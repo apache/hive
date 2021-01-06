@@ -236,6 +236,9 @@ public class ParallelEdgeFixer extends Transform {
   }
 
 
+  /**
+   * Fixes a parallel edge going into a mapjoin by introducing a concentrator RS.
+   */
   private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) {
     LOG.info("Fixing parallel by adding a concentrator RS between {} -> {}", p, o);
 
@@ -253,9 +256,11 @@ public class ParallelEdgeFixer extends Transform {
     //    conf.setForwarding(true);
     conf.setTag(0);
 
-    newConf.setKeyCols(createColumnRefs(conf.getKeyCols(), conf.getOutputKeyColumnNames()));
-    newConf.setValueCols(createColumnRefs(conf.getValueCols(), conf.getOutputValueColumnNames()));
-    newConf.setColumnExprMap(buildIdentityColumnExprMap(conf.getColumnExprMap()));
+    newConf.setKeyCols(new ArrayList(conf.getKeyCols()));
+    //    newConf.setColumnExprMap(colExprMap);
+    //    newConf.setKeyCols(createColumnRefs(conf.getKeyCols(), conf.getOutputKeyColumnNames()));
+    //  newConf.setValueCols(createColumnRefs(conf.getValueCols(), conf.getOutputValueColumnNames()));
+    //    newConf.setColumnExprMap(buildIdentityColumnExprMap(conf.getColumnExprMap()));
     //    newConf.setPartitionCols(partitionCols);
     newRS.setSchema(new RowSchema(p.getSchema()));
 
@@ -276,21 +281,23 @@ public class ParallelEdgeFixer extends Transform {
     List<ExprNodeDesc> colList = new ArrayList<>();
     List<String> outputColumnNames = new ArrayList<>();
     List<ColumnInfo> newColumns = new ArrayList<>();
+
     for (Entry<String, ExprNodeDesc> e : conf.getColumnExprMap().entrySet()) {
 
       String colName = e.getKey();
+      ExprNodeDesc expr = e.getValue();
       if (colName.contains("reducesinkkey")) {
         int asd = 1;
       }
 
-      ExprNodeDesc expr = e.getValue();
       ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
 
       colList.add(colRef);
-      String newColName = colName.replaceAll(".*\\.", "");
-      //      if (colName.startsWith("KEY")) {
-      //        newColName = conf.getKeyCols().get(0);
-      //      }
+      //      String newColName = colName.replaceAll(".*\\.", "");
+      String newColName = extractColumnName(expr);
+//      if (colName.startsWith("KEY")) {
+//        newColName = conf.getKeyCols().get(0);
+//      }
       outputColumnNames.add(newColName);
       ColumnInfo newColInfo = new ColumnInfo(p.getSchema().getColumnInfo(colName));
       newColInfo.setInternalName(newColName);
@@ -304,6 +311,16 @@ public class ParallelEdgeFixer extends Transform {
     newSEL.setSchema(new RowSchema(newColumns));
 
     return newSEL;
+  }
+
+  private String extractColumnName(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
+      return exprNodeColumnDesc.getColumn();
+
+    }
+    throw new RuntimeException("unexpected mapping expression!");
+
   }
 
   private Map<String, ExprNodeDesc> buildIdentityColumnExprMap(Map<String, ExprNodeDesc> columnExprMap) {
