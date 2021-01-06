@@ -700,9 +700,6 @@ public class VectorizedOrcAcidRowBatchReader
     ReaderData readerData = new ReaderData();
     if (shouldReadDeleteDeltasWithLlap(conf, true)) {
       try {
-        if (LlapProxy.getIo() == null) {
-          throw new IllegalCacheConfigurationException("LLAP IO is not enabled.");
-        }
         readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
         return readerData;
       } catch (IllegalCacheConfigurationException icce) {
@@ -716,8 +713,8 @@ public class VectorizedOrcAcidRowBatchReader
 
   /**
    * Checks whether delete delta files should be read through LLAP IO by verifying that:
-   * - this execution is inside an LLAP daemon
    * - delete delta caching feature is turned on in configuration
+   * - this execution is inside an LLAP daemon, and LLAP IO is enabled
    * @param conf job conf / session conf
    * @param metaDataLevelSufficient if true: 'metadata' level delete delta caching is sufficient to return true
    *                                if false: full delete delta caching ('all') is required for this to return true
@@ -726,7 +723,7 @@ public class VectorizedOrcAcidRowBatchReader
   private static boolean shouldReadDeleteDeltasWithLlap(Configuration conf, boolean metaDataLevelSufficient) {
     String ddCacheLevel = HiveConf.getVar(conf, ConfVars.LLAP_IO_CACHE_DELETEDELTAS);
     return ("all".equals(ddCacheLevel) || (metaDataLevelSufficient && ddCacheLevel.equals("metadata")))
-        && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon();
+        && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon() && LlapProxy.getIo() != null;
   }
 
   /**
