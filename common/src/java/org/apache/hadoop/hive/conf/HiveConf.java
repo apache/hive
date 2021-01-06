@@ -4605,7 +4605,7 @@ public class HiveConf extends Configuration {
          "notifications are received by the daemon. Sweep phase of proactive eviction will only do the cache policy " +
          "cleanup in this case. This can increase cache hit ratio but might scale bad in a workload that generates " +
          "many proactive eviction events."),
-    LLAP_IO_CACHE_DELETEDELTAS("hive.llap.io.cache.deletedeltas", "none", new StringSet("none", "metadata", "all"),
+    LLAP_IO_CACHE_DELETEDELTAS("hive.llap.io.cache.deletedeltas", "all", new StringSet("none", "metadata", "all"),
          "When set to 'all' queries that use LLAP IO for execution will also access delete delta files via " +
          "LLAP IO layer and thus they will be fully cached. When set to 'metadata', only the tail of delete deltas " +
          "will be cached. If set to 'none', only the base files and insert deltas will be channeled through LLAP, " +
