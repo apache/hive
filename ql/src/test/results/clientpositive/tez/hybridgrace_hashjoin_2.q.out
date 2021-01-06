@@ -1545,10 +1545,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                  filterExpr: ((key < 'zzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                    predicate: ((key < 'zzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
                     Statistics: Num rows: 2 Data size: 350 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -1585,8 +1585,13 @@ STAGE PLANS:
                           1 key (type: string)
                         outputColumnNames: _col1
                         input vertices:
+<<<<<<< HEAD
                           1 Reducer 5
                         Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          1 Map 4
+                        Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -1595,8 +1600,13 @@ STAGE PLANS:
                             1 value (type: string)
                           outputColumnNames: _col1
                           input vertices:
+<<<<<<< HEAD
                             1 Map 6
                           Statistics: Num rows: 76 Data size: 6764 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            1 Map 5
+                          Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1604,8 +1614,13 @@ STAGE PLANS:
                               0 _col1 (type: string)
                               1 value (type: string)
                             input vertices:
+<<<<<<< HEAD
                               1 Map 4
                             Statistics: Num rows: 123 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                              1 Map 6
+                            Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -1622,17 +1637,32 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
+<<<<<<< HEAD
                   filterExpr: ((key is not null and (value < 'zzzzzzzz')) or (value < 'zzzzzzzzzz')) (type: boolean)
+=======
+                  filterExpr: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+>>>>>>> update q test
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+<<<<<<< HEAD
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: z2
+                  filterExpr: ((key < 'zzzzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                   Filter Operator
                     predicate: (value < 'zzzzzzzzzz') (type: boolean)
                     Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1782,10 +1812,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                  filterExpr: ((key < 'zzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                    predicate: ((key < 'zzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
                     Statistics: Num rows: 2 Data size: 350 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -1823,8 +1853,13 @@ STAGE PLANS:
                           1 key (type: string)
                         outputColumnNames: _col1
                         input vertices:
+<<<<<<< HEAD
                           1 Reducer 5
                         Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          1 Map 4
+                        Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                         HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
@@ -1834,8 +1869,13 @@ STAGE PLANS:
                             1 value (type: string)
                           outputColumnNames: _col1
                           input vertices:
+<<<<<<< HEAD
                             1 Map 6
                           Statistics: Num rows: 76 Data size: 6764 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            1 Map 5
+                          Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                           HybridGraceHashJoin: true
                           Map Join Operator
                             condition map:
@@ -1844,8 +1884,13 @@ STAGE PLANS:
                               0 _col1 (type: string)
                               1 value (type: string)
                             input vertices:
+<<<<<<< HEAD
                               1 Map 4
                             Statistics: Num rows: 123 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                              1 Map 6
+                            Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                             HybridGraceHashJoin: true
                             Group By Operator
                               aggregations: count()
@@ -1863,17 +1908,32 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
+<<<<<<< HEAD
                   filterExpr: ((key is not null and (value < 'zzzzzzzz')) or (value < 'zzzzzzzzzz')) (type: boolean)
+=======
+                  filterExpr: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+>>>>>>> update q test
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: string)
+<<<<<<< HEAD
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: z2
+                  filterExpr: ((key < 'zzzzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> update q test
                   Filter Operator
                     predicate: (value < 'zzzzzzzzzz') (type: boolean)
                     Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
