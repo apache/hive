@@ -1167,7 +1167,10 @@ public class TestInitiator extends CompactorTest {
     String tableName = "my_table";
     Table t = newTable("default", tableName, false);
 
-    for (int i = 0; i < 11; i++) {
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 1);
+
+    // 2 aborts
+    for (int i = 0; i < 2; i++) {
       long txnid = openTxn();
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
       comp.setTablename(tableName);
