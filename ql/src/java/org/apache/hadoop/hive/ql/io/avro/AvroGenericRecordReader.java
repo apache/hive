@@ -176,13 +176,12 @@ public class AvroGenericRecordReader implements
   }
 
   private Boolean extractWriterProlepticFromMetadata(JobConf job, FileSplit split,
-      GenericDatumReader<GenericRecord> gdr) throws IOException {
+      GenericDatumReader<GenericRecord> gdr) {
     if (job == null || gdr == null || split == null || split.getPath() == null) {
       return null;
     }
-    try {
-      DataFileReader<GenericRecord> dataFileReader =
-          new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
+    try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(
+        new FsInput(split.getPath(), job), gdr)) {
       if (dataFileReader.getMeta(AvroSerDe.WRITER_PROLEPTIC) != null) {
         try {
           return Boolean.valueOf(new String(dataFileReader.getMeta(AvroSerDe.WRITER_PROLEPTIC),
@@ -193,6 +192,7 @@ public class AvroGenericRecordReader implements
       }
     } catch (IOException e) {
       // Can't access metadata, carry on.
+      LOG.debug(e.getMessage(), e);
     }
     return null;
   }
