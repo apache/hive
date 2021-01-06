@@ -1857,6 +1857,10 @@ public class HiveConf extends Configuration {
         "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
         "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
         "for all tables."),
+    HIVE_DEFAULT_STORAGE_HANDLER("hive.default.storage.handler.class", "",
+        "Default storage handler class for CREATE TABLE statements. If this is set to a valid class, a 'CREATE TABLE ... STORED AS ... LOCATION ...' command will " +
+        "be equivalent to 'CREATE TABLE ... STORED BY [default.storage.handler.class] LOCATION ...'. Any STORED AS clauses will be ignored, given that STORED BY and STORED AS are " +
+        "incompatible within the same command. Users can explicitly override the default class by issuing 'CREATE TABLE ... STORED BY [overriding.storage.handler.class] ...'"),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "SequenceFile", new StringSet("TextFile", "SequenceFile", "RCfile", "Llap"),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
