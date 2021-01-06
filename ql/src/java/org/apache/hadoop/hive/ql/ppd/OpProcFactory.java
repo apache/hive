@@ -853,6 +853,7 @@ public final class OpProcFactory {
       }
 
       Map<String, ExprNodeDesc> columnExprMap = operator.getColumnExprMap();
+      // Some operators do not have columnExprMap. Example: FilterOperator.
       if (columnExprMap == null) {
         if (operator.getParentOperators().size() == 1) {
           return searchForEqualities(operator.getParentOperators().get(0), exprNodeDescList);
