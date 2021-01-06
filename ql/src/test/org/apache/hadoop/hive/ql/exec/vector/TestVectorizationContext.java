@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnVarCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampColumnColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampColumnScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampScalarColumn;
@@ -960,10 +961,10 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(anotherUnary);
     VectorExpression childVe = ve.getChildExpressions()[0];
     assertEquals(StringLower.class, childVe.getClass());
-    assertEquals(2, ((StringLower) childVe).getOutputColumnNum());
+    assertEquals(2, childVe.getOutputColumnNum());
 
-    assertEquals(StringLTrimColScalar.class, ve.getClass());
-    assertEquals(3, ((StringLTrimColScalar) ve).getOutputColumnNum());
+    assertEquals(StringLTrimCol.class, ve.getClass());
+    assertEquals(3, ve.getOutputColumnNum());
   }
 
   @Test
