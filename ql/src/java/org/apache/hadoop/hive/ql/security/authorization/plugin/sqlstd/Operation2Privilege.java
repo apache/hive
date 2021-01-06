@@ -246,7 +246,7 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REWRITE,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REBUILD,
-        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+        PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT)));
     op2Priv.put(HiveOperationType.DROP_MATERIALIZED_VIEW,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
