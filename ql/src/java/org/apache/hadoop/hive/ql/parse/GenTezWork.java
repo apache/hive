@@ -447,7 +447,7 @@ public class GenTezWork implements SemanticNodeProcessor {
             // Since the MapJoin has had all of its other parents removed at this point,
             // it would be bad here if processReduceSinkToHashJoin() tries to do anything
             // with the RS parent based on its position in the list of parents.
-            ReduceSinkMapJoinProc.processReduceSinkToHashJoin(rs, mj, context);
+            ReduceSinkMapJoinProc.processReduceSinkToHashJoin(rs, mj, context, stack);
 
             // Remove any parents from MapJoin again
             mj.removeParents();

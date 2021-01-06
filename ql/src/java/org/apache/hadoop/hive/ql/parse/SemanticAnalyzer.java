@@ -7059,7 +7059,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genMaterializedViewDataOrgPlan(sortColInfos, distributeColInfos, inputRR, input);
   }
 
-  private Operator genMaterializedViewDataOrgPlan(List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos,
+  public static Operator genMaterializedViewDataOrgPlan(List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos,
       RowResolver inputRR, Operator input) {
     // In this case, we will introduce a RS and immediately after a SEL that restores
     // the row schema to what follow-up operations are expecting
@@ -7129,8 +7129,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         rsRR.addMappingOnly(nm2[0], nm2[1], colInfo);
       }
     }
-    Operator<?> result = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        rsConf, new RowSchema(rsSignature), input), rsRR);
+    //FIXME
+    Operator<?> result = /*putOpInsertMap*/(OperatorFactory.getAndMakeChild(
+        rsConf, new RowSchema(rsSignature), input)/*, rsRR*/);
     result.setColumnExprMap(colExprMap);
 
     // Create SEL operator
@@ -7161,7 +7162,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       selColExprMap.put(colName, exprNodeDesc);
     }
     SelectDesc selConf = new SelectDesc(columnExprs, colNames);
-    result = putOpInsertMap(OperatorFactory.getAndMakeChild(selConf, new RowSchema(selSignature), result), selRR);
+    result = /*putOpInsertMap*/(OperatorFactory.getAndMakeChild(selConf, new RowSchema(selSignature), result)/*, selRR*/);
     result.setColumnExprMap(selColExprMap);
 
     return result;

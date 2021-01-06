@@ -124,7 +124,7 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
     context.preceedingWork = null;
     context.currentRootOperator = null;
 
-    return processReduceSinkToHashJoin(parentRS, mapJoinOp, context);
+    return processReduceSinkToHashJoin(parentRS, mapJoinOp, context, stack);
   }
 
   public static BaseWork getMapJoinParentWork(GenTezProcContext context, Operator<?> parentRS) {
@@ -139,7 +139,16 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
   }
 
   public static Object processReduceSinkToHashJoin(ReduceSinkOperator parentRS, MapJoinOperator mapJoinOp,
-      GenTezProcContext context) throws SemanticException {
+      GenTezProcContext context, Stack<Node> stack) throws SemanticException {
+
+    Operator nonRSparent = null;
+    for (int i = stack.size() - 3; i >= 0; i--) {
+      nonRSparent = (Operator) stack.get(i);
+      if (!(nonRSparent.getConf() instanceof ReduceSinkDesc)) {
+        break;
+      }
+    }
+
     // remove the tag for in-memory side of mapjoin
     parentRS.getConf().setSkipTag(true);
     parentRS.setSkipTag(true);
@@ -340,7 +349,9 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
     TableDesc tbl;
 
     // need to create the correct table descriptor for key/value
-    RowSchema rowSchema = parentRS.getParentOperators().get(0).getSchema();
+    RowSchema rowSchema = nonRSparent.getSchema();
+    //    RowSchema rowSchema0 = parentRS.getParentOperators().get(0).getSchema();
+
     // FIXME why was this ^^^
     //    RowSchema rowSchema = parentRS.getSchema();
     tbl = PlanUtils.getReduceValueTableDesc(PlanUtils.getFieldSchemasFromRowSchema(rowSchema, ""));
