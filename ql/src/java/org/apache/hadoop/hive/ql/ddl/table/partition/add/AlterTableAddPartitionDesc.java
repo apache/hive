@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -234,7 +233,7 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
   @Override
   public String getFullTableName() {
-    return AcidUtils.getFullTableName(dbName,tableName);
+    return AcidUtils.getFullTableName(dbName, tableName);
   }
 
   @Override
