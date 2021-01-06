@@ -59,6 +59,24 @@ public class TestCommands {
     assertEquals("\"'show --comments' tables\"", removeComments("--comments\n\"'show --comments' tables\" --comments"));
     assertEquals("'show --comments tables'", removeComments("--comments\n'show --comments tables' --comments"));
     assertEquals("'\"show --comments tables\"'", removeComments("--comments\n'\"show --comments tables\"' --comments"));
+    assertEquals( "select col1, \n" +
+                  "       year,\n" +
+                  "       month,\n" +
+                  "       date\n" +
+                  "  from test_table\n" +
+                  " where\n" +
+                  "   username = 'foo';",
+        removeComments("select col1, -- comments\n" +
+                       "       --partitioned year column\n" +
+                       "       year,\n" +
+                       "       --partitioned month column\n" +
+                       "       month,\n" +
+                       "       --partitioned date column\n" +
+                       "       date\n" +
+                       "  from test_table\n" +
+                       " where\n" +
+                       "   --for a particular user\n" +
+                       "   username = 'foo';"));
   }
 
   /**
