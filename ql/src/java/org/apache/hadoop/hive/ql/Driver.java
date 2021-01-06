@@ -881,7 +881,7 @@ public class Driver implements IDriver {
     } finally {
       driverState.unlock();
     }
-    driverTxnHandler.destroy(driverContext.getQueryState().getQueryId());
+    driverTxnHandler.destroy();
   }
 
   @Override

@@ -246,7 +246,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       tableWriteIds.clear();
       isExplicitTransaction = false;
       startTransactionCount = 0;
-      this.queryId = ctx.getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
       LOG.info("Opened " + JavaUtils.txnIdToString(txnId));
       ctx.setHeartbeater(startHeartbeat(delay));
       return txnId;
@@ -482,7 +481,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     stmtId = -1;
     numStatements = 0;
     tableWriteIds.clear();
-    queryId = null;
   }
 
   @Override
@@ -1141,10 +1139,5 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         }
       }
     }
-  }
-
-  @Override
-  public String getQueryid() {
-    return queryId;
   }
 }
