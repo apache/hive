@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -60,6 +62,9 @@ import com.google.common.collect.Sets;
  */
 public class ParallelEdgeFixer extends Transform {
 
+  static Operator d1 = null;
+  static Operator d2 = null;
+  static Operator d3 = null;
   protected static final Logger LOG = LoggerFactory.getLogger(ParallelEdgeFixer.class);
 
   @Override
@@ -67,7 +72,7 @@ public class ParallelEdgeFixer extends Transform {
     Set<OpGroup> groups = findOpGroups(pctx);
     fixParallelEdges(groups);
     try {
-      new OperatorGraph(pctx).toDot(new File("/tmp/last_para"));
+      new OperatorGraph(pctx).toDot(new File("/tmp/last_para.dot"));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -116,18 +121,34 @@ public class ParallelEdgeFixer extends Transform {
 
     // alter old RS conf to forward only
     conf.setOutputName("forward_to_" + newRS);
-    conf.setForwarding(true);
+    //    conf.setForwarding(true);
     conf.setTag(0);
 
     newConf.setKeyCols(createColumnRefs(conf.getKeyCols(), conf.getOutputKeyColumnNames()));
     newConf.setValueCols(createColumnRefs(conf.getValueCols(), conf.getOutputValueColumnNames()));
+    newConf.setColumnExprMap(buildIdentityColumnExprMap(conf.getColumnExprMap()));
     //    newConf.setPartitionCols(partitionCols);
 
     newRS.setParentOperators(Lists.newArrayList(p));
     newRS.setChildOperators(Lists.newArrayList(o));
+    newRS.setSchema(new RowSchema(p.getSchema()));
 
     p.replaceChild(o, newRS);
     o.replaceParent(p, newRS);
+
+  }
+
+  private Map<String, ExprNodeDesc> buildIdentityColumnExprMap(Map<String, ExprNodeDesc> columnExprMap) {
+
+    Map<String, ExprNodeDesc> ret = new HashMap<String, ExprNodeDesc>();
+    for (Entry<String, ExprNodeDesc> e : columnExprMap.entrySet()) {
+      String colName = e.getKey();
+      ExprNodeDesc expr = e.getValue();
+
+      ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
+      ret.put(colName, colRef);
+    }
+    return ret;
 
   }
 

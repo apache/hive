@@ -1780,7 +1780,7 @@ public class SharedWorkOptimizer extends Transform {
     final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2, false);
     if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
       // We cannot merge
-      //      return false;
+      return false;
     }
     // 3) We check whether we will end up with same operators inputing on same work.
     //

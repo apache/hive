@@ -341,6 +341,8 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
 
     // need to create the correct table descriptor for key/value
     RowSchema rowSchema = parentRS.getParentOperators().get(0).getSchema();
+    // FIXME why was this ^^^
+    //    RowSchema rowSchema = parentRS.getSchema();
     tbl = PlanUtils.getReduceValueTableDesc(PlanUtils.getFieldSchemasFromRowSchema(rowSchema, ""));
     dummyOp.getConf().setTbl(tbl);
 
