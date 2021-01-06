@@ -198,7 +198,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
 
+STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
