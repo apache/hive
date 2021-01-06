@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -55,17 +56,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
- * This class analyzes and sets the bucketing versions.
- *
- * A set of data values can be distributed into N buckets differently depending on the used hashing algorithm.
- * Hive right now supports multiple hashing algorithms - the actual algo is identified by "bucketingVersion".
- *
- * Bucketing version can be re-select after every Reduce Sink; because a full shuffle can re-distribute the data according to a new hash algo as well.
- *
- * Depending on the table Hive might need to write it's data in some specific bucketing version.
- *
- * In case a bucketed table is read from the table location; the data should be threated as described by the table's bucketing_version property.
- *
+ * FIXME
  */
 public class ParallelEdgeFixer extends Transform {
 

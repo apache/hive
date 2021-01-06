@@ -292,3 +292,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[83][bigTable=?] in task 'Map 3' is a cross product
+Warning: Map Join MAPJOIN[93][bigTable=?] in task 'Map 6' is a cross product
+PREHOOK: query: with t as (
+	select a+b as s from tu,tv where a>1 and b>2 and a*a=b
+)
+select t1.s from t as t1, t as t2 where t1.s=t2.s+1
+union all
+select t1.s from t as t1, t as t2 where t1.s+1=t2.s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+#### A masked pattern was here ####
+POSTHOOK: query: with t as (
+	select a+b as s from tu,tv where a>1 and b>2 and a*a=b
+)
+select t1.s from t as t1, t as t2 where t1.s=t2.s+1
+union all
+select t1.s from t as t1, t as t2 where t1.s+1=t2.s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tu
+POSTHOOK: Input: default@tv
+#### A masked pattern was here ####
