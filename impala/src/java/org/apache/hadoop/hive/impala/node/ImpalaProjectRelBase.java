@@ -108,7 +108,10 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     Map<Integer, Expr> projectExprs = new LinkedHashMap<>();
     int index = 0;
     for (RexNode rexNode : project.getProjects()) {
-      projectExprs.put(index++, rexNode.accept(visitor));
+      Expr projectExpr = rexNode.accept(visitor);
+      Preconditions.checkNotNull(projectExpr,
+          "Visitor returned null Impala expr for RexNode %s", rexNode);
+      projectExprs.put(index++, projectExpr);
     }
     return ImmutableMap.copyOf(projectExprs);
   }
@@ -143,19 +146,21 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     planNode = analyticPlanner.createSingleNodePlan(
         inputPlanNode, Collections.emptyList(), new ArrayList<>());
     // Gather mappings from nodes created by analytic planner
-    ExprSubstitutionMap logicalToPhysical = planNode.getOutputSmap();
+    ExprSubstitutionMap outputExprMap = planNode.getOutputSmap();
     // We populate the outputs from the expressions
     Map<RexNode, Expr> mapping = new LinkedHashMap<>();
     for (int pos : HiveCalciteUtil.getInputRefs(project.getChildExps())) {
-      mapping.put(RexInputRef.of(pos, inputRel.getRowType()),
-          logicalToPhysical.get(inputRel.getExpr(pos)));
+      // Get the Impala expr after substituting its operands based on the expression map
+      Expr e = inputRel.getExpr(pos).substitute(outputExprMap, ctx.getRootAnalyzer(),
+          /* preserveRootType = */true);
+      mapping.put(RexInputRef.of(pos, inputRel.getRowType()), e);
     }
     for (int i = 0; i < analyticExprs.size(); i++) {
       SlotDescriptor slotDesc =
           analyticInfo.getOutputTupleDesc().getSlots().get(i);
       SlotRef logicalOutputSlot = new SlotRef(slotDesc);
       mapping.put(overExprs.get(i),
-          logicalToPhysical.get(logicalOutputSlot));
+          outputExprMap.get(logicalOutputSlot));
     }
     LOG.debug("Mapping from nodes created by analytic planner : {}", mapping);
     return new ImpalaProvidedMappingRexVisitor(ctx.getRootAnalyzer(),
