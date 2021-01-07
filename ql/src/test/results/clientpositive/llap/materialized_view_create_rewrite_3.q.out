@@ -481,14 +481,14 @@ POSTHOOK: Input: default@cmv_basetable_2
 1
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -701,13 +701,13 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -922,12 +922,12 @@ POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
 1
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Output: default@cmv_mat_view
