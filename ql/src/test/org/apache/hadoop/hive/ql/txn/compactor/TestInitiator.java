@@ -408,6 +408,42 @@ public class TestInitiator extends CompactorTest {
   }
 
   @Test
+  public void compactCamelCasePartitionValue() throws Exception {
+    Table t = newTable("default", "test_table", true);
+    Partition p = newPartition(t, "ToDay");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "test_table", 23);
+
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+    comp.setTablename("test_table");
+    comp.setPartitionname("dS=ToDay");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    long writeid = allocateWriteId("default", "test_table", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("initiated", compacts.get(0).getState());
+    Assert.assertEquals("test_table", compacts.get(0).getTablename());
+    Assert.assertEquals("ds=ToDay", compacts.get(0).getPartitionname());
+    Assert.assertEquals(CompactionType.MAJOR, compacts.get(0).getType());
+  }
+
+  @Test
   public void noCompactTableDeltaPctNotHighEnough() throws Exception {
     Table t = newTable("default", "nctdpnhe", false);
 
@@ -1062,6 +1098,65 @@ public class TestInitiator extends CompactorTest {
     Thread.sleep(1L);
     ShowCompactResponse response = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("ready for cleaning",response.getCompacts().get(0).getState());
+  }
+
+  /**
+   * Tests org.apache.hadoop.hive.ql.txn.compactor.CompactorThread#findUserToRunAs(java.lang.String, org.apache.hadoop
+   * .hive.metastore.api.Table).
+   * Used by Worker and Initiator.
+   * Initiator caches this via Initiator#resolveUserToRunAs.
+   * @throws Exception
+   */
+  @Test
+  public void testFindUserToRunAs() throws Exception {
+    Table t = newTable("default", "tfutra", false);
+
+    CompactorThread initiator = new Initiator();
+    initiator.setConf(conf);
+    
+    String userFromConf = "randomUser123";
+
+    // user set in config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    initiator.setConf(conf);
+    Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+
+    // table dir owner (is probably not "randomUser123")
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // simulate restarting Initiator
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+  }
+
+  /**
+   * Tests org.apache.hadoop.hive.ql.txn.compactor.Initiator#resolveUserToRunAs(java.util.Map, 
+   * org.apache.hadoop.hive.metastore.api.Table, org.apache.hadoop.hive.metastore.api.Partition)
+   * Used by Initiator only.
+   * @throws Exception
+   */
+  @Test
+  public void resolveUserToRunAs() throws Exception {
+    Table t = newTable("default", "tfutra", false);
+
+    Map<String, String> tblNameOwners = new HashMap<>();
+    Initiator initiator = new Initiator();
+
+    String userFromConf = "randomUser123";
+
+    // user set in config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    initiator.setConf(conf);
+    Assert.assertEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+
+    
+    // table dir owner (is probably not "randomUser123")
+    // config changes can happen on Initiator restart; a restart would clear cache
+    tblNameOwners = new HashMap<>();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+    // table dir owner again, retrieved from cache
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
   }
 
   @Override

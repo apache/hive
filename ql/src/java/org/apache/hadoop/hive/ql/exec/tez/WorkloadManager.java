@@ -27,6 +27,7 @@ import com.google.common.math.DoubleMath;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -1102,7 +1103,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private void failOnFutureFailure(ListenableFuture<?> future) {
-    Futures.addCallback(future, FATAL_ERROR_CALLBACK);
+    Futures.addCallback(future, FATAL_ERROR_CALLBACK, MoreExecutors.directExecutor());
   }
 
   private void queueGetRequestOnMasterThread(
@@ -1936,7 +1937,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     public void start() throws Exception {
       ListenableFuture<WmTezSession> getFuture = tezAmPool.getSessionAsync();
-      Futures.addCallback(getFuture, this);
+      Futures.addCallback(getFuture, this, MoreExecutors.directExecutor());
     }
 
     @Override
@@ -1990,7 +1991,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       case GETTING: {
         ListenableFuture<WmTezSession> waitFuture = session.waitForAmRegistryAsync(
             amRegistryTimeoutMs, timeoutPool);
-        Futures.addCallback(waitFuture, this);
+        Futures.addCallback(waitFuture, this, MoreExecutors.directExecutor());
         break;
       }
       case WAITING_FOR_REGISTRY: {

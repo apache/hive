@@ -21,11 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
@@ -48,17 +46,20 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
 import org.apache.orc.OrcFile;
+import org.apache.orc.OrcProto;
 import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -133,6 +134,53 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs, true,
         new String[] { AcidUtils.BASE_PREFIX});
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
+  }
+
+  /**
+   * Query based compaction should respect the orc.bloom.filter properties
+   * @throws Exception
+   */
+  @Test
+  public void testMajorCompactionWithBloomFilter() throws Exception {
+
+    String dbName = "default";
+    String tblName = "testMajorCompaction";
+    TestDataProvider testDataProvider = new TestDataProvider();
+    Map<String, String> additionalTblProperties = new HashMap<>();
+    additionalTblProperties.put("orc.bloom.filter.columns", "b");
+    additionalTblProperties.put("orc.bloom.filter.fpp", "0.02");
+    testDataProvider.createFullAcidTable(dbName, tblName, false, false, additionalTblProperties);
+    testDataProvider.insertTestData(tblName);
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+    // Verify deltas are present
+    Assert.assertEquals("Delta directories does not match before compaction",
+        Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000",
+            "delta_0000004_0000004_0000"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+    // Check bucket file contains the bloomFilter
+    checkBloomFilterInAcidFile(fs, new Path(table.getSd().getLocation(), "delta_0000001_0000001_0000/bucket_00000_0"));
+
+    // Run major compaction and cleaner
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
+    // Should contain only one base directory now
+    String expectedBase = "base_0000005_v0000008";
+    Assert.assertEquals("Base directory does not match after major compaction",
+        Collections.singletonList(expectedBase),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    // Check base dir contents
+    List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil
+            .getBucketFileNames(fs, table, null, expectedBase));
+    // Check bucket file contents
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+
+    checkBloomFilterInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase + "/bucket_00000"));
   }
 
   /**
@@ -564,26 +612,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Delete directories does not match", expectedDeleteDeltas,
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
 
-    Set<String> expectedDeleteBucketFilesSet = new HashSet<>();
-    for (String expectedDeleteDelta : expectedDeleteDeltas) {
-      expectedDeleteBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDeleteDelta));
-    }
-    List<String> expectedDeleteBucketFiles = new ArrayList<>(expectedDeleteBucketFilesSet);
-    Collections.sort(expectedDeleteBucketFiles);
-
-    Set<String> expectedBucketFilesSet = new HashSet<>();
-    for (String expectedDelta : expectedDeltas) {
-      expectedBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDelta));
-    }
-    List<String> expectedBucketFiles = new ArrayList<>();
-    for (String expectedBucketFile : expectedBucketFilesSet) {
-      Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
-      Matcher m = p.matcher(expectedBucketFile);
-      if (m.matches()) {
-        expectedBucketFiles.add(m.group(1));
-      }
-    }
-    Collections.sort(expectedBucketFiles);
+    List<String> expectedBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeltas);
+    List<String> expectedDeleteBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeleteDeltas);
 
     CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
     // Clean up resources
@@ -661,26 +693,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         expectedDeleteDeltas,
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
 
-    Set<String> expectedDeleteBucketFilesSet = new HashSet<>();
-    for (String expectedDeleteDelta : expectedDeleteDeltas) {
-      expectedDeleteBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDeleteDelta));
-    }
-    List<String> expectedDeleteBucketFiles = new ArrayList<>(expectedDeleteBucketFilesSet);
-    Collections.sort(expectedDeleteBucketFiles);
-
-    Set<String> expectedBucketFilesSet = new HashSet<>();
-    for (String expectedDelta : expectedDeltas) {
-      expectedBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDelta));
-    }
-    List<String> expectedBucketFiles = new ArrayList<>();
-    for (String expectedBucketFile : expectedBucketFilesSet) {
-      Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
-      Matcher m = p.matcher(expectedBucketFile);
-      if (m.matches()) {
-        expectedBucketFiles.add(m.group(1));
-      }
-    }
-    Collections.sort(expectedBucketFiles);
+    List<String> expectedBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeltas);
+    List<String> expectedDeleteBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeleteDeltas);
 
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
@@ -705,7 +721,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
 
-    Assert.assertEquals("Bucket names are not matching after compaction", expectedDeleteBucketFiles,
+    Assert.assertEquals("Bucket names in delete delta are not matching after compaction", expectedDeleteBucketFiles,
         CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeleteDeltasAfterComp.get(0)));
     // Verify all contents
    // List<String> actualData = dataProvider.getAllData(tableName);
@@ -1728,6 +1744,18 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     }
   }
 
+  private void checkBloomFilterInAcidFile(FileSystem fs, Path bucketFilePath) throws IOException {
+    Reader orcReader = OrcFile.createReader(bucketFilePath,
+        OrcFile.readerOptions(fs.getConf()).filesystem(fs));
+    StripeInformation stripe = orcReader.getStripes().get(0);
+    try (RecordReaderImpl rows = (RecordReaderImpl)orcReader.rows()) {
+      boolean bloomFilter = rows.readStripeFooter(stripe).getStreamsList().stream().anyMatch(
+          s -> s.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER_UTF8
+              || s.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER);
+      Assert.assertTrue("Bloom filter is missing", bloomFilter);
+    }
+  }
+
   /**
    * Couldn't find any way to get the bucket property from BucketCodec, so just reverse
    * engineered the encoding. The actual bucketId is represented by bits 2-11 of 29 bits
@@ -1747,7 +1775,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     QueryCompactor qc = new QueryCompactor() {
       @Override
       void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                         ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
+                         ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
       }
 
       @Override
@@ -1759,17 +1787,19 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     doAnswer(invocationOnMock -> {
       return null;
     }).when(sdMock).getLocation();
+    CompactionInfo ciMock = mock(CompactionInfo.class);
+    ciMock.runAs = "hive";
     List<String> emptyQueries = new ArrayList<>();
     HiveConf hiveConf = new HiveConf();
     hiveConf.set(ValidTxnList.VALID_TXNS_KEY, "8:9223372036854775807::");
 
     // Check for default case.
-    qc.runCompactionQueries(hiveConf, null, sdMock, null, null, null, emptyQueries, emptyQueries, emptyQueries);
+    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("all", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
 
     // Check for case where  hive.llap.io.etl.skip.format is explicitly set to none - as to always use cache.
     hiveConf.setVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT, "none");
-    qc.runCompactionQueries(hiveConf, null, sdMock, null, null, null, emptyQueries, emptyQueries, emptyQueries);
+    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("none", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
   }
 }

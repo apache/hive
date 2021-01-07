@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.contrib.serde2;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.contrib.util.typedbytes.Type;
 import org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesWritableInput;
@@ -35,7 +33,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -77,9 +74,6 @@ import org.apache.hadoop.io.Writable;
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES})
 public class TypedBytesSerDe extends AbstractSerDe {
 
-  public static final Logger LOG = LoggerFactory.getLogger(TypedBytesSerDe.class
-      .getName());
-
   int numColumns;
   StructObjectInspector rowOI;
   ArrayList<Object> row;
@@ -91,12 +85,10 @@ public class TypedBytesSerDe extends AbstractSerDe {
   NonSyncDataInputBuffer inBarrStr;
   TypedBytesWritableInput tbIn;
 
-  List<String> columnNames;
-  List<TypeInfo> columnTypes;
-
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     // We can get the table definition from tbl.
     serializeBytesWritable = new BytesWritable();
@@ -107,51 +99,32 @@ public class TypedBytesSerDe extends AbstractSerDe {
     tbIn = new TypedBytesWritableInput(inBarrStr);
 
     // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    columnTypes = null;
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils
-          .getTypeInfosFromTypeString(columnTypeProperty);
-    }
-
-    assert columnNames.size() == columnTypes.size();
-    numColumns = columnNames.size();
+    numColumns = getColumnNames().size();
 
     // All columns have to be primitive.
     for (int c = 0; c < numColumns; c++) {
-      if (columnTypes.get(c).getCategory() != Category.PRIMITIVE) {
+      if (getColumnTypes().get(c).getCategory() != Category.PRIMITIVE) {
         throw new SerDeException(getClass().getName()
             + " only accepts primitive columns, but column[" + c + "] named "
-            + columnNames.get(c) + " has category "
-            + columnTypes.get(c).getCategory());
+            + getColumnNames().get(c) + " has category "
+            + getColumnTypes().get(c).getCategory());
       }
     }
 
     // Constructing the row ObjectInspector:
     // The row consists of some string columns, each column will be a java
     // String object.
-    List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(
-        columnNames.size());
-    for (int c = 0; c < numColumns; c++) {
-      columnOIs.add(TypeInfoUtils
-          .getStandardWritableObjectInspectorFromTypeInfo(columnTypes.get(c)));
+    List<ObjectInspector> columnOIs = new ArrayList<>(getColumnNames().size());
+    for (TypeInfo colType : getColumnTypes()) {
+      columnOIs.add(TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(colType));
     }
 
     // StandardStruct uses ArrayList to store the row.
     rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-        columnNames, columnOIs);
+        getColumnNames(), columnOIs);
 
     // Constructing the row object, etc, which will be reused for all rows.
-    row = new ArrayList<Object>(numColumns);
-    for (int c = 0; c < numColumns; c++) {
-      row.add(null);
-    }
+    row = new ArrayList<>(Collections.nCopies(numColumns, null));
   }
 
   @Override
@@ -172,8 +145,8 @@ public class TypedBytesSerDe extends AbstractSerDe {
 
     try {
 
-      for (int i = 0; i < columnNames.size(); i++) {
-        row.set(i, deserializeField(tbIn, columnTypes.get(i), row.get(i)));
+      for (int i = 0; i < getColumnNames().size(); i++) {
+        row.set(i, deserializeField(tbIn, getColumnTypes().get(i), row.get(i)));
       }
 
       // The next byte should be the marker
@@ -383,10 +356,5 @@ public class TypedBytesSerDe extends AbstractSerDe {
       throw new RuntimeException("Unrecognized type: " + oi.getCategory());
     }
     }
-  }
-
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 }

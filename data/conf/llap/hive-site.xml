@@ -402,4 +402,9 @@
   <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
 </property>
 
+<property>
+  <name>hive.strict.timestamp.conversion</name>
+  <value>false</value>
+</property>
+
 </configuration>

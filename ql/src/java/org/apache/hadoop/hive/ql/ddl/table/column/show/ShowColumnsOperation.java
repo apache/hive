@@ -94,14 +94,15 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
       }
     }
 
-    result.sort(
-        new Comparator<FieldSchema>() {
-          @Override
-          public int compare(FieldSchema f1, FieldSchema f2) {
-            return f1.getName().compareTo(f2.getName());
-          }
-        });
-
+    if (desc.isSorted()) {
+      result.sort(
+          new Comparator<FieldSchema>() {
+            @Override
+            public int compare(FieldSchema f1, FieldSchema f2) {
+              return f1.getName().compareTo(f2.getName());
+            }
+          });
+    }
     return result;
   }
 

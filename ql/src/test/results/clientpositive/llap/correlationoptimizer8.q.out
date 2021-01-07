@@ -929,7 +929,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 74 Data size: 13764 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1031,6 +1031,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.value, x.key, x.value

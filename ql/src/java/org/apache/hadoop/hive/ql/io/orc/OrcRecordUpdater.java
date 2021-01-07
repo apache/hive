@@ -835,4 +835,8 @@ public class OrcRecordUpdater implements RecordUpdater {
   public Path getUpdatedFilePath() {
     return path;
   }
+
+  public Path getDeleteFilePath() {
+    return deleteEventPath;
+  }
 }

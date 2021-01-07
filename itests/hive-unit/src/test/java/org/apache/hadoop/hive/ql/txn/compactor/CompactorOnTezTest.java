@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -33,6 +33,7 @@ import org.junit.Before;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -72,9 +73,9 @@ public class CompactorOnTezTest {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.cleanDb(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     conf = hiveConf;
     // Use tez as execution engine for this test class
     setupTez(conf);
@@ -124,12 +125,17 @@ public class CompactorOnTezTest {
 
     void createFullAcidTable(String tblName, boolean isPartitioned, boolean isBucketed)
         throws Exception {
-      createFullAcidTable(null, tblName, isPartitioned, isBucketed);
+      createFullAcidTable(null, tblName, isPartitioned, isBucketed, null);
     }
 
     void createFullAcidTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed)
         throws Exception {
-      createTable(dbName, tblName, isPartitioned, isBucketed, false, "orc");
+      createFullAcidTable(dbName, tblName, isPartitioned, isBucketed, null);
+    }
+
+    void createFullAcidTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed,
+        Map<String, String> additionalTblProperties) throws Exception {
+      createTable(dbName, tblName, isPartitioned, isBucketed, false, "orc", additionalTblProperties);
     }
 
     void createMmTable(String tblName, boolean isPartitioned, boolean isBucketed)
@@ -144,11 +150,11 @@ public class CompactorOnTezTest {
 
     void createMmTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed, String fileFormat)
         throws Exception {
-      createTable(dbName, tblName, isPartitioned, isBucketed, true, fileFormat);
+      createTable(dbName, tblName, isPartitioned, isBucketed, true, fileFormat, null);
     }
 
     private void createTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed,
-        boolean insertOnly, String fileFormat) throws Exception {
+        boolean insertOnly, String fileFormat, Map<String, String> additionalTblProperties) throws Exception {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
@@ -163,6 +169,11 @@ public class CompactorOnTezTest {
       }
       query.append(" stored as ").append(fileFormat);
       query.append(" TBLPROPERTIES('transactional'='true',");
+      if (additionalTblProperties != null) {
+        for (Map.Entry<String, String> e : additionalTblProperties.entrySet()) {
+          query.append("'").append(e.getKey()).append("'='").append(e.getValue()).append("', ");
+        }
+      }
       if (insertOnly) {
         query.append(" 'transactional_properties'='insert_only')");
       } else {

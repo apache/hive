@@ -278,13 +278,13 @@ rewrite; but no mv usage	a	2.0
 rewrite; but no mv usage	b	7.0
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
@@ -464,12 +464,12 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: alter materialized view mv_1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: alter materialized view mv_1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1

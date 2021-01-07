@@ -21,15 +21,13 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -37,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -63,19 +62,19 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private VectorizationContext taskVectorizationContext;
 
-  protected transient JobConf jc;
-  private transient boolean inputFileChanged = false;
+  protected JobConf jc;
+  private boolean inputFileChanged = false;
   private TableDesc tableDesc;
 
-  private transient Stat currentStat;
-  private transient Map<String, Stat> stats;
+  private Stat currentStat;
+  private Map<String, Stat> stats;
 
-  private transient int rowLimit = -1;
-  private transient int currCount = 0;
+  private int rowLimit = -1;
+  private int currCount = 0;
   // insiderView will tell this TableScan is inside a view or not.
-  private transient boolean insideView;
+  private boolean insideView;
 
-  private transient boolean vectorized;
+  private boolean vectorized;
 
   private String defaultPartitionName;
 
@@ -487,6 +486,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
     this.probeDecodeContextSet = probeDecodeContext;
+  }
+
+  public TableName getTableName() {
+    Table tableMetadata = conf.getTableMetadata();
+    return TableName.fromString(tableMetadata.getTableName(), tableMetadata.getCatName(), tableMetadata.getDbName());
   }
 
 }

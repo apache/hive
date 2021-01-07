@@ -28,14 +28,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -48,6 +51,8 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -57,6 +62,8 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -65,6 +72,7 @@ import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
@@ -88,6 +96,8 @@ import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
@@ -96,6 +106,7 @@ import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
@@ -126,7 +137,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -142,6 +152,13 @@ import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 public class DbNotificationListener extends TransactionalMetaStoreEventListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
+
+  private static final String NL_SEL_SQL = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
+  private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
+
+  private static final String EV_SEL_SQL = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+  private static final String EV_UPD_SQL =  "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = ?";
+
   private static CleanerThread cleaner = null;
 
   private Configuration conf;
@@ -154,6 +171,16 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
               MetastoreConf.getVar(conf, ConfVars.RAW_STORE_IMPL), 999999));
       cleaner.start();
+    }
+  }
+
+  @VisibleForTesting
+  public static synchronized void resetCleaner(HiveConf conf) throws Exception {
+    if (cleaner != null && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
+      cleaner.interrupt();
+      cleaner.join();
+      cleaner = null;
+      init(conf);
     }
   }
 
@@ -180,8 +207,31 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           TimeUnit.SECONDS);
       MetastoreConf.setTimeVar(getConf(), MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, time,
           TimeUnit.SECONDS);
-      cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(),
-          MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, TimeUnit.SECONDS));
+      boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
+      if(!isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(), ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+    } else if (key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.toString()) ||
+            key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.getHiveName())) {
+      long time = MetastoreConf.convertTimeStr(tableEvent.getNewValue(), TimeUnit.SECONDS,
+              TimeUnit.SECONDS);
+      boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(time);
+      }
+    }
+
+    if (key.equals(ConfVars.REPLCMENABLED.toString()) || key.equals(ConfVars.REPLCMENABLED.getHiveName())) {
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+      else {
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
     }
 
     if (key.equals(ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL.toString()) ||
@@ -704,6 +754,49 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   /***
+   * @param addDefaultConstraintEvent add default constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
+    List<SQLDefaultConstraint> cols = addDefaultConstraintEvent.getDefaultConstraintCols();
+    if (cols.size() > 0) {
+      AddDefaultConstraintMessage colsInMsg = MessageBuilder.getInstance()
+        .buildAddDefaultConstraintMessage(cols);
+      NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_DEFAULTCONSTRAINT.toString(),
+          msgEncoder.getSerializer().serialize(colsInMsg)
+        );
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addDefaultConstraintEvent);
+    }
+  }
+
+  /***
+   * @param addCheckConstraintEvent add check constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
+    LOG.info("Inside DBNotification listener for check constraint.");
+    List<SQLCheckConstraint> cols = addCheckConstraintEvent.getCheckConstraintCols();
+    if (cols.size() > 0) {
+      AddCheckConstraintMessage colsInMsg = MessageBuilder.getInstance()
+        .buildAddCheckConstraintMessage(cols);
+      NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_CHECKCONSTRAINT.toString(),
+          msgEncoder.getSerializer().serialize(colsInMsg)
+        );
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addCheckConstraintEvent);
+    }
+  }
+
+  /***
    * @param dropConstraintEvent drop constraint event
    * @throws MetaException
    */
@@ -826,6 +919,24 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
+  public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn, SQLGenerator sqlGenerator)
+      throws MetaException {
+
+    CommitCompactionMessage msg = MessageBuilder.getInstance().buildCommitCompactionMessage(commitCompactionEvent);
+
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.COMMIT_COMPACTION.toString(),
+        msgEncoder.getSerializer().serialize(msg));
+    event.setDbName(commitCompactionEvent.getDbname());
+    event.setTableName(commitCompactionEvent.getTableName());
+
+    try {
+      addNotificationLog(event, commitCompactionEvent, dbConn, sqlGenerator);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
+  }
+
+  @Override
   public boolean doesAddEventsToNotificationLogTable() {
     return true;
   }
@@ -869,28 +980,92 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
   }
 
-  private long getNextNLId(Statement stmt, SQLGenerator sqlGenerator, String sequence)
+  /**
+   * Get the next notification log ID.
+   *
+   * @return The next ID to use for a notification log message
+   * @throws SQLException if a database access error occurs or this method is
+   *           called on a closed connection
+   * @throws MetaException if the sequence table is not properly initialized
+   */
+  private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
           throws SQLException, MetaException {
-    String s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
-            "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " + quoteString(sequence));
-    LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = null;
-    try {
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new MetaException("Transaction database not properly configured, can't find next NL id.");
-      }
 
-      long nextNLId = rs.getLong(1);
-      long updatedNLId = nextNLId + 1;
-      s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
-              quoteString(sequence);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      return nextNLId;
-    }finally {
-      close(rs);
+    final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
+    Optional<Long> nextSequenceValue = Optional.empty();
+
+    LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
+    try (PreparedStatement stmt = con.prepareStatement(sfuSql)) {
+      stmt.setString(1, sequence);
+      ResultSet rs = stmt.executeQuery();
+      if (rs.next()) {
+        nextSequenceValue = Optional.of(rs.getLong(1));
+      }
     }
+
+    final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
+        () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
+
+    LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
+    try (PreparedStatement stmt = con.prepareStatement(NL_UPD_SQL)) {
+      stmt.setLong(1, updatedNLId);
+      stmt.setString(2, sequence);
+      final int rowCount = stmt.executeUpdate();
+      LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
+    }
+
+    return nextSequenceValue.get();
+  }
+
+  /**
+   * Get the next event ID.
+   *
+   * @return The next ID to use for an event.
+   * @throws SQLException if a database access error occurs or this method is
+   *           called on a closed connection
+   * @throws MetaException if the sequence table is not properly initialized
+   */
+  private long getNextEventId(Connection con, SQLGenerator sqlGenerator)
+      throws SQLException, MetaException {
+
+    /*
+     * FOR UPDATE means something different in Derby than in most other vendor
+     * implementations therefore it is required to lock the entire table. Since
+     * there is only one row in the table, this should not cause any performance
+     * degradation.
+     *
+     * see: https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
+     */
+    if (sqlGenerator.getDbProduct().isDERBY()) {
+      final String lockingQuery = sqlGenerator.lockTable("NOTIFICATION_SEQUENCE", false);
+      LOG.debug("Locking Derby table [{}]", lockingQuery);
+      try (Statement stmt = con.createStatement()) {
+        stmt.execute(lockingQuery);
+      }
+    }
+
+    final String sfuSql = sqlGenerator.addForUpdateClause(EV_SEL_SQL);
+    Optional<Long> nextSequenceValue = Optional.empty();
+
+    LOG.debug("Going to execute query [{}]", sfuSql);
+    try (Statement stmt = con.createStatement()) {
+      ResultSet rs = stmt.executeQuery(sfuSql);
+      if (rs.next()) {
+        nextSequenceValue = Optional.of(rs.getLong(1));
+      }
+    }
+
+    final long updatedEventId = 1L + nextSequenceValue.orElseThrow(
+        () -> new MetaException("Transaction database not properly configured, failed to determine next event ID"));
+
+    LOG.debug("Going to execute query [{}][1={}]", EV_UPD_SQL, updatedEventId);
+    try (PreparedStatement stmt = con.prepareStatement(EV_UPD_SQL)) {
+      stmt.setLong(1, updatedEventId);
+      final int rowCount = stmt.executeUpdate();
+      LOG.debug("Updated {} rows for NOTIFICATION_SEQUENCE table", rowCount);
+    }
+
+    return nextSequenceValue.get();
   }
 
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
@@ -910,8 +1085,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     try {
       stmt = dbConn.createStatement();
-      if (sqlGenerator.getDbProduct() == MYSQL) {
-        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      String st = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      if (st != null) {
+        stmt.execute(st);
       }
 
       String s = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
@@ -926,7 +1102,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       rs = pst.executeQuery();
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
-        long nextNLId = getNextNLId(stmt, sqlGenerator,
+        long nextNLId = getNextNLId(dbConn, sqlGenerator,
                 "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog");
         s = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" " +
                 "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
@@ -1005,33 +1181,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       stmt = dbConn.createStatement();
       event.setMessageFormat(msgEncoder.getMessageFormat());
 
-      if (sqlGenerator.getDbProduct() == MYSQL) {
+      if (sqlGenerator.getDbProduct().isMYSQL()) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
-      // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
-      // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
-      // only one row in the table, this shouldn't cause any performance degradation.
-      if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
-        String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
-        LOG.info("Going to execute query <" + lockingQuery + ">");
-        stmt.executeUpdate(lockingQuery);
-      }
-      String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
-              " from \"NOTIFICATION_SEQUENCE\"");
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new MetaException("Transaction database not properly " +
-                "configured, can't find next event id.");
-      }
-      long nextEventId = rs.getLong(1);
-      long updatedEventid = nextEventId + 1;
-      s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+      long nextEventId = getNextEventId(dbConn, sqlGenerator); 
 
-      long nextNLId = getNextNLId(stmt, sqlGenerator,
+      long nextNLId = getNextNLId(dbConn, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
 
       String insertVal;
@@ -1051,7 +1207,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
       // Event time
       columns = columns + ", \"EVENT_TIME\"";
-      insertVal = insertVal + "," + now();
+      insertVal = insertVal + "," + event.getEventTime();
 
       // Event type
       columns = columns + ", \"EVENT_TYPE\"";
@@ -1095,7 +1251,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         params.add(catName);
       }
 
-      s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
+      String s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       LOG.debug("Going to execute insert <" + s + "> with parameters (" +
               String.join(", ", params) + ")");
@@ -1140,52 +1296,50 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   private static class CleanerThread extends Thread {
-    private RawStore rs;
+    private final RawStore rs;
     private int ttl;
     private long sleepTime;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
-      this.rs = rs;
-      setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
-          TimeUnit.SECONDS));
-      setCleanupInterval(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL,
-              TimeUnit.MILLISECONDS));
       setDaemon(true);
+      this.rs = Objects.requireNonNull(rs);
+
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      ConfVars ttlConf = (isReplEnabled) ?  ConfVars.REPL_EVENT_DB_LISTENER_TTL : ConfVars.EVENT_DB_LISTENER_TTL;
+      setTimeToLive(MetastoreConf.getTimeVar(conf, ttlConf, TimeUnit.SECONDS));
+      setCleanupInterval(
+          MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, TimeUnit.MILLISECONDS));
     }
 
     @Override
     public void run() {
       while (true) {
+        LOG.debug("Cleaner thread running");
         try {
           rs.cleanNotificationEvents(ttl);
           rs.cleanWriteNotificationEvents(ttl);
         } catch (Exception ex) {
-          //catching exceptions here makes sure that the thread doesn't die in case of unexpected
-          //exceptions
-          LOG.warn("Exception received while cleaning notifications: ", ex);
+          LOG.warn("Exception received while cleaning notifications", ex);
         }
-
         LOG.debug("Cleaner thread done");
+
         try {
+          LOG.debug("Sleeping {}ms", sleepTime);
           Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
-          LOG.info("Cleaner thread sleep interrupted", e);
+          LOG.info("Cleaner thread interrupted. Exiting.");
+          return;
         }
       }
     }
 
     public void setTimeToLive(long configTtl) {
-      if (configTtl > Integer.MAX_VALUE) {
-        ttl = Integer.MAX_VALUE;
-      } else {
-        ttl = (int)configTtl;
-      }
+      this.ttl = (int) Math.min(Integer.MAX_VALUE, configTtl);
     }
 
     public void setCleanupInterval(long configInterval) {
       sleepTime = configInterval;
     }
-
   }
 }

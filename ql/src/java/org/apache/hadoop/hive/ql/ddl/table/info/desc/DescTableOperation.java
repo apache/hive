@@ -24,15 +24,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -53,7 +49,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -138,12 +134,6 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private Deserializer getDeserializer(Table table) throws SQLException {
     Deserializer deserializer = table.getDeserializer(true);
-    if (deserializer instanceof AbstractSerDe) {
-      String errorMsgs = ((AbstractSerDe) deserializer).getConfigurationErrors();
-      if (StringUtils.isNotEmpty(errorMsgs)) {
-        throw new SQLException(errorMsgs);
-      }
-    }
     return deserializer;
   }
 
@@ -284,28 +274,19 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void setConstraintsAndStorageHandlerInfo(Table table) throws HiveException {
     if (desc.isExtended() || desc.isFormatted()) {
-      table.setPrimaryKeyInfo(context.getDb().getPrimaryKeys(table.getDbName(), table.getTableName()));
-      table.setForeignKeyInfo(context.getDb().getForeignKeys(table.getDbName(), table.getTableName()));
-      table.setUniqueKeyInfo(context.getDb().getUniqueConstraints(table.getDbName(), table.getTableName()));
-      table.setNotNullConstraint(context.getDb().getNotNullConstraints(table.getDbName(), table.getTableName()));
-      table.setDefaultConstraint(context.getDb().getDefaultConstraints(table.getDbName(), table.getTableName()));
-      table.setCheckConstraint(context.getDb().getCheckConstraints(table.getDbName(), table.getTableName()));
+      TableConstraintsInfo tableConstraintsInfo = context.getDb().getTableConstraints(table.getDbName(), table.getTableName(), false, false);
+      table.setTableConstraintsInfo(tableConstraintsInfo);
       table.setStorageHandlerInfo(context.getDb().getStorageHandlerInfo(table));
     }
   }
 
   private void handleMaterializedView(Table table) throws LockException {
     if (table.isMaterializedView()) {
-      String validTxnsList = context.getDb().getConf().get(ValidTxnList.VALID_TXNS_KEY);
-      if (validTxnsList != null) {
-        List<String> tablesUsed = new ArrayList<>(table.getCreationMetadata().getTablesUsed());
-        ValidTxnWriteIdList currentTxnWriteIds =
-            SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
-        long defaultTimeWindow = HiveConf.getTimeVar(context.getDb().getConf(),
-            HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW, TimeUnit.MILLISECONDS);
-        table.setOutdatedForRewriting(HiveMaterializedViewUtils.isOutdatedMaterializedView(table,
-            currentTxnWriteIds, defaultTimeWindow, tablesUsed, false));
-      }
+      table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
+              table,
+              new ArrayList<>(table.getCreationMetadata().getTablesUsed()),
+              false,
+              SessionState.get().getTxnMgr()));
     }
   }
 }

@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.BooleanArray;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
@@ -174,7 +175,7 @@ public class AMReporter extends AbstractService {
           Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
         }
       }
-    });
+    }, MoreExecutors.directExecutor());
     // TODO: why is this needed? we could just save the host and port?
     nodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
     LOG.info("AMReporter running with DaemonId: {}, NodeId: {}", daemonId, nodeId);
@@ -192,9 +193,9 @@ public class AMReporter extends AbstractService {
     }
   }
 
-  public AMNodeInfo registerTask(String amLocation, int port, String umbilicalUser,
-      Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
-      TezTaskAttemptID attemptId, boolean isGuaranteed) {
+  public AMNodeInfo registerTask(boolean externalClientRequest, String amLocation, int port, String umbilicalUser,
+                                 Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
+                                 TezTaskAttemptID attemptId, boolean isGuaranteed) {
     if (LOG.isTraceEnabled()) {
       LOG.trace(
           "Registering for heartbeat: {}, queryIdentifier={}, attemptId={}",
@@ -214,6 +215,7 @@ public class AMReporter extends AbstractService {
       if (amNodeInfo == null) {
         amNodeInfo = new AMNodeInfo(amNodeId, umbilicalUser, jobToken, queryIdentifier, retryPolicy,
           retryTimeout, socketFactory, conf);
+        amNodeInfo.setIsExternalClientRequest(externalClientRequest);
         amNodeInfoPerQuery.put(amNodeId, amNodeInfo);
         // Add to the queue only the first time this is registered, and on
         // subsequent instances when it's taken off the queue.
@@ -274,7 +276,7 @@ public class AMReporter extends AbstractService {
         LOG.warn("Failed to send taskKilled for {}. The attempt will likely time out.",
             taskAttemptId);
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   public void queryComplete(QueryIdentifier queryIdentifier) {
@@ -342,7 +344,7 @@ public class AMReporter extends AbstractService {
                     amNodeInfo.amNodeId, currentQueryIdentifier, t);
                   queryFailedHandler.queryFailed(currentQueryIdentifier);
                 }
-              });
+              }, MoreExecutors.directExecutor());
             }
           }
         } catch (InterruptedException e) {
@@ -410,8 +412,15 @@ public class AMReporter extends AbstractService {
         BooleanArray guaranteed = new BooleanArray();
         guaranteed.set(tasks.guaranteed.toArray(new BooleanWritable[tasks.guaranteed.size()]));
 
-        amNodeInfo.getUmbilical().nodeHeartbeat(new Text(nodeId.getHostname()),
-            new Text(daemonId.getUniqueNodeIdInCluster()), nodeId.getPort(), aw, guaranteed);
+        if (LlapUtil.isCloudDeployment(conf) && amNodeInfo.isExternalClientRequest()) {
+          String hostname = amNodeInfo.amNodeId.getHostname();
+          int externalClientCloudRpcPort = amNodeInfo.amNodeId.getPort();
+          amNodeInfo.getUmbilical().nodeHeartbeat(new Text(hostname),
+                  new Text(daemonId.getUniqueNodeIdInCluster()), externalClientCloudRpcPort, aw, guaranteed);
+        } else {
+          amNodeInfo.getUmbilical().nodeHeartbeat(new Text(nodeId.getHostname()),
+                  new Text(daemonId.getUniqueNodeIdInCluster()), nodeId.getPort(), aw, guaranteed);
+        }
       } catch (IOException e) {
         QueryIdentifier currentQueryIdentifier = amNodeInfo.getQueryIdentifier();
         amNodeInfo.setAmFailed(true);
@@ -470,6 +479,7 @@ public class AMReporter extends AbstractService {
     private LlapTaskUmbilicalProtocol umbilical;
     private long nextHeartbeatTime;
     private final AtomicBoolean isDone = new AtomicBoolean(false);
+    private final AtomicBoolean isExternalClientRequest = new AtomicBoolean(false);
 
 
     public AMNodeInfo(LlapNodeId amNodeId, String umbilicalUser,
@@ -539,6 +549,14 @@ public class AMReporter extends AbstractService {
 
     boolean isDone() {
       return isDone.get();
+    }
+
+    void setIsExternalClientRequest(boolean val) {
+      isExternalClientRequest.set(val);
+    }
+
+    boolean isExternalClientRequest() {
+      return isExternalClientRequest.get();
     }
 
     /**

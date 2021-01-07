@@ -74,7 +74,7 @@ public class TestBinarySortableSerDe {
     schema.setProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER, nullOrder);
 
     BinarySortableSerDe serde = new BinarySortableSerDe();
-    SerDeUtils.initializeSerDe(serde, new Configuration(), schema, null);
+    serde.initialize(new Configuration(), schema, null);
     return serde;
   }
 

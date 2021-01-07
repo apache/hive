@@ -35,8 +35,8 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <junit.version>4.13</junit.version>
-    <junit.jupiter.version>5.6.2</junit.jupiter.version>
-    <junit.vintage.version>5.6.2</junit.vintage.version>
+    <junit.jupiter.version>5.6.3</junit.jupiter.version>
+    <junit.vintage.version>5.6.3</junit.vintage.version>
     <slf4j.version>1.7.30</slf4j.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
@@ -113,14 +113,13 @@
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-
-    <!-- test inter-project -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
-      <scope>test</scope>
     </dependency>
+
+    <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -177,6 +176,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M4</version>
         <configuration>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx2048m</argLine>

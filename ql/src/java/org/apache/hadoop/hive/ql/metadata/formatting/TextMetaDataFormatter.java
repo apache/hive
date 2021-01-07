@@ -258,12 +258,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           }
           outStream.write(output.getBytes("UTF-8"));
 
-          if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo()) ||
-              ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo()) ||
-              UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo()) ||
-              NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint()) ||
-              CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint()) ||
-              DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint())) {
+          if (tbl.getTableConstraintsInfo().isTableConstraintsInfoNotEmpty()) {
             output = MetaDataFormatUtils.getConstraintsInformation(tbl);
             outStream.write(output.getBytes("UTF-8"));
           }
@@ -290,12 +285,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.write(separator);
             outStream.write(terminator);
           }
-          if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo()) ||
-              ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo()) ||
-              UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo()) ||
-              NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint()) ||
-              DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint()) ||
-              CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint())) {
+          if (tbl.getTableConstraintsInfo().isTableConstraintsInfoNotEmpty()) {
             outStream.write(("Constraints").getBytes("UTF-8"));
             outStream.write(separator);
             if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo())) {

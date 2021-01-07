@@ -31,9 +31,11 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatal
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -53,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,10 +79,14 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.AcidConstants;
+import org.apache.hadoop.hive.common.AcidMetaDataFile;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -88,6 +95,8 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -105,6 +114,7 @@ import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
@@ -195,6 +205,7 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -562,9 +573,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       listeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStoreEventListener.class, conf,
           MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(conf));
-      transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,
-          conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
-      transactionalListeners.add(new AcidEventListener(conf));
+      transactionalListeners = new ArrayList() {{
+          add(new AcidEventListener(conf));
+      }};
+      transactionalListeners.addAll(MetaStoreServerUtils.getMetaStoreListeners(
+              TransactionalMetaStoreEventListener.class, conf,
+              MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS)));
       if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(conf));
       }
@@ -881,6 +895,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
       } catch (NoSuchObjectException e) {
+        LOG.info("Started creating a default database with name: "+DEFAULT_DATABASE_NAME);
         Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
             wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME, true).toString(), null);
         db.setOwnerName(PUBLIC);
@@ -889,6 +904,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         long time = System.currentTimeMillis() / 1000;
         db.setCreateTime((int) time);
         ms.createDatabase(db);
+        LOG.info("Successfully created a default database with name: "+DEFAULT_DATABASE_NAME);
       }
     }
 
@@ -1409,8 +1425,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.error("No such catalog " + db.getCatalogName());
         throw new InvalidObjectException("No such catalog " + db.getCatalogName());
       }
-      Path dbPath = wh.determineDatabasePath(cat, db);
-      db.setLocationUri(dbPath.toString());
+      boolean skipAuthorization = false;
+      String passedInURI = db.getLocationUri();
+      String passedInManagedURI = db.getManagedLocationUri();
+      if (passedInURI == null && passedInManagedURI == null) {
+        skipAuthorization = true;
+      }
+      final Path defaultDbExtPath = wh.getDefaultDatabasePath(db.getName(), true);
+      final Path defaultDbMgdPath = wh.getDefaultDatabasePath(db.getName(), false);
+      final Path dbExtPath = (passedInURI != null) ? wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
+      final Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;
+
+      if ((defaultDbExtPath.equals(dbExtPath) && defaultDbMgdPath.equals(dbMgdPath)) &&
+          ((dbMgdPath == null) || dbMgdPath.equals(defaultDbMgdPath))) {
+        skipAuthorization = true;
+      }
+
+      if ( skipAuthorization ) {
+        //null out to skip authorizer URI check
+        db.setLocationUri(null);
+        db.setManagedLocationUri(null);
+      }else{
+        db.setLocationUri(dbExtPath.toString());
+        if (dbMgdPath != null) {
+          db.setManagedLocationUri(dbMgdPath.toString());
+        }
+      }
       if (db.getOwnerName() == null){
         try {
           db.setOwnerName(SecurityUtils.getUGI().getShortUserName());
@@ -1421,18 +1461,80 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       long time = System.currentTimeMillis()/1000;
       db.setCreateTime((int) time);
       boolean success = false;
-      boolean madeDir = false;
+      boolean madeManagedDir = false;
+      boolean madeExternalDir = false;
       boolean isReplicated = isDbReplicationTarget(db);
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       try {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
-        if (!wh.isDir(dbPath)) {
-          LOG.debug("Creating database path " + dbPath);
-          if (!wh.mkdirs(dbPath)) {
-            throw new MetaException("Unable to create database path " + dbPath +
-                ", failed to create database " + db.getName());
+        //reinstate location uri for metastore db.
+        if (skipAuthorization == true){
+          db.setLocationUri(dbExtPath.toString());
+          if (dbMgdPath != null)
+            db.setManagedLocationUri(dbMgdPath.toString());
+        }
+        if (db.getCatalogName() != null && !db.getCatalogName().
+            equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+          if (!wh.isDir(dbExtPath)) {
+            LOG.debug("Creating database path " + dbExtPath);
+            if (!wh.mkdirs(dbExtPath)) {
+              throw new MetaException("Unable to create database path " + dbExtPath +
+                  ", failed to create database " + db.getName());
+            }
+            madeExternalDir = true;
           }
-          madeDir = true;
+        } else {
+          if (dbMgdPath != null) {
+            try {
+              // Since this may be done as random user (if doAs=true) he may not have access
+              // to the managed directory. We run this as an admin user
+              madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override public Boolean run() throws MetaException {
+                  if (!wh.isDir(dbMgdPath)) {
+                    LOG.info("Creating database path in managed directory " + dbMgdPath);
+                    if (!wh.mkdirs(dbMgdPath)) {
+                      throw new MetaException("Unable to create database managed path " + dbMgdPath + ", failed to create database " + db.getName());
+                    }
+                    return true;
+                  }
+                  return false;
+                }
+              });
+              if (madeManagedDir) {
+                LOG.info("Created database path in managed directory " + dbMgdPath);
+              } else {
+                throw new MetaException(
+                    "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
+              }
+            } catch (IOException | InterruptedException e) {
+              throw new MetaException(
+                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName() + ":" + e.getMessage());
+            }
+          }
+          if (dbExtPath != null) {
+            try {
+              madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override public Boolean run() throws MetaException {
+                  if (!wh.isDir(dbExtPath)) {
+                    LOG.info("Creating database path in external directory " + dbExtPath);
+                    return wh.mkdirs(dbExtPath);
+                  }
+                  return false;
+                }
+              });
+              if (madeExternalDir) {
+                LOG.info("Created database path in external directory " + dbExtPath);
+              } else {
+                LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                    + "StorageBasedAuthorizationProvider is enabled");
+              }
+            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+              throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                  + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+            }
+          } else {
+            LOG.info("Database external path won't be created since the external warehouse directory is not defined");
+          }
         }
 
         ms.openTransaction();
@@ -1449,8 +1551,40 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-          if (madeDir) {
-            wh.deleteDir(dbPath, true, db);
+
+          if (db.getCatalogName() != null && !db.getCatalogName().
+              equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+            if (madeManagedDir) {
+              wh.deleteDir(dbMgdPath, true, db);
+            }
+          } else {
+            if (madeManagedDir) {
+              try {
+                UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Void>() {
+                  @Override public Void run() throws Exception {
+                    wh.deleteDir(dbMgdPath, true, db);
+                    return null;
+                  }
+                });
+              } catch (IOException | InterruptedException e) {
+                LOG.error(
+                    "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
+              }
+            }
+
+            if (madeExternalDir) {
+              try {
+                UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Void>() {
+                  @Override public Void run() throws Exception {
+                    wh.deleteDir(dbExtPath, true, db);
+                    return null;
+                  }
+                });
+              } catch (IOException | InterruptedException e) {
+                LOG.error("Couldn't delete external directory " + dbExtPath + " after " + "it was created for database "
+                    + db.getName() + " " + e.getMessage());
+              }
+            }
           }
         }
 
@@ -1645,6 +1779,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         Set<String> uniqueTableNames = new HashSet<>(get_all_tables(catPrependedName));
         List<String> allFunctions = get_functions(catPrependedName, "*");
+        ListStoredProcedureRequest request = new ListStoredProcedureRequest(catName);
+        request.setDbName(name);
+        List<String> allProcedures = get_all_stored_procedures(request);
 
         if (!cascade) {
           if (!uniqueTableNames.isEmpty()) {
@@ -1654,6 +1791,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!allFunctions.isEmpty()) {
             throw new InvalidOperationException(
                 "Database " + db.getName() + " is not empty. One or more functions exist.");
+          }
+          if (!allProcedures.isEmpty()) {
+            throw new InvalidOperationException(
+                    "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
           }
         }
         Path path = new Path(db.getLocationUri()).getParent();
@@ -1668,6 +1809,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // drop any functions before dropping db
         for (String funcName : allFunctions) {
           drop_function(catPrependedName, funcName);
+        }
+
+        for (String procName : allProcedures) {
+          drop_stored_procedure(new StoredProcedureRequest(catName, name, procName));
         }
 
         final int tableBatchSize = MetastoreConf.getIntVar(conf,
@@ -1781,6 +1926,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             deleteTableData(tablePath, false, db);
           }
           // Delete the data in the database
+          try {
+            if (db.getManagedLocationUri() != null) {
+              wh.deleteDir(new Path(db.getManagedLocationUri()), true, db);
+            }
+          } catch (Exception e) {
+            LOG.error("Failed to delete database directory: " + db.getManagedLocationUri() +
+                " " + e.getMessage());
+          }
+          // Delete the data in the database's location only if it is a legacy db path?
           try {
             wh.deleteDir(new Path(db.getLocationUri()), true, db);
           } catch (Exception e) {
@@ -2002,12 +2156,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       ColumnStatistics colStats = null;
       Table tbl = req.getTable();
       EnvironmentContext envContext = req.getEnvContext();
-      List<SQLPrimaryKey> primaryKeys = req.getPrimaryKeys();
-      List<SQLForeignKey> foreignKeys = req.getForeignKeys();
-      List<SQLUniqueConstraint> uniqueConstraints = req.getUniqueConstraints();
-      List<SQLNotNullConstraint> notNullConstraints = req.getNotNullConstraints();
-      List<SQLDefaultConstraint> defaultConstraints = req.getDefaultConstraints();
-      List<SQLCheckConstraint> checkConstraints = req.getCheckConstraints();
+      SQLAllTableConstraints constraints = new SQLAllTableConstraints();
+      constraints.setPrimaryKeys(req.getPrimaryKeys());
+      constraints.setForeignKeys(req.getForeignKeys());
+      constraints.setUniqueConstraints(req.getUniqueConstraints());
+      constraints.setDefaultConstraints(req.getDefaultConstraints());
+      constraints.setCheckConstraints(req.getCheckConstraints());
+      constraints.setNotNullConstraints(req.getNotNullConstraints());
       List<String> processorCapabilities = req.getProcessorCapabilities();
       String processorId = req.getProcessorIdentifier();
 
@@ -2118,113 +2273,62 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
 
-        if (primaryKeys == null && foreignKeys == null
-                && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null
-            && checkConstraints == null) {
+        if (CollectionUtils.isEmpty(constraints.getPrimaryKeys()) && CollectionUtils.isEmpty(constraints.getForeignKeys())
+                && CollectionUtils.isEmpty(constraints.getUniqueConstraints())&& CollectionUtils.isEmpty(constraints.getNotNullConstraints())&& CollectionUtils.isEmpty(constraints.getDefaultConstraints())
+            && CollectionUtils.isEmpty(constraints.getCheckConstraints())) {
           ms.createTable(tbl);
         } else {
+          final String catName = tbl.getCatName();
           // Check that constraints have catalog name properly set first
-          if (primaryKeys != null && !primaryKeys.isEmpty() && !primaryKeys.get(0).isSetCatName()) {
-            for (SQLPrimaryKey pkcol : primaryKeys) pkcol.setCatName(tbl.getCatName());
+          if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys()) && !constraints.getPrimaryKeys().get(0).isSetCatName()) {
+            constraints.getPrimaryKeys().forEach(constraint -> constraint.setCatName(catName));
           }
-          if (foreignKeys != null && !foreignKeys.isEmpty() && !foreignKeys.get(0).isSetCatName()) {
-            for (SQLForeignKey fkcol : foreignKeys) fkcol.setCatName(tbl.getCatName());
+          if (CollectionUtils.isNotEmpty(constraints.getForeignKeys()) && !constraints.getForeignKeys().get(0).isSetCatName()) {
+            constraints.getForeignKeys().forEach(constraint -> constraint.setCatName(catName));
           }
-          if (uniqueConstraints != null && !uniqueConstraints.isEmpty() && !uniqueConstraints.get(0).isSetCatName()) {
-            for (SQLUniqueConstraint uccol : uniqueConstraints) uccol.setCatName(tbl.getCatName());
+          if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints()) && !constraints.getUniqueConstraints().get(0).isSetCatName()) {
+            constraints.getUniqueConstraints().forEach(constraint -> constraint.setCatName(catName));
           }
-          if (notNullConstraints != null && !notNullConstraints.isEmpty() && !notNullConstraints.get(0).isSetCatName()) {
-            for (SQLNotNullConstraint nncol : notNullConstraints) nncol.setCatName(tbl.getCatName());
+          if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints()) && !constraints.getNotNullConstraints().get(0).isSetCatName()) {
+            constraints.getNotNullConstraints().forEach(constraint -> constraint.setCatName(catName));
           }
-          if (defaultConstraints != null && !defaultConstraints.isEmpty() && !defaultConstraints.get(0).isSetCatName()) {
-            for (SQLDefaultConstraint dccol : defaultConstraints) dccol.setCatName(tbl.getCatName());
+          if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints()) && !constraints.getDefaultConstraints().get(0).isSetCatName()) {
+            constraints.getDefaultConstraints().forEach(constraint -> constraint.setCatName(catName));
           }
-          if (checkConstraints != null && !checkConstraints.isEmpty() && !checkConstraints.get(0).isSetCatName()) {
-            for (SQLCheckConstraint cccol : checkConstraints) cccol.setCatName(tbl.getCatName());
+          if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints()) && !constraints.getCheckConstraints().get(0).isSetCatName()) {
+            constraints.getCheckConstraints().forEach(constraint -> constraint.setCatName(catName));
           }
           // Set constraint name if null before sending to listener
-          List<String> constraintNames = ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
-              uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
-          int primaryKeySize = 0;
-          if (primaryKeys != null) {
-            primaryKeySize = primaryKeys.size();
-            for (int i = 0; i < primaryKeys.size(); i++) {
-              if (primaryKeys.get(i).getPk_name() == null) {
-                primaryKeys.get(i).setPk_name(constraintNames.get(i));
-              }
-              if (!primaryKeys.get(i).isSetCatName()) primaryKeys.get(i).setCatName(tbl.getCatName());
-            }
-          }
-          int foreignKeySize = 0;
-          if (foreignKeys != null) {
-            foreignKeySize = foreignKeys.size();
-            for (int i = 0; i < foreignKeySize; i++) {
-              if (foreignKeys.get(i).getFk_name() == null) {
-                foreignKeys.get(i).setFk_name(constraintNames.get(primaryKeySize + i));
-              }
-              if (!foreignKeys.get(i).isSetCatName()) foreignKeys.get(i).setCatName(tbl.getCatName());
-            }
-          }
-          int uniqueConstraintSize = 0;
-          if (uniqueConstraints != null) {
-            uniqueConstraintSize = uniqueConstraints.size();
-            for (int i = 0; i < uniqueConstraintSize; i++) {
-              if (uniqueConstraints.get(i).getUk_name() == null) {
-                uniqueConstraints.get(i).setUk_name(constraintNames.get(primaryKeySize + foreignKeySize + i));
-              }
-              if (!uniqueConstraints.get(i).isSetCatName()) uniqueConstraints.get(i).setCatName(tbl.getCatName());
-            }
-          }
-          int notNullConstraintSize =  0;
-          if (notNullConstraints != null) {
-            for (int i = 0; i < notNullConstraints.size(); i++) {
-              if (notNullConstraints.get(i).getNn_name() == null) {
-                notNullConstraints.get(i).setNn_name(constraintNames.get(primaryKeySize + foreignKeySize + uniqueConstraintSize + i));
-              }
-              if (!notNullConstraints.get(i).isSetCatName()) notNullConstraints.get(i).setCatName(tbl.getCatName());
-            }
-          }
-          int defaultConstraintSize =  0;
-          if (defaultConstraints!= null) {
-            for (int i = 0; i < defaultConstraints.size(); i++) {
-              if (defaultConstraints.get(i).getDc_name() == null) {
-                defaultConstraints.get(i).setDc_name(constraintNames.get(primaryKeySize + foreignKeySize
-                    + uniqueConstraintSize + notNullConstraintSize + i));
-              }
-              if (!defaultConstraints.get(i).isSetCatName()) defaultConstraints.get(i).setCatName(tbl.getCatName());
-            }
-          }
-          if (checkConstraints!= null) {
-            for (int i = 0; i < checkConstraints.size(); i++) {
-              if (checkConstraints.get(i).getDc_name() == null) {
-                checkConstraints.get(i).setDc_name(constraintNames.get(primaryKeySize + foreignKeySize
-                                                                             + uniqueConstraintSize
-                                                                             + defaultConstraintSize
-                                                                           + notNullConstraintSize + i));
-              }
-              if (!checkConstraints.get(i).isSetCatName()) checkConstraints.get(i).setCatName(tbl.getCatName());
-            }
-          }
+          constraints = ms.createTableWithConstraints(tbl, constraints);
+
         }
 
         if (!transactionalListeners.isEmpty()) {
           transactionalListenerResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
               EventType.CREATE_TABLE, new CreateTableEvent(tbl, true, this, isReplicated), envContext);
-          if (primaryKeys != null && !primaryKeys.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_PRIMARYKEY,
-                new AddPrimaryKeyEvent(primaryKeys, true, this), envContext);
+                new AddPrimaryKeyEvent(constraints.getPrimaryKeys(), true, this), envContext);
           }
-          if (foreignKeys != null && !foreignKeys.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_FOREIGNKEY,
-                new AddForeignKeyEvent(foreignKeys, true, this), envContext);
+                new AddForeignKeyEvent(constraints.getForeignKeys(), true, this), envContext);
           }
-          if (uniqueConstraints != null && !uniqueConstraints.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_UNIQUECONSTRAINT,
-                new AddUniqueConstraintEvent(uniqueConstraints, true, this), envContext);
+                new AddUniqueConstraintEvent(constraints.getUniqueConstraints(), true, this), envContext);
           }
-          if (notNullConstraints != null && !notNullConstraints.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_NOTNULLCONSTRAINT,
-                new AddNotNullConstraintEvent(notNullConstraints, true, this), envContext);
+                new AddNotNullConstraintEvent(constraints.getNotNullConstraints(), true, this), envContext);
+          }
+          if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_CHECKCONSTRAINT,
+                new AddCheckConstraintEvent(constraints.getCheckConstraints(), true, this), envContext);
+          }
+          if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_DEFAULTCONSTRAINT,
+                new AddDefaultConstraintEvent(constraints.getDefaultConstraints(), true, this), envContext);
           }
         }
 
@@ -2241,21 +2345,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_TABLE,
               new CreateTableEvent(tbl, success, this, isReplicated), envContext,
                   transactionalListenerResponses, ms);
-          if (primaryKeys != null && !primaryKeys.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_PRIMARYKEY,
-                new AddPrimaryKeyEvent(primaryKeys, success, this), envContext);
+                new AddPrimaryKeyEvent(constraints.getPrimaryKeys(), success, this), envContext);
           }
-          if (foreignKeys != null && !foreignKeys.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_FOREIGNKEY,
-                new AddForeignKeyEvent(foreignKeys, success, this), envContext);
+                new AddForeignKeyEvent(constraints.getForeignKeys(), success, this), envContext);
           }
-          if (uniqueConstraints != null && !uniqueConstraints.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_UNIQUECONSTRAINT,
-                new AddUniqueConstraintEvent(uniqueConstraints, success, this), envContext);
+                new AddUniqueConstraintEvent(constraints.getUniqueConstraints(), success, this), envContext);
           }
-          if (notNullConstraints != null && !notNullConstraints.isEmpty()) {
+          if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_NOTNULLCONSTRAINT,
-                new AddNotNullConstraintEvent(notNullConstraints, success, this), envContext);
+                new AddNotNullConstraintEvent(constraints.getNotNullConstraints(), success, this), envContext);
+          }
+          if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_DEFAULTCONSTRAINT,
+                new AddDefaultConstraintEvent(constraints.getDefaultConstraints(), success, this), envContext);
+          }
+          if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_CHECKCONSTRAINT,
+                new AddCheckConstraintEvent(constraints.getCheckConstraints(), success, this), envContext);
           }
         }
       }
@@ -2421,30 +2533,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void add_primary_key(AddPrimaryKeyRequest req)
       throws MetaException, InvalidObjectException {
       List<SQLPrimaryKey> primaryKeyCols = req.getPrimaryKeyCols();
-      String constraintName = (primaryKeyCols != null && primaryKeyCols.size() > 0) ?
+      String constraintName = (CollectionUtils.isNotEmpty(primaryKeyCols)) ?
         primaryKeyCols.get(0).getPk_name() : "null";
       startFunction("add_primary_key", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
-      if (!primaryKeyCols.isEmpty() && !primaryKeyCols.get(0).isSetCatName()) {
+      if (CollectionUtils.isNotEmpty(primaryKeyCols) && !primaryKeyCols.get(0).isSetCatName()) {
         String defaultCat = getDefaultCatalog(conf);
         primaryKeyCols.forEach(pk -> pk.setCatName(defaultCat));
       }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-        List<String> constraintNames = ms.addPrimaryKeys(primaryKeyCols);
-        // Set primary key name if null before sending to listener
-        if (primaryKeyCols != null) {
-          for (int i = 0; i < primaryKeyCols.size(); i++) {
-            if (primaryKeyCols.get(i).getPk_name() == null) {
-              primaryKeyCols.get(i).setPk_name(constraintNames.get(i));
-            }
-          }
-        }
+        List<SQLPrimaryKey> primaryKeys = ms.addPrimaryKeys(primaryKeyCols);
         if (transactionalListeners.size() > 0) {
-          if (primaryKeyCols != null && primaryKeyCols.size() > 0) {
-            AddPrimaryKeyEvent addPrimaryKeyEvent = new AddPrimaryKeyEvent(primaryKeyCols, true, this);
+          if (CollectionUtils.isNotEmpty(primaryKeys)) {
+            AddPrimaryKeyEvent addPrimaryKeyEvent = new AddPrimaryKeyEvent(primaryKeys, true, this);
             for (MetaStoreEventListener transactionalListener : transactionalListeners) {
               transactionalListener.onAddPrimaryKey(addPrimaryKeyEvent);
             }
@@ -2473,31 +2577,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void add_foreign_key(AddForeignKeyRequest req)
       throws MetaException, InvalidObjectException {
-      List<SQLForeignKey> foreignKeyCols = req.getForeignKeyCols();
-      String constraintName = (foreignKeyCols != null && foreignKeyCols.size() > 0) ?
-        foreignKeyCols.get(0).getFk_name() : "null";
+      List<SQLForeignKey> foreignKeys = req.getForeignKeyCols();
+      String constraintName = CollectionUtils.isNotEmpty(foreignKeys) ?
+        foreignKeys.get(0).getFk_name() : "null";
       startFunction("add_foreign_key", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
-      if (!foreignKeyCols.isEmpty() && !foreignKeyCols.get(0).isSetCatName()) {
+      if (CollectionUtils.isNotEmpty(foreignKeys) && !foreignKeys.get(0).isSetCatName()) {
         String defaultCat = getDefaultCatalog(conf);
-        foreignKeyCols.forEach(pk -> pk.setCatName(defaultCat));
+        foreignKeys.forEach(pk -> pk.setCatName(defaultCat));
       }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-        List<String> constraintNames = ms.addForeignKeys(foreignKeyCols);
-        // Set foreign key name if null before sending to listener
-        if (foreignKeyCols != null) {
-          for (int i = 0; i < foreignKeyCols.size(); i++) {
-            if (foreignKeyCols.get(i).getFk_name() == null) {
-              foreignKeyCols.get(i).setFk_name(constraintNames.get(i));
-            }
-          }
-        }
+        foreignKeys = ms.addForeignKeys(foreignKeys);
         if (transactionalListeners.size() > 0) {
-          if (foreignKeyCols != null && foreignKeyCols.size() > 0) {
-            AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeyCols, true, this);
+          if (CollectionUtils.isNotEmpty(foreignKeys)) {
+            AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeys, true, this);
             for (MetaStoreEventListener transactionalListener : transactionalListeners) {
               transactionalListener.onAddForeignKey(addForeignKeyEvent);
             }
@@ -2513,9 +2609,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (foreignKeyCols != null && foreignKeyCols.size() > 0) {
+        } else if (CollectionUtils.isNotEmpty(foreignKeys)) {
           for (MetaStoreEventListener listener : listeners) {
-            AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeyCols, true, this);
+            AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeys, true, this);
             listener.onAddForeignKey(addForeignKeyEvent);
           }
         }
@@ -2526,31 +2622,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void add_unique_constraint(AddUniqueConstraintRequest req)
       throws MetaException, InvalidObjectException {
-      List<SQLUniqueConstraint> uniqueConstraintCols = req.getUniqueConstraintCols();
-      String constraintName = (uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) ?
-              uniqueConstraintCols.get(0).getUk_name() : "null";
+      List<SQLUniqueConstraint> uniqueConstraints = req.getUniqueConstraintCols();
+      String constraintName = (uniqueConstraints != null && uniqueConstraints.size() > 0) ?
+              uniqueConstraints.get(0).getUk_name() : "null";
       startFunction("add_unique_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
-      if (!uniqueConstraintCols.isEmpty() && !uniqueConstraintCols.get(0).isSetCatName()) {
+      if (!uniqueConstraints.isEmpty() && !uniqueConstraints.get(0).isSetCatName()) {
         String defaultCat = getDefaultCatalog(conf);
-        uniqueConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+        uniqueConstraints.forEach(pk -> pk.setCatName(defaultCat));
       }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-        List<String> constraintNames = ms.addUniqueConstraints(uniqueConstraintCols);
-        // Set unique constraint name if null before sending to listener
-        if (uniqueConstraintCols != null) {
-          for (int i = 0; i < uniqueConstraintCols.size(); i++) {
-            if (uniqueConstraintCols.get(i).getUk_name() == null) {
-              uniqueConstraintCols.get(i).setUk_name(constraintNames.get(i));
-            }
-          }
-        }
+        uniqueConstraints = ms.addUniqueConstraints(uniqueConstraints);
         if (transactionalListeners.size() > 0) {
-          if (uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) {
-            AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraintCols, true, this);
+          if (CollectionUtils.isNotEmpty(uniqueConstraints)) {
+            AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraints, true, this);
             for (MetaStoreEventListener transactionalListener : transactionalListeners) {
               transactionalListener.onAddUniqueConstraint(addUniqueConstraintEvent);
             }
@@ -2566,9 +2654,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) {
+        } else if (CollectionUtils.isNotEmpty(uniqueConstraints)) {
           for (MetaStoreEventListener listener : listeners) {
-            AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraintCols, true, this);
+            AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraints, true, this);
             listener.onAddUniqueConstraint(addUniqueConstraintEvent);
           }
         }
@@ -2579,31 +2667,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void add_not_null_constraint(AddNotNullConstraintRequest req)
       throws MetaException, InvalidObjectException {
-      List<SQLNotNullConstraint> notNullConstraintCols = req.getNotNullConstraintCols();
-      String constraintName = (notNullConstraintCols != null && notNullConstraintCols.size() > 0) ?
-              notNullConstraintCols.get(0).getNn_name() : "null";
+      List<SQLNotNullConstraint> notNullConstraints = req.getNotNullConstraintCols();
+      String constraintName = (notNullConstraints != null && notNullConstraints.size() > 0) ?
+              notNullConstraints.get(0).getNn_name() : "null";
       startFunction("add_not_null_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
-      if (!notNullConstraintCols.isEmpty() && !notNullConstraintCols.get(0).isSetCatName()) {
+      if (!notNullConstraints.isEmpty() && !notNullConstraints.get(0).isSetCatName()) {
         String defaultCat = getDefaultCatalog(conf);
-        notNullConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+        notNullConstraints.forEach(pk -> pk.setCatName(defaultCat));
       }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-        List<String> constraintNames = ms.addNotNullConstraints(notNullConstraintCols);
-        // Set not null constraint name if null before sending to listener
-        if (notNullConstraintCols != null) {
-          for (int i = 0; i < notNullConstraintCols.size(); i++) {
-            if (notNullConstraintCols.get(i).getNn_name() == null) {
-              notNullConstraintCols.get(i).setNn_name(constraintNames.get(i));
-            }
-          }
-        }
+        notNullConstraints = ms.addNotNullConstraints(notNullConstraints);
+
         if (transactionalListeners.size() > 0) {
-          if (notNullConstraintCols != null && notNullConstraintCols.size() > 0) {
-            AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraintCols, true, this);
+          if (CollectionUtils.isNotEmpty(notNullConstraints)) {
+            AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraints, true, this);
             for (MetaStoreEventListener transactionalListener : transactionalListeners) {
               transactionalListener.onAddNotNullConstraint(addNotNullConstraintEvent);
             }
@@ -2619,9 +2700,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (notNullConstraintCols != null && notNullConstraintCols.size() > 0) {
+        } else if (CollectionUtils.isNotEmpty(notNullConstraints)) {
           for (MetaStoreEventListener listener : listeners) {
-            AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraintCols, true, this);
+            AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraints, true, this);
             listener.onAddNotNullConstraint(addNotNullConstraintEvent);
           }
         }
@@ -2630,37 +2711,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void add_default_constraint(AddDefaultConstraintRequest req)
-        throws MetaException, InvalidObjectException {
-      List<SQLDefaultConstraint> defaultConstraintCols= req.getDefaultConstraintCols();
-      String constraintName = (defaultConstraintCols != null && defaultConstraintCols.size() > 0) ?
-          defaultConstraintCols.get(0).getDc_name() : "null";
+    public void add_default_constraint(AddDefaultConstraintRequest req) throws MetaException, InvalidObjectException {
+      List<SQLDefaultConstraint> defaultConstraints = req.getDefaultConstraintCols();
+      String constraintName =
+          CollectionUtils.isNotEmpty(defaultConstraints) ? defaultConstraints.get(0).getDc_name() : "null";
       startFunction("add_default_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
-      if (!defaultConstraintCols.isEmpty() && !defaultConstraintCols.get(0).isSetCatName()) {
+      if (!defaultConstraints.isEmpty() && !defaultConstraints.get(0).isSetCatName()) {
         String defaultCat = getDefaultCatalog(conf);
-        defaultConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+        defaultConstraints.forEach(pk -> pk.setCatName(defaultCat));
       }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-        List<String> constraintNames = ms.addDefaultConstraints(defaultConstraintCols);
-        // Set not null constraint name if null before sending to listener
-        if (defaultConstraintCols != null) {
-          for (int i = 0; i < defaultConstraintCols.size(); i++) {
-            if (defaultConstraintCols.get(i).getDc_name() == null) {
-              defaultConstraintCols.get(i).setDc_name(constraintNames.get(i));
-            }
-          }
-        }
+        defaultConstraints = ms.addDefaultConstraints(defaultConstraints);
         if (transactionalListeners.size() > 0) {
-          if (defaultConstraintCols != null && defaultConstraintCols.size() > 0) {
-            //TODO: Even listener for default
-            //AddDefaultConstraintEvent addDefaultConstraintEvent = new AddDefaultConstraintEvent(defaultConstraintCols, true, this);
-            //for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-             // transactionalListener.onAddNotNullConstraint(addDefaultConstraintEvent);
-            //}
+          if (CollectionUtils.isNotEmpty(defaultConstraints)) {
+            AddDefaultConstraintEvent addDefaultConstraintEvent =
+                new AddDefaultConstraintEvent(defaultConstraints, true, this);
+            for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+              transactionalListener.onAddDefaultConstraint(addDefaultConstraintEvent);
+            }
           }
         }
         success = ms.commitTransaction();
@@ -2673,10 +2745,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (defaultConstraintCols != null && defaultConstraintCols.size() > 0) {
+        } else if (CollectionUtils.isNotEmpty(defaultConstraints)) {
           for (MetaStoreEventListener listener : listeners) {
-            //AddNotNullConstraintEvent addDefaultConstraintEvent = new AddNotNullConstraintEvent(defaultConstraintCols, true, this);
-            //listener.onAddDefaultConstraint(addDefaultConstraintEvent);
+            AddDefaultConstraintEvent addDefaultConstraintEvent =
+                new AddDefaultConstraintEvent(defaultConstraints, true, this);
+            listener.onAddDefaultConstraint(addDefaultConstraintEvent);
           }
         }
         endFunction("add_default_constraint", success, ex, constraintName);
@@ -2686,34 +2759,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void add_check_constraint(AddCheckConstraintRequest req)
         throws MetaException, InvalidObjectException {
-      List<SQLCheckConstraint> checkConstraintCols= req.getCheckConstraintCols();
-      String constraintName = (checkConstraintCols != null && checkConstraintCols.size() > 0) ?
-          checkConstraintCols.get(0).getDc_name() : "null";
+      List<SQLCheckConstraint> checkConstraints= req.getCheckConstraintCols();
+      String constraintName = CollectionUtils.isNotEmpty(checkConstraints) ?
+          checkConstraints.get(0).getDc_name() : "null";
       startFunction("add_check_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
-      if (!checkConstraintCols.isEmpty() && !checkConstraintCols.get(0).isSetCatName()) {
+      if (!checkConstraints.isEmpty() && !checkConstraints.get(0).isSetCatName()) {
         String defaultCat = getDefaultCatalog(conf);
-        checkConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+        checkConstraints.forEach(pk -> pk.setCatName(defaultCat));
       }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-        List<String> constraintNames = ms.addCheckConstraints(checkConstraintCols);
-        if (checkConstraintCols != null) {
-          for (int i = 0; i < checkConstraintCols.size(); i++) {
-            if (checkConstraintCols.get(i).getDc_name() == null) {
-              checkConstraintCols.get(i).setDc_name(constraintNames.get(i));
-            }
-          }
-        }
+        checkConstraints = ms.addCheckConstraints(checkConstraints);
         if (transactionalListeners.size() > 0) {
-          if (checkConstraintCols != null && checkConstraintCols.size() > 0) {
-            //TODO: Even listener for check
-            //AddcheckConstraintEvent addcheckConstraintEvent = new AddcheckConstraintEvent(checkConstraintCols, true, this);
-            //for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-            // transactionalListener.onAddNotNullConstraint(addcheckConstraintEvent);
-            //}
+          if (CollectionUtils.isNotEmpty(checkConstraints)) {
+            AddCheckConstraintEvent addcheckConstraintEvent = new AddCheckConstraintEvent(checkConstraints, true, this);
+            for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+             transactionalListener.onAddCheckConstraint(addcheckConstraintEvent);
+            }
           }
         }
         success = ms.commitTransaction();
@@ -2726,10 +2791,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (checkConstraintCols != null && checkConstraintCols.size() > 0) {
+        } else if (CollectionUtils.isNotEmpty(checkConstraints)) {
           for (MetaStoreEventListener listener : listeners) {
-            //AddNotNullConstraintEvent addCheckConstraintEvent = new AddNotNullConstraintEvent(checkConstraintCols, true, this);
-            //listener.onAddCheckConstraint(addCheckConstraintEvent);
+            AddCheckConstraintEvent addCheckConstraintEvent = new AddCheckConstraintEvent(checkConstraints, true, this);
+            listener.onAddCheckConstraint(addCheckConstraintEvent);
           }
         }
         endFunction("add_check_constraint", success, ex, constraintName);
@@ -3065,6 +3130,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       //first set basic stats to true
       StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
       environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
       //then invalidate column stats
       StatsSetupConst.clearColumnStatsState(props);
       return;
@@ -3189,29 +3255,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         String[] parsedDbName = parseDbName(dbName, conf);
         Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-        boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
 
+        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
+            !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
         // This is not transactional
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME],
             parsedDbName[DB_NAME], tableName, tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
-          if (!org.apache.hadoop.hive.metastore.utils.HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
-              !FileUtils.pathHasSnapshotSubDir(location, fs)) {
-            HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
-            FileStatus targetStatus = fs.getFileStatus(location);
-            String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-            wh.deleteDir(location, true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
-            fs.mkdirs(location);
-            HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
+          if (truncateFiles) {
+            truncateDataFiles(tbl, parsedDbName, location, fs);
           } else {
-            FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            if (statuses == null || statuses.length == 0) {
-              continue;
-            }
-            for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
-            }
+            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
+            // Compaction and cleaner will take care of the rest
+            addTruncateBaseFile(location, writeId, fs);
           }
         }
 
@@ -3224,6 +3280,44 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } catch (Exception e) {
         throw newMetaException(e);
+      }
+    }
+
+    /**
+     * Add an empty baseDir with a truncate metadatafile
+     * @param location partition or table directory
+     * @param writeId allocated writeId
+     * @param fs FileSystem
+     * @throws Exception
+     */
+    private void addTruncateBaseFile(Path location, long writeId, FileSystem fs) throws Exception {
+      Path basePath = new Path(location, AcidConstants.baseDir(writeId));
+      fs.mkdirs(basePath);
+      // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
+      // No need for a data file, a simple metadata is enough
+      AcidMetaDataFile.writeToFile(fs, basePath, AcidMetaDataFile.DataFormat.TRUNCATED);
+    }
+
+    private void truncateDataFiles(Table tbl, String[] parsedDbName, Path location, FileSystem fs)
+        throws IOException, MetaException, NoSuchObjectException {
+      boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
+          !FileUtils.pathHasSnapshotSubDir(location, fs)) {
+        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
+        FileStatus targetStatus = fs.getFileStatus(location);
+        String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
+        wh.deleteDir(location, true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
+        fs.mkdirs(location);
+        HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
+      } else {
+        FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
+        if (statuses == null || statuses.length == 0) {
+          return;
+        }
+        for (final FileStatus status : statuses) {
+          wh.deleteDir(status.getPath(), true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
+        }
       }
     }
 
@@ -3477,24 +3571,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
         throws MetaException, InvalidOperationException, UnknownDBException {
       String[] parsedDbName = parseDbName(dbName, conf);
-      return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null);
+      return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null, null);
     }
 
     @Override
     public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
-          req.getTblNames(), req.getCapabilities()));
+          req.getTblNames(), req.getCapabilities(), req.getProjectionSpec()));
     }
 
     private List<Table> getTableObjectsInternal(String catName, String dbName,
                                                 List<String> tableNames,
-                                                ClientCapabilities capabilities)
+                                                ClientCapabilities capabilities,
+                                                GetProjectionsSpec projectionsSpec)
             throws MetaException, InvalidOperationException, UnknownDBException {
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
             "Hive tests", "get_table_objects_by_name_req");
       }
+
+      if (projectionsSpec != null) {
+        if (!projectionsSpec.isSetFieldList() && (projectionsSpec.isSetIncludeParamKeyPattern() ||
+                projectionsSpec.isSetExcludeParamKeyPattern())) {
+          throw new InvalidOperationException("Include and Exclude Param key are not supported.");
+        }
+      }
+
       List<Table> tables = new ArrayList<>();
       startMultiTableFunction("get_multi_table", dbName, tableNames);
       Exception ex = null;
@@ -3528,11 +3631,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         while (startIndex < distinctTableNames.size()) {
           int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
           tables.addAll(ms.getTableObjectsByName(catName, dbName, distinctTableNames.subList(
-              startIndex, endIndex)));
+              startIndex, endIndex), projectionsSpec));
           startIndex = endIndex;
         }
         for (Table t : tables) {
-          if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
+          if (t.getParameters() != null && MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
             assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
                 "insert-only tables", "get_table_req");
           }
@@ -5695,8 +5798,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
-        ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+        if(ret !=  null && !ret.isEmpty()) {
+          List<Table> tableInfo = new ArrayList<>();
+          tableInfo = getMS().getTableObjectsByName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+          tableInfo = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tableInfo);// tableInfo object has the owner information of the table which is being passed to FilterUtils.
+          ret = new ArrayList<>();
+          for (Table tbl : tableInfo) {
+            ret.add(tbl.getTableName());
+          }
+        }
       } catch (MetaException e) {
         ex = e;
         throw e;
@@ -6944,7 +7054,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
                                                    final List<String> partNames)
             throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames);
+      return get_partitions_by_names(dbName, tblName, partNames, false, null, null);
     }
 
     @Override
@@ -8218,6 +8328,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public long get_latest_txnid_in_conflict(long txnId) throws MetaException {
+      return getTxnHandler().getLatestTxnIdInConflict(txnId);
+    }
+
+    @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
       // in replication flow, the write notification log table will be updated here.
       if (rqst.isSetWriteEventInfos()) {
@@ -8272,6 +8387,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
                 new CommitTxnEvent(rqst.getTxnid(), this));
+        Optional<CompactionInfo> compactionInfo = getTxnHandler().getCompactionByTxnId(rqst.getTxnid());
+        if (compactionInfo.isPresent()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_COMPACTION,
+              new CommitCompactionEvent(rqst.getTxnid(), compactionInfo.get(), this));
+        }
       }
     }
 
@@ -9200,6 +9320,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return new CheckConstraintsResponse(ret);
     }
 
+    /**
+     * Api to fetch all table constraints at once
+     * @param request it consist of catalog name, database name and table name to identify the table in metastore
+     * @return all constraints attached to given table
+     * @throws TException
+     */
+    @Override
+    public AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request)
+        throws TException, MetaException, NoSuchObjectException {
+      String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+      String dbName = request.getDbName();
+      String tblName = request.getTblName();
+      startTableFunction("get_all_table_constraints", catName, dbName, tblName);
+      SQLAllTableConstraints ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getAllTableConstraints(catName, dbName, tblName);
+      } catch (Exception e) {
+        ex = e;
+        throwMetaException(e);
+      } finally {
+        endFunction("get_all_table_constraints", ret != null, ex, tblName);
+      }
+      return new AllTableConstraintsResponse(ret);
+    }
+
     @Override
     public String get_metastore_db_uuid() throws TException {
       try {
@@ -10043,6 +10189,69 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_replication_metrics", ex == null, ex);
       }
     }
+
+    @Override
+    public void create_stored_procedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+      startFunction("create_stored_procedure");
+      Exception ex = null;
+      try {
+        getMS().createOrUpdateStoredProcedure(proc);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("create_stored_procedure", ex == null, ex);
+      }
+    }
+
+    public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
+      startFunction("get_stored_procedure");
+      Exception ex = null;
+      try {
+        StoredProcedure result = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+        if (result == null) {
+          throw new NoSuchObjectException("StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
+        }
+        return result;
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_stored_procedure", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
+      startFunction("drop_stored_procedure");
+      Exception ex = null;
+      try {
+        getMS().dropStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("drop_stored_procedure", ex == null, ex);
+      }
+    }
+
+    @Override
+    public List<String> get_all_stored_procedures(ListStoredProcedureRequest request) throws MetaException {
+      startFunction("get_all_stored_procedures");
+      Exception ex = null;
+      try {
+        return getMS().getAllStoredProcedures(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_all_stored_procedures", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
@@ -10371,7 +10580,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String keyStorePassword =
           MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-
+      String keyStoreType =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
+      String keyStoreAlgorithm =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
       // enable SSL support for HMS
       List<String> sslVersionBlacklist = new ArrayList<>();
       for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
@@ -10379,7 +10591,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStorePath,
-          keyStorePassword, sslVersionBlacklist);
+          keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
     }
 
     if (tcpKeepAlive) {
@@ -10780,5 +10992,4 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     try {return "" + InetAddress.getLocalHost();}
     catch(UnknownHostException uhe) {return "" + uhe;}
   }
-
 }

@@ -66,13 +66,13 @@ public class Derby extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
+  public String getJdbcUrl(String hostAddress) {
     return String.format("jdbc:derby:memory:%s/%s;create=true", System.getProperty("test.tmp.dir"),
         getDb());
   }
 
   @Override
-  public String getInitialJdbcUrl() {
+  public String getInitialJdbcUrl(String hostAddress) {
     return String.format("jdbc:derby:memory:%s/%s;create=true", System.getProperty("test.tmp.dir"),
         getDb());
   }

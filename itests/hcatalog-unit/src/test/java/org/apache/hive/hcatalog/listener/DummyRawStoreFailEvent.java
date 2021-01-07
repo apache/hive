@@ -20,10 +20,13 @@ package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -380,6 +383,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getTableObjectsByName(String catName, String dbName, List<String> tableNames,
+          GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+    return objectStore.getTableObjectsByName(catName, dbName, tableNames, projectionSpec);
+  }
+
+  @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
     return objectStore.getAllTables(catName, dbName);
   }
@@ -444,7 +453,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
   }
@@ -1084,12 +1093,14 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> createTableWithConstraints(Table tbl,
-                                         List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-                                         List<SQLUniqueConstraint> uniqueConstraints,
-                                         List<SQLNotNullConstraint> notNullConstraints,
-                                         List<SQLDefaultConstraint> defaultConstraints,
-                                         List<SQLCheckConstraint> checkConstraints)
+  public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public SQLAllTableConstraints createTableWithConstraints(Table tbl,
+                                         SQLAllTableConstraints constraints)
       throws InvalidObjectException, MetaException {
     return null;
   }
@@ -1101,37 +1112,37 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks)
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks)
       throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addForeignKeys(List<SQLForeignKey> fks)
+  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks)
       throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks)
       throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
       throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
+  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> nns)
       throws InvalidObjectException, MetaException {
     return null;
   }
@@ -1412,6 +1423,26 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   public void deleteAllPartitionColumnStatistics(TableName tn,String s) {
     objectStore.deleteAllPartitionColumnStatistics(tn,s);
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    objectStore.createOrUpdateStoredProcedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+    return objectStore.getStoredProcedure(catName, db, name);
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+    objectStore.dropStoredProcedure(catName, dbName, funcName);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    return objectStore.getAllStoredProcedures(request);
   }
 
 }

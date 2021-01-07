@@ -62,13 +62,13 @@ public class Mssql extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:sqlserver://localhost:1433;DatabaseName=" + HIVE_DB + ";";
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + HIVE_DB + ";";
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:sqlserver://localhost:1433";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:sqlserver://" + hostAddress + ":1433";
   }
 
   @Override

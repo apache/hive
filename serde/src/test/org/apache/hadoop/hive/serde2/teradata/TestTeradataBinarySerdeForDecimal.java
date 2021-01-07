@@ -44,7 +44,7 @@ public class TestTeradataBinarySerdeForDecimal {
     props.setProperty(serdeConstants.LIST_COLUMNS, "TD_DECIMAL");
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "decimal(9,5)");
 
-    serde.initialize(null, props);
+    serde.initialize(null, props, props);
   }
 
   @Test

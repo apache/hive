@@ -105,7 +105,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
     if (call.rels.length > 2) {
       final Join joinRel = call.rel(2);
       RewritablePKFKJoinInfo joinInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-          joinRel, true, call.getMetadataQuery());
+          joinRel, joinRel.getLeft(), joinRel.getRight(), call.getMetadataQuery());
       if (!joinInfo.rewritable) {
         return false;
       }

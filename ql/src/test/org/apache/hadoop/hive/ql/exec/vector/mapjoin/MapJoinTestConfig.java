@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
@@ -686,7 +685,7 @@ public class MapJoinTestConfig {
     TableDesc keyTableDesc = mapJoinDesc.getKeyTblDesc();
     AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
         BinarySortableSerDe.class, null);
-    SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
+    keySerializer.initialize(null, keyTableDesc.getProperties(), null);
     MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
 
     final List<TableDesc> valueTableDescList;
@@ -697,8 +696,8 @@ public class MapJoinTestConfig {
     }
     TableDesc valueTableDesc = valueTableDescList.get(smallTablePos);
     AbstractSerDe valueSerDe = (AbstractSerDe) ReflectionUtil.newInstance(
-        valueTableDesc.getDeserializerClass(), null);
-    SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+        valueTableDesc.getSerDeClass(), null);
+    valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
     MapJoinObjectSerDeContext valueContext =
         new MapJoinObjectSerDeContext(valueSerDe, hasFilter(mapJoinDesc, smallTablePos));
     MapJoinTableContainerSerDe mapJoinTableContainerSerDe =

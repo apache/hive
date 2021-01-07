@@ -27,6 +27,8 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -305,9 +307,14 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private String getMethodString(Method method) {
     StringBuilder methodSb = new StringBuilder(method.getName());
     methodSb.append("_(");
-    for (Class<?> paramClass : method.getParameterTypes()) {
-      methodSb.append(paramClass.getSimpleName());
-      methodSb.append(", ");
+    if (method.getParameterTypes().length != 0) {
+      Iterator<Class<?>> it =
+          Arrays.stream(method.getParameterTypes()).iterator();
+      methodSb.append(it.next().getSimpleName());
+      while (it.hasNext()) {
+        methodSb.append(", ");
+        methodSb.append(it.next().getSimpleName());
+      }
     }
     methodSb.append(")");
     return methodSb.toString();

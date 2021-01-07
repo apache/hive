@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg.sargToKryo;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,10 +47,11 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
+import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -68,6 +73,7 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -93,7 +99,6 @@ import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -130,19 +135,9 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
-
 @SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
 public class TestInputOutputFormat {
   private static final Logger LOG = LoggerFactory.getLogger(TestInputOutputFormat.class);
-
-  public static String toKryo(SearchArgument sarg) {
-    Output out = new Output(4 * 1024, 10 * 1024 * 1024);
-    new Kryo().writeObject(out, sarg);
-    out.close();
-    return Base64.encodeBase64String(out.toBytes());
-  }
 
   Path workDir = new Path(System.getProperty("test.tmp.dir","target/tmp"));
   static final int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
@@ -1008,13 +1003,13 @@ public class TestInputOutputFormat {
 
   public List<SplitStrategy<?>> createOrCombineStrategies(OrcInputFormat.Context context,
       MockFileSystem fs, String path, OrcInputFormat.CombinedCtx combineCtx) throws IOException {
-    OrcInputFormat.AcidDirInfo adi = createAdi(context, fs, path);
+    AcidDirectory adi = createAdi(context, fs, path);
     return OrcInputFormat.determineSplitStrategies(combineCtx, context,
-        adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        adi.getFs(), adi.getPath(), adi.getBaseAndDeltaFiles(), adi.getDeleteDeltas(),
         null, null, true);
   }
 
-  public OrcInputFormat.AcidDirInfo createAdi(
+  public AcidDirectory createAdi(
       OrcInputFormat.Context context, final MockFileSystem fs, String path) throws IOException {
     return new OrcInputFormat.FileGenerator(
         context, () -> fs, new MockPath(fs, path), false, null).call();
@@ -1022,9 +1017,9 @@ public class TestInputOutputFormat {
 
   private List<OrcInputFormat.SplitStrategy<?>> createSplitStrategies(
       OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
-    OrcInputFormat.AcidDirInfo adi = gen.call();
+    AcidDirectory adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        null, context, adi.getFs(), adi.getPath(), adi.getBaseAndDeltaFiles(), adi.getDeleteDeltas(),
         null, null, true);
   }
 
@@ -1070,14 +1065,23 @@ public class TestInputOutputFormat {
     int length;
     MockBlock[] blocks;
     byte[] content;
+    // If true - it will simulate an HDFS file that was hflushed (i.e. might have content above what can be found as
+    // first block on disk) and is still being written to (e.g. isUnderConstruction is true)
+    boolean isHdfsHflushed = false;
 
     public MockFile(String path, int blockSize, byte[] content,
+        MockBlock... blocks) {
+      this(path, blockSize, content, false, blocks);
+    }
+
+    public MockFile(String path, int blockSize, byte[] content, boolean isHdfsHflushed,
                     MockBlock... blocks) {
       this.path = new Path(path);
       this.blockSize = blockSize;
       this.blocks = blocks;
       this.content = content;
       this.length = content.length;
+      this.isHdfsHflushed = isHdfsHflushed;
       int offset = 0;
       for(MockBlock block: blocks) {
         block.offset = offset;
@@ -1147,6 +1151,11 @@ public class TestInputOutputFormat {
         return file.content[offset++] & 0xff;
       }
       return -1;
+    }
+
+    @Override
+    public int available() throws IOException {
+      return file.length - offset;
     }
   }
 
@@ -1506,8 +1515,23 @@ public class TestInputOutputFormat {
 
     private LocatedFileStatus createLocatedStatus(MockFile file) throws IOException {
       FileStatus fileStatus = createStatus(file);
-      return new LocatedFileStatus(fileStatus,
-          getFileBlockLocationsImpl(fileStatus, 0, fileStatus.getLen(), false));
+      if (file.isHdfsHflushed) {
+        // Should work the same way as the local status except for having isUnderConstruction flag set to true and
+        // having HdfsLocatedFileStatus type
+        LocatedBlocks lb = new LocatedBlocks(fileStatus.getLen(), true, null, null, false, null, null);
+        HdfsLocatedFileStatus mockStatus = mock(HdfsLocatedFileStatus.class);
+        when(mockStatus.getLocatedBlocks()).thenReturn(lb);
+        when(mockStatus.getPath()).thenReturn(fileStatus.getPath());
+        when(mockStatus.getLen()).thenReturn(fileStatus.getLen());
+        when(mockStatus.isDirectory()).thenReturn(false);
+        when(mockStatus.isFile()).thenReturn(true);
+        when(mockStatus.getBlockSize()).thenReturn(fileStatus.getBlockSize());
+        when(mockStatus.getBlockLocations()).thenReturn(getFileBlockLocationsImpl(fileStatus, 0, fileStatus.getLen(),
+            false));
+        return mockStatus;
+      } else {
+        return new LocatedFileStatus(fileStatus, getFileBlockLocationsImpl(fileStatus, 0, fileStatus.getLen(), false));
+      }
     }
 
     private LocatedFileStatus createLocatedDirectory(Path dir) throws IOException {
@@ -1841,7 +1865,7 @@ public class TestInputOutputFormat {
     writer.write(serde.serialize(new MyRow(3,2), inspector));
     writer.close(true);
     serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     assertEquals(OrcSerde.OrcSerdeRow.class, serde.getSerializedClass());
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<x:int,y:int>", inspector.getTypeName());
@@ -1980,7 +2004,7 @@ public class TestInputOutputFormat {
     serde = new OrcSerde();
     properties.setProperty("columns", "z,r");
     properties.setProperty("columns.types", "int:struct<x:int,y:int>");
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -2025,7 +2049,7 @@ public class TestInputOutputFormat {
             properties, Reporter.NULL);
     writer.close(true);
     AbstractSerDe serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
@@ -2103,7 +2127,7 @@ public class TestInputOutputFormat {
     writer.write(serde.serialize(new StringRow("miles"), inspector));
     writer.close(true);
     serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<str:string,str2:string>", inspector.getTypeName());
     InputFormat<?,?> in = new OrcInputFormat();
@@ -2640,7 +2664,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
         .startAnd().isNull("cost", PredicateLeaf.Type.LONG).end().build();
-    conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, toKryo(isNull));
+    conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, sargToKryo(isNull));
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});
@@ -2688,9 +2712,9 @@ public class TestInputOutputFormat {
             .lessThan("z", PredicateLeaf.Type.LONG, Long.valueOf(0))
             .end()
             .build();
-    conf.set("sarg.pushdown", toKryo(sarg));
+    conf.set("sarg.pushdown", sargToKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z,r");
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -2722,11 +2746,11 @@ public class TestInputOutputFormat {
             .lessThan("z", PredicateLeaf.Type.STRING, new String("foo"))
             .end()
             .build();
-    conf.set("sarg.pushdown", toKryo(sarg));
+    conf.set("sarg.pushdown", sargToKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z");
     properties.setProperty("columns", "z");
     properties.setProperty("columns.types", "string");
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -3810,7 +3834,7 @@ public class TestInputOutputFormat {
     }
     writer.close(true);
     serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     assertEquals(OrcSerde.OrcSerdeRow.class, serde.getSerializedClass());
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<x:int,y:int>", inspector.getTypeName());
@@ -4220,5 +4244,95 @@ public class TestInputOutputFormat {
     assertEquals(0, record);
 
     reader.close();
+  }
+
+
+  private static List<MockFile> mockDeltaWithSideFileForStreaming(String delta, int contentLength, int flush_length) {
+    final int blockSize = 1000;
+    boolean isDeltaHflushed = contentLength < flush_length;
+
+    List<MockFile> files = new LinkedList<>();
+
+    ByteBuffer bb = ByteBuffer.allocate(Long.BYTES);
+    bb.putLong(flush_length);
+    bb.array();
+
+    MockBlock[] blocks = new MockBlock[(contentLength / blockSize) + 1];
+    for (int i = 0; i < blocks.length; ++i) {
+      blocks[i] = new MockBlock("host1");
+    }
+
+    files.add(new MockFile("mock:/streaming/" + delta + "/bucket_00000", blockSize, new byte[contentLength], isDeltaHflushed,
+        blocks));
+    files.add(new MockFile("mock:/streaming/" + delta + "/bucket_00000_flush_length", blockSize, bb.array(), false,
+        new MockBlock("host1")));
+
+    return files;
+  }
+
+  private List<OrcSplit> splitsForStreamingAcidTable(List<MockFile> files) throws Exception {
+    try {
+      MockFileSystem fs = new MockFileSystem(conf);
+      files.forEach(f -> MockFileSystem.addGlobalFile(f));
+      conf.set("bucket_count", "1");
+      //set up props for read
+      conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+      AcidUtils.setAcidOperationalProperties(conf, true, null);
+      conf.set(ValidTxnList.VALID_TXNS_KEY,
+          new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
+      conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS,
+          TestVectorizedOrcAcidRowBatchReader.DummyRow.getColumnNamesProperty());
+      conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES,
+          TestVectorizedOrcAcidRowBatchReader.DummyRow.getColumnTypesProperty());
+      conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, true);
+      MockPath mockPath = new MockPath(fs, "mock:/streaming");
+      conf.set("mapred.input.dir", mockPath.toString());
+      conf.set("fs.defaultFS", "mock:///");
+      conf.set("fs.mock.impl", MockFileSystem.class.getName());
+      conf.set(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
+      OrcInputFormat.Context context = new OrcInputFormat.Context(conf, 0);
+
+      OrcInputFormat.FileGenerator gen =
+          new OrcInputFormat.FileGenerator(context, () -> fs, new MockPath(fs,
+              "mock:/streaming"),
+              false, null);
+      List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
+      assertEquals(1, splitStrategies.size());
+      assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
+      return ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
+
+    } finally {
+      MockFileSystem.clearGlobalFiles();
+    }
+  }
+
+  @Test
+  public void testAcidTableStreamingBISplitGeneration() throws Exception {
+    List<OrcSplit> result = null;
+    List<MockFile> files = new LinkedList<>();
+
+    // 1 complete delta file + 1 incomplete where more rows were committed than written to disk
+    // (1000) + (15/95)
+    files.addAll(mockDeltaWithSideFileForStreaming("delta_0000001_0000010_0000", 1000, 1000));
+    files.addAll(mockDeltaWithSideFileForStreaming("delta_0000011_0000020_0000", 15, 95));
+    result = splitsForStreamingAcidTable(files);
+    files.clear();
+    assertEquals(1000, result.get(0).getLength());
+    assertEquals(95, result.get(1).getLength());
+
+    // 1 incomplete delta with 2 complete and 1 incomplete blocks: (1000 + 1000 + 500/800)
+    files.addAll(mockDeltaWithSideFileForStreaming("delta_0000021_0000030_0000", 2500, 2800));
+    result = splitsForStreamingAcidTable(files);
+    files.clear();
+    assertEquals(1000, result.get(0).getLength());
+    assertEquals(1000, result.get(1).getLength());
+    assertEquals(800, result.get(2).getLength());
+
+    // 1 complete delta but shorter flush_length - though I think this is almost impossible
+    files.addAll(mockDeltaWithSideFileForStreaming("delta_0000021_0000030_0000", 1000, 450));
+    result = splitsForStreamingAcidTable(files);
+    files.clear();
+    assertEquals(450, result.get(0).getLength());
+
   }
 }

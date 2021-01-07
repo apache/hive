@@ -1023,8 +1023,8 @@ public final class FunctionRegistry {
     }
 
     // Compare the field types
-    ArrayList<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
-    ArrayList<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
+    List<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
+    List<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
     for (int i = 0; i < fromTypes.size(); i++) {
       TypeInfo commonType = commonClassFunction.apply(fromTypes.get(i), toTypes.get(i));
       if (commonType == null) {

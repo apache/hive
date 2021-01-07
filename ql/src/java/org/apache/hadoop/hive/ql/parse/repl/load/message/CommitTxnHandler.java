@@ -55,7 +55,9 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     String tblName = null;
 
     ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName,
-        null, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN, context.eventOnlyReplicationSpec());
+                                       null, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN,
+                                        context.eventOnlyReplicationSpec(), context.getDumpDirectory(),
+                                        context.getMetricCollector());
 
     if (numEntry > 0) {
       context.log.debug("Commit txn handler for txnid " + msg.getTxnId() + " databases : " + msg.getDatabases() +
@@ -76,7 +78,8 @@ public class CommitTxnHandler extends AbstractMessageHandler {
         tblName = actualTblName;
         // for warehouse level dump, use db name from write event
         dbName = (context.isDbNameEmpty() ? actualDBName : context.dbName);
-        Context currentContext = new Context(context, dbName);
+        Context currentContext = new Context(context, dbName,
+                context.getDumpDirectory(), context.getMetricCollector());
         currentContext.setLocation(location.toUri().toString());
 
         // Piggybacking in Import logic for now

@@ -130,6 +130,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -700,20 +701,32 @@ public class TezCompiler extends TaskCompiler {
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "generateTaskTree");
   }
 
+  void setInputFormatForMapWork(BaseWork work) {
+    if (work instanceof MapWork) {
+      MapWork mapWork = (MapWork) work;
+      Map<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
+      if (!opMap.isEmpty()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
+          setInputFormat(mapWork, op);
+        }
+      }
+    }
+  }
+
   @Override
   protected void setInputFormat(Task<?> task) {
     if (task instanceof TezTask) {
       TezWork work = ((TezTask)task).getWork();
       List<BaseWork> all = work.getAllWork();
       for (BaseWork w: all) {
-        if (w instanceof MapWork) {
-          MapWork mapWork = (MapWork) w;
-          Map<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
-          if (!opMap.isEmpty()) {
-            for (Operator<? extends OperatorDesc> op : opMap.values()) {
-              setInputFormat(mapWork, op);
-            }
+        if (w instanceof MergeJoinWork) {
+          MergeJoinWork mj = (MergeJoinWork)w;
+          setInputFormatForMapWork(mj.getMainWork());
+          for (BaseWork bw : mj.getBaseWorkList()) {
+            setInputFormatForMapWork(bw);
           }
+        } else {
+          setInputFormatForMapWork(w);
         }
       }
     } else if (task instanceof ConditionalTask) {

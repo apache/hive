@@ -75,19 +75,20 @@
     <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <derby.version>10.14.1.0</derby.version>
+    <postgres.version>42.2.14</postgres.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.10.0</jackson.version>
+    <jackson.version>2.10.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3-1</libthrift.version>
+    <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.12.1</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <orc.version>1.5.1</orc.version>
@@ -110,8 +111,7 @@
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp
-      --gen php --gen py --gen rb
+    <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
 
   </properties>
@@ -366,7 +366,7 @@
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>9.3-1102-jdbc41</version>
+        <version>${postgres.version}</version>
         <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->

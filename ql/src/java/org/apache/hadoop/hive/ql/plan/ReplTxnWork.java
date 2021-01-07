@@ -18,10 +18,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
+import com.google.inject.internal.cglib.core.$MethodInfoTransformer;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +47,9 @@ public class ReplTxnWork implements Serializable {
   private ReplicationSpec replicationSpec;
   private List<WriteEventInfo> writeEventInfos;
   private ReplLastIdInfo replLastIdInfo;
+  private String dumpDirectory;
+  private transient ReplicationMetricCollector metricCollector;
+
 
   /**
    * OperationType.
@@ -73,9 +79,24 @@ public class ReplTxnWork implements Serializable {
     this(replPolicy, dbName, tableName, txnIds, type, null, replicationSpec);
   }
 
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+                     ReplicationSpec replicationSpec, String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this(replPolicy, dbName, tableName, txnIds, type, null, replicationSpec);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
+  }
+
   public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
                      OperationType type, ReplicationSpec replicationSpec) {
     this(replPolicy, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
+  }
+
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
+                     OperationType type, ReplicationSpec replicationSpec,
+                     String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this(replPolicy, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
   }
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,
@@ -83,6 +104,13 @@ public class ReplTxnWork implements Serializable {
     this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
   }
 
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,
+                     List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec,
+                     String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
+  }
   public ReplTxnWork(String dbName, String tableName, List<String> partNames,
                      String validWriteIdList, OperationType type) {
     this.dbName = dbName;
@@ -90,6 +118,18 @@ public class ReplTxnWork implements Serializable {
     this.partNames = partNames;
     this.validWriteIdList = validWriteIdList;
     this.operation = type;
+  }
+
+  public ReplTxnWork(String dbName, String tableName, List<String> partNames,
+                     String validWriteIdList, OperationType type, String dumpDirectory,
+                     ReplicationMetricCollector metricCollector) {
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.partNames = partNames;
+    this.validWriteIdList = validWriteIdList;
+    this.operation = type;
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
   }
 
   public void addWriteEventInfo(WriteEventInfo writeEventInfo) {
@@ -141,5 +181,13 @@ public class ReplTxnWork implements Serializable {
 
   public ReplLastIdInfo getReplLastIdInfo() {
     return replLastIdInfo;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public String getDumpDirectory() {
+    return dumpDirectory;
   }
 }

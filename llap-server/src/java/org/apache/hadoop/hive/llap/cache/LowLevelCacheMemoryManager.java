@@ -166,20 +166,12 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     return evicted;
   }
 
-  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-    if (evictor == null) {
-      return 0;
+  public void notifyProactiveEvictionMark() {
+    if (evictor != null) {
+      if (evictor instanceof ProactiveEvictingCachePolicy) {
+        ((ProactiveEvictingCachePolicy) evictor).notifyProactiveEvictionMark();
+      }
     }
-    long evicted = evictor.evictEntity(predicate);
-    if (evicted == 0) {
-      return 0;
-    }
-    long usedMem = -1;
-    do {
-      usedMem = usedMemory.get();
-    } while (!usedMemory.compareAndSet(usedMem, usedMem - evicted));
-    metrics.incrCacheCapacityUsed(-evicted);
-    return evicted;
   }
 
   @VisibleForTesting
