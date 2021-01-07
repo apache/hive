@@ -124,7 +124,6 @@ public class ParallelEdgeFixer extends Transform {
     Operator<ReduceSinkDesc> newRS =
         OperatorFactory.getAndMakeChild(p.getCompilationOpContext(), newConf, new ArrayList<>());
 
-
     // alter old RS conf to forward only
     conf.setOutputName("forward_to_" + newRS);
     //    conf.setForwarding(true);

@@ -46,7 +46,7 @@ STAGE PLANS:
                             1 _col0 (type: bigint)
                           outputColumnNames: _col1
                           input vertices:
-                            1 Map 5
+                            1 Reducer 6
                           Statistics: Num rows: 459239201 Data size: 3630802536 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -76,7 +76,7 @@ STAGE PLANS:
                             1 _col0 (type: bigint)
                           outputColumnNames: _col1
                           input vertices:
-                            1 Reducer 6
+                            1 Map 5
                           Statistics: Num rows: 459239201 Data size: 3630802536 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
