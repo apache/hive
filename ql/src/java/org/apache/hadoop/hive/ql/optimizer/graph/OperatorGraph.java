@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -54,7 +55,7 @@ public class OperatorGraph {
   DagGraph<Operator<?>, OpEdge> g;
 
   enum EdgeType {
-    FLOW, SEMIJOIN, DPP, TEST,
+    FLOW, SEMIJOIN, DPP, TEST, BROADCAST
   }
 
   static class OpEdge {
@@ -69,6 +70,10 @@ public class OperatorGraph {
     public OpEdge(EdgeType et, int index) {
       this.et = et;
       this.index = index;
+    }
+
+    public EdgeType getEdgeType() {
+      return et;
     }
 
   }
@@ -118,7 +123,11 @@ public class OperatorGraph {
       List<Operator<?>> parents = curr.getParentOperators();
       for (int i = 0; i < parents.size(); i++) {
         Operator<?> p = parents.get(i);
-        g.putEdgeValue(p, curr, new OpEdge(EdgeType.FLOW, i));
+        if (curr instanceof MapJoinOperator && p instanceof ReduceSinkOperator) {
+          g.putEdgeValue(p, curr, new OpEdge(EdgeType.BROADCAST, i));
+        } else {
+          g.putEdgeValue(p, curr, new OpEdge(EdgeType.FLOW, i));
+        }
         if (p instanceof ReduceSinkOperator) {
           // ignore cluster of parent RS
           continue;

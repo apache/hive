@@ -25,6 +25,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+
+import java.util.Optional;
+
 public class DiGraph<V, E> {
   protected static class Edge<V, E> {
     public final DiGraph.Node<V, E> s;
@@ -144,6 +147,20 @@ public class DiGraph<V, E> {
       }
     }
     return ret;
+  }
+
+  public Optional<E> getEdge(V s, V t) {
+    DiGraph.Node<V, E> node = nodes.get(s);
+    if (node == null) {
+      return Optional.empty();
+    }
+
+    for (DiGraph.Edge<V, E> edge : node.edges) {
+      if (edge.s.v.equals(s) && edge.t.v.equals(t)) {
+        return Optional.of(edge.e);
+      }
+    }
+    return Optional.empty();
   }
 
   public int degree(V n) {

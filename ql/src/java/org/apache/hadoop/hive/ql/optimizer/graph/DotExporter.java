@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.io.File;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import java.util.Optional;
 
 public class DotExporter {
 
@@ -52,28 +54,42 @@ public class DotExporter {
     DagGraph<Operator<?>, OpEdge> g = operatorGraph.g;
     PrintWriter writer = new PrintWriter(outFile);
     writer.println("digraph G");
-    writer.println("{");
+    writer.println("{\n");
     HashSet<Cluster> clusters = new HashSet<>(nodeCluster.values());
     int idx = 0;
     for (Cluster cluster : clusters) {
       idx++;
-      writer.printf("subgraph cluster_%d {", idx);
+      writer.printf("subgraph cluster_%d {\n", idx);
       for (Operator<?> member : cluster.members) {
-        writer.printf("%s;", nodeName(member));
+        writer.printf("%s;\n", nodeName(member));
       }
-      writer.printf("label = \"cluster %d\";", idx);
-      writer.printf("}");
+      writer.printf("label = \"cluster %d\";\n", idx);
+      writer.printf("}\n");
     }
     Set<Operator<?>> nodes = g.nodes();
     for (Operator<?> n : nodes) {
-      writer.printf("%s[shape=record,label=\"%s\",%s];", nodeName(n), nodeLabel(n), style(n));
+      writer.printf("%s[shape=record,label=\"%s\",%s];\n", nodeName(n), nodeLabel(n), style(n));
       Set<Operator<?>> succ = g.successors(n);
       for (Operator<?> s : succ) {
-        writer.printf("%s->%s;", nodeName(n), nodeName(s));
+        Optional<OpEdge> e = g.getEdge(n, s);
+        String style = "";
+        switch(e.get().getEdgeType()) {
+        case BROADCAST:
+          style = "[color=blue,label=\"BROADCAST\"]";
+          break;
+        case DPP:
+          style = "[color=green,label=\"DPP\"]";
+          break;
+        case SEMIJOIN:
+          style = "[color=red,label=\"SEMIJOIN\"]";
+          break;
+        }
+
+        writer.printf("%s->%s%s;\n", nodeName(n), nodeName(s), style);
       }
     }
 
-    writer.println("}");
+    writer.println("}\n");
     writer.close();
   }
 
