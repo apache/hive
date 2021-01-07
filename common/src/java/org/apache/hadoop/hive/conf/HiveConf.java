@@ -3149,9 +3149,10 @@ public class HiveConf extends Configuration {
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE
      */
-    @Deprecated COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE("hive.compactor.history.retention.attempted", 2,
-      new RangeValidator(0, 100), "Determines how many compaction records in state " +
-        "'did not initiate' will be retained in compaction history for a given table/partition."),
+    @Deprecated
+    COMPACTOR_HISTORY_RETENTION_ATTEMPTED("hive.compactor.history.retention.attempted", 2,
+      new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
+      "retained in compaction history for a given table/partition."),
     /**
      * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */

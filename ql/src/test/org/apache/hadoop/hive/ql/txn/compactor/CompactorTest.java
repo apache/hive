@@ -93,7 +93,7 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 
 /**
  * Super class for all of the compactor test modules.
