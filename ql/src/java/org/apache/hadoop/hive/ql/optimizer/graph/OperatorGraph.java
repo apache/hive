@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -35,6 +36,9 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+
+import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
 /**
@@ -54,11 +58,11 @@ public class OperatorGraph {
 
   DagGraph<Operator<?>, OpEdge> g;
 
-  enum EdgeType {
+  public enum EdgeType {
     FLOW, SEMIJOIN, DPP, TEST, BROADCAST
   }
 
-  static class OpEdge {
+  public static class OpEdge {
 
     private final EdgeType et;
     private final int index;
@@ -95,6 +99,38 @@ public class OperatorGraph {
     public void add(Operator<?> curr) {
       nodeCluster.put(curr, this);
       members.add(curr);
+    }
+
+    public Set<Cluster> parentClusters(Function<OpEdge, Boolean> traverseEdge) {
+      Set<Cluster> ret = new HashSet<Cluster>();
+      for (Operator<?> operator : members) {
+        for (Operator<? extends OperatorDesc> p : operator.getParentOperators()) {
+          if (members.contains(p)) {
+            continue;
+          }
+          Optional<OpEdge> e = g.getEdge(p, operator);
+          if (traverseEdge.apply(e.get())) {
+            ret.add(nodeCluster.get(p));
+          }
+        }
+      }
+      return ret;
+    }
+
+    public Set<Cluster> childClusters(Function<OpEdge, Boolean> traverseEdge) {
+      Set<Cluster> ret = new HashSet<Cluster>();
+      for (Operator<?> operator : members) {
+        for (Operator<? extends OperatorDesc> p : operator.getChildOperators()) {
+          if (members.contains(p)) {
+            continue;
+          }
+          Optional<OpEdge> e = g.getEdge(operator, p);
+          if (traverseEdge.apply(e.get())) {
+            ret.add(nodeCluster.get(p));
+          }
+        }
+      }
+      return ret;
     }
 
   }
@@ -195,5 +231,9 @@ public class OperatorGraph {
     nodeCluster.clear();
     return this;
 
+  }
+
+  public Cluster clusterOf(Operator<?> op1) {
+    return nodeCluster.get(op1);
   }
 }

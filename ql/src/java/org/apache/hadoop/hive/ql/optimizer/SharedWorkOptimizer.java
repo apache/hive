@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OpEdge;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -77,6 +78,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -407,6 +409,9 @@ public class SharedWorkOptimizer extends Transform {
       Set<Operator<?>> removedOps = new HashSet<>();
       for (TableScanOperator discardableTsOp : tableScans) {
         TableName tableName1 = discardableTsOp.getTableName();
+        if (discardableTsOp.getNumChild() == 0) {
+          removedOps.add(discardableTsOp);
+        }
         if (removedOps.contains(discardableTsOp)) {
           LOG.debug("Skip {} as it has already been removed", discardableTsOp);
           continue;
@@ -1767,6 +1772,7 @@ public class SharedWorkOptimizer extends Transform {
         return false;
       }
     }
+
     // 2) We check whether output works when we merge the operators will collide.
     //
     //   Work1   Work2    (merge TS in W1 & W2)        Work1
@@ -1804,7 +1810,7 @@ public class SharedWorkOptimizer extends Transform {
         findParentWorkOperators(pctx, optimizerCache, op2, excludeOps2);
     if (!Collections.disjoint(inputWorksOps1, inputWorksOps2)) {
       // We cannot merge
-      return false;
+      //      return false;
     }
     // 4) We check whether one of the operators is part of a work that is an input for
     // the work of the other operator.
@@ -1826,12 +1832,46 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     OperatorGraph og = new OperatorGraph(pctx);
+
+    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(new T1());
+    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(new T1());
+
+    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new T1());
+    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new T1());
+
+    if (!Collections.disjoint(pc1, pc2)) {
+      LOG.debug("merge would create an unsupported parallel edge(I)", op1, op2);
+      return false;
+    }
+
+    if (!Collections.disjoint(cc1, cc2)) {
+      LOG.debug("merge would create an unsupported parallel edge(II)", op1, op2);
+      return false;
+    }
+
     if (!og.mayMerge(op1, op2)) {
       LOG.debug("merging {} and {} would violate dag properties", op1, op2);
       return false;
     }
 
     return true;
+  }
+
+  static class T1 implements Function<OpEdge, Boolean> {
+
+    @Override
+    public Boolean apply(OpEdge input) {
+      switch (input.getEdgeType()) {
+      case BROADCAST:
+      case DPP:
+      case SEMIJOIN:
+        return false;
+      default:
+        return true;
+      }
+
+    }
+
   }
 
   private static Set<Operator<?>> findParentWorkOperators(ParseContext pctx,
