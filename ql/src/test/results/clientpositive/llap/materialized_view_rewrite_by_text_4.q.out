@@ -69,11 +69,11 @@ HiveProject($f0=[CAST(_UTF-16LE'foo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1
 POSTHOOK: Lineage: mat1.col0 SIMPLE []
