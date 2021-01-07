@@ -238,7 +238,7 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          String oldtRelativePath = wh.getDatabasePath(olddb).toUri()
+          String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
               .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
                   && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
@@ -248,7 +248,7 @@ public class HiveAlterHandler implements AlterHandler {
             // get new location
             Database db = msdb.getDatabase(catName, newDbName);
             assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
-            Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
+            Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
             destPath = new Path(databasePath, newTblName);
             destFs = wh.getFs(destPath);
 
