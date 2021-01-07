@@ -1021,9 +1021,11 @@ class CompactionTxnHandler extends TxnHandler {
             numFailed--;
           }
         }
-        // If the last attempt was too long ago, ignore the failed treshold and try compaction again
-        long retryTime = MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, TimeUnit.MILLISECONDS);
-        return (numFailed == failedThreshold) && (lastEnqueueTime + retryTime > System.currentTimeMillis());
+        // If the last attempt was too long ago, ignore the failed threshold and try compaction again
+        long retryTime = MetastoreConf.getTimeVar(conf,
+            ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, TimeUnit.MILLISECONDS);
+        boolean needsRetry = (retryTime > 0) && (lastEnqueueTime + retryTime < System.currentTimeMillis());
+        return (numFailed == failedThreshold) && !needsRetry;
       }
       catch (SQLException e) {
         LOG.error("Unable to check for failed compactions " + e.getMessage());
