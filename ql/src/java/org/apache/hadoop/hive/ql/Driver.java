@@ -1130,9 +1130,13 @@ public class Driver implements IDriver {
     } finally {
       driverState.unlock();
     }
+    // We need cleanup transactions, even if we did not acquired locks yet
+    // However TxnManager is bound to session, so wee need to check if it is already handling a new query
+    String queryIdFromDriver = driverContext == null ? null : driverContext.getQueryState().getQueryId();
     boolean isTxnOpen = driverContext != null
         && driverContext.getTxnManager() != null
-        && driverContext.getTxnManager().isTxnOpen();
+        && driverContext.getTxnManager().isTxnOpen() &&
+        org.apache.commons.lang3.StringUtils.equals(queryIdFromDriver, driverContext.getTxnManager().getQueryid());
     if (!hiveLocks.isEmpty() || isTxnOpen) {
       try {
         releaseLocksAndCommitOrRollback(false);

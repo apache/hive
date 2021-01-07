@@ -335,4 +335,10 @@ public interface HiveTxnManager {
       throws LockException;
 
  long getLatestTxnIdInConflict() throws LockException;
+
+ /**
+  * Return the queryId this txnManager is handling
+  * @return
+  */
+ String getQueryid();
 }
