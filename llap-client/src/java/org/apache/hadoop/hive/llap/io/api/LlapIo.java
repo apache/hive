@@ -19,14 +19,18 @@
 package org.apache.hadoop.hive.llap.io.api;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.orc.impl.OrcTail;
 
 import javax.annotation.Nullable;
@@ -66,4 +70,22 @@ public interface LlapIo<T> {
   long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest);
 
   void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
+
+  /**
+   * Creates an LLAP record reader for a given file, by creating a split from this file, and passing it into a new
+   * LLAP record reader. May return null when attempting with unsupported schema evolution between reader and file
+   * schemas.
+   * Useful if a file is read multiple times as LLAP will cache it. Should be used for rather smaller files.
+   * @param fileKey - file ID, if null it will be determined during read but for additional performance cost
+   * @param path - path for the file to read
+   * @param tag - cache tag associated with this file (required for LLAP administrative purposes)
+   * @param tableIncludedCols - list of column #'s to be read from the file
+   * @param conf - job conf for this read. Schema serialized herein should be aligned with tableIncludedCols
+   * @param offset - required offset to start reading from
+   * @param length - required reading length
+   * @return
+   * @throws IOException
+   */
+  RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag,
+      List<Integer> tableIncludedCols, JobConf conf, long offset, long length) throws IOException;
 }

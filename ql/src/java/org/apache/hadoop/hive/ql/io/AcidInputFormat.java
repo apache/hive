@@ -345,14 +345,13 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       }
     }
 
-    public Object getFileId(Path deltaDirectory, int bucketId, Configuration conf) {
+    public Object getFileId(Path deltaFile, int bucketId, Configuration conf) {
       boolean forceSynthetic = !HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_USE_FILEID_PATH);
       if (fileId != null && !forceSynthetic) {
         return fileId;
       }
       // Calculate the synthetic fileid
-      Path realPath = getPath(deltaDirectory, bucketId);
-      return new SyntheticFileId(realPath, length, modTime);
+      return new SyntheticFileId(deltaFile, length, modTime);
     }
 
     public Path getPath(Path deltaDirectory, int bucketId) {
