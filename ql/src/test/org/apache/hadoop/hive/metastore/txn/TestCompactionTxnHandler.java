@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -289,11 +290,15 @@ public class TestCompactionTxnHandler {
     assertFalse(txnHandler.checkFailedCompactions(ci));
 
     // Add more failed compactions so that the total is exactly COMPACTOR_INITIATOR_FAILED_THRESHOLD
-    for (int i = 1 ; i <  conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
+    for (int i = 1; i < MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
       addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
     // Now checkFailedCompactions() will return true
     assertTrue(txnHandler.checkFailedCompactions(ci));
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, 1, TimeUnit.MILLISECONDS);
+    // Now checkFailedCompactions() should ignore the treshold
+    assertFalse(txnHandler.checkFailedCompactions(ci));
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, 7, TimeUnit.DAYS);
     // Check the output of show compactions
     checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
     // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
