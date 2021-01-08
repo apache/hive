@@ -310,6 +310,28 @@ public class TestMetastoreConf {
     Assert.assertEquals("false", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
   }
 
+  /**
+   * Verify that a config can be set with a deprecated key/name.
+   */
+  @Test
+  public void testDeprecatedConfigs() throws IOException {
+    // set deprecated config
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "this.is.the.deprecated.name", "2" // default is 1
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(2, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+
+    // set new config
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "test.deprecated", "0" // default is 1
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(0, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+  }
+
   @Test
   public void timeUnits() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
