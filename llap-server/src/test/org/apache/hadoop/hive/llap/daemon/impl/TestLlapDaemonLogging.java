@@ -27,7 +27,6 @@ import org.apache.hive.testutils.junit.extensions.DoNothingTCPServer;
 import org.apache.hive.testutils.junit.extensions.DoNothingTCPServerExtension;
 import org.apache.hive.testutils.junit.extensions.Log4jConfig;
 import org.apache.tez.common.security.TokenCache;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -38,6 +37,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the log4j configuration of the LLAP daemons.
@@ -64,8 +66,59 @@ public class TestLlapDaemonLogging {
     while (!daemon.getExecutorsStatus().isEmpty()) {
       Thread.sleep(100);
     }
+    // The IdlePurgePolicy used should close appenders after 5 seconds of inactivity.
+    // Wait for 8 sec to give some margin. 
+    Thread.sleep(8000);
     Pattern pn = Pattern.compile("query\\d++-dag_1540489363818_0021_\\d{4}\\.log");
-    Assertions.assertEquals(0, findOpenFileDescriptors(pn).count());
+    assertEquals(0, findOpenFileDescriptors(pn).count());
+  }
+
+  @Test
+  @Log4jConfig("llap-daemon-routing-log4j2.properties")
+  @ExtendWith(LlapDaemonExtension.class)
+  @ExtendWith(DoNothingTCPServerExtension.class)
+  void testQueryRoutingLogFileNameOnIncompleteQuery(LlapDaemon daemon, DoNothingTCPServer amMockServer)
+      throws IOException, InterruptedException {
+    final int amPort = amMockServer.port();
+    Credentials credentials = validSessionCredentials();
+    String appId = "application_2500489363818_0021";
+    String queryId = "query0";
+    int dagId = 2000;
+    daemon.registerDag(LlapDaemonTestUtils.buildRegisterDagRequest(appId, dagId, credentials));
+    daemon.submitWork(LlapDaemonTestUtils.buildSubmitProtoRequest(appId, dagId, queryId, amPort, credentials));
+    // Busy wait till all daemon tasks are treated 
+    while (!daemon.getExecutorsStatus().isEmpty()) {
+      Thread.sleep(100);
+    }
+    // The IdlePurgePolicy used should close appenders after 5 seconds of inactivity.
+    // Wait for 8 sec to give some margin. 
+    Thread.sleep(8000);
+    assertFileExists("query0-dag_2500489363818_0021_2000.log");
+  }
+
+  @Test
+  @Log4jConfig("llap-daemon-routing-log4j2.properties")
+  @ExtendWith(LlapDaemonExtension.class)
+  @ExtendWith(DoNothingTCPServerExtension.class)
+  void testQueryRoutingLogFileNameOnCompleteQuery(LlapDaemon daemon, DoNothingTCPServer amMockServer)
+      throws IOException, InterruptedException {
+    final int amPort = amMockServer.port();
+    Credentials credentials = validSessionCredentials();
+    String appId = "application_3500489363818_0021";
+    String queryId = "query0";
+    int dagId = 3000;
+    daemon.registerDag(LlapDaemonTestUtils.buildRegisterDagRequest(appId, dagId, credentials));
+    daemon.submitWork(LlapDaemonTestUtils.buildSubmitProtoRequest(appId, dagId, queryId, amPort, credentials));
+    daemon.queryComplete(LlapDaemonTestUtils.buildQueryCompleteRequest(appId, dagId));
+    // Busy wait till all daemon tasks are treated 
+    while (!daemon.getExecutorsStatus().isEmpty()) {
+      Thread.sleep(100);
+    }
+    // The IdlePurgePolicy used should close appenders after 5 seconds of inactivity.
+    // Wait for 8 sec to give some margin. 
+    Thread.sleep(8000);
+    // A complete query should always have a corresponding log file with ".done" suffix
+    assertFileExists("query0-dag_3500489363818_0021_3000.log.done");
   }
 
   private static Credentials validSessionCredentials() {
@@ -88,6 +141,11 @@ public class TestLlapDaemonLogging {
       }
       return searchPattern.matcher(resolved.toString()).find();
     });
+  }
+
+  private static void assertFileExists(String fileName) throws IOException {
+    boolean found = Files.walk(Paths.get(System.getProperty("java.io.tmpdir"))).anyMatch(p -> p.endsWith(fileName));
+    assertTrue(found, "File " + fileName + " was not found under " + System.getProperty("java.io.tmpdir"));
   }
 
 }
