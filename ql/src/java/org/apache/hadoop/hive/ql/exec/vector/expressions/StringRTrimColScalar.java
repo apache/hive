@@ -20,22 +20,19 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-public class StringTrim extends StringUnaryUDFDirect {
+public class StringRTrimColScalar extends StringTrimColScalarBase {
   private static final long serialVersionUID = 1L;
 
-  private static final byte[] EMPTY_BYTES = new byte[0];
-
-  public StringTrim(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+  public StringRTrimColScalar(int inputColumn, byte[] trimChars, int outputColumnNum) {
+    super(inputColumn, trimChars, outputColumnNum);
   }
 
-  public StringTrim() {
+  public StringRTrimColScalar() {
     super();
   }
 
   /**
-   * TRIM element i of the vector, eliminating blanks from the left
-   * and right sides of the string, and place the result in outV.
+   * RTRIM element i of the vector, and place the result in outV.
    * Operate on the data in place, and set the output by reference
    * to improve performance. Ignore null handling. That will be handled separately.
    */
@@ -44,26 +41,18 @@ public class StringTrim extends StringUnaryUDFDirect {
 
     byte[] bytes = vector[batchIndex];
     final int startIndex = start[batchIndex];
-    final int end = startIndex + length[batchIndex];
-    int leftIndex = startIndex;
-    while(leftIndex < end && bytes[leftIndex] == 0x20) {
-      leftIndex++;
+
+    // Skip trailing blank characters.
+    int index = startIndex + length[batchIndex] - 1;
+    while(index >= startIndex && shouldTrim(bytes[index])) {
+      index--;
     }
-    if (leftIndex == end) {
+
+    final int resultLength = index - startIndex + 1;
+    if (resultLength == 0) {
       outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
       return;
     }
-
-    // Have at least 1 non-blank; Skip trailing blank characters.
-    int rightIndex = end - 1;
-    final int rightLimit = leftIndex + 1;
-    while(rightIndex >= rightLimit && bytes[rightIndex] == 0x20) {
-      rightIndex--;
-    }
-    final int resultLength = rightIndex - leftIndex + 1;
-    if (resultLength <= 0) {
-      throw new RuntimeException("Not expected");
-    }
-    outV.setVal(batchIndex, bytes, leftIndex, resultLength);
+    outV.setVal(batchIndex, bytes, startIndex, resultLength);
   }
 }
