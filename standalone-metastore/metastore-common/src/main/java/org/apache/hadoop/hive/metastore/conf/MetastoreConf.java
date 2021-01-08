@@ -402,7 +402,8 @@ public class MetastoreConf {
         "hive.compactor.history.retention.did.not.initiate", 2,
         new RangeValidator(0, 100), "Determines how many compaction records in state " +
         "'did not initiate' will be retained in compaction history for a given table/partition.",
-        "metastore.compactor.history.retention.attempted"),
+        // deprecated keys:
+        "metastore.compactor.history.retention.attempted", "hive.compactor.history.retention.attempted"),
     COMPACTOR_HISTORY_RETENTION_FAILED("metastore.compactor.history.retention.failed",
         "hive.compactor.history.retention.failed", 3,
         new RangeValidator(0, 100), "Determines how many failed compaction records will be " +
@@ -1417,8 +1418,8 @@ public class MetastoreConf {
     LONG_TEST_ENTRY("test.long", "hive.test.long", 42, "comment"),
     DOUBLE_TEST_ENTRY("test.double", "hive.test.double", Math.PI, "comment"),
     TIME_TEST_ENTRY("test.time", "hive.test.time", 1, TimeUnit.SECONDS, "comment"),
-    DEPRECATED_TEST_ENTRY("test.deprecated", "hive.test.deprecated", 1, new RangeValidator(0, 3),
-        "comment", "this.is.the.deprecated.name"),
+    DEPRECATED_TEST_ENTRY("test.deprecated", "hive.test.deprecated", 0, new RangeValidator(0, 3), "comment",
+        "this.is.the.metastore.deprecated.name", "this.is.the.hive.deprecated.name"),
     TIME_VALIDATOR_ENTRY_INCLUSIVE("test.time.validator.inclusive", "hive.test.time.validator.inclusive", 1,
         TimeUnit.SECONDS,
         new TimeValidator(TimeUnit.MILLISECONDS, 500L, true, 1500L, true), "comment"),
@@ -1435,6 +1436,7 @@ public class MetastoreConf {
     private final boolean caseSensitive;
     private final String description;
     private String deprecatedName = null;
+    private String hiveDeprecatedName = null;
 
     ConfVars(String varname, String hiveName, String defaultVal, String description) {
       this.varname = varname;
@@ -1485,7 +1487,7 @@ public class MetastoreConf {
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, Validator validator,
-        String description, String deprecatedName) {
+        String description, String deprecatedName, String hiveDeprecatedName) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
@@ -1493,6 +1495,7 @@ public class MetastoreConf {
       caseSensitive = false;
       this.description = description;
       this.deprecatedName = deprecatedName;
+      this.hiveDeprecatedName = hiveDeprecatedName;
     }
 
     ConfVars(String varname, String hiveName, boolean defaultVal, String description) {
@@ -1701,14 +1704,18 @@ public class MetastoreConf {
 
     /*
     Add deprecated config names to configuration.
-    The parameters for Configuration.addDeprecation are (oldKey, newKey) and it is assumed that the config is set via 
+    The parameters for Configuration.addDeprecation are (oldKey, newKey) and it is assumed that the config is set via
     newKey and the value is retrieved via oldKey.
-    However in this case we assume the value is set with the deprecated key (oldKey) in some config file and we 
+    However in this case we assume the value is set with the deprecated key (oldKey) in some config file and we
     retrieve it in the code via the new key. So the parameter order we use here is: (newKey, deprecatedKey).
+    We do this with the HiveConf configs as well.
      */
     for (ConfVars var : ConfVars.values()) {
       if (var.deprecatedName != null) {
         Configuration.addDeprecation(var.getVarname(), var.deprecatedName);
+      }
+      if (var.hiveDeprecatedName != null) {
+        Configuration.addDeprecation(var.getHiveName(), var.hiveDeprecatedName);
       }
     }
 
