@@ -1552,7 +1552,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringLTrim(col 1:string) -> 9:string, StringLTrim(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringLTrim(col 1:string) -> 11:string, StringLTrim(col 3:varchar(20)) -> 12:string) -> 13:boolean
+                          selectExpressions: StringLTrimCol(col 1:string) -> 9:string, StringLTrimCol(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringLTrimCol(col 1:string) -> 11:string, StringLTrimCol(col 3:varchar(20)) -> 12:string) -> 13:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2182,7 +2182,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringRTrim(col 1:string) -> 9:string, StringRTrim(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringRTrim(col 1:string) -> 11:string, StringRTrim(col 3:varchar(20)) -> 12:string) -> 13:boolean
+                          selectExpressions: StringRTrimCol(col 1:string) -> 9:string, StringRTrimCol(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringRTrimCol(col 1:string) -> 11:string, StringRTrimCol(col 3:varchar(20)) -> 12:string) -> 13:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2695,7 +2695,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringTrim(col 1:string) -> 9:string, StringTrim(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringTrim(col 1:string) -> 11:string, StringTrim(col 3:varchar(20)) -> 12:string) -> 13:boolean
+                          selectExpressions: StringTrimCol(col 1:string) -> 9:string, StringTrimCol(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringTrimCol(col 1:string) -> 11:string, StringTrimCol(col 3:varchar(20)) -> 12:string) -> 13:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
