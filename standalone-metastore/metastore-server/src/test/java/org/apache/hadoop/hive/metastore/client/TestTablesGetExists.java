@@ -474,7 +474,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   }
 
   @Test
-  public void testGetTableObjectsWithProjectionOfMultipleField() throws Exception {
+  public void testGetTableObjectsWithProjectionOfMultipleField_1() throws Exception {
     List<String> tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
@@ -491,6 +491,32 @@ public class TestTablesGetExists extends MetaStoreClientTest {
       Assert.assertTrue(table.isSetTableName());
       Assert.assertTrue(table.isSetCreateTime());
       Assert.assertFalse(table.isSetSd());
+      Assert.assertFalse(table.isSetOwner());
+    }
+  }
+
+  @Test
+  public void testGetTableObjectsWithProjectionOfMultipleField_2() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetProjectionsSpec projectSpec = (new GetTableProjectionsSpecBuilder()).includeOwner().includeOwnerType().
+            includeSdLocation().build();
+
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertFalse(table.isSetDbName());
+      Assert.assertFalse(table.isSetTableName());
+      Assert.assertTrue(table.isSetCreateTime());
+      Assert.assertTrue(table.isSetSd());
+      Assert.assertTrue(table.isSetOwnerType());
+      Assert.assertTrue(table.isSetOwner());
+      StorageDescriptor sd = table.getSd();
+      Assert.assertTrue(sd.isSetLocation());
     }
   }
 

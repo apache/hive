@@ -75,17 +75,17 @@ public class GetTableProjectionsSpecBuilder {
     }
 
     public GetTableProjectionsSpecBuilder includeSdCdColsName() {
-        initColumnListAndAddCol("sd.cd.cols.name");
+        initColumnListAndAddCol("sd.cols.name");
         return this;
     }
 
     public GetTableProjectionsSpecBuilder includeSdCdColsType() {
-        initColumnListAndAddCol("sd.cd.cols.type");
+        initColumnListAndAddCol("sd.cols.type");
         return this;
     }
 
     public GetTableProjectionsSpecBuilder includeSdCdColsComment() {
-        initColumnListAndAddCol("sd.cd.cols.comment");
+        initColumnListAndAddCol("sd.cols.comment");
         return this;
     }
 

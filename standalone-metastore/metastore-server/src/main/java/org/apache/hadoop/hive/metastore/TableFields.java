@@ -1,4 +1,4 @@
-/*
+ /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -60,9 +60,9 @@ public class TableFields {
 
     private static final ImmutableSet<String> allMultiValuedFields = new ImmutableSet.Builder<String>()
             .add("values")
-            .add("sd.cd.cols.name")
-            .add("sd.cd.cols.type")
-            .add("sd.cd.cols.comment")
+            .add("sd.cols.name")
+            .add("sd.cols.type")
+            .add("sd.cols.comment")
             .add("sd.serdeInfo.parameters")
             .add("sd.bucketCols")
             .add("sd.sortCols.col")
