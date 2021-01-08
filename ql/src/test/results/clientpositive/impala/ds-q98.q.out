@@ -75,7 +75,7 @@ POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_store_sales
 CBO PLAN:
 ImpalaSortRel(sort0=[$2], sort1=[$3], sort2=[$0], sort3=[$1], sort4=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC])
-  ImpalaProjectRel(i_item_id=[$0], i_item_desc=[$1], i_category=[$4], i_class=[$3], i_current_price=[$2], itemrevenue=[$5], revenueratio=[/(*($5, 100:DECIMAL(3, 0)), sum($5) OVER (PARTITION BY $3 ORDER BY $3 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING))])
+  ImpalaProjectRel(i_item_id=[$0], i_item_desc=[$1], i_category=[$4], i_class=[$3], i_current_price=[$2], itemrevenue=[$5], revenueratio=[/(*($5, 100:DECIMAL(3, 0)), sum($5) OVER (PARTITION BY $3 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING))])
     ImpalaAggregateRel(group=[{5, 6, 7, 8, 9}], agg#0=[sum($1)])
       ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
         ImpalaJoinRel(condition=[=($2, $3)], joinType=[inner])
@@ -199,7 +199,6 @@ Per-Host Resources: mem-estimate=28.07MB mem-reservation=28.00MB thread-reservat
   08:ANALYTIC
   |  functions: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  partition by: default.impala_tpcds_item.i_class
-  |  order by: default.impala_tpcds_item.i_class ASC NULLS FIRST
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8,7 row-size=84B cardinality=0

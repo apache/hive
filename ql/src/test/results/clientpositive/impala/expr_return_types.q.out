@@ -420,7 +420,6 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=10.00MB thread-reservat
   02:ANALYTIC
   |  functions: _impala_builtins.lag(tt_int, 1)
   |  partition by: default.type_test.tt_date
-  |  order by: tt_date ASC NULLS FIRST
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3,2 row-size=12B cardinality=0

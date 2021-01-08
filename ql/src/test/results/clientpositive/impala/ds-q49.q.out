@@ -284,7 +284,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$3], sort2=[$4], dir0=[ASC], dir1=[ASC], dir2=[
       ImpalaAggregateRel(group=[{0, 1, 2, 3, 4}])
         ImpalaUnionRel(all=[true])
           ImpalaProjectPassthroughRel(channel=[_UTF-16LE'web':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], item=[$0], return_ratio=[$1], return_rank=[$2], currency_rank=[$3])
-            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[OR(<=($2, 10), <=($3, 10))])
+            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[OR(<=($2, 10), <=($3, 10))])
               ImpalaProjectRel(ws_item_sk=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $func_0=[/(CAST($1):DECIMAL(15, 4), CAST($2):DECIMAL(15, 4))], $func_1=[/(CAST($3):DECIMAL(15, 4), CAST($4):DECIMAL(15, 4))])
                 ImpalaAggregateRel(group=[{1}], agg#0=[sum($8)], agg#1=[sum($3)], agg#2=[sum($9)], agg#3=[sum($4)])
                   ImpalaJoinRel(condition=[AND(=($2, $7), =($1, $6))], joinType=[inner])
@@ -296,7 +296,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$3], sort2=[$4], dir0=[ASC], dir1=[ASC], dir2=[
                     ImpalaProjectPassthroughRel(wr_item_sk=[$2], wr_order_number=[$13], CAST=[CAST(COALESCE($14, 0)):BIGINT], COALESCE=[COALESCE($15, 0:DECIMAL(3, 0))])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_returns]], condition=[AND(>($15, 10000), IS NOT NULL($13), IS NOT NULL($2))])
           ImpalaProjectPassthroughRel(channel=[_UTF-16LE'catalog':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], item=[$0], return_ratio=[$1], return_rank=[$2], currency_rank=[$3])
-            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[OR(<=($2, 10), <=($3, 10))])
+            ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[OR(<=($2, 10), <=($3, 10))])
               ImpalaProjectRel(cs_item_sk=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $func_0=[/(CAST($1):DECIMAL(15, 4), CAST($2):DECIMAL(15, 4))], $func_1=[/(CAST($3):DECIMAL(15, 4), CAST($4):DECIMAL(15, 4))])
                 ImpalaAggregateRel(group=[{1}], agg#0=[sum($8)], agg#1=[sum($3)], agg#2=[sum($9)], agg#3=[sum($4)])
                   ImpalaJoinRel(condition=[AND(=($2, $7), =($1, $6))], joinType=[inner])
@@ -308,7 +308,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$3], sort2=[$4], dir0=[ASC], dir1=[ASC], dir2=[
                     ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], CAST=[CAST(COALESCE($17, 0)):BIGINT], COALESCE=[COALESCE($18, 0:DECIMAL(3, 0))])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(>($18, 10000), IS NOT NULL($16), IS NOT NULL($2))])
       ImpalaProjectPassthroughRel(channel=[_UTF-16LE'store':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], item=[$0], return_ratio=[$1], return_rank=[$2], currency_rank=[$3])
-        ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[OR(<=($2, 10), <=($3, 10))])
+        ImpalaProjectRel(item=[$0], return_ratio=[$5], rank_window_0=[rank() OVER (ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], rank_window_1=[rank() OVER (ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[OR(<=($2, 10), <=($3, 10))])
           ImpalaProjectRel(ss_item_sk=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $func_0=[/(CAST($1):DECIMAL(15, 4), CAST($2):DECIMAL(15, 4))], $func_1=[/(CAST($3):DECIMAL(15, 4), CAST($4):DECIMAL(15, 4))])
             ImpalaAggregateRel(group=[{0}], agg#0=[sum($8)], agg#1=[sum($3)], agg#2=[sum($9)], agg#3=[sum($4)])
               ImpalaJoinRel(condition=[AND(=($1, $7), =($0, $6))], joinType=[inner])
@@ -644,7 +644,6 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  |
   |  40:ANALYTIC
   |  |  functions: _impala_builtins.rank()
-  |  |  partition by: 0
   |  |  order by: divide(casttodecimal(_impala_builtins.sum(coalesce(sr.sr_return_amt, 0))), casttodecimal(_impala_builtins.sum(coalesce(sts.ss_net_paid, 0)))) ASC
   |  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -652,14 +651,13 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  |  in pipelines: 39(GETNEXT)
   |  |
   |  39:SORT
-  |  |  order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(coalesce(sr.sr_return_amt, 0))), casttodecimal(_impala_builtins.sum(coalesce(sts.ss_net_paid, 0)))) ASC NULLS LAST
+  |  |  order by: divide(casttodecimal(_impala_builtins.sum(coalesce(sr.sr_return_amt, 0))), casttodecimal(_impala_builtins.sum(coalesce(sts.ss_net_paid, 0)))) ASC NULLS LAST
   |  |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=56 row-size=96B cardinality=0
   |  |  in pipelines: 39(GETNEXT), 37(OPEN)
   |  |
   |  38:ANALYTIC
   |  |  functions: _impala_builtins.rank()
-  |  |  partition by: 0
   |  |  order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sr.sr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sts.ss_quantity, 0))))) ASC
   |  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -667,7 +665,7 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  |  in pipelines: 37(GETNEXT)
   |  |
   |  58:MERGING-EXCHANGE [UNPARTITIONED]
-  |     order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sr.sr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sts.ss_quantity, 0))))) ASC NULLS LAST
+  |     order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sr.sr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sts.ss_quantity, 0))))) ASC NULLS LAST
   |     mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
   |     tuple-ids=54 row-size=88B cardinality=0
   |     in pipelines: 37(GETNEXT)
@@ -696,7 +694,6 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  |
   |  26:ANALYTIC
   |  |  functions: _impala_builtins.rank()
-  |  |  partition by: 0
   |  |  order by: divide(casttodecimal(_impala_builtins.sum(coalesce(cr.cr_return_amount, 0))), casttodecimal(_impala_builtins.sum(coalesce(cs.cs_net_paid, 0)))) ASC
   |  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -704,14 +701,13 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  |  in pipelines: 25(GETNEXT)
   |  |
   |  25:SORT
-  |  |  order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(coalesce(cr.cr_return_amount, 0))), casttodecimal(_impala_builtins.sum(coalesce(cs.cs_net_paid, 0)))) ASC NULLS LAST
+  |  |  order by: divide(casttodecimal(_impala_builtins.sum(coalesce(cr.cr_return_amount, 0))), casttodecimal(_impala_builtins.sum(coalesce(cs.cs_net_paid, 0)))) ASC NULLS LAST
   |  |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=37 row-size=96B cardinality=0
   |  |  in pipelines: 25(GETNEXT), 23(OPEN)
   |  |
   |  24:ANALYTIC
   |  |  functions: _impala_builtins.rank()
-  |  |  partition by: 0
   |  |  order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cr.cr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cs.cs_quantity, 0))))) ASC
   |  |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -719,7 +715,7 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  |  in pipelines: 23(GETNEXT)
   |  |
   |  53:MERGING-EXCHANGE [UNPARTITIONED]
-  |     order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cr.cr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cs.cs_quantity, 0))))) ASC NULLS LAST
+  |     order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cr.cr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cs.cs_quantity, 0))))) ASC NULLS LAST
   |     mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
   |     tuple-ids=35 row-size=88B cardinality=0
   |     in pipelines: 23(GETNEXT)
@@ -737,7 +733,6 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |
   13:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: 0
   |  order by: divide(casttodecimal(_impala_builtins.sum(coalesce(wr.wr_return_amt, 0))), casttodecimal(_impala_builtins.sum(coalesce(ws.ws_net_paid, 0)))) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -745,14 +740,13 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  in pipelines: 12(GETNEXT)
   |
   12:SORT
-  |  order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(coalesce(wr.wr_return_amt, 0))), casttodecimal(_impala_builtins.sum(coalesce(ws.ws_net_paid, 0)))) ASC NULLS LAST
+  |  order by: divide(casttodecimal(_impala_builtins.sum(coalesce(wr.wr_return_amt, 0))), casttodecimal(_impala_builtins.sum(coalesce(ws.ws_net_paid, 0)))) ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=96B cardinality=0
   |  in pipelines: 12(GETNEXT), 10(OPEN)
   |
   11:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: 0
   |  order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(wr.wr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(ws.ws_quantity, 0))))) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -760,7 +754,7 @@ Per-Host Resources: mem-estimate=270.09MB mem-reservation=82.00MB thread-reserva
   |  in pipelines: 10(GETNEXT)
   |
   48:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(wr.wr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(ws.ws_quantity, 0))))) ASC NULLS LAST
+     order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(wr.wr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(ws.ws_quantity, 0))))) ASC NULLS LAST
      mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=16 row-size=88B cardinality=0
      in pipelines: 10(GETNEXT)
@@ -770,7 +764,7 @@ Per-Host Resources: mem-estimate=134.06MB mem-reservation=40.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=48, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:SORT
-  |  order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(wr.wr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(ws.ws_quantity, 0))))) ASC NULLS LAST
+  |  order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(wr.wr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(ws.ws_quantity, 0))))) ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16 row-size=88B cardinality=0
   |  in pipelines: 10(GETNEXT), 47(OPEN)
@@ -876,7 +870,7 @@ Per-Host Resources: mem-estimate=134.06MB mem-reservation=40.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=53, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   23:SORT
-  |  order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cr.cr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cs.cs_quantity, 0))))) ASC NULLS LAST
+  |  order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cr.cr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(cs.cs_quantity, 0))))) ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=35 row-size=88B cardinality=0
   |  in pipelines: 23(GETNEXT), 52(OPEN)
@@ -982,7 +976,7 @@ Per-Host Resources: mem-estimate=134.06MB mem-reservation=40.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=58, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   37:SORT
-  |  order by: 0 ASC NULLS FIRST, divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sr.sr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sts.ss_quantity, 0))))) ASC NULLS LAST
+  |  order by: divide(casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sr.sr_return_quantity, 0)))), casttodecimal(_impala_builtins.sum(casttobigint(coalesce(sts.ss_quantity, 0))))) ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=54 row-size=88B cardinality=0
   |  in pipelines: 37(GETNEXT), 57(OPEN)

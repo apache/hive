@@ -80,7 +80,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
       ImpalaJoinRel(condition=[=($0, $2)], joinType=[inner])
         ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[IS NOT NULL($0)])
-        ImpalaProjectRel(item_sk=[$0], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(<($1, 11), IS NOT NULL($0))])
+        ImpalaProjectRel(item_sk=[$0], rank_window_0=[rank() OVER (ORDER BY $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(<($1, 11), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaJoinRel(condition=[>($1, $2)], joinType=[inner])
               ImpalaProjectPassthroughRel($f0=[$0], $f1=[CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6)])
@@ -95,7 +95,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
                 ImpalaProjectPassthroughRel($f0=[true], $f1=[$21])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(=($6, 410), IS NULL($4))])
       ImpalaJoinRel(condition=[=($2, $0)], joinType=[inner])
-        ImpalaProjectRel(item_sk=[$0], rank_window_0=[rank() OVER (PARTITION BY 0:TINYINT ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(<($1, 11), IS NOT NULL($0))])
+        ImpalaProjectRel(item_sk=[$0], rank_window_0=[rank() OVER (ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(<($1, 11), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaJoinRel(condition=[>($1, $2)], joinType=[inner])
               ImpalaProjectPassthroughRel($f0=[$0], $f1=[CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6)])
@@ -275,7 +275,6 @@ Per-Host Resources: mem-estimate=4.07MB mem-reservation=4.00MB thread-reservatio
   |
   09:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: 0
   |  order by: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -415,7 +414,6 @@ Per-Host Resources: mem-estimate=6.03MB mem-reservation=5.94MB thread-reservatio
   |
   19:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: 0
   |  order by: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0

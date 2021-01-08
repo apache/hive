@@ -229,13 +229,16 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
       }
     }
     // Fourth parameter is the window frame spec
-    Boundary lBoundary = getWindowBoundary(rexWindow.getLowerBound(),
-        ctx, inputRel);
-    Boundary rBoundary = getWindowBoundary(rexWindow.getUpperBound(),
-        ctx, inputRel);
-    AnalyticWindow window = new AnalyticWindow(
-        rexWindow.isRows() ? AnalyticWindow.Type.ROWS : AnalyticWindow.Type.RANGE,
-        lBoundary, rBoundary);
+    AnalyticWindow window = null;
+    if (!partitionExprs.isEmpty() || !orderByElements.isEmpty()) {
+      Boundary lBoundary = getWindowBoundary(rexWindow.getLowerBound(),
+          ctx, inputRel);
+      Boundary rBoundary = getWindowBoundary(rexWindow.getUpperBound(),
+          ctx, inputRel);
+      window = new AnalyticWindow(
+          rexWindow.isRows() ? AnalyticWindow.Type.ROWS : AnalyticWindow.Type.RANGE,
+          lBoundary, rBoundary);
+    }
 
     return new ImpalaAnalyticExpr(ctx.getRootAnalyzer(), fnCall, partitionExprs, orderByElements, window);
   }

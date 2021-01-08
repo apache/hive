@@ -76,7 +76,7 @@ select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_sales_n1
 CBO PLAN:
-ImpalaProjectPassthroughRel(sum_window_0=[sum($1) OVER (PARTITION BY 0:TINYINT ORDER BY $0 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+ImpalaProjectPassthroughRel(sum_window_0=[sum($1) OVER (ORDER BY $0 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaProjectRel(ss_quantity=[$10], $func_0=[CAST($10):BIGINT])
     ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
 
@@ -92,7 +92,7 @@ select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_sales_n1
 CBO PLAN:
-ImpalaProjectPassthroughRel(sum_window_0=[sum($22) OVER (PARTITION BY 0:TINYINT ORDER BY $22 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+ImpalaProjectPassthroughRel(sum_window_0=[sum($22) OVER (ORDER BY $22 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
 
 HMS CALL get_table_req FOR tab_sales_n1

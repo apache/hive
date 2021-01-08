@@ -71,7 +71,7 @@ POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$2], sort2=[$1], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
-  ImpalaProjectRel((tok_table_or_col i_manager_id)=[$0], (tok_function sum (tok_table_or_col ss_sales_price))=[$2], avg_window_0=[avg($2) OVER (PARTITION BY $0 ORDER BY $0 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], condition=[CASE(>($2, 0), >(/(ABS(-($1, $2)), $2), 0.1:DECIMAL(1, 1)), false)])
+  ImpalaProjectRel((tok_table_or_col i_manager_id)=[$0], (tok_function sum (tok_table_or_col ss_sales_price))=[$2], avg_window_0=[avg($2) OVER (PARTITION BY $0 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], condition=[CASE(>($2, 0), >(/(ABS(-($1, $2)), $2), 0.1:DECIMAL(1, 1)), false)])
     ImpalaAggregateRel(group=[{6, 8}], agg#0=[sum($2)])
       ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
         ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
@@ -201,7 +201,6 @@ Per-Host Resources: mem-estimate=10.03MB mem-reservation=10.00MB thread-reservat
   10:ANALYTIC
   |  functions: _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))
   |  partition by: default.impala_tpcds_item.i_manager_id
-  |  order by: default.impala_tpcds_item.i_manager_id ASC NULLS FIRST
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12,11 row-size=40B cardinality=0

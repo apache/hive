@@ -108,17 +108,28 @@ public class WindowingSpec {
     return getQueryPartitioningSpec().getOrderSpec();
   }
 
+  public void validate(HiveConf conf) throws SemanticException {
+    validateAndMakeEffective(conf, false);
+  }
+
+  public void validateAndMakeEffective(HiveConf conf) throws SemanticException {
+    validateAndMakeEffective(conf, true);
+  }
+
   /*
-   * Apply the rules in the Spec. to fill in any missing pieces of every Window Specification,
-   * also validate that the effective Specification is valid. The rules applied are:
+   * The rules applied are:
    * - For Wdw Specs that refer to Window Defns, inherit missing components.
-   * - A Window Spec with no Parition Spec, is Partitioned on a Constant(number 0)
+   * - A Window Spec with no Partition Spec, is Partitioned on a Constant(number 0)
    * - For missing Wdw Frames or for Frames with only a Start Boundary, completely specify them
    *   by the rules in {@link effectiveWindowFrame}
    * - Validate the effective Window Frames with the rules in {@link validateWindowFrame}
    * - If there is no Order, then add the Partition expressions as the Order.
+   *
+   * If makeEffective is true, fill in missing information in partition spec,
+   * while also validating the effective spec. Otherwise, if makeEffective is
+   * false, only execute validation.
    */
-  public void validateAndMakeEffective(HiveConf conf) throws SemanticException {
+  private void validateAndMakeEffective(HiveConf conf, boolean makeEffective) throws SemanticException {
     for(WindowExpressionSpec expr : getWindowExpressions()) {
       WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
       WindowSpec wdwSpec = wFn.getWindowSpec();
@@ -134,8 +145,10 @@ public class WindowingSpec {
         wFn.setWindowSpec(wdwSpec);
       }
 
-      // 2. A Window Spec with no Parition Spec, is Partitioned on a Constant(number 0)
-      applyConstantPartition(wdwSpec);
+      // 2. A Window Spec with no Partition Spec, is Partitioned on a Constant(number 0)
+      if (makeEffective) {
+        applyConstantPartition(wdwSpec);
+      }
 
       // 3. For missing Wdw Frames or for Frames with only a Start Boundary, completely
       //    specify them by the rules in {@link effectiveWindowFrame}
@@ -144,8 +157,13 @@ public class WindowingSpec {
       // 4. Validate the effective Window Frames with the rules in {@link validateWindowFrame}
       validateWindowFrame(wdwSpec);
 
-      // 5. Add the Partition expressions as the Order if there is no Order and validate Order spec.
-      setAndValidateOrderSpec(wFn);
+      // 5. Add the Partition expressions as the Order if there is no Order
+      if (makeEffective) {
+        wdwSpec.ensureOrderSpec(wFn);
+      }
+
+      // 6. Validate Order spec
+      validateOrderSpec(wFn);
     }
   }
 
@@ -274,22 +292,23 @@ public class WindowingSpec {
   }
 
   /**
-   * Add default order spec if there is no order and validate order spec for valued based
-   * windowing since only one sort key is allowed.
+   * Validate order spec for valued based windowing since only one sort key is allowed.
    * @param wFn Window function spec
    * @throws SemanticException
    */
-  private void setAndValidateOrderSpec(WindowFunctionSpec wFn) throws SemanticException {
+  private void validateOrderSpec(WindowFunctionSpec wFn) throws SemanticException {
     WindowSpec wdwSpec = wFn.getWindowSpec();
-    wdwSpec.ensureOrderSpec(wFn);
     WindowFrameSpec wFrame = wdwSpec.getWindowFrame();
+    PartitionSpec partition = wdwSpec.getPartition();
     OrderSpec order = wdwSpec.getOrder();
 
     BoundarySpec start = wFrame.getStart();
     BoundarySpec end = wFrame.getEnd();
 
     if (wFrame.getWindowType() == WindowType.RANGE) {
-      if (order == null || order.getExpressions().size() == 0) {
+      boolean partitionSpecEmpty = partition == null || partition.getExpressions().size() == 0;
+      boolean orderSpecEmpty = order == null || order.getExpressions().size() == 0;
+      if (partitionSpecEmpty && orderSpecEmpty) {
         throw new SemanticException("Range based Window Frame needs to specify ORDER BY clause");
       }
 
@@ -306,7 +325,9 @@ public class WindowingSpec {
               end.getDirection() == Direction.FOLLOWING &&
               end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
       boolean multiOrderAllowed = currentRange || defaultPreceding || defaultFollowing || defaultPrecedingFollowing;
-      if ( order.getExpressions().size() != 1 && !multiOrderAllowed) {
+      if (!multiOrderAllowed &&
+          (orderSpecEmpty && partition.getExpressions().size() != 1
+              || !orderSpecEmpty && order.getExpressions().size() != 1)) {
         throw new SemanticException("Range value based Window Frame can have only 1 Sort Key");
       }
     }

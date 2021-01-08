@@ -4664,7 +4664,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
       // 1. Get valid Window Function Spec
-      wSpec.validateAndMakeEffective(conf);
+      wSpec.validate(conf);
       List<WindowExpressionSpec> windowExpressions = wSpec.getWindowExpressions();
       if (windowExpressions == null || windowExpressions.isEmpty()) {
         return null;
