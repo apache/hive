@@ -1116,7 +1116,7 @@ public class HiveStringUtils {
         ret.append("\n");
       }
     }
-    return ret.toString();
+    return ret.toString().trim();
   }
 
   /**
@@ -1158,7 +1158,7 @@ public class HiveStringUtils {
       index++;
     }
 
-    return builder.toString().trim();
+    return builder.toString();
   }
 
   /**
