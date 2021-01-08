@@ -54,6 +54,7 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
     try {
       Msck msck = new Msck(false, false);
       msck.init(Msck.getMsckConf(context.getDb().getConf()));
+      msck.setMsckExpressionProxy();
 
       TableName tableName = HiveTableName.of(desc.getTableName());
 

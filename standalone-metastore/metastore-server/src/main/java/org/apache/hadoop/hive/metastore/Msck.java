@@ -107,6 +107,11 @@ public class Msck {
     return metastoreConf;
   }
 
+  public void setMsckExpressionProxy() throws TException {
+      msc.setMetaConf(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
+              MsckPartitionExpressionProxy.class.getCanonicalName());
+  }
+
   /**
    * MetastoreCheck, see if the data in the metastore matches what is on the
    * dfs. Current version checks for tables and partitions that are either
