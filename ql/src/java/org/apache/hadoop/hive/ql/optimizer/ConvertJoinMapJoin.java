@@ -1629,6 +1629,9 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       // Max is disabled, we can safely return false
       return false;
     }
+    if(position < 0){
+      return false;
+    }
     // Evaluate
     ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
     Statistics inputStats = rsOp.getStatistics();
