@@ -601,7 +601,7 @@ public class HiveConf extends Configuration {
     METASTOREURIS("hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
 
-    METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
+    METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", false,
         "Whether to check client capabilities for potentially breaking API usage."),
     METASTORE_FASTPATH("hive.metastore.fastpath", false,
         "Used to avoid all of the proxies and object copies in the metastore.  Note, if this is " +
