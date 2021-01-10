@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.table.storage.skewed;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
