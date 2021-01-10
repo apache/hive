@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.constraint.drop;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -83,5 +82,4 @@ public class AlterTableDropConstraintDesc implements DDLDescWithWriteId, Seriali
   public boolean mayNeedWriteId() {
     return true;
   }
-
 }
