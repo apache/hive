@@ -37,10 +37,6 @@ import java.util.Map;
 public class EngineLoader {
   private static final Logger LOG = LoggerFactory.getLogger(EngineLoader.class);
 
-  public static boolean VALUE_CHECKED;
-  // Support exists only for a maximum of one plugin
-  public static EngineHelper HELPER_INSTANCE;
-
   public static Map<Engine, EngineHelper> engineHelpers = new HashMap<>();
 
   static {
@@ -50,7 +46,7 @@ public class EngineLoader {
           Class.forName("org.apache.hadoop.hive.impala.ImpalaHelper").newInstance();
       engineHelpers.put(Engine.IMPALA, impalaHelper);
     } catch (Exception e) {
-      throw new RuntimeException("Could not load Impala Helper class.");
+      LOG.info("Could not load Impala Helper class.", e);
     }
     EngineHelper defaultHelper = new NativeEngineHelper();
     engineHelpers.put(Engine.HIVE, defaultHelper);
