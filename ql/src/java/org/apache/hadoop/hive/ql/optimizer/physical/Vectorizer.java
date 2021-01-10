@@ -237,6 +237,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
@@ -1288,7 +1290,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       Class<? extends InputFormat> inputFileFormatClass) {
 
       try {
-        InputFormat inputFormat = FetchOperator.getInputFormatFromCache(inputFileFormatClass, hiveConf);
+        @SuppressWarnings("unchecked")
+        InputFormat inputFormat = FetchOperator.getInputFormatFromCache(
+            (Class<? extends InputFormat<WritableComparable<?>, Writable>>) inputFileFormatClass, hiveConf);
         if (inputFormat instanceof VectorizedInputFormatInterface) {
           return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures();
         }

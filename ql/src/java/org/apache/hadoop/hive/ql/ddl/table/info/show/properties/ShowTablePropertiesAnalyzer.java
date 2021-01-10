@@ -52,6 +52,6 @@ public class ShowTablePropertiesAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowTablePropertiesDesc.SCHEMA));
+    addFetchTask(ShowTablePropertiesDesc.SCHEMA);
   }
 }

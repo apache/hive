@@ -276,7 +276,7 @@ public final class QueryResultsCache {
 
     public FetchWork getFetchWork() {
       // FetchWork's sink is used to hold results, so each query needs a separate copy of FetchWork
-      FetchWork fetch = new FetchWork(fetchWork.getTblDir(), fetchWork.getTblDesc(), fetchWork.getLimit());
+      FetchWork fetch = new FetchWork(fetchWork.getTableDir(), fetchWork.getTableDesc(), fetchWork.getLimit());
       fetch.setCachedResult(true);
       fetch.setFilesToFetch(this.cachedResultPaths);
       return fetch;
@@ -530,7 +530,7 @@ public final class QueryResultsCache {
       assert(fetchWork.getFilesToFetch() != null );
 
       boolean requiresCaching = true;
-      queryResultsPath = fetchWork.getTblDir();
+      queryResultsPath = fetchWork.getTableDir();
       FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
 
       long resultSize = 0;
@@ -567,7 +567,7 @@ public final class QueryResultsCache {
 
         // Create a new FetchWork to reference the new cache location.
         FetchWork fetchWorkForCache =
-            new FetchWork(fetchWork.getTblDir(), fetchWork.getTblDesc(), fetchWork.getLimit());
+            new FetchWork(fetchWork.getTableDir(), fetchWork.getTableDesc(), fetchWork.getLimit());
         fetchWorkForCache.setCachedResult(true);
         fetchWorkForCache.setFilesToFetch(fetchWork.getFilesToFetch());
         cacheEntry.fetchWork = fetchWorkForCache;
@@ -749,7 +749,7 @@ public final class QueryResultsCache {
   }
 
   private void calculateEntrySize(CacheEntry entry, FetchWork fetchWork) throws IOException {
-    Path queryResultsPath = fetchWork.getTblDir();
+    Path queryResultsPath = fetchWork.getTableDir();
     FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
     ContentSummary cs = resultsFs.getContentSummary(queryResultsPath);
     entry.size = cs.getLength();

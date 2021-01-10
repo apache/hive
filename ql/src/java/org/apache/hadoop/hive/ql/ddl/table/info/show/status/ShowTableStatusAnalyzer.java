@@ -78,6 +78,6 @@ public class ShowTableStatusAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowTableStatusDesc.SCHEMA));
+    addFetchTask(ShowTableStatusDesc.SCHEMA);
   }
 }

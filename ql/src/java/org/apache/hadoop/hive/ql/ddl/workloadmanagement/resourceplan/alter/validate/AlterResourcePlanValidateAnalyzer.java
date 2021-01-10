@@ -53,7 +53,7 @@ public class AlterResourcePlanValidateAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(AlterResourcePlanValidateDesc.SCHEMA));
+    addFetchTask(AlterResourcePlanValidateDesc.SCHEMA);
 
     DDLUtils.addServiceOutput(conf, getOutputs());
   }

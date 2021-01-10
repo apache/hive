@@ -108,7 +108,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
 
     task.setFetchSource(true);
     String schema = showColStats ? DescTableDesc.COLUMN_STATISTICS_SCHEMA : DescTableDesc.SCHEMA;
-    setFetchTask(createFetchTask(schema));
+    addFetchTask(schema);
   }
 
   /**

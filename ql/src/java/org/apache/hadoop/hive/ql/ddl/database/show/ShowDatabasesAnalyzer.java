@@ -52,6 +52,6 @@ public class ShowDatabasesAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowDatabasesDesc.SHOW_DATABASES_SCHEMA));
+    addFetchTask(ShowDatabasesDesc.SHOW_DATABASES_SCHEMA);
   }
 }

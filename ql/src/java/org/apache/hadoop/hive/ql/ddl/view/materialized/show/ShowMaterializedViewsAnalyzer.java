@@ -73,6 +73,6 @@ public class ShowMaterializedViewsAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowMaterializedViewsDesc.SCHEMA));
+    addFetchTask(ShowMaterializedViewsDesc.SCHEMA);
   }
 }

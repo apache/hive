@@ -421,7 +421,7 @@ public class SimpleFetchOptimizer extends Transform {
       if (!table.isPartitioned()) {
         inputs.add(new ReadEntity(table, parent, !table.isView() && parent == null));
         FetchWork work = new FetchWork(table.getPath(), tableDesc);
-        PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc());
+        PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTableDesc());
         work.setSplitSample(splitSample);
         return work;
       }
@@ -437,8 +437,8 @@ public class SimpleFetchOptimizer extends Transform {
       inputs.add(new ReadEntity(sourceTable, parent, parent == null));
       TableDesc table = Utilities.getTableDesc(sourceTable);
       FetchWork work = new FetchWork(listP, partP, table);
-      if (!work.getPartDesc().isEmpty()) {
-        PartitionDesc part0 = work.getPartDesc().get(0);
+      if (!work.getPartitionDescs().isEmpty()) {
+        PartitionDesc part0 = work.getPartitionDescs().get(0);
         PlanUtils.configureInputJobPropertiesForStorageHandler(part0.getTableDesc());
         work.setSplitSample(splitSample);
       }

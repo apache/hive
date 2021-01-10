@@ -218,7 +218,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           inputs.add(new ReadEntity(db.getDatabase(dbName)));
         }
       }
-      setFetchTask(createFetchTask(dumpSchema));
+      addFetchTask(dumpSchema);
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       LOG.warn("Error during analyzeReplDump", e);
@@ -432,7 +432,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbNameOrPattern = replScope.getDbName();
     String replLastId = getReplStatus(dbNameOrPattern);
     prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
-    setFetchTask(createFetchTask("last_repl_id#string"));
+    addFetchTask("last_repl_id#string");
     LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {} using configuration {}",
         replLastId, ctx.getResFile(), conf);
   }

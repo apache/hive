@@ -53,7 +53,7 @@ public class ShowResourcePlanAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(desc.getSchema()));
+    addFetchTask(desc.getSchema());
 
     DDLUtils.addServiceOutput(conf, getOutputs());
   }

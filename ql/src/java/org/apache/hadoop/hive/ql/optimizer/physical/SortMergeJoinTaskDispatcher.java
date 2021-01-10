@@ -116,10 +116,10 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
       currWork.getAliasToWork().put(alias, op);
 
       PartitionDesc partitionInfo = currWork.getAliasToPartnInfo().get(alias);
-      if (fetchWork.getTblDir() != null) {
-        currWork.mergeAliasedInput(alias, fetchWork.getTblDir(), partitionInfo);
+      if (fetchWork.getTableDir() != null) {
+        currWork.mergeAliasedInput(alias, fetchWork.getTableDir(), partitionInfo);
       } else {
-        for (Path pathDir : fetchWork.getPartDir()) {
+        for (Path pathDir : fetchWork.getPartitionDirs()) {
           currWork.mergeAliasedInput(alias, pathDir, partitionInfo);
         }
       }

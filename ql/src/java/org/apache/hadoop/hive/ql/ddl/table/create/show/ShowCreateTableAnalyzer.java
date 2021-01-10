@@ -58,6 +58,6 @@ public class ShowCreateTableAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowCreateTableDesc.SCHEMA));
+    addFetchTask(ShowCreateTableDesc.SCHEMA);
   }
 }

@@ -52,7 +52,7 @@ public class ShowRoleGrantAnalyzer extends AbstractPrivilegeAnalyzer {
       rootTasks.add(task);
 
       task.setFetchSource(true);
-      setFetchTask(createFetchTask(ShowRoleGrantDesc.SCHEMA));
+      addFetchTask(ShowRoleGrantDesc.SCHEMA);
     }
   }
 }

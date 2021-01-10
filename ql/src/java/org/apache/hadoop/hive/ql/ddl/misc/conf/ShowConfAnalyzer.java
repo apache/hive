@@ -47,6 +47,6 @@ public class ShowConfAnalyzer extends AbstractFunctionAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowConfDesc.SCHEMA));
+    addFetchTask(ShowConfDesc.SCHEMA);
   }
 }

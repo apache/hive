@@ -381,9 +381,9 @@ public class Compiler {
       TableDesc td = ft.getTblDesc();
       // partitioned tables don't have tableDesc set on the FetchTask. Instead they have a list of PartitionDesc
       // objects, each with a table desc. Let's try to fetch the desc for the first partition and use it's deserializer.
-      if (td == null && ft.getWork() != null && ft.getWork().getPartDesc() != null) {
-        if (ft.getWork().getPartDesc().size() > 0) {
-          td = ft.getWork().getPartDesc().get(0).getTableDesc();
+      if (td == null && ft.getWork() != null && ft.getWork().getPartitionDescs() != null) {
+        if (ft.getWork().getPartitionDescs().size() > 0) {
+          td = ft.getWork().getPartitionDescs().get(0).getTableDesc();
         }
       }
 

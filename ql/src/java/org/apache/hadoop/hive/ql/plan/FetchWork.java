@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -40,29 +40,24 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * FetchWork.
- *
  */
 @Explain(displayName = "Fetch Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
     vectorization = Vectorization.SUMMARY_PATH)
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private Path tblDir;
-  private TableDesc tblDesc;
-
-  private ArrayList<Path> partDir;
-  private ArrayList<PartitionDesc> partDesc;
-
-  private Operator<?> source;
-  private ListSinkOperator sink;
+  private final TableDesc tableDesc;
+  private final Path tableDir;
+  private final List<Path> partitionDirs;
+  private final List<PartitionDesc> partitionDescs;
+  private final List<List<Object>> rowsComputedFromStats;
+  private final StructObjectInspector statRowOI;
 
   private int limit;
   private int leastNumRows;
-
+  private Operator<?> source;
+  private ListSinkOperator sink;
   private SplitSample splitSample;
-
-  private transient List<List<Object>> rowsComputedFromStats;
-  private transient StructObjectInspector statRowOI;
 
   /**
    * Serialization Null Format for the serde used to fetch data.
@@ -72,225 +67,95 @@ public class FetchWork implements Serializable {
   private boolean isHiveServerQuery;
 
   /**
-   * Whether is a HiveServer query, and the destination table is
-   * indeed written using ThriftJDBCBinarySerDe
+   * Whether is a HiveServer query, and the destination table is indeed written using ThriftJDBCBinarySerDe.
    */
   private boolean isUsingThriftJDBCBinarySerDe = false;
 
   /**
-   * Whether this FetchWork is returning a cached query result
+   * Whether this FetchWork is returning a cached query result.
    */
   private boolean isCachedResult = false;
 
   private Set<FileStatus> filesToFetch = null;
 
-  public boolean isHiveServerQuery() {
-	return isHiveServerQuery;
+  public FetchWork(Path tableDir, TableDesc tableDesc) {
+    this(tableDir, tableDesc, -1);
   }
 
-  public void setHiveServerQuery(boolean isHiveServerQuery) {
-	this.isHiveServerQuery = isHiveServerQuery;
+  public FetchWork(Path tableDir, TableDesc tableDesc, int limit) {
+    this(tableDesc, tableDir, null, null, null, null, limit);
   }
 
-  public boolean isUsingThriftJDBCBinarySerDe() {
-	  return isUsingThriftJDBCBinarySerDe;
-  }
-
-  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	  this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
-  }
-
-  public FetchWork() {
+  public FetchWork(List<Path> partitionDirs, List<PartitionDesc> partitionDescs, TableDesc tableDesc) {
+    this(tableDesc, null, partitionDirs, partitionDescs, null, null, -1);
   }
 
   public FetchWork(List<List<Object>> rowsComputedFromStats, StructObjectInspector statRowOI) {
-    this.rowsComputedFromStats = rowsComputedFromStats;
-    this.statRowOI = statRowOI;
+    this(null, null, null, null, rowsComputedFromStats, statRowOI, -1);
   }
 
-  public StructObjectInspector getStatRowOI() {
-    return statRowOI;
+  private FetchWork(TableDesc tblDesc, Path tblDir, List<Path> partDir, List<PartitionDesc> partDesc,
+      List<List<Object>> rowsComputedFromStats, StructObjectInspector statRowOI, int limit) {
+    this.tableDesc = tblDesc;
+    this.tableDir = tblDir;
+    this.partitionDirs = partDir == null ? null : new ArrayList<Path>(partDir);
+    this.partitionDescs = partDesc == null ? null : new ArrayList<PartitionDesc>(partDesc);
+    this.rowsComputedFromStats = rowsComputedFromStats;
+    this.statRowOI = statRowOI;
+    this.limit = limit;
+  }
+
+  public TableDesc getTableDesc() {
+    return tableDesc;
+  }
+
+  public Path getTableDir() {
+    return tableDir;
+  }
+
+  public boolean isPartitioned() {
+    return tableDir == null;
+  }
+
+  public boolean isNotPartitioned() {
+    return tableDir != null;
+  }
+
+  public List<Path> getPartitionDirs() {
+    return partitionDirs;
+  }
+
+  public List<PartitionDesc> getPartitionDescs() {
+    return partitionDescs;
   }
 
   public List<List<Object>> getRowsComputedUsingStats() {
     return rowsComputedFromStats;
   }
 
-  public FetchWork(Path tblDir, TableDesc tblDesc) {
-    this(tblDir, tblDesc, -1);
+  public StructObjectInspector getStatRowOI() {
+    return statRowOI;
   }
 
-  public FetchWork(Path tblDir, TableDesc tblDesc, int limit) {
-    this.tblDir = tblDir;
-    this.tblDesc = tblDesc;
+  public void setLimit(int limit) {
     this.limit = limit;
   }
 
-  public FetchWork(List<Path> partDir, List<PartitionDesc> partDesc, TableDesc tblDesc) {
-    this(partDir, partDesc, tblDesc, -1);
-  }
-
-  public FetchWork(List<Path> partDir, List<PartitionDesc> partDesc,
-      TableDesc tblDesc, int limit) {
-    this.tblDesc = tblDesc;
-    this.partDir = new ArrayList<Path>(partDir);
-    this.partDesc = new ArrayList<PartitionDesc>(partDesc);
-    this.limit = limit;
-    this.filesToFetch = new HashSet<>();
-  }
-
-  public void initializeForFetch(CompilationOpContext ctx) {
-    if (source == null) {
-      ListSinkDesc desc = new ListSinkDesc(serializationNullFormat);
-      sink = (ListSinkOperator) OperatorFactory.get(ctx, desc);
-      source = sink;
-    }
-  }
-
-  public String getSerializationNullFormat() {
-    return serializationNullFormat;
-  }
-
-  public void setSerializationNullFormat(String format) {
-    serializationNullFormat = format;
-  }
-
-  public boolean isNotPartitioned() {
-    return tblDir != null;
-  }
-
-  public boolean isPartitioned() {
-    return tblDir == null;
-  }
-
-  /**
-   * @return the tblDir
-   */
-  public Path getTblDir() {
-    return tblDir;
-  }
-
-  /**
-   * @param tblDir
-   *          the tblDir to set
-   */
-  public void setTblDir(Path tblDir) {
-    this.tblDir = tblDir;
-  }
-
-  /**
-   * @return the tblDesc
-   */
-  public TableDesc getTblDesc() {
-    return tblDesc;
-  }
-
-  /**
-   * @param tblDesc
-   *          the tblDesc to set
-   */
-  public void setTblDesc(TableDesc tblDesc) {
-    this.tblDesc = tblDesc;
-  }
-
-  /**
-   * @return the partDir
-   */
-  public ArrayList<Path> getPartDir() {
-    return partDir;
-  }
-
-  /**
-   * @param partDir
-   *          the partDir to set
-   */
-  public void setPartDir(ArrayList<Path> partDir) {
-    this.partDir = partDir;
-  }
-
-  /**
-   * @return the partDesc
-   */
-  public ArrayList<PartitionDesc> getPartDesc() {
-    return partDesc;
-  }
-
-  public List<Path> getPathLists() {
-    return isPartitioned() ? partDir == null ?
-        null : new ArrayList<Path>(partDir) : Arrays.asList(tblDir);
-  }
-
-  /**
-   * Get Partition descriptors in sorted (ascending) order of partition directory
-   *
-   * @return the partDesc array list
-   */
-  @Explain(displayName = "Partition Description", explainLevels = { Level.EXTENDED })
-  public ArrayList<PartitionDesc> getPartDescOrderedByPartDir() {
-    ArrayList<PartitionDesc> partDescOrdered = partDesc;
-
-    if (partDir != null && partDir.size() > 1) {
-      if (partDesc == null || partDir.size() != partDesc.size()) {
-        throw new RuntimeException(
-            "Partition Directory list size doesn't match Partition Descriptor list size");
-      }
-
-      // Construct a sorted Map of Partition Dir - Partition Descriptor; ordering is based on
-      // patition dir (map key)
-      // Assumption: there is a 1-1 mapping between partition dir and partition descriptor lists
-      TreeMap<Path, PartitionDesc> partDirToPartSpecMap = new TreeMap<Path, PartitionDesc>();
-      for (int i = 0; i < partDir.size(); i++) {
-        partDirToPartSpecMap.put(partDir.get(i), partDesc.get(i));
-      }
-
-      // Extract partition desc from sorted map (ascending order of part dir)
-      partDescOrdered = new ArrayList<PartitionDesc>(partDirToPartSpecMap.values());
-    }
-
-    return partDescOrdered;
-  }
-
-  /**
-   * @return the partDescs for paths
-   */
-  public List<PartitionDesc> getPartDescs(List<Path> paths) {
-    List<PartitionDesc> parts = new ArrayList<PartitionDesc>(paths.size());
-    for (Path path : paths) {
-      parts.add(partDesc.get(partDir.indexOf(path.getParent())));
-    }
-    return parts;
-  }
-
-  /**
-   * @param partDesc
-   *          the partDesc to set
-   */
-  public void setPartDesc(ArrayList<PartitionDesc> partDesc) {
-    this.partDesc = partDesc;
-  }
-
-  /**
-   * @return the limit
-   */
   @Explain(displayName = "limit", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public int getLimit() {
     return limit;
   }
 
-  /**
-   * @param limit
-   *          the limit to set
-   */
-  public void setLimit(int limit) {
-    this.limit = limit;
+  public void setLeastNumRows(int leastNumRows) {
+    this.leastNumRows = leastNumRows;
   }
 
   public int getLeastNumRows() {
     return leastNumRows;
   }
 
-  public void setLeastNumRows(int leastNumRows) {
-    this.leastNumRows = leastNumRows;
+  public void setSource(Operator<?> source) {
+    this.source = source;
   }
 
   @Explain(displayName = "Processor Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -299,22 +164,15 @@ public class FetchWork implements Serializable {
   }
 
   public boolean isSourceTable() {
-    if(this.source != null && this.source instanceof TableScanOperator) {
-      return true;
-    }
-    return false;
-  }
-
-  public void setSource(Operator<?> source) {
-    this.source = source;
-  }
-
-  public ListSinkOperator getSink() {
-    return sink;
+    return source != null && source instanceof TableScanOperator;
   }
 
   public void setSink(ListSinkOperator sink) {
     this.sink = sink;
+  }
+
+  public ListSinkOperator getSink() {
+    return sink;
   }
 
   public void setSplitSample(SplitSample splitSample) {
@@ -325,69 +183,38 @@ public class FetchWork implements Serializable {
     return splitSample;
   }
 
-  @Override
-  public String toString() {
-    if (tblDir != null) {
-      return new String("table = " + tblDir);
-    }
-
-    if (partDir == null) {
-      return "null fetchwork";
-    }
-
-    String ret = "partition = ";
-    for (Path part : partDir) {
-      ret = ret.concat(part.toUri().toString());
-    }
-
-    return ret;
+  public void setSerializationNullFormat(String format) {
+    serializationNullFormat = format;
   }
 
-  // -----------------------------------------------------------------------------------------------
-
-  private boolean vectorizationExamined;
-
-  public void setVectorizationExamined(boolean vectorizationExamined) {
-    this.vectorizationExamined = vectorizationExamined;
+  public String getSerializationNullFormat() {
+    return serializationNullFormat;
   }
 
-  public boolean getVectorizationExamined() {
-    return vectorizationExamined;
+  public void setHiveServerQuery(boolean isHiveServerQuery) {
+    this.isHiveServerQuery = isHiveServerQuery;
   }
 
-  public class FetchExplainVectorization {
-
-    private final FetchWork fetchWork;
-
-    public FetchExplainVectorization(FetchWork fetchWork) {
-      this.fetchWork = fetchWork;
-    }
-
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public boolean enabled() {
-      return false;
-    }
-
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabledConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public List<String> enabledConditionsNotMet() {
-      return VectorizationCondition.getConditionsSupported(false);
-    }
+  public boolean isHiveServerQuery() {
+    return isHiveServerQuery;
   }
 
-  @Explain(vectorization = Vectorization.SUMMARY, displayName = "Fetch Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-  public FetchExplainVectorization getMapExplainVectorization() {
-    if (!getVectorizationExamined()) {
-      return null;
-    }
-    return new FetchExplainVectorization(this);
+  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
+    this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
   }
-  @Explain(displayName = "Cached Query Result", displayOnlyOnTrue = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean isCachedResult() {
-    return isCachedResult;
+
+  public boolean isUsingThriftJDBCBinarySerDe() {
+    return isUsingThriftJDBCBinarySerDe;
   }
 
   public void setCachedResult(boolean isCachedResult) {
     this.isCachedResult = isCachedResult;
+  }
+
+  @Explain(displayName = "Cached Query Result", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isCachedResult() {
+    return isCachedResult;
   }
 
   public void setFilesToFetch(Set<FileStatus> filesToFetch) {
@@ -396,5 +223,72 @@ public class FetchWork implements Serializable {
 
   public Set<FileStatus> getFilesToFetch() {
     return filesToFetch;
+  }
+
+  public void initializeForFetch(CompilationOpContext ctx) {
+    if (source == null) {
+      ListSinkDesc desc = new ListSinkDesc(serializationNullFormat);
+      sink = (ListSinkOperator) OperatorFactory.get(ctx, desc);
+      source = sink;
+    }
+  }
+
+  public List<Path> getPathLists() {
+    return isPartitioned() ?
+        partitionDirs == null ? null : new ArrayList<Path>(partitionDirs) :
+        Arrays.asList(tableDir);
+  }
+
+  /**
+   * Get Partition descriptors in sorted (ascending) order of partition directory.
+   */
+  @Explain(displayName = "Partition Description", explainLevels = { Level.EXTENDED })
+  public List<PartitionDesc> getPartitionDescsOrderedByDir() {
+    List<PartitionDesc> partDescOrdered = partitionDescs;
+
+    if (partitionDirs != null && partitionDirs.size() > 1) {
+      if (partitionDescs == null || partitionDirs.size() != partitionDescs.size()) {
+        throw new RuntimeException(
+            "Partition Directory list size doesn't match Partition Descriptor list size");
+      }
+
+      // Construct a sorted Map of Partition Dir - Partition Descriptor; ordering is based on patition dir (map key)
+      // Assumption: there is a 1-1 mapping between partition dir and partition descriptor lists
+      Map<Path, PartitionDesc> partDirToPartSpecMap = new TreeMap<Path, PartitionDesc>();
+      for (int i = 0; i < partitionDirs.size(); i++) {
+        partDirToPartSpecMap.put(partitionDirs.get(i), partitionDescs.get(i));
+      }
+
+      // Extract partition desc from sorted map (ascending order of part dir)
+      partDescOrdered = new ArrayList<PartitionDesc>(partDirToPartSpecMap.values());
+    }
+
+    return partDescOrdered;
+  }
+
+  public List<PartitionDesc> getPartitionDescs(List<Path> paths) {
+    List<PartitionDesc> parts = new ArrayList<PartitionDesc>(paths.size());
+    for (Path path : paths) {
+      parts.add(partitionDescs.get(partitionDirs.indexOf(path.getParent())));
+    }
+    return parts;
+  }
+
+  @Override
+  public String toString() {
+    if (tableDir != null) {
+      return new String("table = " + tableDir);
+    }
+
+    if (partitionDirs == null) {
+      return "null fetchwork";
+    }
+
+    String ret = "partition = ";
+    for (Path part : partitionDirs) {
+      ret = ret.concat(part.toUri().toString());
+    }
+
+    return ret;
   }
 }

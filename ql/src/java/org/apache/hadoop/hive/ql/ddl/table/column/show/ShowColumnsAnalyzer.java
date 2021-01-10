@@ -88,6 +88,6 @@ public class ShowColumnsAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowColumnsDesc.SCHEMA));
+    addFetchTask(ShowColumnsDesc.SCHEMA);
   }
 }

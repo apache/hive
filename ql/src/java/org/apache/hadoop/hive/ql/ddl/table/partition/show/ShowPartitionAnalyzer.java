@@ -87,7 +87,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowPartitionsDesc.SCHEMA));
+    addFetchTask(ShowPartitionsDesc.SCHEMA);
   }
 
 

@@ -54,6 +54,6 @@ public class ShowFunctionsAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowFunctionsDesc.SCHEMA));
+    addFetchTask(ShowFunctionsDesc.SCHEMA);
   }
 }

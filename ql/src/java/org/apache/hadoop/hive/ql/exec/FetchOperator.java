@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -84,11 +83,11 @@ import com.google.common.collect.Lists;
 
 /**
  * FetchTask implementation.
- **/
+ */
 public class FetchOperator implements Serializable {
+  private static final long serialVersionUID = 1L;
 
-  static final Logger LOG = LoggerFactory.getLogger(FetchOperator.class.getName());
-  static final LogHelper console = new LogHelper(LOG);
+  private static final Logger LOG = LoggerFactory.getLogger(FetchOperator.class.getName());
 
   public static final String FETCH_OPERATOR_DIRECTORY_LIST =
       "hive.complete.dir.list";
@@ -116,11 +115,11 @@ public class FetchOperator implements Serializable {
   private transient Path currPath;
   private transient PartitionDesc currDesc;
   private transient Deserializer currSerDe;
-  private transient Converter ObjectConverter;
-  private transient RecordReader<WritableComparable, Writable> currRecReader;
+  private transient Converter objectConverter;
+  private transient RecordReader<WritableComparable<?>, Writable> currRecReader;
 
   private transient JobConf job;
-  private transient WritableComparable key;
+  private transient WritableComparable<?> key;
   private transient Writable value;
   private transient Object[] vcValues;
 
@@ -146,9 +145,9 @@ public class FetchOperator implements Serializable {
     }
     this.vcCols = vcCols;
     this.hasVC = vcCols != null && !vcCols.isEmpty();
-    this.isStatReader = work.getTblDesc() == null;
+    this.isStatReader = work.getTableDesc() == null;
     this.isPartitioned = !isStatReader && work.isPartitioned();
-    this.isNonNativeTable = !isStatReader && work.getTblDesc().isNonNative();
+    this.isNonNativeTable = !isStatReader && work.getTableDesc().isNonNative();
     initialize();
   }
 
@@ -181,53 +180,50 @@ public class FetchOperator implements Serializable {
       row = new Object[1];
     }
     if (isPartitioned) {
-      iterPath = work.getPartDir().iterator();
-      iterPartDesc = work.getPartDesc().iterator();
+      iterPath = work.getPartitionDirs().iterator();
+      iterPartDesc = work.getPartitionDescs().iterator();
     } else {
-      iterPath = Arrays.asList(work.getTblDir()).iterator();
-      iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
+      iterPath = Arrays.asList(work.getTableDir()).iterator();
+      iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTableDesc(), null));
     }
     outputOI = setupOutputObjectInspector();
     context = setupExecContext(operator, work.getPathLists());
   }
 
-  private ExecMapperContext setupExecContext(Operator operator, List<Path> paths) {
-    ExecMapperContext context = null;
+  private ExecMapperContext setupExecContext(Operator<?> operator, List<Path> paths) {
+    ExecMapperContext execMapperContext = null;
     if (hasVC || work.getSplitSample() != null) {
-      context = new ExecMapperContext(job);
+      execMapperContext = new ExecMapperContext(job);
       if (operator != null) {
-        operator.passExecContext(context);
+        operator.passExecContext(execMapperContext);
       }
     }
     setFetchOperatorContext(job, paths);
-    return context;
+    return execMapperContext;
   }
 
   public FetchWork getWork() {
     return work;
   }
 
-  public void setWork(FetchWork work) {
-    this.work = work;
-  }
-
   /**
    * A cache of InputFormat instances.
    */
-  private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
+  private static final Map<String, InputFormat<WritableComparable<?>, Writable>> INPUT_FORMATS = new HashMap<>();
 
-  public static InputFormat getInputFormatFromCache(
-      Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
+  public static InputFormat<WritableComparable<?>, Writable> getInputFormatFromCache(
+      Class<? extends InputFormat<WritableComparable<?>, Writable>> inputFormatClass, Configuration conf)
+          throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
       return ReflectionUtil.newInstance(inputFormatClass, conf);
     }
     // TODO: why is this copy-pasted from HiveInputFormat?
-    InputFormat format = inputFormats.get(inputFormatClass.getName());
+    InputFormat<WritableComparable<?>, Writable> format = INPUT_FORMATS.get(inputFormatClass.getName());
     if (format == null) {
       try {
         format = ReflectionUtil.newInstance(inputFormatClass, conf);
-        inputFormats.put(inputFormatClass.getName(), format);
+        INPUT_FORMATS.put(inputFormatClass.getName(), format);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
                                   + inputFormatClass.getName() + " as specified in mapredWork!", e);
@@ -260,10 +256,10 @@ public class FetchOperator implements Serializable {
     Object[] partValues = new Object[fields.size()];
     for (int i = 0; i < partValues.length; i++) {
       StructField field = fields.get(i);
-      String value = partSpec.get(field.getFieldName());
+      String partFieldValue = partSpec.get(field.getFieldName());
       ObjectInspector oi = field.getFieldObjectInspector();
       partValues[i] = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi).convert(value);
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi).convert(partFieldValue);
     }
     return partValues;
   }
@@ -301,7 +297,7 @@ public class FetchOperator implements Serializable {
     }
   }
 
-  private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
+  private RecordReader<WritableComparable<?>, Writable> getRecordReader() throws Exception {
     if (!iterSplits.hasNext()) {
       List<FetchInputFormatSplit> splits = getNextSplits();
       if (splits == null) {
@@ -310,11 +306,11 @@ public class FetchOperator implements Serializable {
 
       if (!isPartitioned || convertedOI == null) {
         currSerDe = tableSerDe;
-        ObjectConverter = null;
+        objectConverter = null;
       } else {
         currSerDe = needConversion(currDesc) ? currDesc.getDeserializer(job) : tableSerDe;
         ObjectInspector inputOI = currSerDe.getObjectInspector();
-        ObjectConverter = ObjectInspectorConverters.getConverter(inputOI, convertedOI);
+        objectConverter = ObjectInspectorConverters.getConverter(inputOI, convertedOI);
       }
       if (isPartitioned) {
         row[1] = createPartValue(currDesc, partKeyOI);
@@ -332,11 +328,11 @@ public class FetchOperator implements Serializable {
 
     final FetchInputFormatSplit target = iterSplits.next();
 
-    final RecordReader<WritableComparable, Writable> reader = target.getRecordReader(job);
+    final RecordReader<WritableComparable<?>, Writable> reader = target.getRecordReader(job);
     if (hasVC || work.getSplitSample() != null) {
-      currRecReader = new HiveRecordReader<WritableComparable, Writable>(reader, job) {
+      currRecReader = new HiveRecordReader<WritableComparable<?>, Writable>(reader, job) {
         @Override
-        public boolean doNext(WritableComparable key, Writable value) throws IOException {
+        public boolean doNext(WritableComparable<?> key, Writable value) throws IOException {
           // if current pos is larger than shrinkedLength which is calculated for
           // each split by table sampling, stop fetching any more (early exit)
           if (target.shrinkedLength > 0 &&
@@ -346,14 +342,15 @@ public class FetchOperator implements Serializable {
           return super.doNext(key, value);
         }
       };
-      ((HiveContextAwareRecordReader)currRecReader).
+      ((HiveContextAwareRecordReader<?, ?>)currRecReader).
           initIOContext(target, job, target.inputFormat.getClass(), reader);
     } else {
       currRecReader = reader;
     }
     key = currRecReader.createKey();
     value = currRecReader.createValue();
-    headerCount = footerCount = 0;
+    headerCount = 0;
+    footerCount = 0;
     return currRecReader;
   }
 
@@ -369,12 +366,14 @@ public class FetchOperator implements Serializable {
       // non-vectorized record reader is created below.
       HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
 
-      Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
+      @SuppressWarnings("unchecked")
+      Class<? extends InputFormat<WritableComparable<?>, Writable>> formatter =
+          (Class<? extends InputFormat<WritableComparable<?>, Writable>>) currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
-      InputFormat inputFormat = getInputFormatFromCache(formatter, job);
+      InputFormat<WritableComparable<?>, Writable> inputFormat = getInputFormatFromCache(formatter, job);
       if(inputFormat instanceof HiveSequenceFileInputFormat) {
         // input format could be cached, in which case we need to reset the list of files to fetch
-        ((HiveSequenceFileInputFormat) inputFormat).setFiles(null);
+        ((HiveSequenceFileInputFormat<?, ?>) inputFormat).setFiles(null);
       }
 
       List<Path> dirs = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();
@@ -387,7 +386,7 @@ public class FetchOperator implements Serializable {
       List<FetchInputFormatSplit> inputSplits = new ArrayList<>();
       if(inputFormat instanceof HiveSequenceFileInputFormat && this.getWork().getFilesToFetch() != null
           && !this.getWork().getFilesToFetch().isEmpty() && !this.getWork().isSourceTable()) {
-        HiveSequenceFileInputFormat fileFormat = (HiveSequenceFileInputFormat)inputFormat;
+        HiveSequenceFileInputFormat<?, ?> fileFormat = (HiveSequenceFileInputFormat<?, ?>)inputFormat;
         fileFormat.setFiles(this.getWork().getFilesToFetch());
         InputSplit[] splits = inputFormat.getSplits(job, 1);
         for (int i = 0; i < splits.length; i++) {
@@ -428,7 +427,8 @@ public class FetchOperator implements Serializable {
     return null;
   }
 
-  private void generateWrappedSplits(InputFormat inputFormat, List<FetchInputFormatSplit> inputSplits, JobConf job)
+  private void generateWrappedSplits(InputFormat<WritableComparable<?>, Writable> inputFormat,
+      List<FetchInputFormatSplit> inputSplits, JobConf job)
       throws IOException {
     InputSplit[] splits;
     try {
@@ -446,7 +446,7 @@ public class FetchOperator implements Serializable {
     }
   }
 
-  private void processCurrPathForMmWriteIds(InputFormat inputFormat,
+  private void processCurrPathForMmWriteIds(InputFormat<WritableComparable<?>, Writable> inputFormat,
       List<Path> dirs, List<Path> dirsWithOriginals) throws IOException {
     if (inputFormat instanceof HiveInputFormat) {
       dirs.add(currPath); // No need to process here.
@@ -489,7 +489,7 @@ public class FetchOperator implements Serializable {
       List<FetchInputFormatSplit> splits) {
     long totalSize = 0;
     for (FetchInputFormatSplit split: splits) {
-        totalSize += split.getLength();
+      totalSize += split.getLength();
     }
     List<FetchInputFormatSplit> result = new ArrayList<FetchInputFormatSplit>(splits.size());
     long targetSize = splitSample.getTargetSize(totalSize);
@@ -520,15 +520,15 @@ public class FetchOperator implements Serializable {
     }
 
     if (work.getRowsComputedUsingStats() != null) {
-      for (List<Object> row : work.getRowsComputedUsingStats()) {
-        operator.process(row, 0);
+      for (List<Object> computedRow : work.getRowsComputedUsingStats()) {
+        operator.process(computedRow, 0);
       }
       flushRow();
       return true;
     }
-    InspectableObject row = getNextRow();
-    if (row != null) {
-      pushRow(row);
+    InspectableObject nextRow = getNextRow();
+    if (nextRow != null) {
+      pushRow(nextRow);
     } else {
       flushRow();
     }
@@ -543,12 +543,11 @@ public class FetchOperator implements Serializable {
     operator.flush();
   }
 
-  private transient final InspectableObject inspectable = new InspectableObject();
+  private final transient InspectableObject inspectable = new InspectableObject();
 
   /**
    * Get the next row. The fetch context is modified appropriately.
-   *
-   **/
+   */
   public InspectableObject getNextRow() throws IOException {
     try {
       while (true) {
@@ -601,8 +600,8 @@ public class FetchOperator implements Serializable {
                 MapOperator.populateVirtualColumnValues(context, vcCols, vcValues, currSerDe);
           }
           Object deserialized = currSerDe.deserialize(value);
-          if (ObjectConverter != null) {
-            deserialized = ObjectConverter.convert(deserialized);
+          if (objectConverter != null) {
+            deserialized = objectConverter.convert(deserialized);
           }
 
           if (hasVC || isPartitioned) {
@@ -625,8 +624,7 @@ public class FetchOperator implements Serializable {
 
   /**
    * Clear the context, if anything needs to be done.
-   *
-   **/
+   */
   public void clearFetchContext() throws HiveException {
     try {
       if (currRecReader != null) {
@@ -656,27 +654,27 @@ public class FetchOperator implements Serializable {
   }
 
   /**
-   * used for bucket map join
+   * Used for bucket map join.
    */
   public void setupContext(List<Path> paths) {
     this.iterPath = paths.iterator();
     if (!isPartitioned) {
-      this.iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
+      this.iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTableDesc(), null));
     } else {
-      this.iterPartDesc = work.getPartDescs(paths).iterator();
+      this.iterPartDesc = work.getPartitionDescs(paths).iterator();
     }
     this.context = setupExecContext(operator, paths);
   }
 
   /**
-   * returns output ObjectInspector, never null
+   * Returns output ObjectInspector, never null.
    */
   public ObjectInspector getOutputObjectInspector() {
     return outputOI;
   }
 
   private StructObjectInspector setupOutputObjectInspector() throws HiveException {
-    TableDesc tableDesc = work.getTblDesc();
+    TableDesc tableDesc = work.getTableDesc();
     try {
       tableSerDe = tableDesc.getSerDe(job, true);
       tableOI = (StructObjectInspector) tableSerDe.getObjectInspector();
@@ -685,7 +683,7 @@ public class FetchOperator implements Serializable {
       }
       partKeyOI = getPartitionKeyOI(tableDesc);
 
-      List<PartitionDesc> listParts = work.getPartDesc();
+      List<PartitionDesc> listParts = work.getPartitionDescs();
       // Chose the table descriptor if none of the partitions is present.
       // For eg: consider the query:
       // select /*+mapjoin(T1)*/ count(*) from T1 join T2 on T1.key=T2.key
@@ -724,8 +722,7 @@ public class FetchOperator implements Serializable {
 
   // if table and all partitions have the same schema and serde, no need to convert
   private boolean needConversion(TableDesc tableDesc, List<PartitionDesc> partDescs) {
-    Class<?> tableSerDe = tableDesc.getSerDeClass();
-    SerDeSpec spec = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class);
+    SerDeSpec spec = AnnotationUtils.getAnnotation(tableDesc.getSerDeClass(), SerDeSpec.class);
     if (null == spec) {
       // Serde may not have this optional annotation defined in which case be conservative
       // and say conversion is needed.
@@ -734,7 +731,7 @@ public class FetchOperator implements Serializable {
     String[] schemaProps = spec.schemaProps();
     Properties tableProps = tableDesc.getProperties();
     for (PartitionDesc partitionDesc : partDescs) {
-      if (!tableSerDe.getName().equals(partitionDesc.getDeserializerClassName())) {
+      if (!tableDesc.getSerDeClass().getName().equals(partitionDesc.getDeserializerClassName())) {
         return true;
       }
       Properties partProps = partitionDesc.getProperties();
@@ -751,21 +748,21 @@ public class FetchOperator implements Serializable {
   // for split sampling. shrinkedLength is checked against IOContext.getCurrentBlockStart,
   // which is from RecordReader.getPos(). So some inputformats which does not support getPos()
   // like HiveHBaseTableInputFormat cannot be used with this (todo)
-  private static class FetchInputFormatSplit extends HiveInputFormat.HiveInputSplit {
+  private static final class FetchInputFormatSplit extends HiveInputFormat.HiveInputSplit {
 
     // shrinked size for this split. counter part of this in normal mode is
     // InputSplitShim.shrinkedLength.
     // what's different is that this is evaluated by unit of row using RecordReader.getPos()
     // and that is evaluated by unit of split using InputSplit.getLength().
     private long shrinkedLength = -1;
-    private final InputFormat inputFormat;
+    private final InputFormat<WritableComparable<?>, Writable> inputFormat;
 
-    public FetchInputFormatSplit(InputSplit split, InputFormat inputFormat) {
+    private FetchInputFormatSplit(InputSplit split, InputFormat<WritableComparable<?>, Writable> inputFormat) {
       super(split, inputFormat.getClass().getName());
       this.inputFormat = inputFormat;
     }
 
-    public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
+    public RecordReader<WritableComparable<?>, Writable> getRecordReader(JobConf job) throws IOException {
       return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
     }
   }

@@ -52,7 +52,7 @@ public class ShowPrincipalsAnalyzer extends AbstractPrivilegeAnalyzer {
       rootTasks.add(task);
 
       task.setFetchSource(true);
-      setFetchTask(createFetchTask(ShowPrincipalsDesc.SCHEMA));
+      addFetchTask(ShowPrincipalsDesc.SCHEMA);
     }
   }
 }

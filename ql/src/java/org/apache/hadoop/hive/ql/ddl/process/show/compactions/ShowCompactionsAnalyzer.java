@@ -45,6 +45,6 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowCompactionsDesc.SCHEMA));
+    addFetchTask(ShowCompactionsDesc.SCHEMA);
   }
 }

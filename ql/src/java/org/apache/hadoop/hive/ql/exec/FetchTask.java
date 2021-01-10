@@ -43,23 +43,17 @@ import org.apache.hadoop.mapred.JobConf;
 
 /**
  * FetchTask implementation.
- **/
+ */
 public class FetchTask extends Task<FetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private int maxRows = 100;
+
+  private static final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
+
+  private JobConf job;
   private FetchOperator fetch;
   private ListSinkOperator sink;
   private int totalRows;
-  private static transient final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
-  JobConf job = null;
-
-  public FetchTask() {
-    super();
-  }
-
-  public void setValidWriteIdList(String writeIdStr) {
-    fetch.setValidWriteIdList(writeIdStr);
-  }
+  private int maxRows = 100;
 
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
@@ -88,7 +82,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       }
       sink = work.getSink();
       fetch = new FetchOperator(work, job, source, getVirtualColumns(source));
-      source.initialize(conf, new ObjectInspector[]{fetch.getOutputObjectInspector()});
+      source.initialize(conf, new ObjectInspector[] {fetch.getOutputObjectInspector()});
+
       totalRows = 0;
       ExecMapper.setDone(false);
 
@@ -107,6 +102,10 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     return null;
   }
 
+  public void setValidWriteIdList(String writeIdStr) {
+    fetch.setValidWriteIdList(writeIdStr);
+  }
+
   @Override
   public int execute() {
     assert false;
@@ -117,14 +116,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
    * Return the tableDesc of the fetchWork.
    */
   public TableDesc getTblDesc() {
-    return work.getTblDesc();
-  }
-
-  /**
-   * Return the maximum number of rows returned by fetch.
-   */
-  public int getMaxRows() {
-    return maxRows;
+    return work.getTableDesc();
   }
 
   /**
@@ -134,17 +126,20 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     this.maxRows = maxRows;
   }
 
-  public boolean fetch(List res) throws IOException {
+  public boolean fetch(List<?> res) throws IOException {
     sink.reset(res);
+
     int rowsRet = work.getLeastNumRows();
     if (rowsRet <= 0) {
       rowsRet = work.getLimit() >= 0 ? Math.min(work.getLimit() - totalRows, maxRows) : maxRows;
     }
+
     try {
       if (rowsRet <= 0 || work.getLimit() == totalRows) {
         fetch.clearFetchContext();
         return false;
       }
+
       boolean fetched = false;
       while (sink.getNumRows() < rowsRet) {
         if (!fetch.pushRow()) {
@@ -170,7 +165,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   public boolean isFetchFrom(FileSinkDesc fs) {
-    return fs.getFinalDirName().equals(work.getTblDir());
+    return fs.getFinalDirName().equals(work.getTableDir());
   }
 
   @Override
@@ -183,11 +178,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     return "FETCH";
   }
 
-  /**
-   * Clear the Fetch Operator.
-   *
-   * @throws HiveException
-   */
   public void clearFetch() throws HiveException {
     if (fetch != null) {
       fetch.clearFetchContext();

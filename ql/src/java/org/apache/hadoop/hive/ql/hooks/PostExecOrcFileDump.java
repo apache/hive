@@ -81,11 +81,11 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
       List<Path> directories;
       if (partitionedTable) {
         LOG.info("Printing orc file dump for files from partitioned directory..");
-        directories = fetchWork.getPartDir();
+        directories = fetchWork.getPartitionDirs();
       } else {
         LOG.info("Printing orc file dump for files from table directory..");
         directories = Lists.newArrayList();
-        directories.add(fetchWork.getTblDir());
+        directories.add(fetchWork.getTableDir());
       }
 
       for (Path dir : directories) {

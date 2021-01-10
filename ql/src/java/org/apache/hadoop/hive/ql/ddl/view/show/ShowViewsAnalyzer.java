@@ -73,6 +73,6 @@ public class ShowViewsAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowViewsDesc.SCHEMA));
+    addFetchTask(ShowViewsDesc.SCHEMA);
   }
 }

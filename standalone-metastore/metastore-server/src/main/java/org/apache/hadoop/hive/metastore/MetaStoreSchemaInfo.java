@@ -243,7 +243,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
       }
       return currentSchemaVersion;
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to get schema version, Cause:" + e.getMessage());
+      throw new HiveMetaException("Failed to get schema version", e);
     }
   }
 }

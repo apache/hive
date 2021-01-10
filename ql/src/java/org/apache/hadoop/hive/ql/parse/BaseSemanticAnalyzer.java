@@ -71,7 +71,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -1758,26 +1758,26 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * Create a FetchTask for a given schema.
+   * Add a FetchTask for a given schema.
    */
-  protected FetchTask createFetchTask(String tableSchema) {
+  protected void addFetchTask(String tableSchema) {
     String schema =
         "json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")) ? "json#string" : tableSchema;
+    String[] colTypes = schema.split("#");
 
     Properties prop = new Properties();
-    // Sets delimiter to tab (ascii 9)
-    prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));
-    prop.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, " ");
-    String[] colTypes = schema.split("#");
     prop.setProperty("columns", colTypes[0]);
     prop.setProperty("columns.types", colTypes[1]);
+    prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));
+    prop.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, " ");
     prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
     prop.setProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
-    FetchWork fetch =
-        new FetchWork(ctx.getResFile(), new TableDesc(TextInputFormat.class,
-            IgnoreKeyTextOutputFormat.class, prop), -1);
+
+    FetchWork fetch = new FetchWork(ctx.getResFile(),
+        new TableDesc(TextInputFormat.class, HiveIgnoreKeyTextOutputFormat.class, prop), -1);
     fetch.setSerializationNullFormat(" ");
-    return (FetchTask) TaskFactory.get(fetch);
+
+    fetchTask = (FetchTask) TaskFactory.get(fetch);
   }
 
   protected HiveTxnManager getTxnMgr() {

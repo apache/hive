@@ -138,7 +138,7 @@ public class MapredLocalWork implements Serializable {
     }
     for (FetchWork fetchWork : aliasToFetchWork.values()) {
       PlanUtils.configureInputJobPropertiesForStorageHandler(
-        fetchWork.getTblDesc());
+        fetchWork.getTableDesc());
     }
   }
 

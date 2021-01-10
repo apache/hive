@@ -53,6 +53,6 @@ public class DescFunctionAnalyzer extends AbstractFunctionAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(DescFunctionDesc.SCHEMA));
+    addFetchTask(DescFunctionDesc.SCHEMA);
   }
 }

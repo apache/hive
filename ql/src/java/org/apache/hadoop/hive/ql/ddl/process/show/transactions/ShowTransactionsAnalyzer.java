@@ -45,6 +45,6 @@ public class ShowTransactionsAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(ShowTransactionsDesc.SCHEMA));
+    addFetchTask(ShowTransactionsDesc.SCHEMA);
   }
 }
