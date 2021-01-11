@@ -4809,15 +4809,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       s += " AND \"CTC_PARTITION\" = ?";
     }
 
-    try (PreparedStatement pStmt = dbConn.prepareStatement(s)) {
-      int paramCount = 1;
-      pStmt.setString(paramCount++, rqst.getDbName());
-      pStmt.setString(paramCount++, rqst.getTblName());
+    try (PreparedStatement pStmt =
+           sqlGenerator.prepareStmtWithParameters(dbConn, s,  Arrays.asList(rqst.getDbName(), rqst.getTblName()))) {
       if (rqst.getPartName() != null) {
-        pStmt.setString(paramCount++, rqst.getPartName());
+        pStmt.setString(3, rqst.getPartName());
       }
       LOG.debug("Going to execute query <" + s + ">");
-      try (ResultSet rs2 = pStmt.executeQuery(s)) {
+      try (ResultSet rs2 = pStmt.executeQuery()) {
         if (rs2.next()) {
           return true;
         }
