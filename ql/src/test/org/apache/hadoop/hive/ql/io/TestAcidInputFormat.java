@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.io;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +38,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaMetaData;
-import org.apache.hive.common.util.MockFileSystem;
+import org.apache.hadoop.hive.ql.io.HdfsUtils.HdfsFileStatusWithoutId;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,7 +98,7 @@ public class TestAcidInputFormat {
   public void testDeltaMetaWithFile() throws Exception {
     FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, new ArrayList<>(), 0,
-        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), null, 1)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new HdfsFileStatusWithoutId(fs), null, 1)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());
@@ -192,7 +191,7 @@ public class TestAcidInputFormat {
   public void testDeltaMetaWithFileMultiStatement() throws Exception {
     FileStatus fs = new FileStatus(200, false, 100, 100, 100, new Path("mypath"));
     DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0,
-        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new AcidUtils.HdfsFileStatusWithoutId(fs), 97, 1)));
+        Collections.singletonList(new AcidInputFormat.DeltaFileMetaData(new HdfsFileStatusWithoutId(fs), 97, 1)));
 
     assertEquals(2000L, deltaMetaData.getMinWriteId());
     assertEquals(2001L, deltaMetaData.getMaxWriteId());
