@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.routing.IdlePurgePolicy;
+import org.apache.logging.log4j.core.appender.routing.PurgePolicy;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
@@ -172,6 +174,10 @@ public final class LogDivertAppenderForTest {
 
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
+    PurgePolicy purgePolicy = IdlePurgePolicy.createPurgePolicy("5", null, "SECONDS", configuration);
+    // Hack: due to the (non-standard) way that log4j configuration is extended to introduce the routing appender
+    // the life-cycle methods are not called as expected leading to initialization problems (such as the scheduler)
+    configuration.getScheduler().incrementScheduledItems();
 
     // Create the appender
     RoutingAppender routingAppender = RoutingAppender.createAppender(TEST_QUERY_ROUTING_APPENDER,
@@ -179,7 +185,7 @@ public final class LogDivertAppenderForTest {
         routes,
         configuration,
         null,
-        null,
+        purgePolicy,
         null);
 
     LoggerConfig loggerConfig = configuration.getRootLogger();
