@@ -947,7 +947,7 @@ public class AcidUtils {
    * not needed {@link ParsedDeltaLight} should be used.
    */
   @Immutable
-  public static final class ParsedDelta extends ParsedDeltaLight implements ParsedDirectory{
+  public static final class ParsedDelta extends ParsedDeltaLight implements ParsedDirectory {
     private final boolean isRawFormat;
     private List<HdfsFileStatusWithId> files;
 
