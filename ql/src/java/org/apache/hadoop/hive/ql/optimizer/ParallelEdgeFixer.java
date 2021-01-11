@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +31,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -80,6 +86,19 @@ public class ParallelEdgeFixer extends Transform {
     return pctx;
   }
 
+  private static class Cmp1 implements Comparator<Pair<Operator, Operator>> {
+    @Override
+    public int compare(Pair<Operator, Operator> o1, Pair<Operator, Operator> o2) {
+      return sig(o1).compareTo(sig(o2));
+
+    }
+
+    private String sig(Pair<Operator, Operator> o1) {
+      return o1.left.toString() + o1.right.toString();
+    }
+
+  }
+
   /**
    * Adds an intermediate reduce sink inbetweeen p and o.
    */
@@ -93,21 +112,50 @@ public class ParallelEdgeFixer extends Transform {
 
     for (OpGroup g : groups) {
       Set<OpGroup> ascendingGroups = new LinkedHashSet<>();
+      MultivaluedMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>> m = new MultivaluedHashMap<>();
+
       for (Operator<?> o : g.members) {
         for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
           OpGroup parentGroup = op2group.get(p);
           if (parentGroup == g) {
             continue;
           }
-          if (ascendingGroups.contains(parentGroup)) {
-            fixParallelEdge(p, o);
-          } else {
-            ascendingGroups.add(parentGroup);
-          }
-
+          m.add(new Pair(parentGroup, g), new Pair(p, o));
+          //          //          new VertexEdge
+          //          if (ascendingGroups.contains(parentGroup)) {
+          //            fixParallelEdge(p, o);
+          //          } else {
+          //            ascendingGroups.add(parentGroup);
+          //          }
         }
       }
+
+      for (Pair<OpGroup, OpGroup> key : m.keySet()) {
+        List<Pair<Operator, Operator>> values = m.get(key);
+        if(values.size() <=1) {
+          continue;
+        }
+        // operator order must in stabile order - or we end up with falky plans causing flaky tests...
+        values.sort(new Cmp1());
+
+        // remove one possibly unsupported edge (it will be kept as is)
+        removeOneEdge(values);
+
+        Iterator<Pair<Operator, Operator>> it = values.iterator();
+        while (it.hasNext()) {
+          Pair<Operator, Operator> pair = it.next();
+          fixParallelEdge(pair.left, pair.right);
+        }
+
+
+      }
+
     }
+  }
+
+  private void removeOneEdge(List<Pair<Operator, Operator>> values) {
+    // FIXME: unsupported edges?
+    values.remove(values.size() - 1);
   }
 
   /**
