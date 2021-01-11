@@ -829,6 +829,10 @@ public class AcidUtils {
     List<ParsedDelta> getDeleteDeltas();
   }
 
+  public interface ParsedDirectory {
+    public List<HdfsFileStatusWithId> getFiles(FileSystem fs, Ref<Boolean> useFileIds) throws IOException;
+  }
+
   /**
    * Since version 3 but prior to version 4, format of a base is "base_X" where X is a writeId.
    * If this base was produced by a compactor, X is the highest writeId that the compactor included.
@@ -888,7 +892,7 @@ public class AcidUtils {
    * requires looking at the footer of the data file which can be expensive so if this info is
    * not needed {@link ParsedBaseLight} should be used.
    */
-  public static final class ParsedBase extends ParsedBaseLight {
+  public static final class ParsedBase extends ParsedBaseLight implements ParsedDirectory {
 
     private boolean rawFormat;
     private List<HdfsFileStatusWithId> files;
@@ -943,7 +947,7 @@ public class AcidUtils {
    * not needed {@link ParsedDeltaLight} should be used.
    */
   @Immutable
-  public static final class ParsedDelta extends ParsedDeltaLight {
+  public static final class ParsedDelta extends ParsedDeltaLight implements ParsedDirectory{
     private final boolean isRawFormat;
     private List<HdfsFileStatusWithId> files;
 
