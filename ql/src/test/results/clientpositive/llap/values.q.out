@@ -10,18 +10,16 @@ col1	col2	col3
 1	2	3
 4	5	6
 PREHOOK: query: SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
-JOIN (VALUES(1,'a'),(4,'b')) as bar ON foo.col1 = bar.col1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
-JOIN (VALUES(1,'a'),(4,'b')) as bar ON foo.col1 = bar.col1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-foo.col1	foo.col2	foo.col3	bar.col1	bar.col2
-1	2	3	1	a
-4	5	6	4	b
+foo.col1	foo.col2	foo.col3
+1	2	3
+4	5	6
 PREHOOK: query: with t1 as (values('a', 'b'), ('b', 'c'))
 select * from t1 where col1 = 'a'
 union all
