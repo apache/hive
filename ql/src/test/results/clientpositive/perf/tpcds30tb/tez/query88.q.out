@@ -126,208 +126,8 @@ STAGE PLANS:
                               0 _col2 (type: bigint)
                               1 _col0 (type: bigint)
                             input vertices:
-                              1 Reducer 28
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                null sort order: 
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: bigint)
-                          1 _col0 (type: bigint)
-                        outputColumnNames: _col1, _col2
-                        input vertices:
-                          1 Reducer 13
-                        Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: bigint)
-                            1 _col0 (type: bigint)
-                          outputColumnNames: _col2
-                          input vertices:
-                            1 Reducer 20
-                          Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col2 (type: bigint)
-                              1 _col0 (type: bigint)
-                            input vertices:
-                              1 Reducer 29
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                null sort order: 
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: bigint)
-                          1 _col0 (type: bigint)
-                        outputColumnNames: _col1, _col2
-                        input vertices:
-                          1 Reducer 14
-                        Statistics: Num rows: 2944116650 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: bigint)
-                            1 _col0 (type: bigint)
-                          outputColumnNames: _col2
-                          input vertices:
-                            1 Reducer 21
-                          Statistics: Num rows: 706587981 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col2 (type: bigint)
-                              1 _col0 (type: bigint)
-                            input vertices:
-                              1 Reducer 30
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                null sort order: 
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: bigint)
-                          1 _col0 (type: bigint)
-                        outputColumnNames: _col1, _col2
-                        input vertices:
-                          1 Reducer 15
-                        Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: bigint)
-                            1 _col0 (type: bigint)
-                          outputColumnNames: _col2
-                          input vertices:
-                            1 Reducer 22
-                          Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col2 (type: bigint)
-                              1 _col0 (type: bigint)
-                            input vertices:
-                              1 Reducer 31
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                null sort order: 
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: bigint)
-                          1 _col0 (type: bigint)
-                        outputColumnNames: _col1, _col2
-                        input vertices:
-                          1 Reducer 16
-                        Statistics: Num rows: 2944116650 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: bigint)
-                            1 _col0 (type: bigint)
-                          outputColumnNames: _col2
-                          input vertices:
-                            1 Reducer 23
-                          Statistics: Num rows: 706587981 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col2 (type: bigint)
-                              1 _col0 (type: bigint)
-                            input vertices:
-                              1 Reducer 32
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                null sort order: 
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: bigint)
-                          1 _col0 (type: bigint)
-                        outputColumnNames: _col1, _col2
-                        input vertices:
-                          1 Reducer 17
-                        Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: bigint)
-                            1 _col0 (type: bigint)
-                          outputColumnNames: _col2
-                          input vertices:
-                            1 Reducer 24
-                          Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col2 (type: bigint)
-                              1 _col0 (type: bigint)
-                            input vertices:
                               1 Map 26
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -348,6 +148,206 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2
                         input vertices:
                           1 Map 10
+                        Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col2
+                          input vertices:
+                            1 Reducer 20
+                          Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col2 (type: bigint)
+                              1 _col0 (type: bigint)
+                            input vertices:
+                              1 Reducer 28
+                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: count()
+                              minReductionHashAggr: 0.99
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2
+                        input vertices:
+                          1 Reducer 13
+                        Statistics: Num rows: 2944116650 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col2
+                          input vertices:
+                            1 Reducer 21
+                          Statistics: Num rows: 706587981 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col2 (type: bigint)
+                              1 _col0 (type: bigint)
+                            input vertices:
+                              1 Reducer 29
+                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: count()
+                              minReductionHashAggr: 0.99
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2
+                        input vertices:
+                          1 Reducer 14
+                        Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col2
+                          input vertices:
+                            1 Reducer 22
+                          Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col2 (type: bigint)
+                              1 _col0 (type: bigint)
+                            input vertices:
+                              1 Reducer 30
+                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: count()
+                              minReductionHashAggr: 0.99
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2
+                        input vertices:
+                          1 Reducer 15
+                        Statistics: Num rows: 2944116650 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col2
+                          input vertices:
+                            1 Reducer 23
+                          Statistics: Num rows: 706587981 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col2 (type: bigint)
+                              1 _col0 (type: bigint)
+                            input vertices:
+                              1 Reducer 31
+                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: count()
+                              minReductionHashAggr: 0.99
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2
+                        input vertices:
+                          1 Reducer 16
+                        Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: bigint)
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col2
+                          input vertices:
+                            1 Reducer 24
+                          Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col2 (type: bigint)
+                              1 _col0 (type: bigint)
+                            input vertices:
+                              1 Reducer 32
+                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: count()
+                              minReductionHashAggr: 0.99
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col2
+                        input vertices:
+                          1 Reducer 17
                         Statistics: Num rows: 2944116650 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -654,7 +654,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 1769 Data size: 14152 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1831 Data size: 14648 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 14 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -666,7 +666,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 1831 Data size: 14648 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1769 Data size: 14152 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 15 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -678,7 +678,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 1769 Data size: 14152 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1831 Data size: 14648 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 16 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -690,7 +690,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 1831 Data size: 14648 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1769 Data size: 14152 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 17 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -702,7 +702,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 1769 Data size: 14152 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1831 Data size: 14648 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 19 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
