@@ -611,7 +611,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
     long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId,
-      work.oldReplScope != null);
+      previousReplScopeModified());
     // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
     // so that REPL LOAD would drop the tables which are not included in current policy.
     dmd.setReplScope(work.replScope);
@@ -946,7 +946,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
       long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
       dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId,
-        work.oldReplScope != null);
+        previousReplScopeModified());
       dmd.setReplScope(work.replScope);
       dmd.write(true);
       work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
