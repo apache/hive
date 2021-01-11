@@ -1839,7 +1839,15 @@ public class SharedWorkOptimizer extends Transform {
     Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new T1());
     Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new T1());
 
-    if (!Collections.disjoint(pc1, pc2)) {
+    if (Sets.intersection(pc1, pc2).size() > 1) {
+
+      try {
+        new OperatorGraph(pctx).toDot(new java.io.File("/tmp/x.full.dot"));
+        new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/x.joins.dot"));
+      } catch (Exception e1) {
+        throw new RuntimeException(e1);
+      }
+
       LOG.debug("merge would create an unsupported parallel edge(I)", op1, op2);
       return false;
     }
@@ -1862,6 +1870,7 @@ public class SharedWorkOptimizer extends Transform {
     @Override
     public Boolean apply(OpEdge input) {
       switch (input.getEdgeType()) {
+      //      case FLOW:
       case BROADCAST:
       case DPP:
       case SEMIJOIN:
