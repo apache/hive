@@ -71,6 +71,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -89,6 +90,13 @@ STAGE PLANS:
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
@@ -115,6 +123,15 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.outputtbl1_n19
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -252,6 +269,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -267,6 +285,12 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: string), _col1 (type: string)
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
@@ -293,6 +317,16 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.outputtbl2_n6
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 500
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), UDFToLong(VALUE._col1) (type: bigint), '2008-04-08' (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -420,6 +454,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -435,6 +470,12 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string), hr (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
@@ -461,6 +502,16 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.outputtbl3_n3
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1000
+                Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), UDFToLong(VALUE._col1) (type: bigint), '2008-04-08' (type: string), VALUE._col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
