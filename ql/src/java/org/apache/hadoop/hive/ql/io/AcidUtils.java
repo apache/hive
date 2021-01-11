@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaFileMetaData;
+import org.apache.hadoop.hive.ql.io.HdfsUtils.HdfsFileStatusWithoutId;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -632,21 +633,17 @@ public class AcidUtils {
    * files), a regular base file (created by major compaction) or an insert delta (which can be
    * treated as a base when split-update is enabled for acid).
    */
-  public static class AcidBaseFileInfo {
+  public static class FileInfo {
     final private HdfsFileStatusWithId fileId;
     final private AcidBaseFileType acidBaseFileType;
 
-    public AcidBaseFileInfo(HdfsFileStatusWithId fileId, AcidBaseFileType acidBaseFileType) {
+    public FileInfo(HdfsFileStatusWithId fileId, AcidBaseFileType acidBaseFileType) {
       this.fileId = fileId;
       this.acidBaseFileType = acidBaseFileType;
     }
 
     public boolean isOriginal() {
       return this.acidBaseFileType == AcidBaseFileType.ORIGINAL_BASE;
-    }
-
-    public boolean isAcidSchema() {
-      return this.acidBaseFileType == AcidBaseFileType.ACID_SCHEMA;
     }
 
     public HdfsFileStatusWithId getHdfsFileStatusWithId() {
@@ -825,6 +822,13 @@ public class AcidUtils {
     }
   }
 
+  public interface Directory {
+    List<FileInfo> getFiles() throws IOException;
+    FileSystem getFs();
+    Path getPath();
+    List<ParsedDelta> getDeleteDeltas();
+  }
+
   /**
    * Since version 3 but prior to version 4, format of a base is "base_X" where X is a writeId.
    * If this base was produced by a compactor, X is the highest writeId that the compactor included.
@@ -918,7 +922,7 @@ public class AcidUtils {
     public List<HdfsFileStatusWithId> getFiles(FileSystem fs, Ref<Boolean> useFileIds) throws IOException {
       // If the list was not populated before, do it now
       if (files == null && fs != null) {
-        files = listFilesStatusWithId(baseDirPath, useFileIds, fs, AcidUtils.hiddenFileFilter);
+        files = HdfsUtils.listFileStatusWithId(fs, baseDirPath, useFileIds, false, AcidUtils.hiddenFileFilter);
       }
       return files;
     }
@@ -975,7 +979,7 @@ public class AcidUtils {
     public List<HdfsFileStatusWithId> getFiles(FileSystem fs, Ref<Boolean> useFileIds) throws IOException {
       // If the list was not populated before, do it now
       if (files == null && fs != null) {
-        files = listFilesStatusWithId(path, useFileIds, fs, isRawFormat() ? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter);
+        files = HdfsUtils.listFileStatusWithId(fs, path, useFileIds, false, isRawFormat() ? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter);
       }
       return files;
     }
@@ -1312,7 +1316,7 @@ public class AcidUtils {
     FileSystem fs = fileSystem == null ? candidateDirectory.getFileSystem(conf) : fileSystem;
     AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds);
 
-    List<HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, hiddenFileFilter);
+    List<HdfsFileStatusWithId> childrenWithId = HdfsUtils.tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, hiddenFileFilter);
 
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
@@ -1343,7 +1347,7 @@ public class AcidUtils {
       // If childrenWithId != null, we would have already populated "original"
       if (childrenWithId != null) {
         for (Path origDir : directory.getOriginalDirectories()) {
-          directory.getOriginalFiles().addAll(findOriginals(fs, origDir, useFileIds, ignoreEmptyFiles, true));
+          directory.getOriginalFiles().addAll(HdfsUtils.listFileStatusWithId(fs, origDir, useFileIds, true, null));
         }
       }
     }
@@ -1864,92 +1868,6 @@ public class AcidUtils {
       return false;
     }
     return true;
-  }
-
-  public static class HdfsFileStatusWithoutId implements HdfsFileStatusWithId {
-    private final FileStatus fs;
-
-    public HdfsFileStatusWithoutId(FileStatus fs) {
-      this.fs = fs;
-    }
-
-    @Override
-    public FileStatus getFileStatus() {
-      return fs;
-    }
-
-    @Override
-    public Long getFileId() {
-      return null;
-    }
-  }
-
-  /**
-   * Find the original files (non-ACID layout) recursively under the partition directory.
-   * @param fs the file system
-   * @param dir the directory to add
-   * @return the list of original files
-   * @throws IOException
-   */
-  public static List<HdfsFileStatusWithId> findOriginals(FileSystem fs, Path dir, Ref<Boolean> useFileIds,
-      boolean ignoreEmptyFiles, boolean recursive) throws IOException {
-    List<HdfsFileStatusWithId> originals = new ArrayList<>();
-    List<HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, dir, hiddenFileFilter);
-    if (childrenWithId != null) {
-      for (HdfsFileStatusWithId child : childrenWithId) {
-        if (child.getFileStatus().isDirectory()) {
-          if (recursive) {
-            originals.addAll(findOriginals(fs, child.getFileStatus().getPath(), useFileIds,
-                ignoreEmptyFiles, true));
-          }
-        } else {
-          if (!ignoreEmptyFiles || child.getFileStatus().getLen() > 0) {
-            originals.add(child);
-          }
-        }
-      }
-    } else {
-      List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, dir, hiddenFileFilter);
-      for (FileStatus child : children) {
-        if (child.isDirectory()) {
-          if (recursive) {
-            originals.addAll(findOriginals(fs, child.getPath(), useFileIds, ignoreEmptyFiles, true));
-          }
-        } else {
-          if (!ignoreEmptyFiles || child.getLen() > 0) {
-            originals.add(new HdfsFileStatusWithoutId(child));
-          }
-        }
-      }
-    }
-    return originals;
-  }
-
-  private static List<HdfsFileStatusWithId> tryListLocatedHdfsStatus(Ref<Boolean> useFileIds, FileSystem fs,
-      Path directory, PathFilter filter) {
-    if (useFileIds == null) {
-      return null;
-    }
-
-    List<HdfsFileStatusWithId> childrenWithId = null;
-    final Boolean val = useFileIds.value;
-    if (val == null || val) {
-      try {
-        childrenWithId = SHIMS.listLocatedHdfsStatus(fs, directory, filter);
-        if (val == null) {
-          useFileIds.value = true;
-        }
-      } catch (UnsupportedOperationException uoe) {
-        LOG.info("Failed to get files with ID; using regular API: " + uoe.getMessage());
-        if (val == null) {
-          useFileIds.value = false;
-        }
-      } catch (IOException ioe) {
-        LOG.info("Failed to get files with ID; using regular API: " + ioe.getMessage());
-        LOG.debug("Failed to get files with ID", ioe);
-      }
-    }
-    return childrenWithId;
   }
 
   public static boolean isTablePropertyTransactional(Properties props) {
@@ -3166,19 +3084,7 @@ public class AcidUtils {
     return TxnType.DEFAULT;
   }
 
-  public static List<HdfsFileStatusWithId> listFilesStatusWithId(
-      Path base, Ref<Boolean> useFileIds, FileSystem fs, PathFilter filter) throws IOException {
-    // Try the native solution
-    List<HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, base, filter);
 
-    if (childrenWithId  == null) {
-      // Fall back to regular API and create states without ID.
-      childrenWithId = HdfsUtils.listLocatedStatus(fs, base, filter).stream()
-          .map(HdfsFileStatusWithoutId::new)
-          .collect(Collectors.toList());
-    }
-    return childrenWithId;
-  }
 
   private static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {

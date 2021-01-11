@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
 import java.io.IOException;
@@ -70,9 +68,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils.AcidOperationalProperties;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
+import org.apache.hadoop.hive.ql.io.AcidUtils.FileInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 import org.apache.hadoop.hive.ql.io.BatchToRowReader;
@@ -82,6 +81,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
+import org.apache.hadoop.hive.ql.io.OriginalDirectory;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
@@ -849,7 +849,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     public SplitInfo(Context context, FileSystem fs, FileStatus fileStatus, OrcTail orcTail,
         List<OrcProto.Type> readerTypes,  boolean isOriginal, ArrayList<DeltaMetaData> deltas,
         boolean hasBase, Path dir, boolean[] covered) throws IOException {
-      this(context, fs, new AcidUtils.HdfsFileStatusWithoutId(fileStatus),
+      this(context, fs, new HdfsUtils.HdfsFileStatusWithoutId(fileStatus),
           orcTail, readerTypes, isOriginal, deltas, hasBase, dir, covered, null);
     }
   }
@@ -1230,7 +1230,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * Given a directory, get the list of files and blocks in those files.
    * To parallelize file generator use "mapreduce.input.fileinputformat.list-status.num-threads"
    */
-  static final class FileGenerator implements Callable<AcidDirectory> {
+  static final class FileGenerator implements Callable<Directory> {
     private final Context context;
     private final Supplier<FileSystem> fs;
     /**
@@ -1260,12 +1260,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     @Override
-    public AcidDirectory call() throws IOException {
+    public Directory call() throws IOException {
       if (ugi == null) {
         return callInternal();
       }
       try {
-        return ugi.doAs((PrivilegedExceptionAction<AcidDirectory>) () -> callInternal());
+        return ugi.doAs((PrivilegedExceptionAction<Directory>) () -> callInternal());
       } catch (InterruptedException e) {
         throw new IOException(e);
       }
@@ -1282,23 +1282,28 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
 
-    private AcidDirectory callInternal() throws IOException {
-      if (context.acidOperationalProperties != null
-          && context.acidOperationalProperties.isInsertOnly()) {
-        // See the class comment - HIF handles MM for all input formats, so if we try to handle it
-        // again, in particular for the non-recursive originals-only getSplits call, we will just
-        // get confused. This bypass was not necessary when MM tables didn't support originals. Now
-        // that they do, we use this path for anything MM table related, although everything except
-        // the originals could still be handled by AcidUtils like a regular non-txn table.
-        boolean isRecursive = context.conf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE,
-            context.conf.getBoolean("mapred.input.dir.recursive", false));
-        AcidDirectory directory = new AcidDirectory(dir, fs.get(), useFileIds);
-        List<HdfsFileStatusWithId> originals = AcidUtils.findOriginals(fs.get(), dir, useFileIds, true, isRecursive);
-        directory.getOriginalFiles().addAll(originals);
-        return directory;
+    private Directory callInternal() throws IOException {
+      if (context.acidOperationalProperties == null
+          || context.acidOperationalProperties.isInsertOnly()) {
+        // For plain non-acid tables we just need to list all the files in the table / partition directory.
+        // For MM tables HiveInputFormat#processPathsForMmRead already did filter out which
+        // base / delta directories this query should read. The path in dir is either a base / delta / original
+        // directory not the table / partition. So we just need to list the files, no need to do any acid related filtering.
+        // In this context every file is considered original (since none of them is full ACID schema) this is not the same
+        // as original files in the context of MM tables (see HiveConf.HIVE_MM_ALLOW_ORIGINALS)
+        return listOriginalFiles();
       }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
       return getAcidState();
+    }
+    private OriginalDirectory listOriginalFiles() throws IOException {
+      boolean isRecursive = context.conf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE,
+          context.conf.getBoolean("mapred.input.dir.recursive", false));
+
+      List<FileInfo> originals = HdfsUtils
+          .listFileStatusWithId(fs.get(), dir, Ref.from(fs instanceof DistributedFileSystem), isRecursive, null)
+          .stream().map(f -> new FileInfo(f, ORIGINAL_BASE)).collect(Collectors.toList());
+      return new OriginalDirectory(originals, fs.get(), dir);
     }
   }
 
@@ -1741,14 +1746,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     boolean allowSyntheticFileIds = useFileIdsConfig && HiveConf.getBoolVar(
         conf, ConfVars.HIVE_ORC_ALLOW_SYNTHETIC_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
-    List<Future<AcidDirectory>> pathFutures = Lists.newArrayList();
+    List<Future<Directory>> pathFutures = Lists.newArrayList();
     List<Future<Void>> strategyFutures = Lists.newArrayList();
     final List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
     UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
 
     // multi-threaded file statuses and split strategy
     Path[] paths = getInputPaths(conf);
-    CompletionService<AcidDirectory> ecs = new ExecutorCompletionService<>(Context.threadPool);
+    CompletionService<Directory> ecs = new ExecutorCompletionService<>(Context.threadPool);
     for (Path dir : paths) {
       Supplier<FileSystem> fsSupplier = () -> {
         try {
@@ -1757,7 +1762,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           throw new RuntimeException(e);
         }
       };
-      FileGenerator fileGenerator = new FileGenerator(context, fsSupplier, dir, useFileIds, ugi);
+      Callable<Directory> fileGenerator = new FileGenerator(context, fsSupplier, dir, useFileIds, ugi);
       pathFutures.add(ecs.submit(fileGenerator));
     }
 
@@ -1781,18 +1786,18 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       long maxWaitUs = context.splitStrategyBatchMs * 1000000;
       int resultsLeft = paths.length;
       while (resultsLeft > 0) {
-        AcidDirectory adi = null;
+        Directory directory = null;
         if (combinedCtx != null && combinedCtx.combined != null) {
           long waitTimeUs = combinedCtx.combineStartUs + maxWaitUs - System.nanoTime();
           if (waitTimeUs >= 0) {
-            Future<AcidDirectory> f = ecs.poll(waitTimeUs, TimeUnit.NANOSECONDS);
-            adi = (f == null) ? null : f.get();
+            Future<Directory> f = ecs.poll(waitTimeUs, TimeUnit.NANOSECONDS);
+            directory = (f == null) ? null : f.get();
           }
         } else {
-          adi = ecs.take().get();
+          directory = ecs.take().get();
         }
 
-        if (adi == null) {
+        if (directory == null) {
           // We were combining SS-es and the time has expired.
           assert combinedCtx.combined != null;
           scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures, splits);
@@ -1802,7 +1807,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         // We have received a new directory information, make split strategies.
         --resultsLeft;
-        if(adi.getBaseAndDeltaFiles().isEmpty()) {
+        if (directory.getFiles().isEmpty()) {
           //no files found, for example empty table/partition
           continue;
         }
@@ -1810,8 +1815,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         // case when we have a mix of original base files & insert deltas, we will produce two
         // independent split strategies for them. There is a global flag 'isOriginal' that is set
         // on a per split strategy basis and it has to be same for all the files in that strategy.
-        List<SplitStrategy<?>> splitStrategies = determineSplitStrategies(combinedCtx, context, adi.getFs(),
-            adi.getPath(), adi.getBaseAndDeltaFiles(), adi.getDeleteDeltas(), readerTypes, ugi,
+        List<SplitStrategy<?>> splitStrategies = determineSplitStrategies(combinedCtx, context, directory.getFs(),
+            directory.getPath(), directory.getFiles(), directory.getDeleteDeltas(), readerTypes, ugi,
             allowSyntheticFileIds);
 
         for (SplitStrategy<?> splitStrategy : splitStrategies) {
@@ -2257,7 +2262,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   @VisibleForTesting
   static List<SplitStrategy<?>> determineSplitStrategies(CombinedCtx combinedCtx, Context context,
       FileSystem fs, Path dir,
-      List<AcidBaseFileInfo> baseFiles,
+      List<FileInfo> baseFiles,
       List<ParsedDelta> parsedDeltas,
       List<OrcProto.Type> readerTypes,
       UserGroupInformation ugi, boolean allowSyntheticFileIds) throws IOException {
@@ -2285,11 +2290,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<HdfsFileStatusWithId> acidSchemaFiles = new ArrayList<>();
     List<HdfsFileStatusWithId> originalSchemaFiles = new ArrayList<HdfsFileStatusWithId>();
     // Separate the base files into acid schema and non-acid(original) schema files.
-    for (AcidBaseFileInfo acidBaseFileInfo : baseFiles) {
+    for (FileInfo acidBaseFileInfo : baseFiles) {
       if (acidBaseFileInfo.isOriginal()) {
         originalSchemaFiles.add(acidBaseFileInfo.getHdfsFileStatusWithId());
       } else {
-        assert acidBaseFileInfo.isAcidSchema();
         acidSchemaFiles.add(acidBaseFileInfo.getHdfsFileStatusWithId());
       }
     }
