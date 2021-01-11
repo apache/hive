@@ -415,6 +415,11 @@ public class MetastoreConf {
         new RangeValidator(1, 20), "Number of consecutive compaction failures (per table/partition) " +
         "after which automatic compactions will not be scheduled any more.  Note that this must be less " +
         "than hive.compactor.history.retention.failed."),
+    COMPACTOR_INITIATOR_FAILED_RETRY_TIME("metastore.compactor.initiator.failed.retry.time",
+        "hive.compactor.initiator.failed.retry.time", 7, TimeUnit.DAYS,
+        "Time after Initiator will ignore metastore.compactor.initiator.failed.compacts.threshold "
+            + "and retry with compaction again. This will try to auto heal tables with previous failed compaction "
+            + "without manual intervention. Setting it to 0 or negative value will disable this feature."),
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
