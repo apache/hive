@@ -361,7 +361,7 @@ public class HiveStatement implements java.sql.Statement {
       inPlaceUpdateStream.get().getEventNotifier().progressBarCompleted();
     }
 
-    LOG.debug("Waiting on operation to complete. Polling operation status.");
+    LOG.debug("Waiting on operation to complete: Polling operation status");
 
     // Poll on the operation status, till the operation is complete
     do {
