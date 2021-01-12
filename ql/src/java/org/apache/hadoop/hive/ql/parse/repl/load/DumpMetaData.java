@@ -235,4 +235,12 @@ public class DumpMetaData {
     }
     Utils.writeOutput(listValues, dumpFile, hiveConf, replace);
   }
+
+  public void writeReplScope(boolean replace) throws SemanticException {
+    List<List<String>> listValues = new ArrayList<>();
+    if (replScope != null) {
+      listValues.add(prepareReplScopeValues());
+    }
+    Utils.writeOutput(listValues, dumpFile, hiveConf, replace);
+  }
 }

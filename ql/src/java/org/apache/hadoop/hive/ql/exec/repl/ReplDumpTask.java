@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -180,6 +181,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             initiateAuthorizationDumpTask();
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
+          dmd.setReplScope(work.replScope);
+          //write the dmd to enable checkpointing in table level replication
+          dmd.writeReplScope(true);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
@@ -975,8 +979,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return false;
     }
     Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf);
+    if (tableExpressionModified(dumpMetaData)) {
+      return false;
+    }
     if (isBootStrap) {
-      return shouldResumePreviousDump(new DumpMetaData(hiveDumpPath, conf));
+      return shouldResumePreviousDump(dumpMetaData);
     }
     // In case of incremental we should resume if _events_dump file is present and is valid
     Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
@@ -987,6 +995,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
     }
     return resumeFrom > 0L;
+  }
+
+  private boolean tableExpressionModified(DumpMetaData dumpMetaData) {
+    try {
+      //Check if last dump was with same repl scope. If not table expression was modified. So restart the dump
+      //Dont use checkpointing if repl scope if modified
+      return !dumpMetaData.getReplScope().equals(work.replScope);
+    } catch (Exception e) {
+      LOG.info("No previous dump present");
+      return false;
+    }
   }
 
   long currentNotificationId(Hive hiveDb) throws TException {

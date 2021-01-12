@@ -128,11 +128,9 @@ public class ReplScope implements Serializable {
     }
 
     ReplScope replScope = (ReplScope)o;
-    return (Objects.equals(replScope.excludedTableNames, this.excludedTableNames)
+    return Objects.equals(replScope.excludedTableNames, this.excludedTableNames)
       && Objects.equals(replScope.includedTableNames, this.includedTableNames)
-      && replScope.dbName == null ? (this.dbName == null) : replScope.dbName.equals(this.dbName)
-      && replScope.dbNamePattern == null ? (this.dbNamePattern == null)
-      : replScope.dbNamePattern.equals(this.dbNamePattern));
+      && Objects.equals(replScope.dbName, this.dbName);
   }
 
   @Override

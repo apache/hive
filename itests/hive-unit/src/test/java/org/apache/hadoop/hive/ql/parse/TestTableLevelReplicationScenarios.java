@@ -394,36 +394,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       Assert.assertTrue(failed);
     }
 
-    // Test incremental replication with invalid replication policies in REPLACE clause.
-    String replPolicy = primaryDbName;
-    WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
-    String lastReplId = tupleBootstrap.lastReplicationId;
-    for (String oldReplPolicy : invalidReplPolicies) {
-      failed = false;
-      try {
-        replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, null, null, null, replicatedTables);
-      } catch (Exception ex) {
-        LOG.info("Got exception: {}", ex.getMessage());
-        Assert.assertTrue(ex instanceof ParseException);
-        failed = true;
-      }
-      Assert.assertTrue(failed);
-    }
-
-    // Replace with replication policy having different DB name.
-    String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + "_dupe.'t1+'.'t1'";
-    failed = false;
-    try {
-      replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, null, null, null, replicatedTables);
-    } catch (Exception ex) {
-      LOG.info("Got exception: {}", ex.getMessage());
-      Assert.assertTrue(ex instanceof SemanticException);
-      failed = true;
-    }
-    Assert.assertTrue(failed);
 
     // Invalid pattern, include/exclude table list is empty.
     invalidReplPolicies = new String[] {
@@ -742,7 +715,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only 2 tables are replicated to target.
     String[] replicatedTables = new String[] {"in1", "in2"};
     String[] bootstrapTables = new String[] {};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
     // Rename tables to make them satisfy the filter.
@@ -753,7 +726,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
     bootstrapTables = new String[] {"in3", "in4", "in5"};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
     primary.run("use " + primaryDbName)
@@ -765,7 +738,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     replicatedTables = new String[] {"in1", "in2", "in8", "in11"};
     bootstrapTables = new String[] {"in11"};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
     primary.run("use " + primaryDbName)
@@ -780,7 +753,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     replicatedTables = new String[] {"in200", "in12", "in11", "in14"};
     bootstrapTables = new String[] {"in14", "in200"};
-    replicateAndVerify(replPolicy, null, lastReplId, null,
+    replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
   }
 
@@ -836,7 +809,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only 1 tables are replicated to target. Acid tables are not dumped.
     String[] replicatedTables = new String[] {"in1"};
     String[] bootstrapTables = new String[] {};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, dumpWithClause,
             null, bootstrapTables, replicatedTables);
 
     // Rename tables to make them satisfy the filter and enable acid tables.
@@ -849,7 +822,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'");
     replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
     bootstrapTables = new String[] {"in2", "in3", "in4", "in5"};
-    replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
+    replicateAndVerify(replPolicy, replPolicy, lastReplId, dumpWithClause,
             null, bootstrapTables, replicatedTables);
   }
 

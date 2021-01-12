@@ -210,7 +210,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       String oldName = before.getTableName();
       String newName = after.getTableName();
       boolean needDump = true;
-      if (withinContext.oldReplScope != null) {
+      if (withinContext.oldReplScope != null && !withinContext.oldReplScope.equals(withinContext.replScope)) {
         needDump = handleRenameForReplacePolicy(withinContext, oldName, newName);
       } else if (!withinContext.replScope.includeAllTables()) {
         needDump = handleRenameForTableLevelReplication(withinContext, oldName, newName);
