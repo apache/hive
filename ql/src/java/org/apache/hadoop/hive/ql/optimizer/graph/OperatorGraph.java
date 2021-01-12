@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -242,7 +241,7 @@ public class OperatorGraph {
     return nodeCluster.get(op1);
   }
 
-  public Collection<Cluster> getClusters() {
-    return nodeCluster.values();
+  public Set<Cluster> getClusters() {
+    return new HashSet<>(nodeCluster.values());
   }
 }
