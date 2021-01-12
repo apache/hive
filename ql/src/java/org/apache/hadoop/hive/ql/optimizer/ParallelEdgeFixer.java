@@ -21,33 +21,17 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.calcite.util.Pair;
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
-import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
-import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
-import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -62,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * Inserts an extrea RS to avoid parallel edges.
@@ -76,33 +59,31 @@ public class ParallelEdgeFixer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    //    Set<OpGroup> groups = findOpGroups(pctx);
     OperatorGraph og = new OperatorGraph(pctx);
     fixParallelEdges(og);
     return pctx;
   }
 
-  private static class Cmp1 implements Comparator<Pair<Operator<?>, Operator<?>>> {
+  /**
+   * To achieve reproducible plans - the operators must be placed in some stable order.
+   */
+  private static class OperatorPairComparator implements Comparator<Pair<Operator<?>, Operator<?>>> {
     @Override
     public int compare(Pair<Operator<?>, Operator<?>> o1, Pair<Operator<?>, Operator<?>> o2) {
       return sig(o1).compareTo(sig(o2));
-
     }
 
     private String sig(Pair<Operator<?>, Operator<?>> o1) {
       return o1.left.toString() + o1.right.toString();
     }
-
   }
 
-  /**
-   * Adds an intermediate reduce sink inbetweeen p and o.
-   */
   private void fixParallelEdges(OperatorGraph og) {
 
+    // Identify edge operators
+    ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
+        new ArrayListValuedHashMap<>();
     for (Cluster c : og.getClusters()) {
-      ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
-          new ArrayListValuedHashMap<>();
       for (Operator<?> o : c.getMembers()) {
         for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
           Cluster parentCluster = og.clusterOf(p);
@@ -112,23 +93,24 @@ public class ParallelEdgeFixer extends Transform {
           edgeOperators.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
         }
       }
+    }
 
-      for (Pair<Cluster, Cluster> key : edgeOperators.keySet()) {
-        List<Pair<Operator<?>, Operator<?>>> values = edgeOperators.get(key);
-        if(values.size() <=1) {
-          continue;
-        }
-        // operator order must in stabile order - or we end up with falky plans causing flaky tests...
-        values.sort(new Cmp1());
+    // process all edges and fix parallel edges if there are any
+    for (Pair<Cluster, Cluster> key : edgeOperators.keySet()) {
+      List<Pair<Operator<?>, Operator<?>>> values = edgeOperators.get(key);
+      if (values.size() <= 1) {
+        continue;
+      }
+      // operator order must in stabile order - or we end up with falky plans causing flaky tests...
+      values.sort(new OperatorPairComparator());
 
-        // remove one optionally unsupported edge (it will be kept as is)
-        removeOneEdge(values);
+      // remove one optionally unsupported edge (it will be kept as is)
+      removeOneEdge(values);
 
-        Iterator<Pair<Operator<?>, Operator<?>>> it = values.iterator();
-        while (it.hasNext()) {
-          Pair<Operator<?>, Operator<?>> pair = it.next();
-          fixParallelEdge(pair.left, pair.right);
-        }
+      Iterator<Pair<Operator<?>, Operator<?>>> it = values.iterator();
+      while (it.hasNext()) {
+        Pair<Operator<?>, Operator<?>> pair = it.next();
+        fixParallelEdge(pair.left, pair.right);
       }
     }
   }
@@ -137,30 +119,27 @@ public class ParallelEdgeFixer extends Transform {
     Pair<Operator<?>, Operator<?>> toKeep = null;
     for (Pair<Operator<?>, Operator<?>> pair : values) {
       if (!isParallelEdgeSupported(pair)) {
-
         if (toKeep != null) {
-          throw new RuntimeException("More than one operators which should not be reshuffled!");
+          throw new RuntimeException("More than one operators which may not reshuffled!");
         }
         toKeep = pair;
       }
     }
-    toKeep=values.get(values.size() - 1);
+    if (toKeep == null) {
+      toKeep = values.get(values.size() - 1);
+    }
     values.remove(toKeep);
   }
 
   private boolean isParallelEdgeSupported(Pair<Operator<?>, Operator<?>> pair) {
-    ReduceSinkOperator rs = (ReduceSinkOperator) pair.left;
     Operator<?> child = pair.right;
-
     if (child instanceof MapJoinOperator) {
       return true;
     }
-
     if (child instanceof TableScanOperator) {
       return true;
     }
     return false;
-
   }
 
   /**
@@ -177,22 +156,18 @@ public class ParallelEdgeFixer extends Transform {
     Operator<ReduceSinkDesc> newRS =
         OperatorFactory.getAndMakeChild(p.getCompilationOpContext(), newConf, new ArrayList<>());
 
-    // alter old RS conf to forward only
     conf.setOutputName("forward_to_" + newRS);
-    //    conf.setForwarding(true);
     conf.setTag(0);
 
-    newConf.setKeyCols(new ArrayList(conf.getKeyCols()));
+    newConf.setKeyCols(new ArrayList<>(conf.getKeyCols()));
     newRS.setSchema(new RowSchema(p.getSchema()));
 
     p.replaceChild(o, newSEL);
 
-    newSEL.setParentOperators(Lists.newArrayList(p));
-    newSEL.setChildOperators(Lists.newArrayList(newRS));
-    newRS.setParentOperators(Lists.newArrayList(newSEL));
-    newRS.setChildOperators(Lists.newArrayList(o));
-
-    //    newSEL.getChildOperators().add(newRS);
+    newSEL.setParentOperators(Lists.<Operator<?>> newArrayList(p));
+    newSEL.setChildOperators(Lists.<Operator<?>> newArrayList(newRS));
+    newRS.setParentOperators(Lists.<Operator<?>> newArrayList(newSEL));
+    newRS.setChildOperators(Lists.<Operator<?>> newArrayList(o));
 
     o.replaceParent(p, newRS);
 
@@ -207,23 +182,15 @@ public class ParallelEdgeFixer extends Transform {
 
       String colName = e.getKey();
       ExprNodeDesc expr = e.getValue();
-      if (colName.contains("reducesinkkey")) {
-        int asd = 1;
-      }
 
       ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
 
       colList.add(colRef);
-      //      String newColName = colName.replaceAll(".*\\.", "");
       String newColName = extractColumnName(expr);
-//      if (colName.startsWith("KEY")) {
-//        newColName = conf.getKeyCols().get(0);
-//      }
       outputColumnNames.add(newColName);
       ColumnInfo newColInfo = new ColumnInfo(p.getSchema().getColumnInfo(colName));
       newColInfo.setInternalName(newColName);
       newColumns.add(newColInfo);
-
     }
     SelectDesc selConf = new SelectDesc(colList, outputColumnNames);
     Operator<SelectDesc> newSEL =
@@ -245,124 +212,5 @@ public class ParallelEdgeFixer extends Transform {
       return exprNodeConstantDesc.getFoldedFromCol();
     }
     throw new RuntimeException("unexpected mapping expression!");
-  }
-
-  static class BucketVersionProcessorCtx implements NodeProcessorCtx {
-    Set<OpGroup> groups = new LinkedHashSet<OpGroup>();
-  }
-
-  private Set<OpGroup> findOpGroups(ParseContext pctx) throws SemanticException {
-
-    BucketVersionProcessorCtx ctx = new BucketVersionProcessorCtx();
-
-    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
-
-    SemanticDispatcher disp = new DefaultRuleDispatcher(new IdentifyBucketGroups(), opRules, ctx);
-    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
-
-    ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pctx.getTopOps().values());
-    ogw.startWalking(topNodes, null);
-    return ctx.groups;
-  }
-
-  /**
-   * This rule decomposes the operator tree into group which may have different bucketing versions.
-   */
-  private static class IdentifyBucketGroups implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      Operator<?> o = (Operator<?>) nd;
-      OpGroup g;
-      if (nodeOutputs.length == 0 || o instanceof ReduceSinkOperator) {
-        g = newGroup(procCtx);
-      } else {
-        g = (OpGroup) nodeOutputs[0];
-      }
-      for (int i = 1; i < nodeOutputs.length; i++) {
-        g.merge((OpGroup) nodeOutputs[i]);
-      }
-      g.add(o);
-        return g;
-    }
-
-    private OpGroup newGroup(NodeProcessorCtx procCtx) {
-      BucketVersionProcessorCtx ctx = (BucketVersionProcessorCtx) procCtx;
-      OpGroup g = new OpGroup();
-      ctx.groups.add(g);
-      return g;
-    }
-  }
-
-  /**
-   * This class represents the version required by an Operator.
-   */
-  private static class OperatorBucketingVersionInfo {
-
-    private Operator<?> op;
-    private int bucketingVersion;
-
-    public OperatorBucketingVersionInfo(Operator<?> op, int bucketingVersion) {
-      this.op = op;
-      this.bucketingVersion = bucketingVersion;
-    }
-
-    @Override
-    public String toString() {
-      return String.format("[op: %s, bucketingVersion=%d]", op, bucketingVersion);
-    }
-  }
-
-  /**
-   * A Group of operators which must have the same bucketing version.
-   */
-  public static class OpGroup {
-    Set<Operator<?>> members = Sets.newIdentityHashSet();
-    int version = -1;
-
-    public OpGroup() {
-    }
-
-    public void add(Operator<?> o) {
-      members.add(o);
-    }
-
-    public void setBucketVersion() {
-      for (Operator<?> operator : members) {
-        operator.getConf().setBucketingVersion(version);
-        LOG.debug("Bucketing version for {} is set to {}", operator, version);
-      }
-    }
-
-    List<OperatorBucketingVersionInfo> getBucketingVersions() {
-      List<OperatorBucketingVersionInfo> ret = new ArrayList<>();
-      for (Operator<?> operator : members) {
-        if (operator instanceof TableScanOperator) {
-          TableScanOperator tso = (TableScanOperator) operator;
-          int bucketingVersion = tso.getConf().getTableMetadata().getBucketingVersion();
-          int numBuckets = tso.getConf().getNumBuckets();
-          if (numBuckets > 1) {
-            ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
-          } else {
-            LOG.info("not considering bucketingVersion for: %s because it has %d<2 buckets ", tso, numBuckets);
-          }
-        }
-        if (operator instanceof FileSinkOperator) {
-          FileSinkOperator fso = (FileSinkOperator) operator;
-          int bucketingVersion = fso.getConf().getTableInfo().getBucketingVersion();
-          ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
-        }
-      }
-      return ret;
-    }
-
-    public void merge(OpGroup opGroup) {
-      for (Operator<?> operator : opGroup.members) {
-        add(operator);
-      }
-      opGroup.members.clear();
-    }
   }
 }
