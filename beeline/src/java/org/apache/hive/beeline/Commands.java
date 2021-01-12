@@ -147,7 +147,7 @@ public class Commands {
   public boolean addlocaldrivername(String line) {
     String driverName = arg1(line, "driver class name");
     try {
-      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+      beeLine.setDrivers(beeLine.scanDrivers());
     } catch (IOException e) {
       beeLine.error("Fail to scan drivers due to the exception:" + e);
       beeLine.error(e);
@@ -177,7 +177,7 @@ public class Commands {
       URLClassLoader newClassLoader = new URLClassLoader(new URL[]{p.toURL()}, classLoader);
 
       Thread.currentThread().setContextClassLoader(newClassLoader);
-      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+      beeLine.setDrivers(beeLine.scanDrivers());
     } catch (Exception e) {
       beeLine.error("Fail to add local jar due to the exception:" + e);
       beeLine.error(e);
@@ -347,7 +347,7 @@ public class Commands {
     TreeSet<String> names = new TreeSet<String>();
 
     if (beeLine.getDrivers() == null) {
-      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(line)));
+      beeLine.setDrivers(beeLine.scanDrivers());
     }
 
     beeLine.info(beeLine.loc("drivers-found-count", beeLine.getDrivers().size()));
