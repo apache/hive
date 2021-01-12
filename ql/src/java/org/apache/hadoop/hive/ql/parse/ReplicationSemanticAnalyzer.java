@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
@@ -320,6 +321,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
+
+        if (!dmd.isVersionCompatible()) {
+          throw new SemanticException
+              (
+                  "Dump version: " + dmd.getHiveVersion() + ". Versions older than "
+                  + Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT + " are not supported."
+              );
+        }
 
         boolean evDump = false;
         // we will decide what hdfs locations needs to be copied over here as well.
