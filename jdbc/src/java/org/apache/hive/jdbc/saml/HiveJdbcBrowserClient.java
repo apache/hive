@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -120,11 +119,6 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
     clientContext = null;
   }
 
-  private boolean validateSSOUrl(URI ssoUrl) {
-    //TODO(Vihang) add URL validation code here
-    return true;
-  }
-
   public void doBrowserSSO() throws HiveJdbcBrowserException {
     Future<Void> serverResponseHandle = waitAsyncForServerResponse();
     logDebugInfoUri(clientContext.getSsoUri());
@@ -175,7 +169,6 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
   protected void openBrowserWindow() throws HiveJdbcBrowserException {
     URI ssoUri = clientContext.getSsoUri();
     Preconditions.checkNotNull(ssoUri, "SSO Url is null");
-    Preconditions.checkArgument(validateSSOUrl(ssoUri), "Invalid SSO url");
     try {
       if (Desktop.isDesktopSupported()) {
         Desktop.getDesktop().browse(ssoUri);

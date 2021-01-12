@@ -77,9 +77,6 @@ public final class AuthenticationProviderFactory {
       return new CustomAuthenticationProviderImpl((conf == null) ? AuthMethods.CUSTOM.getConf() : conf);
     } else if (authMethod == AuthMethods.NONE) {
       return new AnonymousAuthenticationProviderImpl();
-    } else if (authMethod == AuthMethods.SAML) {
-      //TODO right thing to do?
-      return new AnonymousAuthenticationProviderImpl();
     } else {
       throw new AuthenticationException("Unsupported authentication method");
     }
