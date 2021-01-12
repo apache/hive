@@ -106,7 +106,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private boolean isPTFReduceSink = false;
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
   private boolean forwarding; // Whether this RS can forward records directly instead of shuffling/sorting
-  private boolean parallelEdgeSupport;
 
   public static enum ReducerTraits {
     UNSET(0), // unset
@@ -735,13 +734,5 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public AcidUtils.Operation getWriteType() {
     return writeType;
-  }
-
-  public void setParallelEdgeSupport(boolean b) {
-    parallelEdgeSupport=b;
-  }
-
-  public boolean isParallelEdgeSupport() {
-    return parallelEdgeSupport;
   }
 }

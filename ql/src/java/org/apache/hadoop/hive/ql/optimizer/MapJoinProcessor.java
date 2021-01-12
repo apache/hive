@@ -74,7 +74,6 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -590,8 +589,6 @@ public class MapJoinProcessor extends Transform {
         op.getCompilationOpContext(), mapJoinDescriptor,
         new RowSchema(outputRS.getSignature()), op.getParentOperators());
 
-    markOperatorsAsParallelizable(op.getParentOperators());
-
     mapJoinOp.getConf().setReversedExprs(op.getConf().getReversedExprs());
     Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
     mapJoinOp.setColumnExprMap(colExprMap);
@@ -608,17 +605,6 @@ public class MapJoinProcessor extends Transform {
 
     return mapJoinOp;
 
-  }
-
-  private static void markOperatorsAsParallelizable(List<Operator<? extends OperatorDesc>> operators) {
-    for (Operator<? extends OperatorDesc> parentOp : operators) {
-      OperatorDesc conf = parentOp.getConf();
-      assert (conf instanceof ReduceSinkDesc);
-      if (conf instanceof ReduceSinkDesc) {
-        ReduceSinkDesc reduceSinkDesc = (ReduceSinkDesc) conf;
-        reduceSinkDesc.setParallelEdgeSupport(true);
-      }
-    }
   }
 
   private static boolean needValueIndex(int[] valueIndex) {
