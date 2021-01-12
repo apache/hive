@@ -248,20 +248,6 @@ public class ParallelEdgeFixer extends Transform {
     throw new RuntimeException("unexpected mapping expression!");
   }
 
-  private Map<String, ExprNodeDesc> buildIdentityColumnExprMap(Map<String, ExprNodeDesc> columnExprMap) {
-
-    Map<String, ExprNodeDesc> ret = new HashMap<String, ExprNodeDesc>();
-    for (Entry<String, ExprNodeDesc> e : columnExprMap.entrySet()) {
-      String colName = e.getKey();
-      ExprNodeDesc expr = e.getValue();
-
-      ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
-      ret.put(colName, colRef);
-    }
-    return ret;
-
-  }
-
   static class BucketVersionProcessorCtx implements NodeProcessorCtx {
     Set<OpGroup> groups = new LinkedHashSet<OpGroup>();
   }
