@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
-import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -69,20 +67,12 @@ import com.google.common.collect.Sets;
  */
 public class ParallelEdgeFixer extends Transform {
 
-  static Operator d1 = null;
-  static Operator d2 = null;
-  static Operator d3 = null;
   protected static final Logger LOG = LoggerFactory.getLogger(ParallelEdgeFixer.class);
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Set<OpGroup> groups = findOpGroups(pctx);
     fixParallelEdges(groups);
-    try {
-      new OperatorGraph(pctx).toDot(new File("/tmp/last_para.dot"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
     return pctx;
   }
 
@@ -111,8 +101,7 @@ public class ParallelEdgeFixer extends Transform {
     }
 
     for (OpGroup g : groups) {
-      Set<OpGroup> ascendingGroups = new LinkedHashSet<>();
-      ListValuedMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>> m =
+      ListValuedMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>> edgeOperators =
           new ArrayListValuedHashMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>>();
       for (Operator<?> o : g.members) {
         for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
@@ -120,26 +109,19 @@ public class ParallelEdgeFixer extends Transform {
           if (parentGroup == g) {
             continue;
           }
-          m.put(new Pair(parentGroup, g), new Pair(p, o));
-          //          //          new VertexEdge
-          //          if (ascendingGroups.contains(parentGroup)) {
-          //            fixParallelEdge(p, o);
-          //          } else {
-          //            ascendingGroups.add(parentGroup);
-          //          }
+          edgeOperators.put(new Pair(parentGroup, g), new Pair(p, o));
         }
       }
 
-      for (Pair<OpGroup, OpGroup> key : m.keySet()) {
-        List<Pair<Operator, Operator>> values = m.get(key);
-//        List<Pair<Operator, Operator>> values = new ArrayList<Pair<Operator, Operator>>(values0);
+      for (Pair<OpGroup, OpGroup> key : edgeOperators.keySet()) {
+        List<Pair<Operator, Operator>> values = edgeOperators.get(key);
         if(values.size() <=1) {
           continue;
         }
         // operator order must in stabile order - or we end up with falky plans causing flaky tests...
         values.sort(new Cmp1());
 
-        // remove one possibly unsupported edge (it will be kept as is)
+        // remove one optionally unsupported edge (it will be kept as is)
         removeOneEdge(values);
 
         Iterator<Pair<Operator, Operator>> it = values.iterator();
@@ -273,27 +255,6 @@ public class ParallelEdgeFixer extends Transform {
       ret.put(colName, colRef);
     }
     return ret;
-
-  }
-
-  private List<ExprNodeDesc> createColumnRefs(List<ExprNodeDesc> oldExprs, List<String> newColumnNames) {
-    List<ExprNodeDesc> newExprs = new ArrayList<ExprNodeDesc>();
-    for (int i = 0; i < newColumnNames.size(); i++) {
-      ExprNodeDesc expr = oldExprs.get(i);
-      String name = newColumnNames.get(i);
-
-      ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), name, name, false);
-      newExprs.add(colRef);
-
-    }
-    return newExprs;
-  }
-
-  private void assignGroupVersions(Set<OpGroup> groups) {
-    for (OpGroup opGroup : groups) {
-      opGroup.analyzeBucketVersion();
-      opGroup.setBucketVersion();
-    }
 
   }
 
