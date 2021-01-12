@@ -2264,7 +2264,8 @@ public class BeeLine implements Closeable {
   public Driver findLocalDriver(String url) throws Exception {
     Objects.requireNonNull(url);
 
-    for (Driver d : drivers) {
+    Collection<Driver> currentDrivers = drivers == null ? Collections.emptyList() : drivers;
+    for (Driver d : currentDrivers) {
       try {
         String clazzName = d.getClass().getName();
         Driver driver = (Driver) Class.forName(clazzName, true,
@@ -2276,6 +2277,7 @@ public class BeeLine implements Closeable {
         throw e;
       }
     }
+
     return null;
   }
 
