@@ -76,14 +76,14 @@ public class ParallelEdgeFixer extends Transform {
     return pctx;
   }
 
-  private static class Cmp1 implements Comparator<Pair<Operator, Operator>> {
+  private static class Cmp1 implements Comparator<Pair<Operator<?>, Operator<?>>> {
     @Override
-    public int compare(Pair<Operator, Operator> o1, Pair<Operator, Operator> o2) {
+    public int compare(Pair<Operator<?>, Operator<?>> o1, Pair<Operator<?>, Operator<?>> o2) {
       return sig(o1).compareTo(sig(o2));
 
     }
 
-    private String sig(Pair<Operator, Operator> o1) {
+    private String sig(Pair<Operator<?>, Operator<?>> o1) {
       return o1.left.toString() + o1.right.toString();
     }
 
@@ -101,8 +101,8 @@ public class ParallelEdgeFixer extends Transform {
     }
 
     for (OpGroup g : groups) {
-      ListValuedMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>> edgeOperators =
-          new ArrayListValuedHashMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>>();
+      ListValuedMap<Pair<OpGroup, OpGroup>, Pair<Operator<?>, Operator<?>>> edgeOperators =
+          new ArrayListValuedHashMap<>();
       for (Operator<?> o : g.members) {
         for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
           OpGroup parentGroup = op2group.get(p);
@@ -114,7 +114,7 @@ public class ParallelEdgeFixer extends Transform {
       }
 
       for (Pair<OpGroup, OpGroup> key : edgeOperators.keySet()) {
-        List<Pair<Operator, Operator>> values = edgeOperators.get(key);
+        List<Pair<Operator<?>, Operator<?>>> values = edgeOperators.get(key);
         if(values.size() <=1) {
           continue;
         }
@@ -124,18 +124,18 @@ public class ParallelEdgeFixer extends Transform {
         // remove one optionally unsupported edge (it will be kept as is)
         removeOneEdge(values);
 
-        Iterator<Pair<Operator, Operator>> it = values.iterator();
+        Iterator<Pair<Operator<?>, Operator<?>>> it = values.iterator();
         while (it.hasNext()) {
-          Pair<Operator, Operator> pair = it.next();
+          Pair<Operator<?>, Operator<?>> pair = it.next();
           fixParallelEdge(pair.left, pair.right);
         }
       }
     }
   }
 
-  private void removeOneEdge(List<Pair<Operator, Operator>> values) {
-    Pair<Operator, Operator> toKeep = null;
-    for (Pair<Operator, Operator> pair : values) {
+  private void removeOneEdge(List<Pair<Operator<?>, Operator<?>>> values) {
+    Pair<Operator<?>, Operator<?>> toKeep = null;
+    for (Pair<Operator<?>, Operator<?>> pair : values) {
       if (!isParallelEdgeSupported(pair)) {
 
         if (toKeep != null) {
@@ -148,7 +148,7 @@ public class ParallelEdgeFixer extends Transform {
     values.remove(toKeep);
   }
 
-  private boolean isParallelEdgeSupported(Pair<Operator, Operator> pair) {
+  private boolean isParallelEdgeSupported(Pair<Operator<?>, Operator<?>> pair) {
     ReduceSinkOperator rs = (ReduceSinkOperator) pair.left;
     Operator<?> child = pair.right;
 
