@@ -860,12 +860,10 @@ public class HiveConnection implements java.sql.Connection {
     Map<String, String> openConf = new HashMap<>();
     // for remote JDBC client, try to set the conf var using 'set foo=bar'
     for (Entry<String, String> hiveConf : connParams.getHiveConfs().entrySet()) {
-      LOG.debug("Adding hiveconf: [{}={}]", hiveConf.getKey(), hiveConf.getValue());
       openConf.put("set:hiveconf:" + hiveConf.getKey(), hiveConf.getValue());
     }
     // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
     for (Entry<String, String> hiveVar : connParams.getHiveVars().entrySet()) {
-      LOG.debug("Adding hivevar: [{}={}]", hiveVar.getKey(), hiveVar.getValue());
       openConf.put("set:hivevar:" + hiveVar.getKey(), hiveVar.getValue());
     }
 
@@ -881,10 +879,9 @@ public class HiveConnection implements java.sql.Connection {
     }
 
     // set the session configuration
-    final String hs2ProxyUser = sessConfMap.get(HiveAuthConstants.HS2_PROXY_USER);
-    if (hs2ProxyUser != null) {
-      LOG.debug("Set hive.server2.proxy.user: {}", hs2ProxyUser);
-      openConf.put(HiveAuthConstants.HS2_PROXY_USER, hs2ProxyUser);
+    if (sessConfMap.containsKey(HiveAuthConstants.HS2_PROXY_USER)) {
+      openConf.put(HiveAuthConstants.HS2_PROXY_USER,
+          sessConfMap.get(HiveAuthConstants.HS2_PROXY_USER));
     }
 
     // set create external purge table by default
@@ -892,11 +889,15 @@ public class HiveConnection implements java.sql.Connection {
       openConf.put("set:hiveconf:hive.create.as.external.legacy",
           sessConfMap.get(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL).toLowerCase());
     }
-
-    final boolean isHplSqlMode = isHplSqlMode();
-    LOG.debug("HPLSQL mode: {}", isHplSqlMode);
-    if (isHplSqlMode) {
+    if (isHplSqlMode()) {
       openConf.put("set:hivevar:mode", HPLSQL);
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Dumping initial configuration...");
+      for (Map.Entry<String, String> entry : openConf.entrySet()) {
+        LOG.debug("{}={}", entry.getKey(), entry.getValue());
+      }
     }
 
     openReq.setConfiguration(openConf);
