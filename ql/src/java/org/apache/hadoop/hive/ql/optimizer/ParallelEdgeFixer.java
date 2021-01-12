@@ -359,32 +359,6 @@ public class ParallelEdgeFixer extends Transform {
       return ret;
     }
 
-    public void analyzeBucketVersion() {
-      List<OperatorBucketingVersionInfo> bucketingVersions = getBucketingVersions();
-      try {
-        for (OperatorBucketingVersionInfo info : bucketingVersions) {
-          setVersion(info.bucketingVersion);
-        }
-      } catch (Exception e) {
-        throw new RuntimeException("Error setting bucketingVersion for group: " + bucketingVersions, e);
-      }
-      if (version == -1) {
-        // use version 2 if possible
-        version = 2;
-      }
-    }
-
-    private void setVersion(int newVersion) {
-      if (version == newVersion || newVersion == -1) {
-        return;
-      }
-      if (version == -1) {
-        version = newVersion;
-        return;
-      }
-      throw new RuntimeException("Unable to set version");
-    }
-
     public void merge(OpGroup opGroup) {
       for (Operator<?> operator : opGroup.members) {
         add(operator);
