@@ -36,6 +36,7 @@ import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -146,17 +147,15 @@ public class ParallelEdgeFixer extends Transform {
           Pair<Operator, Operator> pair = it.next();
           fixParallelEdge(pair.left, pair.right);
         }
-
-
       }
-
     }
   }
 
   private void removeOneEdge(List<Pair<Operator, Operator>> values) {
     Pair<Operator, Operator> toKeep = null;
     for (Pair<Operator, Operator> pair : values) {
-      if (!((ReduceSinkDesc) pair.left.getConf()).isParallelEdgeSupport()) {
+      if (!isParallelEdgeSupported(pair)) {
+
         if (toKeep != null) {
           throw new RuntimeException("More than one operators which should not be reshuffled!");
         }
@@ -165,6 +164,21 @@ public class ParallelEdgeFixer extends Transform {
     }
     toKeep=values.get(values.size() - 1);
     values.remove(toKeep);
+  }
+
+  private boolean isParallelEdgeSupported(Pair<Operator, Operator> pair) {
+    ReduceSinkOperator rs = (ReduceSinkOperator) pair.left;
+    Operator<?> child = pair.right;
+
+    if (child instanceof MapJoinOperator) {
+      return true;
+    }
+
+    if (child instanceof TableScanOperator) {
+      return true;
+    }
+    return false;
+
   }
 
   /**
