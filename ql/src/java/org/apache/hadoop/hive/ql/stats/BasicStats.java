@@ -243,7 +243,7 @@ public class BasicStats {
     currentDataSize = rawDataSize;
     currentFileSize = totalSize;
 
-    if (currentNumRows > 0) {
+    if (currentNumRows > 0 || (currentNumRows | rawDataSize) == 0) {
       state = State.COMPLETE;
     } else {
       state = State.NONE;
