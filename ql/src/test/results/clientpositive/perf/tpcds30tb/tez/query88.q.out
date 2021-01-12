@@ -77,7 +77,7 @@ STAGE PLANS:
                             1 _col0 (type: bigint)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 18
+                            1 Reducer 19
                           Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -117,7 +117,7 @@ STAGE PLANS:
                             1 _col0 (type: bigint)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Reducer 19
+                            1 Reducer 20
                           Statistics: Num rows: 706587981 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -126,7 +126,7 @@ STAGE PLANS:
                               0 _col2 (type: bigint)
                               1 _col0 (type: bigint)
                             input vertices:
-                              1 Map 26
+                              1 Reducer 28
                             Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
@@ -147,7 +147,7 @@ STAGE PLANS:
                           1 _col0 (type: bigint)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 10
+                          1 Reducer 13
                         Statistics: Num rows: 2844424992 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -157,7 +157,7 @@ STAGE PLANS:
                             1 _col0 (type: bigint)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Reducer 20
+                            1 Reducer 21
                           Statistics: Num rows: 682661983 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -166,7 +166,7 @@ STAGE PLANS:
                               0 _col2 (type: bigint)
                               1 _col0 (type: bigint)
                             input vertices:
-                              1 Reducer 28
+                              1 Reducer 29
                             Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
@@ -187,7 +187,7 @@ STAGE PLANS:
                           1 _col0 (type: bigint)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Reducer 13
+                          1 Map 10
                         Statistics: Num rows: 2944116650 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -197,7 +197,7 @@ STAGE PLANS:
                             1 _col0 (type: bigint)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Reducer 21
+                            1 Map 18
                           Statistics: Num rows: 706587981 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -206,7 +206,7 @@ STAGE PLANS:
                               0 _col2 (type: bigint)
                               1 _col0 (type: bigint)
                             input vertices:
-                              1 Reducer 29
+                              1 Map 26
                             Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
@@ -654,7 +654,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 1831 Data size: 14648 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1769 Data size: 14152 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 14 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

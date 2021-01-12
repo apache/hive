@@ -851,7 +851,7 @@ STAGE PLANS:
                       1 _col0 (type: bigint)
                     outputColumnNames: _col2, _col7, _col8, _col9, _col11, _col15, _col16, _col17, _col18, _col19, _col22, _col23, _col24, _col25, _col29, _col30
                     input vertices:
-                      1 Map 18
+                      1 Reducer 19
                     Statistics: Num rows: 388710326 Data size: 282214004316 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -861,7 +861,7 @@ STAGE PLANS:
                         1 _col0 (type: bigint)
                       outputColumnNames: _col2, _col7, _col8, _col9, _col11, _col15, _col17, _col18, _col19, _col22, _col23, _col24, _col25, _col29, _col30
                       input vertices:
-                        1 Reducer 19
+                        1 Map 18
                       Statistics: Num rows: 388710326 Data size: 279123740180 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -891,7 +891,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             outputColumnNames: _col7, _col8, _col9, _col11, _col15, _col17, _col22, _col23, _col24, _col25, _col29, _col30, _col34, _col36, _col38
                             input vertices:
-                              1 Map 24
+                              1 Reducer 25
                             Statistics: Num rows: 388710326 Data size: 307825672730 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -901,7 +901,7 @@ STAGE PLANS:
                                 1 _col0 (type: bigint)
                               outputColumnNames: _col7, _col8, _col9, _col11, _col17, _col22, _col23, _col24, _col25, _col29, _col30, _col34, _col36, _col38, _col40
                               input vertices:
-                                1 Reducer 25
+                                1 Map 24
                               Statistics: Num rows: 388710326 Data size: 337775783592 Basic stats: COMPLETE Column stats: COMPLETE
                               Filter Operator
                                 predicate: (_col38 <> _col40) (type: boolean)
@@ -1002,7 +1002,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             outputColumnNames: _col7, _col8, _col9, _col11, _col12, _col15, _col17, _col22, _col23, _col24, _col25, _col29, _col30, _col34, _col36, _col38
                             input vertices:
-                              1 Map 24
+                              1 Reducer 26
                             Statistics: Num rows: 388710326 Data size: 349417677612 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -1012,7 +1012,7 @@ STAGE PLANS:
                                 1 _col0 (type: bigint)
                               outputColumnNames: _col7, _col8, _col9, _col11, _col12, _col17, _col22, _col23, _col24, _col25, _col29, _col30, _col34, _col36, _col38, _col40
                               input vertices:
-                                1 Reducer 26
+                                1 Map 24
                               Statistics: Num rows: 388710326 Data size: 379367788474 Basic stats: COMPLETE Column stats: COMPLETE
                               Filter Operator
                                 predicate: (_col38 <> _col40) (type: boolean)

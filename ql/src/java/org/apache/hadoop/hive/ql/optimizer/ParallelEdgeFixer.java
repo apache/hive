@@ -31,10 +31,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-
 import org.apache.calcite.util.Pair;
+import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -112,15 +111,15 @@ public class ParallelEdgeFixer extends Transform {
 
     for (OpGroup g : groups) {
       Set<OpGroup> ascendingGroups = new LinkedHashSet<>();
-      MultivaluedMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>> m = new MultivaluedHashMap<>();
-
+      ListValuedMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>> m =
+          new ArrayListValuedHashMap<Pair<OpGroup, OpGroup>, Pair<Operator, Operator>>();
       for (Operator<?> o : g.members) {
         for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
           OpGroup parentGroup = op2group.get(p);
           if (parentGroup == g) {
             continue;
           }
-          m.add(new Pair(parentGroup, g), new Pair(p, o));
+          m.put(new Pair(parentGroup, g), new Pair(p, o));
           //          //          new VertexEdge
           //          if (ascendingGroups.contains(parentGroup)) {
           //            fixParallelEdge(p, o);
@@ -132,6 +131,7 @@ public class ParallelEdgeFixer extends Transform {
 
       for (Pair<OpGroup, OpGroup> key : m.keySet()) {
         List<Pair<Operator, Operator>> values = m.get(key);
+//        List<Pair<Operator, Operator>> values = new ArrayList<Pair<Operator, Operator>>(values0);
         if(values.size() <=1) {
           continue;
         }
