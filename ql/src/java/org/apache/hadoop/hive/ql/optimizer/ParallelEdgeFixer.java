@@ -201,12 +201,8 @@ public class ParallelEdgeFixer extends Transform {
     conf.setTag(0);
 
     newConf.setKeyCols(new ArrayList(conf.getKeyCols()));
-    //    newConf.setColumnExprMap(colExprMap);
-    //    newConf.setKeyCols(createColumnRefs(conf.getKeyCols(), conf.getOutputKeyColumnNames()));
-    //  newConf.setValueCols(createColumnRefs(conf.getValueCols(), conf.getOutputValueColumnNames()));
-    //    newConf.setColumnExprMap(buildIdentityColumnExprMap(conf.getColumnExprMap()));
-    //    newConf.setPartitionCols(partitionCols);
     newRS.setSchema(new RowSchema(p.getSchema()));
+    newRS.getConf().setNumReducers(1);
 
     p.replaceChild(o, newSEL);
 
