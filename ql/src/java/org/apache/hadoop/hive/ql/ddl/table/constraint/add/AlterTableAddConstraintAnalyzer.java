@@ -79,7 +79,8 @@ public class AlterTableAddConstraintAnalyzer extends AbstractAlterTableAnalyzer 
       throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(constraintNode.getToken().getText()));
     }
 
-    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null, checkConstraints);
+    Constraints constraints =
+        new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null, checkConstraints);
     AlterTableAddConstraintDesc desc = new AlterTableAddConstraintDesc(tableName, null, constraints);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 

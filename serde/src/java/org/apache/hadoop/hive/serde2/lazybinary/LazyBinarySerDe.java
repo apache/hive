@@ -86,9 +86,6 @@ import org.apache.hadoop.io.Writable;
 public class LazyBinarySerDe extends AbstractSerDe {
   public static final Logger LOG = LoggerFactory.getLogger(LazyBinarySerDe.class.getName());
 
-  List<String> columnNames;
-  List<TypeInfo> columnTypes;
-
   TypeInfo rowTypeInfo;
   ObjectInspector cachedObjectInspector;
 
@@ -108,34 +105,15 @@ public class LazyBinarySerDe extends AbstractSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    // Get column names and types
-    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
-        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
-        : String.valueOf(SerDeUtils.COMMA);
-    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils
-          .getTypeInfosFromTypeString(columnTypeProperty);
-    }
-    assert (columnNames.size() == columnTypes.size());
     // Create row related objects
-    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
     // Create the object inspector and the lazy binary struct object
     cachedObjectInspector = LazyBinaryUtils
         .getLazyBinaryObjectInspectorFromTypeInfo(rowTypeInfo);
     cachedLazyBinaryStruct = (LazyBinaryStruct) LazyBinaryFactory
         .createLazyBinaryObject(cachedObjectInspector);
     // output debug info
-    LOG.debug("LazyBinarySerDe initialized with: columnNames=" + columnNames
-        + " columnTypes=" + columnTypes);
+    log.debug("LazyBinarySerDe initialized with: columnNames={} columnTypes={}", getColumnNames(), getColumnTypes());
 
     serializedSize = 0;
     stats = new SerDeStats();

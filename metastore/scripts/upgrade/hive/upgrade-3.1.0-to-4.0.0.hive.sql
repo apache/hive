@@ -298,7 +298,8 @@ SELECT
   CC_TABLE,
   CC_PARTITION,
   CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
-  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded'
+    WHEN CC_STATE = 'a' THEN 'did not initiate' ELSE 'UNKNOWN' END,
   CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
   CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
   CC_ENQUEUE_TIME,

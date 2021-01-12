@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,7 +29,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -39,32 +37,22 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatContext;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * SerDe class for serializing to and from HCatRecord
+ * SerDe class for serializing to and from HCatRecord.
  */
-
-@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
-                          serdeConstants.LIST_COLUMN_TYPES})
-
+@SerDeSpec(schemaProps = { serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES })
 public class HCatRecordSerDe extends AbstractSerDe {
-
-  private static final Logger LOG = LoggerFactory.getLogger(HCatRecordSerDe.class);
 
   public HCatRecordSerDe() throws SerDeException {
   }
 
-  private List<String> columnNames;
-  private List<TypeInfo> columnTypes;
   private StructTypeInfo rowTypeInfo;
 
   private HCatRecordObjectInspector cachedObjectInspector;
@@ -74,39 +62,15 @@ public class HCatRecordSerDe extends AbstractSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    LOG.debug("Initializing HCatRecordSerDe");
+    log.debug("Initializing HCatRecordSerDe");
 
-    // Get column names and types
-    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
-        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
-        : String.valueOf(SerDeUtils.COMMA);
-    // all table column names
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-
-    // all column types
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    }
-
-    LOG.debug("columns: {} {}", columnNameProperty, columnNames);
-    LOG.debug("types: {} {}", columnTypeProperty, columnTypes);
-    assert (columnNames.size() == columnTypes.size());
-
-    rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+    rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
   }
 
   public void initialize(HCatSchema hsch) throws SerDeException {
 
-    LOG.debug("Initializing HCatRecordSerDe through HCatSchema {}.", hsch);
+    log.debug("Initializing HCatRecordSerDe through HCatSchema {}", hsch);
 
     rowTypeInfo = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(hsch.getSchemaAsTypeString());
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);

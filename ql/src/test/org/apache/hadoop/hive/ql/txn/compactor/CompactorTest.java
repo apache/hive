@@ -93,6 +93,8 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
+
 /**
  * Super class for all of the compactor test modules.
  */
@@ -123,15 +125,15 @@ public abstract class CompactorTest {
   }
 
   protected void startInitiator() throws Exception {
-    startThread('i', true);
+    startThread(CompactorThreadType.INITIATOR, true);
   }
 
   protected void startWorker() throws Exception {
-    startThread('w', true);
+    startThread(CompactorThreadType.WORKER, true);
   }
 
   protected void startCleaner() throws Exception {
-    startThread('c', true);
+    startThread(CompactorThreadType.CLEANER, true);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
@@ -307,13 +309,13 @@ public abstract class CompactorTest {
   }
 
   // I can't do this with @Before because I want to be able to control when the thread starts
-  private void startThread(char type, boolean stopAfterOne) throws Exception {
+  private void startThread(CompactorThreadType type, boolean stopAfterOne) throws Exception {
     TestTxnDbUtil.setConfValues(conf);
     CompactorThread t;
     switch (type) {
-      case 'i': t = new Initiator(); break;
-      case 'w': t = new Worker(); break;
-      case 'c': t = new Cleaner(); break;
+      case INITIATOR: t = new Initiator(); break;
+      case WORKER: t = new Worker(); break;
+      case CLEANER: t = new Cleaner(); break;
       default: throw new RuntimeException("Huh? Unknown thread type.");
     }
     t.setThreadId((int) t.getId());

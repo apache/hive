@@ -41,8 +41,6 @@ import org.apache.hive.common.util.DateUtils;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
 
@@ -58,8 +56,6 @@ import static java.time.ZoneOffset.UTC;
 
 public class JdbcSerDe extends AbstractSerDe {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSerDe.class);
-
   private String[] hiveColumnNames;
   private int numColumns;
   private PrimitiveTypeInfo[] hiveColumnTypes;
@@ -74,7 +70,7 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    LOGGER.trace("Initializing the JdbcSerDe");
+    log.trace("Initializing the JdbcSerDe");
     super.initialize(configuration, tableProperties, partitionProperties);
     try {
       if (properties.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
@@ -135,12 +131,11 @@ public class JdbcSerDe extends AbstractSerDe {
         row = new ArrayList<>(hiveColumnNames.length);
       }
     } catch (Exception e) {
-      LOGGER.error("Caught exception while initializing the SqlSerDe", e);
-      throw new SerDeException(e);
+      throw new SerDeException("Caught exception while initializing the SqlSerDe", e);
     }
 
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("JdbcSerDe initialized with\n" + "\t columns: " + Arrays.toString(hiveColumnNames) + "\n\t types: "
+    if (log.isDebugEnabled()) {
+      log.debug("JdbcSerDe initialized with\n" + "\t columns: " + Arrays.toString(hiveColumnNames) + "\n\t types: "
           + Arrays.toString(hiveColumnTypes));
     }
   }
@@ -148,7 +143,7 @@ public class JdbcSerDe extends AbstractSerDe {
 
   @Override
   public DBRecordWritable serialize(Object row, ObjectInspector inspector) throws SerDeException {
-    LOGGER.trace("Serializing from SerDe");
+    log.trace("Serializing from SerDe");
     if ((row == null) || (hiveColumnTypes == null)) {
       throw new SerDeException("JDBC SerDe hasn't been initialized properly");
     }
@@ -209,7 +204,7 @@ public class JdbcSerDe extends AbstractSerDe {
 
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
-    LOGGER.trace("Deserializing from SerDe");
+    log.trace("Deserializing from SerDe");
     if (!(blob instanceof MapWritable)) {
       throw new SerDeException("Expected MapWritable. Got " + blob.getClass().getName());
     }

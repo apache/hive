@@ -91,7 +91,7 @@ public class VerifyLazy {
   }
 
   public static boolean lazyCompareStruct(StructTypeInfo structTypeInfo, List<Object> fields, List<Object> expectedFields) {
-    ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     final int size = fieldTypeInfos.size();
     for (int i = 0; i < size; i++) {
       Object lazyEleObj = fields.get(i);

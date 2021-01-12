@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.ql.io.AcidUtils.FileInfo;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hive.common.util.Ref;
 
@@ -31,13 +32,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileType.ACID_SCHEMA;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileType.ORIGINAL_BASE;
 
 /**
  * AcidDirectory used to provide ACID directory layout information, which directories and files to read.
  * This representation only valid in a context of a ValidWriteIdList and ValidTxnList.
  */
-public final class AcidDirectory {
+public final class AcidDirectory implements AcidUtils.Directory {
 
   private final Path path;
   private final FileSystem fs;
@@ -170,6 +172,7 @@ public final class AcidDirectory {
     return unCompactedAborts;
   }
 
+  @Override
   public FileSystem getFs() {
     return fs;
   }
@@ -185,18 +188,19 @@ public final class AcidDirectory {
    * All original, base and delta bucket files that should be read by this reader
    * @throws IOException ex
    */
-  public List<AcidUtils.AcidBaseFileInfo> getBaseAndDeltaFiles() throws IOException {
-    List<AcidUtils.AcidBaseFileInfo> baseAndDeltaFiles = new ArrayList<>();
+  @Override
+  public List<FileInfo> getFiles() throws IOException {
+    List<FileInfo> baseAndDeltaFiles = new ArrayList<>();
     if (base == null) {
       // For non-acid tables (or paths), all data files are in getOriginalFiles() list
       for (HadoopShims.HdfsFileStatusWithId fileId : originalFiles) {
-        baseAndDeltaFiles.add(new AcidUtils.AcidBaseFileInfo(fileId, ORIGINAL_BASE));
+        baseAndDeltaFiles.add(new FileInfo(fileId, ORIGINAL_BASE));
       }
     } else {
       // The base files are either listed in ParsedBase or will be populated now
       for (HadoopShims.HdfsFileStatusWithId fileId : base.getFiles(fs, useFileId)) {
-        baseAndDeltaFiles.add(new AcidUtils.AcidBaseFileInfo(fileId,
-            isBaseInRawFormat() ? ORIGINAL_BASE : AcidUtils.AcidBaseFileType.ACID_SCHEMA));
+        baseAndDeltaFiles.add(new FileInfo(fileId,
+            isBaseInRawFormat() ? ORIGINAL_BASE : ACID_SCHEMA));
       }
     }
     for (AcidUtils.ParsedDelta parsedDelta : currentDirectories) {
@@ -211,10 +215,10 @@ public final class AcidDirectory {
       }
 
       AcidUtils.AcidBaseFileType deltaType =
-          parsedDelta.isRawFormat() ? ORIGINAL_BASE : AcidUtils.AcidBaseFileType.ACID_SCHEMA;
+          parsedDelta.isRawFormat() ? ORIGINAL_BASE : ACID_SCHEMA;
       // The bucket files are either listed in ParsedDelta or will be populated now
       for (HadoopShims.HdfsFileStatusWithId deltaFile : parsedDelta.getFiles(fs, useFileId)) {
-        baseAndDeltaFiles.add(new AcidUtils.AcidBaseFileInfo(deltaFile, deltaType));
+        baseAndDeltaFiles.add(new FileInfo(deltaFile, deltaType));
       }
     }
 

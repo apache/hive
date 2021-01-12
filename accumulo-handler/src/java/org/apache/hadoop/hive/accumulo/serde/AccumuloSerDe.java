@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.accumulo.serde;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -83,6 +84,18 @@ public class AccumuloSerDe extends AbstractSerDe {
       log.info("Initialized with {} type: {}", accumuloSerDeParameters.getSerDeParameters()
           .getColumnNames(), accumuloSerDeParameters.getSerDeParameters().getColumnTypes());
     }
+  }
+  
+  @Override
+  protected List<String> parseColumnNames() {
+    // Are calculated in AccumuloSerDeParameters
+    return Collections.emptyList();
+  }
+  
+  @Override
+  protected List<TypeInfo> parseColumnTypes() {
+    // Are calculated in AccumuloSerDeParameters
+    return Collections.emptyList();
   }
 
   protected ArrayList<ObjectInspector> getColumnObjectInspectors(List<TypeInfo> columnTypes,

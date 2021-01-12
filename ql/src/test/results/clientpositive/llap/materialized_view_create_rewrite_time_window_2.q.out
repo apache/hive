@@ -177,13 +177,13 @@ Expanded Query:     	SELECT `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	Yes                 	 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n300 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n100
 PREHOOK: Input: default@cmv_basetable_n100
 PREHOOK: Input: default@cmv_mat_view_n300
 PREHOOK: Output: default@cmv_mat_view_n300
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n300 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n100
 POSTHOOK: Input: default@cmv_basetable_n100
 POSTHOOK: Input: default@cmv_mat_view_n300

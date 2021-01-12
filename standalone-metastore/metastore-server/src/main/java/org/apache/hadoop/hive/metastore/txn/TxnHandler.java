@@ -228,7 +228,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static final protected char READY_FOR_CLEANING = 'r';
   static final char FAILED_STATE = 'f';
   static final char SUCCEEDED_STATE = 's';
-  static final char ATTEMPTED_STATE = 'a';
+  static final char DID_NOT_INITIATE = 'a';
 
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
@@ -1253,7 +1253,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * as a logical time counter. If S.commitTime < T.startTime, T and S do NOT overlap.
    *
    * Motivating example:
-   * Suppose we have multi-statment transactions T and S both of which are attempting x = x + 1
+   * Suppose we have multi-statement transactions T and S both of which are attempting x = x + 1
    * In order to prevent lost update problem, then the non-overlapping txns must lock in the snapshot
    * that they read appropriately. In particular, if txns do not overlap, then one follows the other
    * (assuming they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
@@ -3510,7 +3510,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       case READY_FOR_CLEANING: return CLEANING_RESPONSE;
       case FAILED_STATE: return FAILED_RESPONSE;
       case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
-      case ATTEMPTED_STATE: return ATTEMPTED_RESPONSE;
+      case DID_NOT_INITIATE: return DID_NOT_INITIATE_RESPONSE;
       default:
         return Character.toString(s);
     }

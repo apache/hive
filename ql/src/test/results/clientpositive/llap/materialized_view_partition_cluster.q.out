@@ -940,12 +940,12 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@cluster_mv_1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@cluster_mv_1
 STAGE DEPENDENCIES:
@@ -1054,11 +1054,11 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@cluster_mv_1
 POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@cluster_mv_1
 POSTHOOK: Output: default@cluster_mv_1@partkey=338.0
@@ -1357,13 +1357,13 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@cluster_mv_3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@cluster_mv_3
@@ -1517,12 +1517,12 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@cluster_mv_3
 POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@cluster_mv_3
@@ -1843,13 +1843,13 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@cluster_mv_3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@cluster_mv_3
@@ -2018,12 +2018,12 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@cluster_mv_3
 POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@cluster_mv_3
@@ -2207,12 +2207,12 @@ val_238_n2	238	338.0
 val_238_n2	238	338.0
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@cluster_mv_4
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@cluster_mv_4
 STAGE DEPENDENCIES:
@@ -2336,11 +2336,11 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@cluster_mv_4
 POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@cluster_mv_4
 POSTHOOK: Output: default@cluster_mv_4@partkey=301.0

@@ -605,14 +605,14 @@ POSTHOOK: Input: default@cmv_mat_view_n3
 1
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Input: default@cmv_mat_view_n3
 PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 POSTHOOK: Input: default@cmv_mat_view_n3
@@ -825,13 +825,13 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Input: default@cmv_mat_view_n3
 PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 POSTHOOK: Input: default@cmv_mat_view_n3

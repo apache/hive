@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -55,10 +55,10 @@ public final class PrivilegeUtils {
 
     StringBuilder sb = new StringBuilder();
     for (String entry : entries) {
-      DDLUtils.appendNonNull(sb, entry, true);
+      ShowUtils.appendNonNull(sb, entry, true);
     }
 
-    DDLUtils.writeToFile(sb.toString(), resFile, context);
+    ShowUtils.writeToFile(sb.toString(), resFile, context);
   }
 
   private static final HiveAuthorizationTranslator DEFAULT_AUTHORIZATION_TRANSLATOR =

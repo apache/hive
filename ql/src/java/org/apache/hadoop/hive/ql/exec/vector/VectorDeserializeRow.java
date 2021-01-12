@@ -344,7 +344,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     case STRUCT:
       {
         final StructTypeInfo structTypeInfo = (StructTypeInfo) sourceTypeInfo;
-        final ArrayList<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
+        final List<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
         final int count = fieldTypeInfoList.size();
         final Field[] fields = new Field[count];
         for (int i = 0; i < count; i++) {

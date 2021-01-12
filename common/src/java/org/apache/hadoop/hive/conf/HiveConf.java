@@ -1991,6 +1991,10 @@ public class HiveConf extends Configuration {
         "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
         "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
         "for all tables."),
+    HIVE_DEFAULT_STORAGE_HANDLER("hive.default.storage.handler.class", "",
+        "Default storage handler class for CREATE TABLE statements. If this is set to a valid class, a 'CREATE TABLE ... STORED AS ... LOCATION ...' command will " +
+        "be equivalent to 'CREATE TABLE ... STORED BY [default.storage.handler.class] LOCATION ...'. Any STORED AS clauses will be ignored, given that STORED BY and STORED AS are " +
+        "incompatible within the same command. Users can explicitly override the default class by issuing 'CREATE TABLE ... STORED BY [overriding.storage.handler.class] ...'"),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", ResultFileFormat.SEQUENCEFILE.toString(),
         new StringSet(ResultFileFormat.getValidSet()),
         "Default file format for storing result of the query."),
@@ -3149,7 +3153,7 @@ public class HiveConf extends Configuration {
       new RangeValidator(0, 100), "Determines how many failed compaction records will be " +
       "retained in compaction history for a given table/partition."),
     /**
-     * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_ATTEMPTED
+     * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE
      */
     @Deprecated
     COMPACTOR_HISTORY_RETENTION_ATTEMPTED("hive.compactor.history.retention.attempted", 2,
@@ -4603,6 +4607,12 @@ public class HiveConf extends Configuration {
          "notifications are received by the daemon. Sweep phase of proactive eviction will only do the cache policy " +
          "cleanup in this case. This can increase cache hit ratio but might scale bad in a workload that generates " +
          "many proactive eviction events."),
+    LLAP_IO_CACHE_DELETEDELTAS("hive.llap.io.cache.deletedeltas", "all", new StringSet("none", "metadata", "all"),
+         "When set to 'all' queries that use LLAP IO for execution will also access delete delta files via " +
+         "LLAP IO layer and thus they will be fully cached. When set to 'metadata', only the tail of delete deltas " +
+         "will be cached. If set to 'none', only the base files and insert deltas will be channeled through LLAP, " +
+         "while delete deltas will be accessed directly from their configured FS without caching them. " +
+         "This feature only works with ColumnizedDeleteEventRegistry, SortMergedDeleteEventRegistry is not supported."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
