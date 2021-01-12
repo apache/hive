@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.registry.impl;
 
 import static java.lang.Integer.parseInt;
+import static org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl.COMPUTE_NAME_PROPERTY_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -146,6 +148,13 @@ public class TestLlapZookeeperRegistryImpl {
     LlapServiceInstanceSet instances = compute1.getInstances("LLAP", 1000);
     PersistentEphemeralNode znode1 = createZnodeForComputeGroup(COMPUTE_1, "id1");
     PersistentEphemeralNode znode2 = createZnodeForComputeGroup(COMPUTE_2, "id2");
+
+    assertEventually(() -> instances.getAllForComputeGroup(s -> COMPUTE_1.equals(s)).size() == 1,
+        "should see 1 instance in compute group 1");
+
+    assertEventually(() -> instances.getAllForComputeGroup(Pattern.compile(".*").asPredicate()).size() == 2,
+        "should see all the two instances from all compute groups");
+
     assertEventually(() -> instances.getAll().size() == 1, "should have size 1 after adding 1 to its compute group");
     CloseableUtils.closeQuietly(znode2);
     assertEventually(() -> instances.getAll().size() == 1, "should have size 1 after removing from different compute group");
@@ -173,6 +182,7 @@ public class TestLlapZookeeperRegistryImpl {
     record.set(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, 10);
     record.set(HiveConf.ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, 100);
     record.set(ZkRegistryBase.UNIQUE_IDENTIFIER, id);
+    record.set(COMPUTE_NAME_PROPERTY_KEY, computeGroup);
     PersistentEphemeralNode znode = new PersistentEphemeralNode(
       curatorFramework,
       PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL,

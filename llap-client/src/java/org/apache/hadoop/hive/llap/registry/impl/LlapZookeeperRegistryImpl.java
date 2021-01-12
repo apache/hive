@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.apache.curator.framework.recipes.atomic.AtomicValue;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
@@ -81,6 +82,7 @@ public class LlapZookeeperRegistryImpl
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
   private static final String CONFIG_CHANGE_PATH = "config-change";
   private static final String CONFIG_CHANGE_NODE = "window-end";
+  public static final String COMPUTE_NAME_PROPERTY_KEY = "computeName";
 
 
   private SlotZnode slotZnode;
@@ -172,7 +174,7 @@ public class LlapZookeeperRegistryImpl
             HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE));
     populateConfigValues(capacityValues.entrySet());
     if (computeGroup != null) {
-      daemonZkRecord.set("computeName", computeGroup);
+      daemonZkRecord.set(COMPUTE_NAME_PROPERTY_KEY, computeGroup);
       LOG.info("Compute grouping enabled. Using computeName: {}", computeGroup);
     }
 
@@ -312,6 +314,11 @@ public class LlapZookeeperRegistryImpl
       parent.populateCache(instancesCache, false);
     }
 
+
+    @Override
+    public Collection<LlapServiceInstance> getAllForComputeGroup(Predicate<String> predicate) {
+      return LlapServiceInstanceSet.getAllForComputeGroup(parent.getAllInternal(), predicate);
+    }
 
     @Override
     public Collection<LlapServiceInstance> getAll() {

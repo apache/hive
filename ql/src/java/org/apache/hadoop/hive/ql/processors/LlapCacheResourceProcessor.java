@@ -32,6 +32,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import javax.net.SocketFactory;
 
@@ -62,10 +64,12 @@ import com.google.common.collect.Lists;
 
 public class LlapCacheResourceProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(LlapCacheResourceProcessor.class);
+
   private Options CACHE_OPTIONS = new Options();
   private HelpFormatter helpFormatter = new HelpFormatter();
 
   LlapCacheResourceProcessor() {
+    CACHE_OPTIONS.addOption("compute", "computeGroup", true, "Compute group");
     CACHE_OPTIONS.addOption("purge", "purge", false, "Purge LLAP IO cache");
   }
 
@@ -106,7 +110,7 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
       }
       try {
         LlapRegistryService llapRegistryService = LlapRegistryService.getClient(ss.getConf());
-        llapCachePurge(ss, llapRegistryService);
+        llapCachePurge(ss, llapRegistryService, args);
         return new CommandProcessorResponse(getSchema(), null);
       } catch (Exception e) {
         LOG.error("Error while purging LLAP IO Cache. err: ", e);
@@ -128,10 +132,12 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
     return sch;
   }
 
-  private void llapCachePurge(final SessionState ss, final LlapRegistryService llapRegistryService) throws Exception {
+  private void llapCachePurge(final SessionState ss, final LlapRegistryService llapRegistryService, CommandLine args)
+      throws Exception {
     ExecutorService executorService = Executors.newCachedThreadPool();
     List<Future<Long>> futures = new ArrayList<>();
-    Collection<LlapServiceInstance> instances = llapRegistryService.getInstances().getAll();
+    Collection<LlapServiceInstance> instances =
+        llapRegistryService.getInstances().getAllForComputeGroup(computeGroupFilterFromArgs(args));
     for (LlapServiceInstance instance : instances) {
       futures.add(executorService.submit(new PurgeCallable(ss.getConf(), instance)));
     }
@@ -190,5 +196,14 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
 
   @Override
   public void close() {
+  }
+
+  static Predicate<String> computeGroupFilterFromArgs(CommandLine args) {
+    if (args.hasOption("compute")) {
+      String computeExpression = args.getOptionValue("compute");
+      return Pattern.compile(computeExpression).asPredicate();
+    } else {
+      return s -> true;
+    }
   }
 }

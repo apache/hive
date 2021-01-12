@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -232,6 +233,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
     @Override
     public Collection<LlapServiceInstance> getAll() {
       return instances.values();
+    }
+
+    @Override
+    public Collection<LlapServiceInstance> getAllForComputeGroup(Predicate<String> predicate) {
+      return LlapServiceInstanceSet.getAllForComputeGroup(instances.values(), predicate);
     }
 
     @Override

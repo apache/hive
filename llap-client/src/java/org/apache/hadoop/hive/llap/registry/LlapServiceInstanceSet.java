@@ -14,9 +14,15 @@
 package org.apache.hadoop.hive.llap.registry;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+
+import static org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl.COMPUTE_NAME_PROPERTY_KEY;
 
 public interface LlapServiceInstanceSet extends ServiceInstanceSet<LlapServiceInstance> {
 
@@ -29,6 +35,36 @@ public interface LlapServiceInstanceSet extends ServiceInstanceSet<LlapServiceIn
    */
   Collection<LlapServiceInstance> getAllInstancesOrdered(
       boolean consistentIndexes);
+
+  /**
+   * Returns an unordered collection of LLAP instances whose compute group property matches the predicate.
+   * @param predicate if it evaluates to true against an instance's compute group name, the instance will be included
+   *                  in the result
+   * @return collection of instances
+   */
+  Collection<LlapServiceInstance> getAllForComputeGroup(Predicate<String> predicate);
+
+  /**
+   * Helper method for getAllForComputeGroup implementors
+   * @param allInstances - all the instances to apply further filtering on
+   * @param predicate - the predicate to filter
+   * @return
+   */
+  static Collection<LlapServiceInstance> getAllForComputeGroup(Collection<LlapServiceInstance> allInstances,
+      Predicate<String> predicate) {
+    List<LlapServiceInstance> result = new LinkedList<>();
+    for (LlapServiceInstance instance : allInstances) {
+      Map<String, String> properties = instance.getProperties();
+      if (properties == null) {
+        continue;
+      }
+      String computeGroup = properties.get(COMPUTE_NAME_PROPERTY_KEY);
+      if (computeGroup != null && predicate.test(computeGroup)) {
+        result.add(instance);
+      }
+    }
+    return result;
+  }
 
   /** LLAP application ID */
   ApplicationId getApplicationId();

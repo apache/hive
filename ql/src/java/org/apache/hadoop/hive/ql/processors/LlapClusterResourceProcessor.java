@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import static org.apache.hadoop.hive.ql.processors.LlapCacheResourceProcessor.computeGroupFilterFromArgs;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT;
 import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
 
@@ -51,6 +52,7 @@ public class LlapClusterResourceProcessor implements CommandProcessor {
   private HelpFormatter helpFormatter = new HelpFormatter();
 
   LlapClusterResourceProcessor() {
+    CLUSTER_OPTIONS.addOption("compute", "computeGroup", true, "Compute group");
     CLUSTER_OPTIONS.addOption("info", "info", false, "Information about LLAP cluster");
   }
 
@@ -93,7 +95,8 @@ public class LlapClusterResourceProcessor implements CommandProcessor {
         LlapRegistryService llapRegistryService = LlapRegistryService.getClient(ss.getConf());
         String appId = llapRegistryService.getApplicationId() == null ? "null" :
           llapRegistryService.getApplicationId().toString();
-        for (LlapServiceInstance instance : llapRegistryService.getInstances().getAll()) {
+        for (LlapServiceInstance instance :
+            llapRegistryService.getInstances().getAllForComputeGroup(computeGroupFilterFromArgs(args))) {
           ss.out.println(Joiner.on("\t").join(appId, instance.getWorkerIdentity(), instance.getHost(),
             instance.getRpcPort(), instance.getResource().getMemory() * 1024L * 1024L,
             instance.getResource().getVirtualCores()));
