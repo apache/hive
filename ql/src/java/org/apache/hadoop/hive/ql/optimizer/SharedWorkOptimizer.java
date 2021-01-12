@@ -306,14 +306,6 @@ public class SharedWorkOptimizer extends Transform {
     return pctx;
   }
 
-  //  private void subTreeDeDuplicator(ParseContext pctx) {
-  //    pctx.getFetchSink();0
-  //    OperatorGraph og = new OperatorGraph(pctx);
-  //    OpTreeSignatureFactory sigFactory = OpTreeSignatureFactory.newCache();
-  //    sigFactory.getSignature(pctx);
-  //    OpTreeSignature.of(root);
-  //  }
-
   /** SharedWorkOptimization strategy modes */
   public enum Mode {
     /**
@@ -1785,12 +1777,20 @@ public class SharedWorkOptimizer extends Transform {
     // If we do, we cannot merge. The reason is that Tez currently does
     // not support parallel edges, i.e., multiple edges from same work x
     // into same work y.
-    final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1, false);
-    final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2, false);
-    if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
-      // We cannot merge
-      //      return false;
+    OperatorGraph og = new OperatorGraph(pctx);
+    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new NonParallelizableEdgePredicate());
+
+    if (!Collections.disjoint(cc1, cc2)) {
+      LOG.debug("merge would create an unsupported parallel edge(CHILDS)", op1, op2);
+      return false;
     }
+
+    if (!og.mayMerge(op1, op2)) {
+      LOG.debug("merging {} and {} would violate dag properties", op1, op2);
+      return false;
+    }
+
     // 4) We check whether we will end up with same operators inputing on same work.
     //
     //       Work1        (merge TS in W2 & W3)        Work1
@@ -1802,22 +1802,6 @@ public class SharedWorkOptimizer extends Transform {
     //
     // In the check, we exclude the inputs to the root operator that we are trying
     // to merge (only useful for extended merging as TS do not have inputs).
-    final Set<Operator<?>> excludeOps1 = sr.retainableOps.get(0).getNumParent() > 0 ?
-        ImmutableSet.copyOf(sr.retainableOps.get(0).getParentOperators()) : ImmutableSet.of();
-    final Set<Operator<?>> inputWorksOps1 =
-        findParentWorkOperators(pctx, optimizerCache, op1, excludeOps1);
-    final Set<Operator<?>> excludeOps2 = sr.discardableOps.get(0).getNumParent() > 0 ?
-        Sets.union(ImmutableSet.copyOf(sr.discardableOps.get(0).getParentOperators()), sr.discardableInputOps) :
-            sr.discardableInputOps;
-    final Set<Operator<?>> inputWorksOps2 =
-        findParentWorkOperators(pctx, optimizerCache, op2, excludeOps2);
-    if (!Collections.disjoint(inputWorksOps1, inputWorksOps2)) {
-      // We cannot merge
-      //      return false;
-    }
-
-    OperatorGraph og = new OperatorGraph(pctx);
-
     Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(new NonParallelizableEdgePredicate());
     Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(new NonParallelizableEdgePredicate());
     Set<Cluster> pc = new HashSet<>(Sets.intersection(pc1, pc2));
@@ -1830,20 +1814,7 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pc.size() > 0) {
-      LOG.debug("merge would create an unsupported parallel edge(I)", op1, op2);
-      return false;
-    }
-
-    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new NonParallelizableEdgePredicate());
-    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new NonParallelizableEdgePredicate());
-
-    if (!Collections.disjoint(cc1, cc2)) {
-      LOG.debug("merge would create an unsupported parallel edge(II)", op1, op2);
-      return false;
-    }
-
-    if (!og.mayMerge(op1, op2)) {
-      LOG.debug("merging {} and {} would violate dag properties", op1, op2);
+      LOG.debug("merge would create an unsupported parallel edge(PARENTS)", op1, op2);
       return false;
     }
 
