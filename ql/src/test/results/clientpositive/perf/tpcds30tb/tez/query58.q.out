@@ -9,7 +9,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 8 <- Map 11 (BROADCAST_EDGE), Reducer 12 (BROADCAST_EDGE)
-        Reducer 10 <- Map 8 (BROADCAST_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 10 <- Map 8 (SIMPLE_EDGE), Reducer 9 (BROADCAST_EDGE)
         Reducer 12 <- Map 11 (CUSTOM_SIMPLE_EDGE)
         Reducer 14 <- Map 13 (CUSTOM_SIMPLE_EDGE), Map 16 (BROADCAST_EDGE), Reducer 10 (CUSTOM_SIMPLE_EDGE)
         Reducer 15 <- Reducer 14 (SIMPLE_EDGE)
@@ -221,7 +221,7 @@ STAGE PLANS:
                     1 _col0 (type: date)
                   outputColumnNames: _col0
                   input vertices:
-                    0 Map 8
+                    0 Reducer 9
                   Statistics: Num rows: 2668041676 Data size: 21344333408 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: bigint)
@@ -528,14 +528,15 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY._col0 (type: date)
-                outputColumnNames: _col0
+                expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
-                  key expressions: _col0 (type: date)
+                  key expressions: _col1 (type: date)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col0 (type: date)
-                  Statistics: Num rows: 73049 Data size: 4090744 Basic stats: COMPLETE Column stats: COMPLETE
+                  Map-reduce partition columns: _col1 (type: date)
+                  Statistics: Num rows: 73049 Data size: 4675136 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
 
   Stage: Stage-0
     Fetch Operator

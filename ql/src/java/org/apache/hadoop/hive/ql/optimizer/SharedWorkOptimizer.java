@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OpEdge;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -151,8 +152,6 @@ public class SharedWorkOptimizer extends Transform {
     } catch (Exception e1) {
       throw new RuntimeException(e1);
     }
-
-    //    subTreeDeDuplicator(pctx);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Before SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -1773,7 +1772,25 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    // 2) We check whether output works when we merge the operators will collide.
+    // 2) We check whether one of the operators is part of a work that is an input for
+    // the work of the other operator.
+    //
+    //   Work1            (merge TS in W1 & W3)        Work1
+    //     |                        ->                   |        X
+    //   Work2                                         Work2
+    //     |                                             |
+    //   Work3                                         Work1
+    //
+    // If we do, we cannot merge, as we would end up with a cycle in the DAG.
+    final Set<Operator<?>> descendantWorksOps1 =
+        findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps);
+    final Set<Operator<?>> descendantWorksOps2 =
+        findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
+    if (!Collections.disjoint(descendantWorksOps1, workOps2) || !Collections.disjoint(workOps1, descendantWorksOps2)) {
+      return false;
+    }
+
+    // 3) We check whether output works when we merge the operators will collide.
     //
     //   Work1   Work2    (merge TS in W1 & W2)        Work1
     //       \   /                  ->                  | |       X
@@ -1788,7 +1805,7 @@ public class SharedWorkOptimizer extends Transform {
       // We cannot merge
       //      return false;
     }
-    // 3) We check whether we will end up with same operators inputing on same work.
+    // 4) We check whether we will end up with same operators inputing on same work.
     //
     //       Work1        (merge TS in W2 & W3)        Work1
     //       /   \                  ->                  | |       X
@@ -1812,45 +1829,27 @@ public class SharedWorkOptimizer extends Transform {
       // We cannot merge
       //      return false;
     }
-    // 4) We check whether one of the operators is part of a work that is an input for
-    // the work of the other operator.
-    //
-    //   Work1            (merge TS in W1 & W3)        Work1
-    //     |                        ->                   |        X
-    //   Work2                                         Work2
-    //     |                                             |
-    //   Work3                                         Work1
-    //
-    // If we do, we cannot merge, as we would end up with a cycle in the DAG.
-    final Set<Operator<?>> descendantWorksOps1 =
-            findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps);
-    final Set<Operator<?>> descendantWorksOps2 =
-            findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
-    if (!Collections.disjoint(descendantWorksOps1, workOps2)
-            || !Collections.disjoint(workOps1, descendantWorksOps2)) {
-      return false;
-    }
 
     OperatorGraph og = new OperatorGraph(pctx);
 
-    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(new T1());
-    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(new T1());
+    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(new NonParallelizableEdgePredicate());
+    Set<Cluster> pc = new HashSet<>(Sets.intersection(pc1, pc2));
 
-    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new T1());
-    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new T1());
+    for (Operator<?> o : sr.discardableOps.get(0).getParentOperators()) {
+      pc.remove(og.clusterOf(o));
+    }
+    for (Operator<?> o : sr.discardableInputOps) {
+      pc.remove(og.clusterOf(o));
+    }
 
-    if (Sets.intersection(pc1, pc2).size() > 1) {
-
-      try {
-        new OperatorGraph(pctx).toDot(new java.io.File("/tmp/x.full.dot"));
-        new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/x.joins.dot"));
-      } catch (Exception e1) {
-        throw new RuntimeException(e1);
-      }
-
+    if (pc.size() > 0) {
       LOG.debug("merge would create an unsupported parallel edge(I)", op1, op2);
       return false;
     }
+
+    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new NonParallelizableEdgePredicate());
 
     if (!Collections.disjoint(cc1, cc2)) {
       LOG.debug("merge would create an unsupported parallel edge(II)", op1, op2);
@@ -1865,12 +1864,11 @@ public class SharedWorkOptimizer extends Transform {
     return true;
   }
 
-  static class T1 implements Function<OpEdge, Boolean> {
+  static class NonParallelizableEdgePredicate implements Function<OpEdge, Boolean> {
 
     @Override
     public Boolean apply(OpEdge input) {
       switch (input.getEdgeType()) {
-      //      case FLOW:
       case BROADCAST:
       case DPP:
       case SEMIJOIN:
