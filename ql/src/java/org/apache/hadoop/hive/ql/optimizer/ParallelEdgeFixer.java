@@ -154,8 +154,17 @@ public class ParallelEdgeFixer extends Transform {
   }
 
   private void removeOneEdge(List<Pair<Operator, Operator>> values) {
-    // FIXME: unsupported edges?
-    values.remove(values.size() - 1);
+    Pair<Operator, Operator> toKeep = null;
+    for (Pair<Operator, Operator> pair : values) {
+      if (!((ReduceSinkDesc) pair.left.getConf()).isParallelEdgeSupport()) {
+        if (toKeep != null) {
+          throw new RuntimeException("More than one operators which should not be reshuffled!");
+        }
+        toKeep = pair;
+      }
+    }
+    toKeep=values.get(values.size() - 1);
+    values.remove(toKeep);
   }
 
   /**
