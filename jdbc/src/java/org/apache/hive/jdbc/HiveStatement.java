@@ -309,6 +309,7 @@ public class HiveStatement implements java.sql.Statement {
     execReq.setConfOverlay(sessConf);
     execReq.setQueryTimeout(queryTimeout);
     try {
+      LOG.debug("Submitting statement [{}]: {}", sessHandle, sql);
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
       List<String> infoMessages = execResp.getStatus().getInfoMessages();
@@ -318,6 +319,7 @@ public class HiveStatement implements java.sql.Statement {
         }
       }
       stmtHandle = Optional.of(execResp.getOperationHandle());
+      LOG.debug("Running with statement handle: {}", stmtHandle.get());
     } catch (SQLException eS) {
       isLogBeingGenerated = false;
       throw eS;
@@ -359,6 +361,8 @@ public class HiveStatement implements java.sql.Statement {
       inPlaceUpdateStream.get().getEventNotifier().progressBarCompleted();
     }
 
+    LOG.debug("Waiting on operation to complete: Polling operation status");
+
     // Poll on the operation status, till the operation is complete
     do {
       try {
@@ -371,6 +375,7 @@ public class HiveStatement implements java.sql.Statement {
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
+        LOG.debug("Status response: {}", statusResp);
         if (!isOperationComplete && inPlaceUpdateStream.isPresent()) {
           inPlaceUpdateStream.get().update(statusResp.getProgressUpdateResponse());
         }
