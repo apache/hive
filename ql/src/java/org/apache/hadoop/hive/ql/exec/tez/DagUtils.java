@@ -1602,9 +1602,9 @@ public class DagUtils {
     boolean endVertex = tezWork.getLeaves().contains(workUnit);
     if (endVertex) {
       OutputCommitterDescriptor ocd = null;
-      if (conf.get("hive.tez.mapreduce.output.committer.class") != null
+      if (HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER) != null
           && conf.get("mapred.output.committer.class") != null) {
-        ocd = OutputCommitterDescriptor.create(conf.get("hive.tez.mapreduce.output.committer.class"));
+        ocd = OutputCommitterDescriptor.create(HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER));
       }
       vertex.addDataSink("out_"+workUnit.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(outputKlass.getName())
