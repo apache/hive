@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -49,6 +48,8 @@ import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -64,7 +65,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
- * FIXME
+ * Inserts an extrea RS to avoid parallel edges.
+ *
+ * For mapjoins, semijoins its less costly to sometimes reshuffle the existing data - than computing it from scratch.
+ * Parallel edges are introduced by the {@link SharedWorkOptimizer} in case this fixer could patch them up.
  */
 public class ParallelEdgeFixer extends Transform {
 
@@ -72,8 +76,9 @@ public class ParallelEdgeFixer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    Set<OpGroup> groups = findOpGroups(pctx);
-    fixParallelEdges(groups);
+    //    Set<OpGroup> groups = findOpGroups(pctx);
+    OperatorGraph og = new OperatorGraph(pctx);
+    fixParallelEdges(og);
     return pctx;
   }
 
@@ -93,28 +98,22 @@ public class ParallelEdgeFixer extends Transform {
   /**
    * Adds an intermediate reduce sink inbetweeen p and o.
    */
-  private void fixParallelEdges(Set<OpGroup> groups) {
-    Map<Operator, OpGroup> op2group = new HashMap<>();
-    for (OpGroup g : groups) {
-      for (Operator<?> o : g.members) {
-        op2group.put(o, g);
-      }
-    }
+  private void fixParallelEdges(OperatorGraph og) {
 
-    for (OpGroup g : groups) {
-      ListValuedMap<Pair<OpGroup, OpGroup>, Pair<Operator<?>, Operator<?>>> edgeOperators =
+    for (Cluster c : og.getClusters()) {
+      ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
           new ArrayListValuedHashMap<>();
-      for (Operator<?> o : g.members) {
+      for (Operator<?> o : c.getMembers()) {
         for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
-          OpGroup parentGroup = op2group.get(p);
-          if (parentGroup == g) {
+          Cluster parentCluster = og.clusterOf(p);
+          if (parentCluster == c) {
             continue;
           }
-          edgeOperators.put(new Pair(parentGroup, g), new Pair(p, o));
+          edgeOperators.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
         }
       }
 
-      for (Pair<OpGroup, OpGroup> key : edgeOperators.keySet()) {
+      for (Pair<Cluster, Cluster> key : edgeOperators.keySet()) {
         List<Pair<Operator<?>, Operator<?>>> values = edgeOperators.get(key);
         if(values.size() <=1) {
           continue;

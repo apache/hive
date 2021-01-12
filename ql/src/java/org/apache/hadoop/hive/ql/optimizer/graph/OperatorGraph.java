@@ -20,6 +20,8 @@
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -89,14 +91,14 @@ public class OperatorGraph {
 
     Set<Operator<?>> members = new LinkedHashSet<>();
 
-    public void merge(Cluster o) {
+    protected void merge(Cluster o) {
       for (Operator<?> node : o.members) {
         add(node);
       }
       o.members.clear();
     }
 
-    public void add(Operator<?> curr) {
+    protected void add(Operator<?> curr) {
       nodeCluster.put(curr, this);
       members.add(curr);
     }
@@ -133,6 +135,9 @@ public class OperatorGraph {
       return ret;
     }
 
+    public Set<Operator<?>> getMembers() {
+      return Collections.unmodifiableSet(members);
+    }
   }
 
 
@@ -235,5 +240,9 @@ public class OperatorGraph {
 
   public Cluster clusterOf(Operator<?> op1) {
     return nodeCluster.get(op1);
+  }
+
+  public Collection<Cluster> getClusters() {
+    return nodeCluster.values();
   }
 }
