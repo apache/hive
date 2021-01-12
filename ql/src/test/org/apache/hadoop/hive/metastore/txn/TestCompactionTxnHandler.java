@@ -304,7 +304,7 @@ public class TestCompactionTxnHandler {
     // Check the output of show compactions
     checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
     // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
-    // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED is enough for this.
+    // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE is enough for this.
     // But we also want enough to tickle the code in TxnUtils.buildQueryWithINClauseStrings()
     // so that it produces multiple queries. For that we need at least 290.
     for (int i = 0 ; i < 300; i++) {

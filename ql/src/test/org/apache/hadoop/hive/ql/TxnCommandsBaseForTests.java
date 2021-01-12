@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -215,7 +216,6 @@ public abstract class TxnCommandsBaseForTests {
   public static void runInitiator(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
   }
-  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);

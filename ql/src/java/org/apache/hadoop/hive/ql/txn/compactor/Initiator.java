@@ -203,8 +203,10 @@ public class Initiator extends MetaStoreCompactorThread {
         requestCompaction(ci, runAs, type);
       }
     } catch (Throwable ex) {
-      LOG.error("Caught exception while trying to determine if we should compact {}. " +
-          "Marking failed to avoid repeated failures, {}", ci, ex);
+      String errorMessage = "Caught exception while trying to determine if we should compact " + ci + ". Marking "
+          + "failed to avoid repeated failures, " + ex;
+      LOG.error(errorMessage);
+      ci.errorMessage = errorMessage;
       txnHandler.markFailed(ci);
     }
   }
