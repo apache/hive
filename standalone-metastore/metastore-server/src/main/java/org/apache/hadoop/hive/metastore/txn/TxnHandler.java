@@ -228,7 +228,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static final protected char READY_FOR_CLEANING = 'r';
   static final char FAILED_STATE = 'f';
   static final char SUCCEEDED_STATE = 's';
-  static final char ATTEMPTED_STATE = 'a';
+  static final char DID_NOT_INITIATE = 'a';
 
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
@@ -3510,7 +3510,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       case READY_FOR_CLEANING: return CLEANING_RESPONSE;
       case FAILED_STATE: return FAILED_RESPONSE;
       case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
-      case ATTEMPTED_STATE: return ATTEMPTED_RESPONSE;
+      case DID_NOT_INITIATE: return DID_NOT_INITIATE_RESPONSE;
       default:
         return Character.toString(s);
     }
