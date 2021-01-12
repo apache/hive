@@ -416,7 +416,7 @@ public class TezTask extends Task<TezWork> {
     }
   }
 
-  DAG build(JobConf conf, TezWork tezWork, Path scratchDir, Context ctx,
+  DAG build(JobConf jobConf, TezWork tezWork, Path scratchDir, Context ctx,
       Map<String, LocalResource> vertexResources) throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
@@ -427,7 +427,7 @@ public class TezTask extends Task<TezWork> {
     Collections.reverse(topologicalWorkList);
 
     // the name of the dag is what is displayed in the AM/Job UI
-    String dagName = utils.createDagName(conf, queryPlan);
+    String dagName = utils.createDagName(jobConf, queryPlan);
 
     LOG.info("Dag name: " + dagName);
     DAG dag = DAG.create(dagName);
@@ -437,7 +437,7 @@ public class TezTask extends Task<TezWork> {
         .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
     dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
 
     if (LOG.isDebugEnabled()) {
@@ -445,8 +445,8 @@ public class TezTask extends Task<TezWork> {
     }
     dag.setDAGInfo(dagInfo);
 
-    dag.setCredentials(conf.getCredentials());
-    setAccessControlsForCurrentUser(dag, queryPlan.getQueryId(), conf);
+    dag.setCredentials(jobConf.getCredentials());
+    setAccessControlsForCurrentUser(dag, queryPlan.getQueryId(), jobConf);
 
     for (BaseWork workUnit: topologicalWorkList) {
 
@@ -494,9 +494,9 @@ public class TezTask extends Task<TezWork> {
         }
       } else {
         // Regular vertices
-        JobConf wxConf = utils.initializeVertexConf(conf, ctx, workUnit);
+        JobConf wxConf = utils.initializeVertexConf(jobConf, ctx, workUnit);
         checkOutputSpec(workUnit, wxConf);
-        Vertex wx = utils.createVertex(wxConf, workUnit, scratchDir,
+        Vertex wx = utils.createVertex(conf, wxConf, workUnit, scratchDir,
             tezWork, vertexResources);
         if (tezWork.getChildren(workUnit).size() > 1) {
           String tezRuntimeSortMb = wxConf.get(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB);
@@ -517,7 +517,7 @@ public class TezTask extends Task<TezWork> {
           wx.setConf(TEZ_MEMORY_RESERVE_FRACTION, Double.toString(frac));
         } // Otherwise just leave it up to Tez to decide how much memory to allocate
         dag.addVertex(wx);
-        utils.addCredentials(workUnit, dag, conf);
+        utils.addCredentials(workUnit, dag, jobConf);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + workUnit.getName());
         workToVertex.put(workUnit, wx);
         workToConf.put(workUnit, wxConf);
@@ -534,7 +534,7 @@ public class TezTask extends Task<TezWork> {
       }
     }
     // Clear the work map after build. TODO: remove caching instead?
-    Utilities.clearWorkMap(conf);
+    Utilities.clearWorkMap(jobConf);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
   }

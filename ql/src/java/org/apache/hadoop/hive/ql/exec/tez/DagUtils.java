@@ -747,13 +747,13 @@ public class DagUtils {
     }
   }
 
-  private Vertex createVertexFromMergeWork(JobConf conf, MergeJoinWork mergeJoinWork,
+  private Vertex createVertexFromMergeWork(HiveConf hiveConf, JobConf conf, MergeJoinWork mergeJoinWork,
       Path mrScratchDir, VertexType vertexType) throws Exception {
     Utilities.setMergeWork(conf, mergeJoinWork, mrScratchDir, false);
     if (mergeJoinWork.getMainWork() instanceof MapWork) {
       List<BaseWork> mapWorkList = mergeJoinWork.getBaseWorkList();
       MapWork mapWork = (MapWork) (mergeJoinWork.getMainWork());
-      Vertex mergeVx = createVertexFromMapWork(
+      Vertex mergeVx = createVertexFromMapWork(hiveConf,
           conf, mapWork, mrScratchDir, vertexType);
 
       conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
@@ -805,7 +805,7 @@ public class DagUtils {
   /*
    * Helper function to create Vertex from MapWork.
    */
-  private Vertex createVertexFromMapWork(JobConf conf, MapWork mapWork, Path mrScratchDir,
+  private Vertex createVertexFromMapWork(HiveConf hiveConf, JobConf conf, MapWork mapWork, Path mrScratchDir,
       VertexType vertexType) throws Exception {
 
     // set up the operator plan
@@ -902,12 +902,16 @@ public class DagUtils {
       conf.setBoolean(Utilities.VECTOR_MODE, mapWork.getVectorMode());
       conf.setBoolean(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, mapWork.getUseVectorizedInputFileFormat());
 
-      InputSplitInfo inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(conf, false, 0);
+      JobConf splitconf = new JobConf(conf);
+      if (hiveConf != null) {
+        splitconf.addResource(hiveConf);
+      }
+      InputSplitInfo inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(splitconf, false, 0);
       InputInitializerDescriptor descriptor = InputInitializerDescriptor.create(MRInputSplitDistributor.class.getName());
       InputDescriptor inputDescriptor = InputDescriptor.create(MRInputLegacy.class.getName())
               .setUserPayload(UserPayload
                       .create(MRRuntimeProtos.MRInputUserPayloadProto.newBuilder()
-                              .setConfigurationBytes(TezUtils.createByteStringFromConf(conf))
+                              .setConfigurationBytes(TezUtils.createByteStringFromConf(splitconf))
                               .setSplits(inputSplitInfo.getSplitsProto()).build().toByteString()
                               .asReadOnlyByteBuffer()));
 
@@ -1516,6 +1520,7 @@ public class DagUtils {
   /**
    * Create a vertex from a given work object.
    *
+   * @param hiveConf hiveConf object
    * @param conf JobConf to be used to this execution unit
    * @param workUnit The instance of BaseWork representing the actual work to be performed
    * by this vertex.
@@ -1523,7 +1528,7 @@ public class DagUtils {
    * @return Vertex
    */
   @SuppressWarnings("deprecation")
-  public Vertex createVertex(JobConf conf, BaseWork workUnit, Path scratchDir,
+  public Vertex createVertex(HiveConf hiveConf, JobConf conf, BaseWork workUnit, Path scratchDir,
       TezWork tezWork, Map<String, LocalResource> localResources) throws Exception {
 
     Vertex vertex;
@@ -1531,12 +1536,12 @@ public class DagUtils {
     // BaseWork.
     VertexType vertexType = tezWork.getVertexType(workUnit);
     if (workUnit instanceof MapWork) {
-      vertex = createVertexFromMapWork(
+      vertex = createVertexFromMapWork(hiveConf,
           conf, (MapWork) workUnit, scratchDir, vertexType);
     } else if (workUnit instanceof ReduceWork) {
       vertex = createVertexFromReduceWork(conf, (ReduceWork) workUnit, scratchDir);
     } else if (workUnit instanceof MergeJoinWork) {
-      vertex = createVertexFromMergeWork(
+      vertex = createVertexFromMergeWork(hiveConf,
           conf, (MergeJoinWork) workUnit, scratchDir, vertexType);
       // set VertexManagerPlugin if whether it's a cross product destination vertex
       List<String> crossProductSources = new ArrayList<>();

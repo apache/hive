@@ -453,7 +453,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       // Update the queryId to use the generated applicationId. See comment below about
       // why this is done.
       HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
-      Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, work,
+      Vertex wx = utils.createVertex(null, wxConf, mapWork, scratchDir, work,
           DagUtils.createTezLrMap(appJarLr, null));
       String vertexName = wx.getName();
       dag.addVertex(wx);
