@@ -59,7 +59,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 3
+                          1 Reducer 4
                         Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -69,7 +69,7 @@ STAGE PLANS:
                             1 _col0 (type: string)
                           outputColumnNames: _col0, _col3
                           input vertices:
-                            1 Reducer 4
+                            1 Map 3
                           Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: hash(_col0,_col3) (type: int)
@@ -139,15 +139,14 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: string)
+                  Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator

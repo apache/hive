@@ -215,7 +215,7 @@ STAGE PLANS:
                       nullSafes: [true]
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
-                        1 Map 2
+                        1 Reducer 3
                       Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -232,7 +232,7 @@ STAGE PLANS:
                             nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false
                         outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                         input vertices:
-                          1 Reducer 3
+                          1 Map 2
                         Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
@@ -329,22 +329,22 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: value, key
+                outputColumnNames: key, value
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0]
                 Reduce Output Operator
-                  key expressions: key (type: int)
+                  key expressions: value (type: int)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: key (type: int)
+                  Map-reduce partition columns: value (type: int)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: value (type: int)
+                  value expressions: key (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -410,7 +410,7 @@ STAGE PLANS:
                     nullSafes: [true]
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
-                      1 Map 2
+                      1 Reducer 3
                     Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -428,7 +428,7 @@ STAGE PLANS:
                       nullSafes: [true]
                       outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                       input vertices:
-                        1 Reducer 3
+                        1 Map 2
                       Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
@@ -510,22 +510,22 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: value, key
+                outputColumnNames: key, value
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0]
                 Reduce Output Operator
-                  key expressions: key (type: int)
+                  key expressions: value (type: int)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: key (type: int)
+                  Map-reduce partition columns: value (type: int)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: value (type: int)
+                  value expressions: key (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -819,7 +819,7 @@ STAGE PLANS:
                     nullSafes: [true, true]
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
-                      1 Map 2
+                      1 Reducer 3
                     Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -837,7 +837,7 @@ STAGE PLANS:
                       nullSafes: [true, true]
                       outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                       input vertices:
-                        1 Reducer 3
+                        1 Map 2
                       Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
@@ -917,16 +917,16 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
-                outputColumnNames: key, value
+                outputColumnNames: value, key
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
-                  key expressions: key (type: int), value (type: int)
+                  key expressions: value (type: int), key (type: int)
                   null sort order: zz
                   sort order: ++
-                  Map-reduce partition columns: key (type: int), value (type: int)
+                  Map-reduce partition columns: value (type: int), key (type: int)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkMultiKeyOperator
                       native: true
@@ -1359,7 +1359,7 @@ STAGE PLANS:
                       nullSafes: [true]
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
-                        1 Map 2
+                        1 Reducer 3
                       Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -1374,7 +1374,7 @@ STAGE PLANS:
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                         input vertices:
-                          1 Reducer 3
+                          1 Map 2
                         Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
@@ -1471,22 +1471,22 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: value, key
+                outputColumnNames: key, value
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0]
                 Reduce Output Operator
-                  key expressions: key (type: int)
+                  key expressions: value (type: int)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: key (type: int)
+                  Map-reduce partition columns: value (type: int)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: value (type: int)
+                  value expressions: key (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -1768,7 +1768,7 @@ STAGE PLANS:
                       nullSafes: [true, false]
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
-                        1 Reducer 3
+                        1 Map 2
                       Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -1786,7 +1786,7 @@ STAGE PLANS:
                         nullSafes: [true, false]
                         outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                         input vertices:
-                          1 Map 2
+                          1 Reducer 3
                         Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
@@ -1881,16 +1881,16 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
-                outputColumnNames: value, key
+                outputColumnNames: key, value
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
-                  key expressions: value (type: int), key (type: int)
+                  key expressions: key (type: int), value (type: int)
                   null sort order: zz
                   sort order: ++
-                  Map-reduce partition columns: value (type: int), key (type: int)
+                  Map-reduce partition columns: key (type: int), value (type: int)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkMultiKeyOperator
                       native: true
@@ -1961,7 +1961,7 @@ STAGE PLANS:
                     nullSafes: [true, true]
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
-                      1 Map 2
+                      1 Reducer 3
                     Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -1979,7 +1979,7 @@ STAGE PLANS:
                       nullSafes: [true, true]
                       outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                       input vertices:
-                        1 Reducer 3
+                        1 Map 2
                       Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
@@ -2059,16 +2059,16 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
-                outputColumnNames: key, value
+                outputColumnNames: value, key
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
-                  key expressions: key (type: int), value (type: int)
+                  key expressions: value (type: int), key (type: int)
                   null sort order: zz
                   sort order: ++
-                  Map-reduce partition columns: key (type: int), value (type: int)
+                  Map-reduce partition columns: value (type: int), key (type: int)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkMultiKeyOperator
                       native: true

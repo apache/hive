@@ -64,7 +64,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         input vertices:
-                          1 Reducer 5
+                          1 Map 4
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
@@ -84,7 +84,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         input vertices:
-                          1 Map 4
+                          1 Reducer 5
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()

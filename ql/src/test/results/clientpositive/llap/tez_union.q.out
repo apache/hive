@@ -563,9 +563,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Map 1 <- Map 4 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Map 10 <- Reducer 6 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Map 9 <- Map 4 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Map 9 <- Reducer 5 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
         Reducer 6 <- Map 4 (SIMPLE_EDGE)
@@ -594,7 +594,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Reducer 5
+                          1 Map 4
                         Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -749,7 +749,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 4
+                          1 Reducer 5
                         Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -1042,8 +1042,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Map 5 <- Map 3 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Map 1 <- Map 3 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Map 5 <- Reducer 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -1068,7 +1068,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Reducer 4
+                          1 Map 3
                         Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -1127,7 +1127,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 3
+                          1 Reducer 4
                         Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false

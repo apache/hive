@@ -27,8 +27,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Map 6 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Map 1 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Map 6 <- Reducer 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -54,7 +54,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Reducer 5
+                          1 Map 4
                         Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
@@ -111,7 +111,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 4
+                          1 Reducer 5
                         Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
@@ -543,10 +543,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 6 <- Map 1 (BROADCAST_EDGE), Union 4 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
-        Reducer 5 <- Union 4 (SIMPLE_EDGE)
+        Map 6 <- Reducer 5 (BROADCAST_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -606,7 +606,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 1
+                          1 Reducer 5
                         Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
@@ -616,18 +616,6 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY._col0 (type: string)
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -640,7 +628,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Statistics: Num rows: 51 Data size: 4425 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 5 
+        Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -654,8 +642,20 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 4 
-            Vertex: Union 4
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
+        Union 3 
+            Vertex: Union 3
 
   Stage: Stage-0
     Fetch Operator
@@ -775,10 +775,10 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 6 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (BROADCAST_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (BROADCAST_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Map 1 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -848,6 +848,18 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
+              Select Operator
+                expressions: KEY._col0 (type: string)
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
@@ -861,7 +873,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                   outputColumnNames: _col0
                   input vertices:
-                    1 Reducer 5
+                    1 Map 1
                   Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
@@ -877,7 +889,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
-        Reducer 3 
+        Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -891,7 +903,7 @@ STAGE PLANS:
                   null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 4 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -905,18 +917,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -1008,10 +1008,10 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 6 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (BROADCAST_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (BROADCAST_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Map 1 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1081,6 +1081,18 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
+              Select Operator
+                expressions: KEY._col0 (type: string)
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
@@ -1094,7 +1106,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                   outputColumnNames: _col0
                   input vertices:
-                    1 Reducer 5
+                    1 Map 1
                   Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
@@ -1110,7 +1122,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
-        Reducer 3 
+        Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -1124,7 +1136,7 @@ STAGE PLANS:
                   null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 4 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -1138,18 +1150,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator

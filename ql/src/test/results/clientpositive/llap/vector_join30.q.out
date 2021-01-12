@@ -963,7 +963,7 @@ STAGE PLANS:
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0
                         input vertices:
-                          1 Map 3
+                          1 Reducer 4
                         Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -983,7 +983,7 @@ STAGE PLANS:
                               hashTableImplementationType: OPTIMIZED
                           outputColumnNames: _col2, _col3
                           input vertices:
-                            1 Reducer 4
+                            1 Map 3
                           Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: hash(_col2,_col3) (type: int)
@@ -1156,18 +1156,18 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string
+                    dataColumnCount: 1
+                    dataColumns: KEY.reducesinkkey0:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 0]
+                    projectedOutputColumnNums: [0]
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
@@ -1178,9 +1178,7 @@ STAGE PLANS:
                       keyColumns: 0:string
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumns: 1:string
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: string)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -1575,7 +1573,7 @@ STAGE PLANS:
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
-                        1 Reducer 4
+                        1 Map 3
                       Statistics: Num rows: 791 Data size: 209615 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -1594,7 +1592,7 @@ STAGE PLANS:
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Reducer 4
                         Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: hash(_col1,_col2) (type: int)
@@ -1767,18 +1765,18 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string
+                    dataColumnCount: 1
+                    dataColumns: KEY.reducesinkkey0:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 0]
+                    projectedOutputColumnNums: [0]
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
@@ -1789,9 +1787,7 @@ STAGE PLANS:
                       keyColumns: 0:string
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumns: 1:string
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: string)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
