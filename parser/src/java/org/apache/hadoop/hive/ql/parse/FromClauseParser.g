@@ -316,7 +316,7 @@ valuesTableConstructor
 @init { gParent.pushMsg("values table constructor", state); }
 @after { gParent.popMsg(state); }
     :
-    valueRowConstructor (options{greedy=true;}: COMMA! valueRowConstructor)*
+    valueRowConstructor (COMMA! valueRowConstructor)*
     ;
 
 valueRowConstructor
