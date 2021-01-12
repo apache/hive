@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -240,8 +241,11 @@ public class ParallelEdgeFixer extends Transform {
       return exprNodeColumnDesc.getColumn();
 
     }
+    if (expr instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc exprNodeConstantDesc = (ExprNodeConstantDesc) expr;
+      return exprNodeConstantDesc.getFoldedFromCol();
+    }
     throw new RuntimeException("unexpected mapping expression!");
-
   }
 
   private Map<String, ExprNodeDesc> buildIdentityColumnExprMap(Map<String, ExprNodeDesc> columnExprMap) {
