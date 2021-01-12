@@ -22,6 +22,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
@@ -13162,12 +13163,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param tblProp
    *          property map
+   * @param isCTAS
    * @return Modified table property map
    */
   private Map<String, String> validateAndAddDefaultProperties(
-      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable, boolean isTransactional, boolean isManaged) throws SemanticException {
+          Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
+          String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
+          boolean isTemporaryTable, boolean isTransactional, boolean isManaged, boolean isCTAS) throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
 
     String paraString = HiveConf.getVar(conf, ConfVars.NEWTABLEDEFAULTPARA);
@@ -13217,6 +13219,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
+    retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
     return retValue;
   }
 
@@ -13543,7 +13546,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13571,7 +13574,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
       }
       tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-          isTemporary, isTransactional, isManaged);
+          isTemporary, isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, false, tblProps);
 
@@ -13595,7 +13598,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13681,7 +13684,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, true);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,
