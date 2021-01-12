@@ -133,7 +133,7 @@ import com.google.common.annotations.VisibleForTesting;
  *
  */
 public class HiveConnection implements java.sql.Connection {
-  public static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
   private String jdbcUriString;
   private String host;
   private int port;
@@ -853,19 +853,26 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private void openSession() throws SQLException {
+    LOG.debug("Opening Hive connection session");
+
     TOpenSessionReq openReq = new TOpenSessionReq();
 
-    Map<String, String> openConf = new HashMap<String, String>();
+    Map<String, String> openConf = new HashMap<>();
     // for remote JDBC client, try to set the conf var using 'set foo=bar'
     for (Entry<String, String> hiveConf : connParams.getHiveConfs().entrySet()) {
+      LOG.debug("Adding hiveconf: [{}={}]", hiveConf.getKey(), hiveConf.getValue());
       openConf.put("set:hiveconf:" + hiveConf.getKey(), hiveConf.getValue());
     }
     // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
     for (Entry<String, String> hiveVar : connParams.getHiveVars().entrySet()) {
+      LOG.debug("Adding hivevar: [{}={}]", hiveVar.getKey(), hiveVar.getValue());
       openConf.put("set:hivevar:" + hiveVar.getKey(), hiveVar.getValue());
     }
+
     // switch the database
+    LOG.debug("Default database: {}", connParams.getDbName());
     openConf.put("use:database", connParams.getDbName());
+    
     if (wmPool != null) {
       openConf.put("set:hivevar:wmpool", wmPool);
     }
@@ -874,9 +881,10 @@ public class HiveConnection implements java.sql.Connection {
     }
 
     // set the session configuration
-    if (sessConfMap.containsKey(HiveAuthConstants.HS2_PROXY_USER)) {
-      openConf.put(HiveAuthConstants.HS2_PROXY_USER,
-          sessConfMap.get(HiveAuthConstants.HS2_PROXY_USER));
+    final String hs2ProxyUser = sessConfMap.get(HiveAuthConstants.HS2_PROXY_USER);
+    if (hs2ProxyUser != null) {
+      LOG.debug("Set hive.server2.proxy.user: {}", hs2ProxyUser);
+      openConf.put(HiveAuthConstants.HS2_PROXY_USER, hs2ProxyUser);
     }
 
     // set create external purge table by default
@@ -884,7 +892,10 @@ public class HiveConnection implements java.sql.Connection {
       openConf.put("set:hiveconf:hive.create.as.external.legacy",
           sessConfMap.get(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL).toLowerCase());
     }
-    if (isHplSqlMode()) {
+
+    final boolean isHplSqlMode = isHplSqlMode();
+    LOG.debug("HPLSQL mode: {}", isHplSqlMode);
+    if (isHplSqlMode) {
       openConf.put("set:hivevar:mode", HPLSQL);
     }
 
@@ -913,6 +924,15 @@ public class HiveConnection implements java.sql.Connection {
       }
       protocol = openResp.getServerProtocolVersion();
       sessHandle = openResp.getSessionHandle();
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Opened new session with protocol: {}", protocol);
+        LOG.debug("Session handle: {}", sessHandle);
+        LOG.debug("Dumping configuration...");
+        for (Map.Entry<String, String> entry : serverHiveConf.entrySet()) {
+          LOG.debug("{}={}", entry.getKey(), entry.getValue());
+        }
+      }
 
       final String serverFetchSizeString =
           openResp.getConfiguration().get(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname);
