@@ -61,6 +61,7 @@ import org.apache.kafka.clients.admin.CreateDelegationTokenResult;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.security.token.delegation.DelegationToken;
+import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.output.MROutput;
@@ -1600,9 +1601,14 @@ public class DagUtils {
     // final vertices need to have at least one output
     boolean endVertex = tezWork.getLeaves().contains(workUnit);
     if (endVertex) {
+      OutputCommitterDescriptor ocd = null;
+      if (conf.get("hive.tez.mapreduce.output.committer.class") != null
+          && conf.get("mapred.output.committer.class") != null) {
+        ocd = OutputCommitterDescriptor.create(conf.get("hive.tez.mapreduce.output.committer.class"));
+      }
       vertex.addDataSink("out_"+workUnit.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(outputKlass.getName())
-          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), null, null));
+          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), ocd, null));
     }
 
     return vertex;
