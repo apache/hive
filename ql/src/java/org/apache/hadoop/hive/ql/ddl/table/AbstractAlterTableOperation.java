@@ -78,7 +78,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       }
     }
 
-    finalizeAlterTableWithWriteIdOp(table, oldTable, partitions, context, environmentContext, desc);
+    finalizeAlterTableWithWriteIdOp(table, oldTable, partitions, context, environmentContext);
     return 0;
   }
 
@@ -123,7 +123,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
   }
 
   private void finalizeAlterTableWithWriteIdOp(Table table, Table oldTable, List<Partition> partitions,
-      DDLOperationContext context, EnvironmentContext environmentContext, AbstractAlterTableDesc alterTable)
+      DDLOperationContext context, EnvironmentContext environmentContext)
       throws HiveException {
     if (partitions == null) {
       updateModifiedParameters(table.getTTable().getParameters(), context.getConf());
@@ -135,21 +135,21 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     }
 
     try {
-      environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTable.getType().name());
+      environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, desc.getType().name());
       if (partitions == null) {
-        long writeId = alterTable.getWriteId() != null ? alterTable.getWriteId() : 0;
-        context.getDb().alterTable(alterTable.getDbTableName(), table, alterTable.isCascade(), environmentContext, true,
+        long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
+        context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true,
             writeId);
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
         boolean isTxn = false;
-        if (alterTable.getPartitionSpec() != null && alterTable.getType() == AlterTableType.ADDPROPS) {
+        if (desc.getPartitionSpec() != null && desc.getType() == AlterTableType.ADDPROPS) {
           // ADDPROPS is used to add replication properties like repl.last.id, which isn't
           // transactional change. In case of replication check for transactional properties
           // explicitly.
-          Map<String, String> props = alterTable.getProps();
-          if (alterTable.getReplicationSpec() != null && alterTable.getReplicationSpec().isInReplicationScope()) {
+          Map<String, String> props = desc.getProps();
+          if (desc.getReplicationSpec() != null && desc.getReplicationSpec().isInReplicationScope()) {
             isTxn = (props.get(StatsSetupConst.COLUMN_STATS_ACCURATE) != null);
           } else {
             isTxn = true;
@@ -159,8 +159,8 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
         context.getDb().alterPartitions(qualifiedName, partitions, environmentContext, isTxn);
       }
       // Add constraints if necessary
-      if (alterTable instanceof AbstractAlterTableWithConstraintsDesc) {
-        AlterTableAddConstraintOperation.addConstraints((AbstractAlterTableWithConstraintsDesc)alterTable,
+      if (desc instanceof AbstractAlterTableWithConstraintsDesc) {
+        AlterTableAddConstraintOperation.addConstraints((AbstractAlterTableWithConstraintsDesc)desc,
             context.getDb());
       }
     } catch (InvalidOperationException e) {
