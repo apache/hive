@@ -1016,10 +1016,10 @@ public class AcidUtils {
           split2 == -1 ? Long.parseLong(rest.substring(split + 1)) : Long.parseLong(rest.substring(split + 1, split2));
       if (split2 == -1) {
         // pre 1.3.x delta files
-        return new ParsedDeltaLight(min, max, null, -1, isDeleteDelta, visibilityTxnId);
+        return new ParsedDeltaLight(min, max, deltaDir, -1, isDeleteDelta, visibilityTxnId);
       }
       int statementId = Integer.parseInt(rest.substring(split2 + 1));
-      return new ParsedDeltaLight(min, max, null, statementId, isDeleteDelta, visibilityTxnId);
+      return new ParsedDeltaLight(min, max, deltaDir, statementId, isDeleteDelta, visibilityTxnId);
     }
 
     private ParsedDeltaLight(long min, long max, Path path, int statementId,
