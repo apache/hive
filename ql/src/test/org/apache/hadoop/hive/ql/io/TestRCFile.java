@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -115,7 +114,7 @@ public class TestRCFile {
     serDe = new ColumnarSerDe();
     // Create the SerDe
     tbl = createProperties();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     bytesArray = new byte[][] {"123".getBytes(StandardCharsets.UTF_8),
         "456".getBytes(StandardCharsets.UTF_8), "789".getBytes(StandardCharsets.UTF_8),
@@ -427,7 +426,7 @@ public class TestRCFile {
     AbstractSerDe serDe = new ColumnarSerDe();
     // Create the SerDe
     Properties tbl = createProperties();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     String usage = "Usage: RCFile " + "[-count N]" + " file";
     if (args.length == 0) {

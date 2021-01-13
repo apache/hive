@@ -59,11 +59,16 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public class ConvertAstToSearchArg {
   private static final Logger LOG = LoggerFactory.getLogger(ConvertAstToSearchArg.class);
+
+  private static final int KRYO_OUTPUT_BUFFER_SIZE = 4 * 1024;
+  private static final int KRYO_OUTPUT_BUFFER_MAX_SIZE = 10 * 1024 * 1024;
+
   private final SearchArgument.Builder builder;
   private final Configuration conf;
 
@@ -570,6 +575,13 @@ public class ConvertAstToSearchArg {
 
   public static boolean canCreateFromConf(Configuration conf) {
     return conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) != null || conf.get(SARG_PUSHDOWN) != null;
+  }
+
+  public static String sargToKryo(SearchArgument sarg) {
+    Output out = new Output(KRYO_OUTPUT_BUFFER_SIZE, KRYO_OUTPUT_BUFFER_MAX_SIZE);
+    kryo.get().writeObject(out, sarg);
+    out.close();
+    return Base64.encodeBase64String(out.toBytes());
   }
 
 }

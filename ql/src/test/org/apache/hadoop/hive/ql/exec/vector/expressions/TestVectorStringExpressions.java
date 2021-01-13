@@ -5451,7 +5451,7 @@ public class TestVectorStringExpressions {
   @Test
   public void testVectorLTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
-    VectorExpression expr = new StringLTrim(0, 1);
+    VectorExpression expr = new StringLTrimCol(0, 1);
     expr.evaluate(b);
     BytesColumnVector outV = (BytesColumnVector) b.cols[1];
     Assert.assertEquals(0,
@@ -5471,7 +5471,7 @@ public class TestVectorStringExpressions {
   @Test
   public void testVectorRTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
-    VectorExpression expr = new StringRTrim(0, 1);
+    VectorExpression expr = new StringRTrimCol(0, 1);
     expr.evaluate(b);
     BytesColumnVector outV = (BytesColumnVector) b.cols[1];
     Assert.assertEquals(0,
@@ -5491,7 +5491,7 @@ public class TestVectorStringExpressions {
   @Test
   public void testVectorTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
-    VectorExpression expr = new StringTrim(0, 1);
+    VectorExpression expr = new StringTrimCol(0, 1);
     expr.evaluate(b);
     BytesColumnVector outV = (BytesColumnVector) b.cols[1];
     Assert.assertEquals(0,

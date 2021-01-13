@@ -1371,7 +1371,9 @@ public class SharedWorkOptimizer extends Transform {
           return false;
         }
       } else if (op.getConf() instanceof DynamicPruningEventDesc) {
-        // accept
+        if (!pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_MERGE_EVENTOPS)) {
+          return false;
+        }
       } else {
         return false;
       }

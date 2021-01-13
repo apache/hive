@@ -42,7 +42,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
 /**
  * Extends the transaction handler with methods needed only by the compactor threads.  These
@@ -98,7 +100,7 @@ class CompactionTxnHandler extends TxnHandler {
           "    GROUP BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"" +
           "  ) \"C2\" " +
           "  ON \"C1\".\"CC_ID\" = \"C2\".\"CC_ID\" " +
-          "  WHERE \"C1\".\"CC_STATE\" IN (" + quoteChar(ATTEMPTED_STATE) + "," + quoteChar(FAILED_STATE) + ")" +
+          "  WHERE \"C1\".\"CC_STATE\" IN (" + quoteChar(DID_NOT_INITIATE) + "," + quoteChar(FAILED_STATE) + ")" +
           ") \"C\" " +
           "ON \"TC\".\"CTC_DATABASE\" = \"C\".\"CC_DATABASE\" AND \"TC\".\"CTC_TABLE\" = \"C\".\"CC_TABLE\" " +
           "  AND (\"TC\".\"CTC_PARTITION\" = \"C\".\"CC_PARTITION\" OR (\"TC\".\"CTC_PARTITION\" IS NULL AND \"C\".\"CC_PARTITION\" IS NULL)) " +
@@ -305,7 +307,7 @@ class CompactionTxnHandler extends TxnHandler {
           s = s + " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
         if (retentionTime > 0) {
-          s = s + " AND \"CQ_COMMIT_TIME\" < (" + TxnDbUtil.getEpochFn(dbProduct) + " - " + retentionTime + ")";
+          s = s + " AND \"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ")";
         }
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -364,7 +366,7 @@ class CompactionTxnHandler extends TxnHandler {
             + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\") "
           + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + quoteChar(SUCCEEDED_STATE) + ", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
-            + TxnDbUtil.getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
+            + getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
             + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\" "
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
@@ -836,12 +838,12 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   private static class RetentionCounters {
-    int attemptedRetention = 0;
+    int didNotInitiateRetention = 0;
     int failedRetention = 0;
     int succeededRetention = 0;
 
-    RetentionCounters(int attemptedRetention, int failedRetention, int succeededRetention) {
-      this.attemptedRetention = attemptedRetention;
+    RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention) {
+      this.didNotInitiateRetention = didNotInitiateRetention;
       this.failedRetention = failedRetention;
       this.succeededRetention = succeededRetention;
     }
@@ -849,8 +851,8 @@ class CompactionTxnHandler extends TxnHandler {
 
   private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc) {
     switch (ci.state) {
-      case ATTEMPTED_STATE:
-        if(--rc.attemptedRetention < 0) {
+      case DID_NOT_INITIATE:
+        if(--rc.didNotInitiateRetention < 0) {
           deleteSet.add(ci.id);
         }
         break;
@@ -904,7 +906,7 @@ class CompactionTxnHandler extends TxnHandler {
               rs.getString(4), rs.getString(5).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
-            rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+            rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
               getFailedCompactionRetention(),
               MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
           }
@@ -992,11 +994,11 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        pStmt = dbConn.prepareStatement("SELECT \"CC_STATE\" FROM \"COMPLETED_COMPACTIONS\" WHERE " +
+        pStmt = dbConn.prepareStatement("SELECT \"CC_STATE\", \"CC_ENQUEUE_TIME\" FROM \"COMPLETED_COMPACTIONS\" WHERE " +
           "\"CC_DATABASE\" = ? AND " +
           "\"CC_TABLE\" = ? " +
           (ci.partName != null ? "AND \"CC_PARTITION\" = ?" : "") +
-          " AND \"CC_STATE\" != " + quoteChar(ATTEMPTED_STATE) + " ORDER BY \"CC_ID\" DESC");
+          " AND \"CC_STATE\" != " + quoteChar(DID_NOT_INITIATE) + " ORDER BY \"CC_ID\" DESC");
         pStmt.setString(1, ci.dbname);
         pStmt.setString(2, ci.tableName);
         if (ci.partName != null) {
@@ -1005,8 +1007,13 @@ class CompactionTxnHandler extends TxnHandler {
         rs = pStmt.executeQuery();
         int numFailed = 0;
         int numTotal = 0;
+        long lastEnqueueTime = -1;
         int failedThreshold = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
         while(rs.next() && ++numTotal <= failedThreshold) {
+          long enqueueTime = rs.getLong(2);
+          if (enqueueTime > lastEnqueueTime) {
+            lastEnqueueTime = enqueueTime;
+          }
           if(rs.getString(1).charAt(0) == FAILED_STATE) {
             numFailed++;
           }
@@ -1014,7 +1021,11 @@ class CompactionTxnHandler extends TxnHandler {
             numFailed--;
           }
         }
-        return numFailed == failedThreshold;
+        // If the last attempt was too long ago, ignore the failed threshold and try compaction again
+        long retryTime = MetastoreConf.getTimeVar(conf,
+            ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME, TimeUnit.MILLISECONDS);
+        boolean needsRetry = (retryTime > 0) && (lastEnqueueTime + retryTime < System.currentTimeMillis());
+        return (numFailed == failedThreshold) && !needsRetry;
       }
       catch (SQLException e) {
         LOG.error("Unable to check for failed compactions " + e.getMessage());
@@ -1035,7 +1046,7 @@ class CompactionTxnHandler extends TxnHandler {
    * If there is an entry in compaction_queue with ci.id, remove it
    * Make entry in completed_compactions with status 'f'.
    * If there is no entry in compaction_queue, it means Initiator failed to even schedule a compaction,
-   * which we record as ATTEMPTED_STATE entry in history.
+   * which we record as DID_NOT_INITIATE entry in history.
    */
   @Override
   @RetrySemantics.CannotRetry
@@ -1081,7 +1092,7 @@ class CompactionTxnHandler extends TxnHandler {
           ci.id = generateCompactionQueueId(stmt);
           //mostly this indicates that the Initiator is paying attention to some table even though
           //compactions are not happening.
-          ci.state = ATTEMPTED_STATE;
+          ci.state = DID_NOT_INITIATE;
           //this is not strictly accurate, but 'type' cannot be null.
           if(ci.type == null) {
             ci.type = CompactionType.MINOR;
@@ -1232,7 +1243,7 @@ class CompactionTxnHandler extends TxnHandler {
     if (txnType == TxnType.COMPACTION) {
       stmt.executeUpdate(
           "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
-              TxnDbUtil.getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
+              getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
   }
 

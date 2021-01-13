@@ -71,13 +71,11 @@ import org.apache.hadoop.io.Writable;
 public class LazyBinarySerDe2 extends LazyBinarySerDe {
   LBSerializer rowSerializer;
 
-  public LazyBinarySerDe2() throws SerDeException {
-    super();
-  }
-
   @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-    super.initialize(conf, tbl);
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     ObjectInspector oi = getObjectInspector();
 
     rowSerializer = createLBSerializer(oi);

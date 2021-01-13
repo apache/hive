@@ -33,8 +33,8 @@ public class PostgresTPCDS extends Postgres {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/metastore";
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/metastore";
   }
 
   @Override

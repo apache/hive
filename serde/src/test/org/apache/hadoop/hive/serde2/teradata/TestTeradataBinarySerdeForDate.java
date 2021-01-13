@@ -44,7 +44,7 @@ public class TestTeradataBinarySerdeForDate {
   public void setUp() throws Exception {
     props.setProperty(serdeConstants.LIST_COLUMNS, "TD_DATE");
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "date");
-    serde.initialize(null, props);
+    serde.initialize(null, props, null);
   }
 
   @Test

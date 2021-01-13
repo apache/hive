@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.DataReader;
@@ -66,14 +65,11 @@ import org.apache.orc.impl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace.RangesSrc;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor.ZlibDirectDecompressor;
+import org.apache.hive.common.util.CleanerUtil;
 import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.CodedInputStream;
-
-import sun.misc.Cleaner;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
@@ -112,17 +108,6 @@ import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 //       schema evolution/ACID schema considerations should be on higher level.
 class EncodedReaderImpl implements EncodedReader {
   public static final Logger LOG = LoggerFactory.getLogger(EncodedReaderImpl.class);
-  private static Field cleanerField;
-  static {
-    try {
-      // TODO: To make it work for JDK9 use CleanerUtil from https://issues.apache.org/jira/browse/HADOOP-12760
-      final Class<?> dbClazz = Class.forName("java.nio.DirectByteBuffer");
-      cleanerField = dbClazz.getDeclaredField("cleaner");
-      cleanerField.setAccessible(true);
-    } catch (Throwable t) {
-      cleanerField = null;
-    }
-  }
   private static final Object POOLS_CREATION_LOCK = new Object();
   private static Pools POOLS;
   private static class Pools {
@@ -1725,19 +1710,14 @@ class EncodedReaderImpl implements EncodedReader {
       dataReader.releaseBuffer(bb);
       return;
     }
-    Field localCf = cleanerField;
-    if (!bb.isDirect() || localCf == null) return;
+    if (!bb.isDirect() || !CleanerUtil.UNMAP_SUPPORTED) {
+      return;
+    }
     try {
-      Cleaner cleaner = (Cleaner) localCf.get(bb);
-      if (cleaner != null) {
-        cleaner.clean();
-      } else {
-        LOG.debug("Unable to clean a buffer using cleaner - no cleaner");
-      }
+      CleanerUtil.getCleaner().freeBuffer(bb);
     } catch (Exception e) {
       // leave it for GC to clean up
-      LOG.warn("Unable to clean direct buffers using Cleaner.");
-      cleanerField = null;
+      LOG.warn("Unable to clean direct buffers using Cleaner");
     }
   }
 

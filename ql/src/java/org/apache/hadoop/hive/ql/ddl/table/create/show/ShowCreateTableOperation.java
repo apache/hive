@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -87,7 +87,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   @Override
   public int execute() throws HiveException {
     // get the create table statement for the table and populate the output
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       Table table = context.getDb().getTable(desc.getDatabaseName(), desc.getTableName());
       String command = table.isView() ? getCreateViewCommand(table, desc.isRelative())
           : getCreateTableCommand(table, desc.isRelative());
@@ -351,6 +351,6 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
       new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
 
   private String getProperties(Table table) {
-    return DDLUtils.propertiesToString(table.getParameters(), PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES);
+    return ShowUtils.propertiesToString(table.getParameters(), PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES);
   }
 }

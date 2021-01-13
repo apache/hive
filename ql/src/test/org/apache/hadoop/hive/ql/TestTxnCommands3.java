@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
@@ -79,47 +79,47 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "s/delta_0000002_0000002_0000/bucket_00000"}};
+            "s/delta_0000002_0000002_0000/bucket_00000_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
 
-    Assert.assertEquals(0, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='t'"));
-    Assert.assertEquals(0, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='t'"));
-    Assert.assertEquals(0, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from WRITE_SET where WS_TABLE='t'"));
-    Assert.assertEquals(0, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='t'"));
-    Assert.assertEquals(0, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from NEXT_WRITE_ID where NWI_TABLE='t'"));
 
     Assert.assertEquals(
-        TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"), 2,
-        TxnDbUtil.countQueryAgent(hiveConf,
+        TestTxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"), 2,
+        TestTxnDbUtil.countQueryAgent(hiveConf,
             "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='s'"));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='s'"));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from WRITE_SET where WS_TABLE='s'"));
-    Assert.assertEquals(3, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(3, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='s'"));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from NEXT_WRITE_ID where NWI_TABLE='s'"));
 
     runStatementOnDriver("alter table mydb1.S RENAME TO mydb2.bar");
 
     Assert.assertEquals(
-        TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"), 2,
-        TxnDbUtil.countQueryAgent(hiveConf,
+        TestTxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"), 2,
+        TestTxnDbUtil.countQueryAgent(hiveConf,
             "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='bar'"));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='bar'"));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from WRITE_SET where WS_TABLE='bar'"));
-    Assert.assertEquals(4, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(4, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='bar'"));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from NEXT_WRITE_ID where NWI_TABLE='bar'"));
   }
 
@@ -288,14 +288,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     String[][] expected2 = new String[][]{
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00001"},
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00000"},
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00000_0"},
 
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00001"},
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00000"}};
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "after update", LOG);
   }
   @Test
@@ -433,16 +433,16 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runCleaner(hiveConf);
     //we still have 1 aborted (compactor) txn
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_COMPONENTS"));
     //this returns 1 row since we only have 1 compaction executed
-    int highestCompactWriteId = TxnDbUtil.countQueryAgent(hiveConf,
+    int highestCompactWriteId = TestTxnDbUtil.countQueryAgent(hiveConf,
         "select CC_HIGHEST_WRITE_ID from COMPLETED_COMPACTIONS");
     /**
      * See {@link org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler#updateCompactorState(CompactionInfo, long)}
      * for notes on why CC_HIGHEST_WRITE_ID=TC_WRITEID
      */
-    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_COMPONENTS where TC_WRITEID=" + highestCompactWriteId));
     //now make a successful compactor run so that next Cleaner run actually cleans
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
@@ -498,11 +498,11 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   }
 
   private void assertTableIsEmpty(String table) throws Exception {
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
-        TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
+        TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
   }
   private void assertOneTxn() throws Exception {
-    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"), 1,
-        TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXNS"), 1,
+        TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
   }
 }

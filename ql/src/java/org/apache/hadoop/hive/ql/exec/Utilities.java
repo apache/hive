@@ -163,6 +163,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -1642,9 +1643,9 @@ public final class Utilities {
     HiveOutputFormat<?, ?> hiveOutputFormat = null;
     Class<? extends Writable> outputClass = null;
     try {
-      Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
-      serializer.initialize(hconf, tableInfo.getProperties());
-      outputClass = serializer.getSerializedClass();
+      AbstractSerDe serde = tableInfo.getSerDeClass().newInstance();
+      serde.initialize(hconf, tableInfo.getProperties(), null);
+      outputClass = serde.getSerializedClass();
       hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, tableInfo);
     } catch (SerDeException e) {
       throw new HiveException(e);
@@ -2851,7 +2852,7 @@ public final class Utilities {
    * corresponding to these dynamic partitions.
    */
   public static List<LinkedHashMap<String, String>> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
-      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite) throws HiveException {
+      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite, AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
@@ -2860,11 +2861,19 @@ public final class Utilities {
       List<Path> path = new ArrayList<>();
       if (isMmTable || isDirectInsert) {
         Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(fs, loadPath, numDPCols, null, writeId, -1,
-            conf, isInsertOverwrite);
+            conf, isInsertOverwrite, acidOperation);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent();
+          String partitionSpec = dpPath.toString().substring(loadPath.toString().length() + 1);
           if (!path.contains(dpPath)) {
-            path.add(dpPath);
+            if (isInsertOverwrite) {
+              if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.contains(partitionSpec)) {
+                path.add(dpPath);
+              }
+            }
+            else {
+              path.add(dpPath);
+            }
           }
         }
       } else {
@@ -4245,7 +4254,7 @@ public final class Utilities {
 
   public static Path[] getDirectInsertDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
       PathFilter filter, long writeId, int stmtId, Configuration conf,
-      Boolean isBaseDir) throws IOException {
+      Boolean isBaseDir, AcidUtils.Operation acidOperation) throws IOException {
     int skipLevels = dpLevels;
     if (filter == null) {
       filter = new AcidUtils.IdPathFilter(writeId, stmtId);
@@ -4261,7 +4270,8 @@ public final class Utilities {
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getDirectInsertDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
-    return getDirectInsertDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir);
+    return getDirectInsertDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir,
+        acidOperation);
   }
 
   private static boolean isS3(FileSystem fs) {
@@ -4338,7 +4348,7 @@ public final class Utilities {
   }
 
   private static Path[] getDirectInsertDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
-      PathFilter filter, long writeId, int stmtId, boolean isBaseDir) throws IOException {
+      PathFilter filter, long writeId, int stmtId, boolean isBaseDir, AcidUtils.Operation acidOperation) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append('*');
@@ -4348,7 +4358,15 @@ public final class Utilities {
       // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(writeId, writeId)).append("_*");
       throw new AssertionError("GlobStatus should not be called without a statement ID");
     } else {
-      sb.append(Path.SEPARATOR).append(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId));
+      String deltaSubDir = AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId);
+      if (AcidUtils.Operation.DELETE.equals(acidOperation)) {
+        deltaSubDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
+      }
+      if (AcidUtils.Operation.UPDATE.equals(acidOperation)) {
+        String deltaPostFix = deltaSubDir.replace("delta", "");
+        deltaSubDir = "{delete_delta,delta}" + deltaPostFix;
+      }
+      sb.append(Path.SEPARATOR).append(deltaSubDir);
     }
     Path pathPattern = new Path(path, sb.toString());
     return statusToPath(fs.globStatus(pathPattern, filter));
@@ -4356,9 +4374,9 @@ public final class Utilities {
 
   private static void tryDeleteAllDirectInsertFiles(FileSystem fs, Path specPath, Path manifestDir,
       int dpLevels, int lbLevels, AcidUtils.IdPathFilter filter, long writeId, int stmtId,
-      Configuration conf) throws IOException {
+      Configuration conf, AcidUtils.Operation acidOperation) throws IOException {
     Path[] files = getDirectInsertDirectoryCandidates(
-        fs, specPath, dpLevels, filter, writeId, stmtId, conf, null);
+        fs, specPath, dpLevels, filter, writeId, stmtId, conf, null, acidOperation);
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
@@ -4372,7 +4390,7 @@ public final class Utilities {
 
   public static void writeCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
       String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite,
-      boolean hasDynamicPartitions, Set<String> dynamicPartitionSpecs, String staticSpec) throws HiveException {
+      boolean hasDynamicPartitions, Set<String> dynamicPartitionSpecs, String staticSpec, boolean isDelete) throws HiveException {
 
     // When doing a multi-statement insert overwrite with dynamic partitioning,
     // the partition information will be written to the manifest file.
@@ -4389,7 +4407,7 @@ public final class Utilities {
     }
 
     // We assume one FSOP per task (per specPath), so we create it in specPath.
-    Path manifestPath = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec);
+    Path manifestPath = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec, isDelete);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
     Utilities.FILE_OP_LOGGER.info("Writing manifest to {} with {}", manifestPath, commitPaths);
     try {
@@ -4417,15 +4435,20 @@ public final class Utilities {
   }
 
   private static Path getManifestDir(Path specPath, long writeId, int stmtId, String unionSuffix,
-      boolean isInsertOverwrite, String staticSpec) {
+      boolean isInsertOverwrite, String staticSpec, boolean isDelete) {
     Path manifestRoot = specPath;
     if (staticSpec != null) {
       String tableRoot = specPath.toString();
       tableRoot = tableRoot.substring(0, tableRoot.length() - staticSpec.length());
       manifestRoot = new Path(tableRoot);
     }
-    Path manifestPath = new Path(manifestRoot, "_tmp." +
-      AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
+
+    String deltaDir = AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId);
+    if (isDelete) {
+      deltaDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
+    }
+    Path manifestPath = new Path(manifestRoot, "_tmp." + deltaDir);
+
     if (isInsertOverwrite) {
       // When doing a multi-statement insert overwrite query with dynamic partitioning, the
       // generated manifest directory is the same for each FileSinkOperator.
@@ -4449,14 +4472,15 @@ public final class Utilities {
 
   public static void handleDirectInsertTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long writeId, int stmtId,
-      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite, boolean isDirectInsert, String staticSpec)
-      throws IOException, HiveException {
+      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite, boolean isDirectInsert,
+      String staticSpec, AcidUtils.Operation acidOperation, FileSinkDesc conf) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec);
+    boolean isDelete = AcidUtils.Operation.DELETE.equals(acidOperation);
+    Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec, isDelete);
     if (!success) {
       AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
       tryDeleteAllDirectInsertFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
-          filter, writeId, stmtId, hconf);
+          filter, writeId, stmtId, hconf, acidOperation);
       return;
     }
 
@@ -4464,15 +4488,7 @@ public final class Utilities {
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
-      if (manifestFiles != null) {
-        for (FileStatus status : manifestFiles) {
-          Path path = status.getPath();
-          if (path.getName().endsWith(MANIFEST_EXTENSION)) {
-            Utilities.FILE_OP_LOGGER.info("Reading manifest {}", path);
-            manifests.add(path);
-          }
-        }
-      }
+      manifests = selectManifestFiles(manifestFiles);
     } else {
       Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
@@ -4505,7 +4521,8 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
+    AcidUtils.IdPathFilter filter =
+        new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
     if (!fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
@@ -4514,7 +4531,7 @@ public final class Utilities {
     Path[] files = null;
     if (!isInsertOverwrite || dpLevels == 0 || !dynamicPartitionSpecs.isEmpty()) {
       files = getDirectInsertDirectoryCandidates(
-          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
+          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite, acidOperation);
     }
 
     ArrayList<Path> directInsertDirectories = new ArrayList<>();
@@ -4542,6 +4559,8 @@ public final class Utilities {
     if (!directInsertDirectories.isEmpty()) {
       cleanDirectInsertDirectoriesConcurrently(directInsertDirectories, committed, fs, hconf, unionSuffix, lbLevels);
     }
+
+    conf.setDynPartitionValues(dynamicPartitionSpecs);
 
     if (!committed.isEmpty()) {
       throw new HiveException("The following files were committed but not found: " + committed);
@@ -4573,6 +4592,67 @@ public final class Utilities {
         Utilities.createEmptyBuckets(hconf, emptyBuckets, mbc.isCompressed, mbc.tableInfo, reporter);
       }
     }
+  }
+
+  /**
+   * The name of a manifest file consists of the task ID and a .manifest extension, where
+   * the task ID includes the attempt ID as well. It can happen that a task attempt already
+   * wrote out the manifest file, and then fails, so Tez restarts it. If the next attempt
+   * successfully finishes, the query won't fail but there could be multiple manifest files with
+   * the same task ID, but different attempt IDs. In this case the manifest file which has
+   * the highest attempt ID, and not empty, has to be considered.
+   * The empty manifest files and the ones with the same task ID but lower attempt ID has to be ignored.
+   * @param manifestFiles All the files listed in the manifest directory
+   * @return The list of manifest files which have the highest attempt ID and are not empty
+   */
+  @VisibleForTesting
+  static List<Path> selectManifestFiles(FileStatus[] manifestFiles) {
+    List<Path> manifests = new ArrayList<>();
+    if (manifestFiles != null) {
+      Map<String, Integer> fileNameToAttempId = new HashMap<>();
+      Map<String, Path> fileNameToPath = new HashMap<>();
+
+      for (FileStatus manifestFile : manifestFiles) {
+        Path path = manifestFile.getPath();
+        if (manifestFile.getLen() == 0L) {
+          Utilities.FILE_OP_LOGGER.info("Found manifest file {}, but it is empty.", path);
+          continue;
+        }
+        String fileName = path.getName();
+        if (fileName.endsWith(MANIFEST_EXTENSION)) {
+          Pattern pattern = Pattern.compile("([0-9]+)_([0-9]+).manifest");
+          Matcher matcher = pattern.matcher(fileName);
+          if (matcher.matches()) {
+            String taskId = matcher.group(1);
+            int attemptId = Integer.parseInt(matcher.group(2));
+            Integer maxAttemptId = fileNameToAttempId.get(taskId);
+            if (maxAttemptId == null) {
+              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToPath.put(taskId, path);
+              Utilities.FILE_OP_LOGGER.info("Found manifest file {} with attemptId {}.", path, attemptId);
+            } else if (attemptId > maxAttemptId) {
+              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToPath.put(taskId, path);
+              Utilities.FILE_OP_LOGGER.info(
+                  "Found manifest file {} which has higher attemptId than {}. Ignore the manifest files with attemptId below {}.",
+                  path, maxAttemptId, attemptId);
+            } else {
+              Utilities.FILE_OP_LOGGER.info(
+                  "Found manifest file {} with attemptId {}, but already have a manifest file with attemptId {}. Ignore this manifest file.",
+                  path, attemptId, maxAttemptId);
+            }
+          } else {
+            Utilities.FILE_OP_LOGGER.info("Found manifest file {}", path);
+            manifests.add(path);
+          }
+        }
+      }
+
+      if (!fileNameToPath.isEmpty()) {
+        manifests.addAll(fileNameToPath.values());
+      }
+    }
+    return manifests;
   }
 
   private static void cleanDirectInsertDirectoriesConcurrently(

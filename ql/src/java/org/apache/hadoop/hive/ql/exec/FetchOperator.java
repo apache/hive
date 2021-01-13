@@ -694,7 +694,7 @@ public class FetchOperator implements Serializable {
   private StructObjectInspector setupOutputObjectInspector() throws HiveException {
     TableDesc tableDesc = work.getTblDesc();
     try {
-      tableSerDe = tableDesc.getDeserializer(job, true);
+      tableSerDe = tableDesc.getSerDe(job, true);
       tableOI = (StructObjectInspector) tableSerDe.getObjectInspector();
       if (!isPartitioned) {
         return getTableRowOI(tableOI);
@@ -740,7 +740,7 @@ public class FetchOperator implements Serializable {
 
   // if table and all partitions have the same schema and serde, no need to convert
   private boolean needConversion(TableDesc tableDesc, List<PartitionDesc> partDescs) {
-    Class<?> tableSerDe = tableDesc.getDeserializerClass();
+    Class<?> tableSerDe = tableDesc.getSerDeClass();
     SerDeSpec spec = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class);
     if (null == spec) {
       // Serde may not have this optional annotation defined in which case be conservative
