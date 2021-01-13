@@ -5351,15 +5351,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RowResolver rr = this.relToHiveRR.get(srcRel);
         RowResolver newRR = new RowResolver();
         String alias = qb.getParseInfo().getAlias();
-        for (ColumnInfo colInfo : rr.getColumnInfos()) {
+        List<String> targetColNames = processTableColumnNames(qb.getParseInfo().getColAliases(), alias);
+
+        for (int i = 0; i < rr.getColumnInfos().size(); ++i) {
+          ColumnInfo colInfo = rr.getColumnInfos().get(i);
           String name = colInfo.getInternalName();
           String[] tmp = rr.reverseLookup(name);
-          if ("".equals(tmp[0]) || tmp[1] == null) {
+          ColumnInfo newCi = new ColumnInfo(colInfo);
+          newCi.setTabAlias(alias);
+          if (i < targetColNames.size()) {
+            tmp[1] = targetColNames.get(i);
+            newCi.setAlias(tmp[1]);
+          } else if ("".equals(tmp[0]) || tmp[1] == null) {
             // ast expression is not a valid column name for table
             tmp[1] = colInfo.getInternalName();
           }
-          ColumnInfo newCi = new ColumnInfo(colInfo);
-          newCi.setTabAlias(alias);
           newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);
         }
         relToHiveRR.put(srcRel, newRR);
