@@ -2416,6 +2416,8 @@ queryStatementExpression
       }
     }
     ->  queryStatementExpressionBody
+    |
+    valuesSource
     ;
 
 queryStatementExpressionBody
