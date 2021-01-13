@@ -630,6 +630,8 @@ class GetAllFunctionsResponse;
 
 class ClientCapabilities;
 
+class GetProjectionsSpec;
+
 class GetTableRequest;
 
 class GetTableResult;
@@ -785,8 +787,6 @@ class RenamePartitionResponse;
 class AlterTableRequest;
 
 class AlterTableResponse;
-
-class GetProjectionsSpec;
 
 class GetPartitionsFilterSpec;
 
@@ -11367,6 +11367,64 @@ inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj
   return out;
 }
 
+typedef struct _GetProjectionsSpec__isset {
+  _GetProjectionsSpec__isset() : fieldList(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
+  bool fieldList :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
+} _GetProjectionsSpec__isset;
+
+class GetProjectionsSpec {
+ public:
+
+  GetProjectionsSpec(const GetProjectionsSpec&);
+  GetProjectionsSpec& operator=(const GetProjectionsSpec&);
+  GetProjectionsSpec() : includeParamKeyPattern(), excludeParamKeyPattern() {
+  }
+
+  virtual ~GetProjectionsSpec() throw();
+  std::vector<std::string>  fieldList;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
+
+  _GetProjectionsSpec__isset __isset;
+
+  void __set_fieldList(const std::vector<std::string> & val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
+
+  bool operator == (const GetProjectionsSpec & rhs) const
+  {
+    if (!(fieldList == rhs.fieldList))
+      return false;
+    if (!(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (!(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
+      return false;
+    return true;
+  }
+  bool operator != (const GetProjectionsSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetProjectionsSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetProjectionsSpec &a, GetProjectionsSpec &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _GetTableRequest__isset {
   _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false) {}
   bool capabilities :1;
@@ -15787,64 +15845,6 @@ class AlterTableResponse {
 void swap(AlterTableResponse &a, AlterTableResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _GetProjectionsSpec__isset {
-  _GetProjectionsSpec__isset() : fieldList(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
-  bool fieldList :1;
-  bool includeParamKeyPattern :1;
-  bool excludeParamKeyPattern :1;
-} _GetProjectionsSpec__isset;
-
-class GetProjectionsSpec {
- public:
-
-  GetProjectionsSpec(const GetProjectionsSpec&);
-  GetProjectionsSpec& operator=(const GetProjectionsSpec&);
-  GetProjectionsSpec() : includeParamKeyPattern(), excludeParamKeyPattern() {
-  }
-
-  virtual ~GetProjectionsSpec() throw();
-  std::vector<std::string>  fieldList;
-  std::string includeParamKeyPattern;
-  std::string excludeParamKeyPattern;
-
-  _GetProjectionsSpec__isset __isset;
-
-  void __set_fieldList(const std::vector<std::string> & val);
-
-  void __set_includeParamKeyPattern(const std::string& val);
-
-  void __set_excludeParamKeyPattern(const std::string& val);
-
-  bool operator == (const GetProjectionsSpec & rhs) const
-  {
-    if (!(fieldList == rhs.fieldList))
-      return false;
-    if (!(includeParamKeyPattern == rhs.includeParamKeyPattern))
-      return false;
-    if (!(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
-      return false;
-    return true;
-  }
-  bool operator != (const GetProjectionsSpec &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const GetProjectionsSpec & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(GetProjectionsSpec &a, GetProjectionsSpec &b);
-
-inline std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj)
 {
   obj.printTo(out);
   return out;

@@ -627,13 +627,13 @@ import org.slf4j.LoggerFactory;
           case 3: // REQUIRED_READ_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list976 = iprot.readListBegin();
-                struct.requiredReadCapabilities = new ArrayList<String>(_list976.size);
-                String _elem977;
-                for (int _i978 = 0; _i978 < _list976.size; ++_i978)
+                org.apache.thrift.protocol.TList _list984 = iprot.readListBegin();
+                struct.requiredReadCapabilities = new ArrayList<String>(_list984.size);
+                String _elem985;
+                for (int _i986 = 0; _i986 < _list984.size; ++_i986)
                 {
-                  _elem977 = iprot.readString();
-                  struct.requiredReadCapabilities.add(_elem977);
+                  _elem985 = iprot.readString();
+                  struct.requiredReadCapabilities.add(_elem985);
                 }
                 iprot.readListEnd();
               }
@@ -645,13 +645,13 @@ import org.slf4j.LoggerFactory;
           case 4: // REQUIRED_WRITE_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list979 = iprot.readListBegin();
-                struct.requiredWriteCapabilities = new ArrayList<String>(_list979.size);
-                String _elem980;
-                for (int _i981 = 0; _i981 < _list979.size; ++_i981)
+                org.apache.thrift.protocol.TList _list987 = iprot.readListBegin();
+                struct.requiredWriteCapabilities = new ArrayList<String>(_list987.size);
+                String _elem988;
+                for (int _i989 = 0; _i989 < _list987.size; ++_i989)
                 {
-                  _elem980 = iprot.readString();
-                  struct.requiredWriteCapabilities.add(_elem980);
+                  _elem988 = iprot.readString();
+                  struct.requiredWriteCapabilities.add(_elem988);
                 }
                 iprot.readListEnd();
               }
@@ -688,9 +688,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(REQUIRED_READ_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredReadCapabilities.size()));
-            for (String _iter982 : struct.requiredReadCapabilities)
+            for (String _iter990 : struct.requiredReadCapabilities)
             {
-              oprot.writeString(_iter982);
+              oprot.writeString(_iter990);
             }
             oprot.writeListEnd();
           }
@@ -702,9 +702,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(REQUIRED_WRITE_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredWriteCapabilities.size()));
-            for (String _iter983 : struct.requiredWriteCapabilities)
+            for (String _iter991 : struct.requiredWriteCapabilities)
             {
-              oprot.writeString(_iter983);
+              oprot.writeString(_iter991);
             }
             oprot.writeListEnd();
           }
@@ -746,18 +746,18 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetRequiredReadCapabilities()) {
         {
           oprot.writeI32(struct.requiredReadCapabilities.size());
-          for (String _iter984 : struct.requiredReadCapabilities)
+          for (String _iter992 : struct.requiredReadCapabilities)
           {
-            oprot.writeString(_iter984);
+            oprot.writeString(_iter992);
           }
         }
       }
       if (struct.isSetRequiredWriteCapabilities()) {
         {
           oprot.writeI32(struct.requiredWriteCapabilities.size());
-          for (String _iter985 : struct.requiredWriteCapabilities)
+          for (String _iter993 : struct.requiredWriteCapabilities)
           {
-            oprot.writeString(_iter985);
+            oprot.writeString(_iter993);
           }
         }
       }
@@ -775,26 +775,26 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list986 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.requiredReadCapabilities = new ArrayList<String>(_list986.size);
-          String _elem987;
-          for (int _i988 = 0; _i988 < _list986.size; ++_i988)
+          org.apache.thrift.protocol.TList _list994 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.requiredReadCapabilities = new ArrayList<String>(_list994.size);
+          String _elem995;
+          for (int _i996 = 0; _i996 < _list994.size; ++_i996)
           {
-            _elem987 = iprot.readString();
-            struct.requiredReadCapabilities.add(_elem987);
+            _elem995 = iprot.readString();
+            struct.requiredReadCapabilities.add(_elem995);
           }
         }
         struct.setRequiredReadCapabilitiesIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list989 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.requiredWriteCapabilities = new ArrayList<String>(_list989.size);
-          String _elem990;
-          for (int _i991 = 0; _i991 < _list989.size; ++_i991)
+          org.apache.thrift.protocol.TList _list997 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.requiredWriteCapabilities = new ArrayList<String>(_list997.size);
+          String _elem998;
+          for (int _i999 = 0; _i999 < _list997.size; ++_i999)
           {
-            _elem990 = iprot.readString();
-            struct.requiredWriteCapabilities.add(_elem990);
+            _elem998 = iprot.readString();
+            struct.requiredWriteCapabilities.add(_elem998);
           }
         }
         struct.setRequiredWriteCapabilitiesIsSet(true);

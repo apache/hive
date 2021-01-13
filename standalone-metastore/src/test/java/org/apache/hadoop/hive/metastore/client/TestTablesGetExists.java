@@ -513,6 +513,31 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   }
 
   @Test
+  public void testGetTableObjectsWithProjectionOfMultipleField2() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
+    List<String> projectedFields = Arrays.asList("dbName", "tableName", "owner", "ownerType", "sd.location");
+    projectSpec.setFieldList(projectedFields);
+
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertTrue(table.isSetDbName());
+      Assert.assertTrue(table.isSetTableName());
+      Assert.assertTrue(table.isSetOwner());
+      Assert.assertTrue(table.isSetOwnerType());
+      Assert.assertTrue(table.isSetSd());
+      StorageDescriptor sd = table.getSd();
+      Assert.assertTrue(sd.isSetLocation());
+    }
+  }
+
+  @Test
   public void testGetTableObjectsWithProjectionOfSerDeInfoSingleValuedFields() throws Exception {
     List<String> tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName());
