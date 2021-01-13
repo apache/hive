@@ -26038,7 +26038,7 @@ class AlterTableResponse:
   def __ne__(self, other):
     return not (self == other)
 
-class GetPartitionsProjectionSpec:
+class GetProjectionsSpec:
   """
   Attributes:
    - fieldList
@@ -26096,7 +26096,7 @@ class GetPartitionsProjectionSpec:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('GetPartitionsProjectionSpec')
+    oprot.writeStructBegin('GetProjectionsSpec')
     if self.fieldList is not None:
       oprot.writeFieldBegin('fieldList', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.fieldList))
@@ -26324,7 +26324,7 @@ class GetPartitionsRequest:
     (4, TType.BOOL, 'withAuth', None, None, ), # 4
     (5, TType.STRING, 'user', None, None, ), # 5
     (6, TType.LIST, 'groupNames', (TType.STRING,None), None, ), # 6
-    (7, TType.STRUCT, 'projectionSpec', (GetPartitionsProjectionSpec, GetPartitionsProjectionSpec.thrift_spec), None, ), # 7
+    (7, TType.STRUCT, 'projectionSpec', (GetProjectionsSpec, GetProjectionsSpec.thrift_spec), None, ), # 7
     (8, TType.STRUCT, 'filterSpec', (GetPartitionsFilterSpec, GetPartitionsFilterSpec.thrift_spec), None, ), # 8
   )
 
@@ -26384,7 +26384,7 @@ class GetPartitionsRequest:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.STRUCT:
-          self.projectionSpec = GetPartitionsProjectionSpec()
+          self.projectionSpec = GetProjectionsSpec()
           self.projectionSpec.read(iprot)
         else:
           iprot.skip(ftype)

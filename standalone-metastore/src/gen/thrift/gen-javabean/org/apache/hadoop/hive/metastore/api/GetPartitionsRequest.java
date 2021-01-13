@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
   private boolean withAuth; // optional
   private String user; // optional
   private List<String> groupNames; // optional
-  private GetPartitionsProjectionSpec projectionSpec; // required
+  private GetProjectionsSpec projectionSpec; // required
   private GetPartitionsFilterSpec filterSpec; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -162,7 +162,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PROJECTION_SPEC, new org.apache.thrift.meta_data.FieldMetaData("projectionSpec", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetPartitionsProjectionSpec.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetProjectionsSpec.class)));
     tmpMap.put(_Fields.FILTER_SPEC, new org.apache.thrift.meta_data.FieldMetaData("filterSpec", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetPartitionsFilterSpec.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -175,7 +175,7 @@ import org.slf4j.LoggerFactory;
   public GetPartitionsRequest(
     String dbName,
     String tblName,
-    GetPartitionsProjectionSpec projectionSpec,
+    GetProjectionsSpec projectionSpec,
     GetPartitionsFilterSpec filterSpec)
   {
     this();
@@ -208,7 +208,7 @@ import org.slf4j.LoggerFactory;
       this.groupNames = __this__groupNames;
     }
     if (other.isSetProjectionSpec()) {
-      this.projectionSpec = new GetPartitionsProjectionSpec(other.projectionSpec);
+      this.projectionSpec = new GetProjectionsSpec(other.projectionSpec);
     }
     if (other.isSetFilterSpec()) {
       this.filterSpec = new GetPartitionsFilterSpec(other.filterSpec);
@@ -384,11 +384,11 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public GetPartitionsProjectionSpec getProjectionSpec() {
+  public GetProjectionsSpec getProjectionSpec() {
     return this.projectionSpec;
   }
 
-  public void setProjectionSpec(GetPartitionsProjectionSpec projectionSpec) {
+  public void setProjectionSpec(GetProjectionsSpec projectionSpec) {
     this.projectionSpec = projectionSpec;
   }
 
@@ -484,7 +484,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetProjectionSpec();
       } else {
-        setProjectionSpec((GetPartitionsProjectionSpec)value);
+        setProjectionSpec((GetProjectionsSpec)value);
       }
       break;
 
@@ -977,7 +977,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 7: // PROJECTION_SPEC
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.projectionSpec = new GetPartitionsProjectionSpec();
+              struct.projectionSpec = new GetProjectionsSpec();
               struct.projectionSpec.read(iprot);
               struct.setProjectionSpecIsSet(true);
             } else { 
@@ -1172,7 +1172,7 @@ import org.slf4j.LoggerFactory;
         struct.setGroupNamesIsSet(true);
       }
       if (incoming.get(6)) {
-        struct.projectionSpec = new GetPartitionsProjectionSpec();
+        struct.projectionSpec = new GetProjectionsSpec();
         struct.projectionSpec.read(iprot);
         struct.setProjectionSpecIsSet(true);
       }

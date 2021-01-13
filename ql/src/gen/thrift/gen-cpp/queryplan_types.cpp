@@ -153,7 +153,7 @@ const char* _kStageTypeNames[] = {
   "RANGER_DUMP",
   "RANGER_LOAD",
   "ATLAS_DUMP",
-  "ATLAS_LOAD
+  "ATLAS_LOAD"
 };
 const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(23, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 

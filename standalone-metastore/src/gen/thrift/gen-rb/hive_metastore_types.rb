@@ -5839,7 +5839,7 @@ class AlterTableResponse
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetPartitionsProjectionSpec
+class GetProjectionsSpec
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FIELDLIST = 1
   INCLUDEPARAMKEYPATTERN = 2
@@ -5914,7 +5914,7 @@ class GetPartitionsRequest
     WITHAUTH => {:type => ::Thrift::Types::BOOL, :name => 'withAuth', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user', :optional => true},
     GROUPNAMES => {:type => ::Thrift::Types::LIST, :name => 'groupNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetPartitionsProjectionSpec},
+    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetProjectionsSpec},
     FILTERSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'filterSpec', :class => ::GetPartitionsFilterSpec}
   }
 
