@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField PROJECTION_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("projectionSpec", org.apache.thrift.protocol.TType.STRUCT, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -57,6 +58,7 @@ import org.slf4j.LoggerFactory;
   private String catName; // optional
   private List<String> processorCapabilities; // optional
   private String processorIdentifier; // optional
+  private GetProjectionsSpec projectionSpec; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -65,7 +67,8 @@ import org.slf4j.LoggerFactory;
     CAPABILITIES((short)3, "capabilities"),
     CAT_NAME((short)4, "catName"),
     PROCESSOR_CAPABILITIES((short)5, "processorCapabilities"),
-    PROCESSOR_IDENTIFIER((short)6, "processorIdentifier");
+    PROCESSOR_IDENTIFIER((short)6, "processorIdentifier"),
+    PROJECTION_SPEC((short)7, "projectionSpec");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -92,6 +95,8 @@ import org.slf4j.LoggerFactory;
           return PROCESSOR_CAPABILITIES;
         case 6: // PROCESSOR_IDENTIFIER
           return PROCESSOR_IDENTIFIER;
+        case 7: // PROJECTION_SPEC
+          return PROJECTION_SPEC;
         default:
           return null;
       }
@@ -132,7 +137,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TBL_NAMES,_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER};
+  private static final _Fields optionals[] = {_Fields.TBL_NAMES,_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.PROJECTION_SPEC};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -150,6 +155,8 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PROCESSOR_IDENTIFIER, new org.apache.thrift.meta_data.FieldMetaData("processorIdentifier", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PROJECTION_SPEC, new org.apache.thrift.meta_data.FieldMetaData("projectionSpec", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "GetProjectionsSpec")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetTablesRequest.class, metaDataMap);
   }
@@ -188,6 +195,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetProcessorIdentifier()) {
       this.processorIdentifier = other.processorIdentifier;
     }
+    if (other.isSetProjectionSpec()) {
+      this.projectionSpec = other.projectionSpec;
+    }
   }
 
   public GetTablesRequest deepCopy() {
@@ -202,6 +212,7 @@ import org.slf4j.LoggerFactory;
     this.catName = null;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
+    this.projectionSpec = null;
   }
 
   public String getDbName() {
@@ -372,6 +383,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public GetProjectionsSpec getProjectionSpec() {
+    return this.projectionSpec;
+  }
+
+  public void setProjectionSpec(GetProjectionsSpec projectionSpec) {
+    this.projectionSpec = projectionSpec;
+  }
+
+  public void unsetProjectionSpec() {
+    this.projectionSpec = null;
+  }
+
+  /** Returns true if field projectionSpec is set (has been assigned a value) and false otherwise */
+  public boolean isSetProjectionSpec() {
+    return this.projectionSpec != null;
+  }
+
+  public void setProjectionSpecIsSet(boolean value) {
+    if (!value) {
+      this.projectionSpec = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -422,6 +456,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case PROJECTION_SPEC:
+      if (value == null) {
+        unsetProjectionSpec();
+      } else {
+        setProjectionSpec((GetProjectionsSpec)value);
+      }
+      break;
+
     }
   }
 
@@ -444,6 +486,9 @@ import org.slf4j.LoggerFactory;
 
     case PROCESSOR_IDENTIFIER:
       return getProcessorIdentifier();
+
+    case PROJECTION_SPEC:
+      return getProjectionSpec();
 
     }
     throw new IllegalStateException();
@@ -468,6 +513,8 @@ import org.slf4j.LoggerFactory;
       return isSetProcessorCapabilities();
     case PROCESSOR_IDENTIFIER:
       return isSetProcessorIdentifier();
+    case PROJECTION_SPEC:
+      return isSetProjectionSpec();
     }
     throw new IllegalStateException();
   }
@@ -539,6 +586,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_projectionSpec = true && this.isSetProjectionSpec();
+    boolean that_present_projectionSpec = true && that.isSetProjectionSpec();
+    if (this_present_projectionSpec || that_present_projectionSpec) {
+      if (!(this_present_projectionSpec && that_present_projectionSpec))
+        return false;
+      if (!this.projectionSpec.equals(that.projectionSpec))
+        return false;
+    }
+
     return true;
   }
 
@@ -575,6 +631,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_processorIdentifier);
     if (present_processorIdentifier)
       list.add(processorIdentifier);
+
+    boolean present_projectionSpec = true && (isSetProjectionSpec());
+    list.add(present_projectionSpec);
+    if (present_projectionSpec)
+      list.add(projectionSpec);
 
     return list.hashCode();
   }
@@ -643,6 +704,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetProcessorIdentifier()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processorIdentifier, other.processorIdentifier);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetProjectionSpec()).compareTo(other.isSetProjectionSpec());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProjectionSpec()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.projectionSpec, other.projectionSpec);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -721,6 +792,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.processorIdentifier);
+      }
+      first = false;
+    }
+    if (isSetProjectionSpec()) {
+      if (!first) sb.append(", ");
+      sb.append("projectionSpec:");
+      if (this.projectionSpec == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.projectionSpec);
       }
       first = false;
     }
@@ -843,6 +924,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // PROJECTION_SPEC
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.projectionSpec = new GetProjectionsSpec();
+              struct.projectionSpec.read(iprot);
+              struct.setProjectionSpecIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -910,6 +1000,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.projectionSpec != null) {
+        if (struct.isSetProjectionSpec()) {
+          oprot.writeFieldBegin(PROJECTION_SPEC_FIELD_DESC);
+          struct.projectionSpec.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -944,7 +1041,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProcessorIdentifier()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetProjectionSpec()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetTblNames()) {
         {
           oprot.writeI32(struct.tblNames.size());
@@ -972,6 +1072,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProcessorIdentifier()) {
         oprot.writeString(struct.processorIdentifier);
       }
+      if (struct.isSetProjectionSpec()) {
+        struct.projectionSpec.write(oprot);
+      }
     }
 
     @Override
@@ -979,7 +1082,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list954 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -1018,6 +1121,11 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(4)) {
         struct.processorIdentifier = iprot.readString();
         struct.setProcessorIdentifierIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.projectionSpec = new GetProjectionsSpec();
+        struct.projectionSpec.read(iprot);
+        struct.setProjectionSpecIsSet(true);
       }
     }
   }

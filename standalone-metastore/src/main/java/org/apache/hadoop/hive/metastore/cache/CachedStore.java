@@ -1577,6 +1577,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
+    GetProjectionsSpec projectionsSpec) throws MetaException, UnknownDBException {
+    return rawStore.getTableObjectsByName(catName, db, tbl_names, projectionsSpec);
+  }
+
+  @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
     if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get() ||
             (canUseEvents && rawStore.isActiveTransaction())) {

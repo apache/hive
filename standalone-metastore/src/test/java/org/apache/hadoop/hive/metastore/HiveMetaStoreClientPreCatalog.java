@@ -3169,6 +3169,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+                                           GetProjectionsSpec projectionsSpec) throws MetaException,
+          InvalidOperationException, UnknownDBException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void updateCreationMetadata(String catName, String dbName, String tableName,
                                      CreationMetadata cm) throws MetaException, TException {
     throw new UnsupportedOperationException();

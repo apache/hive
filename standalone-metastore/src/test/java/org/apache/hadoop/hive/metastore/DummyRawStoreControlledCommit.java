@@ -348,6 +348,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
+                                           GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
     return objectStore.getAllTables(catName, dbName);
   }
