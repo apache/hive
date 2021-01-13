@@ -110,6 +110,10 @@ public class Utils {
     public static final String AUTH_BROWSER_RESPONSE_PORT = "browserResponsePort";
     // connection parameter used to specify the timeout in seconds for the browser mode
     public static final String AUTH_BROWSER_RESPONSE_TIMEOUT_SECS = "browserResponseTimeout";
+    // connection parameter to optionally disable the SSL validation done when using
+    // browser based authentication. Useful mostly for testing/dev purposes.
+    // By default, SSL validation is done unless this parameter is set to true.
+    public static final String AUTH_BROWSER_DISABLE_SSL_VALIDATION = "browserDisableSslCheck";
     public static final String ANONYMOUS_USER = "anonymous";
     public static final String ANONYMOUS_PASSWD = "anonymous";
     public static final String USE_SSL = "ssl";

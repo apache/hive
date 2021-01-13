@@ -543,6 +543,10 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   protected void validateSslForBrowserMode() throws SQLException {
+    if (disableSSLValidation()) {
+      LOG.warn("SSL validation for the browser mode is disabled.");
+      return;
+    }
     if (isBrowserAuthMode() && !isSslConnection()) {
       throw new SQLException(new IllegalArgumentException(
           "Browser mode is only supported with SSL is enabled"));
@@ -1222,6 +1226,16 @@ public class HiveConnection implements java.sql.Connection {
   private boolean isBrowserAuthMode() {
     return JdbcConnectionParams.AUTH_SSO_BROWSER_MODE
         .equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE));
+  }
+
+  /**
+   * This checks for {@code JdbcConnectionParams.AUTH_BROWSER_DISABLE_SSL_VALIDATION}
+   * on the connection url and returns the boolean value of it. Returns false if the
+   * parameter is not present.
+   */
+  private boolean disableSSLValidation() {
+    return Boolean.parseBoolean(
+        sessConfMap.get(JdbcConnectionParams.AUTH_BROWSER_DISABLE_SSL_VALIDATION));
   }
 
   private boolean isHttpTransportMode() {
