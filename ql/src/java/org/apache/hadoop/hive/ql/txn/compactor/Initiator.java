@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -48,6 +47,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -322,33 +322,19 @@ public class Initiator extends MetaStoreCompactorThread {
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
     AcidDirectory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
-    Path base = dir.getBaseDirectory();
     long baseSize = 0;
-    FileStatus stat = null;
-    if (base != null) {
-      stat = fs.getFileStatus(base);
-      if (!stat.isDirectory()) {
-        LOG.error("Was assuming base " + base.toString() + " is directory, but it's a file!");
-        return null;
+    if (dir.getBase() != null) {
+      baseSize = sumDirSize(fs, dir.getBase());
+    } else {
+      for (HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
+        baseSize += origStat.getFileStatus().getLen();
       }
-      baseSize = sumDirSize(fs, base);
-    }
-
-    List<HdfsFileStatusWithId> originals = dir.getOriginalFiles();
-    for (HdfsFileStatusWithId origStat : originals) {
-      baseSize += origStat.getFileStatus().getLen();
     }
 
     long deltaSize = 0;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     for (AcidUtils.ParsedDelta delta : deltas) {
-      stat = fs.getFileStatus(delta.getPath());
-      if (!stat.isDirectory()) {
-        LOG.error("Was assuming delta " + delta.getPath().toString() + " is a directory, " +
-            "but it's a file!");
-        return null;
-      }
-      deltaSize += sumDirSize(fs, delta.getPath());
+      deltaSize += sumDirSize(fs, delta);
     }
 
     if (baseSize == 0 && deltaSize > 0) {
@@ -410,12 +396,11 @@ public class Initiator extends MetaStoreCompactorThread {
     return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
-  private long sumDirSize(FileSystem fs, Path dir) throws IOException {
-    long size = 0;
-    FileStatus[] buckets = fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
-    for (int i = 0; i < buckets.length; i++) {
-      size += buckets[i].getLen();
-    }
+  private long sumDirSize(FileSystem fs, ParsedDirectory dir) throws IOException {
+    long size = dir.getFiles(fs, Ref.from(false)).stream()
+        .map(HdfsFileStatusWithId::getFileStatus)
+        .mapToLong(FileStatus::getLen)
+        .sum();
     return size;
   }
 
