@@ -303,11 +303,12 @@ public class ImpalaRexCall {
     if (rexCall.getKind() != SqlKind.CAST) {
       return returnRexCall;
     }
-    SqlTypeName s1 = rexCall.getType().getSqlTypeName();
-    SqlTypeName s2 = rexCall.getOperands().get(0).getType().getSqlTypeName();
-    // Impala has a CAST DECIMAL AS DECIMAL function for when the precision or scale
-    // is different.
-    if (s1.equals(s2) && s1 != SqlTypeName.DECIMAL) {
+    RelDataType r1 = rexCall.getType();
+    RelDataType r2 = rexCall.getOperands().get(0).getType();
+    // If the datatype has the same precision and scale, there is no need for the case (Impala
+    // will fail in this case).
+    if (r1.getSqlTypeName() == r2.getSqlTypeName() && r1.getPrecision() == r2.getPrecision() &&
+        r1.getScale() == r2.getScale()) {
       returnRexCall = rexCall.getOperands().get(0);
     }
     return returnRexCall;

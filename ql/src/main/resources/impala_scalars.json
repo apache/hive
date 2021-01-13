@@ -15853,28 +15853,6 @@
         "hdfsUriLoc": ""
     },
     {
-        "impalaFnName": "casttovarchar",
-        "fnName": "cast",
-        "hasVarArgs": "false",
-        "retType": "VARCHAR",
-        "argTypes": [
-            "VARCHAR"
-        ],
-        "symbolName": "notsupported",
-        "hdfsUriLoc": ""
-    },
-    {
-        "impalaFnName": "casttochar",
-        "fnName": "cast",
-        "hasVarArgs": "false",
-        "retType": "CHAR",
-        "argTypes": [
-            "CHAR"
-        ],
-        "symbolName": "notsupported",
-        "hdfsUriLoc": ""
-    },
-    {
         "impalaFnName": "casttotimestamp",
         "fnName": "cast",
         "hasVarArgs": "false",
