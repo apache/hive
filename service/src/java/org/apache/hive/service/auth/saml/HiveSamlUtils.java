@@ -57,9 +57,9 @@ public class HiveSamlUtils {
       URI uri = new URI(callbackUrl);
       int port = uri.getPort();
       int httpPort = conf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT);
-      // currently we only support the callback url to be at the same port as the http
-      // server.
-      Preconditions.checkArgument(port == httpPort,
+      // we only support the callback url to be at the same port as the http
+      // server. In case the port is not provided we default to using http port.
+      Preconditions.checkArgument(port == -1 || port == httpPort,
           "Callback url " + callbackUrl + " must be at the same port " + httpPort
               + " defined by " + ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname);
       return uri;
