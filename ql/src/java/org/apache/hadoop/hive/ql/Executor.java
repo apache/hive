@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -329,13 +330,35 @@ public class Executor {
   private void launchTasks(boolean noName, int jobCount, String jobName) throws HiveException {
     // Launch upto maxthreads tasks
     Task<?> task;
-    int maxthreads = HiveConf.getIntVar(driverContext.getConf(), HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
+    int maxthreads = getMaxThreads();
+    LOG.info("Using hive.exec.parallel.thread.number as {}", maxthreads);
     while ((task = taskQueue.getRunnable(maxthreads)) != null) {
       TaskRunner runner = launchTask(task, noName, jobName, jobCount);
       if (!runner.isRunning()) {
         break;
       }
     }
+  }
+
+  /**
+   * Gets the maximum number of threads by finding the maximum of the value specified by the root tasks,
+   * if no root task has hive.exec.parallel.thread.number specified then uses the value from the driverContext.
+   * @return max number of threads.
+   */
+  private int getMaxThreads() {
+    int maxThreads = -1;
+    List<Task<? extends Serializable>> rootTasks = driverContext.getPlan().getRootTasks();
+    for (Task t : rootTasks) {
+      if (t.getConf() != null) {
+        maxThreads = Math.max(t.getConf().getInt(ConfVars.EXECPARALLETHREADNUMBER.varname, -2), maxThreads);
+      }
+    }
+    if (maxThreads <= 0) {
+      // No root Task has explicitly specified the value of hive.exec.parallel.thread.number, using the value from
+      // driver context.
+      maxThreads = HiveConf.getIntVar(driverContext.getConf(), HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
+    }
+    return maxThreads;
   }
 
   private TaskRunner launchTask(Task<?> task, boolean noName, String jobName, int jobCount) throws HiveException {

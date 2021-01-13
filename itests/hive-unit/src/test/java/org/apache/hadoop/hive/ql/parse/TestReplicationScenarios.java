@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
@@ -81,6 +83,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -374,6 +378,37 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned_empty", empty, driverMirror);
     verifyRun("SELECT * from " + replicatedDbName + ".unptned_empty", empty, driverMirror);
+  }
+
+  @Test
+  public void testNumThreadsConfigs() throws Exception {
+    org.apache.logging.log4j.Logger logger = LogManager.getLogger(Driver.class.getName());
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+    String name = testName.getMethodName();
+    String replicatedDbName = name + "_dupe";
+    String dbName = createDB(name, driver);
+    String[] empty = new String[] {};
+    run("CREATE TABLE " + dbName + ".tbl(a string) STORED AS TEXTFILE", driver);
+    advanceDumpDir();
+
+    // Test if the hive.exec.parallel.thread.number config is honored in case of REPL DUMP.
+    run("REPL DUMP " + dbName + " WITH ('mapreduce.job.queuename'='default','hive" + ".exec"
+        + ".parallel'='true','hive.exec.parallel.thread.number'='128')", driver);
+    String logStr = appender.getOutput();
+    assertTrue(logStr, logStr.contains("Using hive.exec.parallel.thread.number as 128"));
+
+    appender.reset();
+
+    // Test if the hive.exec.parallel.thread.number config is honored in case of REPL LOAD.
+    run("REPL LOAD " + dbName + " into " + replicatedDbName + " WITH ('mapreduce.job.queuename'='default','hive"
+        + ".exec" + ".parallel'='true','hive.exec.parallel.thread.number'='256')", driverMirror);
+    logStr = appender.getOutput();
+    assertTrue(logStr, logStr.contains("Using hive.exec.parallel.thread.number as 256"));
+
+    // Confirm replication worked with the configs provided.
+    verifyRun("SELECT * from " + replicatedDbName + ".tbl", empty, driverMirror);
   }
 
   @Test
