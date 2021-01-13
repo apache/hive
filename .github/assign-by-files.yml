@@ -1,34 +1,39 @@
 ---
 # thrift changes
-'*.thrift':
+'**/*.thrift':
   - kgyrtkirk
 # parser changes
-'*.g':
+'**/*.g':
   - kgyrtkirk
 # metastore database changes
-'package.jdo':
+'**/package.jdo':
   - kgyrtkirk
 # these will match on various scheduled query
-'*(schq|Scheduled)*':
-  - kgyrtkirk
 '**/schq/**':
   - kgyrtkirk
+'**/*Scheduled*':
+  - kgyrtkirk
 # these will match sketches related stuff
-'*[sS]ketches*':
+'**/*[sS]ketches*':
   - kgyrtkirk
 # Build system
 'Jenkinsfile':
+  - kgyrtkirk
+'.github/**':
   - kgyrtkirk
 # ddl changes
 '**/ddl/**':
   - miklosgergely
 # driver related changes
-'**/ql/(*Driver*|Compiler|Executor).java':
+'**/ql/*@(Driver|Compiler|Executor)*.java':
   - miklosgergely
 # schematool changes
-'**schematool**':
+'**/schematool/**':
   - miklosgergely
 # metatool changes
-'**metatool**':
+'**/metatool/**':
   - miklosgergely
-  
+'**/tez/**/*.java':
+  - abstractdog
+'**/*Tez*java':
+  - abstractdog
