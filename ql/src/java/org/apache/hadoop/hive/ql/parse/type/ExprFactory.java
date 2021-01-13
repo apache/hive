@@ -337,6 +337,8 @@ public abstract class ExprFactory<T> {
 
   protected abstract boolean isEqualFunction(FunctionInfo fi);
 
+  protected abstract boolean isNSCompareFunction(FunctionInfo fi);
+
   protected abstract boolean isConsistentWithinQuery(FunctionInfo fi);
 
   protected abstract boolean isStateful(FunctionInfo fi);

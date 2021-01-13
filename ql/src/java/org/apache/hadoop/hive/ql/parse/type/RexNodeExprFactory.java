@@ -906,6 +906,11 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     return functionHelper.isEqualFunction(fi);
   }
 
+  @Override
+  protected boolean isNSCompareFunction(FunctionInfo fi) {
+    return functionHelper.isNSCompareFunction(fi);
+  }
+
   /**
    * {@inheritDoc}
    */

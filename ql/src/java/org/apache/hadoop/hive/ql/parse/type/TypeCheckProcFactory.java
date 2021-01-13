@@ -986,9 +986,8 @@ public class TypeCheckProcFactory<T> {
           T newChild = interpretNodeAsConstant(colTypeInfo, constChild);
           if (newChild == null) {
             // non-interpretable as target type...
-            // TODO: all comparisons with null should result in null
-            if (exprFactory.isEqualFunction(fi)) {
-              return exprFactory.createBooleanConstantExpr(null);
+            if (!exprFactory.isNSCompareFunction(fi)) {
+             return exprFactory.createBooleanConstantExpr(null);
             }
           } else {
             children.set(constIdx, newChild);
