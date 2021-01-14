@@ -130,14 +130,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 1000 Data size: 344000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col5, _col6
-                        Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1000 Data size: 364000 Basic stats: COMPLETE Column stats: COMPLETE
                         Limit
                           Number of rows: 2
                           Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
@@ -154,13 +154,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: map('key1':100,'key2':200) (type: map<string,int>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 1000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col5, _col6
-                          Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1000 Data size: 364000 Basic stats: COMPLETE Column stats: COMPLETE
                           Limit
                             Number of rows: 2
                             Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
@@ -175,10 +175,10 @@ STAGE PLANS:
                                 TopN Hash Memory Usage: 0.1
                                 value expressions: _col0 (type: string), _col1 (type: int)
                     Select Operator
-                      Statistics: Num rows: 1000 Data size: 344000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col5, _col6
-                        Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1000 Data size: 364000 Basic stats: COMPLETE Column stats: COMPLETE
                         Limit
                           Number of rows: 2
                           Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
@@ -195,13 +195,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: map('key1':100,'key2':200) (type: map<string,int>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 1000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col5, _col6
-                          Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1000 Data size: 364000 Basic stats: COMPLETE Column stats: COMPLETE
                           Limit
                             Number of rows: 2
                             Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
