@@ -91,6 +91,9 @@ public class OperatorGraph {
     Set<Operator<?>> members = new LinkedHashSet<>();
 
     protected void merge(Cluster o) {
+      if (o == this) {
+        return;
+      }
       for (Operator<?> node : o.members) {
         add(node);
       }
