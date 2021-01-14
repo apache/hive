@@ -4040,15 +4040,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         try {
         if (!success) {
-          ms.rollbackTransaction();
-          cleanupPartitionFolders(addedPartitions, db);
+            ms.rollbackTransaction();
+            cleanupPartitionFolders(addedPartitions, db);
 
-          if (!listeners.isEmpty()) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                  EventType.ADD_PARTITION,
-                                                  new AddPartitionEvent(tbl, parts, false, this),
-                                                  null, null, ms);
-          }
+            if (!listeners.isEmpty()) {
+              MetaStoreListenerNotifier.notifyEvent(listeners,
+                                                    EventType.ADD_PARTITION,
+                                                    new AddPartitionEvent(tbl, parts, false, this),
+                                                    null, null, ms);
+            }
           }
         } finally {
           tableLock.unlock();
