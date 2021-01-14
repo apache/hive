@@ -430,7 +430,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       if (child.startsWith(exLock)) {
         childSeq = getSequenceNumber(child, exLock);
       }
-      if ((mode == HiveLockMode.EXCLUSIVE) && (child.startsWith(shLock))) {
+      if ((mode == HiveLockMode.EXCLUSIVE) && child.startsWith(shLock)) {
         childSeq = getSequenceNumber(child, shLock);
       }
       if ((mode == HiveLockMode.SEMI_SHARED || mode == HiveLockMode.EXCLUSIVE) && child.startsWith(semiLock)) {

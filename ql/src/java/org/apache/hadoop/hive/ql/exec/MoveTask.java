@@ -857,7 +857,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                                queryPlan.getQueryStr(),
                                conf);
 
-    HiveLockObject lock = new HiveLockObject(baseTable,lockData);
+    HiveLockObject lock = new HiveLockObject(baseTable, lockData);
 
     for (HiveLockObj hiveLockObj : lockObjects) {
       if (Arrays.equals(hiveLockObj.getObj().getPaths(), lock.getPaths())) {
@@ -873,8 +873,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   }
 
   private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {
-    return (tbd.getLbCtx() == null) ? false : tbd.getLbCtx()
-        .isSkewedStoredAsDir();
+    return tbd.getLbCtx() != null && tbd.getLbCtx().isSkewedStoredAsDir();
   }
 
   /**
