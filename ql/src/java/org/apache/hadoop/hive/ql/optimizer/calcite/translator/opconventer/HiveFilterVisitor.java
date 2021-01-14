@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter.OpAttr;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 
 class HiveFilterVisitor extends HiveRelNodeVisitor<HiveFilter> {
@@ -51,6 +52,7 @@ class HiveFilterVisitor extends HiveRelNodeVisitor<HiveFilter> {
     ExprNodeDesc filCondExpr = filterRel.getCondition().accept(
         new ExprNodeConverter(inputOpAf.tabAlias, filterRel.getInput().getRowType(), inputOpAf.vcolsInCalcite,
             filterRel.getCluster().getTypeFactory(), true));
+    ExprNodeDescUtils.validateFilter(filCondExpr);
     FilterDesc filDesc = new FilterDesc(filCondExpr, false);
     ArrayList<ColumnInfo> cinfoLst = HiveOpConverterUtils.createColInfos(inputOpAf.inputs.get(0));
     FilterOperator filOp = (FilterOperator) OperatorFactory.getAndMakeChild(filDesc,

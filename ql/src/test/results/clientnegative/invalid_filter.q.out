@@ -1,0 +1,1 @@
+FAILED: SemanticException Filter: ((UDFToDouble(key) > 50.0D) and regexp_extract(get_json_object(value, '$.fakekey'), '(h)(.*?)(s)', 2)) contains some non-boolean expressions: [GenericUDFBridge ==> regexp_extract (GenericUDFBridge ==> get_json_object (Column[value], Const string $.fakekey), Const string (h)(.*?)(s), Const int 2)]

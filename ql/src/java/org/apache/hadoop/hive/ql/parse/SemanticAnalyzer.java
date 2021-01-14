@@ -3568,7 +3568,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         filterCond = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false);
       }
     }
-
+    // validate the filter
+    ExprNodeDescUtils.validateFilter(filterCond);
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);

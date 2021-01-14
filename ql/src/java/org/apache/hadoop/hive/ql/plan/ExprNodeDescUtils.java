@@ -335,6 +335,39 @@ public class ExprNodeDescUtils {
   }
 
   /**
+   *  Validate the children of the input filter that must be bool expressions.
+   */
+  public static boolean validateFilter(ExprNodeDesc filterCond) throws SemanticException {
+    assert filterCond != null;
+    List<ExprNodeDesc> children = new ArrayList<>();
+    extractBoolExpr(filterCond, children);
+    List<ExprNodeDesc> nonBoolExprs = new ArrayList<>();
+    for (ExprNodeDesc expr : children) {
+      if (!(TypeInfoFactory.booleanTypeInfo.accept(expr.getTypeInfo()) ||
+          isNullConstant(expr))) {
+        nonBoolExprs.add(expr);
+      }
+    }
+    if (!nonBoolExprs.isEmpty()) {
+      String filterString = filterCond.getExprString() == null ? filterCond.toString() : filterCond.getExprString();
+      throw new SemanticException("Filter: " + filterString + " contains some non-boolean expressions: " + nonBoolExprs);
+    }
+    return true;
+  }
+
+  private static void extractBoolExpr(ExprNodeDesc cond, List<ExprNodeDesc> children) {
+    if (cond == null) {
+      return;
+    }
+    if (FunctionRegistry.isOpAnd(cond) || FunctionRegistry.isOpOr(cond)) {
+      for (ExprNodeDesc child : cond.getChildren()) {
+        extractBoolExpr(child, children);
+      }
+    }
+    children.add(cond);
+  }
+
+  /**
    * Convert expressions in current operator to those in terminal operator, which
    * is an ancestor of current or null (back to top operator).
    * Possibly contain null values for non-traceable exprs
