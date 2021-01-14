@@ -121,18 +121,28 @@ STAGE PLANS:
                             Partition key expr: cs_sold_date_sk
                             Statistics: Num rows: 137 Data size: 1096 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
-                          Dynamic Partitioning Event Operator
-                            Target column: sr_returned_date_sk (bigint)
-                            Target Input: store_returns
-                            Partition key expr: sr_returned_date_sk
-                            Statistics: Num rows: 137 Data size: 1096 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 8
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 274 Data size: 2192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: bigint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 274 Data size: 2192 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: bigint)
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 137 Data size: 1096 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: sr_returned_date_sk (bigint)
+                            Target Input: store_returns
+                            Partition key expr: sr_returned_date_sk
+                            Statistics: Num rows: 137 Data size: 1096 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 8
                   Filter Operator
                     predicate: (d_quarter_name = '2000Q1') (type: boolean)
                     Statistics: Num rows: 91 Data size: 8918 Basic stats: COMPLETE Column stats: COMPLETE

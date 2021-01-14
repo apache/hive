@@ -156,7 +156,7 @@ STAGE PLANS:
                             Target Input: web_sales
                             Partition key expr: ws_sold_date_sk
                             Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                            Target Vertex: Map 4
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z

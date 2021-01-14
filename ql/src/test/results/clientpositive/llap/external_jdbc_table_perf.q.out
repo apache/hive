@@ -3530,19 +3530,19 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
-        Reducer 11 <- Map 19 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-        Reducer 12 <- Map 18 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
-        Reducer 13 <- Reducer 12 (SIMPLE_EDGE)
-        Reducer 14 <- Map 20 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-        Reducer 15 <- Map 18 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
-        Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-        Reducer 3 <- Map 18 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 11 <- Map 8 (SIMPLE_EDGE), Reducer 18 (SIMPLE_EDGE)
+        Reducer 12 <- Reducer 11 (SIMPLE_EDGE)
+        Reducer 14 <- Map 13 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE)
+        Reducer 16 <- Map 15 (SIMPLE_EDGE), Map 19 (SIMPLE_EDGE)
+        Reducer 17 <- Reducer 16 (SIMPLE_EDGE)
+        Reducer 18 <- Map 20 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE)
+        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 13 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 16 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 10 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 12 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-        Reducer 9 <- Map 17 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3574,7 +3574,61 @@ WHERE "sr_item_sk" IS NOT NULL AND "sr_returned_date_sk" IS NOT NULL) AS "t2" ON
                       value expressions: _col30 (type: int), _col38 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 17 
+        Map 13 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  properties:
+                    hive.sql.query SELECT "t0"."d_date_sk", "t0"."d_date_id", "t0"."d_date", "t0"."d_month_seq", "t0"."d_week_seq", "t0"."d_quarter_seq", "t0"."d_year", "t0"."d_dow", "t0"."d_moy", "t0"."d_dom", "t0"."d_qoy", "t0"."d_fy_year", "t0"."d_fy_quarter_seq", "t0"."d_fy_week_seq", "t0"."d_day_name", "t0"."d_quarter_name", "t0"."d_holiday", "t0"."d_weekend", "t0"."d_following_holiday", "t0"."d_first_dom", "t0"."d_last_dom", "t0"."d_same_day_ly", "t0"."d_same_day_lq", "t0"."d_current_day", "t0"."d_current_week", "t0"."d_current_month", "t0"."d_current_quarter", "t0"."d_current_year", "t2"."wr_returned_date_sk", "t2"."wr_returned_time_sk", "t2"."wr_item_sk", "t2"."wr_refunded_customer_sk", "t2"."wr_refunded_cdemo_sk", "t2"."wr_refunded_hdemo_sk", "t2"."wr_refunded_addr_sk", "t2"."wr_returning_customer_sk", "t2"."wr_returning_cdemo_sk", "t2"."wr_returning_hdemo_sk", "t2"."wr_returning_addr_sk", "t2"."wr_web_page_sk", "t2"."wr_reason_sk", "t2"."wr_order_number", "t2"."wr_return_quantity", "t2"."wr_return_amt", "t2"."wr_return_tax", "t2"."wr_return_amt_inc_tax", "t2"."wr_fee", "t2"."wr_return_ship_cost", "t2"."wr_refunded_cash", "t2"."wr_reversed_charge", "t2"."wr_account_credit", "t2"."wr_net_loss"
+FROM (SELECT "d_date_sk", "d_date_id", "d_date", "d_month_seq", "d_week_seq", "d_quarter_seq", "d_year", "d_dow", "d_moy", "d_dom", "d_qoy", "d_fy_year", "d_fy_quarter_seq", "d_fy_week_seq", "d_day_name", "d_quarter_name", "d_holiday", "d_weekend", "d_following_holiday", "d_first_dom", "d_last_dom", "d_same_day_ly", "d_same_day_lq", "d_current_day", "d_current_week", "d_current_month", "d_current_quarter", "d_current_year"
+FROM "DATE_DIM"
+WHERE "d_date" IS NOT NULL AND "d_date_sk" IS NOT NULL) AS "t0"
+INNER JOIN (SELECT "wr_returned_date_sk", "wr_returned_time_sk", "wr_item_sk", "wr_refunded_customer_sk", "wr_refunded_cdemo_sk", "wr_refunded_hdemo_sk", "wr_refunded_addr_sk", "wr_returning_customer_sk", "wr_returning_cdemo_sk", "wr_returning_hdemo_sk", "wr_returning_addr_sk", "wr_web_page_sk", "wr_reason_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt", "wr_return_tax", "wr_return_amt_inc_tax", "wr_fee", "wr_return_ship_cost", "wr_refunded_cash", "wr_reversed_charge", "wr_account_credit", "wr_net_loss"
+FROM "WEB_RETURNS"
+WHERE "wr_item_sk" IS NOT NULL AND "wr_returned_date_sk" IS NOT NULL) AS "t2" ON "t0"."d_date_sk" = "t2"."wr_returned_date_sk"
+                    hive.sql.query.fieldNames d_date_sk,d_date_id,d_date,d_month_seq,d_week_seq,d_quarter_seq,d_year,d_dow,d_moy,d_dom,d_qoy,d_fy_year,d_fy_quarter_seq,d_fy_week_seq,d_day_name,d_quarter_name,d_holiday,d_weekend,d_following_holiday,d_first_dom,d_last_dom,d_same_day_ly,d_same_day_lq,d_current_day,d_current_week,d_current_month,d_current_quarter,d_current_year,wr_returned_date_sk,wr_returned_time_sk,wr_item_sk,wr_refunded_customer_sk,wr_refunded_cdemo_sk,wr_refunded_hdemo_sk,wr_refunded_addr_sk,wr_returning_customer_sk,wr_returning_cdemo_sk,wr_returning_hdemo_sk,wr_returning_addr_sk,wr_web_page_sk,wr_reason_sk,wr_order_number,wr_return_quantity,wr_return_amt,wr_return_tax,wr_return_amt_inc_tax,wr_fee,wr_return_ship_cost,wr_refunded_cash,wr_reversed_charge,wr_account_credit,wr_net_loss
+                    hive.sql.query.fieldTypes int,char(16),date,int,int,int,int,int,int,int,int,int,int,int,char(9),char(6),char(1),char(1),char(1),int,int,int,int,char(1),char(1),char(1),char(1),char(1),int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: d_date (type: date), wr_item_sk (type: int), wr_return_quantity (type: int)
+                    outputColumnNames: _col2, _col30, _col42
+                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: date)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: date)
+                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col30 (type: int), _col42 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 15 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  properties:
+                    hive.sql.query SELECT "d_date", "d_week_seq"
+FROM "DATE_DIM"
+WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
+                    hive.sql.query.fieldNames d_date,d_week_seq
+                    hive.sql.query.fieldTypes date,int
+                    hive.sql.query.split true
+                  Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: d_date (type: date), d_week_seq (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: date)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 19 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -3604,7 +3658,36 @@ WHERE "d_date" IN (DATE '1998-01-02', DATE '1998-10-15', DATE '1998-11-10') AND 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 18 
+        Map 20 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  properties:
+                    hive.sql.query SELECT "t0"."d_date_sk", "t0"."d_date_id", "t0"."d_date", "t0"."d_month_seq", "t0"."d_week_seq", "t0"."d_quarter_seq", "t0"."d_year", "t0"."d_dow", "t0"."d_moy", "t0"."d_dom", "t0"."d_qoy", "t0"."d_fy_year", "t0"."d_fy_quarter_seq", "t0"."d_fy_week_seq", "t0"."d_day_name", "t0"."d_quarter_name", "t0"."d_holiday", "t0"."d_weekend", "t0"."d_following_holiday", "t0"."d_first_dom", "t0"."d_last_dom", "t0"."d_same_day_ly", "t0"."d_same_day_lq", "t0"."d_current_day", "t0"."d_current_week", "t0"."d_current_month", "t0"."d_current_quarter", "t0"."d_current_year", "t2"."cr_returned_date_sk", "t2"."cr_returned_time_sk", "t2"."cr_item_sk", "t2"."cr_refunded_customer_sk", "t2"."cr_refunded_cdemo_sk", "t2"."cr_refunded_hdemo_sk", "t2"."cr_refunded_addr_sk", "t2"."cr_returning_customer_sk", "t2"."cr_returning_cdemo_sk", "t2"."cr_returning_hdemo_sk", "t2"."cr_returning_addr_sk", "t2"."cr_call_center_sk", "t2"."cr_catalog_page_sk", "t2"."cr_ship_mode_sk", "t2"."cr_warehouse_sk", "t2"."cr_reason_sk", "t2"."cr_order_number", "t2"."cr_return_quantity", "t2"."cr_return_amount", "t2"."cr_return_tax", "t2"."cr_return_amt_inc_tax", "t2"."cr_fee", "t2"."cr_return_ship_cost", "t2"."cr_refunded_cash", "t2"."cr_reversed_charge", "t2"."cr_store_credit", "t2"."cr_net_loss"
+FROM (SELECT "d_date_sk", "d_date_id", "d_date", "d_month_seq", "d_week_seq", "d_quarter_seq", "d_year", "d_dow", "d_moy", "d_dom", "d_qoy", "d_fy_year", "d_fy_quarter_seq", "d_fy_week_seq", "d_day_name", "d_quarter_name", "d_holiday", "d_weekend", "d_following_holiday", "d_first_dom", "d_last_dom", "d_same_day_ly", "d_same_day_lq", "d_current_day", "d_current_week", "d_current_month", "d_current_quarter", "d_current_year"
+FROM "DATE_DIM"
+WHERE "d_date" IS NOT NULL AND "d_date_sk" IS NOT NULL) AS "t0"
+INNER JOIN (SELECT "cr_returned_date_sk", "cr_returned_time_sk", "cr_item_sk", "cr_refunded_customer_sk", "cr_refunded_cdemo_sk", "cr_refunded_hdemo_sk", "cr_refunded_addr_sk", "cr_returning_customer_sk", "cr_returning_cdemo_sk", "cr_returning_hdemo_sk", "cr_returning_addr_sk", "cr_call_center_sk", "cr_catalog_page_sk", "cr_ship_mode_sk", "cr_warehouse_sk", "cr_reason_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount", "cr_return_tax", "cr_return_amt_inc_tax", "cr_fee", "cr_return_ship_cost", "cr_refunded_cash", "cr_reversed_charge", "cr_store_credit", "cr_net_loss"
+FROM "CATALOG_RETURNS"
+WHERE "cr_item_sk" IS NOT NULL AND "cr_returned_date_sk" IS NOT NULL) AS "t2" ON "t0"."d_date_sk" = "t2"."cr_returned_date_sk"
+                    hive.sql.query.fieldNames d_date_sk,d_date_id,d_date,d_month_seq,d_week_seq,d_quarter_seq,d_year,d_dow,d_moy,d_dom,d_qoy,d_fy_year,d_fy_quarter_seq,d_fy_week_seq,d_day_name,d_quarter_name,d_holiday,d_weekend,d_following_holiday,d_first_dom,d_last_dom,d_same_day_ly,d_same_day_lq,d_current_day,d_current_week,d_current_month,d_current_quarter,d_current_year,cr_returned_date_sk,cr_returned_time_sk,cr_item_sk,cr_refunded_customer_sk,cr_refunded_cdemo_sk,cr_refunded_hdemo_sk,cr_refunded_addr_sk,cr_returning_customer_sk,cr_returning_cdemo_sk,cr_returning_hdemo_sk,cr_returning_addr_sk,cr_call_center_sk,cr_catalog_page_sk,cr_ship_mode_sk,cr_warehouse_sk,cr_reason_sk,cr_order_number,cr_return_quantity,cr_return_amount,cr_return_tax,cr_return_amt_inc_tax,cr_fee,cr_return_ship_cost,cr_refunded_cash,cr_reversed_charge,cr_store_credit,cr_net_loss
+                    hive.sql.query.fieldTypes int,char(16),date,int,int,int,int,int,int,int,int,int,int,int,char(9),char(6),char(1),char(1),char(1),int,int,int,int,char(1),char(1),char(1),char(1),char(1),int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: d_date (type: date), cr_item_sk (type: int), cr_return_quantity (type: int)
+                    outputColumnNames: _col2, _col30, _col45
+                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: date)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: date)
+                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col30 (type: int), _col45 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: item
@@ -3643,134 +3726,27 @@ WHERE "i_item_sk" IS NOT NULL AND "i_item_id" IS NOT NULL
                       value expressions: _col1 (type: char(16))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 19 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  properties:
-                    hive.sql.query SELECT "t0"."d_date_sk", "t0"."d_date_id", "t0"."d_date", "t0"."d_month_seq", "t0"."d_week_seq", "t0"."d_quarter_seq", "t0"."d_year", "t0"."d_dow", "t0"."d_moy", "t0"."d_dom", "t0"."d_qoy", "t0"."d_fy_year", "t0"."d_fy_quarter_seq", "t0"."d_fy_week_seq", "t0"."d_day_name", "t0"."d_quarter_name", "t0"."d_holiday", "t0"."d_weekend", "t0"."d_following_holiday", "t0"."d_first_dom", "t0"."d_last_dom", "t0"."d_same_day_ly", "t0"."d_same_day_lq", "t0"."d_current_day", "t0"."d_current_week", "t0"."d_current_month", "t0"."d_current_quarter", "t0"."d_current_year", "t2"."wr_returned_date_sk", "t2"."wr_returned_time_sk", "t2"."wr_item_sk", "t2"."wr_refunded_customer_sk", "t2"."wr_refunded_cdemo_sk", "t2"."wr_refunded_hdemo_sk", "t2"."wr_refunded_addr_sk", "t2"."wr_returning_customer_sk", "t2"."wr_returning_cdemo_sk", "t2"."wr_returning_hdemo_sk", "t2"."wr_returning_addr_sk", "t2"."wr_web_page_sk", "t2"."wr_reason_sk", "t2"."wr_order_number", "t2"."wr_return_quantity", "t2"."wr_return_amt", "t2"."wr_return_tax", "t2"."wr_return_amt_inc_tax", "t2"."wr_fee", "t2"."wr_return_ship_cost", "t2"."wr_refunded_cash", "t2"."wr_reversed_charge", "t2"."wr_account_credit", "t2"."wr_net_loss"
-FROM (SELECT "d_date_sk", "d_date_id", "d_date", "d_month_seq", "d_week_seq", "d_quarter_seq", "d_year", "d_dow", "d_moy", "d_dom", "d_qoy", "d_fy_year", "d_fy_quarter_seq", "d_fy_week_seq", "d_day_name", "d_quarter_name", "d_holiday", "d_weekend", "d_following_holiday", "d_first_dom", "d_last_dom", "d_same_day_ly", "d_same_day_lq", "d_current_day", "d_current_week", "d_current_month", "d_current_quarter", "d_current_year"
-FROM "DATE_DIM"
-WHERE "d_date" IS NOT NULL AND "d_date_sk" IS NOT NULL) AS "t0"
-INNER JOIN (SELECT "wr_returned_date_sk", "wr_returned_time_sk", "wr_item_sk", "wr_refunded_customer_sk", "wr_refunded_cdemo_sk", "wr_refunded_hdemo_sk", "wr_refunded_addr_sk", "wr_returning_customer_sk", "wr_returning_cdemo_sk", "wr_returning_hdemo_sk", "wr_returning_addr_sk", "wr_web_page_sk", "wr_reason_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt", "wr_return_tax", "wr_return_amt_inc_tax", "wr_fee", "wr_return_ship_cost", "wr_refunded_cash", "wr_reversed_charge", "wr_account_credit", "wr_net_loss"
-FROM "WEB_RETURNS"
-WHERE "wr_item_sk" IS NOT NULL AND "wr_returned_date_sk" IS NOT NULL) AS "t2" ON "t0"."d_date_sk" = "t2"."wr_returned_date_sk"
-                    hive.sql.query.fieldNames d_date_sk,d_date_id,d_date,d_month_seq,d_week_seq,d_quarter_seq,d_year,d_dow,d_moy,d_dom,d_qoy,d_fy_year,d_fy_quarter_seq,d_fy_week_seq,d_day_name,d_quarter_name,d_holiday,d_weekend,d_following_holiday,d_first_dom,d_last_dom,d_same_day_ly,d_same_day_lq,d_current_day,d_current_week,d_current_month,d_current_quarter,d_current_year,wr_returned_date_sk,wr_returned_time_sk,wr_item_sk,wr_refunded_customer_sk,wr_refunded_cdemo_sk,wr_refunded_hdemo_sk,wr_refunded_addr_sk,wr_returning_customer_sk,wr_returning_cdemo_sk,wr_returning_hdemo_sk,wr_returning_addr_sk,wr_web_page_sk,wr_reason_sk,wr_order_number,wr_return_quantity,wr_return_amt,wr_return_tax,wr_return_amt_inc_tax,wr_fee,wr_return_ship_cost,wr_refunded_cash,wr_reversed_charge,wr_account_credit,wr_net_loss
-                    hive.sql.query.fieldTypes int,char(16),date,int,int,int,int,int,int,int,int,int,int,int,char(9),char(6),char(1),char(1),char(1),int,int,int,int,char(1),char(1),char(1),char(1),char(1),int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2)
-                    hive.sql.query.split false
-                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: d_date (type: date), wr_item_sk (type: int), wr_return_quantity (type: int)
-                    outputColumnNames: _col2, _col30, _col42
-                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: date)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: date)
-                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col30 (type: int), _col42 (type: int)
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 20 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  properties:
-                    hive.sql.query SELECT "t0"."d_date_sk", "t0"."d_date_id", "t0"."d_date", "t0"."d_month_seq", "t0"."d_week_seq", "t0"."d_quarter_seq", "t0"."d_year", "t0"."d_dow", "t0"."d_moy", "t0"."d_dom", "t0"."d_qoy", "t0"."d_fy_year", "t0"."d_fy_quarter_seq", "t0"."d_fy_week_seq", "t0"."d_day_name", "t0"."d_quarter_name", "t0"."d_holiday", "t0"."d_weekend", "t0"."d_following_holiday", "t0"."d_first_dom", "t0"."d_last_dom", "t0"."d_same_day_ly", "t0"."d_same_day_lq", "t0"."d_current_day", "t0"."d_current_week", "t0"."d_current_month", "t0"."d_current_quarter", "t0"."d_current_year", "t2"."cr_returned_date_sk", "t2"."cr_returned_time_sk", "t2"."cr_item_sk", "t2"."cr_refunded_customer_sk", "t2"."cr_refunded_cdemo_sk", "t2"."cr_refunded_hdemo_sk", "t2"."cr_refunded_addr_sk", "t2"."cr_returning_customer_sk", "t2"."cr_returning_cdemo_sk", "t2"."cr_returning_hdemo_sk", "t2"."cr_returning_addr_sk", "t2"."cr_call_center_sk", "t2"."cr_catalog_page_sk", "t2"."cr_ship_mode_sk", "t2"."cr_warehouse_sk", "t2"."cr_reason_sk", "t2"."cr_order_number", "t2"."cr_return_quantity", "t2"."cr_return_amount", "t2"."cr_return_tax", "t2"."cr_return_amt_inc_tax", "t2"."cr_fee", "t2"."cr_return_ship_cost", "t2"."cr_refunded_cash", "t2"."cr_reversed_charge", "t2"."cr_store_credit", "t2"."cr_net_loss"
-FROM (SELECT "d_date_sk", "d_date_id", "d_date", "d_month_seq", "d_week_seq", "d_quarter_seq", "d_year", "d_dow", "d_moy", "d_dom", "d_qoy", "d_fy_year", "d_fy_quarter_seq", "d_fy_week_seq", "d_day_name", "d_quarter_name", "d_holiday", "d_weekend", "d_following_holiday", "d_first_dom", "d_last_dom", "d_same_day_ly", "d_same_day_lq", "d_current_day", "d_current_week", "d_current_month", "d_current_quarter", "d_current_year"
-FROM "DATE_DIM"
-WHERE "d_date" IS NOT NULL AND "d_date_sk" IS NOT NULL) AS "t0"
-INNER JOIN (SELECT "cr_returned_date_sk", "cr_returned_time_sk", "cr_item_sk", "cr_refunded_customer_sk", "cr_refunded_cdemo_sk", "cr_refunded_hdemo_sk", "cr_refunded_addr_sk", "cr_returning_customer_sk", "cr_returning_cdemo_sk", "cr_returning_hdemo_sk", "cr_returning_addr_sk", "cr_call_center_sk", "cr_catalog_page_sk", "cr_ship_mode_sk", "cr_warehouse_sk", "cr_reason_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount", "cr_return_tax", "cr_return_amt_inc_tax", "cr_fee", "cr_return_ship_cost", "cr_refunded_cash", "cr_reversed_charge", "cr_store_credit", "cr_net_loss"
-FROM "CATALOG_RETURNS"
-WHERE "cr_item_sk" IS NOT NULL AND "cr_returned_date_sk" IS NOT NULL) AS "t2" ON "t0"."d_date_sk" = "t2"."cr_returned_date_sk"
-                    hive.sql.query.fieldNames d_date_sk,d_date_id,d_date,d_month_seq,d_week_seq,d_quarter_seq,d_year,d_dow,d_moy,d_dom,d_qoy,d_fy_year,d_fy_quarter_seq,d_fy_week_seq,d_day_name,d_quarter_name,d_holiday,d_weekend,d_following_holiday,d_first_dom,d_last_dom,d_same_day_ly,d_same_day_lq,d_current_day,d_current_week,d_current_month,d_current_quarter,d_current_year,cr_returned_date_sk,cr_returned_time_sk,cr_item_sk,cr_refunded_customer_sk,cr_refunded_cdemo_sk,cr_refunded_hdemo_sk,cr_refunded_addr_sk,cr_returning_customer_sk,cr_returning_cdemo_sk,cr_returning_hdemo_sk,cr_returning_addr_sk,cr_call_center_sk,cr_catalog_page_sk,cr_ship_mode_sk,cr_warehouse_sk,cr_reason_sk,cr_order_number,cr_return_quantity,cr_return_amount,cr_return_tax,cr_return_amt_inc_tax,cr_fee,cr_return_ship_cost,cr_refunded_cash,cr_reversed_charge,cr_store_credit,cr_net_loss
-                    hive.sql.query.fieldTypes int,char(16),date,int,int,int,int,int,int,int,int,int,int,int,char(9),char(6),char(1),char(1),char(1),int,int,int,int,char(1),char(1),char(1),char(1),char(1),int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,int,decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2),decimal(7,2)
-                    hive.sql.query.split false
-                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: d_date (type: date), cr_item_sk (type: int), cr_return_quantity (type: int)
-                    outputColumnNames: _col2, _col30, _col45
-                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: date)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: date)
-                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col30 (type: int), _col45 (type: int)
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  properties:
-                    hive.sql.query SELECT "d_date", "d_week_seq"
-FROM "DATE_DIM"
-WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
-                    hive.sql.query.fieldNames d_date,d_week_seq
-                    hive.sql.query.fieldTypes date,int
-                    hive.sql.query.split true
-                  Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: d_date (type: date), d_week_seq (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col1 (type: int)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col1 (type: int)
-                      Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: date)
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: date)
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: char(16))
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: date)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: date)
-                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: date)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: date)
-                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: date)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: date)
-                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: char(16)), _col1 (type: bigint), UDFToDouble(_col1) (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: char(16))
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: char(16))
+                    Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint), _col2 (type: double)
         Reducer 11 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col2 (type: date)
-                  1 _col0 (type: date)
-                outputColumnNames: _col30, _col42
-                Statistics: Num rows: 1 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col30 (type: int)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col30 (type: int)
-                  Statistics: Num rows: 1 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col42 (type: int)
-        Reducer 12 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -3779,11 +3755,11 @@ WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
                 keys:
                   0 _col30 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col42, _col54
+                outputColumnNames: _col45, _col57
                 Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: sum(_col42)
-                  keys: _col54 (type: char(16))
+                  aggregations: sum(_col45)
+                  keys: _col57 (type: char(16))
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -3795,7 +3771,7 @@ WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
                     Map-reduce partition columns: _col0 (type: char(16))
                     Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
-        Reducer 13 
+        Reducer 12 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -3824,6 +3800,73 @@ WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
                 keys:
                   0 _col2 (type: date)
                   1 _col0 (type: date)
+                outputColumnNames: _col30, _col42
+                Statistics: Num rows: 1 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col30 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col30 (type: int)
+                  Statistics: Num rows: 1 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col42 (type: int)
+        Reducer 16 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: date)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: date)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: date)
+                    Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+        Reducer 17 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: date)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: date)
+                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: date)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: date)
+                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: date)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: date)
+                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+        Reducer 18 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col2 (type: date)
+                  1 _col0 (type: date)
                 outputColumnNames: _col30, _col45
                 Statistics: Num rows: 1 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -3833,51 +3876,6 @@ WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
                   Map-reduce partition columns: _col30 (type: int)
                   Statistics: Num rows: 1 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col45 (type: int)
-        Reducer 15 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col30 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col45, _col57
-                Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col45)
-                  keys: _col57 (type: char(16))
-                  minReductionHashAggr: 0.99
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: char(16))
-                    null sort order: z
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: char(16))
-                    Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
-        Reducer 16 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0)
-                keys: KEY._col0 (type: char(16))
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: char(16)), _col1 (type: bigint), UDFToDouble(_col1) (type: double)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: char(16))
-                    null sort order: z
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: char(16))
-                    Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint), _col2 (type: double)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -4008,24 +4006,26 @@ WHERE "d_week_seq" IS NOT NULL AND "d_date" IS NOT NULL
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
+                  0 _col30 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col42, _col54
+                Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col0 (type: date)
+                  aggregations: sum(_col42)
+                  keys: _col54 (type: char(16))
                   minReductionHashAggr: 0.99
                   mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: date)
+                    key expressions: _col0 (type: char(16))
                     null sort order: z
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: date)
-                    Statistics: Num rows: 1 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: char(16))
+                    Statistics: Num rows: 1 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
     Fetch Operator

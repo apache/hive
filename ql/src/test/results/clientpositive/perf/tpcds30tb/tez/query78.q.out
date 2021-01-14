@@ -74,11 +74,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-                            Target column: cs_sold_date_sk (bigint)
-                            Target Input: catalog_sales
-                            Partition key expr: cs_sold_date_sk
+                            Target column: ws_sold_date_sk (bigint)
+                            Target Input: web_sales
+                            Partition key expr: ws_sold_date_sk
                             Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 9
+                            Target Vertex: Map 14
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -96,11 +96,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-                            Target column: ws_sold_date_sk (bigint)
-                            Target Input: web_sales
-                            Partition key expr: ws_sold_date_sk
+                            Target column: cs_sold_date_sk (bigint)
+                            Target Input: catalog_sales
+                            Partition key expr: cs_sold_date_sk
                             Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 14
+                            Target Vertex: Map 9
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 13 
