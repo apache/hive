@@ -146,13 +146,6 @@ public class SharedWorkOptimizer extends Transform {
       return pctx;
     }
 
-    try {
-      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/0.full.dot"));
-      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/0.joins.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
-    }
-
     if (LOG.isDebugEnabled()) {
       LOG.debug("Before SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
     }

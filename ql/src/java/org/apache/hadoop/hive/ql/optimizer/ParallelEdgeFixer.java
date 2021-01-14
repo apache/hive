@@ -60,13 +60,6 @@ public class ParallelEdgeFixer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     OperatorGraph og = new OperatorGraph(pctx);
-    try {
-      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/p.full.dot"));
-      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/p.joins.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
-    }
-
     fixParallelEdges(og);
     return pctx;
   }
