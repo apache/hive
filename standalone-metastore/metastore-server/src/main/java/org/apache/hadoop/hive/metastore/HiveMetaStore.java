@@ -7085,7 +7085,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
                                                    final List<String> partNames)
             throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames);
+      return get_partitions_by_names(dbName, tblName, partNames, false, null, null);
     }
 
     @Override
@@ -10713,7 +10713,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     HMSHandler.LOG
         .info("hive.metastore.runworker.in = {}", MetastoreConf.getVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN));
     HMSHandler.LOG.info("metastore.compactor.history.retention.attempted = {}",
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED));
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
     HMSHandler.LOG.info("metastore.compactor.history.retention.failed = {}",
         MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED));
     HMSHandler.LOG.info("metastore.compactor.history.retention.succeeded = {}",

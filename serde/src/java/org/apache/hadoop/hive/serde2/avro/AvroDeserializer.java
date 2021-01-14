@@ -394,8 +394,8 @@ class AvroDeserializer {
   private Object deserializeStruct(GenericData.Record datum, Schema fileSchema, StructTypeInfo columnType)
           throws AvroSerdeException {
     // No equivalent Java type for the backing structure, need to recurse and build a list
-    ArrayList<TypeInfo> innerFieldTypes = columnType.getAllStructFieldTypeInfos();
-    ArrayList<String> innerFieldNames = columnType.getAllStructFieldNames();
+    List<TypeInfo> innerFieldTypes = columnType.getAllStructFieldTypeInfos();
+    List<String> innerFieldNames = columnType.getAllStructFieldNames();
     List<Object> innerObjectRow = new ArrayList<Object>(innerFieldTypes.size());
 
     return workerBase(innerObjectRow, fileSchema, innerFieldNames, innerFieldTypes, datum);

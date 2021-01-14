@@ -1,0 +1,97 @@
+PREHOOK: query: EXPLAIN CBO
+VALUES(1,2,3),(4,5,6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+VALUES(1,2,3),(4,5,6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6)))], rowType=[RecordType(INTEGER col1, INTEGER col2, INTEGER col3)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: VALUES(1,2,3),(4,5,6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1,2,3),(4,5,6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+col1	col2	col3
+1	2	3
+4	5	6
+PREHOOK: query: EXPLAIN CBO
+SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6)))], rowType=[RecordType(INTEGER col1, INTEGER col2, INTEGER col3)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+foo.col1	foo.col2	foo.col3
+1	2	3
+4	5	6
+PREHOOK: query: EXPLAIN CBO
+WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
+SELECT * FROM t1 WHERE col1 = 'a'
+UNION ALL
+SELECT * from t1 WHERE col1 = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
+SELECT * FROM t1 WHERE col1 = 'a'
+UNION ALL
+SELECT * from t1 WHERE col1 = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col1=[CAST(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], col2=[$1])
+    HiveFilter(condition=[=($0, _UTF-16LE'a')])
+      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(VARCHAR(2147483647) col1, VARCHAR(2147483647) col2)])
+        HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col1=[CAST(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], col2=[$1])
+    HiveFilter(condition=[=($0, _UTF-16LE'b')])
+      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(_UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(VARCHAR(2147483647) col1, VARCHAR(2147483647) col2)])
+        HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
+SELECT * FROM t1 WHERE col1 = 'a'
+UNION ALL
+SELECT * from t1 WHERE col1 = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
+SELECT * FROM t1 WHERE col1 = 'a'
+UNION ALL
+SELECT * from t1 WHERE col1 = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+col1	col2
+a	b
+b	c

@@ -42,6 +42,7 @@ public class CompactorTestUtilities {
 
   private static final Charset UTF8 = Charset.forName("UTF-8");
   private static final int ORC_ACID_VERSION_DEFAULT = 0;
+  public enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
 
   /**
    * This is smart enough to handle streaming ingest where there could be a

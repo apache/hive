@@ -350,7 +350,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       throw new RuntimeException("serialization.last.column.takes.rest not supported");
     }
 
-    timestampParser = new TimestampParser();
+    List<String> timestampFormats = lazyParams.getTimestampFormats();
+    timestampParser = (timestampFormats == null) ?
+        new TimestampParser() : new TimestampParser(timestampFormats);
 
     internalBufferLen = -1;
   }

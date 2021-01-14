@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
@@ -262,6 +263,7 @@ import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -334,7 +336,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private QB qb;
-  private ASTNode ast;
+  protected ASTNode ast;
   private int destTableId;
   private UnionProcContext uCtx;
   private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
@@ -2661,11 +2663,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
-      if (!unparseTranslator.isEnabled() &&
-          (viewMask.isEnabled() && analyzeRewrite == null)) {
-        viewTree = rewriteASTWithMaskAndFilter(viewMask, viewTree,
+      if (viewMask.isEnabled() && analyzeRewrite == null) {
+        ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
             ctx, db, tabNameToTabObject);
+        viewTree = parseResult.getTree();
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
         @Override
@@ -3860,9 +3862,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ErrorMsg.INVALID_COLUMN.getMsg(), sel));
     }
 
-    if (unparseTranslator.isEnabled()) {
-      unparseTranslator.addTranslation(sel, replacementText.toString());
-    } else if (tableMask.isEnabled()) {
+    unparseTranslator.addTranslation(sel, replacementText.toString());
+    if (tableMask.isEnabled()) {
       tableMask.addTranslation(sel, replacementText.toString());
     }
     return pos;
@@ -8743,9 +8744,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     StructObjectInspector oi = null;
     try {
-      Deserializer deserializer = tableDesc.getDeserializerClass()
+      AbstractSerDe deserializer = tableDesc.getSerDeClass()
           .newInstance();
-      SerDeUtils.initializeSerDe(deserializer, conf, tableDesc.getProperties(), null);
+      deserializer.initialize(conf, tableDesc.getProperties(), null);
       oi = (StructObjectInspector) deserializer.getObjectInspector();
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -12308,7 +12309,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  private ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+  private ParseResult rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
                                                 Context ctx, Hive db, Map<String, Table> tabNameToTabObject)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
@@ -12355,13 +12356,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         // We pass a new empty context with our HiveConf so the lexer can
         // detect if allowQuotedId is enabled.
-        rewrittenTree = ParseUtils.parse(rewrittenQuery, new Context(conf));
+        Context rewriteCtx = new Context(conf);
+        ctx.addSubContext(rewriteCtx);
+        rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
+        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
       } catch (ParseException | IOException e) {
         throw new SemanticException(e);
       }
-      return rewrittenTree;
     } else {
-      return ast;
+      return new ParseResult(ast, ctx.getTokenRewriteStream());
     }
   }
 
@@ -12590,15 +12593,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     sinkOp = genOPTree(ast, plannerCtx);
 
     boolean usesMasking = false;
-    if (!unparseTranslator.isEnabled() &&
+    if (!forViewCreation && ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
-      ASTNode rewrittenAST = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
+      ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
           ctx, db, tabNameToTabObject);
+      ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
         plannerCtx = pcf.get();
         ctx.setSkipTableMasking(true);
+        ctx.setTokenRewriteStream(rewrittenResult.getTokenRewriteStream());
         init(true);
         //change the location of position alias process here
         processPositionAlias(rewrittenAST);
@@ -13067,7 +13072,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ASTNode node : fieldDescList) {
       Map<ASTNode, String> map = translateFieldDesc(node);
       for (Entry<ASTNode, String> entry : map.entrySet()) {
-        unparseTranslator.addTranslation(entry.getKey(), entry.getValue());
+        unparseTranslator.addTranslation(entry.getKey(), entry.getValue().toLowerCase());
       }
     }
 
@@ -13383,6 +13388,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Creating table " + dbDotTab + " position=" + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
+
+    // set storage handler if default handler is provided in config
+    String defaultStorageHandler = HiveConf.getVar(conf, HIVE_DEFAULT_STORAGE_HANDLER);
+    if (defaultStorageHandler != null && !defaultStorageHandler.isEmpty()) {
+      LOG.info("Default storage handler class detected in config. Using storage handler class if exists: '{}'",
+          defaultStorageHandler);
+      storageFormat.setStorageHandler(defaultStorageHandler);
+      isUserStorageFormat = true;
+    }
 
     /*
      * Check the 1st-level children and do simple semantic checks: 1) CTLT and
@@ -13945,12 +13959,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String msg = "Cannot enable automatic rewriting for materialized view.";
           if (ctx.getCboInfo() != null) {
             msg += " " + ctx.getCboInfo();
+          } else {
+            msg += " Check CBO is turned on: set " + ConfVars.HIVE_CBO_ENABLED.varname;
           }
           throw new SemanticException(msg);
         }
         if (!isValidAutomaticRewritingMaterialization()) {
-          throw new SemanticException("Cannot enable automatic rewriting for materialized view. " +
-              getInvalidAutomaticRewritingMaterializationReason());
+          String errorMessage = "Only query text based automatic rewriting is available for materialized view. " +
+                  getInvalidAutomaticRewritingMaterializationReason();
+          console.printError(errorMessage);
+          LOG.warn(errorMessage);
         }
       }
     } catch (HiveException e) {

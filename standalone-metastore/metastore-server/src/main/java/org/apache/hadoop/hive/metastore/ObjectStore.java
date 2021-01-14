@@ -31,6 +31,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10853,53 +10854,89 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void cleanNotificationEvents(int olderThan) {
-    boolean commited = false;
-    Query query = null;
-    try {
-      openTransaction();
-      long tmp = System.currentTimeMillis() / 1000 - olderThan;
-      int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
-      query = pm.newQuery(MNotificationLog.class, "eventTime < tooOld");
-      query.declareParameters("java.lang.Integer tooOld");
+    final int eventBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
 
-      int max_events = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
-      max_events = max_events > 0 ? max_events : Integer.MAX_VALUE;
-      query.setRange(0, max_events);
-      query.setOrdering("eventId ascending");
+    final long ageSec = olderThan;
+    final Instant now = Instant.now();
 
-      List<MNotificationLog> toBeRemoved = (List) query.execute(tooOld);
-      int iteration = 0;
-      int eventCount = 0;
-      long minEventId = 0;
-      long minEventTime = 0;
-      long maxEventId = 0;
-      long maxEventTime = 0;
-      while (CollectionUtils.isNotEmpty(toBeRemoved)) {
-        int listSize = toBeRemoved.size();
-        if (iteration == 0) {
-          MNotificationLog firstNotification = toBeRemoved.get(0);
-          minEventId = firstNotification.getEventId();
-          minEventTime = firstNotification.getEventTime();
-        }
-        MNotificationLog lastNotification = toBeRemoved.get(listSize - 1);
-        maxEventId = lastNotification.getEventId();
-        maxEventTime = lastNotification.getEventTime();
-        pm.deletePersistentAll(toBeRemoved);
-        eventCount += listSize;
-        iteration++;
-        toBeRemoved = (List) query.execute(tooOld);
-      }
-      if (iteration == 0) {
-        LOG.info("No Notification events found to be cleaned with eventTime < {}.", tooOld);
-      } else {
-        LOG.info("Notification Cleaned {} events with eventTime < {} in {} iteration, " +
-            "minimum eventId {} (with eventTime {}) and maximum eventId {} (with eventTime {})",
-            eventCount, tooOld, iteration, minEventId, minEventTime, maxEventId, maxEventTime);
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    final int tooOld = Math.toIntExact(now.getEpochSecond() - ageSec);
+
+    final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
+
+    final long start = System.nanoTime();
+    int deleteCount = doCleanNotificationEvents(tooOld, batchSize);
+
+    if (deleteCount == 0) {
+      LOG.info("No Notification events found to be cleaned with eventTime < {}", tooOld);
+    } else {
+      int batchCount = 0;
+      do {
+        batchCount = doCleanNotificationEvents(tooOld, batchSize);
+        deleteCount += batchCount;
+      } while (batchCount > 0);
     }
+
+    final long finish = System.nanoTime();
+
+    LOG.info("Deleted {} notification events older than epoch:{} in {}ms", deleteCount, tooOld,
+        TimeUnit.NANOSECONDS.toMillis(finish - start));
+  }
+
+  private int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize) {
+    final Transaction tx = pm.currentTransaction();
+    int eventsCount = 0;
+
+    try {
+      tx.begin();
+
+      try (Query query = pm.newQuery(MNotificationLog.class, "eventTime <= tooOld")) {
+        query.declareParameters("java.lang.Integer tooOld");
+        query.setOrdering("eventId ascending");
+        if (batchSize.isPresent()) {
+          query.setRange(0, batchSize.get());
+        }
+
+        List<MNotificationLog> events = (List) query.execute(ageSec);
+        if (CollectionUtils.isNotEmpty(events)) {
+          eventsCount = events.size();
+
+          if (LOG.isDebugEnabled()) {
+            int minEventTime, maxEventTime;
+            long minEventId, maxEventId;
+            Iterator<MNotificationLog> iter = events.iterator();
+            MNotificationLog firstNotification = iter.next();
+
+            minEventTime = maxEventTime = firstNotification.getEventTime();
+            minEventId = maxEventId = firstNotification.getEventId();
+
+            while (iter.hasNext()) {
+              MNotificationLog notification = iter.next();
+              minEventTime = Math.min(minEventTime, notification.getEventTime());
+              maxEventTime = Math.max(maxEventTime, notification.getEventTime());
+              minEventId = Math.min(minEventId, notification.getEventId());
+              maxEventId = Math.max(maxEventId, notification.getEventId());
+            }
+
+            LOG.debug(
+                "Remove notification batch of {} events with eventTime < {}, min eventId {}, max eventId {}, min eventTime {}, max eventTime {}",
+                eventsCount, ageSec, minEventId, maxEventId, minEventTime, maxEventTime);
+          }
+
+          pm.deletePersistentAll(events);
+        }
+      }
+
+      tx.commit();
+    } catch (Exception e) {
+      LOG.error("Unable to delete batch of notification events", e);
+      eventsCount = 0;
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+    }
+
+    return eventsCount;
   }
 
   @Override

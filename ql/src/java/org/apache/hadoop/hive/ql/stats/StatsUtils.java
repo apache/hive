@@ -2099,6 +2099,18 @@ public class StatsUtils {
     }
   }
 
+  public static void scaleColStatistics(List<ColStatistics> colStats, double factor) {
+    for (ColStatistics cs : colStats) {
+      cs.setNumFalses(StatsUtils.safeMult(cs.getNumFalses(), factor));
+      cs.setNumTrues(StatsUtils.safeMult(cs.getNumTrues(), factor));
+      cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
+      if (factor < 1.0) {
+        final double newNDV = Math.ceil(cs.getCountDistint() * factor);
+        cs.setCountDistint(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);
+      }
+    }
+  }
+
   public static long computeNDVGroupingColumns(List<ColStatistics> colStats, Statistics parentStats,
       boolean expDecay) {
     List<Long> ndvValues =

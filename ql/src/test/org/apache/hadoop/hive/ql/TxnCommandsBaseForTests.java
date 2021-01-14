@@ -38,13 +38,14 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -123,9 +124,9 @@ public abstract class TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
-    TxnDbUtil.setConfValues(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
     txnHandler = TxnUtils.getTxnStore(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -160,7 +161,7 @@ public abstract class TxnCommandsBaseForTests {
         d = null;
       }
     } finally {
-      TxnDbUtil.cleanDb(hiveConf);
+      TestTxnDbUtil.cleanDb(hiveConf);
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }
@@ -215,7 +216,6 @@ public abstract class TxnCommandsBaseForTests {
   public static void runInitiator(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
   }
-  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);

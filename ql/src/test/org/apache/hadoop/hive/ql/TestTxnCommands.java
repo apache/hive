@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -379,7 +379,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Test
-  public void testAddConstraintAdvancingWriteIds() throws Exception {
+  public void testAddAndDropConstraintAdvancingWriteIds() throws Exception {
 
     String tableName = "constraints_table";
     hiveConf.setBoolean("hive.stats.autogather", true);
@@ -410,8 +410,25 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT unique1 UNIQUE (a, b) DISABLE", tableName));
     validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
     LOG.info("ValidWriteIds after add constraint unique::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds); 
-  
+    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds);
+
+    LOG.info("ValidWriteIds before drop constraint::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  DROP CONSTRAINT a_PK", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:6:9223372036854775807::", validWriteIds);
+    LOG.info("ValidWriteIds after drop constraint primary key::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  DROP CONSTRAINT check1", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:7:9223372036854775807::", validWriteIds);
+    LOG.info("ValidWriteIds after drop constraint check::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  DROP CONSTRAINT unique1", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:8:9223372036854775807::", validWriteIds);
+    LOG.info("ValidWriteIds after drop constraint unique::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s CHANGE COLUMN b b STRING", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:9:9223372036854775807::", validWriteIds);
+
   }
 
   @Test
@@ -819,7 +836,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertNotNull(txnInfo);
     Assert.assertEquals(14, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
-    String s =TxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
+    String s = TestTxnDbUtil
+        .queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
     String[] vals = s.split("\\s+");
     Assert.assertEquals("Didn't get expected timestamps", 2, vals.length);
     long lastHeartbeat = Long.parseLong(vals[1]);
@@ -843,7 +861,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
 
     //should've done several heartbeats
-    s =TxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
+    s = TestTxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
     vals = s.split("\\s+");
     Assert.assertEquals("Didn't get expected timestamps", 2, vals.length);
     Assert.assertTrue("Heartbeat didn't progress: (old,new) (" + lastHeartbeat + "," + vals[1]+ ")",

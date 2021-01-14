@@ -52,6 +52,7 @@ public class DumpMetaData {
   private final Path dumpFile;
   private final HiveConf hiveConf;
   private Long dumpExecutionId;
+  private boolean replScopeModified = false;
 
   public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -61,16 +62,18 @@ public class DumpMetaData {
   public DumpMetaData(Path dumpRoot, DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot,
       HiveConf hiveConf) {
     this(dumpRoot, hiveConf);
-    setDump(lvl, eventFrom, eventTo, cmRoot, 0L);
+    setDump(lvl, eventFrom, eventTo, cmRoot, 0L, false);
   }
 
-  public void setDump(DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot, Long dumpExecutionId) {
+  public void setDump(DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot, Long dumpExecutionId,
+                      boolean replScopeModified) {
     this.dumpType = lvl;
     this.eventFrom = eventFrom;
     this.eventTo = eventTo;
     this.cmRoot = cmRoot;
     this.initialized = true;
     this.dumpExecutionId = dumpExecutionId;
+    this.replScopeModified = replScopeModified;
   }
 
   public void setPayload(String payload) {
@@ -117,10 +120,10 @@ public class DumpMetaData {
       br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
       String line;
       if ((line = br.readLine()) != null) {
-        String[] lineContents = line.split("\t", 6);
+        String[] lineContents = line.split("\t", 7);
         setDump(DumpType.valueOf(lineContents[0]), Long.valueOf(lineContents[1]),
             Long.valueOf(lineContents[2]),
-            new Path(lineContents[3]), Long.valueOf(lineContents[4]));
+            new Path(lineContents[3]), Long.valueOf(lineContents[4]), Boolean.valueOf(lineContents[6]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
       } else {
         throw new IOException(
@@ -163,6 +166,11 @@ public class DumpMetaData {
   public Long getDumpExecutionId() throws SemanticException {
     initializeIfNot();
     return dumpExecutionId;
+  }
+
+  public boolean isReplScopeModified() throws SemanticException {
+    initializeIfNot();
+    return replScopeModified;
   }
 
   public ReplScope getReplScope() throws SemanticException {
@@ -219,7 +227,8 @@ public class DumpMetaData {
             eventTo.toString(),
             cmRoot.toString(),
             dumpExecutionId.toString(),
-            payload)
+            payload,
+            String.valueOf(replScopeModified))
     );
     if (replScope != null) {
       listValues.add(prepareReplScopeValues());

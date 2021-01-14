@@ -101,7 +101,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     FileSplit fileSplit = (FileSplit) split;
     reporter.setStatus(fileSplit.toString());
-    FileSystem splitFileSystem = fileSplit.getPath().getFileSystem(job);
+
     try {
       // At this entry point, we are going to assume that these are logical table columns.
       // Perhaps we should go thru the code and clean this up to be more explicit; for now, we

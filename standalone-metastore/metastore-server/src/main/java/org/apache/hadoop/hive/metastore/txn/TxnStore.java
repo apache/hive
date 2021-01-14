@@ -56,10 +56,10 @@ public interface TxnStore extends Configurable {
   String CLEANING_RESPONSE = "ready for cleaning";
   String FAILED_RESPONSE = "failed";
   String SUCCEEDED_RESPONSE = "succeeded";
-  String ATTEMPTED_RESPONSE = "attempted";
+  String DID_NOT_INITIATE_RESPONSE = "did not initiate";
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
-      SUCCEEDED_RESPONSE, ATTEMPTED_RESPONSE};
+      SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE };
 
   int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
