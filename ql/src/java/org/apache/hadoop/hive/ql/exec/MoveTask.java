@@ -787,10 +787,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     public LocalTableLock(HiveLockObject lock) throws LockException {
       this.lock = Optional.of(lock);
-      LOG.info("LocalTableLock; locking: " + lock);
+      LOG.debug("LocalTableLock; locking: " + lock);
       HiveLockManager lockMgr = context.getHiveTxnManager().getLockManager();
       lockObj = lockMgr.lock(lock, HiveLockMode.SEMI_SHARED, true);
-      LOG.info("LocalTableLock; locked: " + lock);
+      LOG.debug("LocalTableLock; locked: " + lock);
     }
 
     public LocalTableLock() {
@@ -802,7 +802,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if(!lock.isPresent()) {
         return;
       }
-      LOG.info("LocalTableLock; unlocking: "+lock);
+      LOG.debug("LocalTableLock; unlocking: " + lock);
       HiveLockManager lockMgr;
       try {
         lockMgr = context.getHiveTxnManager().getLockManager();
@@ -810,19 +810,19 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       } catch (LockException e1) {
         throw new IOException(e1);
       }
-      LOG.info("LocalTableLock; unlocked");
+      LOG.debug("LocalTableLock; unlocked");
     }
 
   }
 
   static enum LockFileMoveMode {
-    none, dp, all;
+    NONE, DP, ALL;
 
     public static LockFileMoveMode fromConf(HiveConf conf) {
       if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
-        return none;
+        return NONE;
       }
-      String lockFileMoveMode = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_FILE_MOVE_MODE);
+      String lockFileMoveMode = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_FILE_MOVE_MODE).toUpperCase();
       return valueOf(lockFileMoveMode);
     }
   }
@@ -830,10 +830,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private LocalTableLock acquireLockForFileMove(LoadTableDesc loadTableWork) throws HiveException {
     LockFileMoveMode mode = LockFileMoveMode.fromConf(conf);
 
-    if (mode == LockFileMoveMode.none) {
+    if (mode == LockFileMoveMode.NONE) {
       return new LocalTableLock();
     }
-    if (mode == LockFileMoveMode.dp) {
+    if (mode == LockFileMoveMode.DP) {
       if (loadTableWork.getDPCtx() == null) {
         return new LocalTableLock();
       }
