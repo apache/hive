@@ -983,11 +983,12 @@ public class TypeCheckProcFactory<T> {
 
           final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
               exprFactory.getTypeInfo(columnChild).getTypeName().toLowerCase());
-          T newChild = interpretNodeAsConstant(colTypeInfo, constChild);
+          T newChild = interpretNodeAsConstant(colTypeInfo, constChild,
+              exprFactory.isEqualFunction(fi));
           if (newChild == null) {
             // non-interpretable as target type...
             if (!exprFactory.isNSCompareFunction(fi)) {
-             return exprFactory.createBooleanConstantExpr(null);
+              return exprFactory.createBooleanConstantExpr(null);
             }
           } else {
             children.set(constIdx, newChild);
@@ -1206,6 +1207,12 @@ public class TypeCheckProcFactory<T> {
 
     @VisibleForTesting
     protected T interpretNodeAsConstant(PrimitiveTypeInfo targetType, T constChild) throws SemanticException {
+      // k in (v1, v2) can be treated as k = v1 or k = v2, so isEqual set to true.
+      return interpretNodeAsConstant(targetType, constChild, true);
+    }
+
+    private T interpretNodeAsConstant(PrimitiveTypeInfo targetType, T constChild,
+        boolean isEqual) throws SemanticException {
       if (exprFactory.isConstantExpr(constChild)) {
         // Try to narrow type of constant
         Object constVal = exprFactory.getConstantValue(constChild);
@@ -1216,7 +1223,7 @@ public class TypeCheckProcFactory<T> {
         PrimitiveTypeInfo sourceType =
             (PrimitiveTypeInfo) exprFactory.getTypeInfo(constChild);
         Object newConst = exprFactory.interpretConstantAsPrimitive(
-            targetType, constVal, sourceType);
+            targetType, constVal, sourceType, isEqual);
         if (newConst == null) {
           return null;
         }

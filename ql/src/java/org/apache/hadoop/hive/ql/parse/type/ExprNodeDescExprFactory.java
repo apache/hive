@@ -339,7 +339,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    */
   @Override
   protected Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType, Object constantValue,
-      PrimitiveTypeInfo sourceType) {
+      PrimitiveTypeInfo sourceType, boolean isEqual) {
     if (constantValue instanceof Number || constantValue instanceof String) {
       try {
         PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
@@ -359,6 +359,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
           return HiveDecimal.create(constantValue.toString());
         }
       } catch (NumberFormatException | ArithmeticException nfe) {
+        if (!isEqual && (constantValue instanceof Number ||
+            NumberUtils.isNumber(constantValue.toString()))) {
+          // The target is a number, if constantToInterpret can be interpreted as a number,
+          // return the constantToInterpret directly, GenericUDFBaseCompare will do
+          // type conversion for us.
+          return constantValue;
+        }
         LOG.trace("Failed to narrow type of constant", nfe);
         return null;
       }

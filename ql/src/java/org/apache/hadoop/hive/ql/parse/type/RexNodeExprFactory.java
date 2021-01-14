@@ -325,7 +325,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType, Object constantValue,
-      PrimitiveTypeInfo sourceType) {
+      PrimitiveTypeInfo sourceType, boolean isEqual) {
     // Extract string value if necessary
     Object constantToInterpret = constantValue;
     if (constantValue instanceof NlsString) {
@@ -352,6 +352,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           return decimal != null ? decimal.bigDecimalValue() : null;
         }
       } catch (NumberFormatException | ArithmeticException nfe) {
+        if (!isEqual && (constantToInterpret instanceof Number ||
+            NumberUtils.isNumber(constantToInterpret.toString()))) {
+          // The target is a number, if constantToInterpret can be interpreted as a number,
+          // return the constantToInterpret directly, GenericUDFBaseCompare will do
+          // type conversion for us.
+          return constantToInterpret;
+        }
         LOG.trace("Failed to narrow type of constant", nfe);
         return null;
       }
