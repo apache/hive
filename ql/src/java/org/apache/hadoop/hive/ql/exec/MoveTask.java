@@ -785,16 +785,16 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     private Optional<HiveLockObject> lock;
     private HiveLock lockObj;
 
-    public LocalTableLock(Optional<HiveLockObject> lock) throws LockException {
-
-      this.lock = lock;
-      if(!lock.isPresent()) {
-        return;
-      }
+    public LocalTableLock(HiveLockObject lock) throws LockException {
+      this.lock = Optional.of(lock);
       LOG.info("LocalTableLock; locking: " + lock);
       HiveLockManager lockMgr = context.getHiveTxnManager().getLockManager();
-      lockObj = lockMgr.lock(lock.get(), HiveLockMode.SEMI_SHARED, true);
+      lockObj = lockMgr.lock(lock, HiveLockMode.SEMI_SHARED, true);
       LOG.info("LocalTableLock; locked: " + lock);
+    }
+
+    public LocalTableLock() {
+      lock = Optional.empty();
     }
 
     @Override
@@ -831,22 +831,22 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     LockFileMoveMode mode = LockFileMoveMode.fromConf(conf);
 
     if (mode == LockFileMoveMode.none) {
-      return new LocalTableLock(Optional.empty());
+      return new LocalTableLock();
     }
     if (mode == LockFileMoveMode.dp) {
       if (loadTableWork.getDPCtx() == null) {
-        return new LocalTableLock(Optional.empty());
+        return new LocalTableLock();
       }
     }
 
     WriteEntity output = context.getLoadTableOutputMap().get(loadTableWork);
     List<HiveLockObj> lockObjects = context.getOutputLockObjects().get(output);
     if (lockObjects == null) {
-      return new LocalTableLock(Optional.empty());
+      return new LocalTableLock();
     }
     TableDesc table = loadTableWork.getTable();
     if(table == null) {
-      return new LocalTableLock(Optional.empty());
+      return new LocalTableLock();
     }
 
     Hive db = getHive();
@@ -866,12 +866,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         HiveLockMode l = hiveLockObj.getMode();
         if (l == HiveLockMode.EXCLUSIVE || l == HiveLockMode.SEMI_SHARED) {
           // no need to lock ; already owns a more powerful one
-          return new LocalTableLock(Optional.empty());
+          return new LocalTableLock();
         }
       }
     }
 
-    return new LocalTableLock(Optional.of(lock));
+    return new LocalTableLock(lock);
   }
 
   private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {
