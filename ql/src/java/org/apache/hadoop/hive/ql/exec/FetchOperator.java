@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -465,12 +466,14 @@ public class FetchOperator implements Serializable {
   }
 
   private String makeInputString(List<Path> dirs) {
-    if (dirs == null || dirs.isEmpty()) return "";
-    StringBuffer str = new StringBuffer(StringUtils.escapeString(dirs.get(0).toString()));
-    for(int i = 1; i < dirs.size(); i++) {
-      str.append(",").append(StringUtils.escapeString(dirs.get(i).toString()));
+    if (dirs == null || dirs.isEmpty()) {
+      return "";
     }
-    return str.toString();
+    // remove duplicates
+    return dirs.stream()
+        .map(dir -> StringUtils.escapeString(dir.toString()))
+        .distinct()
+        .collect(Collectors.joining(","));
 
   }
   private ValidWriteIdList extractValidWriteIdList() {
