@@ -1470,7 +1470,9 @@ public class DagUtils {
         TezConfigurationFactory
             .wrapWithJobConf(hiveConf, skipAMConf ? findDefaults.negate() : null);
 
-    conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    if (conf.get("mapred.output.committer.class") == null) {
+      conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    }
 
     conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
     conf.setBoolean("mapred.committer.job.task.cleanup.needed", false);
