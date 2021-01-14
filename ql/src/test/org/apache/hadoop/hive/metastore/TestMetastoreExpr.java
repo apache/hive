@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -136,26 +139,26 @@ public class TestMetastoreExpr {
 
     ExprBuilder e = new ExprBuilder(tblName);
 
-    checkExpr(3, dbName, tblName, e.val(0).intCol("p2").pred(">", 2).build());
-    checkExpr(3, dbName, tblName, e.intCol("p2").val(0).pred("<", 2).build());
-    checkExpr(1, dbName, tblName, e.intCol("p2").val(0).pred(">", 2).build());
-    checkExpr(2, dbName, tblName, e.val(31).intCol("p2").pred("<=", 2).build());
-    checkExpr(3, dbName, tblName, e.val("p11").strCol("p1").pred(">", 2).build());
+    checkExpr(3, dbName, tblName, e.val(0).intCol("p2").pred(">", 2).build(), tbl);
+    checkExpr(3, dbName, tblName, e.intCol("p2").val(0).pred("<", 2).build(), tbl);
+    checkExpr(1, dbName, tblName, e.intCol("p2").val(0).pred(">", 2).build(), tbl);
+    checkExpr(2, dbName, tblName, e.val(31).intCol("p2").pred("<=", 2).build(), tbl);
+    checkExpr(3, dbName, tblName, e.val("p11").strCol("p1").pred(">", 2).build(), tbl);
     checkExpr(1, dbName, tblName, e.val("p11").strCol("p1").pred(">", 2)
-        .intCol("p2").val(31).pred("<", 2).pred("and", 2).build());
+        .intCol("p2").val(31).pred("<", 2).pred("and", 2).build(), tbl);
     checkExpr(3, dbName, tblName,
-        e.val(32).val(31).intCol("p2").val(false).pred("between", 4).build());
+        e.val(32).val(31).intCol("p2").val(false).pred("between", 4).build(), tbl);
 
     addPartition(client, tbl, Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "36"), "part5");
     addPartition(client, tbl, Lists.newArrayList("p16", "__HIVE_DEFAULT_PARTITION__"), "part6");
 
     // Apply isnull and instr (not supported by pushdown) via name filtering.
     checkExpr(5, dbName, tblName, e.val("p").strCol("p1")
-        .fn("instr", TypeInfoFactory.intTypeInfo, 2).val(0).pred("<=", 2).build());
-    checkExpr(1, dbName, tblName, e.intCol("p2").pred("isnull", 1).build());
-    checkExpr(1, dbName, tblName, e.val("__HIVE_DEFAULT_PARTITION__").intCol("p2").pred("=", 2).build());
-    checkExpr(5, dbName, tblName, e.intCol("p1").pred("isnotnull", 1).build());
-    checkExpr(5, dbName, tblName, e.val("__HIVE_DEFAULT_PARTITION__").strCol("p1").pred("!=", 2).build());
+        .fn("instr", TypeInfoFactory.intTypeInfo, 2).val(0).pred("<=", 2).build(), tbl);
+    checkExpr(1, dbName, tblName, e.intCol("p2").pred("isnull", 1).build(), tbl);
+    checkExpr(1, dbName, tblName, e.val("__HIVE_DEFAULT_PARTITION__").intCol("p2").pred("=", 2).build(), tbl);
+    checkExpr(5, dbName, tblName, e.intCol("p1").pred("isnotnull", 1).build(), tbl);
+    checkExpr(5, dbName, tblName, e.val("__HIVE_DEFAULT_PARTITION__").strCol("p1").pred("!=", 2).build(), tbl);
 
     // Cannot deserialize => throw the specific exception.
     try {
@@ -167,7 +170,7 @@ public class TestMetastoreExpr {
 
     // Invalid expression => throw some exception, but not incompatible metastore.
     try {
-      checkExpr(-1, dbName, tblName, e.val(31).intCol("p3").pred(">", 2).build());
+      checkExpr(-1, dbName, tblName, e.val(31).intCol("p3").pred(">", 2).build(), tbl);
       fail("Should have thrown");
     } catch (IMetaStoreClient.IncompatibleMetastoreException ignore) {
       fail("Should not have thrown IncompatibleMetastoreException");
@@ -176,12 +179,27 @@ public class TestMetastoreExpr {
   }
 
   public void checkExpr(int numParts,
-      String dbName, String tblName, ExprNodeGenericFuncDesc expr) throws Exception {
+      String dbName, String tblName, ExprNodeGenericFuncDesc expr, Table t) throws Exception {
     List<Partition> parts = new ArrayList<Partition>();
     client.listPartitionsByExpr(dbName, tblName,
         SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
+
+    // check with partition spec as well
+    PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName,
+            ByteBuffer.wrap(SerializationUtilities.serializeExpressionToKryo(expr)));
+    req.setMaxParts((short)-1);
+    req.setId(t.getId());
+
+    List<PartitionSpec> partSpec = new ArrayList<>();
+    client.listPartitionsSpecByExpr(req, partSpec);
+    int partSpecSize = 0;
+    if(!partSpec.isEmpty()) {
+      partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
+    }
+    assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
   }
+
 
   /**
    * Helper class for building an expression.

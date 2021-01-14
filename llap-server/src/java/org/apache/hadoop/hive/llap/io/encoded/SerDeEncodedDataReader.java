@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.SchemaAwareCacheKey;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
@@ -58,9 +59,11 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.encoded.VectorDeserializeOrcWriter.AsyncCallback;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -70,6 +73,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -217,12 +221,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     fs = split.getPath().getFileSystem(daemonConf);
-    fileKey = determineFileId(fs, split,
+    PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
+    fileKey = determineCacheKey(fs, split, partitionDesc,
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
         !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
-        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, parts) : null;
+        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
     this.sourceInputFormat = sourceInputFormat;
     this.sourceSerDe = sourceSerDe;
     this.reporter = reporter;
@@ -1424,8 +1429,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     ReaderWithOffsets offsetReader = null;
     @SuppressWarnings("rawtypes")
     RecordReader sourceReader = sourceInputFormat.getRecordReader(split, jobConf, reporter);
+    Path path = split.getPath().getFileSystem(daemonConf).makeQualified(split.getPath());
+    PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     try {
-      offsetReader = createOffsetReader(sourceReader);
+      offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc());
       sourceReader = null;
     } finally {
       if (sourceReader != null) {
@@ -1633,16 +1640,20 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader) {
+  private ReaderWithOffsets createOffsetReader(RecordReader<?, ?> sourceReader, TableDesc tableDesc)
+      throws IOException {
+    int headerCount = Utilities.getHeaderCount(tableDesc);
+    int footerCount = Utilities.getFooterCount(tableDesc, jobConf);
     if (LlapIoImpl.LOG.isDebugEnabled()) {
-      LlapIoImpl.LOG.debug("Using " + sourceReader.getClass().getSimpleName() + " to read data");
+      LlapIoImpl.LOG.debug("Using {} to read data with skip.header.line.count {} and skip.footer.line.count {}",
+          sourceReader.getClass().getSimpleName(), headerCount, footerCount);
     }
     // Handle the special cases here. Perhaps we could have a more general structure, or even
     // a configurable set (like storage handlers), but for now we only have one.
     if (isLrrEnabled && sourceReader instanceof LineRecordReader) {
-      return LineRrOffsetReader.create((LineRecordReader)sourceReader);
+      return LineRrOffsetReader.create((LineRecordReader)sourceReader, jobConf, headerCount, footerCount);
     }
-    return new PassThruOffsetReader(sourceReader);
+    return new PassThruOffsetReader(sourceReader, jobConf, headerCount, footerCount);
   }
 
   private static String[] extractHosts(FileSplit split, boolean isInMemory) throws IOException {
@@ -1711,13 +1722,14 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineFileId(FileSystem fs, FileSplit split,
+  private static Object determineCacheKey(FileSystem fs, FileSplit split, PartitionDesc partitionDesc,
       boolean allowSynthetic, boolean checkDefaultFs, boolean forceSynthetic) throws IOException {
     /* TODO: support this optionally? this is not OrcSplit, but we could add a custom split.
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) return fileKey; */
     LlapIoImpl.LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs, forceSynthetic);
+    Object fileId = HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs, forceSynthetic);
+    return SchemaAwareCacheKey.buildCacheKey(fileId, LlapHiveUtils.getSchemaHash(partitionDesc));
   }
 
   @Override

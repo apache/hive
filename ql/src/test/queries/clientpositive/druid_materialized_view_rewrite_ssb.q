@@ -1,3 +1,4 @@
+--! qt:disabled:unstable; fails sometimes HIVE-23450
 --! qt:dataset:part
 
 set hive.support.concurrency=true;

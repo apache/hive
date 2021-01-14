@@ -1,0 +1,34 @@
+PREHOOK: query: EXPLAIN
+SHOW PARTITIONS srcpart
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: EXPLAIN
+SHOW PARTITIONS srcpart
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      limit: -1
+      table: srcpart
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW PARTITIONS srcpart
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: SHOW PARTITIONS srcpart
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+ds=2008-04-09/hr=11
+ds=2008-04-09/hr=12

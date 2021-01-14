@@ -79,6 +79,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -192,6 +193,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -326,6 +328,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -494,6 +497,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -542,6 +546,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -727,6 +732,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -854,6 +860,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1003,6 +1010,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1142,6 +1150,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1267,7 +1276,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1288,7 +1297,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1392,6 +1401,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1503,6 +1513,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1625,6 +1636,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1672,7 +1684,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1798,6 +1810,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -1923,6 +1936,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2036,6 +2050,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2170,6 +2185,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2338,6 +2354,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2386,6 +2403,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2571,6 +2589,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2698,6 +2717,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2847,6 +2867,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -2986,6 +3007,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -3099,6 +3121,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -3210,6 +3233,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -3332,6 +3356,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -3379,7 +3404,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -3505,6 +3530,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a

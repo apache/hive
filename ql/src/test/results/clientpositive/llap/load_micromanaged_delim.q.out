@@ -1,0 +1,192 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@delim_table_ext
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@delim_table_ext
+PREHOOK: query: describe formatted delim_table_ext
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@delim_table_ext
+POSTHOOK: query: describe formatted delim_table_ext
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@delim_table_ext
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+safety              	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	1                   
+	totalSize           	52                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\t                  
+	serialization.format	\t                  
+PREHOOK: query: SELECT * FROM delim_table_ext
+PREHOOK: type: QUERY
+PREHOOK: Input: default@delim_table_ext
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM delim_table_ext
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@delim_table_ext
+#### A masked pattern was here ####
+1	Acura	4
+2	Toyota	3
+3	Tesla	5
+4	Honda	5
+11	Mazda	2
+PREHOOK: query: CREATE TABLE delim_table_micro(id INT, name STRING, safety INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@delim_table_micro
+POSTHOOK: query: CREATE TABLE delim_table_micro(id INT, name STRING, safety INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@delim_table_micro
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@delim_table_micro
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@delim_table_micro
+PREHOOK: query: describe formatted delim_table_micro
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@delim_table_micro
+POSTHOOK: query: describe formatted delim_table_micro
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@delim_table_micro
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+safety              	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	52                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\t                  
+	serialization.format	\t                  
+PREHOOK: query: SELECT * FROM delim_table_micro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@delim_table_micro
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM delim_table_micro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@delim_table_micro
+#### A masked pattern was here ####
+1	Acura	4
+2	Toyota	3
+3	Tesla	5
+4	Honda	5
+11	Mazda	2
+PREHOOK: query: CREATE TRANSACTIONAL TABLE delim_table_trans(id INT, name STRING, safety INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@delim_table_trans
+POSTHOOK: query: CREATE TRANSACTIONAL TABLE delim_table_trans(id INT, name STRING, safety INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@delim_table_trans
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@delim_table_trans
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@delim_table_trans
+PREHOOK: query: describe formatted delim_table_trans
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@delim_table_trans
+POSTHOOK: query: describe formatted delim_table_trans
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@delim_table_trans
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+safety              	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	52                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\t                  
+	serialization.format	\t                  
+PREHOOK: query: SELECT * FROM delim_table_trans
+PREHOOK: type: QUERY
+PREHOOK: Input: default@delim_table_trans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM delim_table_trans
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@delim_table_trans
+#### A masked pattern was here ####
+1	Acura	4
+2	Toyota	3
+3	Tesla	5
+4	Honda	5
+11	Mazda	2

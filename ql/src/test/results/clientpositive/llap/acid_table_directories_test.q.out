@@ -1,0 +1,188 @@
+PREHOOK: query: create table srctbl (key char(1), value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srctbl
+POSTHOOK: query: create table srctbl (key char(1), value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srctbl
+PREHOOK: query: insert into table srctbl values ('d', 4), ('e', 5), ('f', 6), ('i', 9), ('j', 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@srctbl
+POSTHOOK: query: insert into table srctbl values ('d', 4), ('e', 5), ('f', 6), ('i', 9), ('j', 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@srctbl
+POSTHOOK: Lineage: srctbl.key SCRIPT []
+POSTHOOK: Lineage: srctbl.value SCRIPT []
+PREHOOK: query: select * from srctbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srctbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from srctbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srctbl
+#### A masked pattern was here ####
+d	4
+e	5
+f	6
+i	9
+j	10
+PREHOOK: query: drop table if exists acidparttbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists acidparttbl
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidparttbl
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidparttbl
+PREHOOK: query: insert into table acidparttbl partition(p=100) values ('a', 1), ('b', 2), ('c', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acidparttbl@p=100
+POSTHOOK: query: insert into table acidparttbl partition(p=100) values ('a', 1), ('b', 2), ('c', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acidparttbl@p=100
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).key SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).value SCRIPT []
+PREHOOK: query: select p, key, value from acidparttbl order by p, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidparttbl
+PREHOOK: Input: default@acidparttbl@p=100
+#### A masked pattern was here ####
+POSTHOOK: query: select p, key, value from acidparttbl order by p, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidparttbl
+POSTHOOK: Input: default@acidparttbl@p=100
+#### A masked pattern was here ####
+100	a	1
+100	b	2
+100	c	3
+PREHOOK: query: insert overwrite table acidparttbl partition(p=100) select key, value from srctbl where key in ('d', 'e', 'f')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srctbl
+PREHOOK: Output: default@acidparttbl@p=100
+POSTHOOK: query: insert overwrite table acidparttbl partition(p=100) select key, value from srctbl where key in ('d', 'e', 'f')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srctbl
+POSTHOOK: Output: default@acidparttbl@p=100
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).key SIMPLE [(srctbl)srctbl.FieldSchema(name:key, type:char(1), comment:null), ]
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).value SIMPLE [(srctbl)srctbl.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: select p, key, value from acidparttbl order by p, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidparttbl
+PREHOOK: Input: default@acidparttbl@p=100
+#### A masked pattern was here ####
+POSTHOOK: query: select p, key, value from acidparttbl order by p, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidparttbl
+POSTHOOK: Input: default@acidparttbl@p=100
+#### A masked pattern was here ####
+100	d	4
+100	e	5
+100	f	6
+PREHOOK: query: insert into table acidparttbl partition(p) values ('g', 7, 100), ('h', 8, 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acidparttbl
+POSTHOOK: query: insert into table acidparttbl partition(p) values ('g', 7, 100), ('h', 8, 200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acidparttbl
+POSTHOOK: Output: default@acidparttbl@p=100
+POSTHOOK: Output: default@acidparttbl@p=200
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).key SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).value SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=200).key SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=200).value SCRIPT []
+PREHOOK: query: select p, key, value from acidparttbl order by p, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidparttbl
+PREHOOK: Input: default@acidparttbl@p=100
+PREHOOK: Input: default@acidparttbl@p=200
+#### A masked pattern was here ####
+POSTHOOK: query: select p, key, value from acidparttbl order by p, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidparttbl
+POSTHOOK: Input: default@acidparttbl@p=100
+POSTHOOK: Input: default@acidparttbl@p=200
+#### A masked pattern was here ####
+100	d	4
+100	e	5
+100	f	6
+100	g	7
+200	h	8
+PREHOOK: query: insert overwrite table acidparttbl partition(p) values ('i', 9, 100), ('j', 10, 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acidparttbl
+POSTHOOK: query: insert overwrite table acidparttbl partition(p) values ('i', 9, 100), ('j', 10, 200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acidparttbl
+POSTHOOK: Output: default@acidparttbl@p=100
+POSTHOOK: Output: default@acidparttbl@p=200
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).key SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=100).value SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=200).key SCRIPT []
+POSTHOOK: Lineage: acidparttbl PARTITION(p=200).value SCRIPT []
+PREHOOK: query: select p, key, value from acidparttbl order by p, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidparttbl
+PREHOOK: Input: default@acidparttbl@p=100
+PREHOOK: Input: default@acidparttbl@p=200
+#### A masked pattern was here ####
+POSTHOOK: query: select p, key, value from acidparttbl order by p, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidparttbl
+POSTHOOK: Input: default@acidparttbl@p=100
+POSTHOOK: Input: default@acidparttbl@p=200
+#### A masked pattern was here ####
+100	i	9
+200	j	10
+#### A masked pattern was here ####
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+#### A masked pattern was here ####
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID BASE DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+### ACID DELTA DIR ###
+PREHOOK: query: drop table acidparttbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acidparttbl
+PREHOOK: Output: default@acidparttbl
+POSTHOOK: query: drop table acidparttbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acidparttbl
+POSTHOOK: Output: default@acidparttbl
+PREHOOK: query: drop table srctbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@srctbl
+PREHOOK: Output: default@srctbl
+POSTHOOK: query: drop table srctbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@srctbl
+POSTHOOK: Output: default@srctbl

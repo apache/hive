@@ -75,6 +75,7 @@ import org.apache.hadoop.metrics2.lib.MutableCounterLong;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.security.ssl.SSLFactory;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
@@ -83,6 +84,7 @@ import org.apache.tez.runtime.library.common.security.SecureShuffleUtils;
 import org.apache.tez.runtime.library.common.shuffle.orderedgrouped.ShuffleHeader;
 import org.apache.tez.runtime.library.common.sort.impl.TezIndexRecord;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -429,6 +431,10 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   public int getPort() {
     return port;
+  }
+
+  public boolean isDirWatcherEnabled() {
+    return dirWatcher != null;
   }
 
   /**
@@ -804,11 +810,18 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       try {
         populateHeaders(mapIds, jobId, dagId, user, reduceId,
             response, keepAliveParam, mapOutputInfoMap);
-      } catch(IOException e) {
+      } catch (DiskErrorException e) { // fatal error: fetcher should be aware of that
+        LOG.error("Shuffle error in populating headers (fatal: DiskErrorException):", e);
+        String errorMessage = getErrorMessage(e);
+        // custom message, might be noticed by fetchers
+        // it should reuse the current response object, as headers have been already set for it
+        sendFakeShuffleHeaderWithError(ctx, "DISK_ERROR_EXCEPTION: " + errorMessage, response);
+        return;
+      } catch (IOException e) {
         ch.write(response);
         LOG.error("Shuffle error in populating headers :", e);
         String errorMessage = getErrorMessage(e);
-        sendError(ctx,errorMessage , INTERNAL_SERVER_ERROR);
+        sendError(ctx, errorMessage, INTERNAL_SERVER_ERROR);
         return;
       }
       ch.write(response);
@@ -1041,22 +1054,37 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       return writeFuture;
     }
 
-    protected void sendError(ChannelHandlerContext ctx,
-        HttpResponseStatus status) {
+    protected void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
       sendError(ctx, "", status);
     }
 
-    protected void sendError(ChannelHandlerContext ctx, String message,
-        HttpResponseStatus status) {
+    protected void sendError(ChannelHandlerContext ctx, String message, HttpResponseStatus status) {
       HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
-      response.headers().add(CONTENT_TYPE, "text/plain; charset=UTF-8");
+      sendError(ctx, message, response);
+    }
+
+    protected void sendError(ChannelHandlerContext ctx, String message, HttpResponse response) {
+      sendError(ctx, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8), response);
+    }
+
+    private void sendFakeShuffleHeaderWithError(ChannelHandlerContext ctx, String message,
+        HttpResponse response) throws IOException {
+      ShuffleHeader header = new ShuffleHeader(message, -1, -1, -1);
+      DataOutputBuffer out = new DataOutputBuffer();
+      header.write(out);
+
+      sendError(ctx, wrappedBuffer(out.getData(), 0, out.getLength()), response);
+    }
+
+    protected void sendError(ChannelHandlerContext ctx, ChannelBuffer content,
+        HttpResponse response) {
+      response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
       // Put shuffle version into http header
       response.headers().add(ShuffleHeader.HTTP_HEADER_NAME,
           ShuffleHeader.DEFAULT_HTTP_HEADER_NAME);
       response.headers().add(ShuffleHeader.HTTP_HEADER_VERSION,
           ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION);
-      response.setContent(
-        ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8));
+      response.setContent(content);
 
       // Close the connection as soon as the error message is sent.
       ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);

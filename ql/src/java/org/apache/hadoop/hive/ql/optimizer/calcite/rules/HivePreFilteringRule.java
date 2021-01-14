@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -204,13 +205,13 @@ public class HivePreFilteringRule extends RelOptRule {
       for (RexNode conjunction : conjunctions) {
         // We do not know what it is, we bail out for safety
         if (!(conjunction instanceof RexCall) || !HiveCalciteUtil.isDeterministic(conjunction)) {
-          return new ArrayList<>();
+          return Collections.emptyList();
         }
         RexCall conjCall = (RexCall) conjunction;
         Set<Integer> refs = HiveCalciteUtil.getInputRefs(conjCall);
         if (refs.size() != 1) {
           // We do not know what it is, we bail out for safety
-          return new ArrayList<>();
+          return Collections.emptyList();
         }
         RexNode ref = rexBuilder.makeInputRef(input, refs.iterator().next());
         String stringRef = ref.toString();
@@ -227,7 +228,7 @@ public class HivePreFilteringRule extends RelOptRule {
       // If we did not add any factor or there are no common factors, we can
       // bail out
       if (refsInAllOperands.isEmpty()) {
-        return new ArrayList<>();
+        return Collections.emptyList();
       }
     }
 

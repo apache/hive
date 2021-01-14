@@ -1,3 +1,5 @@
+--! qt:disabled:disabled in HIVE-20715
+
 --! qt:dataset:src
 
 SELECT histogram_numeric(cast(substr(src.value,5) AS double), 2) FROM src;

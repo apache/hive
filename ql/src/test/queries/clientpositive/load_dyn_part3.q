@@ -1,3 +1,4 @@
+--! qt:disabled:Disabled in HIVE-20662. Enable in HIVE-20663
 --! qt:dataset:srcpart
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS

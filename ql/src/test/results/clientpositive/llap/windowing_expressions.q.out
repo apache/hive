@@ -1,0 +1,711 @@
+PREHOOK: query: drop table over10k_n22
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table over10k_n22
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table over10k_n22(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal(4,2),  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k_n22
+POSTHOOK: query: create table over10k_n22(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal(4,2),  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over10k_n22
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n22
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k_n22
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n22
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k_n22
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
+max(p_retailprice) over w1 - min(p_retailprice) over w1 = last_value(p_retailprice) over w1 - first_value(p_retailprice) over w1
+from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
+max(p_retailprice) over w1 - min(p_retailprice) over w1 = last_value(p_retailprice) over w1 - first_value(p_retailprice) over w1
+from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	2	true	true
+Manufacturer#1	1173.15	2	true	true
+Manufacturer#1	1414.42	28	true	true
+Manufacturer#1	1602.59	6	true	true
+Manufacturer#1	1632.66	42	true	true
+Manufacturer#1	1753.76	34	true	true
+Manufacturer#2	1690.68	14	true	true
+Manufacturer#2	1698.66	25	true	true
+Manufacturer#2	1701.6	18	true	true
+Manufacturer#2	1800.7	40	true	true
+Manufacturer#2	2031.98	2	true	true
+Manufacturer#3	1190.27	14	true	true
+Manufacturer#3	1337.29	45	true	true
+Manufacturer#3	1410.39	19	true	true
+Manufacturer#3	1671.68	17	true	true
+Manufacturer#3	1922.98	1	true	true
+Manufacturer#4	1206.26	27	true	true
+Manufacturer#4	1290.35	12	true	true
+Manufacturer#4	1375.42	39	true	true
+Manufacturer#4	1620.67	10	true	true
+Manufacturer#4	1844.92	7	true	true
+Manufacturer#5	1018.1	46	true	true
+Manufacturer#5	1464.48	23	true	true
+Manufacturer#5	1611.66	6	true	true
+Manufacturer#5	1788.73	2	true	true
+Manufacturer#5	1789.69	31	true	true
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+rank() over (distribute by p_mfgr sort by p_retailprice) as r,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) -5 as s1
+from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+rank() over (distribute by p_mfgr sort by p_retailprice) as r,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) -5 as s1
+from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	2	1	1173.15	1168.15
+Manufacturer#1	1173.15	2	1	2346.3	2341.3
+Manufacturer#1	1414.42	28	3	3760.7200000000003	3755.7200000000003
+Manufacturer#1	1602.59	6	4	5363.31	5358.31
+Manufacturer#1	1632.66	42	5	6995.97	6990.97
+Manufacturer#1	1753.76	34	6	8749.73	8744.73
+Manufacturer#2	1690.68	14	1	1690.68	1685.68
+Manufacturer#2	1698.66	25	2	3389.34	3384.34
+Manufacturer#2	1701.6	18	3	5090.9400000000005	5085.9400000000005
+Manufacturer#2	1800.7	40	4	6891.64	6886.64
+Manufacturer#2	2031.98	2	5	8923.62	8918.62
+Manufacturer#3	1190.27	14	1	1190.27	1185.27
+Manufacturer#3	1337.29	45	2	2527.56	2522.56
+Manufacturer#3	1410.39	19	3	3937.95	3932.95
+Manufacturer#3	1671.68	17	4	5609.63	5604.63
+Manufacturer#3	1922.98	1	5	7532.610000000001	7527.610000000001
+Manufacturer#4	1206.26	27	1	1206.26	1201.26
+Manufacturer#4	1290.35	12	2	2496.6099999999997	2491.6099999999997
+Manufacturer#4	1375.42	39	3	3872.0299999999997	3867.0299999999997
+Manufacturer#4	1620.67	10	4	5492.7	5487.7
+Manufacturer#4	1844.92	7	5	7337.62	7332.62
+Manufacturer#5	1018.1	46	1	1018.1	1013.1
+Manufacturer#5	1464.48	23	2	2482.58	2477.58
+Manufacturer#5	1611.66	6	3	4094.24	4089.24
+Manufacturer#5	1788.73	2	4	5882.969999999999	5877.969999999999
+Manufacturer#5	1789.69	31	5	7672.66	7667.66
+PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n22 order by s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+POSTHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n22 order by s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+alice allen	400	76.31	337.23
+alice allen	451	73.63	429.38
+alice allen	462	66.89	425.87
+alice allen	472	89.57	408.09
+alice allen	484	75.98	430.98
+alice allen	501	2.79	473.94
+alice allen	501	64.24	471.67
+alice allen	509	21.45	488.7
+alice brown	302	43.9	280.3
+alice brown	324	93.15	319.53
+alice brown	332	13.93	316.18
+alice brown	337	97.94	292.07
+alice brown	346	71.31	246.25
+alice brown	376	3.37	375.77
+alice brown	381	95.46	289.01
+alice brown	399	58.89	381.43
+alice brown	409	1.98	328.7
+alice brown	425	30.3	391.45
+alice brown	452	49.57	412.95
+alice brown	471	94.48	465.91
+alice brown	492	5.74	460.11
+alice brown	499	62.51	418.88
+alice carson	268	27.96	197.68
+alice carson	316	46.9	288.37
+alice carson	318	56.1	300.49
+alice carson	376	87.28	339.18
+alice carson	380	64.2	340.66
+alice carson	390	56.02	385.69
+alice carson	404	12.6	328.94
+alice carson	427	39.03	415.5
+alice carson	473	87.78	373.55
+alice carson	508	47.35	463.51
+alice davidson	270	60.39	202.25
+alice davidson	272	45.18	262.73
+alice davidson	287	90.86	187.29001
+alice davidson	298	53.84	242.49
+alice davidson	308	8.66	215.20999
+alice davidson	321	73.47	261.16
+alice davidson	328	70.35	231.20999
+alice davidson	384	71.97	357.79
+alice davidson	402	78.24	364.38
+alice davidson	408	8.38	347.39
+alice davidson	408	71.2	331.46
+alice davidson	423	6.34	379.13
+alice davidson	431	60.34	375.19
+alice davidson	437	62.0	380.76
+alice davidson	445	92.22	406.65
+alice davidson	448	99.98	357.6
+alice davidson	479	24.54	431.76
+alice davidson	487	69.8	399.93
+alice ellison	256	38.16	166.31
+alice ellison	274	74.24	178.19
+alice ellison	296	91.53	208.67
+alice ellison	313	36.06	257.74
+alice ellison	320	54.25	309.71
+alice ellison	331	70.9	319.71
+alice ellison	335	92.23	312.1
+alice ellison	343	3.03	275.87
+alice ellison	354	68.23	320.59
+alice ellison	355	63.57	260.63
+alice ellison	374	75.1	310.54
+alice ellison	403	73.95	315.77
+alice ellison	405	23.05	399.6
+alice ellison	482	56.14	472.31
+alice ellison	490	77.51	473.66
+alice falkner	280	18.44	227.7
+alice falkner	311	97.31	246.45
+alice falkner	323	90.25	246.19
+alice falkner	339	57.14	286.88
+alice falkner	342	90.76	336.73
+alice falkner	345	44.77	258.58002
+alice falkner	371	17.6	316.43
+alice falkner	382	19.32	366.19
+alice falkner	382	51.87	334.19
+alice falkner	389	32.7	334.83002
+alice falkner	393	7.23	293.11
+alice falkner	393	85.1	377.27
+alice falkner	452	89.86	366.1
+alice falkner	455	32.16	449.22
+alice falkner	477	18.84	378.93
+alice falkner	481	18.45	453.02
+alice falkner	500	51.04	417.44
+alice garcia	263	95.11	231.76
+alice garcia	299	15.56	274.92
+alice garcia	309	18.88	300.05
+alice garcia	325	52.15	297.22
+alice garcia	331	46.88	257.52
+alice garcia	366	11.33	269.1
+alice garcia	379	17.78	378.11
+alice garcia	388	51.6	363.71
+alice garcia	427	11.13	333.26
+alice garcia	446	38.83	392.47
+alice garcia	446	48.45	442.29
+alice garcia	459	1.29	445.45
+alice garcia	486	97.12	446.29
+alice hernandez	270	36.09	176.53
+alice hernandez	290	47.23	250.39
+alice hernandez	296	88.54	217.41
+alice hernandez	320	48.24	261.37
+alice hernandez	323	44.93	306.09
+PREHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n22 order by s, i, i - lead(i, 3, 0) over (partition by si order by i,s)limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n22 order by s, i, i - lead(i, 3, 0) over (partition by si order by i,s)limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+alice allen	65545	-15
+alice allen	65557	-38
+alice allen	65600	-29
+alice allen	65609	-5
+alice allen	65662	-18
+alice allen	65670	-15
+alice allen	65720	-15
+alice allen	65758	-18
+alice brown	65569	-13
+alice brown	65570	-45
+alice brown	65666	-22
+alice brown	65667	-7
+alice brown	65673	-8
+alice brown	65696	-16
+alice brown	65704	-6
+alice brown	65707	-16
+alice brown	65708	-15
+alice brown	65711	-10
+alice brown	65733	-22
+alice brown	65779	-10
+alice brown	65781	65781
+alice brown	65790	65790
+alice carson	65545	-44
+alice carson	65559	-56
+alice carson	65559	-15
+alice carson	65565	-22
+alice carson	65576	-26
+alice carson	65695	-30
+alice carson	65710	-6
+alice carson	65713	-27
+alice carson	65747	-6
+alice carson	65785	65785
+alice davidson	65544	-14
+alice davidson	65547	-41
+alice davidson	65554	-26
+alice davidson	65560	-4
+alice davidson	65563	-60
+alice davidson	65590	-22
+alice davidson	65596	-15
+alice davidson	65631	-18
+alice davidson	65641	-9
+alice davidson	65676	-20
+alice davidson	65677	-37
+alice davidson	65677	-23
+alice davidson	65690	-31
+alice davidson	65707	-29
+alice davidson	65740	-11
+alice davidson	65742	-42
+alice davidson	65747	-29
+alice davidson	65791	65791
+alice ellison	65537	-10
+alice ellison	65544	-3
+alice ellison	65557	-8
+alice ellison	65572	-19
+alice ellison	65612	-23
+alice ellison	65677	-37
+alice ellison	65681	-9
+alice ellison	65698	-16
+alice ellison	65699	-12
+alice ellison	65713	-6
+alice ellison	65730	-6
+alice ellison	65741	-35
+alice ellison	65744	-8
+alice ellison	65745	-9
+alice ellison	65787	65787
+alice falkner	65596	-49
+alice falkner	65597	-13
+alice falkner	65611	-17
+alice falkner	65622	-11
+alice falkner	65669	-16
+alice falkner	65685	-14
+alice falkner	65690	-23
+alice falkner	65699	-9
+alice falkner	65709	-14
+alice falkner	65710	-19
+alice falkner	65715	-6
+alice falkner	65718	-20
+alice falkner	65722	-15
+alice falkner	65752	-34
+alice falkner	65773	-8
+alice falkner	65775	65775
+alice falkner	65785	65785
+alice garcia	65573	-5
+alice garcia	65613	-5
+alice garcia	65623	-16
+alice garcia	65630	-8
+alice garcia	65674	-30
+alice garcia	65675	-19
+alice garcia	65712	-17
+alice garcia	65725	-29
+alice garcia	65734	-12
+alice garcia	65744	-15
+alice garcia	65746	-15
+alice garcia	65746	-6
+alice garcia	65759	-9
+alice hernandez	65543	-19
+alice hernandez	65545	-8
+alice hernandez	65569	-25
+alice hernandez	65603	-6
+alice hernandez	65633	-30
+PREHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n22 order by s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+POSTHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n22 order by s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+alice allen	400	29.44	357.33
+alice allen	451	15.46	450.04
+alice allen	462	22.19	437.29
+alice allen	472	18.39	446.17
+alice allen	484	49.73	452.96
+alice allen	501	20.39	474.45
+alice allen	501	37.79	463.24
+alice allen	509	23.59	477.92
+alice brown	302	25.14	298.32
+alice brown	324	41.46	279.78
+alice brown	332	30.84	287.05
+alice brown	337	5.92	298.95
+alice brown	346	1.29	315.67
+alice brown	376	37.3	358.09
+alice brown	381	21.15	353.29
+alice brown	399	7.4	381.37
+alice brown	409	44.05	381.92
+alice brown	425	21.48	416.11
+alice brown	452	6.97	451.73
+alice brown	471	1.09	428.46
+alice brown	492	45.75	457.44
+alice brown	499	33.57	451.0
+alice carson	268	46.87	NULL
+alice carson	316	5.41	268.85
+alice carson	318	46.5	282.3
+alice carson	376	1.57	327.3
+alice carson	380	32.67	371.19
+alice carson	390	43.55	373.81
+alice carson	404	13.47	371.33
+alice carson	427	42.02	400.78
+alice carson	473	12.26	445.88
+alice carson	508	6.26	498.74
+alice davidson	270	2.8	NULL
+alice davidson	272	43.54	234.94
+alice davidson	287	1.94	241.16
+alice davidson	298	17.23	NULL
+alice davidson	308	40.43	291.3
+alice davidson	321	21.01	286.47
+alice davidson	328	15.13	317.85
+alice davidson	384	31.52	374.19
+alice davidson	402	46.91	396.27
+alice davidson	408	10.74	389.95
+alice davidson	408	41.52	388.77
+alice davidson	423	13.02	378.39
+alice davidson	431	33.03	402.71
+alice davidson	437	47.25	405.83
+alice davidson	445	9.3	421.17
+alice davidson	448	40.87	446.87
+alice davidson	479	1.17	450.09
+alice davidson	487	8.8	477.18
+alice ellison	256	45.71	NULL
+alice ellison	274	45.57	NULL
+alice ellison	296	31.03	249.39
+alice ellison	313	43.73	264.84000000000003
+alice ellison	320	49.6	306.35
+alice ellison	331	29.9	305.08
+alice ellison	335	5.81	320.45
+alice ellison	343	27.11	335.73
+alice ellison	354	13.68	340.87
+alice ellison	355	35.92	336.11
+alice ellison	374	42.03	338.4
+alice ellison	403	12.56	396.39
+alice ellison	405	20.36	369.84000000000003
+alice ellison	482	13.5	473.05
+alice ellison	490	34.31	442.93
+alice falkner	280	49.8	NULL
+alice falkner	311	22.2	297.53
+alice falkner	323	41.9	283.12
+alice falkner	339	48.11	304.3
+alice falkner	342	31.92	336.37
+alice falkner	345	4.55	328.34
+alice falkner	371	5.39	370.25
+alice falkner	382	5.2	334.86
+alice falkner	382	41.64	341.05
+alice falkner	389	30.11	342.25
+alice falkner	393	27.44	354.96
+alice falkner	393	41.29	345.05
+alice falkner	452	20.17	446.84
+alice falkner	455	49.76	411.42
+alice falkner	477	28.11	443.36
+alice falkner	481	23.51	446.49
+alice falkner	500	37.85	462.02
+alice garcia	263	9.55	NULL
+alice garcia	299	42.31	256.34000000000003
+alice garcia	309	21.44	274.72
+alice garcia	325	19.93	307.14
+alice garcia	331	44.27	282.95
+alice garcia	366	1.29	334.93
+alice garcia	379	3.21	368.27
+alice garcia	388	23.49	364.37
+alice garcia	427	45.24	414.1
+alice garcia	446	7.18	413.61
+alice garcia	446	39.71	416.12
+alice garcia	459	6.36	437.26
+alice garcia	486	17.66	454.52
+alice hernandez	270	47.64	NULL
+alice hernandez	290	41.78	262.16
+alice hernandez	296	49.58	266.28
+alice hernandez	320	41.45	278.38
+alice hernandez	323	42.75	319.19
+PREHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n22 order by s, lag(s, 3, 'fred') over (partition by f order by b) limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+POSTHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n22 order by s, lag(s, 3, 'fred') over (partition by f order by b) limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n22
+#### A masked pattern was here ####
+alice allen	fred
+alice allen	fred
+alice allen	fred
+alice allen	fred
+alice allen	fred
+alice allen	fred
+alice allen	fred
+alice allen	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice brown	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice carson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice davidson	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice ellison	fred
+alice falkner	alice underhill
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred
+alice falkner	fred underhill
+alice garcia	david garcia
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice garcia	fred
+alice hernandez	fred
+alice hernandez	fred
+alice hernandez	fred
+alice hernandez	fred
+alice hernandez	fred
+PREHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1753.76
+Manufacturer#1	1632.66
+Manufacturer#1	1602.59
+Manufacturer#1	1414.42
+Manufacturer#2	1800.7
+Manufacturer#2	1690.68
+Manufacturer#2	2031.98
+Manufacturer#2	1701.6
+Manufacturer#3	1410.39
+Manufacturer#3	1671.68
+Manufacturer#3	1190.27
+Manufacturer#3	1337.29
+Manufacturer#4	1375.42
+Manufacturer#5	1788.73
+Manufacturer#1	1173.15
+Manufacturer#1	1173.15
+Manufacturer#2	1698.66
+Manufacturer#3	1922.98
+Manufacturer#4	1844.92
+Manufacturer#4	1620.67
+Manufacturer#4	1206.26
+Manufacturer#4	1290.35
+Manufacturer#5	1018.1
+Manufacturer#5	1464.48
+Manufacturer#5	1789.69
+Manufacturer#5	1611.66
+PREHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1753.76
+Manufacturer#1	1693.21
+Manufacturer#1	1663.0033333333333
+Manufacturer#1	1540.54
+Manufacturer#1	1467.062
+Manufacturer#1	1458.2883333333332
+Manufacturer#2	1800.7
+Manufacturer#2	1745.69
+Manufacturer#2	1841.1200000000001
+Manufacturer#2	1805.505
+Manufacturer#2	1784.7240000000002
+Manufacturer#3	1922.98
+Manufacturer#3	1666.685
+Manufacturer#3	1668.3500000000001
+Manufacturer#3	1548.83
+Manufacturer#3	1506.522
+Manufacturer#4	1844.92
+Manufacturer#4	1610.17
+Manufacturer#4	1613.67
+Manufacturer#4	1511.8175
+Manufacturer#4	1467.5240000000001
+Manufacturer#5	1018.1
+Manufacturer#5	1241.29
+Manufacturer#5	1424.0900000000001
+Manufacturer#5	1515.25
+Manufacturer#5	1534.532
+PREHOOK: query: create table t1_n142 (a1 int, b1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n142
+POSTHOOK: query: create table t1_n142 (a1 int, b1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n142
+PREHOOK: query: create table t2_n83 (a1 int, b1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n83
+POSTHOOK: query: create table t2_n83 (a1 int, b1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n83
+PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k_n22) tt insert overwrite table t1_n142 select * insert overwrite table t2_n83 select *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n22
+PREHOOK: Output: default@t1_n142
+PREHOOK: Output: default@t2_n83
+POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k_n22) tt insert overwrite table t1_n142 select * insert overwrite table t2_n83 select *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n22
+POSTHOOK: Output: default@t1_n142
+POSTHOOK: Output: default@t2_n83
+POSTHOOK: Lineage: t1_n142.a1 SCRIPT [(over10k_n22)over10k_n22.FieldSchema(name:t, type:tinyint, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:si, type:smallint, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:i, type:int, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:b, type:bigint, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:f, type:float, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:d, type:double, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:bo, type:boolean, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:s, type:string, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:ts, type:timestamp, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k_n22)over10k_n22.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t1_n142.b1 SIMPLE [(over10k_n22)over10k_n22.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n83.a1 SCRIPT [(over10k_n22)over10k_n22.FieldSchema(name:t, type:tinyint, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:si, type:smallint, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:i, type:int, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:b, type:bigint, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:f, type:float, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:d, type:double, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:bo, type:boolean, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:s, type:string, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:ts, type:timestamp, comment:null), (over10k_n22)over10k_n22.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k_n22)over10k_n22.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t2_n83.b1 SIMPLE [(over10k_n22)over10k_n22.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from t1_n142 order by a1, b1 limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n142
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_n142 order by a1, b1 limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n142
+#### A masked pattern was here ####
+65536	alice ichabod
+65536	alice robinson
+65536	bob robinson
+PREHOOK: query: select * from t2_n83 order by a1, b1 limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n83
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t2_n83 order by a1, b1 limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n83
+#### A masked pattern was here ####
+65536	alice ichabod
+65536	alice robinson
+65536	bob robinson
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)
+from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
+order by p_mfgr, p_retailprice, p_size
+limit 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)
+from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
+order by p_mfgr, p_retailprice, p_size
+limit 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	2	true
+Manufacturer#1	1173.15	2	true
+Manufacturer#1	1414.42	28	true
+Manufacturer#1	1602.59	6	true
+Manufacturer#1	1632.66	42	true
+Manufacturer#1	1753.76	34	true
+Manufacturer#2	1690.68	14	true
+Manufacturer#2	1698.66	25	true
+Manufacturer#2	1701.6	18	true
+Manufacturer#2	1800.7	40	true
+Manufacturer#2	2031.98	2	true

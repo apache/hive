@@ -23,9 +23,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -38,9 +40,7 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -48,12 +48,17 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -67,11 +72,8 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
@@ -79,8 +81,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 /**
@@ -88,13 +90,13 @@ import org.junit.Test;
  *
  */
 public class TestHive {
-  protected Hive hm;
-  protected HiveConf hiveConf;
+  protected static Hive hm;
+  protected static HiveConf hiveConf;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
 
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = new HiveConf(TestHive.class);
     hm = setUpImpl(hiveConf);
   }
 
@@ -116,8 +118,8 @@ public class TestHive {
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     try {
 
       // disable trash
@@ -685,7 +687,7 @@ public class TestHive {
     try {
 
       Table table = createPartitionedTable(dbName, tableName);
-      table.getParameters().put("auto.purge", "true");
+      table.getParameters().put("skip.trash", "true");
       hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
@@ -771,12 +773,32 @@ public class TestHive {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to create parition for table: " + tableName, false);
       }
+      checkPartitionsConsistency(tbl);
+
       hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed");
       throw e;
     }
+  }
+
+  private void checkPartitionsConsistency(Table tbl) throws Exception {
+    Set<Partition> allParts = hm.getAllPartitionsOf(tbl);
+    List<Partition> allParts2 = hm.getPartitions(tbl);
+    assertEquals("inconsistent results: getAllPartitionsOf/getPartitions", allParts, new HashSet<>(allParts2));
+
+    Partition singlePart = allParts2.get(0);
+    Partition singlePart2 = hm.getPartition(tbl, singlePart.getSpec(), false);
+    assertEquals("inconsistent results: getPartition", singlePart, singlePart2);
+
+    List<ExprNodeDesc> exprs = Lists.newArrayList(new ExprNodeConstantDesc(true), new ExprNodeConstantDesc(true));
+    ExprNodeGenericFuncDesc trueExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", exprs);
+    List<Partition> allParts3 = new ArrayList<Partition>();
+    hm.getPartitionsByExpr(tbl, trueExpr, hm.getConf(), allParts3);
+
+    assertEquals("inconsistent results: getPartitionsByExpr", allParts2, allParts3);
+
   }
 
   @Test

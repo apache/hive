@@ -515,10 +515,11 @@ public class RelOptHiveTable implements RelOptTable {
       computePartitionList(hiveConf, null, new HashSet<Integer>());
     }
 
-    ColumnStatsList colStatsCached = colStatsCache.get(partitionList.getKey());
+    String partitionListKey = partitionList.getKey().orElse(null);
+    ColumnStatsList colStatsCached = colStatsCache.get(partitionListKey);
     if (colStatsCached == null) {
       colStatsCached = new ColumnStatsList();
-      colStatsCache.put(partitionList.getKey(), colStatsCached);
+      colStatsCache.put(partitionListKey, colStatsCached);
     }
 
     // 2. Obtain Col Stats for Non Partition Cols
@@ -751,7 +752,7 @@ public class RelOptHiveTable implements RelOptTable {
   }
 
   public String getPartitionListKey() {
-    return partitionList != null ? partitionList.getKey() : null;
+    return partitionList != null ? partitionList.getKey().orElse(null) : null;
   }
 
 }

@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.hbase.HBaseSerDeParameters;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroLazyObjectInspector;
 import org.apache.hadoop.hive.serde2.avro.AvroSchemaRetriever;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;

@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -242,6 +241,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);
+    addToAliasFilterTags(alias, value, nextKeyGroup);
     if (nextKeyGroup) {
       //assert this.nextGroupStorage[alias].size() == 0;
       this.nextGroupStorage[alias].addRow(value);

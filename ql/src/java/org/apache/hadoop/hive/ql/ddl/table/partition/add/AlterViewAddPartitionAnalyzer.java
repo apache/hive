@@ -60,8 +60,8 @@ public class AlterViewAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer 
   protected void postProcess(TableName tableName, Table table, AlterTableAddPartitionDesc desc, Task<DDLWork> ddlTask)
       throws SemanticException {
     // Compile internal query to capture underlying table partition dependencies
-    String dbTable = HiveUtils.unparseIdentifier(tableName.getDb()) + "." +
-        HiveUtils.unparseIdentifier(tableName.getTable());
+    String dbTable = HiveUtils.unparseIdentifier(tableName.getDb(), conf) + "." +
+        HiveUtils.unparseIdentifier(tableName.getTable(), conf);
 
     StringBuilder where = new StringBuilder();
     boolean firstOr = true;
@@ -79,7 +79,7 @@ public class AlterViewAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer 
         } else {
           where.append(" AND ");
         }
-        where.append(HiveUtils.unparseIdentifier(entry.getKey()));
+        where.append(HiveUtils.unparseIdentifier(entry.getKey(), conf));
         where.append(" = '");
         where.append(HiveUtils.escapeString(entry.getValue()));
         where.append("'");

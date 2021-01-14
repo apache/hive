@@ -29,6 +29,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.nodes.PersistentNode;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.retry.RetryOneTime;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -337,6 +338,9 @@ public class ZooKeeperHiveHelper {
     }
     if (maxRetries > 0) {
       builder = builder.retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries));
+    } else {
+      // Retry policy is mandatory
+      builder = builder.retryPolicy(new RetryOneTime(1000));
     }
     if (zooKeeperAclProvider != null) {
       builder = builder.aclProvider(zooKeeperAclProvider);

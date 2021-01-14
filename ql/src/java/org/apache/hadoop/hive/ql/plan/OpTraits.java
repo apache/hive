@@ -26,16 +26,13 @@ public class OpTraits {
   private List<List<String>> sortColNames;
   private int numBuckets;
   private int numReduceSinks;
-  private int bucketingVersion;
 
   public OpTraits(List<List<String>> bucketColNames, int numBuckets,
-      List<List<String>> sortColNames, int numReduceSinks,
-                  int bucketingVersion) {
+      List<List<String>> sortColNames, int numReduceSinks) {
     this.bucketColNames = bucketColNames;
     this.numBuckets = numBuckets;
     this.sortColNames = sortColNames;
     this.numReduceSinks = numReduceSinks;
-    this.bucketingVersion = bucketingVersion;
   }
 
   public List<List<String>> getBucketColNames() {
@@ -71,17 +68,9 @@ public class OpTraits {
     return this.numReduceSinks;
   }
 
-  public void setBucketingVersion(int bucketingVersion) {
-    this.bucketingVersion = bucketingVersion;
-  }
-
-  public int getBucketingVersion() {
-    return bucketingVersion;
-  }
-
   @Override
   public String toString() {
     return "{ bucket column names: " + bucketColNames + "; sort column names: "
-        + sortColNames + "; bucket count: " + numBuckets + "; bucketing version: " + bucketingVersion + " }";
+        + sortColNames + "; bucket count: " + numBuckets + "}";
   }
 }

@@ -1,0 +1,237 @@
+PREHOOK: query: CREATE TABLE fact_daily_n0(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: CREATE TABLE fact_daily_n0(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fact_daily_n0
+PREHOOK: query: CREATE TABLE fact_tz(x int, y STRING, z STRING) PARTITIONED BY (ds STRING, hr STRING)	
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fact_tz
+POSTHOOK: query: CREATE TABLE fact_tz(x int, y STRING, z STRING) PARTITIONED BY (ds STRING, hr STRING)	
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fact_tz
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='1')	
+SELECT key, value, value FROM src WHERE key=484
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@fact_tz@ds=1/hr=1
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='1')	
+SELECT key, value, value FROM src WHERE key=484
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@fact_tz@ds=1/hr=1
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='2')	
+SELECT key, value, value FROM src WHERE key=278 or key=86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@fact_tz@ds=1/hr=2
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='2')	
+SELECT key, value, value FROM src WHERE key=278 or key=86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@fact_tz@ds=1/hr=2
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='3')	
+SELECT key, value, value FROM src WHERE key=238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@fact_tz@ds=1/hr=3
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='3')	
+SELECT key, value, value FROM src WHERE key=238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@fact_tz@ds=1/hr=3
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####
+PREHOOK: query: alter table fact_daily_n0 skewed by (x) on (484,238)
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: alter table fact_daily_n0 skewed by (x) on (484,238)
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Output: default@fact_daily_n0
+PREHOOK: query: ALTER TABLE fact_daily_n0 SET TBLPROPERTIES('EXTERNAL'='TRUE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: ALTER TABLE fact_daily_n0 SET TBLPROPERTIES('EXTERNAL'='TRUE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Output: default@fact_daily_n0
+PREHOOK: query: ALTER TABLE fact_daily_n0 ADD PARTITION (ds='1')	
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: ALTER TABLE fact_daily_n0 ADD PARTITION (ds='1')	
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@fact_daily_n0
+POSTHOOK: Output: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Output: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
+POSTHOOK: Output: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted fact_daily_n0 PARTITION (ds = '1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@fact_daily_n0
+POSTHOOK: query: describe formatted fact_daily_n0 PARTITION (ds = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@fact_daily_n0
+# col_name            	data_type           	comment             
+x                   	int                 	                    
+y                   	string              	                    
+z                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	fact_daily_n0       	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	3                   
+	totalSize           	117                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[x]                 	 
+Skewed Values:      	[[238], [484]]      	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[238]=/fact_tz/ds=1/x=238, [484]=/fact_tz/ds=1/x=484, [HIVE_DEFAULT_LIST_BUCKETING_KEY]=/fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME}	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM fact_daily_n0 WHERE ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Input: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM fact_daily_n0 WHERE ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+238	val_238	val_238	1
+238	val_238	val_238	1
+278	val_278	val_278	1
+278	val_278	val_278	1
+484	val_484	val_484	1
+86	val_86	val_86	1
+PREHOOK: query: explain extended SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Input: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `x`
+FROM `default`.`fact_daily_n0`
+WHERE `ds` = '1' AND `x` <> 86
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+            properties:
+              column.name.delimiter ,
+              columns x,y,z
+              columns.types int:string:string
+#### A masked pattern was here ####
+              name default.fact_daily_n0
+              partition_columns ds
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                EXTERNAL TRUE
+                bucketing_version 2
+                column.name.delimiter ,
+                columns x,y,z
+                columns.comments 
+                columns.types int:string:string
+#### A masked pattern was here ####
+                name default.fact_daily_n0
+                partition_columns ds
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily_n0
+            name: default.fact_daily_n0
+      Processor Tree:
+        TableScan
+          alias: fact_daily_n0
+          filterExpr: ((ds = '1') and (x <> 86)) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (x <> 86) (type: boolean)
+            Select Operator
+              expressions: x (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Input: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
+#### A masked pattern was here ####
+238
+238
+278
+278
+484

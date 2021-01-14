@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -127,9 +128,14 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           dbPattern, tablePattern, foundTableMetas.size());
 
         for (TableMeta tableMeta : foundTableMetas) {
-          Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-          if (partitionDiscoveryEnabled(table.getParameters()) && !tblBeingReplicatedInto(table.getParameters())) {
-            candidateTables.add(table);
+          try {
+            Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
+            if (partitionDiscoveryEnabled(table.getParameters()) && !tblBeingReplicatedInto(table.getParameters())) {
+              candidateTables.add(table);
+            }
+          } catch (NoSuchObjectException e) {
+            // Ignore dropped tables after fetching TableMeta.
+            LOG.warn(e.getMessage());
           }
         }
         if (candidateTables.isEmpty()) {
@@ -146,7 +152,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
         CountDownLatch countDownLatch = new CountDownLatch(candidateTables.size());
         LOG.info("Found {} candidate tables for partition discovery", candidateTables.size());
-        setupMsckConf();
+        setupMsckPathInvalidation();
+        Configuration msckConf = Msck.getMsckConf(conf);
         for (Table table : candidateTables) {
           qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
           long retentionSeconds = getRetentionPeriodInSeconds(table);
@@ -155,7 +162,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
             null, null, true, true, true, retentionSeconds);
-          executorService.submit(new MsckThread(msckInfo, conf, qualifiedTableName, countDownLatch));
+          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
         }
         countDownLatch.await();
         executorService.shutdownNow();
@@ -196,7 +203,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     return retentionSeconds;
   }
 
-  private void setupMsckConf() {
+  private void setupMsckPathInvalidation() {
     // if invalid partition directory appears, we just skip and move on. We don't want partition management to throw
     // when invalid path is encountered as these are background threads. We just want to skip and move on. Users will
     // have to fix the invalid paths via external means.

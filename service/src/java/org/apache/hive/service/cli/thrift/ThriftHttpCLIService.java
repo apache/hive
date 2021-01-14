@@ -18,12 +18,14 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -31,6 +33,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -44,6 +47,8 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -52,6 +57,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
@@ -64,6 +70,11 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   public ThriftHttpCLIService(CLIService cliService, Runnable oomHook) {
     super(cliService, ThriftHttpCLIService.class.getSimpleName());
     this.oomHook = oomHook;
+  }
+
+  @Override
+  protected HiveServer2TransportMode getTransportMode() {
+    return HiveServer2TransportMode.http;
   }
 
   /**
@@ -126,6 +137,14 @@ public class ThriftHttpCLIService extends ThriftCLIService {
               ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname 
               + " Not configured for SSL connection");
         }
+        String keyStoreType = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_TYPE).trim();
+        if (keyStoreType.isEmpty()) {
+          keyStoreType = KeyStore.getDefaultType();
+        }
+        String keyStoreAlgorithm = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+        if (keyStoreAlgorithm.isEmpty()) {
+          keyStoreAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
+        }
         SslContextFactory sslContextFactory = new SslContextFactory();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
@@ -134,6 +153,8 @@ public class ThriftHttpCLIService extends ThriftCLIService {
             + Arrays.toString(sslContextFactory.getExcludeProtocols()));
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
+        sslContextFactory.setKeyStoreType(keyStoreType);
+        sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
         connector = new ServerConnector(server, sslContextFactory, http);
       } else {
         connector = new ServerConnector(server, http);
@@ -186,6 +207,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         server.setHandler(context);
       }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+      constrainHttpMethods(context, false);
 
       // TODO: check defaults: maxTimeout, keepalive, maxBodySize,
       // bodyRecieveDuration, etc.
@@ -261,6 +283,28 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       }
     }
     return httpPath;
+  }
+
+  public  void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
+    Constraint c = new Constraint();
+    c.setAuthenticate(true);
+
+    ConstraintMapping cmt = new ConstraintMapping();
+    cmt.setConstraint(c);
+    cmt.setMethod("TRACE");
+    cmt.setPathSpec("/*");
+
+    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+    if (!allowOptionsMethod) {
+      ConstraintMapping cmo = new ConstraintMapping();
+      cmo.setConstraint(c);
+      cmo.setMethod("OPTIONS");
+      cmo.setPathSpec("/*");
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt, cmo});
+    } else {
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt});
+    }
+    ctxHandler.setSecurityHandler(securityHandler);
   }
 
   @Override

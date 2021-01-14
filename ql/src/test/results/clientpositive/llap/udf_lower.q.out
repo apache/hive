@@ -1,0 +1,53 @@
+PREHOOK: query: DESCRIBE FUNCTION lower
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION lower
+POSTHOOK: type: DESCFUNCTION
+lower(str) - Returns str with all characters changed to lowercase
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED lower
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED lower
+POSTHOOK: type: DESCFUNCTION
+lower(str) - Returns str with all characters changed to lowercase
+Synonyms: lcase
+Example:
+  > SELECT lower('Facebook') FROM src LIMIT 1;
+  'facebook'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (UDFToDouble(key) = 86.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 86.0D) (type: boolean)
+            Select Operator
+              expressions: 'abc 123' (type: string), 'ABC 123' (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+abc 123	ABC 123

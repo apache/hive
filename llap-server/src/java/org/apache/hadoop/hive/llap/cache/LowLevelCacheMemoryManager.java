@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
@@ -162,6 +164,14 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     } while (!usedMemory.compareAndSet(usedMem, usedMem - evicted));
     metrics.incrCacheCapacityUsed(-evicted);
     return evicted;
+  }
+
+  public void notifyProactiveEvictionMark() {
+    if (evictor != null) {
+      if (evictor instanceof ProactiveEvictingCachePolicy) {
+        ((ProactiveEvictingCachePolicy) evictor).notifyProactiveEvictionMark();
+      }
+    }
   }
 
   @VisibleForTesting

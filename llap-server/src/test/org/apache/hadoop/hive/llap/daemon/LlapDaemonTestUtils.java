@@ -28,12 +28,23 @@ public class LlapDaemonTestUtils {
   private LlapDaemonTestUtils() {}
 
   public static SubmitWorkRequestProto buildSubmitProtoRequest(int fragmentNumber,
+                                                               String appId, int dagId, int vId, String dagName,
+                                                               int dagStartTime, int attemptStartTime, int numSelfAndUpstreamTasks, int numSelfAndUpstreamComplete,
+                                                               int withinDagPriority, Credentials credentials) throws IOException {
+    return buildSubmitProtoRequest(fragmentNumber, 0,
+            appId, dagId, vId, dagName, dagStartTime, attemptStartTime,
+            numSelfAndUpstreamTasks, numSelfAndUpstreamComplete,
+            withinDagPriority, credentials);
+  }
+
+  public static SubmitWorkRequestProto buildSubmitProtoRequest(int fragmentNumber,
+      int attemptNumber,
       String appId, int dagId, int vId, String dagName,
       int dagStartTime, int attemptStartTime, int numSelfAndUpstreamTasks, int numSelfAndUpstreamComplete,
       int withinDagPriority, Credentials credentials) throws IOException {
     return SubmitWorkRequestProto
         .newBuilder()
-        .setAttemptNumber(0)
+        .setAttemptNumber(attemptNumber)
         .setFragmentNumber(fragmentNumber)
         .setWorkSpec(
             LlapDaemonProtocolProtos.VertexOrBinary.newBuilder().setVertex(

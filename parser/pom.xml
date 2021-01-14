@@ -49,14 +49,19 @@
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
-      <version>${antlr.version}</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
-      <artifactId>ST4</artifactId>
-      <version>${ST4.version}</version>
+      <artifactId>stringtemplate</artifactId>
+      <version>3.2.1</version>
+      <scope>test</scope>
     </dependency>
-    <!-- test inter-project -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -78,6 +83,7 @@
           <sourceDirectory>${basedir}/src/java</sourceDirectory>
           <includes>
             <include>**/HiveLexer.g</include>
+            <include>**/HiveLexerStandard.g</include>
             <include>**/HiveParser.g</include>
             <include>**/HintParser.g</include>
           </includes>

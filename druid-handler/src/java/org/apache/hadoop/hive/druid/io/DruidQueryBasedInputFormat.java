@@ -19,28 +19,24 @@ package org.apache.hadoop.hive.druid.io;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.druid.java.util.http.client.Request;
 import org.apache.druid.query.BaseQuery;
 import org.apache.druid.query.LocatedSegmentDescriptor;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.SegmentDescriptor;
 import org.apache.druid.query.scan.ScanQuery;
-import org.apache.druid.query.select.PagingSpec;
-import org.apache.druid.query.select.SelectQuery;
 import org.apache.druid.query.spec.MultipleSpecificSegmentSpec;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
-import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.serde.DruidGroupByQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidScanQueryRecordReader;
-import org.apache.hadoop.hive.druid.serde.DruidSelectQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
@@ -88,8 +84,6 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       return new DruidTopNQueryRecordReader();
     case Query.GROUP_BY:
       return new DruidGroupByQueryRecordReader();
-    case Query.SELECT:
-      return new DruidSelectQueryRecordReader();
     case Query.SCAN:
       return new DruidScanQueryRecordReader();
     default:
@@ -152,9 +146,6 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     case Query.TOPN:
     case Query.GROUP_BY:
       return new HiveDruidSplit[] {new HiveDruidSplit(druidQuery, paths[0], new String[] {address})};
-    case Query.SELECT:
-      SelectQuery selectQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, SelectQuery.class);
-      return distributeSelectQuery(address, selectQuery, paths[0]);
     case Query.SCAN:
       ScanQuery scanQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, ScanQuery.class);
       return distributeScanQuery(address, scanQuery, paths[0]);
@@ -163,54 +154,13 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     }
   }
 
-  /* New method that distributes the Select query by creating splits containing
-   * information about different Druid nodes that have the data for the given
-   * query. */
-  private static HiveDruidSplit[] distributeSelectQuery(String address, SelectQuery query, Path dummyPath)
-      throws IOException {
-    // If it has a limit, we use it and we do not distribute the query
-    final boolean isFetch = query.getContextBoolean(DruidConstants.DRUID_QUERY_FETCH, false);
-    if (isFetch) {
-      return new HiveDruidSplit[] {new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query),
-          dummyPath,
-          new String[] {address})};
-    }
-
-    final List<LocatedSegmentDescriptor> segmentDescriptors = fetchLocatedSegmentDescriptors(address, query);
-
-    // Create one input split for each segment
-    final int numSplits = segmentDescriptors.size();
-    final HiveDruidSplit[] splits = new HiveDruidSplit[segmentDescriptors.size()];
-    for (int i = 0; i < numSplits; i++) {
-      final LocatedSegmentDescriptor locatedSD = segmentDescriptors.get(i);
-      final String[] hosts = new String[locatedSD.getLocations().size()];
-      for (int j = 0; j < locatedSD.getLocations().size(); j++) {
-        hosts[j] = locatedSD.getLocations().get(j).getHost();
-      }
-      // Create partial Select query
-      final SegmentDescriptor
-          newSD =
-          new SegmentDescriptor(locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
-      //@TODO This is fetching all the rows at once from broker or multiple historical nodes
-      // Move to use scan query to avoid GC back pressure on the nodes
-      // https://issues.apache.org/jira/browse/HIVE-17627
-      final SelectQuery
-          partialQuery =
-          query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(Lists.newArrayList(newSD)))
-              .withPagingSpec(PagingSpec.newSpec(Integer.MAX_VALUE));
-      splits[i] =
-          new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath, hosts);
-    }
-    return splits;
-  }
-
   /* New method that distributes the Scan query by creating splits containing
    * information about different Druid nodes that have the data for the given
    * query. */
   private static HiveDruidSplit[] distributeScanQuery(String address, ScanQuery query, Path dummyPath)
       throws IOException {
     // If it has a limit, we use it and we do not distribute the query
-    final boolean isFetch = query.getLimit() < Long.MAX_VALUE;
+    final boolean isFetch = query.getScanRowsLimit() < Long.MAX_VALUE;
     if (isFetch) {
       return new HiveDruidSplit[] {new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query),
           dummyPath,

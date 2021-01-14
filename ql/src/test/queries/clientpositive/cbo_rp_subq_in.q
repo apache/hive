@@ -1,3 +1,4 @@
+--! qt:disabled:disabled for a along time - along with the other cbo_rb_subq tests
 --! qt:dataset:src_cbo
 --! qt:dataset:part
 --! qt:dataset:lineitem

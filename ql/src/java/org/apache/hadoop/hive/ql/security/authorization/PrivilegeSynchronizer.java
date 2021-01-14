@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -43,6 +46,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * PrivilegeSynchronizer defines a thread to synchronize privileges from
  * external authorizer to Hive metastore.
@@ -57,7 +61,8 @@ public class PrivilegeSynchronizer implements Runnable {
   private PolicyProviderContainer policyProviderContainer;
 
   public PrivilegeSynchronizer(LeaderLatch privilegeSynchronizerLatch,
-      PolicyProviderContainer policyProviderContainer, HiveConf hiveConf) {
+      PolicyProviderContainer policyProviderContainer,
+      HiveConf hiveConf) {
     this.hiveConf = new HiveConf(hiveConf);
     this.hiveConf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(), DefaultMetaStoreFilterHookImpl.class.getName());
     try {
@@ -78,6 +83,9 @@ public class PrivilegeSynchronizer implements Runnable {
     for (Map.Entry<String, Map<HiveResourceACLs.Privilege, HiveResourceACLs.AccessResult>> principalAcls
         : principalAclsMap.entrySet()) {
       String principal = principalAcls.getKey();
+      int[] columnPrivilegeBits = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      boolean columnUpdateFlag = false;
+
       for (Map.Entry<HiveResourceACLs.Privilege, HiveResourceACLs.AccessResult> acl : principalAcls.getValue()
           .entrySet()) {
         if (acl.getValue() == HiveResourceACLs.AccessResult.ALLOWED) {
@@ -95,15 +103,26 @@ public class PrivilegeSynchronizer implements Runnable {
                         (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case COLUMN:
-            privBag.addToPrivileges(
-                new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, columnName),
-                    principal, principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
-                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
+
+            int privilegeBit = acl.getKey().ordinal();
+            columnPrivilegeBits[privilegeBit] = 1;
+            columnUpdateFlag = true;
+
             break;
           default:
             throw new RuntimeException("Get unknown object type " + objectType);
           }
         }
+      }
+      if (columnUpdateFlag) {
+        String columnPrivilegeBitsString =
+            StringUtils.join(Arrays.asList(ArrayUtils.toObject(columnPrivilegeBits)), " ");
+        privBag.addToPrivileges(
+            new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, columnName),
+                principal, principalType, new PrivilegeGrantInfo(columnPrivilegeBitsString,
+                    (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
+
+        columnUpdateFlag = false;
       }
     }
   }

@@ -18,9 +18,9 @@
 package org.apache.hadoop.hive.cli;
 
 
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -331,6 +331,7 @@ public class TestCliDriverMethods {
 
     sessionState.err = new SessionStream(data);
     sessionState.out = new SessionStream(System.out);
+    sessionState.setIsQtestLogging(true);
     try {
       CliSessionState.start(sessionState);
       CliDriver cliDriver = new CliDriver();

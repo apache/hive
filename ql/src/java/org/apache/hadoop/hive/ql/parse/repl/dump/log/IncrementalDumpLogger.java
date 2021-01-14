@@ -23,7 +23,12 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.IncrementalDumpEvent;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
-public class IncrementalDumpLogger extends ReplLogger {
+/**
+ * IncrementalDumpLogger.
+ *
+ * Repllogger for incremental dump.
+ **/
+public class IncrementalDumpLogger extends ReplLogger<String> {
   private String dbName;
   private String dumpDir;
   private long estimatedNumEvents;

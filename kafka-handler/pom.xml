@@ -30,7 +30,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <kafka.version>2.3.0</kafka.version>
   </properties>
 
   <artifactId>kafka-handler</artifactId>
@@ -39,6 +38,12 @@
 
   <dependencies>
     <!-- Intra-project -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-common</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -64,9 +69,17 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <exclusions>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -104,27 +117,25 @@
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka_2.11</artifactId>
+      <artifactId>kafka_2.12</artifactId>
       <version>${kafka.version}</version>
       <classifier>test</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka_2.11</artifactId>
+      <artifactId>kafka_2.12</artifactId>
       <version>${kafka.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
-      <version>3.5.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.30</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -133,6 +144,10 @@
       <version>5.4.0</version>
       <scope>test</scope>
       <exclusions>
+        <exclusion>
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.apache.avro</groupId>
           <artifactId>avro</artifactId>
@@ -162,7 +177,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>${maven.shade.plugin.version}</version>
             <executions>
               <execution>
                 <phase>package</phase>

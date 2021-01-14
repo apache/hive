@@ -1,0 +1,201 @@
+PREHOOK: query: DESCRIBE FUNCTION substr
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION substr
+POSTHOOK: type: DESCFUNCTION
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstr(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED substr
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED substr
+POSTHOOK: type: DESCFUNCTION
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstr(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+Synonyms: substring, mid
+pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.
+Example:
+   > SELECT substr('Facebook', 5) FROM src LIMIT 1;
+  'book'
+  > SELECT substr('Facebook', -5) FROM src LIMIT 1;
+  'ebook'
+  > SELECT substr('Facebook', 5, 1) FROM src LIMIT 1;
+  'b'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSubstr
+Function type:BUILTIN
+PREHOOK: query: SELECT
+  substr(null, 1), substr(null, 1, 1),
+  substr('ABC', null), substr('ABC', null, 1),
+  substr('ABC', 1, null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr(null, 1), substr(null, 1, 1),
+  substr('ABC', null), substr('ABC', null, 1),
+  substr('ABC', 1, null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT
+  substr('ABC', 1, 0), substr('ABC', 1, -1), substr('ABC', 2, -100),
+  substr('ABC', 4), substr('ABC', 4, 100),
+  substr('ABC', -4), substr('ABC', -4, 100),
+  substr('ABC', 100), substr('ABC', 100, 100),
+  substr('ABC', -100), substr('ABC', -100, 100),
+  substr('ABC', 2147483647), substr('ABC', 2147483647, 2147483647)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABC', 1, 0), substr('ABC', 1, -1), substr('ABC', 2, -100),
+  substr('ABC', 4), substr('ABC', 4, 100),
+  substr('ABC', -4), substr('ABC', -4, 100),
+  substr('ABC', 100), substr('ABC', 100, 100),
+  substr('ABC', -100), substr('ABC', -100, 100),
+  substr('ABC', 2147483647), substr('ABC', 2147483647, 2147483647)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+												
+PREHOOK: query: SELECT
+  substr('ABCDEFG', 3, 4), substr('ABCDEFG', -5, 4),
+  substr('ABCDEFG', 3), substr('ABCDEFG', -5),
+  substr('ABC', 0), substr('ABC', 1), substr('ABC', 2), substr('ABC', 3),
+  substr('ABC', 1, 2147483647), substr('ABC', 2, 2147483647),
+  substr('A', 0), substr('A', 1), substr('A', -1)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABCDEFG', 3, 4), substr('ABCDEFG', -5, 4),
+  substr('ABCDEFG', 3), substr('ABCDEFG', -5),
+  substr('ABC', 0), substr('ABC', 1), substr('ABC', 2), substr('ABC', 3),
+  substr('ABC', 1, 2147483647), substr('ABC', 2, 2147483647),
+  substr('A', 0), substr('A', 1), substr('A', -1)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CDEF	CDEF	CDEFG	CDEFG	ABC	ABC	BC	C	ABC	BC	A	A	A
+PREHOOK: query: SELECT
+  substr('ABC', 0, 1), substr('ABC', 0, 2), substr('ABC', 0, 3), substr('ABC', 0, 4),
+  substr('ABC', 1, 1), substr('ABC', 1, 2), substr('ABC', 1, 3), substr('ABC', 1, 4),
+  substr('ABC', 2, 1), substr('ABC', 2, 2), substr('ABC', 2, 3), substr('ABC', 2, 4),
+  substr('ABC', 3, 1), substr('ABC', 3, 2), substr('ABC', 3, 3), substr('ABC', 3, 4),
+  substr('ABC', 4, 1)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABC', 0, 1), substr('ABC', 0, 2), substr('ABC', 0, 3), substr('ABC', 0, 4),
+  substr('ABC', 1, 1), substr('ABC', 1, 2), substr('ABC', 1, 3), substr('ABC', 1, 4),
+  substr('ABC', 2, 1), substr('ABC', 2, 2), substr('ABC', 2, 3), substr('ABC', 2, 4),
+  substr('ABC', 3, 1), substr('ABC', 3, 2), substr('ABC', 3, 3), substr('ABC', 3, 4),
+  substr('ABC', 4, 1)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C	
+PREHOOK: query: SELECT
+  substr('ABC', -1, 1), substr('ABC', -1, 2), substr('ABC', -1, 3), substr('ABC', -1, 4),
+  substr('ABC', -2, 1), substr('ABC', -2, 2), substr('ABC', -2, 3), substr('ABC', -2, 4),
+  substr('ABC', -3, 1), substr('ABC', -3, 2), substr('ABC', -3, 3), substr('ABC', -3, 4),
+  substr('ABC', -4, 1)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABC', -1, 1), substr('ABC', -1, 2), substr('ABC', -1, 3), substr('ABC', -1, 4),
+  substr('ABC', -2, 1), substr('ABC', -2, 2), substr('ABC', -2, 3), substr('ABC', -2, 4),
+  substr('ABC', -3, 1), substr('ABC', -3, 2), substr('ABC', -3, 3), substr('ABC', -3, 4),
+  substr('ABC', -4, 1)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
+PREHOOK: query: SELECT
+  substring('ABCDEFG', 3, 4), substring('ABCDEFG', -5, 4),
+  substring('ABCDEFG', 3), substring('ABCDEFG', -5),
+  substring('ABC', 0), substring('ABC', 1), substring('ABC', 2), substring('ABC', 3),
+  substring('ABC', 1, 2147483647), substring('ABC', 2, 2147483647),
+  substring('A', 0), substring('A', 1), substring('A', -1)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substring('ABCDEFG', 3, 4), substring('ABCDEFG', -5, 4),
+  substring('ABCDEFG', 3), substring('ABCDEFG', -5),
+  substring('ABC', 0), substring('ABC', 1), substring('ABC', 2), substring('ABC', 3),
+  substring('ABC', 1, 2147483647), substring('ABC', 2, 2147483647),
+  substring('A', 0), substring('A', 1), substring('A', -1)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CDEF	CDEF	CDEFG	CDEFG	ABC	ABC	BC	C	ABC	BC	A	A	A
+PREHOOK: query: SELECT
+  substr(null, 1), substr(null, 1, 1),
+  substr(ABC, null), substr(ABC, null, 1),
+  substr(ABC, 1, null),
+  substr(ABC, 0, 1), substr(ABC, 0, 2), substr(ABC, 0, 3), substr(ABC, 0, 4),
+  substr(ABC, 1, 1), substr(ABC, 1, 2), substr(ABC, 1, 3), substr(ABC, 1, 4),
+  substr(ABC, 2, 1), substr(ABC, 2, 2), substr(ABC, 2, 3), substr(ABC, 2, 4),
+  substr(ABC, 3, 1), substr(ABC, 3, 2), substr(ABC, 3, 3), substr(ABC, 3, 4),
+  substr(ABC, 4, 1),
+  substr(ABC, -1, 1), substr(ABC, -1, 2), substr(ABC, -1, 3), substr(ABC, -1, 4),
+  substr(ABC, -2, 1), substr(ABC, -2, 2), substr(ABC, -2, 3), substr(ABC, -2, 4),
+  substr(ABC, -3, 1), substr(ABC, -3, 2), substr(ABC, -3, 3), substr(ABC, -3, 4),
+  substr(ABC, -4, 1)
+FROM (
+   select CAST(concat(substr(value, 1, 0), 'ABC') as BINARY) as ABC from src tablesample (1 rows)
+) X
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr(null, 1), substr(null, 1, 1),
+  substr(ABC, null), substr(ABC, null, 1),
+  substr(ABC, 1, null),
+  substr(ABC, 0, 1), substr(ABC, 0, 2), substr(ABC, 0, 3), substr(ABC, 0, 4),
+  substr(ABC, 1, 1), substr(ABC, 1, 2), substr(ABC, 1, 3), substr(ABC, 1, 4),
+  substr(ABC, 2, 1), substr(ABC, 2, 2), substr(ABC, 2, 3), substr(ABC, 2, 4),
+  substr(ABC, 3, 1), substr(ABC, 3, 2), substr(ABC, 3, 3), substr(ABC, 3, 4),
+  substr(ABC, 4, 1),
+  substr(ABC, -1, 1), substr(ABC, -1, 2), substr(ABC, -1, 3), substr(ABC, -1, 4),
+  substr(ABC, -2, 1), substr(ABC, -2, 2), substr(ABC, -2, 3), substr(ABC, -2, 4),
+  substr(ABC, -3, 1), substr(ABC, -3, 2), substr(ABC, -3, 3), substr(ABC, -3, 4),
+  substr(ABC, -4, 1)
+FROM (
+   select CAST(concat(substr(value, 1, 0), 'ABC') as BINARY) as ABC from src tablesample (1 rows)
+) X
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C		C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
+PREHOOK: query: SELECT
+  substr("玩", 1),
+  substr("abc 玩", 5),
+  substr("abc 玩玩玩 abc", 5),
+  substr("abc 玩玩玩 abc", 5, 3)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr("玩", 1),
+  substr("abc 玩", 5),
+  substr("abc 玩玩玩 abc", 5),
+  substr("abc 玩玩玩 abc", 5, 3)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+玩	玩	玩玩玩 abc	玩玩玩

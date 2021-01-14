@@ -1,0 +1,66 @@
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DESCRIBE FUNCTION split_map_privs
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION split_map_privs
+POSTHOOK: type: DESCFUNCTION
+split_map_privs(str) - Splits binary str and maps to privilege type regex
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED split_map_privs
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED split_map_privs
+POSTHOOK: type: DESCFUNCTION
+split_map_privs(str) - Splits binary str and maps to privilege type regex
+Example:
+  > SELECT split_map_privs('0 1 1 0 1 1 0 0 0') FROM src LIMIT 1;
+  ["UPDATE", "CREATE", "ALTER", "INDEX"]
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToPrivilege
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN SELECT
+  split_map_privs('1 0 0 0 0 0 0 0 0 0'),
+  split_map_privs('1 0 0 1 0 0 0 0 0 0')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT
+  split_map_privs('1 0 0 0 0 0 0 0 0 0'),
+  split_map_privs('1 0 0 1 0 0 0 0 0 0')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: split_map_privs('1 0 0 0 0 0 0 0 0 0') (type: array<string>), split_map_privs('1 0 0 1 0 0 0 0 0 0') (type: array<string>)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT
+  split_map_privs('1 0 0 0 0 0 0 0 0 0'),
+  split_map_privs('1 0 0 1 0 0 0 0 0 0')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  split_map_privs('1 0 0 0 0 0 0 0 0 0'),
+  split_map_privs('1 0 0 1 0 0 0 0 0 0')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+["SELECT"]	["SELECT","DROP"]

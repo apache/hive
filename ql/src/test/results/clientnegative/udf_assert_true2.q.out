@@ -23,13 +23,13 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col5
-                  Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (1 + assert_true((_col5 < 2))) (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 2
+                  Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 536 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (1 + assert_true((_col5 < 2))) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -47,13 +47,13 @@ STAGE PLANS:
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col5
-                    Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: (1 + assert_true((_col5 < 2))) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 2
+                    Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 2
+                      Statistics: Num rows: 2 Data size: 536 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: (1 + assert_true((_col5 < 2))) (type: int)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false

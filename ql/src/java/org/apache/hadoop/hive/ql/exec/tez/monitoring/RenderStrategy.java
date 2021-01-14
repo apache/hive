@@ -93,17 +93,17 @@ class RenderStrategy {
            * We may have missed the start of the vertex due to the 3 seconds interval
            */
             if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-              perfLogger.PerfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+              perfLogger.perfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
             }
 
             if (!perfLogger.endTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-              perfLogger.PerfLogEnd(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+              perfLogger.perfLogEnd(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
             }
           }
           if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
 
             if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-              perfLogger.PerfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+              perfLogger.perfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
             }
 
           /* vertex is started, but not complete */

@@ -20,8 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.slf4j.Logger;
@@ -46,8 +48,10 @@ public class PerPoolTriggerValidatorRunnable implements Runnable {
   @Override
   public void run() {
     try {
+      ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
+          .setNameFormat("PoolValidator %d").build();
       ScheduledExecutorService validatorExecutorService = Executors
-        .newScheduledThreadPool(sessionTriggerProviders.size());
+          .newScheduledThreadPool(sessionTriggerProviders.size(), threadFactory);
       for (Map.Entry<String, SessionTriggerProvider> entry : sessionTriggerProviders.entrySet()) {
         String poolName = entry.getKey();
         if (!poolValidators.containsKey(poolName)) {

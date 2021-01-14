@@ -94,7 +94,7 @@ public class TestIncrementalRows {
 
     convertedIr.next();
     String row = convertedIr.next().toString();
-    Assert.assertEquals("[[77, 77, 77]]", row);
+    Assert.assertEquals("[TU1N]", row);
   }
 
   public void initNrOfResultSetCalls(final int iter) throws SQLException {
@@ -115,6 +115,7 @@ public class TestIncrementalRows {
     initNrOfResultSetCalls(10);
 
     when(mockResultSet.getObject(1)).thenReturn("Hello World");
+    when(mockResultSet.getString(1)).thenReturn("Hello World");
 
     // IncrementalRows constructor should buffer the first "incrementalBufferRows" rows
     IncrementalRowsWithNormalization incrementalRowsWithNormalization = new IncrementalRowsWithNormalization(

@@ -53,6 +53,12 @@ public abstract class VectorMapJoinFastBytesHashTable
     add(keyBytes, 0, keyLength, currentValue);
   }
 
+  @Override
+  public boolean containsLongKey(long currentKey) {
+    // Only supported for Long-Hash implementations
+    throw new RuntimeException("Not supported yet!");
+  }
+
   public abstract void add(byte[] keyBytes, int keyStart, int keyLength,
       BytesWritable currentValue);
 

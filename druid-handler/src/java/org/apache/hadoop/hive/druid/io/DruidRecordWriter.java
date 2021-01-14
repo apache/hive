@@ -103,13 +103,9 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
             "realtimeTuningConfig is null");
     this.dataSchema = Preconditions.checkNotNull(dataSchema, "data schema is null");
 
-    appenderator =
-        Appenderators.createOffline(this.dataSchema,
-            tuningConfig,
-            new FireDepartmentMetrics(),
-            dataSegmentPusher,
-            DruidStorageHandlerUtils.JSON_MAPPER,
-            DruidStorageHandlerUtils.INDEX_IO,
+    appenderator = Appenderators
+        .createOffline("hive-offline-appenderator", this.dataSchema, tuningConfig, false, new FireDepartmentMetrics(),
+            dataSegmentPusher, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO,
             DruidStorageHandlerUtils.INDEX_MERGER_V9);
     this.maxPartitionSize = maxPartitionSize;
     appenderator.startJob();

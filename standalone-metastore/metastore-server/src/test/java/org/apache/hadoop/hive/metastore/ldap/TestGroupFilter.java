@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.junit.Before;
 import org.mockito.Mock;
@@ -144,7 +144,8 @@ public class TestGroupFilter {
       throws AuthenticationException, NamingException, IOException {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPFILTER, "hiveusers,containsg1");
 
-    when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
+    lenient().when(search.findGroupsForUser(eq("user1")))
+        .thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
 
     Filter filter = factory.getInstance(conf);
     filter.apply(search, "user1");
@@ -155,7 +156,8 @@ public class TestGroupFilter {
       throws AuthenticationException, NamingException, IOException {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPFILTER, "HiveUsers");
 
-    when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
+    lenient().when(search.findGroupsForUser(eq("user1")))
+        .thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
 
     Filter filter = factory.getInstance(conf);
     filter.apply(search, "user1");

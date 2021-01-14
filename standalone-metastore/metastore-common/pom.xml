@@ -42,6 +42,10 @@
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-storage-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -61,16 +65,8 @@
       <artifactId>protobuf-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.jolbox</groupId>
-      <artifactId>bonecp</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -109,7 +105,11 @@
       <artifactId>hadoop-common</artifactId>
       <optional>true</optional>
       <exclusions>
-        <exclusion>
+         <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+          </exclusion>
+       <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
@@ -140,6 +140,10 @@
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -229,10 +233,14 @@
           <artifactId>httpclient</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.jboss.netty</groupId>
-          <artifactId>netty</artifactId>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+    <groupId>com.github.ben-manes.caffeine</groupId>
+    <artifactId>caffeine</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
@@ -255,11 +263,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-shims</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
@@ -362,18 +365,26 @@
       </build>
     </profile>
     <profile>
-      <id>findbugs</id>
+      <id>spotbugs</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>3.0.0</version>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.0.0</version>
+            <dependencies>
+              <!-- Specify the version of spotbugs -->
+              <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs</artifactId>
+                <version>4.0.3</version>
+              </dependency>
+            </dependencies>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>
@@ -381,14 +392,14 @@
       <reporting>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>3.0.0</version>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.0.0</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>
@@ -411,7 +422,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
-          <version>${maven.antrun.plugin.version}</version>
           <dependencies>
             <dependency>
               <groupId>ant-contrib</groupId>
@@ -434,7 +444,7 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <!-- plugins are always listed in sorted order by groupId, artifectId -->
+      <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -527,7 +537,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.20.1</version>
         <executions>
           <execution>
             <goals>
@@ -577,13 +586,11 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
           </additionalClasspathElements>
-          <groups>${test.groups}</groups>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <version>0.10</version>
         <configuration>
           <excludes>
             <exclude>binary-package-licenses/**</exclude>

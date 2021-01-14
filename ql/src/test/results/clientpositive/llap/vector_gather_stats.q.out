@@ -1,0 +1,115 @@
+PREHOOK: query: create table cd
+(
+    cd_demo_sk                int,
+    cd_gender                 string,
+    cd_marital_status         string,
+    cd_purchase_estimate      int,
+    cd_credit_rating          string,
+    cd_dep_count              int,
+    cd_dep_employed_count     int,
+    cd_dep_college_count      int
+)
+partitioned by
+(
+    cd_education_status       string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cd
+POSTHOOK: query: create table cd
+(
+    cd_demo_sk                int,
+    cd_gender                 string,
+    cd_marital_status         string,
+    cd_purchase_estimate      int,
+    cd_credit_rating          string,
+    cd_dep_count              int,
+    cd_dep_employed_count     int,
+    cd_dep_college_count      int
+)
+partitioned by
+(
+    cd_education_status       string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cd
+PREHOOK: query: alter table cd add partition (cd_education_status='Primary')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@cd
+POSTHOOK: query: alter table cd add partition (cd_education_status='Primary')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@cd
+POSTHOOK: Output: default@cd@cd_education_status=Primary
+PREHOOK: query: insert into table cd partition (cd_education_status='Primary') values (1, 'M', 'M', 500, 'Good', 0, 0, 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cd@cd_education_status=Primary
+POSTHOOK: query: insert into table cd partition (cd_education_status='Primary') values (1, 'M', 'M', 500, 'Good', 0, 0, 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cd@cd_education_status=Primary
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_credit_rating SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_demo_sk SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_college_count SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_count SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_employed_count SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_gender SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_marital_status SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_purchase_estimate SCRIPT []
+PREHOOK: query: explain vectorization detail
+analyze table cd partition (cd_education_status) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cd
+PREHOOK: Input: default@cd@cd_education_status=Primary
+PREHOOK: Output: default@cd
+PREHOOK: Output: default@cd@cd_education_status=Primary
+POSTHOOK: query: explain vectorization detail
+analyze table cd partition (cd_education_status) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cd
+POSTHOOK: Input: default@cd@cd_education_status=Primary
+POSTHOOK: Output: default@cd
+POSTHOOK: Output: default@cd@cd_education_status=Primary
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cd
+            Execution mode: llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                notVectorizedReason: TABLESCAN operator: gather stats not supported
+                vectorized: false
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: analyze table cd partition (cd_education_status) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cd
+PREHOOK: Input: default@cd@cd_education_status=Primary
+PREHOOK: Output: default@cd
+PREHOOK: Output: default@cd@cd_education_status=Primary
+POSTHOOK: query: analyze table cd partition (cd_education_status) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cd
+POSTHOOK: Input: default@cd@cd_education_status=Primary
+POSTHOOK: Output: default@cd
+POSTHOOK: Output: default@cd@cd_education_status=Primary

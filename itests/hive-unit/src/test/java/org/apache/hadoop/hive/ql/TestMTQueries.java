@@ -19,12 +19,15 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.fail;
 
 /**
  * Suite for testing running of queries in multi-threaded mode.
  */
+@Ignore("Ignore until HIVE-23138 is finished")
 public class TestMTQueries extends BaseTestQueries {
 
   public TestMTQueries() {

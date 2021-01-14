@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.ddl.database.showcreate;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 
 import java.io.DataOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -39,7 +41,7 @@ public class ShowCreateDatabaseOperation extends DDLOperation<ShowCreateDatabase
 
   @Override
   public int execute() throws HiveException {
-    DataOutputStream outStream = DDLUtils.getOutputStream(desc.getResFile(), context);
+    DataOutputStream outStream = ShowUtils.getOutputStream(desc.getResFile(), context);
     try {
       return showCreateDatabase(outStream);
     } catch (Exception e) {
@@ -60,13 +62,17 @@ public class ShowCreateDatabaseOperation extends DDLOperation<ShowCreateDatabase
     }
     createDbCommand.append("LOCATION\n  '");
     createDbCommand.append(database.getLocationUri()).append("'\n");
-    String propertiesToString = DDLUtils.propertiesToString(database.getParameters(), null);
+    if (database.getManagedLocationUri() != null) {
+      createDbCommand.append("MANAGEDLOCATION\n  '");
+      createDbCommand.append(database.getManagedLocationUri()).append("'\n");
+    }
+    String propertiesToString = ShowUtils.propertiesToString(database.getParameters(), Collections.emptySet());
     if (!propertiesToString.isEmpty()) {
       createDbCommand.append("WITH DBPROPERTIES (\n");
       createDbCommand.append(propertiesToString).append(")\n");
     }
 
-    outStream.write(createDbCommand.toString().getBytes("UTF-8"));
+    outStream.write(createDbCommand.toString().getBytes(StandardCharsets.UTF_8));
     return 0;
   }
 }

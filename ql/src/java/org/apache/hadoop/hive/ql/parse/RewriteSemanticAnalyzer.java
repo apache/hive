@@ -262,7 +262,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       rewrittenCtx.setHDFSCleanup(true);
       // We keep track of all the contexts that are created by this query
       // so we can clear them when we finish execution
-      ctx.addRewrittenStatementContext(rewrittenCtx);
+      ctx.addSubContext(rewrittenCtx);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
     }
@@ -405,11 +405,9 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    */
   private boolean isTargetTable(Entity entity, Table targetTable) {
     //todo: https://issues.apache.org/jira/browse/HIVE-15048
-    /**
-     * is this the right way to compare?  Should it just compare paths?
-     * equals() impl looks heavy weight
-     */
-    return targetTable.equals(entity.getTable());
+    // Since any DDL now advances the write id, we should ignore the write Id,
+    // while comparing two tables
+    return targetTable.equalsWithIgnoreWriteId(entity.getTable());
   }
 
   /**

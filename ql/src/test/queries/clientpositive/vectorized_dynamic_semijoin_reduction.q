@@ -15,8 +15,8 @@ set hive.vectorized.adaptor.usage.mode=none;
 set hive.vectorized.execution.enabled=true;
 
 -- Create Tables
-create table dsrv_big stored as orc as select key as key_str, cast(key as int) as key_int, value from src;
-create table dsrv_small stored as orc as select distinct key as key_str, cast(key as int) as key_int, value from src where key < 100;
+create table dsrv_big stored as orc as select key as key_str, key as key_str2, cast(key as int) as key_int, cast(key as int) as key_int2, value from src;
+create table dsrv_small stored as orc as select distinct key as key_str, key as key_str2, cast(key as int) as key_int, cast(key as int) as key_int2, value from src where key < 100;
 
 -- single key (int)
 EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int);
@@ -35,8 +35,21 @@ EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a, dsrv_small b, 
 select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int;
 
 -- multiple keys
+SELECT 'use MurmurHashStringColIntCol';
 EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int);
 select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int);
+
+SELECT 'use MurmurHashStringColIntCol, regardless of key ordering on join clause';
+EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_str = b.key_str);
+select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_str = b.key_str);
+
+SELECT 'use MurmurHashIntColIntCol';
+EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_int2 = b.key_int2);
+select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_int2 = b.key_int2);
+
+SELECT 'use MurmurHashStringColStringCol';
+EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_str2 = b.key_str2);
+select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_str2 = b.key_str2);
 
 -- small table result is empty
 EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2');

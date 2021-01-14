@@ -101,4 +101,14 @@ public class TestTimestampTZWritable {
         ", nanos " + destTstz.getNanos();
     Assert.assertEquals(errMsg, srcTstz, destTstz);
   }
+
+  @Test
+  public void testNotExposingInternal() {
+    TimestampTZ tz = TimestampTZUtil.parse("2017-04-14 18:00:00 Asia/Shanghai");
+    TimestampLocalTZWritable writable = new TimestampLocalTZWritable(tz);
+
+    TimestampTZ tzGot = writable.getTimestampTZ();
+
+    Assert.assertNotSame(tz, tzGot);
+  }
 }

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
-import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
@@ -28,12 +27,14 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +59,26 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     ASTNode tableTree = (ASTNode) root.getChild(0);
     TableName tableName = getQualifiedTableName(tableTree);
-    if (ctx.enableUnparse()) {
+    // If this was called from ScheduledQueryAnalyzer we do not want to execute the Alter materialized view statement
+    // now. However query scheduler requires the fully qualified table name.
+    if (ctx.isScheduledQuery()) {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       return;
     }
+
+    try {
+      Boolean outdated = db.isOutdatedMaterializedView(getTxnMgr(), tableName);
+      if (outdated != null && !outdated) {
+        String msg = String.format("Materialized view %s.%s is up to date. Skipping rebuild.",
+                tableName.getDb(), tableName.getTable());
+        LOG.info(msg);
+        console.printInfo(msg, false);
+        return;
+      }
+    } catch (HiveException e) {
+      LOG.warn("Error while checking materialized view " + tableName.getDb() + "." + tableName.getTable(), e);
+    }
+
     ASTNode rewrittenAST = getRewrittenAST(tableName);
 
     mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
@@ -70,6 +87,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
+    queryState.setCommandType(HiveOperation.ALTER_MATERIALIZED_VIEW_REBUILD);
   }
 
   private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE %s %s";
@@ -95,7 +113,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       String rewrittenInsertStatement = String.format(REWRITTEN_INSERT_STATEMENT,
           tableName.getEscapedNotEmptyDbTable(), viewText);
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
-      this.ctx.addRewrittenStatementContext(ctx);
+      this.ctx.addSubContext(ctx);
 
       if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
         // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a

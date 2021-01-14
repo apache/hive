@@ -19,22 +19,37 @@ package org.apache.hive.beeline.hs2connection;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+/**
+ * TestBeelineWithUserHs2ConnectionFile test.
+ */
+@RunWith(Parameterized.class)
 public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2ConnectionFileTestBase {
+
+  @Parameterized.Parameters(name = "{index}: tranportMode={0}")
+  public static Collection<Object[]> transportModes() {
+    return Arrays.asList(new Object[][]{{MiniHS2.HS2_ALL_MODE}, {MiniHS2.HS2_BINARY_MODE}, {MiniHS2.HS2_HTTP_MODE}});
+  }
 
   @Test
   public void testBeelineConnectionHttp() throws Exception {
+    Assume.assumeTrue(transportMode.equals(MiniHS2.HS2_HTTP_MODE)
+        || transportMode.equalsIgnoreCase(MiniHS2.HS2_ALL_MODE));
     setupHttpHs2();
     String path = createHttpHs2ConnectionFile();
     assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
   }
 
   private void setupHttpHs2() throws Exception {
-    confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, HS2_HTTP_MODE);
-    confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, HS2_HTTP_ENDPOINT);
     confOverlay.put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "true");
     miniHS2.start(confOverlay);
     createTable();
@@ -42,7 +57,7 @@ public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2Connecti
 
   private String createHttpHs2ConnectionFile() throws Exception {
     Hs2ConnectionXmlConfigFileWriter writer = new Hs2ConnectionXmlConfigFileWriter();
-    String baseJdbcURL = miniHS2.getBaseJdbcURL();
+    String baseJdbcURL = miniHS2.getBaseHttpJdbcURL();
 
     URI uri = new URI(baseJdbcURL.substring(5));
     writer.writeProperty(HS2ConnectionFileParser.BEELINE_CONNECTION_PROPERTY_PREFIX + "hosts",
@@ -62,6 +77,8 @@ public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2Connecti
 
   @Test
   public void testBeelineConnectionNoAuth() throws Exception {
+    Assume.assumeTrue(transportMode.equals(MiniHS2.HS2_BINARY_MODE)
+        || transportMode.equalsIgnoreCase(MiniHS2.HS2_ALL_MODE));
     setupNoAuthConfHS2();
     String path = createNoAuthHs2ConnectionFile();
     assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
@@ -89,6 +106,8 @@ public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2Connecti
 
   @Test
   public void testBeelineConnectionSSL() throws Exception {
+    Assume.assumeTrue(transportMode.equals(MiniHS2.HS2_BINARY_MODE)
+        || transportMode.equalsIgnoreCase(MiniHS2.HS2_ALL_MODE));
     setupSslHs2();
     String path = createSSLHs2ConnectionFile();
     assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);

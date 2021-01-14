@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 @VectorizedExpressions({FuncLog2LongToDouble.class, FuncLog2DoubleToDouble.class})
 public class UDFLog2 extends UDFMath {
 
-  private static final double LOG_2 = Math.log(2.0);
+  private static final double LOG_2 = StrictMath.log(2.0);
 
   private final DoubleWritable result = new DoubleWritable();
 
@@ -47,7 +47,7 @@ public class UDFLog2 extends UDFMath {
     if (a.get() <= 0.0) {
       return null;
     } else {
-      result.set(Math.log(a.get()) / LOG_2);
+      result.set(StrictMath.log(a.get()) / LOG_2);
       return result;
     }
   }

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.File;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
-import org.apache.logging.log4j.util.Strings;
 
 public class QTestRunnerUtils {
   public static final String DEFAULT_INIT_SCRIPT = "q_test_init.sql";
@@ -104,7 +104,7 @@ public class QTestRunnerUtils {
         StringBuilder builder = new StringBuilder();
         builder.append("Test ").append(qfiles[i].getName())
             .append(" results check failed with error code ").append(result.getReturnCode());
-        if (Strings.isNotEmpty(result.getCapturedOutput())) {
+        if (StringUtils.isNotEmpty(result.getCapturedOutput())) {
           builder.append(" and diff value ").append(result.getCapturedOutput());
         }
         System.err.println(builder.toString());
@@ -155,7 +155,7 @@ public class QTestRunnerUtils {
         StringBuilder builder = new StringBuilder();
         builder.append("Test ").append(qfiles[i].getName())
             .append(" results check failed with error code ").append(result.getReturnCode());
-        if (Strings.isNotEmpty(result.getCapturedOutput())) {
+        if (StringUtils.isNotEmpty(result.getCapturedOutput())) {
           builder.append(" and diff value ").append(result.getCapturedOutput());
         }
         System.err.println(builder.toString());

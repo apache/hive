@@ -100,6 +100,7 @@ atomjoinSource
     |  virtualTableSource (lateralView^)*
     |  (LPAREN (KW_WITH|KW_SELECT|KW_MAP|KW_REDUCE|KW_FROM)) => subQuerySource (lateralView^)*
     |  (LPAREN LPAREN atomSelectStatement RPAREN setOperator ) => subQuerySource (lateralView^)*
+    |  (LPAREN valuesSource) => subQuerySource (lateralView^)*
     |  partitionedTableFunction (lateralView^)*
     |  LPAREN! joinSource RPAREN!
     ;
@@ -145,6 +146,7 @@ joinToken
     | KW_RIGHT (KW_OUTER)? KW_JOIN -> TOK_RIGHTOUTERJOIN
     | KW_FULL  (KW_OUTER)? KW_JOIN -> TOK_FULLOUTERJOIN
     | KW_LEFT KW_SEMI KW_JOIN      -> TOK_LEFTSEMIJOIN
+    | KW_LEFT KW_ANTI KW_JOIN -> TOK_LEFTANTISEMIJOIN
     ;
 
 lateralView
@@ -286,6 +288,15 @@ searchCondition
 //-----------------------------------------------------------------------------------
 
 //-------- Row Constructor ----------------------------------------------------------
+valuesSource
+    :
+    valuesClause
+       -> ^(TOK_QUERY ^(TOK_INSERT
+               ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+               ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause)))
+               ))
+    ;
+
 //in support of SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as FOO(a,b,c) and
 // INSERT INTO <table> (col1,col2,...) VALUES(...),(...),...
 // INSERT INTO <table> (col1,col2,...) SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as Foo(a,b,c)

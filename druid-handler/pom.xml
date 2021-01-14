@@ -33,7 +33,7 @@
   </properties>
 
   <dependencies>
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+    <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -50,11 +50,7 @@
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>
-          <artifactId>netty-all</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -83,13 +79,21 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>${joda.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>${netty3.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>io.tesla.aether</groupId>
+          <artifactId>tesla-aether</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
@@ -106,6 +110,10 @@
           <groupId>org.apache.druid</groupId>
           <artifactId>druid-aws-common</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>
@@ -114,6 +122,26 @@
       <artifactId>druid-processing</artifactId>
       <version>${druid.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>com.ibm.icu</groupId>
+          <artifactId>icu4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-commons</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
+        </exclusion>
         <exclusion>
           <!--LGPL licenced library-->
           <groupId>com.google.code.findbugs</groupId>
@@ -188,7 +216,11 @@
                   <groupId>com.google.guava</groupId>
                   <artifactId>guava</artifactId>
               </exclusion>
-              <exclusion>
+               <exclusion>
+                  <groupId>commons-beanutils</groupId>
+                  <artifactId>commons-beanutils</artifactId>
+              </exclusion>
+             <exclusion>
                   <groupId>commons-logging</groupId>
                   <artifactId>commons-logging</artifactId>
               </exclusion>
@@ -214,7 +246,7 @@
         </exclusion>
         <exclusion>
           <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -259,6 +291,12 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j2.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -346,6 +384,7 @@
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
+                        <exclude>META-INF/versions/**</exclude>
                         <exclude>static/</exclude>
                       </excludes>
                     </filter>

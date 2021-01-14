@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -351,10 +350,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
-      AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
-          keyTableDesc.getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
-      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
+      AbstractSerDe keySerDe = (AbstractSerDe) ReflectionUtil.newInstance(
+          keyTableDesc.getSerDeClass(), null);
+      keySerDe.initialize(null, keyTableDesc.getProperties(), null);
+      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerDe, false);
       for (int pos = 0; pos < order.length; pos++) {
         if (pos == posBigTable) {
           continue;
@@ -366,8 +365,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
         }
         AbstractSerDe valueSerDe = (AbstractSerDe) ReflectionUtil.newInstance(
-            valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+            valueTableDesc.getSerDeClass(), null);
+        valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
         MapJoinObjectSerDeContext valueContext =
             new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
         mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);
@@ -380,7 +379,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   // Core logic to load hash table using HashTableLoader
   private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTableInternal(
           ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(mapContext, mrContext, hconf, this);
     try {
       loader.load(mapJoinTables, mapJoinTableSerdes);
@@ -399,7 +398,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
             new ImmutablePair<> (mapJoinTables, mapJoinTableSerdes);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
 
     if (canSkipJoinProcessing(mapContext)) {
       LOG.info("Skipping big table join processing for " + this.toString());
@@ -582,6 +581,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
       if (joinNeeded) {
         List<Object> value = getFilteredValue(alias, row);
+        addToAliasFilterTags(alias, value, false);
         // Add the value to the ArrayList
         storage[alias].addRow(value);
         // generate the output records

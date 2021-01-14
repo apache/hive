@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE EXTERNAL TABLE data_with_union(
+  unionfield uniontype<int, string>,
+  arrayfield array<int>,
+  mapfield map<int,int>,
+  structfield struct<`sf1`:int, `sf2`:string>)
+stored as textfile
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@data_with_union
+POSTHOOK: query: CREATE EXTERNAL TABLE data_with_union(
+  unionfield uniontype<int, string>,
+  arrayfield array<int>,
+  mapfield map<int,int>,
+  structfield struct<`sf1`:int, `sf2`:string>)
+stored as textfile
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@data_with_union
+PREHOOK: query: create table data_with_union_2 as select * from data_with_union
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@data_with_union
+PREHOOK: Output: database:default
+PREHOOK: Output: default@data_with_union_2
+POSTHOOK: query: create table data_with_union_2 as select * from data_with_union
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@data_with_union
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@data_with_union_2
+POSTHOOK: Lineage: data_with_union_2.arrayfield SIMPLE [(data_with_union)data_with_union.FieldSchema(name:arrayfield, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: data_with_union_2.mapfield SIMPLE [(data_with_union)data_with_union.FieldSchema(name:mapfield, type:map<int,int>, comment:null), ]
+POSTHOOK: Lineage: data_with_union_2.structfield SIMPLE [(data_with_union)data_with_union.FieldSchema(name:structfield, type:struct<sf1:int,sf2:string>, comment:null), ]
+POSTHOOK: Lineage: data_with_union_2.unionfield SIMPLE [(data_with_union)data_with_union.FieldSchema(name:unionfield, type:uniontype<int,string>, comment:null), ]
+PREHOOK: query: select * from data_with_union_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@data_with_union_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from data_with_union_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@data_with_union_2
+#### A masked pattern was here ####
+{0:1}	[0,2]	{1:1}	{"sf1":1,"sf2":"foo"}

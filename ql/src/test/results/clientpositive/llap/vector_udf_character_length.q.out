@@ -75,7 +75,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest1_n59
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-2
     Dependency Collection

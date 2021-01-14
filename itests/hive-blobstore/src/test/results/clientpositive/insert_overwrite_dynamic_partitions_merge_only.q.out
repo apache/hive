@@ -47,6 +47,7 @@ SELECT
 FROM tmp_table_merge t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table_merge
+POSTHOOK: Output: default@s3_table_merge
 POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
 POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
 POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10000).event_name SIMPLE [(tmp_table_merge)t.FieldSchema(name:name, type:string, comment:null), ]
@@ -89,6 +90,7 @@ SELECT
 FROM tmp_table_merge t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table_merge
+POSTHOOK: Output: default@s3_table_merge
 POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
 POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
 POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10000).event_name SIMPLE [(tmp_table_merge)t.FieldSchema(name:name, type:string, comment:null), ]

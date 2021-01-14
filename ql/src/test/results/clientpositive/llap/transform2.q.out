@@ -1,0 +1,9 @@
+PREHOOK: query: SELECT TRANSFORM(substr(key, 1, 2)) USING 'cat' FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT TRANSFORM(substr(key, 1, 2)) USING 'cat' FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+23	NULL

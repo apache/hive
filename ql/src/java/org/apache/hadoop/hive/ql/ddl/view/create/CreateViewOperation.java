@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -30,8 +31,8 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-
-import com.google.common.collect.ImmutableSet;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
+import org.apache.hadoop.hive.ql.parse.StorageFormat;
 
 /**
  * Operation process of creating a view.
@@ -45,19 +46,20 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
   public int execute() throws HiveException {
     Table oldview = context.getDb().getTable(desc.getViewName(), false);
     if (oldview != null) {
+      boolean isReplace = desc.isReplace();
+
       // Check whether we are replicating
       if (desc.getReplicationSpec().isInReplicationScope()) {
         // if this is a replication spec, then replace-mode semantics might apply.
         if (desc.getReplicationSpec().allowEventReplacementInto(oldview.getParameters())) {
-          desc.setReplace(true); // we replace existing view.
+          isReplace = true; // we replace existing view.
         } else {
-          LOG.debug("DDLTask: Create View is skipped as view {} is newer than update",
-              desc.getViewName()); // no replacement, the existing table state is newer than our update.
+          LOG.debug("DDLTask: Create View is skipped as view {} is newer than update", desc.getViewName());
           return 0;
         }
       }
 
-      if (!desc.isReplace()) {
+      if (!isReplace) {
         if (desc.getIfNotExists()) {
           return 0;
         }
@@ -66,27 +68,19 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()));
       }
 
-      // It should not be a materialized view
-      assert !desc.isMaterialized();
-
       // replace existing view
       // remove the existing partition columns from the field schema
-      oldview.setViewOriginalText(desc.getViewOriginalText());
-      oldview.setViewExpandedText(desc.getViewExpandedText());
+      oldview.setViewOriginalText(desc.getOriginalText());
+      oldview.setViewExpandedText(desc.getExpandedText());
       oldview.setFields(desc.getSchema());
       if (desc.getComment() != null) {
         oldview.setProperty("comment", desc.getComment());
       }
-      if (desc.getTblProps() != null) {
-        oldview.getTTable().getParameters().putAll(desc.getTblProps());
+      if (desc.getProperties() != null) {
+        oldview.getTTable().getParameters().putAll(desc.getProperties());
       }
-      oldview.setPartCols(desc.getPartCols());
-      if (desc.getInputFormat() != null) {
-        oldview.setInputFormatClass(desc.getInputFormat());
-      }
-      if (desc.getOutputFormat() != null) {
-        oldview.setOutputFormatClass(desc.getOutputFormat());
-      }
+      oldview.setPartCols(desc.getPartitionColumns());
+
       oldview.checkValidity(null);
       if (desc.getOwnerName() != null) {
         oldview.setOwner(desc.getOwnerName());
@@ -96,23 +90,54 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
           context.getWork().getOutputs());
     } else {
       // We create new view
-      Table tbl = desc.toTable(context.getConf());
-      // We set the signature for the view if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        CreationMetadata cm =
-            new CreationMetadata(MetaStoreUtils.getDefaultCatalog(context.getConf()), tbl.getDbName(),
-                tbl.getTableName(), ImmutableSet.copyOf(desc.getTablesUsed()));
-        cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-        tbl.getTTable().setCreationMetadata(cm);
-      }
-      context.getDb().createTable(tbl, desc.getIfNotExists());
-      DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK),
+      Table view = createViewObject();
+      context.getDb().createTable(view, desc.getIfNotExists());
+      DDLUtils.addIfAbsentByName(new WriteEntity(view, WriteEntity.WriteType.DDL_NO_LOCK),
           context.getWork().getOutputs());
 
       //set lineage info
-      DataContainer dc = new DataContainer(tbl.getTTable());
-      context.getQueryState().getLineageState().setLineage(new Path(desc.getViewName()), dc, tbl.getCols());
+      DataContainer dc = new DataContainer(view.getTTable());
+      context.getQueryState().getLineageState().setLineage(new Path(desc.getViewName()), dc, view.getCols());
     }
     return 0;
+  }
+
+  private Table createViewObject() throws HiveException {
+    TableName name = HiveTableName.of(desc.getViewName());
+    Table view = new Table(name.getDb(), name.getTable());
+    view.setViewOriginalText(desc.getOriginalText());
+    view.setViewExpandedText(desc.getExpandedText());
+    view.setTableType(TableType.VIRTUAL_VIEW);
+    view.setSerializationLib(null);
+    view.clearSerDeInfo();
+    view.setFields(desc.getSchema());
+    if (desc.getComment() != null) {
+      view.setProperty("comment", desc.getComment());
+    }
+
+    if (desc.getProperties() != null) {
+      view.getParameters().putAll(desc.getProperties());
+    }
+
+    if (!CollectionUtils.isEmpty(desc.getPartitionColumns())) {
+      view.setPartCols(desc.getPartitionColumns());
+    }
+
+    StorageFormat storageFormat = new StorageFormat(context.getConf());
+    storageFormat.fillDefaultStorageFormat(false, false);
+
+    view.setInputFormatClass(storageFormat.getInputFormat());
+    view.setOutputFormatClass(storageFormat.getOutputFormat());
+
+    if (desc.getOwnerName() != null) {
+      view.setOwner(desc.getOwnerName());
+    }
+
+    // Sets the column state for the create view statement (false since it is a creation).
+    // Similar to logic in CreateTableDesc.
+    StatsSetupConst.setStatsStateForCreateTable(view.getTTable().getParameters(), null,
+        StatsSetupConst.FALSE);
+
+    return view;
   }
 }

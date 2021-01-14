@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
@@ -331,6 +330,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   }
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    LOG.debug("Configuring JobConf for table {}.{}", tableDesc.getDbName(), tableDesc.getTableName());
     try {
       HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*

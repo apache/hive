@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 
 public class SSLTestUtils {
@@ -55,14 +56,14 @@ public class SSLTestUtils {
   }
 
   public static void setMetastoreSslConf(HiveConf conf) {
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_METASTORE_USE_SSL, true);
-    conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.USE_SSL, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH,
             dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
-    conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD,
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD,
             KEY_STORE_TRUST_STORE_PASSWORD);
-    conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH,
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH,
             dataFileDir + File.separator + TRUST_STORE_NAME);
-    conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD,
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD,
             KEY_STORE_TRUST_STORE_PASSWORD);
   }
 

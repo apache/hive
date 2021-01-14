@@ -22,8 +22,8 @@ stored as textfile;
 
 load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char_serde_regex;
 
-select * from char_serde_regex limit 5;
-select value, count(*) from char_serde_regex group by value limit 5;
+select * from char_serde_regex order by key, value limit 5;
+select value, count(*) from char_serde_regex group by value order by value limit 5;
 
 --
 -- LazyBinary
@@ -36,8 +36,8 @@ alter table char_serde_lb set serde 'org.apache.hadoop.hive.serde2.lazybinary.La
 
 insert overwrite table char_serde_lb
   select key, value from char_serde_regex;
-select * from char_serde_lb limit 5;
-select value, count(*) from char_serde_lb group by value limit 5;
+select * from char_serde_lb order by key, value limit 5;
+select value, count(*) from char_serde_lb group by value order by value limit 5;
 
 --
 -- LazySimple
@@ -50,8 +50,8 @@ alter table char_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimp
 
 insert overwrite table char_serde_ls
   select key, value from char_serde_lb;
-select * from char_serde_ls limit 5;
-select value, count(*) from char_serde_ls group by value limit 5;
+select * from char_serde_ls order by key, value limit 5;
+select value, count(*) from char_serde_ls group by value order by value limit 5;
 
 --
 -- Columnar
@@ -64,8 +64,8 @@ alter table char_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.Colum
 
 insert overwrite table char_serde_c
   select key, value from char_serde_ls;
-select * from char_serde_c limit 5;
-select value, count(*) from char_serde_c group by value limit 5;
+select * from char_serde_c order by key, value limit 5;
+select value, count(*) from char_serde_c group by value order by value limit 5;
 
 --
 -- LazyBinaryColumnar
@@ -78,8 +78,8 @@ alter table char_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.Laz
 
 insert overwrite table char_serde_lbc
   select key, value from char_serde_c;
-select * from char_serde_lbc limit 5;
-select value, count(*) from char_serde_lbc group by value limit 5;
+select * from char_serde_lbc order by key, value limit 5;
+select value, count(*) from char_serde_lbc group by value order by value limit 5;
 
 --
 -- ORC
@@ -93,8 +93,8 @@ alter table char_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 
 insert overwrite table char_serde_orc
   select key, value from char_serde_lbc;
-select * from char_serde_orc limit 5;
-select value, count(*) from char_serde_orc group by value limit 5;
+select * from char_serde_orc order by key, value limit 5;
+select value, count(*) from char_serde_orc group by value order by value limit 5;
 
 drop table if exists char_serde_regex;
 drop table if exists char_serde_lb;

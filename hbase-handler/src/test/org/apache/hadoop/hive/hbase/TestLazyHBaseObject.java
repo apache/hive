@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Result;
@@ -360,8 +358,8 @@ public class TestLazyHBaseObject {
     hbaseCellMap = new LazyHBaseCellMap((LazyMapObjectInspector) oi);
     byte [] cfFloat = "cf-float".getBytes();
     kvs.clear();
-    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes((float) 1.0F),
-      Bytes.toBytes((float) 1.0F)));
+    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes(1.0F),
+      Bytes.toBytes(1.0F)));
     result = Result.create(kvs);
     hbaseCellMap.init(result, cfFloat, mapBinaryStorage);
     FloatWritable expectedFloatValue = new FloatWritable(1.0F);
@@ -371,8 +369,8 @@ public class TestLazyHBaseObject {
     assertEquals(expectedFloatValue, lazyPrimitive.getWritableObject());
 
     kvs.clear();
-    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes((float) Float.MIN_VALUE),
-      Bytes.toBytes((float) Float.MIN_VALUE)));
+    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes(Float.MIN_VALUE),
+      Bytes.toBytes(Float.MIN_VALUE)));
     result = Result.create(kvs);
     hbaseCellMap.init(result, cfFloat, mapBinaryStorage);
     expectedFloatValue = new FloatWritable(Float.MIN_VALUE);
@@ -382,8 +380,8 @@ public class TestLazyHBaseObject {
     assertEquals(expectedFloatValue, lazyPrimitive.getWritableObject());
 
     kvs.clear();
-    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes((float) Float.MAX_VALUE),
-      Bytes.toBytes((float) Float.MAX_VALUE)));
+    kvs.add(new KeyValue(rowKey, cfFloat, Bytes.toBytes(Float.MAX_VALUE),
+      Bytes.toBytes(Float.MAX_VALUE)));
     result = Result.create(kvs);
     hbaseCellMap.init(result, cfFloat, mapBinaryStorage);
     expectedFloatValue = new FloatWritable(Float.MAX_VALUE);
@@ -772,11 +770,11 @@ public class TestLazyHBaseObject {
         break;
 
       case 5:
-        value = Bytes.toBytes((float) 1.0F);
+        value = Bytes.toBytes(1.0F);
         break;
 
       case 6:
-        value = Bytes.toBytes((double) 1.0);
+        value = Bytes.toBytes(1.0);
         break;
 
       case 7:

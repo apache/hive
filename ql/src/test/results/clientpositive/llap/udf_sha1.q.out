@@ -1,0 +1,65 @@
+PREHOOK: query: DESCRIBE FUNCTION sha1
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sha1
+POSTHOOK: type: DESCFUNCTION
+sha1(str or bin) - Calculates the SHA-1 digest for string or binary and returns the value as a hex string.
+PREHOOK: query: DESC FUNCTION EXTENDED sha
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED sha
+POSTHOOK: type: DESCFUNCTION
+sha(str or bin) - Calculates the SHA-1 digest for string or binary and returns the value as a hex string.
+Synonyms: sha1
+Example:
+  > SELECT sha('ABC');
+  '3c01bdbb26f358bab27f267924aa2c9a03fcfdb8'
+  > SELECT sha(binary('ABC'));
+  '3c01bdbb26f358bab27f267924aa2c9a03fcfdb8'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSha1
+Function type:BUILTIN
+PREHOOK: query: explain select sha1('ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select sha1('ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: '3c01bdbb26f358bab27f267924aa2c9a03fcfdb8' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+sha1('ABC'),
+sha(''),
+sha(binary('ABC')),
+sha1(binary('')),
+sha1(cast(null as string)),
+sha(cast(null as binary)),
+sha1(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+sha1('ABC'),
+sha(''),
+sha(binary('ABC')),
+sha1(binary('')),
+sha1(cast(null as string)),
+sha(cast(null as binary)),
+sha1(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+3c01bdbb26f358bab27f267924aa2c9a03fcfdb8	da39a3ee5e6b4b0d3255bfef95601890afd80709	3c01bdbb26f358bab27f267924aa2c9a03fcfdb8	da39a3ee5e6b4b0d3255bfef95601890afd80709	NULL	NULL	NULL

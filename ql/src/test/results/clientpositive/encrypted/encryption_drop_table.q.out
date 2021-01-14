@@ -38,10 +38,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_ext_table
-PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
+PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_ext_table
@@ -54,10 +54,10 @@ POSTHOOK: query: DROP TABLE default.encrypted_ext_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_ext_table
 POSTHOOK: Output: default@encrypted_ext_table
-PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
+PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table_n2
@@ -69,10 +69,10 @@ POSTHOOK: query: DROP TABLE default.encrypted_table_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table_n2
 POSTHOOK: Output: default@encrypted_table_n2
-PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
+PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table1
@@ -142,10 +142,10 @@ POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table1
 POSTHOOK: Output: default@encrypted_table1
-PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
+PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 FAILED: SemanticException [Error 10001]: Table not found encrypted_table1
@@ -153,9 +153,9 @@ PREHOOK: query: DROP TABLE default.encrypted_table1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
+PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default

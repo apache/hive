@@ -32,6 +32,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: cint is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_30_container, bigKeyColName:cint, smallTablePos:1, keyRatio:0.4967447916666667
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

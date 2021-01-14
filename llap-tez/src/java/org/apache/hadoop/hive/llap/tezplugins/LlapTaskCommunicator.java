@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.hive.conf.Validator.RangeValidator;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService.NodeInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
@@ -22,10 +23,12 @@ import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.BooleanArr
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -94,12 +97,14 @@ import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.dag.app.TezTaskCommunicatorImpl;
+import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
 import org.apache.tez.serviceplugins.api.ContainerEndReason;
+import org.apache.tez.serviceplugins.api.DagInfo;
 import org.apache.tez.serviceplugins.api.ServicePluginErrorDefaults;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorContext;
@@ -255,23 +260,43 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
       int numHandlers =
           HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT);
-      int umbilicalPort = HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
-      if (umbilicalPort <= 0) {
-        umbilicalPort = 0;
-      }
-      server = new RPC.Builder(conf)
-          .setProtocol(LlapTaskUmbilicalProtocol.class)
-          .setBindAddress("0.0.0.0")
-          .setPort(umbilicalPort)
-          .setInstance(umbilical)
-          .setNumHandlers(numHandlers)
-          .setSecretManager(jobTokenSecretManager).build();
+      String[] portRange =
+          conf.get(HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname)
+              .split("-");
+      boolean isHadoopSecurityAuthorizationEnabled = conf.getBoolean(
+          CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false);
+      boolean portFound = false;
+      IOException ioe = null;
+      int minPort = Integer.parseInt(portRange[0]);
+      if (portRange.length == 1) {
+        // Single port specified, not range.
+        startServerInternal(conf, minPort, numHandlers, jobTokenSecretManager,
+            isHadoopSecurityAuthorizationEnabled);
+        portFound = true;
+        LOG.info("Successfully bound to port {}", minPort);
+      } else {
+        int maxPort = Integer.parseInt(portRange[1]);
+        // Validate the range specified is valid. i.e the ports lie between
+        // 1024 and 65535.
+        validatePortRange(portRange[0], portRange[1]);
 
-      if (conf.getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false)) {
-        server.refreshServiceAcl(conf, new LlapUmbilicalPolicyProvider());
+        for (int i = minPort; i < maxPort; i++) {
+          try {
+            startServerInternal(conf, i, numHandlers, jobTokenSecretManager,
+                isHadoopSecurityAuthorizationEnabled);
+            portFound = true;
+            LOG.info("Successfully bound to port {}", i);
+            break;
+          } catch (BindException be) {
+            // Ignore and move ahead, in search of a free port.
+            LOG.warn("Unable to bind to port {}", i, be);
+            ioe = be;
+          }
+        }
       }
-
-      server.start();
+      if(!portFound) {
+        throw ioe;
+      }
       this.address = NetUtils.getConnectAddress(server);
       this.amHost = LlapUtil.getAmHostNameFromAddress(address, conf);
       LOG.info("Started LlapUmbilical: " + umbilical.getClass().getName() + " at address: "
@@ -279,6 +304,44 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     } catch (IOException e) {
       throw new TezUncheckedException(e);
     }
+  }
+
+  private void validatePortRange(String minPort, String maxPort)
+      throws IOException {
+    RangeValidator rangeValidator = new RangeValidator(1024L, 65535L);
+    String valMin = rangeValidator.validate(minPort);
+    String valMax = rangeValidator.validate(maxPort);
+    if (valMin == null & valMax == null) {
+      throw new IOException("Invalid minimum range value: " + minPort + " and "
+          + "maximum range value: " + maxPort + " for "
+          + HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname
+          + ". The value should be between 1024 and 65535.");
+    }
+    if (valMin != null) {
+      throw new IOException("Invalid minimum range value :" + minPort + " for "
+          + HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname
+          + ". The value should be between 1024 and 65535.");
+    }
+    if (valMax != null) {
+      throw new IOException("Invalid maximum range value:" + maxPort + " for "
+          + HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname
+          + ". The value should be between 1024 and 65535.");
+    }
+  }
+
+  private void startServerInternal(Configuration conf, int umbilicalPort,
+      int numHandlers, JobTokenSecretManager jobTokenSecretManager,
+      boolean isHadoopSecurityAuthorizationEnabled) throws IOException {
+    server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
+        .setBindAddress("0.0.0.0").setPort(umbilicalPort).setInstance(umbilical)
+        .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
+        .build();
+
+    if (isHadoopSecurityAuthorizationEnabled) {
+      server.refreshServiceAcl(conf, new LlapUmbilicalPolicyProvider());
+    }
+
+    server.start();
   }
 
   @VisibleForTesting
@@ -398,11 +461,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         credentialsChanged, priority);
     int dagId = taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId();
     if (currentQueryIdentifierProto == null || (dagId != currentQueryIdentifierProto.getDagIndex())) {
-      // TODO HiveQueryId extraction by parsing the Processor payload is ugly. This can be improved
-      // once TEZ-2672 is fixed.
-      String hiveQueryId;
+      String hiveQueryId = extractQueryIdFromContext();
       try {
-        hiveQueryId = extractQueryId(taskSpec);
+        hiveQueryId = (hiveQueryId == null) ? extractQueryId(taskSpec) : hiveQueryId;
       } catch (IOException e) {
         throw new RuntimeException("Failed to extract query id from task spec: " + taskSpec, e);
       }
@@ -820,10 +881,20 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     // is likely already happening.
   }
 
+  // Needed for GenericUDTFGetSplits, where TaskSpecs are generated
   private String extractQueryId(TaskSpec taskSpec) throws IOException {
     UserPayload processorPayload = taskSpec.getProcessorDescriptor().getUserPayload();
     Configuration conf = TezUtils.createConfFromUserPayload(processorPayload);
     return HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+  }
+
+  private String extractQueryIdFromContext() {
+    //TODO: Remove following instance of check, When TEZ-2672 exposes getConf from DagInfo
+    DagInfo dagInfo = getContext().getCurrentDagInfo();
+    if (dagInfo instanceof DAG) {
+      return ((DAG)dagInfo).getConf().get(ConfVars.HIVEQUERYID.varname);
+    }
+    return null;
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequest(ContainerId containerId,
@@ -848,10 +919,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         taskSpec, currentQueryIdentifierProto, getTokenIdentifier(), user, hiveQueryId)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
-    if (scheduler != null) { // May be null in tests
-      // TODO: see javadoc
-      builder.setIsGuaranteed(scheduler.isInitialGuaranteed(taskSpec.getTaskAttemptID()));
-    }
+    builder.setIsGuaranteed(ContainerFactory.isContainerInitializedAsGuaranteed(containerId));
     return builder.build();
   }
 

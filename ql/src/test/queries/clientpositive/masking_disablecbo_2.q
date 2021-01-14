@@ -1,4 +1,6 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.cbo.enable=false;
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.enabled=true;

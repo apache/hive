@@ -1067,15 +1067,15 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)", "", ""},
       // Ceil on an integer argument is a noop, but it is less code to handle it this way.
       {"ColumnUnaryFunc", "FuncCeil", "long", "long", "Math.ceil", "", "(long)", "", ""},
-      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", "", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", "",
+      {"ColumnUnaryFunc", "FuncExp", "double", "double", "StrictMath.exp", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "long", "StrictMath.exp", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncLn", "double", "double", "StrictMath.log", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", "",
+      {"ColumnUnaryFunc", "FuncLn", "double", "long", "StrictMath.log", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", "",
+      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "StrictMath.log10", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", "",
+      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "StrictMath.log10", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       // The MathExpr class contains helper functions for cases when existing library
       // routines can't be used directly.
@@ -1101,8 +1101,8 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "long", "Math.cos", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "double", "StrictMath.cos", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "long", "StrictMath.cos", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", "", ""},
@@ -3213,8 +3213,8 @@ public class GenVectorCode extends Task {
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replace("<ClassName>", className);
+    templateString = templateString.replace("<Operator>", operatorName.toLowerCase());
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);

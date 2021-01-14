@@ -20,9 +20,12 @@ package org.apache.hadoop.hive.metastore.utils;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -43,12 +46,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
@@ -107,8 +113,14 @@ public class MetaStoreUtils {
   // NOTE:
   // If the following array is updated, please also be sure to update the
   // configuration parameter documentation
-  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
-  private static final char[] specialCharactersInTableNames = new char[] { '/' };
+  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in MetastoreConf as well.
+  private static final char[] SPECIAL_CHARACTERS_IN_TABLE_NAMES = new char[] {
+      // standard
+      ' ', '"', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '[', ']',
+      '_', '|', '{', '}', '$', '^',
+      // non-standard
+      '!', '~', '#', '@', '`'
+  };
 
   /**
    * Catches exceptions that can't be handled and bundles them to MetaException
@@ -188,15 +200,15 @@ public class MetaStoreUtils {
    */
   public static boolean validateName(String name, Configuration conf) {
     Pattern tpat;
-    String allowedCharacters = "\\w_";
+    StringBuilder allowedSpecialCharacters = new StringBuilder();
     if (conf != null
         && MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES)) {
-      for (Character c : specialCharactersInTableNames) {
-        allowedCharacters += c;
+      for (Character c : SPECIAL_CHARACTERS_IN_TABLE_NAMES) {
+        allowedSpecialCharacters.append(c);
       }
     }
-    tpat = Pattern.compile("[" + allowedCharacters + "]+");
+    tpat = Pattern.compile("[\\w" + Pattern.quote(allowedSpecialCharacters.toString()) + "]+");
     Matcher m = tpat.matcher(name);
     return m.matches();
   }
@@ -247,6 +259,20 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
+  /**
+   * Determines whether an table needs to be deleted completely or moved to trash directory.
+   *
+   * @param tableParams parameters of the table
+   *
+   * @return true if the table needs to be deleted rather than moved to trash directory
+   */
+  public static boolean isSkipTrash(Map<String, String> tableParams) {
+    if (tableParams == null) {
+      return false;
+    }
+    return isPropertyTrue(tableParams, "skip.trash")
+        || isPropertyTrue(tableParams, "auto.purge");
+  }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {
@@ -398,13 +424,6 @@ public class MetaStoreUtils {
    */
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
     List<URL> curPath = getCurrentClassPaths(cloader);
-    ArrayList<URL> newPath = new ArrayList<>(curPath.size());
-
-    // get a list with the current classpath components
-    for (URL onePath : curPath) {
-      newPath.add(onePath);
-    }
-    curPath = newPath;
 
     for (String onestr : newPaths) {
       URL oneurl = urlFromPathString(onestr);
@@ -413,7 +432,12 @@ public class MetaStoreUtils {
       }
     }
 
-    return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
+    return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+      @Override
+      public ClassLoader run() {
+        return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
+      }
+    });
   }
 
   /**
@@ -655,9 +679,12 @@ public class MetaStoreUtils {
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION,
           sd.getLocation());
     }
-    schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT, Integer
-            .toString(sd.getNumBuckets()));
+    int bucket_cnt = sd.getNumBuckets();
+    if (bucket_cnt > 0) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT,
+          Integer.toString(bucket_cnt));
+    }
+
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
@@ -671,10 +698,6 @@ public class MetaStoreUtils {
       if (sd.getSerdeInfo().getSerializationLib() != null) {
         schema.setProperty(ColumnType.SERIALIZATION_LIB, sd .getSerdeInfo().getSerializationLib());
       }
-    }
-
-    if (sd.getCols() != null) {
-      schema.setProperty(ColumnType.SERIALIZATION_DDL, getDDLFromFieldSchema(tableName, sd.getCols()));
     }
 
     String partString = StringUtils.EMPTY;
@@ -705,7 +728,13 @@ public class MetaStoreUtils {
     if (parameters != null) {
       for (Map.Entry<String, String> e : parameters.entrySet()) {
         // add non-null parameters to the schema
-        if ( e.getValue() != null) {
+        String key = e.getKey();
+        if (!StatsSetupConst.COLUMN_STATS_ACCURATE.equals(key) &&
+            !hive_metastoreConstants.DDL_TIME.equals(key) &&
+            !StatsSetupConst.TOTAL_SIZE.equals(key) &&
+            !StatsSetupConst.RAW_DATA_SIZE.equals(key) &&
+            !StatsSetupConst.NUM_FILES.equals(key) &&
+            !StatsSetupConst.ROW_COUNT.equals(key) && e.getValue() != null) {
           schema.setProperty(e.getKey(), e.getValue());
         }
       }
@@ -875,7 +904,9 @@ public class MetaStoreUtils {
    * database name with the proper delimiters.
    */
   public static String[] parseDbName(String dbName, Configuration conf) throws MetaException {
-    if (dbName == null) return nullCatalogAndDatabase;
+    if (dbName == null) {
+      return Arrays.copyOf(nullCatalogAndDatabase, nullCatalogAndDatabase.length);
+    }
     if (hasCatalogName(dbName)) {
       if (dbName.endsWith(CATALOG_DB_SEPARATOR)) {
         // This means the DB name is null
@@ -956,5 +987,39 @@ public class MetaStoreUtils {
    */
   public static List<Predicate<String>> compilePatternsToPredicates(List<String> patterns) {
     return patterns.stream().map(pattern -> compile(pattern).asPredicate()).collect(Collectors.toList());
+  }
+
+  /**
+   * Get order specs from a represented string.
+   * @param order specified in partColIndex[,partColIndex]*:[-|\+]+ pattern
+   * @return the order specs
+   */
+  public static List<Object[]> makeOrderSpecs(String order) {
+    if (StringUtils.isBlank(order) || order.split(":").length != 2) {
+      return new ArrayList<Object[]>();
+    }
+    String[] parts = order.split(":");
+    String[] poses = parts[0].split(",");
+    char[] chars = parts[1].toCharArray();
+    List<Object[]> orderSpecs = new ArrayList<Object[]>(chars.length);
+    if (poses.length != chars.length) {
+      throw new IllegalArgumentException("The length of partition keys and sort order" +
+          " do not mismatch, order: " + order);
+    }
+    for (int i = 0; i < poses.length; i++) {
+      Object[] spec = new Object[2];
+      spec[0] = Integer.parseInt(poses[i]);
+      spec[1] = ('+' == chars[i]) ? "ASC" : "DESC";
+      orderSpecs.add(spec);
+    }
+    return orderSpecs;
+  }
+
+  public static void addPartitonSpecsToList(PartitionsSpecByExprResult r, List<PartitionSpec> result) {
+    result.addAll(r.getPartitionsSpec());
+  }
+
+  public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 }

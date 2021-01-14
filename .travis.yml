@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# https://docs.travis-ci.com/user/ci-environment/
+# https://docs.travis-ci.com/user/reference/overview/
 # trusty - 7.5GB memory and 2 cores
-sudo: required
-dist: trusty
+dist: bionic
 
 # travis performs a shallow clone by default, in case of any issues
 # that requires full git history, enable this
@@ -25,7 +24,7 @@ dist: trusty
 
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 # disabling cache for /home/travis/.m2/repository/org/apache/hive/hive-jdbc/3.0.0-SNAPSHOT/hive-jdbc-3.0.0-SNAPSHOT-standalone.jar (Permission denied)
 #cache:
@@ -36,11 +35,6 @@ env:
   MAVEN_SKIP_RC=true
   MAVEN_OPTS="-Xmx2g"
 
-# workaround added: https://github.com/travis-ci/travis-ci/issues/4629
-before_install:
-  - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
-
-
-install: true
+install: skip
 
 script: mvn clean install -DskipTests -q -Pitests

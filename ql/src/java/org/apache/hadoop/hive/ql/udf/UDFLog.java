@@ -72,7 +72,7 @@ public class UDFLog extends UDFMath {
     if (a.get() <= 0.0) {
       return null;
     } else {
-      result.set(Math.log(a.get()));
+      result.set(StrictMath.log(a.get()));
       return result;
     }
   }
@@ -81,7 +81,7 @@ public class UDFLog extends UDFMath {
     if (base <= 1.0 || input <= 0.0) {
       return null;
     }
-    result.set(Math.log(input) / Math.log(base));
+    result.set(StrictMath.log(input) / StrictMath.log(base));
     return result;
   }
 

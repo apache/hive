@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,7 +46,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     ShowCompactResponse rsp = context.getDb().showCompactions();
 
     // Write the results into the file
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       // Write a header for cliDriver
       if (!sessionState.isHiveServerQuery()) {
         writeHeader(os);
@@ -81,6 +81,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("Worker");
     os.write(Utilities.tabCode);
+    os.writeBytes("Enqueue Time");
+    os.write(Utilities.tabCode);
     os.writeBytes("Start Time");
     os.write(Utilities.tabCode);
     os.writeBytes("Duration(ms)");
@@ -111,6 +113,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes(wid == null ? NO_VAL : wid.split("-")[0]);
     os.write(Utilities.tabCode);
     os.writeBytes(wid == null ? NO_VAL : wid.split("-")[1]);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetEnqueueTime() ? Long.toString(e.getEnqueueTime()) : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : NO_VAL);
     os.write(Utilities.tabCode);

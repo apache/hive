@@ -28,17 +28,17 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
-import org.apache.hive.hcatalog.streaming.TransactionBatch;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StreamingException;
@@ -50,10 +50,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -96,8 +102,34 @@ class CompactorTestUtil {
       throws IOException {
     Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
         new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
-    return Arrays.stream(fs.listStatus(path)).map(FileStatus::getPath).map(Path::getName).sorted()
+    return Arrays.stream(fs.listStatus(path, AcidUtils.bucketFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
         .collect(Collectors.toList());
+  }
+
+  static List<String> getBucketFileNamesForMMTables(FileSystem fs, Table table, String partitionName, String deltaName)
+      throws IOException {
+    Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
+        new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
+    return Arrays.stream(fs.listStatus(path, AcidUtils.hiddenFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
+        .collect(Collectors.toList());
+  }
+
+  static List<String> getBucketFileNamesWithoutAttemptId(FileSystem fs, Table table, String partitionName,
+      List<String> deltaDirs) throws IOException {
+    Set<String> bucketFiles = new HashSet<>();
+    for (String deltaDir : deltaDirs) {
+      bucketFiles.addAll(getBucketFileNames(fs, table, partitionName, deltaDir));
+    }
+    Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
+    List<String> bucketFilesWithoutAttemptId = new ArrayList<>();
+    for (String bucketFile : bucketFiles) {
+      Matcher m = p.matcher(bucketFile);
+      if (m.matches()) {
+        bucketFilesWithoutAttemptId.add(m.group(1));
+      }
+    }
+    Collections.sort(bucketFilesWithoutAttemptId);
+    return bucketFilesWithoutAttemptId;
   }
 
   /**
@@ -118,7 +150,7 @@ class CompactorTestUtil {
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    t.init(new AtomicBoolean(true), new AtomicBoolean());
+    t.init(new AtomicBoolean(true));
     if (partNames.length == 0) {
       txnHandler.compact(new CompactionRequest(dbName, tblName, compactionType));
       t.run();
@@ -138,65 +170,15 @@ class CompactorTestUtil {
    * @throws Exception if cleaner cannot be started.
    */
   static void runCleaner(HiveConf hConf) throws Exception {
+    // Wait for the cooldown period so the Cleaner can see last committed txn as the highest committed watermark
+    Thread.sleep(MetastoreConf.getTimeVar(hConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
     HiveConf hiveConf = new HiveConf(hConf);
-    AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
+    t.init(new AtomicBoolean(true));
     t.run();
-  }
-
-  /**
-   * Trigger compaction initiator.
-   * @param hConf hive configuration
-   * @param isQueryBased run compaction as query based
-   * @throws Exception if initiator cannot be started.
-   */
-  static void runInitiator(HiveConf hConf, boolean isQueryBased) throws Exception {
-    HiveConf hiveConf = new HiveConf(hConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Initiator t = new Initiator();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  /**
-   * Trigger compaction worker.
-   * @param hConf hive configuration
-   * @param isQueryBased run compaction as query based
-   * @throws Exception if worker cannot be started.
-   */
-  static void runWorker(HiveConf hConf, boolean isQueryBased) throws Exception {
-    HiveConf hiveConf = new HiveConf(hConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  /**
-   * Execute Hive CLI statement.
-   * @param cmd arbitrary statement to execute
-   * @param driver execution driver
-   * @throws Exception failed to execute statement
-   */
-  void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
-    LOG.debug("Executing: " + cmd);
-    try {
-      driver.run(cmd);
-    } catch (CommandProcessorException e) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + e);
-    }
   }
 
   /**
@@ -214,6 +196,7 @@ class CompactorTestUtil {
       throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + e);
     }
     List<String> rs = new ArrayList<>();
+    driver.setMaxRows(400);
     driver.getResults(rs);
     return rs;
   }
@@ -258,25 +241,6 @@ class CompactorTestUtil {
       return null;
     }
     return connection;
-  }
-
-  static void writeBatch(org.apache.hive.hcatalog.streaming.StreamingConnection connection,
-      DelimitedInputWriter writer,
-      boolean closeEarly) throws InterruptedException, org.apache.hive.hcatalog.streaming.StreamingException {
-    TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
-    txnBatch.beginNextTransaction();
-    txnBatch.write("50,Kiev".getBytes());
-    txnBatch.write("51,St. Petersburg".getBytes());
-    txnBatch.write("44,Boston".getBytes());
-    txnBatch.commit();
-    if (!closeEarly) {
-      txnBatch.beginNextTransaction();
-      txnBatch.write("52,Tel Aviv".getBytes());
-      txnBatch.write("53,Atlantis".getBytes());
-      txnBatch.write("53,Boston".getBytes());
-      txnBatch.commit();
-      txnBatch.close();
-    }
   }
 
   static void checkExpectedTxnsPresent(Path base, Path[] deltas, String columnNamesProperty, String columnTypesProperty,
@@ -347,7 +311,7 @@ class CompactorTestUtil {
     conf.setBoolean("orc.schema.evolution.case.sensitive", false);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     AcidInputFormat.RawReader<OrcStruct> reader =
-        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, String>());
+        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, Integer>());
     RecordIdentifier identifier = reader.createKey();
     OrcStruct value = reader.createValue();
     long currentTxn = min;

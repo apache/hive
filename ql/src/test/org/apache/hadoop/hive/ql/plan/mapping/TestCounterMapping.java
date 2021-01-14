@@ -184,9 +184,7 @@ public class TestCounterMapping {
     OpTreeSignature filterSig = pm.lookup(OpTreeSignature.class, fos.get(0));
     Object pred = filterSig.getSig().getSigMap().get("getPredicateString");
     assertEquals("(u = 2) (type: boolean)", pred);
-
   }
-
 
   @Test
   @Ignore("needs HiveFilter mapping")

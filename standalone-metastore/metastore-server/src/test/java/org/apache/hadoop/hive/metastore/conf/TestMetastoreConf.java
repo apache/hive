@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.conf;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.core.StringEndsWith;
@@ -47,10 +48,8 @@ import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
-import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreConf {
@@ -132,7 +131,7 @@ public class TestMetastoreConf {
     conf = MetastoreConf.newMetastoreConf();
     Assert.assertEquals("defaultval", MetastoreConf.getVar(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals(42, MetastoreConf.getLongVar(conf, ConfVars.LONG_TEST_ENTRY));
-    Assert.assertEquals(3.141592654, MetastoreConf.getDoubleVar(conf, ConfVars.DOUBLE_TEST_ENTRY),
+    Assert.assertEquals(Math.PI, MetastoreConf.getDoubleVar(conf, ConfVars.DOUBLE_TEST_ENTRY),
         0.0000001);
     Assert.assertTrue(MetastoreConf.getBoolVar(conf, ConfVars.BOOLEAN_TEST_ENTRY));
     Assert.assertEquals(1, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY, TimeUnit.SECONDS));
@@ -149,7 +148,7 @@ public class TestMetastoreConf {
     Assert.assertEquals("defaultval", MetastoreConf.get(conf, ConfVars.STR_TEST_ENTRY.getHiveName()));
     Assert.assertEquals("defaultval", MetastoreConf.getAsString(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals("42", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
-    Assert.assertEquals("3.141592654", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
+    Assert.assertEquals("" + Math.PI, MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
     Assert.assertEquals("true", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
   }
 
@@ -311,6 +310,36 @@ public class TestMetastoreConf {
     Assert.assertEquals("false", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
   }
 
+  /**
+   * Verify that a config can be set with a deprecated key/name.
+   */
+  @Test
+  public void testDeprecatedConfigs() throws IOException {
+    // set with deprecated key
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "this.is.the.metastore.deprecated.name", "1" // default is 0
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+
+    // set with hive (HiveConf) deprecated key
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "this.is.the.hive.deprecated.name", "2" // default is 0
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(2, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+
+    // set with normal key
+    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
+        "hive.test.str", "hivedefault",
+        "test.deprecated", "3" // default is 0
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+  }
+
   @Test
   public void timeUnits() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
@@ -465,13 +494,11 @@ public class TestMetastoreConf {
         EventCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.METASTORE_DELEGATION_MANAGER_CLASS,
         MetastoreDelegationTokenManager.class.getName());
-    Assert.assertEquals(MetastoreConf.ACID_COMPACTION_HISTORY_SERVICE_CLASS,
-        AcidCompactionHistoryService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_HOUSE_KEEPER_SERVICE_CLASS,
         AcidHouseKeeperService.class.getName());
+    Assert.assertEquals(MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
+        AcidTxnCleanerService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
         AcidOpenTxnsCounterService.class.getName());
-    Assert.assertEquals(MetastoreConf.ACID_WRITE_SET_SERVICE_CLASS,
-        AcidWriteSetService.class.getName());
   }
 }

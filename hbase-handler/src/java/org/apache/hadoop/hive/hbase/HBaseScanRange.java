@@ -87,6 +87,7 @@ public class HBaseScanRange implements Serializable {
     scan.setFilter(new FilterList(filters));
   }
 
+  @Override
   public String toString() {
     return (startRow == null ? "" : new BytesWritable(startRow).toString()) + " ~ " +
         (stopRow == null ? "" : new BytesWritable(stopRow).toString());

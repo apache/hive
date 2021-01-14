@@ -119,7 +119,7 @@ public final class KuduPredicateHandler {
   public static List<KuduPredicate> getPredicates(Configuration conf, Schema schema) {
     SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
     if (sarg == null) {
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     return toKuduPredicates(sarg, schema);
   }

@@ -20,14 +20,24 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.timestampInspectorFromStats;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 
+import com.google.common.base.MoreObjects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TimestampColumnStatsMerger extends ColumnStatsMerger {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TimestampColumnStatsMerger.class);
+
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+    LOG.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
+
     TimestampColumnStatsDataInspector aggregateData = timestampInspectorFromStats(aggregateColStats);
     TimestampColumnStatsDataInspector newData = timestampInspectorFromStats(newColStats);
 
@@ -40,7 +50,7 @@ public class TimestampColumnStatsMerger extends ColumnStatsMerger {
     } else {
       NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
       NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      long ndv = -1;
+      final long ndv;
       if (oldEst.canMerge(newEst)) {
         oldEst.mergeEstimators(newEst);
         ndv = oldEst.estimateNumDistinctValues();
@@ -48,8 +58,8 @@ public class TimestampColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
-          + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
+      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
+          aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
     }
 
@@ -57,36 +67,32 @@ public class TimestampColumnStatsMerger extends ColumnStatsMerger {
   }
 
   public void setLowValue(TimestampColumnStatsDataInspector aggregateData, TimestampColumnStatsDataInspector newData) {
+    final Timestamp aggregateLowValue = aggregateData.getLowValue();
+    final Timestamp newLowValue = newData.getLowValue();
+
+    final Timestamp mergedLowValue;
     if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
       return;
-    }
-
-    Timestamp aggregateLowValue = aggregateData.getLowValue();
-    Timestamp newLowValue = newData.getLowValue();
-
-    Timestamp mergedLowValue = null;
-    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
-      mergedLowValue = aggregateLowValue.compareTo(newLowValue) > 0 ? newLowValue : aggregateLowValue;
+    } else if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      mergedLowValue = ObjectUtils.min(newLowValue, aggregateLowValue);
     } else {
-      mergedLowValue = aggregateLowValue == null ? newLowValue : aggregateLowValue;
+      mergedLowValue = MoreObjects.firstNonNull(aggregateLowValue, newLowValue);
     }
 
     aggregateData.setLowValue(mergedLowValue);
   }
 
   public void setHighValue(TimestampColumnStatsDataInspector aggregateData, TimestampColumnStatsDataInspector newData) {
+    final Timestamp aggregateHighValue = aggregateData.getHighValue();
+    final Timestamp newHighValue = newData.getHighValue();
+
+    final Timestamp mergedHighValue;
     if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
       return;
-    }
-
-    Timestamp aggregateHighValue = aggregateData.getHighValue();
-    Timestamp newHighValue = newData.getHighValue();
-
-    Timestamp mergedHighValue = null;
-    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
-      mergedHighValue = aggregateHighValue.compareTo(newHighValue) > 0 ? aggregateHighValue : newHighValue;
+    } else if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      mergedHighValue = ObjectUtils.max(aggregateHighValue, newHighValue);
     } else {
-      mergedHighValue = aggregateHighValue == null ? newHighValue : aggregateHighValue;
+      mergedHighValue = MoreObjects.firstNonNull(aggregateHighValue, newHighValue);
     }
 
     aggregateData.setHighValue(mergedHighValue);

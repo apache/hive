@@ -1,0 +1,561 @@
+PREHOOK: query: create table inputTbl1_n13(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inputTbl1_n13
+POSTHOOK: query: create table inputTbl1_n13(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inputTbl1_n13
+PREHOOK: query: create table outputTbl1_n19(key string, `values` bigint) partitioned by (ds string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1_n19
+POSTHOOK: query: create table outputTbl1_n19(key string, `values` bigint) partitioned by (ds string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl1_n19
+PREHOOK: query: create table outputTbl2_n6(key string, `values` bigint) partitioned by (ds string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl2_n6
+POSTHOOK: query: create table outputTbl2_n6(key string, `values` bigint) partitioned by (ds string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl2_n6
+PREHOOK: query: create table outputTbl3_n3(key string, `values` bigint) partitioned by (ds string,hr string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl3_n3
+POSTHOOK: query: create table outputTbl3_n3(key string, `values` bigint) partitioned by (ds string,hr string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl3_n3
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@inputtbl1_n13
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@inputtbl1_n13
+PREHOOK: query: explain
+insert overwrite table outputTbl1_n19 partition(ds='2004')
+SELECT *
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n13
+PREHOOK: Output: default@outputtbl1_n19@ds=2004
+POSTHOOK: query: explain
+insert overwrite table outputTbl1_n19 partition(ds='2004')
+SELECT *
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n13
+POSTHOOK: Output: default@outputtbl1_n19@ds=2004
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1_n13
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1_n19
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1_n19
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2004
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl1_n19
+
+PREHOOK: query: insert overwrite table outputTbl1_n19 partition(ds='2004')
+SELECT *
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n13
+PREHOOK: Output: default@outputtbl1_n19@ds=2004
+POSTHOOK: query: insert overwrite table outputTbl1_n19 partition(ds='2004')
+SELECT *
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n13 group by key
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n13
+POSTHOOK: Output: default@outputtbl1_n19@ds=2004
+POSTHOOK: Lineage: outputtbl1_n19 PARTITION(ds=2004).key EXPRESSION [(inputtbl1_n13)inputtbl1_n13.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n19 PARTITION(ds=2004).values EXPRESSION [(inputtbl1_n13)inputtbl1_n13.null, ]
+PREHOOK: query: desc formatted outputTbl1_n19 partition(ds='2004')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1_n19
+POSTHOOK: query: desc formatted outputTbl1_n19 partition(ds='2004')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl1_n19
+# col_name            	data_type           	comment             
+key                 	string              	                    
+values              	bigint              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2004]              	 
+Database:           	default             	 
+Table:              	outputtbl1_n19      	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	4                   
+	totalSize           	40                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from outputTbl1_n19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1_n19
+PREHOOK: Input: default@outputtbl1_n19@ds=2004
+#### A masked pattern was here ####
+POSTHOOK: query: select * from outputTbl1_n19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1_n19
+POSTHOOK: Input: default@outputtbl1_n19@ds=2004
+#### A masked pattern was here ####
+1	1	2004
+1	1	2004
+2	1	2004
+2	1	2004
+3	1	2004
+3	1	2004
+7	1	2004
+7	1	2004
+8	2	2004
+8	2	2004
+PREHOOK: query: explain 
+insert overwrite table outputTbl2_n6 partition(ds)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
+  UNION ALL
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@outputtbl2_n6
+POSTHOOK: query: explain 
+insert overwrite table outputTbl2_n6 partition(ds)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
+  UNION ALL
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl2_n6
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 500
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: string), _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 500
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), UDFToLong(VALUE._col1) (type: bigint), '2008-04-08' (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.outputtbl2_n6
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.outputtbl2_n6
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl2_n6
+
+PREHOOK: query: insert overwrite table outputTbl2_n6 partition(ds)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
+  UNION ALL
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@outputtbl2_n6
+POSTHOOK: query: insert overwrite table outputTbl2_n6 partition(ds)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
+  UNION ALL
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl2_n6
+POSTHOOK: Output: default@outputtbl2_n6@ds=2008-04-08
+POSTHOOK: Lineage: outputtbl2_n6 PARTITION(ds=2008-04-08).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl2_n6 PARTITION(ds=2008-04-08).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions outputTbl2_n6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@outputtbl2_n6
+POSTHOOK: query: show partitions outputTbl2_n6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@outputtbl2_n6
+ds=2008-04-08
+PREHOOK: query: desc formatted outputTbl2_n6 partition(ds='2008-04-08')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl2_n6
+POSTHOOK: query: desc formatted outputTbl2_n6 partition(ds='2008-04-08')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl2_n6
+# col_name            	data_type           	comment             
+key                 	string              	                    
+values              	bigint              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08]        	 
+Database:           	default             	 
+Table:              	outputtbl2_n6       	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	totalSize           	6812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain insert overwrite table outputTbl3_n3 partition(ds, hr)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
+  UNION ALL
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@outputtbl3_n3
+POSTHOOK: query: explain insert overwrite table outputTbl3_n3 partition(ds, hr)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
+  UNION ALL
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl3_n3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 1000
+                    Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1000
+                Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: string), UDFToLong(VALUE._col1) (type: bigint), '2008-04-08' (type: string), VALUE._col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.outputtbl3_n3
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.outputtbl3_n3
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl3_n3
+
+PREHOOK: query: insert overwrite table outputTbl3_n3 partition(ds, hr)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
+  UNION ALL
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@outputtbl3_n3
+POSTHOOK: query: insert overwrite table outputTbl3_n3 partition(ds, hr)
+SELECT *
+FROM (
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
+  UNION ALL
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@outputtbl3_n3
+POSTHOOK: Output: default@outputtbl3_n3@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@outputtbl3_n3@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: outputtbl3_n3 PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3_n3 PARTITION(ds=2008-04-08,hr=11).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3_n3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3_n3 PARTITION(ds=2008-04-08,hr=12).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions outputTbl3_n3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@outputtbl3_n3
+POSTHOOK: query: show partitions outputTbl3_n3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@outputtbl3_n3
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+PREHOOK: query: desc formatted outputTbl3_n3 partition(ds='2008-04-08', hr='11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl3_n3
+POSTHOOK: query: desc formatted outputTbl3_n3 partition(ds='2008-04-08', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl3_n3
+# col_name            	data_type           	comment             
+key                 	string              	                    
+values              	bigint              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	outputtbl3_n3       	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	totalSize           	6812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

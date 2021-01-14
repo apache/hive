@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -79,7 +80,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public static final String CONTEXT_NAME_KEY = "__hive.context.name";
 
   private transient Configuration configuration;
-  protected transient CompilationOpContext cContext;
+  protected CompilationOpContext cContext;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -92,7 +93,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
   private String marker;
 
-  protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
   // initializing the whole tree in all the mappers (which might be required for mappers
@@ -1545,11 +1545,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return true;
   }
 
-  public void setBucketingVersion(int bucketingVersion) {
-    this.bucketingVersion = bucketingVersion;
-  }
-
-  public int getBucketingVersion() {
-    return bucketingVersion;
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+    for (Operator<? extends OperatorDesc> c : getChildOperators()) {
+      c.replaceTabAlias(oldAlias, newAlias);
+    }
   }
 }

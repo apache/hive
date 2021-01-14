@@ -103,7 +103,7 @@ public class LongColumnStatsDataInspector extends LongColumnStatsData {
   }
 
   public NumDistinctValueEstimator getNdvEstimator() {
-    if (isSetBitVectors() && getBitVectors().length != 0) {
+    if (ndvEstimator == null && isSetBitVectors() && getBitVectors().length != 0) {
       updateNdvEstimator();
     }
     return ndvEstimator;

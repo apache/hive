@@ -549,6 +549,20 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+PREHOOK: query: explain cbo
+select empid, deptno from emps_n3 group by empid, deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select empid, deptno from emps_n3 group by empid, deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_n3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(empid=[$0], deptno=[$1])
+  HiveTableScan(table=[[default, emps_n3]], table:alias=[emps_n3])
+
 PREHOOK: query: explain
 select empid, deptno from emps_n3 group by empid, deptno
 PREHOOK: type: QUERY
@@ -1086,7 +1100,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(_col0)
                         keys: true (type: boolean)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1213,7 +1227,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(_col1)
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE

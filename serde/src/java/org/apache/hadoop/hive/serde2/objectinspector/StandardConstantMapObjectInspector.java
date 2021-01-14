@@ -40,8 +40,8 @@ public class StandardConstantMapObjectInspector extends StandardMapObjectInspect
    */
    protected StandardConstantMapObjectInspector(ObjectInspector mapKeyObjectInspector,
        ObjectInspector mapValueObjectInspector, Map<?, ?> value) {
-    super(mapKeyObjectInspector, mapValueObjectInspector);
-    this.value = value;
+     super(mapKeyObjectInspector, mapValueObjectInspector);
+     this.value = value;
   }
 
   @Override

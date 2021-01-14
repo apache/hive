@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.sarg;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg.sargToKryo;
 
 import com.google.common.collect.Sets;
 
@@ -438,7 +439,7 @@ public class TestSearchArgumentImpl {
         .end()
         .build();
 
-    String serializedSarg = TestInputOutputFormat.toKryo(sarg);
+    String serializedSarg = sargToKryo(sarg);
     SearchArgument sarg2 = ConvertAstToSearchArg.create(serializedSarg);
 
     Field literalField = PredicateLeafImpl.class.getDeclaredField("literal");

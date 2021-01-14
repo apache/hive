@@ -26,47 +26,29 @@ package org.apache.hadoop.hive.ql.io.filter;
  * actually selected any rows.
  *
  */
-public abstract class FilterContext {
-
-  protected boolean currBatchIsSelectedInUse = false;
-  protected int[] currBatchSelected = null;
-  protected int currBatchSelectedSize = 0;
-
-  public FilterContext() {
-    super();
-  }
+public interface FilterContext {
 
   /**
    * Reset FilterContext variables.
    */
-  public void resetFilterContext() {
-    this.currBatchIsSelectedInUse = false;
-    this.currBatchSelected = null;
-    this.currBatchSelectedSize = 0;
-  }
+  void reset();
 
   /**
    * Is the filter applied?
    * @return true if the filter is actually applied
    */
-  public boolean isSelectedInUse() {
-    return this.currBatchIsSelectedInUse;
-  }
+  boolean isSelectedInUse();
 
   /**
    * Return an int array with the rows that pass the filter.
    * Do not modify the array returned!
    * @return int array
    */
-  public int[] getSelected() {
-    return this.currBatchSelected;
-  }
+  int[] getSelected();
 
   /**
    * Return the number of rows that pass the filter.
    * @return an int
    */
-  public int getSelectedSize() {
-    return this.currBatchSelectedSize;
-  }
+  int getSelectedSize();
 }

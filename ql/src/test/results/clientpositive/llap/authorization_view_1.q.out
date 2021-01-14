@@ -1,0 +1,261 @@
+PREHOOK: query: create table src_autho_test_n8 as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test_n8
+POSTHOOK: query: create table src_autho_test_n8 as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_autho_test_n8
+POSTHOOK: Lineage: src_autho_test_n8.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test_n8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v_n9 as select * from src_autho_test_n8
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_n9
+POSTHOOK: query: create view v_n9 as select * from src_autho_test_n8
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_n9
+POSTHOOK: Lineage: v_n9.key SIMPLE [(src_autho_test_n8)src_autho_test_n8.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n9.value SIMPLE [(src_autho_test_n8)src_autho_test_n8.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create view v1_n13 as select * from src_autho_test_n8
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1_n13
+POSTHOOK: query: create view v1_n13 as select * from src_autho_test_n8
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1_n13
+POSTHOOK: Lineage: v1_n13.key SIMPLE [(src_autho_test_n8)src_autho_test_n8.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1_n13.value SIMPLE [(src_autho_test_n8)src_autho_test_n8.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create view v2_n7 as select * from src_autho_test_n8
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v2_n7
+POSTHOOK: query: create view v2_n7 as select * from src_autho_test_n8
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v2_n7
+POSTHOOK: Lineage: v2_n7.key SIMPLE [(src_autho_test_n8)src_autho_test_n8.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2_n7.value SIMPLE [(src_autho_test_n8)src_autho_test_n8.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: grant select on table src_autho_test_n8 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test_n8
+POSTHOOK: query: grant select on table src_autho_test_n8 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test_n8
+PREHOOK: query: grant select on table v_n9 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v_n9
+POSTHOOK: query: grant select on table v_n9 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v_n9
+PREHOOK: query: grant select on table v1_n13 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v1_n13
+POSTHOOK: query: grant select on table v1_n13 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v1_n13
+PREHOOK: query: grant select on table v2_n7 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v2_n7
+POSTHOOK: query: grant select on table v2_n7 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v2_n7
+PREHOOK: query: show grant user hive_test_user on table v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table v_n9
+POSTHOOK: type: SHOW_GRANT
+default	v_n9			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9
+POSTHOOK: type: SHOW_GRANT
+default	v_n9			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on v_n9(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: select * from v_n9 order by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_n9 order by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+PREHOOK: query: revoke select on table src_autho_test_n8 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@src_autho_test_n8
+POSTHOOK: query: revoke select on table src_autho_test_n8 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test_n8
+PREHOOK: query: show grant user hive_test_user on table v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table v_n9
+POSTHOOK: type: SHOW_GRANT
+default	v_n9			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9
+POSTHOOK: type: SHOW_GRANT
+default	v_n9			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on v_n9(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: revoke select on table v_n9 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@v_n9
+POSTHOOK: query: revoke select on table v_n9 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@v_n9
+PREHOOK: query: show grant user hive_test_user on table v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table v_n9
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on v_n9(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: grant select on table src_autho_test_n8 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test_n8
+POSTHOOK: query: grant select on table src_autho_test_n8 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test_n8
+PREHOOK: query: grant select(key) on table v_n9 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v_n9
+POSTHOOK: query: grant select(key) on table v_n9 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v_n9
+PREHOOK: query: show grant user hive_test_user on table v_n9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table v_n9
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on v_n9(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_n9(key)
+POSTHOOK: type: SHOW_GRANT
+default	v_n9		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: select key from v_n9 order by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select key from v_n9 order by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+PREHOOK: query: select key from
+(select v_n9.key from src_autho_test_n8 join v_n9 on src_autho_test_n8.key=v_n9.key)subq 
+order by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select key from
+(select v_n9.key from src_autho_test_n8 join v_n9 on src_autho_test_n8.key=v_n9.key)subq 
+order by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+0
+0
+0
+0
+0
+0
+0
+0
+0
+10
+PREHOOK: query: select key from
+(select key as key from src_autho_test_n8 union all select key from v_n9)subq 
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select key from
+(select key as key from src_autho_test_n8 union all select key from v_n9)subq 
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+238
+86
+311
+27
+165
+409
+255
+278
+98
+484
+PREHOOK: query: select key from
+(select value as key from v2_n7 union select value as key from v1_n13 union all select key from v_n9)subq
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test_n8
+PREHOOK: Input: default@v1_n13
+PREHOOK: Input: default@v2_n7
+PREHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select key from
+(select value as key from v2_n7 union select value as key from v1_n13 union all select key from v_n9)subq
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test_n8
+POSTHOOK: Input: default@v1_n13
+POSTHOOK: Input: default@v2_n7
+POSTHOOK: Input: default@v_n9
+#### A masked pattern was here ####
+val_0
+val_10
+val_100
+val_103
+val_104
+val_105
+val_11
+val_111
+val_113
+val_114

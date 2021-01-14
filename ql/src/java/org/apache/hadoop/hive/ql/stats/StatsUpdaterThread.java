@@ -130,9 +130,8 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   }
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
+  public void init(AtomicBoolean stop) throws MetaException {
     this.stop = stop;
-    this.looped = looped;
     setPriority(MIN_PRIORITY);
     setDaemon(true);
     String user = "anonymous";

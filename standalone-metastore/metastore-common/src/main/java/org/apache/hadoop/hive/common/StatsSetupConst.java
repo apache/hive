@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -148,6 +149,10 @@ public class StatsSetupConst {
   // update should take place, such as with replication.
   public static final String DO_NOT_UPDATE_STATS = "DO_NOT_UPDATE_STATS";
 
+  // This string constant is used by AlterHandler to figure out that it should not attempt to
+  // populate quick stats based on the file listing
+  public static final String DO_NOT_POPULATE_QUICK_STATS = "DO_NOT_POPULATE_QUICK_STATS";
+
   //This string constant will be persisted in metastore to indicate whether corresponding
   //table or partition's statistics and table or partition's column statistics are accurate or not.
   public static final String COLUMN_STATS_ACCURATE = "COLUMN_STATS_ACCURATE";
@@ -167,6 +172,7 @@ public class StatsSetupConst {
       COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE, ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS,
       NUM_ERASURE_CODED_FILES);
 
+  @JsonPropertyOrder({"basicStats", "columnStats"})
   private static class ColumnStatsAccurate {
     private static ObjectReader objectReader;
     private static ObjectWriter objectWriter;

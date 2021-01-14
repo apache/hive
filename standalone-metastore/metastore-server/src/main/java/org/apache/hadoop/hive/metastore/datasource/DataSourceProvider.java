@@ -35,13 +35,6 @@ public interface DataSourceProvider {
   DataSource create(Configuration hdpConfig) throws SQLException;
 
   /**
-   * BoneCp has a bug which causes closed connections to be returned to the pool
-   * under certain conditions. (HIVE-11915)
-   * @return true if the factory creates BoneCp pools which need "special attention"
-   */
-  boolean mayReturnClosedConnection();
-
-  /**
    * Get the declared pooling type string. This is used to check against the constant in
    * config options.
    * @return The pooling type string associated with the data source.

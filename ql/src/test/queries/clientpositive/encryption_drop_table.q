@@ -15,13 +15,13 @@ CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.
 INSERT OVERWRITE TABLE encrypted_table_n2 SELECT * FROM src;
 
 CREATE EXTERNAL TABLE encrypted_ext_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 
 DROP TABLE default.encrypted_ext_table;
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 
 DROP TABLE default.encrypted_table_n2;
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 
 DROP TABLE IF EXISTS encrypted_table1;
 CREATE TABLE encrypted_table1 (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table1';
@@ -34,10 +34,10 @@ SELECT COUNT(*) FROM encrypted_table1;
 
 INSERT OVERWRITE TABLE encrypted_table1 SELECT * FROM src;
 DROP TABLE default.encrypted_table1;
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 
 TRUNCATE TABLE encrypted_table1;
 DROP TABLE default.encrypted_table1;
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 
 CRYPTO DELETE_KEY --keyName key_128;

@@ -1,0 +1,81 @@
+PREHOOK: query: DESCRIBE FUNCTION aes_encrypt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION aes_encrypt
+POSTHOOK: type: DESCFUNCTION
+aes_encrypt(input string/binary, key string/binary) - Encrypt input using AES.
+PREHOOK: query: DESC FUNCTION EXTENDED aes_encrypt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED aes_encrypt
+POSTHOOK: type: DESCFUNCTION
+aes_encrypt(input string/binary, key string/binary) - Encrypt input using AES.
+AES (Advanced Encryption Standard) algorithm. Key lengths of 128, 192 or 256 bits can be used. 192 and 256 bits keys can be used if Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files are installed. If either argument is NULL or the key length is not one of the permitted values, the return value is NULL.
+Example: > SELECT base64(aes_encrypt('ABC', '1234567890123456'));
+ 'y6Ss+zCYObpCbgfWfyNWTw=='
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFAesEncrypt
+Function type:BUILTIN
+PREHOOK: query: explain select aes_encrypt('ABC', '1234567890123456')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select aes_encrypt('ABC', '1234567890123456')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: CBA4ACFB309839BA426E07D67F23564F (type: binary)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+base64(aes_encrypt('ABC', '1234567890123456')),
+base64(aes_encrypt('', '1234567890123456')),
+base64(aes_encrypt(binary('ABC'), binary('1234567890123456'))),
+base64(aes_encrypt(binary(''), binary('1234567890123456'))),
+aes_encrypt(cast(null as string), '1234567890123456'),
+aes_encrypt(cast(null as binary), binary('1234567890123456'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+base64(aes_encrypt('ABC', '1234567890123456')),
+base64(aes_encrypt('', '1234567890123456')),
+base64(aes_encrypt(binary('ABC'), binary('1234567890123456'))),
+base64(aes_encrypt(binary(''), binary('1234567890123456'))),
+aes_encrypt(cast(null as string), '1234567890123456'),
+aes_encrypt(cast(null as binary), binary('1234567890123456'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+y6Ss+zCYObpCbgfWfyNWTw==	BQGHoM3lqYcsurCRq3PlUw==	y6Ss+zCYObpCbgfWfyNWTw==	BQGHoM3lqYcsurCRq3PlUw==	NULL	NULL
+PREHOOK: query: select
+aes_encrypt('ABC', '12345678901234567'),
+aes_encrypt(binary('ABC'), binary('123456789012345')),
+aes_encrypt('ABC', ''),
+aes_encrypt(binary('ABC'), binary('')),
+aes_encrypt('ABC', cast(null as string)),
+aes_encrypt(binary('ABC'), cast(null as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+aes_encrypt('ABC', '12345678901234567'),
+aes_encrypt(binary('ABC'), binary('123456789012345')),
+aes_encrypt('ABC', ''),
+aes_encrypt(binary('ABC'), binary('')),
+aes_encrypt('ABC', cast(null as string)),
+aes_encrypt(binary('ABC'), cast(null as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL

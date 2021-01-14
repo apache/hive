@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -202,6 +203,7 @@ public class TransactionalKafkaWriterTest {
     checkData();
   }
 
+  @Ignore("HIVE-23400 flaky")
   @Test(expected = IOException.class) public void writerFencedOut() throws IOException {
     TransactionalKafkaWriter
         writer =

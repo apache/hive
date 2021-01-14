@@ -20,6 +20,7 @@ package org.apache.hive.service.cli.operation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -149,7 +150,7 @@ public class GetTablesOperation extends MetadataOperation {
    */
   @Override
   public TableSchema getResultSetSchema() throws HiveSQLException {
-    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
+    assertState(Collections.singleton(OperationState.FINISHED));
     return RESULT_SET_SCHEMA;
   }
 
@@ -158,7 +159,7 @@ public class GetTablesOperation extends MetadataOperation {
    */
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
-    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
+    assertState(Collections.singleton(OperationState.FINISHED));
     validateDefaultFetchOrientation(orientation);
     if (orientation.equals(FetchOrientation.FETCH_FIRST)) {
       rowSet.setStartOffset(0);

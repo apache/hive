@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -141,6 +141,7 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hiveConf.setVar(HiveConf.ConfVars.REPLCMDIR, cmRoot);
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
+    hiveConf.setBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
         "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
     hiveConf.setVar(HiveConf.ConfVars.REPLDIR, this.repldDir);
@@ -191,8 +192,8 @@ public class WarehouseInstance implements Closeable {
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
 
-    TxnDbUtil.cleanDb(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
 
     // change the value for the next instance.
     ++uniqueIdentifier;
@@ -466,6 +467,12 @@ public class WarehouseInstance implements Closeable {
   // Stats updater task and partition management task skip processing tables being replicated into.
   private void verifyReplTargetProperty(Map<String, String> props) {
     assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+  }
+
+  public void verifyTargetOfReplProperty(String dbName) throws Exception {
+    Database db = getDatabase(dbName);
+    assertTrue(db.getParameters().containsKey(ReplUtils.TARGET_OF_REPLICATION));
+    assertTrue(Boolean.getBoolean(db.getParameters().get(ReplUtils.TARGET_OF_REPLICATION)));
   }
 
   public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {

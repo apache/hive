@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 drop table over10k_n11;
 
 create table over10k_n11(
@@ -13,11 +15,12 @@ create table over10k_n11(
            `dec` decimal(4,2),  
            bin binary)
        row format delimited
-       fields terminated by '|';
+       fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false");
 
 load data local inpath '../../data/files/over10k' into table over10k_n11;
 
-select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n11 limit 100;
+select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n11 order by s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) limit 100;
 
 select s, 
 rank() over (partition by s order by `dec` desc), 

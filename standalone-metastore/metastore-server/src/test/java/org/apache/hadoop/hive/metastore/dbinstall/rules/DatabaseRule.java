@@ -57,7 +57,20 @@ public abstract class DatabaseRule extends ExternalResource {
 
   public abstract String getJdbcDriver();
 
-  public abstract String getJdbcUrl();
+  public abstract String getJdbcUrl(String hostAddress);
+
+  public final String getJdbcUrl() {
+    return getJdbcUrl(getContainerHostAddress());
+  }
+
+  public final String getContainerHostAddress() {
+    String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
+    if (hostAddress != null) {
+      return hostAddress;
+    } else {
+      return "localhost";
+    }
+  }
 
   private boolean verbose;
 
@@ -68,18 +81,22 @@ public abstract class DatabaseRule extends ExternalResource {
   public DatabaseRule setVerbose(boolean verbose) {
     this.verbose = verbose;
     return this;
-  };
+  }
 
   public String getDb() {
     return HIVE_DB;
-  };
+  }
 
   /**
    * URL to use when connecting as root rather than Hive
    *
    * @return URL
    */
-  public abstract String getInitialJdbcUrl();
+  public abstract String getInitialJdbcUrl(String hostAddress);
+
+  public final String getInitialJdbcUrl() {
+    return getJdbcUrl(getContainerHostAddress());
+  }
 
   /**
    * Determine if the docker container is ready to use.
@@ -107,13 +124,14 @@ public abstract class DatabaseRule extends ExternalResource {
 
   @Override
   public void before() throws Exception { //runDockerContainer
+    runCmdAndPrintStreams(buildRmCmd(), 600);
     if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
     }
     long startTime = System.currentTimeMillis();
     ProcessResults pr;
     do {
-      Thread.sleep(5000);
+      Thread.sleep(1000);
       pr = runCmd(buildLogCmd(), 5);
       if (pr.rc != 0) {
         throw new RuntimeException("Failed to get docker logs");
@@ -134,10 +152,7 @@ public abstract class DatabaseRule extends ExternalResource {
       return;
     }
     try {
-      if (runCmdAndPrintStreams(buildStopCmd(), 60) != 0) {
-        throw new RuntimeException("Unable to stop docker container");
-      }
-      if (runCmdAndPrintStreams(buildRmCmd(), 15) != 0) {
+      if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
         throw new RuntimeException("Unable to remove docker container");
       }
     } catch (InterruptedException | IOException e) {
@@ -145,9 +160,15 @@ public abstract class DatabaseRule extends ExternalResource {
     }
   }
 
-  protected String getDockerContainerName(){
-    return String.format("metastore-test-%s-install", getDbType());
-  };
+  protected String getDockerContainerName() {
+    String suffix = System.getenv("HIVE_TEST_DOCKER_CONTAINER_SUFFIX");
+    if (suffix == null) {
+      suffix = "";
+    } else {
+      suffix = "-" + suffix;
+    }
+    return String.format("metastore-test-%s-install%s", getDbType(), suffix);
+  }
 
   private ProcessResults runCmd(String[] cmd, long secondsToWait)
       throws IOException, InterruptedException {
@@ -179,6 +200,7 @@ public abstract class DatabaseRule extends ExternalResource {
     List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
     cmd.add("docker");
     cmd.add("run");
+    cmd.add("--rm");
     cmd.add("--name");
     cmd.add(getDockerContainerName());
     cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
@@ -186,18 +208,12 @@ public abstract class DatabaseRule extends ExternalResource {
     return cmd.toArray(new String[cmd.size()]);
   }
 
-  private String[] buildStopCmd() {
-    return buildArray(
-        "docker",
-        "stop",
-        getDockerContainerName()
-    );
-  }
-
   private String[] buildRmCmd() {
     return buildArray(
         "docker",
         "rm",
+        "-f",
+        "-v",
         getDockerContainerName()
     );
   }
@@ -275,7 +291,7 @@ public abstract class DatabaseRule extends ExternalResource {
         "-dbType",
         getDbType(),
         "-userName",
-        HIVE_USER,
+        getHiveUser(),
         "-passWord",
         getHivePassword(),
         "-url",
@@ -288,5 +304,21 @@ public abstract class DatabaseRule extends ExternalResource {
   public void install() {
     createUser();
     installLatest();
+  }
+
+  public int validateSchema() {
+    return new MetastoreSchemaTool().setVerbose(verbose).run(buildArray(
+        "-validate",
+        "-dbType",
+        getDbType(),
+        "-userName",
+        getHiveUser(),
+        "-passWord",
+        getHivePassword(),
+        "-url",
+        getJdbcUrl(),
+        "-driver",
+        getJdbcDriver()
+    ));
   }
 }

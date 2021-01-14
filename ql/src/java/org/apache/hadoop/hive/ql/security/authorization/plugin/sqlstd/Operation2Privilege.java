@@ -245,6 +245,8 @@ public class Operation2Privilege {
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REWRITE,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REBUILD,
+        PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT)));
     op2Priv.put(HiveOperationType.DROP_MATERIALIZED_VIEW,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
@@ -351,6 +353,8 @@ public class Operation2Privilege {
         new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
+    op2Priv.put(HiveOperationType.PREPARE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.EXECUTE, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWLOCKS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.CREATEFUNCTION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));

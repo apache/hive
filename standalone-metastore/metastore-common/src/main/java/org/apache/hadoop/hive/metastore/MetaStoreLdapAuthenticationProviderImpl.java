@@ -22,6 +22,8 @@ import javax.naming.NamingException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -70,7 +72,7 @@ public class MetaStoreLdapAuthenticationProviderImpl implements MetaStorePasswdA
   }
 
   @Override
-  public void Authenticate(String user, String password) throws AuthenticationException {
+  public void authenticate(String user, String password) throws AuthenticationException {
     DirSearch search = null;
     String bindUser = MetastoreConf.getVar(this.conf,
             MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_BIND_USER);
@@ -117,7 +119,7 @@ public class MetaStoreLdapAuthenticationProviderImpl implements MetaStorePasswdA
       throw new AuthenticationException("Error validating LDAP user:"
           + " a null or blank user name has been provided");
     }
-    if (StringUtils.isBlank(password) || password.getBytes()[0] == 0) {
+    if (StringUtils.isBlank(password) || password.getBytes(StandardCharsets.UTF_8)[0] == 0) {
       throw new AuthenticationException("Error validating LDAP user:"
           + " a null or blank password has been provided");
     }

@@ -1,0 +1,114 @@
+PREHOOK: query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUT4
+POSTHOOK: query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@INPUT4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@input4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@input4
+PREHOOK: query: EXPLAIN
+SELECT a.KEY2
+FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
+      FROM INPUT4) a
+ORDER BY KEY2 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@input4
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.KEY2
+FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
+      FROM INPUT4) a
+ORDER BY KEY2 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: input4
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a.KEY2
+FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
+      FROM INPUT4) a
+ORDER BY KEY2 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@input4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.KEY2
+FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
+      FROM INPUT4) a
+ORDER BY KEY2 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input4
+#### A masked pattern was here ####
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104

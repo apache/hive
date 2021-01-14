@@ -1,4 +1,6 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=false;

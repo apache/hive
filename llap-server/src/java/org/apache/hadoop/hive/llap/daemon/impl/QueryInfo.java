@@ -24,10 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
@@ -70,6 +69,7 @@ public class QueryInfo {
 
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
   private final String tokenUserName, appId;
+  private final ContainerRunnerImpl.UgiPool ugiPool;
 
   public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
     String dagName, String hiveQueryIdString,
@@ -79,7 +79,7 @@ public class QueryInfo {
     String tokenAppId, final LlapNodeId amNodeId,
     String tokenIdentifier,
     Token<JobTokenIdentifier> appToken,
-    boolean isExternalQuery) {
+    boolean isExternalQuery, ContainerRunnerImpl.UgiPool ugiPool) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -96,6 +96,7 @@ public class QueryInfo {
     this.appTokenIdentifier = tokenIdentifier;
     this.appToken = appToken;
     this.isExternalQuery = isExternalQuery;
+    this.ugiPool = ugiPool;
     final InetSocketAddress address =
         NetUtils.createSocketAddrForHost(amNodeId.getHostname(), amNodeId.getPort());
     SecurityUtil.setTokenService(appToken, address);
@@ -139,7 +140,18 @@ public class QueryInfo {
       int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
     QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(
         this, vertexName, fragmentNumber, attemptNumber, vertexSpec, fragmentIdString);
-    knownFragments.add(fragmentInfo);
+    boolean wasUniqueFragment = knownFragments.add(fragmentInfo);
+    if (!wasUniqueFragment) {
+      // The same query fragment (including attempt number) has already been registered.
+      // This could potentially occur for external clients that are trying to submit the
+      // exact same fragment more than once (for example speculative execution of a query fragment).
+      // This should not occur for a non-external query fragment.
+      // Either way, registering the same fragment twice should be disallowed as the LLAP structures
+      // it will only ever have a single submission of a fragment.
+      String message = "Fragment " + fragmentIdString + "(isExternal=" + isExternalQuery()
+              + ") has already been registered.";
+      throw new IllegalArgumentException(message);
+    }
     return fragmentInfo;
   }
 
@@ -332,21 +344,11 @@ public class QueryInfo {
     return appId;
   }
 
-
-  private final BlockingQueue<UserGroupInformation> ugiPool = new LinkedBlockingQueue<>();
-
-  public UserGroupInformation getUmbilicalUgi() {
-
-    UserGroupInformation ugi;
-    ugi = ugiPool.poll();
-    if (ugi == null) {
-      ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
-      ugi.addToken(appToken);
-    }
-    return ugi;
+  UserGroupInformation getUmbilicalUgi() throws ExecutionException {
+    return ugiPool.getUmbilicalUgi(appTokenIdentifier, appToken);
   }
 
-  public void returnUmbilicalUgi(UserGroupInformation ugi) {
-    ugiPool.offer(ugi);
+  void returnUmbilicalUgi(UserGroupInformation ugi) {
+    ugiPool.returnUmbilicalUgi(appTokenIdentifier, ugi);
   }
 }

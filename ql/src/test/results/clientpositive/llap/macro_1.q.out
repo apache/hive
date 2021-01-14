@@ -1,0 +1,84 @@
+PREHOOK: query: CREATE TEMPORARY MACRO STRING_LEN(x string) length(x)
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO STRING_LEN(x string) length(x)
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY MACRO STRING_LEN_PLUS_ONE(x string) length(x)+1
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO STRING_LEN_PLUS_ONE(x string) length(x)+1
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY MACRO STRING_LEN_PLUS_TWO(x string) length(x)+2
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO STRING_LEN_PLUS_TWO(x string) length(x)+2
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: create table macro_test (x string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@macro_test
+POSTHOOK: query: create table macro_test (x string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@macro_test
+PREHOOK: query: insert into table macro_test values ("bb"), ("a"), ("ccc")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@macro_test
+POSTHOOK: query: insert into table macro_test values ("bb"), ("a"), ("ccc")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@macro_test
+POSTHOOK: Lineage: macro_test.x SCRIPT []
+PREHOOK: query: SELECT
+    CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
+FROM macro_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@macro_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+    CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
+FROM macro_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@macro_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2:3:4
+1:2:3
+3:4:5
+PREHOOK: query: SELECT
+    CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
+FROM macro_test
+sort by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@macro_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+    CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
+FROM macro_test
+sort by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@macro_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1:2:3
+2:3:4
+3:4:5
+PREHOOK: query: SELECT
+    CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
+FROM macro_test
+sort by a desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@macro_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+    CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
+FROM macro_test
+sort by a desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@macro_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3:4:5
+2:3:4
+1:2:3

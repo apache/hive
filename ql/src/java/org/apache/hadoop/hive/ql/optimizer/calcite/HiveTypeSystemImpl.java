@@ -78,6 +78,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     // Binary doesn't need any sizes; Decimal has the default of 10.
     case BINARY:
     case VARBINARY:
+      return RelDataType.PRECISION_NOT_SPECIFIED;
     case TIME:
     case TIMESTAMP:
     case TIMESTAMP_WITH_LOCAL_TIME_ZONE:

@@ -187,7 +187,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           Utilities.FILE_OP_LOGGER.debug("Computing stats for {}", file);
           if (!file.isDirectory()) {
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(partish.getInputFormatClass(), jc);
-            InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { partish.getLocation() });
+            InputSplit dummySplit = new FileSplit(file.getPath(), 0, -1, new String[] { partish.getLocation() });
             if (file.getLen() == 0) {
               numFiles += 1;
             } else {

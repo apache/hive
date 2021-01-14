@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -61,19 +62,19 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private VectorizationContext taskVectorizationContext;
 
-  protected transient JobConf jc;
-  private transient boolean inputFileChanged = false;
+  protected JobConf jc;
+  private boolean inputFileChanged = false;
   private TableDesc tableDesc;
 
-  private transient Stat currentStat;
-  private transient Map<String, Stat> stats;
+  private Stat currentStat;
+  private Map<String, Stat> stats;
 
-  private transient int rowLimit = -1;
-  private transient int currCount = 0;
+  private int rowLimit = -1;
+  private int currCount = 0;
   // insiderView will tell this TableScan is inside a view or not.
-  private transient boolean insideView;
+  private boolean insideView;
 
-  private transient boolean vectorized;
+  private boolean vectorized;
 
   private String defaultPartitionName;
 
@@ -83,6 +84,50 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    */
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
+
+  private ProbeDecodeContext probeDecodeContextSet;
+
+  /**
+   * Inner wrapper class for TS ProbeDecode optimization
+   */
+  public static class ProbeDecodeContext {
+
+    private final String mjSmallTableCacheKey;
+    private final String mjBigTableKeyColName;
+    private final byte mjSmallTablePos;
+    private final double keyRatio;
+
+    public ProbeDecodeContext(String mjSmallTableCacheKey, byte mjSmallTablePos, String mjBigTableKeyColName,
+        double keyRatio) {
+      this.mjSmallTableCacheKey = mjSmallTableCacheKey;
+      this.mjSmallTablePos = mjSmallTablePos;
+      this.mjBigTableKeyColName = mjBigTableKeyColName;
+      this.keyRatio = keyRatio;
+    }
+
+    public String getMjSmallTableCacheKey() {
+      return mjSmallTableCacheKey;
+    }
+
+    public byte getMjSmallTablePos() {
+      return mjSmallTablePos;
+    }
+
+    public String getMjBigTableKeyColName() {
+      return mjBigTableKeyColName;
+    }
+
+    public double getKeyRatio() {
+      return keyRatio;
+    }
+
+    @Override
+    public String toString() {
+      return "cacheKey:" + mjSmallTableCacheKey + ", bigKeyColName:" + mjBigTableKeyColName +
+          ", smallTablePos:" + mjSmallTablePos + ", keyRatio:" + keyRatio;
+    }
+  }
+
 
   public TableDesc getTableDescSkewJoin() {
     return tableDesc;
@@ -433,6 +478,19 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public VectorizationContext getOutputVectorizationContext() {
     return taskVectorizationContext;
+  }
+
+  public ProbeDecodeContext getProbeDecodeContext() {
+    return probeDecodeContextSet;
+  }
+
+  public void setProbeDecodeContext(ProbeDecodeContext probeDecodeContext) {
+    this.probeDecodeContextSet = probeDecodeContext;
+  }
+
+  public TableName getTableName() {
+    Table tableMetadata = conf.getTableMetadata();
+    return TableName.fromString(tableMetadata.getTableName(), tableMetadata.getCatName(), tableMetadata.getDbName());
   }
 
 }

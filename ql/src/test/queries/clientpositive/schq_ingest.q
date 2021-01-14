@@ -26,8 +26,8 @@ join t_offset on id>=offset) s1
 insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id);
  
--- configure to run ingestion every 10 minutes
-create scheduled query ingest every 10 minutes defined as
+-- configure to run ingestion - in the far future
+create scheduled query ingest cron '0 0 0 1 * ? 2030' defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
 insert into t select id,cnt where not first
@@ -39,7 +39,7 @@ insert into s values(2,2),(3,3);
 -- pretend that a timeout have happened
 alter scheduled query ingest execute;
 
-!sleep 10;
+!sleep 30;
 select state,error_message from sys.scheduled_executions;
 
 select * from t order by id;

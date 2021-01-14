@@ -42,4 +42,6 @@ public interface TableEvent extends BootstrapEvent {
    * Exposing the FileSystem implementation outside which is what it should NOT do.
    */
   Path metadataPath();
+
+  Path dataPath();
 }

@@ -350,7 +350,8 @@ public class TezSessionState {
 
     setupSessionAcls(tezConfig, conf);
 
-    final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
+    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
+    final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
         .build();
@@ -842,8 +843,11 @@ public class TezSessionState {
 
   private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException,
       LoginException {
-    final File jar =
-        new File(Utilities.jarFinderGetJar(clazz));
+    String jarPath = Utilities.jarFinderGetJar(clazz);
+    if (jarPath == null) {
+      throw new IOException("Can't find jar for: " + clazz);
+    }
+    final File jar = new File(jarPath);
     final String localJarPath = jar.toURI().toURL().toExternalForm();
     final LocalResource jarLr = createJarLocalResource(localJarPath);
     lrMap.put(DagUtils.getBaseName(jarLr), jarLr);

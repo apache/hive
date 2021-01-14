@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -36,7 +37,7 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
@@ -77,6 +78,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     conf.setVar(ConfVars.HIVEMAPREDMODE, "nonstrict");
 
+    TestTxnDbUtil.prepDb(conf);
     SessionState.start(conf);
     driver = new Driver(conf);
     runCmd("create table " + TABLE_NAME + " (i int, j int, k string) partitioned by (city string, `date` string) ");

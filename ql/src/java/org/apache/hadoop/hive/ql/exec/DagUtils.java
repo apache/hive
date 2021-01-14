@@ -26,14 +26,12 @@ import com.google.common.base.Strings;
 
 public class DagUtils {
 
-  public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
-
   public static String getQueryName(Configuration conf) {
     String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYNAME);
     if (Strings.isNullOrEmpty(name)) {
       return conf.get(MRJobConfig.JOB_NAME);
     } else {
-      return name + " (" + conf.get(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME) + ")";
+      return name;
     }
   }
 

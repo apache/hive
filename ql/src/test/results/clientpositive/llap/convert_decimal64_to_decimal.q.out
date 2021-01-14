@@ -161,6 +161,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: decimal0801_col_4 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:decimal0801_col_4, smallTablePos:1, keyRatio:0.6833333333333333
                   Statistics: Num rows: 1080 Data size: 109984 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -383,6 +384,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: decimal0801_col_4 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:decimal0801_col_4, smallTablePos:1, keyRatio:0.6833333333333333
                   Statistics: Num rows: 1080 Data size: 109984 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

@@ -7,7 +7,7 @@ CREATE TABLE repairtable_n3(col STRING) PARTITIONED BY (p1 STRING, p2 STRING);
 MSCK TABLE repairtable_n3;
 show partitions repairtable_n3;
 
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n3/p1=c/p2=a/p3=b;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_n3/p1=c/p2=a/p3=b;
 
 MSCK TABLE default.repairtable_n3;
 show partitions repairtable_n3;

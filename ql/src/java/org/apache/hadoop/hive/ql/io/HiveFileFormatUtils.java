@@ -23,6 +23,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -314,7 +315,7 @@ public final class HiveFileFormatUtils {
   public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket,
                                                    FileSinkDesc conf, Path outPath,
                                                    ObjectInspector inspector,
-                                                   Reporter reporter, int rowIdColNum, String attemptId)
+                                                   Reporter reporter, int rowIdColNum, Integer attemptId)
       throws HiveException, IOException {
     HiveOutputFormat<?, ?> hiveOutputFormat = getHiveOutputFormat(jc, tableInfo);
     AcidOutputFormat<?, ?> acidOutputFormat = null;
@@ -340,7 +341,7 @@ public final class HiveFileFormatUtils {
                                                 Reporter reporter,
                                                 int rowIdColNum,
                                                 FileSinkDesc conf,
-                                                String attemptId) throws IOException {
+                                                Integer attemptId) throws IOException {
     return acidOutputFormat.getRecordUpdater(outPath, new AcidOutputFormat.Options(jc)
         .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
@@ -481,7 +482,7 @@ public final class HiveFileFormatUtils {
    **/
   public static List<String> doGetAliasesFromPath(Map<Path, List<String>> pathToAliases, Path dir) {
     if (pathToAliases == null) {
-      return new ArrayList<String>();
+      return Collections.emptyList();
     }
     Path path = getMatchingPath(pathToAliases, dir);
     return pathToAliases.get(path);

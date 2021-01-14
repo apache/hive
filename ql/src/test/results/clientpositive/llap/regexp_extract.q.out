@@ -1,0 +1,512 @@
+PREHOOK: query: EXPLAIN EXTENDED
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN EXTENDED
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), value (type: string), 3 (type: int), 7 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Transform Operator
+                      command: cat
+                      output info:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          properties:
+                            bucketing_version -1
+                            columns _col0,_col1
+                            columns.types string,string
+                            field.delim 9
+                            serialization.format 9
+                            serialization.last.column.takes.rest true
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Filter Operator
+                        isSamplingPred: false
+                        predicate: (_col0 < 100) (type: boolean)
+                        Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: string)
+                          null sort order: a
+                          numBuckets: -1
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: string), _col1 (type: string)
+                          auto parallelism: true
+            Path -> Alias:
+              hdfs://### HDFS PATH ### [src]
+            Path -> Partition:
+              hdfs://### HDFS PATH ### 
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [src]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), regexp_extract(VALUE._col1, 'val_(\d+\t\d+)', 1) (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 44986 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: hdfs://### HDFS PATH ###
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 166 Data size: 44986 Basic stats: COMPLETE Column stats: COMPLETE
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0	3
+0	0	3
+0	0	3
+10	10	3
+11	11	3
+12	12	3
+12	12	3
+15	15	3
+15	15	3
+17	17	3
+18	18	3
+18	18	3
+19	19	3
+2	2	3
+20	20	3
+24	24	3
+24	24	3
+26	26	3
+26	26	3
+27	27	3
+28	28	3
+30	30	3
+33	33	3
+34	34	3
+35	35	3
+35	35	3
+35	35	3
+37	37	3
+37	37	3
+4	4	3
+41	41	3
+42	42	3
+42	42	3
+43	43	3
+44	44	3
+47	47	3
+5	5	3
+5	5	3
+5	5	3
+51	51	3
+51	51	3
+53	53	3
+54	54	3
+57	57	3
+58	58	3
+58	58	3
+64	64	3
+65	65	3
+66	66	3
+67	67	3
+67	67	3
+69	69	3
+70	70	3
+70	70	3
+70	70	3
+72	72	3
+72	72	3
+74	74	3
+76	76	3
+76	76	3
+77	77	3
+78	78	3
+8	8	3
+80	80	3
+82	82	3
+83	83	3
+83	83	3
+84	84	3
+84	84	3
+85	85	3
+86	86	3
+87	87	3
+9	9	3
+90	90	3
+90	90	3
+90	90	3
+92	92	3
+95	95	3
+95	95	3
+96	96	3
+97	97	3
+97	97	3
+98	98	3
+98	98	3
+PREHOOK: query: EXPLAIN EXTENDED
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN EXTENDED
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), value (type: string), 3 (type: int), 7 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Transform Operator
+                      command: cat
+                      output info:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          properties:
+                            bucketing_version -1
+                            columns _col0,_col1
+                            columns.types string,string
+                            field.delim 9
+                            serialization.format 9
+                            serialization.last.column.takes.rest true
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Filter Operator
+                        isSamplingPred: false
+                        predicate: (_col0 < 100) (type: boolean)
+                        Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: string)
+                          null sort order: a
+                          numBuckets: -1
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: string), _col1 (type: string)
+                          auto parallelism: true
+            Path -> Alias:
+              hdfs://### HDFS PATH ### [src]
+            Path -> Partition:
+              hdfs://### HDFS PATH ### 
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [src]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), regexp_extract(VALUE._col1, 'val_(\d+\t\d+)') (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 44986 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: hdfs://### HDFS PATH ###
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 166 Data size: 44986 Basic stats: COMPLETE Column stats: COMPLETE
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0	3
+0	0	3
+0	0	3
+10	10	3
+11	11	3
+12	12	3
+12	12	3
+15	15	3
+15	15	3
+17	17	3
+18	18	3
+18	18	3
+19	19	3
+2	2	3
+20	20	3
+24	24	3
+24	24	3
+26	26	3
+26	26	3
+27	27	3
+28	28	3
+30	30	3
+33	33	3
+34	34	3
+35	35	3
+35	35	3
+35	35	3
+37	37	3
+37	37	3
+4	4	3
+41	41	3
+42	42	3
+42	42	3
+43	43	3
+44	44	3
+47	47	3
+5	5	3
+5	5	3
+5	5	3
+51	51	3
+51	51	3
+53	53	3
+54	54	3
+57	57	3
+58	58	3
+58	58	3
+64	64	3
+65	65	3
+66	66	3
+67	67	3
+67	67	3
+69	69	3
+70	70	3
+70	70	3
+70	70	3
+72	72	3
+72	72	3
+74	74	3
+76	76	3
+76	76	3
+77	77	3
+78	78	3
+8	8	3
+80	80	3
+82	82	3
+83	83	3
+83	83	3
+84	84	3
+84	84	3
+85	85	3
+86	86	3
+87	87	3
+9	9	3
+90	90	3
+90	90	3
+90	90	3
+92	92	3
+95	95	3
+95	95	3
+96	96	3
+97	97	3
+97	97	3
+98	98	3
+98	98	3

@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
@@ -280,7 +281,7 @@ public class ZooKeeperStorage implements TempletonStorage {
     try {
       return zk.getChildren().forPath(getPath(type));
     } catch (Exception e) {
-      return new ArrayList<String>();
+      return Collections.emptyList();
     }
   }
 

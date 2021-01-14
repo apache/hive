@@ -99,6 +99,7 @@ import org.apache.hadoop.tools.DistCp;
 import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairSchedulerConfiguration;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -618,7 +619,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    * MiniDFSShim.
    *
    */
-  public class MiniDFSShim implements HadoopShims.MiniDFSShim {
+  public static class MiniDFSShim implements HadoopShims.MiniDFSShim {
     private final MiniDFSCluster cluster;
 
     public MiniDFSShim(MiniDFSCluster cluster) {
@@ -643,7 +644,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     return hcatShimInstance;
   }
-  private final class HCatHadoopShims23 implements HCatHadoopShims {
+
+  private static final class HCatHadoopShims23 implements HCatHadoopShims {
     @Override
     public TaskID createTaskID() {
       return new TaskID("", 0, TaskType.MAP, 0);
@@ -827,7 +829,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     stream.hflush();
   }
 
-  class ProxyFileSystem23 extends ProxyFileSystem {
+  static class ProxyFileSystem23 extends ProxyFileSystem {
     public ProxyFileSystem23(FileSystem fs) {
       super(fs);
     }
@@ -1029,7 +1031,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Shim for KerberosName
    */
-  public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
+  public static class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
 
     private final KerberosName kerberosName;
 
@@ -1187,6 +1189,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   private static Boolean hdfsEncryptionSupport;
 
+  @SuppressFBWarnings(value = "LI_LAZY_INIT_STATIC", justification = "All threads set the same value despite data race")
   public static boolean isHdfsEncryptionSupported() {
     if (hdfsEncryptionSupport == null) {
       Method m = null;
@@ -1204,8 +1207,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return hdfsEncryptionSupport;
   }
 
-  public class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
-    private final String HDFS_SECURITY_DEFAULT_CIPHER = "AES/CTR/NoPadding";
+  public static class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
+    private static final String HDFS_SECURITY_DEFAULT_CIPHER = "AES/CTR/NoPadding";
 
     /**
      * Gets information about HDFS encryption zones
@@ -1220,11 +1223,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final Configuration conf;
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
-      DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
-
       this.conf = conf;
-      this.keyProvider = dfs.getClient().getKeyProvider();
       this.hdfsAdmin = new HdfsAdmin(uri, conf);
+      this.keyProvider = this.hdfsAdmin.getKeyProvider();
     }
 
     @Override
@@ -1235,11 +1236,38 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       } else {
         fullPath = path.getFileSystem(conf).makeQualified(path);
       }
-      if(!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
+      if (!isFileInHdfs(path.getFileSystem(conf), path)) {
         return false;
       }
 
       return (getEncryptionZoneForPath(fullPath) != null);
+    }
+
+    /**
+     * Returns true if the given fs supports mount functionality. In general we
+     * can have child file systems only in the case of mount fs like
+     * ViewFsOverloadScheme or ViewDistributedFileSystem. Returns false if the
+     * getChildFileSystems API returns null.
+     */
+    private boolean isMountedFs(FileSystem fs) {
+      return fs.getChildFileSystems() != null;
+    }
+
+    private boolean isFileInHdfs(FileSystem fs, Path path) throws IOException {
+      String hdfsScheme = "hdfs";
+      boolean isHdfs = hdfsScheme.equalsIgnoreCase(path.toUri().getScheme());
+      // The ViewHDFS supports that, any non-hdfs paths can be mounted as hdfs
+      // paths. Here HDFSEncryptionShim actually works only for hdfs paths. But
+      // in the case of ViewHDFS, paths can be with hdfs scheme, but they might
+      // actually resolve to other fs.
+      // ex: hdfs://ns1/test ---> o3fs://b.v.ozone1/test
+      // So, we need to lookup where the actual file is to know the filesystem
+      // in use. The resolvePath is a sure shot way of knowing which file system
+      // the file is.
+      if (isHdfs && isMountedFs(fs)) {
+        isHdfs = hdfsScheme.equals(fs.resolvePath(path).toUri().getScheme());
+      }
+      return isHdfs;
     }
 
     public EncryptionZone getEncryptionZoneForPath(Path path) throws IOException {

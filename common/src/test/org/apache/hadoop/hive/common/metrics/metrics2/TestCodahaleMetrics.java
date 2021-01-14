@@ -55,7 +55,7 @@ public class TestCodahaleMetrics {
   private static final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
   private static File jsonReportFile;
   private static MetricRegistry metricRegistry;
-  private static final long REPORT_INTERVAL_MS = 100;
+  private static final long REPORT_INTERVAL_MS = 2000;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -151,10 +151,16 @@ public class TestCodahaleMetrics {
    * @throws Exception if fails to read counter value
    */
   @Test
+  @org.junit.Ignore("flaky test HIVE-23692")
   public void testFileReporting() throws Exception {
     int runs = 5;
     String  counterName = "count2";
-    for (int i = 0; i < runs; i++) {
+
+    // on the first write the metrics writer should initialize stuff
+    MetricsFactory.getInstance().incrementCounter(counterName);
+    sleep(5 * REPORT_INTERVAL_MS);
+
+    for (int i = 1; i <= runs; i++) {
       MetricsFactory.getInstance().incrementCounter(counterName);
       sleep(REPORT_INTERVAL_MS + REPORT_INTERVAL_MS / 2);
       Assert.assertEquals(i + 1, getCounterValue(counterName));

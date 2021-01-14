@@ -26,6 +26,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TAB
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private static final String HIVESQL = "HIVESQL".intern();
   private static final String OBJCAPABILITIES = "OBJCAPABILITIES".intern();
   private static final String MANAGERAWMETADATA = "MANAGE_RAW_METADATA".intern();
+  private static final String ACCEPTSUNMODIFIEDMETADATA = "ACCEPTS_UNMODIFIED_METADATA".intern();
 
   private static final List<String> ACIDCOMMONWRITELIST = new ArrayList(Arrays.asList(
       HIVEMANAGESTATS,
@@ -137,10 +139,12 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 newTable.setAccessType(ACCESSTYPE_READONLY);
                 requiredWrites.add(HIVEBUCKET2);
                 StorageDescriptor newSd = new StorageDescriptor(table.getSd());
-                newSd.setNumBuckets(-1); // remove bucketing info
+                if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
+                  LOG.debug("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
+                  newSd.setNumBuckets(-1); // remove bucketing info
+                }
                 newTable.setSd(newSd);
                 newTable.setRequiredWriteCapabilities(requiredWrites);
-                LOG.info("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
               }
             } else { // Unbucketed
               if (processorCapabilities.contains(EXTWRITE) && processorCapabilities.contains(EXTREAD)) {
@@ -269,21 +273,20 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
 
           Table newTable = new Table(table);
-          boolean removedBucketing = false;
-
           if (requiredCapabilities.contains(HIVEBUCKET2) && !processorCapabilities.contains(HIVEBUCKET2)) {
             StorageDescriptor newSd = new StorageDescriptor(table.getSd());
-            newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+            if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
+              newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+              LOG.debug("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
+            }
             newTable.setSd(newSd);
-            removedBucketing = true;
             newTable.setAccessType(ACCESSTYPE_READONLY);
             LOG.debug("Adding HIVEBUCKET2 to requiredWrites");
             requiredWrites.add(HIVEBUCKET2);
-            LOG.info("Removed bucketing information from table");
           }
 
           if (requiredCapabilities.contains(EXTWRITE) && processorCapabilities.contains(EXTWRITE)) {
-            if (!removedBucketing) {
+            if (!isBucketed) {
               LOG.info("EXTWRITE Matches, accessType=" + ACCESSTYPE_READWRITE);
               newTable.setAccessType(ACCESSTYPE_READWRITE);
               ret.put(newTable, requiredCapabilities);
@@ -468,7 +471,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       String tCapabilities = params.get(OBJCAPABILITIES);
       if (partition.getSd() != null) {
         partBuckets = partition.getSd().getNumBuckets();
-        LOG.info("Number of original part buckets=" + partBuckets);
+        LOG.debug("Number of original part buckets=" + partBuckets);
       } else {
         partBuckets = 0;
       }
@@ -481,7 +484,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
             Partition newPartition = new Partition(partition);
             StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-            newSd.setNumBuckets(-1); // remove bucketing info
+            if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+              newSd.setNumBuckets(-1); // remove bucketing info
             newPartition.setSd(newSd);
             ret.add(newPartition);
           } else {
@@ -494,7 +498,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              newSd.setNumBuckets(-1); // remove bucketing info
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+                newSd.setNumBuckets(-1); // remove bucketing info
               newPartition.setSd(newSd);
               ret.add(newPartition);
               break;
@@ -520,7 +525,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (requiredCapabilities.contains(HIVEBUCKET2) && !processorCapabilities.contains(HIVEBUCKET2)) {
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+                newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
               newPartition.setSd(newSd);
               LOG.info("Removed bucketing information from partition");
               ret.add(newPartition);
@@ -532,7 +538,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               if (!processorCapabilities.contains(HIVEBUCKET2)) {
                 Partition newPartition = new Partition(partition);
                 StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-                newSd.setNumBuckets(-1); // remove bucketing info
+                if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+                  newSd.setNumBuckets(-1); // remove bucketing info
                 newPartition.setSd(newSd);
                 ret.add(newPartition);
                 break;
@@ -677,16 +684,28 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
 
     LOG.info("Starting translation for transformDatabase for processor " + processorId + " with " + processorCapabilities
-        + " on database " + db.getName());
+        + " on database {} locationUri={} managedLocationUri={}", db.getName(), db.getLocationUri(), db.getManagedLocationUri());
 
-    if (!isTenantBasedStorage && (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
-            !processorCapabilities.contains(HIVEFULLACIDWRITE)))) {
-      LOG.info("Processor does not have any of ACID write capabilities, changing current location from " +
-              db.getLocationUri() + " to external warehouse location");
-      Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
-      LOG.debug("Setting DBLocation to " + extWhLocation.toString());
-      // TODO should not alter database now.
-      db.setLocationUri(extWhLocation.toString());
+    if (!isTenantBasedStorage) {
+      Path locationPath = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      if (FileUtils.isSubdirectory(whRootPath.toString(), locationPath.toString())) { // legacy path
+        if (processorCapabilities != null && (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) ||
+            processorCapabilities.contains(HIVEFULLACIDWRITE))) {
+          LOG.debug("Processor has atleast one of ACID write capabilities, setting current locationUri " + db.getLocationUri() + " as managedLocationUri");
+          db.setManagedLocationUri(new Path(db.getLocationUri()).toString());
+        }
+        Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
+        LOG.info("Database's location is a managed location, setting to a new default path based on external warehouse path:" + extWhLocation.toString());
+        db.setLocationUri(extWhLocation.toString());
+      } else {
+        if (processorCapabilities != null && (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) ||
+            processorCapabilities.contains(HIVEFULLACIDWRITE))) {
+          Path mgdWhLocation = hmsHandler.getWh().getDefaultDatabasePath(db.getName(), false);
+          LOG.debug("Processor has atleast one of ACID write capabilities, setting default managed path to " + mgdWhLocation.toString());
+          db.setManagedLocationUri(mgdWhLocation.toString());
+        }
+      }
     }
     LOG.info("Transformer returning database:" + db.toString());
     return db;
@@ -700,17 +719,17 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       return list1;
 
     if (list1 == null || list1.size() == 0)
-      return new ArrayList<String>();
+      return Collections.emptyList();
 
     if (list2.containsAll(list1))
-      return new ArrayList<String>();
+      return Collections.emptyList();
 
     diffList.addAll(list2);
     LOG.debug("diffList=" + Arrays.toString(diffList.toArray()) + ",master list=" + Arrays.toString(list1.toArray()));
     if (diffList.retainAll(list1)) {
       LOG.debug("diffList=" + Arrays.toString(diffList.toArray()));
       if (diffList.size() == list1.size()) { // lists match
-        return new ArrayList<String>(); // return empty list indicating no missing elements
+        return Collections.emptyList(); // return empty list indicating no missing elements
       } else {
         list1.removeAll(diffList);
         LOG.debug("list1.size():" + list1.size());
@@ -792,7 +811,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                     + table.getTableName() + ",location:" + tablePath + ",Database location for external tables:" + dbLocation);
           }
 
-          dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getManagedLocationUri()));
+          dbLocation = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getDatabaseManagedPath(db));
           if (dbLocation != null && FileUtils.isSubdirectory(dbLocation.toString(), tablePath.toString())) {
             throw new MetaException(
                 "An external table's location should not be located within managed warehouse root directory of its database, table:"

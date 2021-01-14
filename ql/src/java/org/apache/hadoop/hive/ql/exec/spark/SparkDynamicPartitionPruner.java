@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -79,11 +80,11 @@ public class SparkDynamicPartitionPruner {
       // Nothing to prune for this MapWork
       return;
     }
-    perfLogger.PerfLogBegin(CLASS_NAME,
+    perfLogger.perfLogBegin(CLASS_NAME,
             PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
     processFiles(work, jobConf);
     prunePartitions(work);
-    perfLogger.PerfLogBegin(CLASS_NAME,
+    perfLogger.perfLogBegin(CLASS_NAME,
             PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
   }
 
@@ -262,8 +263,9 @@ public class SparkDynamicPartitionPruner {
       this.columnName = columnName;
       this.columnType = columnType;
 
-      deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
-      deserializer.initialize(jobConf, table.getProperties());
+      AbstractSerDe serDe = ReflectionUtils.newInstance(table.getSerDeClass(), null);
+      serDe.initialize(jobConf, table.getProperties(), null);
+      deserializer = serDe;
 
       ObjectInspector inspector = deserializer.getObjectInspector();
       if (LOG.isDebugEnabled()) {

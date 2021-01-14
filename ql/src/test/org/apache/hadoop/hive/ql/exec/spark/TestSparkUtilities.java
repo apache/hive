@@ -42,7 +42,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -65,7 +65,7 @@ public class TestSparkUtilities {
 
     SparkSessionManager mockSessionManager = mock(SparkSessionManager.class);
     doAnswer(invocationOnMock -> {
-      SparkSession sparkSession = invocationOnMock.getArgumentAt(0, SparkSession.class);
+      SparkSession sparkSession = invocationOnMock.getArgument(0, SparkSession.class);
       if (sparkSession == null) {
         return mock(SparkSession.class);
       } else {
@@ -76,7 +76,7 @@ public class TestSparkUtilities {
     SessionState mockSessionState = mock(SessionState.class);
     when(mockSessionState.getConf()).thenReturn(mockConf);
     doAnswer(invocationOnMock -> {
-      activeSparkSession.set(invocationOnMock.getArgumentAt(0, SparkSession.class));
+      activeSparkSession.set(invocationOnMock.getArgument(0, SparkSession.class));
       return null;
     }).when(mockSessionState).setSparkSession(any(SparkSession.class));
     doAnswer(invocationOnMock ->
@@ -137,7 +137,7 @@ public class TestSparkUtilities {
     }).when(fsOp).getConf();
 
     doAnswer(invocationOnMock -> {
-      assertEquals(expectedPathRef.value, invocationOnMock.getArgumentAt(0, Path.class));
+      assertEquals(expectedPathRef.value, invocationOnMock.getArgument(0, Path.class));
       return null;
     }).when(fileSinkDesc).setDirName(any(Path.class));
 

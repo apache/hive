@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.time.ZoneId;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -106,6 +108,33 @@ public class TestETypeConverter {
         getWritableFromPrimitiveConverter(createHiveTypeInfo("double"), primitiveType, 2200);
     DoubleWritable doubleWritable = (DoubleWritable) writable;
     assertEquals(22, (int) doubleWritable.get());
+  }
+
+  @Test
+  public void testGetSmallBigIntConverter() {
+    Timestamp timestamp = Timestamp.valueOf("1998-10-03 09:58:31.231");
+    long msTime = timestamp.toEpochMilli();
+    ByteBuffer buf = ByteBuffer.allocate(12);
+    buf.order(ByteOrder.LITTLE_ENDIAN);
+    buf.putLong(msTime);
+    buf.flip();
+    // Need TimeStamp logicalType annotation here
+    PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.MILLIS);
+    Writable writable = getWritableFromBinaryConverter(createHiveTypeInfo("bigint"), primitiveType, Binary.fromByteBuffer(buf));
+    // Retrieve as BigInt
+    LongWritable longWritable = (LongWritable) writable;
+    assertEquals(msTime, longWritable.get());
+  }
+
+  @Test
+  public void testGetBigIntConverter() {
+    Timestamp timestamp = Timestamp.valueOf("1998-10-03 09:58:31.231");
+    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, true);
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
+    Writable writable = getWritableFromBinaryConverter(createHiveTypeInfo("bigint"), primitiveType, nanoTime.toBinary());
+    // Retrieve as BigInt
+    LongWritable longWritable = (LongWritable) writable;
+    assertEquals(nanoTime.getTimeOfDayNanos(), longWritable.get());
   }
 
   @Test

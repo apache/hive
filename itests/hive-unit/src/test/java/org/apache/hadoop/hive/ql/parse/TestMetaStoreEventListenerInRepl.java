@@ -181,7 +181,7 @@ public class TestMetaStoreEventListenerInRepl {
 
     eventsMap = prepareIncData(primaryDbName);
     LOG.info(testName.getMethodName() + ": first incremental dump and load.");
-    primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple incre = primary.run("use " + primaryDbName)
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
     ReplMetaStoreEventListenerTestImpl.checkEventSanity(eventsMap, replicatedDbName);

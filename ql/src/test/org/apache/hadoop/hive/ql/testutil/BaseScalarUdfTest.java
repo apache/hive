@@ -71,7 +71,7 @@ public abstract class BaseScalarUdfTest {
    * @return A list of expressions
    * @throws UDFArgumentException if the UDF has been formulated incorrectly
    */
-  public abstract List<ExprNodeDesc> getExpressionList() throws UDFArgumentException;
+  public abstract List<ExprNodeDesc> getExpressionList() throws Exception;
 
   /**
    * This method drives the test. It takes the data from getBaseTable() and
@@ -81,7 +81,7 @@ public abstract class BaseScalarUdfTest {
    * @throws HiveException
    */
   @Test
-  public final void testUdf() throws HiveException {
+  public final void testUdf() throws Exception {
     InspectableObject [] data = getBaseTable();
     List<ExprNodeDesc> expressionList = getExpressionList();
     SelectDesc selectCtx = new SelectDesc(expressionList,

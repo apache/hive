@@ -681,7 +681,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
       // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
       String dynPathSpec = loadPath.toUri().getPath();
-      dynPathSpec = dynPathSpec.replaceAll("__HIVE_DEFAULT_PARTITION__", "*");
+      dynPathSpec = dynPathSpec.replace("__HIVE_DEFAULT_PARTITION__", "*");
 
       //      LOG.info("Searching for "+dynPathSpec);
       Path pathPattern = new Path(dynPathSpec);

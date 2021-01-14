@@ -1,0 +1,35 @@
+PREHOOK: query: DESCRIBE FUNCTION rtrim
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION rtrim
+POSTHOOK: type: DESCFUNCTION
+rtrim(str[, chars]) - Removes the trailing pad characters from str 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED rtrim
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED rtrim
+POSTHOOK: type: DESCFUNCTION
+rtrim(str[, chars]) - Removes the trailing pad characters from str 
+Example:
+  > SELECT rtrim('facebook   ') FROM src LIMIT 1;
+  'facebook'
+  > SELECT rtrim('facebookxyzzyx', 'xzy') FROM src LIMIT 1;
+  'facebook'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFRTrim
+Function type:BUILTIN
+PREHOOK: query: SELECT '"' || rtrim('   tech   ') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || rtrim('   tech   ') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"   tech"
+PREHOOK: query: SELECT '"' || rtrim('facebookxyzzyx', 'xzy') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || rtrim('facebookxyzzyx', 'xzy') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"facebook"

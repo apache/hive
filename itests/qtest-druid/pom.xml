@@ -37,13 +37,15 @@
   <!-- dependencies are always listed in sorted order by groupId, artifectId -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <druid.avatica.version>1.15.0</druid.avatica.version>
     <druid.curator.version>4.0.0</druid.curator.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
     <druid.jetty.version>9.4.10.v20180503</druid.jetty.version>
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.test.version>2.0.0</kafka.test.version>
+    <kafka.test.version>2.5.0</kafka.test.version>
+    <druid.guice.version>4.1.0</druid.guice.version>
     <slf4j.version>1.7.30</slf4j.version>
   </properties>
       <dependencies>
@@ -64,6 +66,10 @@
               <artifactId>jersey-core</artifactId>
               <groupId>com.sun.jersey</groupId>
             </exclusion>
+            <exclusion>
+              <groupId>org.jboss.netty</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
         <dependency>
@@ -82,6 +88,10 @@
             <exclusion>
               <artifactId>jersey-core</artifactId>
               <groupId>com.sun.jersey</groupId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.jboss.netty</groupId>
+              <artifactId>*</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
@@ -156,6 +166,26 @@
           <artifactId>curator-recipes</artifactId>
           <version>${druid.curator.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-metrics</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-server</artifactId>
+          <version>${avatica.version}</version>
+        </dependency>
        <dependency>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-bundle</artifactId>
@@ -214,7 +244,7 @@
         </dependency>
         <dependency>
           <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka_2.11</artifactId>
+          <artifactId>kafka_2.12</artifactId>
           <version>${kafka.test.version}</version>
         </dependency>
         <dependency>
@@ -266,6 +296,10 @@
                   <pattern>org.apache.kafka</pattern>
                   <shadedPattern>org.apache.kafkatests</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>org.jboss.netty</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
+                </relocation>
               </relocations>
               <filters>
                 <filter>
@@ -274,9 +308,34 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/versions/**</exclude>
                   </excludes>
                 </filter>
               </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
             </configuration>
           </execution>
         </executions>

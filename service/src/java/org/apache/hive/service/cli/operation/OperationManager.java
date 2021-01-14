@@ -429,13 +429,12 @@ public class OperationManager extends AbstractService {
    */
   public QueryInfo getQueryInfo(String handle) {
     synchronized (webuiLock) {
-      if (historicalQueryInfos == null) {
-        return null;
-      }
-
       QueryInfo result = liveQueryInfos.get(handle);
       if (result != null) {
         return result;
+      }
+      if (historicalQueryInfos == null) {
+        return null;
       }
       return historicalQueryInfos.get(handle);
     }
@@ -454,5 +453,21 @@ public class OperationManager extends AbstractService {
       }
     }
     return result;
+  }
+
+  public boolean canShowDrilldownLink(OperationHandle operationHandle) {
+    try {
+      if (!getHiveConf().isWebUiEnabled()) {
+        return false;
+      }
+      Operation operation = getOperation(operationHandle);
+      if (operation instanceof SQLOperation) {
+        HiveConf hiveConf = ((SQLOperation)operation).queryState.getConf();
+        return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK);
+      }
+    } catch (HiveSQLException e) {
+      // The operation not found, disable showing it
+    }
+    return false;
   }
 }

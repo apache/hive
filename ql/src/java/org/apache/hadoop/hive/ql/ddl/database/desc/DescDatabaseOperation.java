@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -41,14 +41,14 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
 
   @Override
   public int execute() throws HiveException {
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       Database database = context.getDb().getDatabase(desc.getDatabaseName());
       if (database == null) {
         throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDatabaseName());
       }
 
       SortedMap<String, String> params = null;
-      if (desc.isExt()) {
+      if (desc.isExtended()) {
         params = new TreeMap<>(database.getParameters());
       }
 
@@ -57,8 +57,9 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
         location = "location/in/test";
       }
 
-      context.getFormatter().showDatabaseDescription(outStream, database.getName(), database.getDescription(),
-          location, database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params);
+      DescDatabaseFormatter formatter = DescDatabaseFormatter.getFormatter(context.getConf());
+      formatter.showDatabaseDescription(outStream, database.getName(), database.getDescription(), location,
+          database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }

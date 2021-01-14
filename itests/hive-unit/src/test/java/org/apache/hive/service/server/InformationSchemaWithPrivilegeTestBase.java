@@ -286,7 +286,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
 
     List<String> args = new ArrayList<String>(baseArgs);
     args.add("-f");
-    args.add("../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql");
+    args.add("../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql");
     BeeLine beeLine = new BeeLine();
     int result = beeLine.begin(args.toArray(new String[] {}), null);
     beeLine.close();

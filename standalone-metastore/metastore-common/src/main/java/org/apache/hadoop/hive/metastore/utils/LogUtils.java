@@ -47,15 +47,6 @@ public class LogUtils {
   }
 
   /**
-   * This is an exception that can be passed to logger just for printing the stacktrace.
-   */
-  public static class StackTraceLogger extends Exception {
-    public StackTraceLogger(final String msg) {
-      super(msg);
-    }
-  }
-
-  /**
    * Initialize log4j.
    *
    * @return an message suitable for display to the user

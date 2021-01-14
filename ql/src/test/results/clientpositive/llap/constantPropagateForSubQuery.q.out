@@ -1,0 +1,261 @@
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain extended
+ select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended
+ select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('429' AS STRING) AS `ak`, `t0`.`value` AS `av`, `t1`.`key` AS `bk`, `t1`.`value` AS `bv`
+FROM (SELECT `value`
+FROM `default`.`src`
+WHERE `key` = '429') AS `t0`,
+(SELECT `key`, `value`
+FROM `default`.`src1`) AS `t1`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: (key = '429') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (key = '429') (type: boolean)
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        null sort order: 
+                        numBuckets: -1
+                        sort order: 
+                        Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        value expressions: _col0 (type: string)
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [a]
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      bucketingVersion: 2
+                      null sort order: 
+                      numBuckets: -1
+                      sort order: 
+                      Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col0 (type: string), _col1 (type: string)
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src1
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src1
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src1
+                  name: default.src1
+            Truncated Path -> Alias:
+              /src1 [b]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2
+                Position of Big Table: 0
+                Statistics: Num rows: 50 Data size: 13300 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: '429' (type: string), _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 50 Data size: 17650 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 50 Data size: 17650 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3
+                          columns.types string:string:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+429	val_429		
+429	val_429		
+429	val_429		
+429	val_429		
+429	val_429		
+429	val_429		
+429	val_429		
+429	val_429		
+429	val_429		val_165
+429	val_429		val_165
+429	val_429		val_193
+429	val_429		val_193
+429	val_429		val_265
+429	val_429		val_265
+429	val_429		val_27
+429	val_429		val_27
+429	val_429		val_409
+429	val_429		val_409
+429	val_429		val_484
+429	val_429		val_484
+429	val_429	128	
+429	val_429	128	
+429	val_429	146	val_146
+429	val_429	146	val_146
+429	val_429	150	val_150
+429	val_429	150	val_150
+429	val_429	213	val_213
+429	val_429	213	val_213
+429	val_429	224	
+429	val_429	224	
+429	val_429	238	val_238
+429	val_429	238	val_238
+429	val_429	255	val_255
+429	val_429	255	val_255
+429	val_429	273	val_273
+429	val_429	273	val_273
+429	val_429	278	val_278
+429	val_429	278	val_278
+429	val_429	311	val_311
+429	val_429	311	val_311
+429	val_429	369	
+429	val_429	369	
+429	val_429	401	val_401
+429	val_429	401	val_401
+429	val_429	406	val_406
+429	val_429	406	val_406
+429	val_429	66	val_66
+429	val_429	66	val_66
+429	val_429	98	val_98
+429	val_429	98	val_98

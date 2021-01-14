@@ -53,9 +53,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: create scheduled query t_analyze cron '0 */1 * * * ? *' as analyze table t compute statistics for columns
+PREHOOK: query: create scheduled query t_analyze cron '0 0 0 1 * ? 2030' as analyze table t compute statistics for columns
 PREHOOK: type: CREATE SCHEDULED QUERY
-POSTHOOK: query: create scheduled query t_analyze cron '0 */1 * * * ? *' as analyze table t compute statistics for columns
+POSTHOOK: query: create scheduled query t_analyze cron '0 0 0 1 * ? 2030' as analyze table t compute statistics for columns
 POSTHOOK: type: CREATE SCHEDULED QUERY
 PREHOOK: query: alter scheduled query t_analyze execute
 PREHOOK: type: ALTER SCHEDULED QUERY

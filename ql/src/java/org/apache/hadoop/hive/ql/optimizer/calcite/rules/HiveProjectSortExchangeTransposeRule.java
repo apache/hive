@@ -29,6 +29,9 @@ import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationImpl;
+import org.apache.calcite.rel.RelCollationTraitDef;
+import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistributionTraitDef;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SortExchange;
@@ -83,19 +86,17 @@ public final class HiveProjectSortExchangeTransposeRule extends RelOptRule {
       return;
     }
 
-    RelTraitSet newTraitSet = TraitsUtil.getDefaultTraitSet(sortExchange.getCluster());
-    RelCollation newCollation = newTraitSet.canonize(RelCollationImpl.of(fieldCollations));
-    newTraitSet = newTraitSet.replace(newCollation);
+    RelCollation newCollation = RelCollationTraitDef.INSTANCE.canonize(RelCollationImpl.of(fieldCollations));
     List<Integer> newDistributionKeys = getNewRelDistributionKeys(project, sortExchange.getDistribution());
+    RelDistribution newDistribution = RelDistributionTraitDef.INSTANCE.canonize(
+        new HiveRelDistribution(sortExchange.getDistribution().getType(), newDistributionKeys));
+    RelTraitSet newTraitSet = TraitsUtil.getDefaultTraitSet(sortExchange.getCluster())
+        .replace(newCollation).replace(newDistribution);
 
     // New operators
     final RelNode newProject = project.copy(sortExchange.getInput().getTraitSet(),
         ImmutableList.of(sortExchange.getInput()));
-    final SortExchange newSort = sortExchange.copy(
-        newTraitSet,
-        newProject,
-        new HiveRelDistribution(sortExchange.getDistribution().getType(), newDistributionKeys),
-        newCollation);
+    final SortExchange newSort = sortExchange.copy(newTraitSet, newProject, newDistribution, newCollation);
 
     call.transformTo(newSort);
   }

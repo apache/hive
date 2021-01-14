@@ -57,7 +57,7 @@ import static org.hamcrest.CoreMatchers.not;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * Class for testing HS2 compile lock behavior (serializable, parallel unbounded, parallel bounded).

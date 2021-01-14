@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.function.Predicate;
+
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -63,4 +65,13 @@ public interface LowLevelCache {
 
   /** Notifies the cache that a particular buffer should be removed due to eviction. */
   void notifyEvicted(MemoryBuffer buffer);
+
+  /**
+   * Iterates through the file entries of this cache and for those that match the given predicate (aka have a matching
+   * CacheTag) will have their buffers marked for (a later) proactive eviction.
+   * @param predicate - matching the predicate indicates eligibility for proactive eviction
+   * @param isInstantDeallocation - whether to ask allocator to deallocate eligible buffers immediately after marking
+   * @return number of bytes marked in the buffers eligible for eviction
+   */
+  long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation);
 }

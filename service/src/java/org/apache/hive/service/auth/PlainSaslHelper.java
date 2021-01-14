@@ -158,7 +158,12 @@ public final class PlainSaslHelper {
       }
       PasswdAuthenticationProvider provider =
         AuthenticationProviderFactory.getAuthenticationProvider(authMethod);
-      provider.Authenticate(username, password);
+      try {
+        provider.Authenticate(username, password);
+      } catch (Exception e) {
+        LOG.error("Login attempt is failed for user : " + username + ". Error Messsage : " + e.getMessage());
+        throw e;
+      }
       if (ac != null) {
         ac.setAuthorized(true);
       }

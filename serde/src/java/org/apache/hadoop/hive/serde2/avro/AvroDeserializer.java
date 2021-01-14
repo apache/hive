@@ -278,7 +278,7 @@ class AvroDeserializer {
 
       int scale = 0;
       try {
-        scale = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).asInt();
+        scale = AvroSerdeUtils.getIntFromSchema(fileSchema, AvroSerDe.AVRO_PROP_SCALE);
       } catch(Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + fileSchema, ex);
       }
@@ -294,7 +294,7 @@ class AvroDeserializer {
 
       int maxLength = 0;
       try {
-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = AvroSerdeUtils.getIntFromSchema(fileSchema, AvroSerDe.AVRO_PROP_MAX_LENGTH);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value for char field from file schema: " + fileSchema, ex);
       }
@@ -309,7 +309,7 @@ class AvroDeserializer {
 
       maxLength = 0;
       try {
-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+        maxLength = AvroSerdeUtils.getIntFromSchema(fileSchema, AvroSerDe.AVRO_PROP_MAX_LENGTH);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value for varchar field from file schema: " + fileSchema, ex);
       }
@@ -355,12 +355,15 @@ class AvroDeserializer {
       } else {
         skipUTCConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION.defaultBoolVal;
       }
+      boolean legacyConversion = false;
       ZoneId convertToTimeZone;
       if (writerTimezone != null) {
         convertToTimeZone = writerTimezone;
       } else if (skipUTCConversion) {
         convertToTimeZone = ZoneOffset.UTC;
       } else {
+        legacyConversion = configuration != null && HiveConf.getBoolVar(
+            configuration, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
         convertToTimeZone = TimeZone.getDefault().toZoneId();
       }
       final boolean skipProlepticConversion;
@@ -375,7 +378,7 @@ class AvroDeserializer {
         }
       }
       Timestamp timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone);
+          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone, legacyConversion);
       if (!skipProlepticConversion) {
         timestamp = Timestamp.ofEpochMilli(
             CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
@@ -391,8 +394,8 @@ class AvroDeserializer {
   private Object deserializeStruct(GenericData.Record datum, Schema fileSchema, StructTypeInfo columnType)
           throws AvroSerdeException {
     // No equivalent Java type for the backing structure, need to recurse and build a list
-    ArrayList<TypeInfo> innerFieldTypes = columnType.getAllStructFieldTypeInfos();
-    ArrayList<String> innerFieldNames = columnType.getAllStructFieldNames();
+    List<TypeInfo> innerFieldTypes = columnType.getAllStructFieldTypeInfos();
+    List<String> innerFieldNames = columnType.getAllStructFieldNames();
     List<Object> innerObjectRow = new ArrayList<Object>(innerFieldTypes.size());
 
     return workerBase(innerObjectRow, fileSchema, innerFieldNames, innerFieldTypes, datum);

@@ -1,0 +1,68 @@
+PREHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(21,11))
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.00000000000
+PREHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: (UDFToDouble(UDFToInteger(key)) / UDFToDouble(UDFToInteger(key))) (type: double)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.0

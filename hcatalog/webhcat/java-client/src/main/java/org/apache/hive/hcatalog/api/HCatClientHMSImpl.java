@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1007,7 +1008,7 @@ public class HCatClientHMSImpl extends HCatClient {
           }
         });
       } else {
-        return new ArrayList<HCatNotificationEvent>();
+        return Collections.emptyList();
       }
     } catch (TException e) {
       throw new ConnectionFailureException("TException while getting notifications", e);

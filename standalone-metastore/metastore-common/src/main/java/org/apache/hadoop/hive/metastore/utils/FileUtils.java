@@ -243,7 +243,7 @@ public class FileUtils {
   }
 
   private static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+    return c < charToEscape.size() && charToEscape.get(c);
   }
 
   public static String escapePathName(String path) {
@@ -332,7 +332,7 @@ public class FileUtils {
       // does not exist. But getFileStatus() throw IOException. To mimic the
       // similar behavior we will return empty array on exception. For external
       // tables, the path of the table will not exists during table creation
-      return new ArrayList<>(0);
+      return Collections.emptyList();
     }
   }
 

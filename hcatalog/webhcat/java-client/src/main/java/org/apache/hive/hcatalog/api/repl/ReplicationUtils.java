@@ -21,7 +21,6 @@ package org.apache.hive.hcatalog.api.repl;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hive.hcatalog.api.HCatDatabase;
@@ -37,6 +36,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
 
 public class ReplicationUtils {
@@ -222,7 +222,7 @@ public class ReplicationUtils {
     DataOutput dataOutput = new DataOutputStream(baos);
     ReaderWriter.writeDatum(dataOutput,command.getClass().getName());
     command.write(dataOutput);
-    return Base64.encodeBase64URLSafeString(baos.toByteArray());
+    return Base64.getUrlEncoder().encodeToString(baos.toByteArray());
   }
 
   /**
@@ -234,7 +234,7 @@ public class ReplicationUtils {
    * given a base64 String representation of it.
    */
    public static Command deserializeCommand(String s) throws IOException {
-    DataInput dataInput = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(s)));
+    DataInput dataInput = new DataInputStream(new ByteArrayInputStream(Base64.getUrlDecoder().decode(s)));
     String clazz = (String) ReaderWriter.readDatum(dataInput);
     Command cmd;
     try {

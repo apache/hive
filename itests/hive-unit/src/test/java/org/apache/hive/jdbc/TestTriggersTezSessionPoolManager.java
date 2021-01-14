@@ -31,10 +31,12 @@ import org.apache.hadoop.hive.ql.wm.Trigger;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TestName;
 
 import com.google.common.collect.Lists;
 
+@Ignore("test unstable HIVE-23523")
 public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest {
   @Rule
   public TestName testName = new TestName();

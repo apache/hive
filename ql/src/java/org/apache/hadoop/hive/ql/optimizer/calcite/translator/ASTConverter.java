@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -41,9 +42,11 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
@@ -61,6 +64,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
@@ -74,6 +78,7 @@ import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +87,8 @@ import com.google.common.collect.Iterables;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
+  public static final String NON_FK_FILTERED = "NON_FK_FILTERED";
+  public static final String NON_FK_NOT_FILTERED = "NON_FK_NOT_FILTERED";
 
   private final RelNode          root;
   private final HiveAST          hiveAST;
@@ -147,11 +154,7 @@ public class ASTConverter {
           b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
           break;
         case ROLLUP:
-          b = ASTBuilder.construct(HiveParser.TOK_ROLLUP_GROUPBY, "TOK_ROLLUP_GROUPBY");
-          break;
         case CUBE:
-          b = ASTBuilder.construct(HiveParser.TOK_CUBE_GROUPBY, "TOK_CUBE_GROUPBY");
-          break;
         case OTHER:
           b = ASTBuilder.construct(HiveParser.TOK_GROUPING_SETS, "TOK_GROUPING_SETS");
           groupingSetsExpression = true;
@@ -184,9 +187,7 @@ public class ASTConverter {
           ASTBuilder expression = ASTBuilder.construct(
                   HiveParser.TOK_GROUPING_SETS_EXPRESSION, "TOK_GROUPING_SETS_EXPRESSION");
           for (int i : groupSet) {
-            RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
-                .createSqlType(SqlTypeName.ANY));
-            expression.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+            addRefToBuilder(expression, i);
           }
           b.add(expression);
         }
@@ -402,7 +403,7 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s, false, r.getCluster().getRexBuilder()));
-      boolean semiJoin = join.isSemiJoin();
+      boolean semiJoin = join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI;
       if (join.getRight() instanceof Join && !semiJoin) {
           // should not be done for semijoin since it will change the semantics
         // Invert join inputs; this is done because otherwise the SemanticAnalyzer
@@ -416,9 +417,12 @@ public class ASTConverter {
           type = join.getJoinType();
         }
         ast = ASTBuilder.join(right.ast, left.ast, type, cond);
+        addPkFkInfoToAST(ast, join, true);
       } else {
         ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond);
+        addPkFkInfoToAST(ast, join, false);
       }
+
       if (semiJoin) {
         s = left.schema;
       }
@@ -440,6 +444,40 @@ public class ASTConverter {
       ast = ASTBuilder.subQuery(srcAST, sqAlias);
     }
     return new QueryBlockInfo(s, ast);
+  }
+
+  /**
+   * Add PK-FK join information to the AST as a query hint
+   * @param ast
+   * @param join
+   * @param swapSides whether the left and right input of the join is swapped
+   */
+  private void addPkFkInfoToAST(ASTNode ast, Join join, boolean swapSides) {
+    List<RexNode> joinFilters = new ArrayList<>(RelOptUtil.conjunctions(join.getCondition()));
+    RelMetadataQuery mq = join.getCluster().getMetadataQuery();
+    HiveRelOptUtil.PKFKJoinInfo rightInputResult =
+            HiveRelOptUtil.extractPKFKJoin(join, joinFilters, false, mq);
+    HiveRelOptUtil.PKFKJoinInfo leftInputResult =
+            HiveRelOptUtil.extractPKFKJoin(join, joinFilters, true, mq);
+    // Add the fkJoinIndex (0=left, 1=right, if swapSides is false) to the AST
+    // check if the nonFK side is filtered
+    if (leftInputResult.isPkFkJoin && leftInputResult.additionalPredicates.isEmpty()) {
+      RelNode nonFkInput = join.getRight();
+      ast.addChild(pkFkHint(swapSides ? 1 : 0, HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)));
+    } else if (rightInputResult.isPkFkJoin && rightInputResult.additionalPredicates.isEmpty()) {
+      RelNode nonFkInput = join.getLeft();
+      ast.addChild(pkFkHint(swapSides ? 0 : 1, HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)));
+    }
+  }
+
+  private ASTNode pkFkHint(int fkTableIndex, boolean nonFkSideIsFiltered) {
+    ParseDriver parseDriver = new ParseDriver();
+    try {
+      return parseDriver.parseHint(String.format("PKFK_JOIN(%d, %s)",
+              fkTableIndex, nonFkSideIsFiltered ? NON_FK_FILTERED : NON_FK_NOT_FILTERED));
+    } catch (ParseException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   class QBVisitor extends RelVisitor {
@@ -665,15 +703,15 @@ public class ASTConverter {
       ASTNode wRangeAst = null;
 
       ASTNode startAST = null;
-      RexWindowBound ub = window.getUpperBound();
-      if (ub != null) {
-        startAST = getWindowBound(ub);
+      RexWindowBound lb = window.getLowerBound();
+      if (lb != null) {
+        startAST = getWindowBound(lb);
       }
 
       ASTNode endAST = null;
-      RexWindowBound lb = window.getLowerBound();
-      if (lb != null) {
-        endAST = getWindowBound(lb);
+      RexWindowBound ub = window.getUpperBound();
+      if (ub != null) {
+        endAST = getWindowBound(ub);
       }
 
       if (startAST != null || endAST != null) {
@@ -792,6 +830,11 @@ public class ASTConverter {
       } else {
         return SqlFunctionConverter.buildAST(op, astNodeLst);
       }
+    }
+
+    @Override
+    public ASTNode visitDynamicParam(RexDynamicParam dynamicParam) {
+      return ASTBuilder.dynamicParam(dynamicParam);
     }
   }
 

@@ -361,7 +361,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
               throw new RuntimeException("Unexpected hash table key type " + hashTableKeyType.name());
             }
             joinResult = longHashMap.lookup(longKey, hashMapResult);
-            if (joinResult != JoinUtil.JoinResult.MATCH) {
+            if (joinResult != JoinUtil.JoinResult.MATCH || !longHashMap.containsLongKey(longKey)) {
               assertTrue(false);
             }
           }

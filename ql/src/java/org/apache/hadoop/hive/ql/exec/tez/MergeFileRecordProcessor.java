@@ -74,7 +74,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       Map<String, LogicalOutput> outputs) throws Exception {
     // TODO HIVE-14042. Abort handling.
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(mrReporter, inputs, outputs);
     execContext = new ExecMapperContext(jconf);
 
@@ -142,7 +142,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         throw new RuntimeException("Map operator initialization failed", e);
       }
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
   @Override

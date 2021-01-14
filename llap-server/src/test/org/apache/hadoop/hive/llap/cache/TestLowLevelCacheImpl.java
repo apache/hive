@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import static org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer.INVALIDATE_OK;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -30,9 +32,13 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
@@ -41,6 +47,7 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
+
 import org.junit.Test;
 
 public class TestLowLevelCacheImpl {
@@ -64,10 +71,17 @@ public class TestLowLevelCacheImpl {
 
     @Override
     public void deallocate(MemoryBuffer buffer) {
+      if (buffer instanceof LlapCacheableBuffer) {
+        ((LlapCacheableBuffer)buffer).invalidate();
+      }
     }
 
     @Override
     public void deallocateEvicted(MemoryBuffer buffer) {
+    }
+
+    @Override
+    public void deallocateProactivelyEvicted(MemoryBuffer buffer) {
     }
 
     @Override
@@ -198,6 +212,120 @@ Example code to test specific scenarios:
       }
       iter = iter.next;
     }
+  }
+
+  @Test
+  public void testBitmaskHandling() {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+            LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+            new DummyAllocator(), true, -1); // no cleanup thread
+    long fn1 = 1;
+
+    LlapDataBuffer[] buffs1 = IntStream.range(0, 5).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs1 = drs(1, 2, 31, 32, 33);
+
+    LlapDataBuffer[] buffs2 = IntStream.range(0, 41).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs2 = drs(IntStream.range(1, 42).toArray());
+
+
+    assertNull(cache.putFileData(fn1, drs1, buffs1, 0, Priority.NORMAL, null, null));
+
+    long[] mask = cache.putFileData(fn1, drs2, buffs2, 0, Priority.NORMAL, null, null);
+    assertEquals(1, mask.length);
+    long expected = Long.parseLong("111000000000000000000000000000011", 2);
+    assertEquals(expected, mask[0]);
+  }
+
+  @Test
+  public void testDeclaredLengthUnsetForCollidedBuffer() throws Exception {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+
+    long fileKey = 1;
+    long[] putResult;
+
+    // 5 buffers: 0,1 cached in the first go, 2,3,4 cached in the next one; buffers 1 and 4 cover overlapping ranges
+    LlapDataBuffer[] buffers = IntStream.range(0, 5).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+
+    LlapDataBuffer[] oldBufs = new LlapDataBuffer[]{ buffers[0], buffers[1] };
+    DiskRange[] oldRanges = drs(0, 15);
+
+    LlapDataBuffer[] newBufs = new LlapDataBuffer[]{ buffers[2], buffers[3], buffers[4] };
+    DiskRange[] newRanges = drs(5, 10, 15);
+
+    putResult = cache.putFileData(fileKey, oldRanges, oldBufs, 0, Priority.NORMAL, null, null);
+    assertNull(putResult);
+
+    putResult = cache.putFileData(fileKey, newRanges, newBufs, 0, Priority.NORMAL, null, null);
+    assertEquals(1, putResult.length);
+    assertEquals(Long.parseLong("100", 2), putResult[0]);
+
+    for (int i = 0; i < buffers.length; ++i) {
+      // since buffer 4 collided with buffer 1 it should not have cached length set, as it will not even be seen by
+      // cache policy before it gets quickly deallocated in processCollisions method
+      if (i == buffers.length - 1) {
+        assertEquals(LlapDataBuffer.UNKNOWN_CACHED_LENGTH, buffers[i].declaredCachedLength);
+      } else {
+        assertEquals(1, buffers[i].declaredCachedLength);
+      }
+    }
+
+
+  }
+
+  @Test
+  public void testProactiveEvictionMark() {
+    _testProactiveEvictionMark(false);
+  }
+
+  @Test
+  public void testProactiveEvictionMarkInstantDeallocation() {
+    _testProactiveEvictionMark(true);
+  }
+
+  private void _testProactiveEvictionMark(boolean isInstantDeallocation) {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+    long fn1 = 1;
+    long fn2 = 2;
+
+    LlapDataBuffer[] buffs1 = IntStream.range(0, 4).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs1 = drs(IntStream.range(1, 5).toArray());
+    CacheTag tag1 = CacheTag.build("default.table1");
+
+    LlapDataBuffer[] buffs2 = IntStream.range(0, 41).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs2 = drs(IntStream.range(1, 42).toArray());
+    CacheTag tag2 = CacheTag.build("default.table2");
+
+    Predicate<CacheTag> predicate = tag -> "default.table1".equals(tag.getTableName());
+
+    cache.putFileData(fn1, drs1, buffs1, 0, Priority.NORMAL, null, tag1);
+    cache.putFileData(fn2, drs2, buffs2, 0, Priority.NORMAL, null, tag2);
+    Arrays.stream(buffs1).forEach(b -> {b.decRef(); b.decRef();});
+
+    // Simulating eviction on a buffer
+    assertEquals(INVALIDATE_OK, buffs1[2].invalidate());
+
+    //buffs1[0,1,3] should be marked, as 2 is already invalidated
+    assertEquals(3, cache.markBuffersForProactiveEviction(predicate, isInstantDeallocation));
+
+    for (int i = 0; i < buffs1.length; ++i) {
+      LlapDataBuffer buffer = buffs1[i];
+      if (i == 2) {
+        assertFalse(buffer.isMarkedForEviction());
+      } else {
+        assertTrue(buffer.isMarkedForEviction());
+        assertEquals(isInstantDeallocation, buffer.isInvalid());
+      }
+    }
+
+    // All buffers for file2 should not be marked as per predicate
+    for (LlapDataBuffer buffer : buffs2) {
+      assertFalse(buffer.isMarkedForEviction());
+    }
+
   }
 
   @Test
@@ -438,7 +566,7 @@ Example code to test specific scenarios:
             if (r instanceof CacheChunk) {
               LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)r).getBuffer();
               cache.decRefBuffer(result);
-              if (victim == null && result.invalidate() == LlapCacheableBuffer.INVALIDATE_OK) {
+              if (victim == null && result.invalidate() == INVALIDATE_OK) {
                 ++evictions;
                 victim = result;
               }
@@ -491,7 +619,7 @@ Example code to test specific scenarios:
     for (int i = 0; i < refCount; ++i) {
       victimBuffer.decRef();
     }
-    assertTrue(LlapCacheableBuffer.INVALIDATE_OK == victimBuffer.invalidate());
+    assertTrue(INVALIDATE_OK == victimBuffer.invalidate());
     cache.notifyEvicted(victimBuffer);
   }
 

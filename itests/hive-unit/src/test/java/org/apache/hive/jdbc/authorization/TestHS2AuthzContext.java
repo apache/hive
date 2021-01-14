@@ -18,37 +18,33 @@
 
 package org.apache.hive.jdbc.authorization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.util.HashMap;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
 /**
  * Test context information that gets passed to authorization api
  */
@@ -103,8 +99,7 @@ public class TestHS2AuthzContext {
     verifyContextContents("dfs -ls /", "-ls /");
   }
 
-  private void verifyContextContents(final String cmd, String ctxCmd) throws Exception,
-      HiveAuthzPluginException, HiveAccessControlException {
+  private void verifyContextContents(final String cmd, String ctxCmd) throws Exception {
     Connection hs2Conn = getConnection("user1");
     Statement stmt = hs2Conn.createStatement();
 
@@ -116,8 +111,7 @@ public class TestHS2AuthzContext {
         .forClass(HiveAuthzContext.class);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
-        Matchers.anyListOf(HivePrivilegeObject.class),
-        Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
+        anyList(), any(), contextCapturer.capture());
 
     HiveAuthzContext context = contextCapturer.getValue();
 

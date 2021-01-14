@@ -21,14 +21,19 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -46,6 +51,16 @@ public class TestParseUtils {
     this.query = query;
     this.txnType = txnType;
     this.conf = new HiveConf();
+  }
+
+  @Before
+  public void before() {
+    SessionState.start((HiveConf) conf);
+  }
+
+  @After
+  public void after() throws Exception {
+    SessionState.get().close();
   }
 
   @Parameters
@@ -89,19 +104,24 @@ public class TestParseUtils {
              "WHEN NOT MATCHED THEN " +
              "  INSERT VALUES (src.col_a, src.col_b)",
            TxnType.DEFAULT},
+
+          {"CREATE MATERIALIZED VIEW matview AS SELECT * FROM b", TxnType.DEFAULT},
+          {"ALTER MATERIALIZED VIEW matview REBUILD", TxnType.MATER_VIEW_REBUILD},
+          {"ALTER MATERIALIZED VIEW matview DISABLE REWRITE", TxnType.DEFAULT}
       });
   }
 
   @Test
-  public void testTxnTypeWithEnabledReadOnlyFeature() throws ParseException {
+  public void testTxnTypeWithEnabledReadOnlyFeature() throws Exception {
     enableReadOnlyTxnFeature(true);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)), txnType);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), txnType);
   }
 
   @Test
-  public void testTxnTypeWithDisabledReadOnlyFeature() throws ParseException {
+  public void testTxnTypeWithDisabledReadOnlyFeature() throws Exception {
     enableReadOnlyTxnFeature(false);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)), TxnType.DEFAULT);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))),
+        txnType == TxnType.READ_ONLY ? TxnType.DEFAULT : txnType);
   }
 
   private void enableReadOnlyTxnFeature(boolean featureFlag) {

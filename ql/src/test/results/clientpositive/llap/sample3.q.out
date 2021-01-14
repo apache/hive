@@ -1,0 +1,257 @@
+PREHOOK: query: EXPLAIN
+SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: s
+          Filter Operator
+            predicate: (((hash(key) & 2147483647) % 5) = 0) (type: boolean)
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+1
+103
+103
+122
+122
+122
+125
+125
+125
+133
+133
+147
+147
+155
+16
+16
+161
+161
+161
+161
+162
+162
+163
+165
+165
+165
+18
+18
+194
+196
+196
+196
+196
+21
+21
+21
+21
+222
+222
+230
+230
+230
+230
+230
+237
+237
+238
+238
+238
+24
+24
+240
+246
+246
+256
+256
+256
+260
+260
+260
+264
+264
+273
+273
+273
+273
+275
+275
+275
+276
+278
+278
+278
+288
+288
+289
+289
+296
+296
+302
+302
+305
+305
+311
+311
+311
+32
+323
+323
+33
+33
+332
+335
+335
+335
+344
+344
+344
+35
+35
+35
+35
+35
+35
+352
+352
+355
+355
+362
+366
+369
+369
+369
+369
+37
+37
+373
+373
+379
+379
+391
+391
+393
+393
+393
+397
+397
+405
+407
+407
+407
+407
+41
+410
+411
+411
+416
+425
+43
+432
+432
+435
+435
+436
+436
+439
+439
+439
+439
+441
+450
+450
+453
+453
+454
+454
+454
+454
+454
+455
+455
+455
+460
+466
+466
+466
+469
+469
+469
+469
+469
+469
+470
+470
+481
+481
+484
+484
+492
+492
+492
+492
+493
+494
+494
+494
+498
+498
+498
+51
+51
+51
+52
+52
+52
+52
+53
+53
+54
+61
+68
+69
+69
+72
+72
+8
+8
+87
+87
+87
+89
+89
+89
+91
+93
+93
+93
+96

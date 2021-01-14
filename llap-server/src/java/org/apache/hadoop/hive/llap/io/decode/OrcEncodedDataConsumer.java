@@ -70,20 +70,20 @@ public class OrcEncodedDataConsumer
   private ConsumerFileMetadata fileMetadata; // We assume one request is only for one file.
   private CompressionCodec codec;
   private List<ConsumerStripeMetadata> stripes;
-  private final boolean skipCorrupt; // TODO: get rid of this
   private SchemaEvolution evolution;
   private IoTrace trace;
   private final Includes includes;
   private TypeDescription[] batchSchemas;
   private boolean useDecimal64ColumnVectors;
 
-  public OrcEncodedDataConsumer(
-    Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
-    QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
+  public OrcEncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, Includes includes,
+                                QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.includes = includes;
-    // TODO: get rid of this
-    this.skipCorrupt = skipCorrupt;
+    if (includes.isProbeDecodeEnabled()) {
+      LlapIoImpl.LOG.info("OrcEncodedDataConsumer probeDecode is enabled with cacheKey {} colIndex {} and colName {}",
+              this.includes.getProbeCacheKey(), this.includes.getProbeColIdx(), this.includes.getProbeColName());
+    }
   }
 
   public void setUseDecimal64ColumnVectors(final boolean useDecimal64ColumnVectors) {
@@ -152,17 +152,10 @@ public class OrcEncodedDataConsumer
         }
 
         ColumnVectorBatch cvb = cvbPool.take();
+        cvb.filterContext.reset();
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
         cvb.size = batchSize;
         for (int idx = 0; idx < columnReaders.length; ++idx) {
-          TreeReader reader = columnReaders[idx];
-          if (cvb.cols[idx] == null) {
-            // Orc store rows inside a root struct (hive writes it this way).
-            // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
-          }
-          trace.logTreeReaderNextVector(idx);
-
           /*
            * Currently, ORC's TreeReaderFactory class does this:
            *
@@ -198,9 +191,8 @@ public class OrcEncodedDataConsumer
            *     it doesn't get confused.
            *
            */
-          ColumnVector cv = cvb.cols[idx];
-          cv.reset();
-          cv.ensureSize(batchSize, false);
+          TreeReader reader = columnReaders[idx];
+          ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
           reader.nextVector(cv, null, batchSize);
         }
 
@@ -218,10 +210,23 @@ public class OrcEncodedDataConsumer
     }
   }
 
+  private ColumnVector prepareColumnVector(ColumnVectorBatch cvb, int idx, int batchSize) {
+    if (cvb.cols[idx] == null) {
+      // Orc store rows inside a root struct (hive writes it this way).
+      // When we populate column vectors we skip over the root struct.
+      cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
+    }
+    trace.logTreeReaderNextVector(idx);
+    ColumnVector cv = cvb.cols[idx];
+    cv.reset();
+    cv.ensureSize(batchSize, false);
+    return cv;
+  }
+
   private void createColumnReaders(OrcEncodedColumnBatch batch,
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
-            .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
+            .setSchemaEvolution(evolution)
             .writerTimeZone(stripeMetadata.getWriterTimezone())
             .fileFormat(fileMetadata == null ? null : fileMetadata.getFileVersion())
             .useUTCTimestamp(true)

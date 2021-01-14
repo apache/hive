@@ -115,7 +115,7 @@ public final class MetaStorePlainSaslHelper {
       }
       MetaStorePasswdAuthenticationProvider provider =
         MetaStoreAuthenticationProviderFactory.getAuthenticationProvider(conf, authMethod);
-      provider.Authenticate(username, password);
+      provider.authenticate(username, password);
       if (ac != null) {
         ac.setAuthorized(true);
       }

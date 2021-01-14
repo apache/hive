@@ -52,6 +52,7 @@ import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -454,10 +455,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               }
               String trustStorePassword =
                   MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+              String trustStoreType =
+                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+              String trustStoreAlgorithm =
+                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+
 
               // Create an SSL socket and connect
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-                  trustStorePath, trustStorePassword );
+                  trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm );
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
             } catch(IOException e) {
               throw new IllegalArgumentException(e);
@@ -593,6 +599,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       if (null != client) {
         client.shutdown();
+        if ((transport == null) || !transport.isOpen()) {
+          LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
+        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
@@ -1290,6 +1299,16 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    GetPartitionsPsWithAuthResponse res = client.get_partitions_ps_with_auth_req(req);
+    List<Partition> parts = fastpath ? res.getPartitions() :
+        deepCopyPartitions(filterHook.filterPartitions(res.getPartitions()));
+    res.setPartitions(parts);
+    return res;
+  }
+
+  @Override
   public List<Partition> listPartitionsWithAuthInfo(String db_name,
       String tbl_name, List<String> part_vals, short max_parts,
       String user_name, List<String> group_names) throws NoSuchObjectException,
@@ -1364,6 +1383,30 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
   }
 
+
+  @Override
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
+      throws TException {
+    assert result != null;
+    PartitionsSpecByExprResult r;
+    try {
+      r = client.get_partitions_spec_by_expr(req);
+    } catch (TApplicationException te) {
+      if (te.getType() != TApplicationException.UNKNOWN_METHOD
+          && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
+        throw te;
+      }
+      throw new IncompatibleMetastoreException(
+          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+    }
+
+    // do client side filtering
+    r.setPartitionsSpec(filterHook.filterPartitionSpecs(r.getPartitionsSpec()));
+
+    result.addAll(r.getPartitionsSpec());
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
+  }
+
   /**
    * @param name
    * @return the database
@@ -1397,9 +1440,21 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_partition_req(req);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-                                              List<String> part_names) throws NoSuchObjectException, MetaException, TException {
+                                              List<String> part_names)
+      throws NoSuchObjectException, MetaException, TException {
     return getPartitionsByNames(db_name, tbl_name, part_names, false, null);
+  }
+
+  @Override public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_partitions_req(req);
   }
 
   @Override
@@ -1414,6 +1469,20 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
     List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
+  }
+
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName,
+      String defaultPartName, byte[] exprBytes, String order,
+      short maxParts) throws MetaException, TException, NoSuchObjectException {
+
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException {
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -1612,6 +1681,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         client.get_partition_names(dbName, tblName, max));
   }
 
+  @Override public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_partition_names_ps_req(req);
+  }
+
   @Override
   public List<String> listPartitionNames(String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
@@ -1739,6 +1813,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws
       MetaException, NoSuchObjectException, TException {
     return client.get_check_constraints(request).getCheckConstraints();
+  }
+
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request) throws
+      MetaException, NoSuchObjectException, TException {
+    return client.get_all_table_constraints(request).getAllTableConstraints();
   }
 
   /** {@inheritDoc} */
@@ -2230,13 +2310,32 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetOpenTxnsResponse getOpenTxns() throws TException {
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return client.get_open_txns_req(getOpenTxnsRequest);
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws TException {
-    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns(), 0);
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), 0);
   }
 
   @Override
   public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns(), currentTxn);
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), currentTxn);
+  }
+
+  @Override
+  public ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(excludeTxnTypes);
+    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest),
+      currentTxn);
   }
 
   @Override
@@ -2344,7 +2443,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void replCommitTxn(CommitTxnRequest rqst)
+  public void commitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException {
     client.commit_txn(rqst);
   }
@@ -2536,6 +2635,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         hiveMetaHook.rollbackInsertTable(table, overwrite);
       }
     }
+  }
+
+  @Override
+  public long getLatestTxnIdInConflict(long txnId) throws MetaException {
+    return 0;
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
@@ -3169,6 +3273,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+                                           GetProjectionsSpec projectionsSpec) throws MetaException,
+          InvalidOperationException, UnknownDBException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void updateCreationMetadata(String catName, String dbName, String tableName,
                                      CreationMetadata cm) throws MetaException, TException {
     throw new UnsupportedOperationException();
@@ -3415,9 +3526,23 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetFieldsResponse getFieldsRequest(GetFieldsRequest req)
+      throws MetaException, TException, UnknownTableException, UnknownDBException {
+    throw new UnsupportedOperationException("getFieldsRequest is not supported in HiveMetastoreClientPreCatalog. "
+        + "Use HiveMetastoreClient instead");
+  }
+
+  @Override
   public List<FieldSchema> getSchema(String catName, String db, String tableName) throws
       MetaException, TException, UnknownTableException, UnknownDBException {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public GetSchemaResponse getSchemaRequest(GetSchemaRequest req)
+      throws MetaException, TException, UnknownTableException, UnknownDBException {
+    throw new UnsupportedOperationException("getSchemaRequest is not supported in HiveMetastoreClientPreCatalog. "
+        + "Use HiveMetastoreClient instead");
   }
 
   @Override
@@ -3694,6 +3819,37 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
+    client.add_replication_metrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                         replicationMetricsRequest) throws MetaException, TException {
+    return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
+    client.create_stored_procedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    return client.get_stored_procedure(request);
+  }
+
+  @Override
+  public void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    client.drop_stored_procedure(request);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+    return client.get_all_stored_procedures(request);
+  }
+
+  @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
       throws MetaException, TException {
     return client.scheduled_query_poll(request);
@@ -3702,5 +3858,20 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
     client.scheduled_query_maintenance(request);
+  }
+
+  @Override
+  public long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
+    throw new NotImplementedException("");
+  }
+
+  @Override
+  public void seedTxnId(long seedTxnId) throws TException {
+    throw new NotImplementedException("");
   }
 }

@@ -321,7 +321,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(s)
                         keys: salary (type: float)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE

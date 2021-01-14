@@ -1,0 +1,56 @@
+PREHOOK: query: DESCRIBE FUNCTION decode
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION decode
+POSTHOOK: type: DESCFUNCTION
+decode(bin, str) - Decode the first argument using the second argument character set
+PREHOOK: query: DESC FUNCTION EXTENDED decode
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED decode
+POSTHOOK: type: DESCFUNCTION
+decode(bin, str) - Decode the first argument using the second argument character set
+Possible options for the character set are 'US-ASCII', 'ISO-8859-1',
+'UTF-8', 'UTF-16BE', 'UTF-16LE', and 'UTF-16'. If either argument
+is null, the result will also be null
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDecode
+Function type:BUILTIN
+PREHOOK: query: explain select decode(binary('TestDecode1'), 'UTF-8')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select decode(binary('TestDecode1'), 'UTF-8')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'TestDecode1' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+decode(binary('TestDecode1'), 'UTF-8'),
+decode(binary('TestDecode2'), cast('UTF-8' as varchar(10))),
+decode(binary('TestDecode3'), cast('UTF-8' as char(5))),
+decode(cast(null as binary), 'UTF-8')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+decode(binary('TestDecode1'), 'UTF-8'),
+decode(binary('TestDecode2'), cast('UTF-8' as varchar(10))),
+decode(binary('TestDecode3'), cast('UTF-8' as char(5))),
+decode(cast(null as binary), 'UTF-8')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+TestDecode1	TestDecode2	TestDecode3	NULL

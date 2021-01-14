@@ -61,13 +61,13 @@ public final class HiveSortExchange extends SortExchange implements HiveRelNode 
     RelOptCluster cluster = input.getCluster();
     distribution = RelDistributionTraitDef.INSTANCE.canonize(distribution);
     collation = RelCollationTraitDef.INSTANCE.canonize(collation);
-    RelTraitSet traitSet = getTraitSet(collation, cluster);
+    RelTraitSet traitSet = getTraitSet(cluster, collation, distribution);
     return new HiveSortExchange(cluster, traitSet, input, distribution, collation, keys);
   }
 
-  private static RelTraitSet getTraitSet(RelCollation collation, RelOptCluster cluster) {
-    // add distribution
-    return TraitsUtil.getDefaultTraitSet(cluster).replace(collation);
+  private static RelTraitSet getTraitSet(
+      RelOptCluster cluster, RelCollation collation, RelDistribution distribution) {
+    return TraitsUtil.getDefaultTraitSet(cluster).replace(collation).replace(distribution);
   }
 
   public static HiveSortExchange create(RelNode input,
@@ -75,7 +75,7 @@ public final class HiveSortExchange extends SortExchange implements HiveRelNode 
     RelOptCluster cluster = input.getCluster();
     distribution = RelDistributionTraitDef.INSTANCE.canonize(distribution);
     collation = RelCollationTraitDef.INSTANCE.canonize(collation);
-    RelTraitSet traitSet = getTraitSet(collation, cluster);
+    RelTraitSet traitSet = getTraitSet(cluster, collation, distribution);
     RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(collation.getFieldCollations()));
 
     ImmutableList.Builder<RexNode> builder = ImmutableList.builder();

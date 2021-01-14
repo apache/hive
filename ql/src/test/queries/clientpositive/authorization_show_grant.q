@@ -1,3 +1,4 @@
+--! qt:dataset::ONLY
 --! qt:authorizer
 
 set user.name=hive_admin_user;

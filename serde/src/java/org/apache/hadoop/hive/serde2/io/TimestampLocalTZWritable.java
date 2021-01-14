@@ -100,7 +100,7 @@ public class TimestampLocalTZWritable implements WritableComparable<TimestampLoc
       timestampTZ.setZonedDateTime(null);
       return;
     }
-    timestampTZ = tstz;
+    timestampTZ.setZonedDateTime(tstz.getZonedDateTime());
     timeZone = timestampTZ.getZonedDateTime().getZone();
     bytesEmpty = true;
     timestampTZEmpty = false;
@@ -130,7 +130,7 @@ public class TimestampLocalTZWritable implements WritableComparable<TimestampLoc
 
   public TimestampTZ getTimestampTZ() {
     populateTimestampTZ();
-    return timestampTZ;
+    return new TimestampTZ(timestampTZ.getZonedDateTime());
   }
 
   /**

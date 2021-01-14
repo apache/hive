@@ -1,0 +1,76 @@
+#### A masked pattern was here ####
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop database if exists src cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists src cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: drop database if exists destination cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists destination cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database src with DBPROPERTIES ('repl.source.for' = '1,2,3')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:src
+POSTHOOK: query: create database src with DBPROPERTIES ('repl.source.for' = '1,2,3')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:src
+PREHOOK: query: create table src.t(id int, cnt int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:src
+PREHOOK: Output: src@t
+POSTHOOK: query: create table src.t(id int, cnt int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:src
+POSTHOOK: Output: src@t
+PREHOOK: query: insert into src.t values(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: src@t
+POSTHOOK: query: insert into src.t values(1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: src@t
+POSTHOOK: Lineage: t.cnt SCRIPT []
+POSTHOOK: Lineage: t.id SCRIPT []
+PREHOOK: query: create scheduled query repl1 every 15 minutes as repl dump src
+#### A masked pattern was here ####
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query repl1 every 15 minutes as repl dump src
+#### A masked pattern was here ####
+POSTHOOK: type: CREATE SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl1 execute
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl1 execute
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: create scheduled query repl2 every 15 minutes as repl load src into destination
+#### A masked pattern was here ####
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query repl2 every 15 minutes as repl load src into destination
+#### A masked pattern was here ####
+POSTHOOK: type: CREATE SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl2 execute
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl2 execute
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+default
+destination
+information_schema
+src
+sys
+PREHOOK: query: select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@replication_metrics
+#### A masked pattern was here ####
+POSTHOOK: query: select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@replication_metrics
+#### A masked pattern was here ####
+1	repl1	0
+2	repl2	1

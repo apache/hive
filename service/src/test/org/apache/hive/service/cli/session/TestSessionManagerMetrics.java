@@ -77,6 +77,10 @@ public class TestSessionManagerMetrics {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
     conf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    //NOTES: If we enable operation log, SessionManager will delete operation logs directory on exit,
+    //it maybe impact TestSessionCleanup, because they use the same location ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION,
+    // when we run testing in parallel on local machine with -DforkCount=x, it happen.
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
     MetricsFactory.init(conf);
 
     sm = new SessionManager(null, true);
@@ -378,7 +382,7 @@ public class TestSessionManagerMetrics {
 
     // We're going to wait for the session to be abandoned.
     String currentValue;
-    int count = 5; // how many times we'll sleep before giving up
+    int count = 10; // how many times we'll sleep before giving up
     String expectedValue = "1";
     do {
       // HIVE_SERVER2_SESSION_CHECK_INTERVAL is set to 3 seconds, so we have to wait for at least

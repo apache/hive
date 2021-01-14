@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 use default;
 -- Test sort_array_by() UDF
 

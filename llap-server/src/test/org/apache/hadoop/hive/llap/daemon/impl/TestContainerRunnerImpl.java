@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.Mockito.mock;
@@ -132,6 +133,11 @@ public class TestContainerRunnerImpl {
 
   @After
   public void cleanup() throws Exception {
+    for (Object key : ShuffleHandler.get().getRegisteredApps().keySet()) {
+      String appId = (String) key;
+      ShuffleHandler.get().unregisterDag(null, appId, dagId);
+    }
+
     containerRunner.serviceStop();
     queryTracker.serviceStop();
     executorService.serviceStop();
@@ -155,6 +161,7 @@ public class TestContainerRunnerImpl {
                 .setDagIndex(dagId)
                 .build())
         .build();
+
     containerRunner.registerDag(request);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().size(), 1);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().get(appId), dagId);
@@ -174,7 +181,81 @@ public class TestContainerRunnerImpl {
     containerRunner.submitWork(sRequest);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().size(), 1);
     Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().get(appId), dagId);
-    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
-    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    if (ShuffleHandler.get().isDirWatcherEnabled()) {
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testSubmitSameFragment() throws Exception {
+    Credentials credentials = new Credentials();
+    Token<LlapTokenIdentifier> sessionToken = new Token<>(
+            "identifier".getBytes(), "testPassword".getBytes(), new Text("kind"), new Text("service"));
+    TokenCache.setSessionToken(sessionToken, credentials);
+
+    RegisterDagRequestProto request = RegisterDagRequestProto.newBuilder()
+            .setUser(testUser)
+            .setCredentialsBinary(ByteString.copyFrom(LlapTezUtils.serializeCredentials(credentials)))
+            .setQueryIdentifier(
+                    QueryIdentifierProto.newBuilder()
+                            .setApplicationIdString(appId)
+                            .setDagIndex(dagId)
+                            .build())
+            .build();
+    containerRunner.registerDag(request);
+    Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().size(), 1);
+    Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().get(appId), dagId);
+    Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 0);
+
+    int fragNum = 1;
+    int attemptNum = 0;
+    SubmitWorkRequestProto sRequest1 =
+            LlapDaemonTestUtils.buildSubmitProtoRequest(fragNum, attemptNum, appId,
+                    dagId, vId, "dagName", 0, 0,
+                    0, 0, 1,
+                    credentials);
+
+    containerRunner.submitWork(sRequest1);
+    Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().size(), 1);
+    Assert.assertEquals(ShuffleHandler.get().getRegisteredApps().get(appId), dagId);
+    if (ShuffleHandler.get().isDirWatcherEnabled()) {
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().size(), 1);
+      Assert.assertEquals(ShuffleHandler.get().getRegisteredDirectories().get(appId), dagId);
+    }
+
+    // submitWork() was successful, should show up as an active fragment.
+    Assert.assertEquals(1, containerRunner.getExecutorStatus().size());
+    boolean caughtException = false;
+
+    // Try exact same fragment ID + attempt number - should fail.
+    try {
+      SubmitWorkRequestProto sRequest2 =
+              LlapDaemonTestUtils.buildSubmitProtoRequest(fragNum, attemptNum, appId,
+                      dagId, vId, "dagName", 0, 0,
+                      0, 0, 1,
+                      credentials);
+
+      containerRunner.submitWork(sRequest2);
+    } catch (IllegalArgumentException err) {
+      err.printStackTrace();
+      caughtException = true;
+    }
+    Assert.assertTrue(caughtException);
+    // request failed so should still only have the 1 fragment
+    Assert.assertEquals(1, containerRunner.getExecutorStatus().size());
+
+    // Try same fragment ID with different attempt number - should work.
+    attemptNum = 1;
+    SubmitWorkRequestProto sRequest3 =
+            LlapDaemonTestUtils.buildSubmitProtoRequest(fragNum, attemptNum, appId,
+                    dagId, vId, "dagName", 0, 0,
+                    0, 0, 1,
+                    credentials);
+
+    containerRunner.submitWork(sRequest3);
+
+    // Should now have 2 fragments registered.
+    Assert.assertEquals(2, containerRunner.getExecutorStatus().size());
   }
 }

@@ -109,7 +109,7 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
-    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+    PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
 
     OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs);
 
@@ -145,18 +145,7 @@ public class SparkCompiler extends TaskCompiler {
       new ConstantPropagate(ConstantPropagateProcCtx.ConstantPropagateOption.SHORTCUT).transform(pCtx);
     }
 
-    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
-    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
-    // This call updates the bucketing version of final ReduceSinkOp based on
-    // the bucketing version of FileSinkOp. This operation must happen at the
-    // end to ensure there is no further rewrite of plan which may end up
-    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
-    // Update bucketing version of ReduceSinkOp if needed
-    // Note: This has been copied here from TezCompiler, change seems needed for bucketing to work
-    // properly moving forward.
-    updateBucketingVersionForUpgrade(procCtx);
-
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+    PERF_LOGGER.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
   private void runRemoveDynamicPruning(OptimizeSparkProcContext procCtx) throws SemanticException {
@@ -363,7 +352,7 @@ public class SparkCompiler extends TaskCompiler {
   protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
-    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+    PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
 
     GenSparkUtils utils = GenSparkUtils.getUtils();
     utils.resetSequenceNumber();
@@ -432,7 +421,7 @@ public class SparkCompiler extends TaskCompiler {
       utils.processPartitionPruningSink(procCtx, (SparkPartitionPruningSinkOperator) prunerSink);
     }
 
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+    PERF_LOGGER.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
   }
 
   private void generateTaskTreeHelper(GenSparkProcContext procCtx, List<Node> topNodes)
@@ -575,7 +564,7 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
-    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
+    PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
 
@@ -633,39 +622,7 @@ public class SparkCompiler extends TaskCompiler {
       new AnnotateRunTimeStatsOptimizer().resolve(physicalCtx);
     }
 
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
+    PERF_LOGGER.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     return;
-  }
-
-  private void updateBucketingVersionForUpgrade(OptimizeSparkProcContext procCtx) {
-    // Fetch all the FileSinkOperators.
-    Set<FileSinkOperator> fsOpsAll = new HashSet<>();
-    for (TableScanOperator ts : procCtx.getParseContext().getTopOps().values()) {
-      Set<FileSinkOperator> fsOps = OperatorUtils.findOperators(
-          ts, FileSinkOperator.class);
-      fsOpsAll.addAll(fsOps);
-    }
-
-
-    for (FileSinkOperator fsOp : fsOpsAll) {
-      if (!fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
-        continue;
-      }
-      // Look for direct parent ReduceSinkOp
-      // If there are more than 1 parent, bail out.
-      Operator<?> parent = fsOp;
-      List<Operator<?>> parentOps = parent.getParentOperators();
-      while (parentOps != null && parentOps.size() == 1) {
-        parent = parentOps.get(0);
-        if (!(parent instanceof ReduceSinkOperator)) {
-          parentOps = parent.getParentOperators();
-          continue;
-        }
-
-        // Found the target RSOp
-        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
-        break;
-      }
-    }
   }
 }

@@ -120,7 +120,7 @@ POSTHOOK: query: Select page FROM druid_kafka_test_delimited
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_kafka_test_delimited
 POSTHOOK: Output: hdfs://### HDFS PATH ###
- "Gypsy Danger"
+"Gypsy Danger"
 "Striker Eureka"
 "Cherno Alpha"
 "Crimson Typhoon"

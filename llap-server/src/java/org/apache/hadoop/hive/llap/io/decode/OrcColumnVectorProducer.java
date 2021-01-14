@@ -56,7 +56,6 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final LowLevelCache lowLevelCache;
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
-  private boolean _skipCorrupt; // TODO: get rid of this
   private LlapDaemonCacheMetrics cacheMetrics;
   private LlapDaemonIOMetrics ioMetrics;
   // TODO: if using in multiple places, e.g. SerDe cache, pass this in.
@@ -73,7 +72,6 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.lowLevelCache = lowLevelCache;
     this.bufferManager = bufferManager;
     this.conf = conf;
-    this._skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
     this.cacheMetrics = cacheMetrics;
     this.ioMetrics = ioMetrics;
     this.tracePool = tracePool;
@@ -90,8 +88,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
       InputFormat<?, ?> unused0, Deserializer unused1, Reporter reporter, JobConf job,
       Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
-    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
-        consumer, includes, _skipCorrupt, counters, ioMetrics);
+    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, includes, counters, ioMetrics);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
         metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool, parts);
     edc.init(reader, reader, reader.getTrace());

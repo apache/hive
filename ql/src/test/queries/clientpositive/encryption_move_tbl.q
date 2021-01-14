@@ -20,7 +20,7 @@ CRYPTO CREATE_KEY --keyName key_128_2 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128_2 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db;
 
 INSERT OVERWRITE TABLE encrypted_table_n1 SELECT * FROM src;
-SHOW TABLES LIKE "encrypted_*";
+SHOW TABLES LIKE "encrypted_%";
 ANALYZE TABLE encrypted_table_n1 COMPUTE STATISTICS FOR COLUMNS;
 DESCRIBE FORMATTED encrypted_table_n1 key;
 DESCRIBE FORMATTED encrypted_table_n1 value;
@@ -44,7 +44,7 @@ ALTER TABLE encrypted_table_outloc RENAME TO renamed_encrypted_table_outloc;
 SHOW TABLES;
 
 -- create database encrypted_db_outloc in a specified location other than its default in warehouse
-CREATE DATABASE encrypted_db_outloc LOCATION '${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location';
+CREATE DATABASE encrypted_db_outloc MANAGEDLOCATION '${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location';
 CRYPTO CREATE_KEY --keyName key_128_4 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128_4 --path ${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location;
 

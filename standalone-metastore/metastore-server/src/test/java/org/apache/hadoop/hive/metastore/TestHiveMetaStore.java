@@ -45,7 +45,7 @@ import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -692,7 +692,7 @@ public abstract class TestHiveMetaStore {
     List<Partition> createdPartitions = setupProjectionTestTable();
     Table tbl = client.getTable("compdb", "comptbl");
     GetPartitionsRequest request = new GetPartitionsRequest();
-    GetPartitionsProjectionSpec projectSpec = new GetPartitionsProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     projectSpec.setFieldList(Arrays
         .asList("dbName", "tableName", "catName", "parameters", "lastAccessTime", "sd.location",
             "values", "createTime", "sd.serdeInfo.serializationLib", "sd.cols"));
@@ -1175,14 +1175,14 @@ public abstract class TestHiveMetaStore {
     silentDropDatabase(TEST_DB1_NAME);
 
     String dbLocation =
-      MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
+        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
     FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
     fs.mkdirs(
-              new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"),
-              new FsPermission((short) 0));
+        new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"),
+        new FsPermission((short) 0));
     Database db = new DatabaseBuilder()
         .setName(TEST_DB1_NAME)
-        .setLocation(dbLocation)
+        .setManagedLocation(dbLocation)
         .build(conf);
 
 
@@ -1202,7 +1202,7 @@ public abstract class TestHiveMetaStore {
       }
 
       fs.setPermission(new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"),
-                       new FsPermission((short) 755));
+          new FsPermission((short) 755));
       fs.delete(new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"), true);
     }
 
@@ -1856,7 +1856,7 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testAlterTable() throws Exception {
     String dbName = "alterdb";
-    String invTblName = "alter-tbl";
+    String invTblName = "alter§tbl";
     String tblName = "altertbl";
 
     try {
@@ -1864,9 +1864,9 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(dbName);
 
       String dbLocation =
-          "/tmp/warehouse/_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/_testDB_table_create_";
       String mgdLocation =
-          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_table_create_";
       new DatabaseBuilder()
           .setName(dbName)
           .setLocation(dbLocation)
@@ -2104,10 +2104,15 @@ public abstract class TestHiveMetaStore {
     try {
       silentDropDatabase(dbName);
 
+      String extWarehouse =  MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
+      LOG.info("external warehouse set to:" + extWarehouse);
+      if (extWarehouse == null || extWarehouse.trim().isEmpty()) {
+        extWarehouse = "/tmp/external";
+      }
       String dbLocation =
-          "/tmp/warehouse/_testDB_table_create_";
+          extWarehouse + "/_testDB_table_database_";
       String mgdLocation =
-          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "_testDB_table_create_";
+          MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_table_database_";
       new DatabaseBuilder()
           .setName(dbName)
           .setLocation(dbLocation)
@@ -3422,5 +3427,65 @@ public abstract class TestHiveMetaStore {
     tbl.setTableType("VIRTUAL_VIEW");
     m.invoke(hms, tbl, part, false, null);
     verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
+  }
+
+
+  public void testAlterTableRenameBucketedColumnPositive() throws Exception {
+    String dbName = "alterTblDb";
+    String tblName = "altertbl";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder().setName(dbName).create(client, conf);
+
+    ArrayList<FieldSchema> origCols = new ArrayList<>(2);
+    origCols.add(new FieldSchema("originalColName", ColumnType.STRING_TYPE_NAME, ""));
+    origCols.add(new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    Table origTbl = new TableBuilder().setDbName(dbName).setTableName(tblName).setCols(origCols)
+        .setBucketCols(Lists.newArrayList("originalColName")).build(conf);
+    client.createTable(origTbl);
+
+    // Rename bucketed column positive case
+    ArrayList<FieldSchema> colsUpdated = new ArrayList<>(origCols);
+    colsUpdated.set(0, new FieldSchema("updatedColName1", ColumnType.STRING_TYPE_NAME, ""));
+    Table tblUpdated = client.getTable(dbName, tblName);
+    tblUpdated.getSd().setCols(colsUpdated);
+    tblUpdated.getSd().getBucketCols().set(0, colsUpdated.get(0).getName());
+    client.alter_table(dbName, tblName, tblUpdated);
+
+    Table resultTbl = client.getTable(dbName, tblUpdated.getTableName());
+    assertEquals("Num bucketed columns is not 1 ", 1, resultTbl.getSd().getBucketCols().size());
+    assertEquals("Bucketed column names incorrect", colsUpdated.get(0).getName(),
+        resultTbl.getSd().getBucketCols().get(0));
+
+    silentDropDatabase(dbName);
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void testAlterTableRenameBucketedColumnNegative() throws Exception {
+    String dbName = "alterTblDb";
+    String tblName = "altertbl";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder().setName(dbName).create(client, conf);
+
+    ArrayList<FieldSchema> origCols = new ArrayList<>(2);
+    origCols.add(new FieldSchema("originalColName", ColumnType.STRING_TYPE_NAME, ""));
+    origCols.add(new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    Table origTbl = new TableBuilder().setDbName(dbName).setTableName(tblName).setCols(origCols)
+        .setBucketCols(Lists.newArrayList("originalColName")).build(conf);
+    client.createTable(origTbl);
+
+    // Rename bucketed column negative case
+    ArrayList<FieldSchema> colsUpdated = new ArrayList<>(origCols);
+    colsUpdated.set(0, new FieldSchema("updatedColName1", ColumnType.STRING_TYPE_NAME, ""));
+    Table tblUpdated = client.getTable(dbName, tblName);
+    tblUpdated.getSd().setCols(colsUpdated);
+    client.alter_table(dbName, tblName, tblUpdated);
+
+    silentDropDatabase(dbName);
   }
 }

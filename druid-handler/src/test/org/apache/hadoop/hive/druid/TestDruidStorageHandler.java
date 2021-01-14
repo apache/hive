@@ -93,12 +93,8 @@ public class TestDruidStorageHandler {
   private DataSegment createSegment(String location, Interval interval, String version, ShardSpec shardSpec)
       throws IOException {
     FileUtils.writeStringToFile(new File(location), "dummySegmentData");
-    return DataSegment.builder()
-        .dataSource(DATA_SOURCE_NAME)
-        .version(version)
-        .interval(interval)
-        .shardSpec(shardSpec)
-        .loadSpec(ImmutableMap.of("path", location))
+    return DataSegment.builder().dataSource(DATA_SOURCE_NAME).version(version).interval(interval).shardSpec(shardSpec)
+        .loadSpec(ImmutableMap.of("path", location)).size(1000L)
         .build();
   }
 

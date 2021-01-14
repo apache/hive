@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -64,10 +66,14 @@ public class Utils {
 
   private static final String URI_HIVE_PREFIX = "hive2:";
 
-  // This value is set to true by the setServiceUnavailableRetryStrategy() when the server returns 401
+  // This value is set to true by the setServiceUnavailableRetryStrategy() when the server returns 401.
+  // This value is used only when cookie is sent for authorization. In case the cookie is expired,
+  // client will send the actual credentials in the next connection request.
+  // If credentials are sent in the first request it self, then no need to retry.
   static final String HIVE_SERVER2_RETRY_KEY = "hive.server2.retryserver";
-  static final String HIVE_SERVER2_RETRY_TRUE = "true";
-  static final String HIVE_SERVER2_RETRY_FALSE = "false";
+  static final String HIVE_SERVER2_SENT_CREDENTIALS = "hive.server2.sentCredentials";
+  static final String HIVE_SERVER2_CONST_TRUE = "true";
+  static final String HIVE_SERVER2_CONST_FALSE = "false";
 
   public static class JdbcConnectionParams {
     // Note on client side parameter naming convention:
@@ -99,6 +105,8 @@ public class Utils {
     public static final String USE_SSL = "ssl";
     public static final String SSL_TRUST_STORE = "sslTrustStore";
     public static final String SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
+    public static final String SSL_TRUST_STORE_TYPE = "trustStoreType";
+    public static final String SSL_TRUST_MANAGER_FACTORY_ALGORITHM = "trustManagerFactoryAlgorithm";
     // We're deprecating the name and placement of this in the parsed map (from hive conf vars to
     // hive session vars).
     static final String TRANSPORT_MODE_DEPRECATED = "hive.server2.transport.mode";
@@ -138,6 +146,8 @@ public class Utils {
     static final String WM_POOL = "wmPool";
     // Cookie prefix
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
+    // Create external purge table by default
+    static final String CREATE_TABLE_AS_EXTERNAL = "hiveCreateAsExternalLegacy";
 
     // We support ways to specify application name modeled after some existing DBs, since
     // there's no standard approach.
@@ -157,12 +167,8 @@ public class Utils {
     static final String SUNJSSE_ALGORITHM_STRING = "SunJSSE";
    // --------------- End 2 way ssl options ----------------------------
 
-    // Non-configurable params:
-    // Currently supports JKS keystore format
-    static final String SSL_TRUST_STORE_TYPE = "JKS";
-
     private static final String HIVE_VAR_PREFIX = "hivevar:";
-    private static final String HIVE_CONF_PREFIX = "hiveconf:";
+    public static final String HIVE_CONF_PREFIX = "hiveconf:";
     private String host = null;
     private int port = 0;
     private String jdbcUriString;
@@ -180,6 +186,10 @@ public class Utils {
     private String zookeeperTrustStorePassword = "";
     private String currentHostZnodePath;
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
+
+    // HiveConf parameters
+    public static final String HIVE_DEFAULT_NULLS_LAST_KEY =
+        HIVE_CONF_PREFIX + HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
 
     public JdbcConnectionParams() {
     }

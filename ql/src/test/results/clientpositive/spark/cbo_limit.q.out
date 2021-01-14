@@ -179,7 +179,7 @@ HiveFilter(condition=[>($0, 1)])
   HiveProject(c_int=[$0])
     HiveSortLimit(fetch=[1])
       HiveProject(c_int=[$2])
-        HiveFilter(condition=[>($3, 1.0E0)])
+        HiveFilter(condition=[>($3, 1E0)])
           HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int
@@ -205,7 +205,7 @@ HiveSortLimit(fetch=[0])
   HiveProject(_o__c0=[$1])
     HiveAggregate(group=[{0}], agg#0=[count()])
       HiveProject($f0=[true])
-        HiveFilter(condition=[>($3, 1.0E0)])
+        HiveFilter(condition=[>($3, 1E0)])
           HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select count(*) from cbo_t1 where c_float > 1.0 group by true limit 0

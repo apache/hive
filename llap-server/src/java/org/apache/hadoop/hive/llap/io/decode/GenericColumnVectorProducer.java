@@ -85,8 +85,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
-    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
-        consumer, includes, false, counters, ioMetrics);
+    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, includes, counters, ioMetrics);
     SerDeFileMetadata fm;
     try {
       fm = new SerDeFileMetadata(sourceSerDe);

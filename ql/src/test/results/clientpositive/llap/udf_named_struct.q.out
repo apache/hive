@@ -1,0 +1,51 @@
+PREHOOK: query: DESCRIBE FUNCTION named_struct
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION named_struct
+POSTHOOK: type: DESCFUNCTION
+named_struct(name1, val1, name2, val2, ...) - Creates a struct with the given field names and values
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED named_struct
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED named_struct
+POSTHOOK: type: DESCFUNCTION
+named_struct(name1, val1, name2, val2, ...) - Creates a struct with the given field names and values
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNamedStruct
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT named_struct("foo", 1, "bar", 2),
+       named_struct("foo", 1, "bar", 2).foo FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT named_struct("foo", 1, "bar", 2),
+       named_struct("foo", 1, "bar", 2).foo FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: named_struct('foo',1,'bar',2) (type: struct<foo:int,bar:int>), named_struct('foo',1,'bar',2).foo (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT named_struct("foo", 1, "bar", 2),
+       named_struct("foo", 1, "bar", 2).foo FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT named_struct("foo", 1, "bar", 2),
+       named_struct("foo", 1, "bar", 2).foo FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+{"foo":1,"bar":2}	1

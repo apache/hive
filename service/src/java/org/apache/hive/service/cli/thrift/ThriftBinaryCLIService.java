@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.CLIService;
@@ -56,6 +57,11 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
   public ThriftBinaryCLIService(CLIService cliService, Runnable oomHook) {
     super(cliService, ThriftBinaryCLIService.class.getSimpleName());
     this.oomHook = oomHook;
+  }
+
+  @Override
+  protected HiveServer2TransportMode getTransportMode() {
+    return HiveServer2TransportMode.binary;
   }
 
   @Override
@@ -86,8 +92,10 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
         }
         String keyStorePassword = ShimLoader.getHadoopShims().getPassword(hiveConf,
             HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname);
+        String keyStoreType = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_TYPE).trim();
+        String keyStoreAlgorithm = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
         serverSocket = HiveAuthUtils.getServerSSLSocket(hiveHost, portNum, keyStorePath, keyStorePassword,
-            sslVersionBlacklist);
+            keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
       }
 
       // Server args

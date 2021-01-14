@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Assert;
-import junit.framework.TestCase;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
@@ -226,28 +225,28 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesI_I();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
 
     serDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesI_II();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
 
     serDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesI_III();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
 
     serDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesI_IV();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
   }
@@ -261,8 +260,7 @@ public class TestHBaseSerDe {
     long putTimestamp = 1;
     tbl.setProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP,
             Long.toString(putTimestamp));
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-
+    serDe.initialize(conf, tbl, null);
 
     byte [] cfa = "cola".getBytes();
     byte [] cfb = "colb".getBytes();
@@ -471,21 +469,21 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesII_I();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
 
     serDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesII_II();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
 
     serDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesII_III();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
   }
@@ -556,15 +554,15 @@ public class TestHBaseSerDe {
 
     byte [][][] columnQualifiersAndValues = new byte [][][] {
         {Bytes.toBytes(1), new byte [] {1}, Bytes.toBytes((short) 1),
-         Bytes.toBytes((long) 1), Bytes.toBytes((float) 1.0F), Bytes.toBytes(1.0),
+         Bytes.toBytes((long) 1), Bytes.toBytes(1.0F), Bytes.toBytes(1.0),
          Bytes.toBytes(true)},
         {Bytes.toBytes(Integer.MIN_VALUE), new byte [] {Byte.MIN_VALUE},
-         Bytes.toBytes((short) Short.MIN_VALUE), Bytes.toBytes((long) Long.MIN_VALUE),
-         Bytes.toBytes((float) Float.MIN_VALUE), Bytes.toBytes(Double.MIN_VALUE),
+         Bytes.toBytes(Short.MIN_VALUE), Bytes.toBytes(Long.MIN_VALUE),
+         Bytes.toBytes(Float.MIN_VALUE), Bytes.toBytes(Double.MIN_VALUE),
          Bytes.toBytes(false)},
         {Bytes.toBytes(Integer.MAX_VALUE), new byte [] {Byte.MAX_VALUE},
-         Bytes.toBytes((short) Short.MAX_VALUE), Bytes.toBytes((long) Long.MAX_VALUE),
-         Bytes.toBytes((float) Float.MAX_VALUE), Bytes.toBytes(Double.MAX_VALUE),
+         Bytes.toBytes(Short.MAX_VALUE), Bytes.toBytes(Long.MAX_VALUE),
+         Bytes.toBytes(Float.MAX_VALUE), Bytes.toBytes(Double.MAX_VALUE),
          Bytes.toBytes(true)}
     };
 
@@ -602,7 +600,7 @@ public class TestHBaseSerDe {
     HBaseSerDe hbaseSerDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveMapHBaseColumnFamily();
-    SerDeUtils.initializeSerDe(hbaseSerDe, conf, tbl, null);
+    hbaseSerDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveMapHBaseColumnFamily(hbaseSerDe, r, p, expectedData, rowKeys,
         columnFamilies, columnQualifiersAndValues);
@@ -610,7 +608,7 @@ public class TestHBaseSerDe {
     hbaseSerDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesForHiveMapHBaseColumnFamilyII();
-    SerDeUtils.initializeSerDe(hbaseSerDe, conf, tbl, null);
+    hbaseSerDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveMapHBaseColumnFamily(hbaseSerDe, r, p, expectedData, rowKeys,
         columnFamilies, columnQualifiersAndValues);
@@ -732,7 +730,7 @@ public class TestHBaseSerDe {
     HBaseSerDe hbaseSerDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveMapHBaseColumnFamilyII_I();
-    SerDeUtils.initializeSerDe(hbaseSerDe, conf, tbl, null);
+    hbaseSerDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveMapHBaseColumnFamilyII(hbaseSerDe, r, p, expectedData,
         columnFamilies, columnQualifiersAndValues);
@@ -740,7 +738,7 @@ public class TestHBaseSerDe {
     hbaseSerDe = new HBaseSerDe();
     conf = new Configuration();
     tbl = createPropertiesForHiveMapHBaseColumnFamilyII_II();
-    SerDeUtils.initializeSerDe(hbaseSerDe, conf, tbl, null);
+    hbaseSerDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveMapHBaseColumnFamilyII(hbaseSerDe, r, p, expectedData,
         columnFamilies, columnQualifiersAndValues);
@@ -866,7 +864,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForColumnPrefixes();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     Object notPresentKey = new Text("unwanted_col");
 
@@ -961,7 +959,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForCompositeKeyWithSeparator();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHBaseCompositeKey(serDe, r, p);
   }
@@ -1012,7 +1010,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForCompositeKeyWithoutSeparator();
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHBaseCompositeKey(serDe, r, p);
   }
@@ -1084,7 +1082,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroSchemaInline();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING);
@@ -1131,7 +1129,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroForwardEvolvedSchema();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING_3);
@@ -1177,7 +1175,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroBackwardEvolvedSchema();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING);
@@ -1228,7 +1226,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroSerClass();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING_2);
@@ -1288,7 +1286,7 @@ public class TestHBaseSerDe {
       HBaseSerDe serDe = new HBaseSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createPropertiesForHiveAvroSchemaUrl(onHDFS);
-      serDe.initialize(conf, tbl);
+      serDe.initialize(conf, tbl, null);
 
       deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
           EXPECTED_DESERIALIZED_AVRO_STRING);
@@ -1345,7 +1343,7 @@ public class TestHBaseSerDe {
     Configuration conf = new Configuration();
 
     Properties tbl = createPropertiesForHiveAvroExternalSchema();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING_2);
@@ -1419,7 +1417,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroColumnFamilyMap();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     Object notPresentKey = new Text("prefixA_avro1");
 
@@ -1468,7 +1466,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForValueStruct();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHBaseValueStruct(serDe, r, p);
 
@@ -1484,7 +1482,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Properties tbl = createPropertiesForValueStruct();
     tbl.setProperty("columns.comments", "");
-    serDe.initialize(new Configuration(), tbl);
+    serDe.initialize(new Configuration(), tbl, null);
   }
 
   private Properties createPropertiesForValueStruct() {

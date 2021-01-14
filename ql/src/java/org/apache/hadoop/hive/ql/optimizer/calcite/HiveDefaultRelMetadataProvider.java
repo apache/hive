@@ -18,19 +18,8 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.List;
-import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion;
-import org.apache.calcite.plan.hep.HepRelVertex;
-import org.apache.calcite.plan.volcano.AbstractConverter;
-import org.apache.calcite.plan.volcano.RelSubset;
-import org.apache.calcite.rel.AbstractRelNode;
+
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -38,27 +27,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdExpressionLineage;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
@@ -87,6 +61,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdRuntimeRowCount.SOURCE,
                   HiveRelMdUniqueKeys.SOURCE,
                   HiveRelMdColumnUniqueness.SOURCE,
+                  HiveRelMdExpressionLineage.SOURCE,
                   HiveRelMdSize.SOURCE,
                   HiveRelMdMemory.SOURCE,
                   HiveRelMdDistribution.SOURCE,
@@ -120,6 +95,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdRowCount.SOURCE,
                   HiveRelMdUniqueKeys.SOURCE,
                   HiveRelMdColumnUniqueness.SOURCE,
+                  HiveRelMdExpressionLineage.SOURCE,
                   HiveRelMdSize.SOURCE,
                   HiveRelMdMemory.SOURCE,
                   new HiveRelMdParallelism(maxSplitSize).getMetadataProvider(),
@@ -149,8 +125,6 @@ public class HiveDefaultRelMetadataProvider {
    * be visited during the planning phase.
    */
   public static void initializeMetadataProviderClass(List<Class<? extends RelNode>> nodeClasses) {
-    // This will register the classes in the default Janino implementation
-    JaninoRelMetadataProvider.DEFAULT.register(nodeClasses);
     // This will register the classes in the default Hive implementation
     DEFAULT.register(nodeClasses);
   }

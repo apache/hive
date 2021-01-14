@@ -42,7 +42,7 @@ public final class LBProcFactory extends PrunerOperatorFactory {
 
     @Override
     protected void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
-                                     TableScanOperator top) throws SemanticException, UDFArgumentException {
+        TableScanOperator top) throws SemanticException {
       LBOpWalkerCtx owc = (LBOpWalkerCtx) procCtx;
       // Otherwise this is not a sampling predicate and we need to
       ExprNodeDesc predicate = fop.getConf().getPredicate();

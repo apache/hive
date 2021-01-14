@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -51,6 +53,8 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   public ValidReaderWriteIdList(String tableName, long[] exceptions, BitSet abortedBits, long highWatermark) {
     this(tableName, exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
   }
+
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
   public ValidReaderWriteIdList(String tableName,
                                 long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenWriteId) {
     this.tableName = tableName;
@@ -213,6 +217,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public long[] getInvalidWriteIds() {
     return exceptions;
   }

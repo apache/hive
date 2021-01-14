@@ -14,7 +14,6 @@
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +29,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -39,16 +36,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 /**
- *
- * A ParquetHiveSerDe for Hive (with the deprecated package mapred)
- *
+ * A ParquetHiveSerDe for Hive (with the deprecated package mapred). Parquet
+ * format and stats is collected in ParquetRecordWriterWrapper when writer gets
+ * closed.
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
         ParquetOutputFormat.COMPRESSION})
@@ -77,36 +73,17 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   }
 
   @Override
-  public final void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
-    final List<String> columnNames;
-    final List<TypeInfo> columnTypes;
-    // Get column names and sort order
-    final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    }
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    if (columnNames.size() != columnTypes.size()) {
-      throw new IllegalArgumentException("ParquetHiveSerde initialization failed. Number of column " +
-        "name and column type differs. columnNames = " + columnNames + ", columnTypes = " +
-        columnTypes);
-    }
     // Create row related objects
     StructTypeInfo completeTypeInfo =
-        (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+        (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
     StructTypeInfo prunedTypeInfo = null;
-    if (conf != null) {
-      String rawPrunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+    if (this.configuration.isPresent()) {
+      String rawPrunedColumnPaths =
+          this.configuration.get().get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
       if (rawPrunedColumnPaths != null) {
         List<String> prunedColumnPaths = processRawPrunedPaths(rawPrunedColumnPaths);
         prunedTypeInfo = pruneFromPaths(completeTypeInfo, prunedColumnPaths);
@@ -144,17 +121,6 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     parquetRow.value = obj;
     parquetRow.inspector= (StructObjectInspector)objInspector;
     return parquetRow;
-  }
-
-  /**
-   * Return null for Parquet format and stats is collected in ParquetRecordWriterWrapper when writer gets
-   * closed.
-   *
-   * @return null
-   */
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   /**

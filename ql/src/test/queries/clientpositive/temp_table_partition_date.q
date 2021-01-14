@@ -16,7 +16,7 @@ insert overwrite table partition_date_1_temp partition(dt='2013-08-08', region= 
   select * from src tablesample (11 rows);
 
 
-select distinct dt from partition_date_1_temp;
+select distinct dt from partition_date_1_temp order by dt;
 select * from partition_date_1_temp where dt = '2000-01-01' and region = '2' order by key,value;
 
 -- 15

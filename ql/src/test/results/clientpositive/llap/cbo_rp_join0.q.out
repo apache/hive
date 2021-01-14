@@ -1,0 +1,6956 @@
+PREHOOK: query: explain select key, cbo_t1.c_int, cbo_t2.p, q from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select key as a, c_int as b, cbo_t3.c_float as c from cbo_t3) cbo_t3 on cbo_t1.key=a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key, cbo_t1.c_int, cbo_t2.p, q from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select key as a, c_int as b, cbo_t3.c_float as c from cbo_t3) cbo_t3 on cbo_t1.key=a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_int (type: int)
+                      outputColumnNames: key, c_int
+                      Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: key (type: string)
+                        Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: c_int (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t2:cbo_t2
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_int (type: int)
+                      outputColumnNames: key, c_int
+                      Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: key (type: string)
+                        Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: c_int (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t3:cbo_t3
+                  Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Right Outer Join 0 to 2
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                outputColumnNames: key, c_int, key0, c_int0
+                Statistics: Num rows: 216 Data size: 38270 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int)
+                  outputColumnNames: key, c_int, p, q
+                  Statistics: Num rows: 216 Data size: 38270 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 216 Data size: 38270 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, cbo_t1.c_int, cbo_t2.p, q from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select key as a, c_int as b, cbo_t3.c_float as c from cbo_t3) cbo_t3 on cbo_t1.key=a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: select key, cbo_t1.c_int, cbo_t2.p, q from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select key as a, c_int as b, cbo_t3.c_float as c from cbo_t3) cbo_t3 on cbo_t1.key=a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+ 1	1	 1	1
+ 1	1	 1	1
+ 1	1	 1	1
+ 1	1	 1	1
+ 1	1	 1	1
+ 1	1	 1	1
+ 1	1	 1	1
+ 1	1	 1	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+ 1 	1	 1 	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1 	1	1 	1
+1 	1	1 	1
+1 	1	1 	1
+1 	1	1 	1
+1 	1	1 	1
+1 	1	1 	1
+1 	1	1 	1
+1 	1	1 	1
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: explain select key, c_int, cbo_t2.p, cbo_t2.q, cbo_t3.x, cbo_t4.b from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select cbo_t3.key as x, cbo_t3.c_int as y, c_float as z from cbo_t3) cbo_t3 on cbo_t1.key=x left outer join
+(select key as a, c_int as b, c_float as c from cbo_t1) cbo_t4 on cbo_t1.key=a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key, c_int, cbo_t2.p, cbo_t2.q, cbo_t3.x, cbo_t4.b from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select cbo_t3.key as x, cbo_t3.c_int as y, c_float as z from cbo_t3) cbo_t3 on cbo_t1.key=x left outer join
+(select key as a, c_int as b, c_float as c from cbo_t1) cbo_t4 on cbo_t1.key=a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_int (type: int)
+                      outputColumnNames: key, c_int
+                      Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: key (type: string)
+                        Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: c_int (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t2:cbo_t2
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_int (type: int)
+                      outputColumnNames: key, c_int
+                      Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: key (type: string)
+                        Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: c_int (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t3:cbo_t3
+                  Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: cbo_t4:cbo_t1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), c_int (type: int)
+                      outputColumnNames: key, c_int
+                      Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: key (type: string)
+                        Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: c_int (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Right Outer Join 0 to 2
+                     Left Outer Join 0 to 3
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                  3 key (type: string)
+                outputColumnNames: key, c_int, key0, c_int0, key1, c_int2
+                Statistics: Num rows: 972 Data size: 259257 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int), key1 (type: string), c_int2 (type: int)
+                  outputColumnNames: key, c_int, p, q, x, b
+                  Statistics: Num rows: 972 Data size: 259257 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 972 Data size: 259257 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, c_int, cbo_t2.p, cbo_t2.q, cbo_t3.x, cbo_t4.b from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select cbo_t3.key as x, cbo_t3.c_int as y, c_float as z from cbo_t3) cbo_t3 on cbo_t1.key=x left outer join
+(select key as a, c_int as b, c_float as c from cbo_t1) cbo_t4 on cbo_t1.key=a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: select key, c_int, cbo_t2.p, cbo_t2.q, cbo_t3.x, cbo_t4.b from cbo_t1 join
+(select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p right outer join
+(select cbo_t3.key as x, cbo_t3.c_int as y, c_float as z from cbo_t3) cbo_t3 on cbo_t1.key=x left outer join
+(select key as a, c_int as b, c_float as c from cbo_t1) cbo_t4 on cbo_t1.key=a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1	1	 1	1	 1	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+ 1 	1	 1 	1	 1 	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1	1	1	1	1	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+1 	1	1 	1	1 	1
+NULL	NULL	NULL	NULL	2	NULL
+NULL	NULL	NULL	NULL	2	NULL
+NULL	NULL	NULL	NULL	2	NULL
+NULL	NULL	NULL	NULL	3	NULL
+NULL	NULL	NULL	NULL	3	NULL
+NULL	NULL	NULL	NULL	3	NULL
+NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL

@@ -24,7 +24,7 @@ public class Oracle extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "orangehrm/oracle-xe-11g";
+    return "pvargacl/oracle-xe-18.4.0";
   }
 
   @Override
@@ -32,10 +32,6 @@ public class Oracle extends DatabaseRule {
     return buildArray(
         "-p",
         "1521:1521",
-        "-e",
-        "DEFAULT_SYS_PASS=" + getDbRootPassword(),
-        "-e",
-        "ORACLE_ALLOW_REMOTE=true",
         "-d"
     );
   }
@@ -61,22 +57,27 @@ public class Oracle extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:oracle:thin:@//localhost:1521/xe";
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:oracle:thin:@//localhost:1521/xe";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
   }
 
   @Override
   public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("Oracle started successfully!");
+    return logOutput.contains("DATABASE IS READY TO USE!");
   }
 
   @Override
   public String getHivePassword() {
     return HIVE_PASSWORD;
+  }
+
+  @Override
+  public String getHiveUser() {
+    return "c##"+ super.getHiveUser();
   }
 }

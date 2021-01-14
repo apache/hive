@@ -45,4 +45,18 @@ EXPLAIN ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='val
 ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2');
 SHOW CREATE TABLE t;
 
+EXPLAIN ALTER TABLE t UNSET SERDEPROPERTIES('property1');
+ALTER TABLE t UNSET SERDEPROPERTIES('property1');
+SHOW CREATE TABLE t;
 
+-- it is valid to unset a non-existing property
+ALTER TABLE t UNSET SERDEPROPERTIES('property1');
+SHOW CREATE TABLE t;
+
+-- a removed property can be set again
+ALTER TABLE t SET SERDEPROPERTIES('property1'='value1');
+SHOW CREATE TABLE t;
+
+-- remove all serde properties
+ALTER TABLE t UNSET SERDEPROPERTIES('property1', 'property2');
+SHOW CREATE TABLE t;

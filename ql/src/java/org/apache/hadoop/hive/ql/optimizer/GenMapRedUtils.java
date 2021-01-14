@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
@@ -759,13 +760,13 @@ public final class GenMapRedUtils {
    *          current plan
    * @param local
    *          whether you need to add to map-reduce or local work
-   * @param tt_desc
+   * @param ttDesc
    *          table descriptor
    * @throws SemanticException
    */
   public static void setTaskPlan(Path path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
-      TableDesc tt_desc) throws SemanticException {
+      TableDesc ttDesc) throws SemanticException {
 
     if (path == null || alias == null) {
       return;
@@ -774,7 +775,7 @@ public final class GenMapRedUtils {
     if (topOp instanceof TableScanOperator) {
       try {
         Utilities.addSchemaEvolutionToTableScanOperator(
-          (StructObjectInspector) tt_desc.getDeserializer().getObjectInspector(),
+          (StructObjectInspector) ttDesc.getSerDe().getObjectInspector(),
           (TableScanOperator) topOp);
       } catch (Exception e) {
         throw new SemanticException(e);
@@ -783,7 +784,7 @@ public final class GenMapRedUtils {
 
     if (!local) {
       plan.addPathToAlias(path, alias);
-      plan.addPathToPartitionInfo(path, new PartitionDesc(tt_desc, null));
+      plan.addPathToPartitionInfo(path, new PartitionDesc(ttDesc, null));
       plan.getAliasToWork().put(alias, topOp);
     } else {
       // populate local work if needed
@@ -797,7 +798,7 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToWork().get(alias) == null;
       assert localPlan.getAliasToFetchWork().get(alias) == null;
       localPlan.getAliasToWork().put(alias, topOp);
-      localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), tt_desc));
+      localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), ttDesc));
       plan.setMapRedLocalWork(localPlan);
     }
   }
@@ -1381,8 +1382,8 @@ public final class GenMapRedUtils {
     // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
 
-    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
-        mvTasks, fsopPath, fsInputDesc.isMmTable(), fsInputDesc.isDirectInsert());
+    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsopPath, fsInputDesc.isMmTable(),
+        fsInputDesc.isDirectInsert(), fsInputDesc.getMoveTaskId(), fsInputDesc.getAcidOperation());
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
         fsInputDesc.getMergeInputDirName(), finalName, mvTask, dependencyTask, lineageState);
 
@@ -1671,6 +1672,8 @@ public final class GenMapRedUtils {
       fmd = new OrcFileMergeDesc();
     }
     fmd.setIsMmTable(fsInputDesc.isMmTable());
+    boolean isCompactionTable = AcidUtils.isCompactionTable(tblDesc.getProperties());
+    fmd.setIsCompactionTable(isCompactionTable);
     fmd.setWriteId(fsInputDesc.getTableWriteId());
     int stmtId = fsInputDesc.getStatementId();
     fmd.setStmtId(stmtId == -1 ? 0 : stmtId);
@@ -1870,20 +1873,26 @@ public final class GenMapRedUtils {
   }
 
   public static Task<MoveWork> findMoveTaskForFsopOutput(List<Task<MoveWork>> mvTasks, Path fsopFinalDir,
-      boolean isMmFsop, boolean isDirectInsert) {
+      boolean isMmFsop, boolean isDirectInsert, String fsoMoveTaskId, AcidUtils.Operation acidOperation) {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
       Path srcDir = null;
       boolean isLfd = false;
+      String moveTaskId = null;
+      AcidUtils.Operation moveTaskWriteType = null;
       if (mvWork.getLoadFileWork() != null) {
         srcDir = mvWork.getLoadFileWork().getSourcePath();
         isLfd = true;
         if (isMmFsop || isDirectInsert) {
           srcDir = srcDir.getParent();
         }
+        moveTaskId = mvWork.getLoadFileWork().getMoveTaskId();
+        moveTaskWriteType = mvWork.getLoadFileWork().getWriteType();
       } else if (mvWork.getLoadTableWork() != null) {
         srcDir = mvWork.getLoadTableWork().getSourcePath();
+        moveTaskId = mvWork.getLoadTableWork().getMoveTaskId();
+        moveTaskWriteType = mvWork.getLoadTableWork().getWriteType();
       }
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("Observing MoveWork " + System.identityHashCode(mvWork)
@@ -1892,7 +1901,16 @@ public final class GenMapRedUtils {
       }
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
-        return mvTsk;
+        if (isDirectInsert || isMmFsop) {
+          if (moveTaskId.equals(fsoMoveTaskId)) {
+            // If the ACID direct insert is on, the MoveTasks cannot be identified by the srcDir as
+            // in this case the srcDir is always the root directory of the table.
+            // We need to consider the ACID write type to identify the MoveTasks.
+            return mvTsk;
+          }
+        } else {
+          return mvTsk;
+        }
       }
     }
     return null;
@@ -1911,7 +1929,7 @@ public final class GenMapRedUtils {
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
     MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(),
-        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert());
+        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
     if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
@@ -1993,7 +2011,7 @@ public final class GenMapRedUtils {
        * 1. MM Tables
        * 2. INSERT operation on full ACID table
        */
-      if ((!isMmTable) && (!isDirectInsert)) {
+      if (!isMmTable && !isDirectInsert) {
         // generate the temporary file
         // it must be on the same file system as the current destination
         Context baseCtx = parseCtx.getContext();
@@ -2025,7 +2043,7 @@ public final class GenMapRedUtils {
 
     if (!chDir) {
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(), isMmTable,
-          isDirectInsert);
+          isDirectInsert, fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
     }
 
     // Set the move task to be dependent on the current task

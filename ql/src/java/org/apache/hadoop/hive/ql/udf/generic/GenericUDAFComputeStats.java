@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
  */
 @Description(name = "compute_stats",
       value = "_FUNC_(x) - Returns the statistical summary of a set of primitive type values.")
+@Deprecated
 public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFComputeStats.class.getName());

@@ -1,4 +1,6 @@
+--! qt:disabled:Disabled in HIVE-19509
 --! qt:dataset:alltypesorc
+
 set hive.stats.dbclass=fs;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;

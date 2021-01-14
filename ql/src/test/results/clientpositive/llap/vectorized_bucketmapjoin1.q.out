@@ -128,6 +128,7 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                    Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -214,6 +215,7 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                    Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -300,6 +302,7 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                    Dummy Store
             Map Operator Tree:
                 TableScan
                   alias: a

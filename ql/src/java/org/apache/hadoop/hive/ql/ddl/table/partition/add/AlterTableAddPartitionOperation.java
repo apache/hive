@@ -157,7 +157,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
       List<Partition> partitions) throws HiveException {
     // TODO: normally, the result is not necessary; might make sense to pass false
     List<org.apache.hadoop.hive.ql.metadata.Partition> outPartitions = new ArrayList<>();
-    for (Partition outPart : context.getDb().addPartition(partitions, desc.isIfNotExists(), true)) {
+    for (Partition outPart : context.getDb().addPartitions(partitions, desc.isIfNotExists(), true)) {
       outPartitions.add(new org.apache.hadoop.hive.ql.metadata.Partition(table, outPart));
     }
     return outPartitions;
@@ -170,15 +170,15 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     // no choice but to iterate over the partitions here.
 
     List<Partition> partitionsToAdd = new ArrayList<>();
-    List<Partition> partitionssToAlter = new ArrayList<>();
+    List<Partition> partitionsToAlter = new ArrayList<>();
     List<String> partitionNames = new ArrayList<>();
     for (Partition partition : partitions){
       partitionNames.add(getPartitionName(table, partition));
       try {
-        Partition p = context.getDb().getPartition(desc.getDbName(), desc.getTableName(), partition.getValues());
+        Partition p = context.getDb().getPartition(table, desc.getDbName(), desc.getTableName(), partition.getValues());
         if (desc.getReplicationSpec().allowReplacementInto(p.getParameters())){
           ReplicationSpec.copyLastReplId(p.getParameters(), partition.getParameters());
-          partitionssToAlter.add(partition);
+          partitionsToAlter.add(partition);
         } // else ptn already exists, but we do nothing with it.
       } catch (HiveException e){
         if (e.getCause() instanceof NoSuchObjectException) {
@@ -191,7 +191,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     }
 
     List<org.apache.hadoop.hive.ql.metadata.Partition> outPartitions = new ArrayList<>();
-    for (Partition outPartition : context.getDb().addPartition(partitionsToAdd, desc.isIfNotExists(), true)) {
+    for (Partition outPartition : context.getDb().addPartitions(partitionsToAdd, desc.isIfNotExists(), true)) {
       outPartitions.add(new org.apache.hadoop.hive.ql.metadata.Partition(table, outPartition));
     }
 
@@ -199,7 +199,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     EnvironmentContext ec = new EnvironmentContext();
     ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     String validWriteIdList = getValidWriteIdList(table, writeId);
-    context.getDb().alterPartitions(desc.getDbName(), desc.getTableName(), partitionssToAlter, ec, validWriteIdList,
+    context.getDb().alterPartitions(desc.getDbName(), desc.getTableName(), partitionsToAlter, ec, validWriteIdList,
         writeId);
 
     for (Partition outPartition : context.getDb().getPartitionsByNames(desc.getDbName(), desc.getTableName(),

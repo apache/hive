@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -308,7 +309,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return inputFormat;
   }
 
-  private static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
+  public static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
     String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Checking " + ifName + " against " + formatList);
@@ -380,7 +381,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
     HiveInputSplit hsplit = (HiveInputSplit) split;
-    InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
     Class inputFormatClass = null;
     try {
@@ -423,7 +423,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     RecordReader innerReader = null;
     try {
-      innerReader = inputFormat.getRecordReader(inputSplit, job, reporter);
+      // Handle the special header/footer skipping cases here.
+      innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
@@ -503,19 +504,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     conf.setInputFormat(inputFormat.getClass());
-    int headerCount = 0;
-    int footerCount = 0;
     if (table != null) {
-      headerCount = Utilities.getHeaderCount(table);
-      footerCount = Utilities.getFooterCount(table, conf);
+      int headerCount = Utilities.getHeaderCount(table);
+      int footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
-        if (TextInputFormat.class.isAssignableFrom(inputFormatClass)) {
+        if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && isUncompressedInput(finalDirs, conf)) {
           SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
           skippingTextInputFormat.configure(conf, headerCount, footerCount);
           inputFormat = skippingTextInputFormat;
         } else {
-          // if the input is not text and contains header/footer we have no way of
-          // splitting them.
+          // if the input is Compressed OR not text we have no way of splitting them!
+          // In that case RecordReader should take care of header/footer skipping!
           HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
         }
       }
@@ -576,6 +575,25 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     return validWriteIdList;
+  }
+
+  public boolean isUncompressedInput(List<Path> finalPaths, Configuration conf) throws IOException {
+    CompressionCodecFactory compressionCodecs = new CompressionCodecFactory(conf);
+    for (Path curr : finalPaths) {
+      FileSystem fs = curr.getFileSystem(conf);
+      if (fs.isDirectory(curr)) {
+        List<FileStatus> results = new ArrayList<>();
+        FileUtils.listStatusRecursively(fs, fs.getFileStatus(curr), results);
+        for (FileStatus fileStatus : results) {
+          if (compressionCodecs.getCodec(fileStatus.getPath()) != null) {
+            return false;
+          }
+        }
+      } else if (compressionCodecs.getCodec(curr) != null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static void processPathsForMmRead(List<Path> dirs, Configuration conf,
@@ -655,8 +673,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     if (hasAcidDirs) {
-      AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
-          fs, dir, conf, validWriteIdList, Ref.from(false), true, null, false);
+      AcidDirectory dirInfo = AcidUtils.getAcidState(
+          fs, dir, conf, validWriteIdList, Ref.from(false), true);
 
       // Find the base, created for IOW.
       Path base = dirInfo.getBaseDirectory();
@@ -716,7 +734,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
     Path[] dirs = getInputPaths(job);
     JobConf newjob = new JobConf(job);
@@ -813,7 +831,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (LOG.isInfoEnabled()) {
       LOG.info("number of splits " + result.size());
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 

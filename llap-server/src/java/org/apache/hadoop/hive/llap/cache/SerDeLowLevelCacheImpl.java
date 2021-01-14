@@ -23,6 +23,7 @@ import com.google.common.base.Function;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -74,19 +76,12 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
                     ReadWriteLockMetrics.createLockMetricsSource("FileData"));
   }
 
-  public static final class LlapSerDeDataBuffer extends LlapAllocatorBuffer {
+  public static final class LlapSerDeDataBuffer extends BaseLlapDataBuffer {
     public boolean isCached = false;
-    private CacheTag tag;
+
     @Override
-    public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-      evictionDispatcher.notifyEvicted(this);
-    }
-    public void setTag(CacheTag tag) {
-      this.tag = tag;
-    }
-    @Override
-    public CacheTag getTag() {
-      return tag;
+    public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
+      evictionDispatcher.notifyEvicted(this, isProactiveEviction);
     }
   }
 
@@ -523,6 +518,40 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     return rc > 0;
   }
 
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
+    long markedBytes = 0;
+    // Proactive eviction does not need to be perfectly accurate - the iterator returned here might be missing some
+    // concurrent inserts / removals but it's fine for us here.
+    Collection<FileCache<FileData>> fileCaches = cache.values();
+    for (FileCache<FileData> fileCache : fileCaches) {
+      if (predicate.test(fileCache.getTag()) && fileCache.incRef()) {
+        // Locked on subcache so that the async cleaner won't pull out buffers in an unlikely scenario.
+        try {
+          ArrayList<StripeData> stripeDataList = fileCache.getCache().getData();
+          for (StripeData stripeData : stripeDataList) {
+            for (int i = 0; i < stripeData.getData().length; ++i) {
+              LlapSerDeDataBuffer[][] colData = stripeData.getData()[i];
+              if (colData == null) continue;
+              for (int j = 0; j < colData.length; ++j) {
+                LlapSerDeDataBuffer[] streamData = colData[j];
+                if (streamData == null) continue;
+                for (int k = 0; k < streamData.length; ++k) {
+                  markedBytes += streamData[k].markForEviction();
+                  if (isInstantDeallocation) {
+                    allocator.deallocate(streamData[k]);
+                  }
+                }
+              }
+            }
+          }
+        } finally {
+          fileCache.decRef();
+        }
+      }
+    }
+    return markedBytes;
+  }
+
   public void putFileData(final FileData data, Priority priority,
       LowLevelCacheCounters qfCounters, CacheTag tag) {
     // TODO: buffers are accounted for at allocation time, but ideally we should report the memory
@@ -541,7 +570,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         public FileData apply(Void input) {
           return data; // If we don't have a file cache, we will add this one as is.
         }
-      });
+      }, tag);
       cached = subCache.getCache();
     } finally {
       if (data != cached) {
@@ -554,7 +583,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
       }
       try {
         for (StripeData si : data.stripes) {
-          lockAllBuffersForPut(si, priority, tag);
+          lockAllBuffersForPut(si, priority, subCache);
         }
         if (data == cached) {
           if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
@@ -599,7 +628,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     }
   }
 
-  private void lockAllBuffersForPut(StripeData si, Priority priority, CacheTag tag) {
+  private void lockAllBuffersForPut(StripeData si, Priority priority, FileCache cache) {
     for (int i = 0; i < si.data.length; ++i) {
       LlapSerDeDataBuffer[][] colData = si.data[i];
       if (colData == null) continue;
@@ -609,7 +638,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         for (int k = 0; k < streamData.length; ++k) {
           boolean canLock = lockBuffer(streamData[k], false); // false - not in cache yet
           assert canLock;
-          streamData[k].setTag(tag);
+          streamData[k].setFileCache(cache);
           cachePolicy.cache(streamData[k], priority);
           streamData[k].isCached = true;
         }
@@ -764,13 +793,12 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
   @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nSerDe cache state ");
-    int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0;
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0, allMarked = 0;
     for (Map.Entry<Object, FileCache<FileData>> e : cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
         FileData fd = e.getValue().getCache();
-        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
-        sb.append(fd.colCount).append(" columns, ").append(fd.stripes.size()).append(" stripes; ");
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0, fileMarked = 0;
         for (StripeData stripe : fd.stripes) {
           if (stripe.data == null) continue;
           for (int i = 0; i < stripe.data.length; ++i) {
@@ -789,6 +817,9 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
                   }
                   continue;
                 }
+                if (streamData[k].isMarkedForEviction()) {
+                  ++fileMarked;
+                }
                 try {
                   if (newRc > 1) { // We hold one refcount.
                     ++fileLocked;
@@ -806,13 +837,16 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         allUnlocked += fileUnlocked;
         allEvicted += fileEvicted;
         allMoving += fileMoving;
+        allMarked += fileMarked;
         sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, " + fileUnlocked
-            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved");
+            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved, " + fileMarked
+            + " marked for eviction; ");
+        sb.append(fd.colCount).append(" columns, ").append(fd.stripes.size()).append(" stripes");
       } finally {
         e.getValue().decRef();
       }
     }
     sb.append("\nSerDe cache summary: " + allLocked + " locked, " + allUnlocked + " unlocked, "
-        + allEvicted + " evicted, " + allMoving + " being moved");
+        + allEvicted + " evicted, " + allMoving + " being moved, " + allMarked + " marked for eviction");
   }
 }
