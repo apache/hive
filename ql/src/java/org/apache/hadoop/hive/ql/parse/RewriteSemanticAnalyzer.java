@@ -257,15 +257,11 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     HiveConf.setBoolVar(conf, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
     // Parse the rewritten query string
     Context rewrittenCtx;
-    try {
-      rewrittenCtx = new Context(conf);
-      rewrittenCtx.setHDFSCleanup(true);
-      // We keep track of all the contexts that are created by this query
-      // so we can clear them when we finish execution
-      ctx.addSubContext(rewrittenCtx);
-    } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
-    }
+    rewrittenCtx = new Context(conf);
+    rewrittenCtx.setHDFSCleanup(true);
+    // We keep track of all the contexts that are created by this query
+    // so we can clear them when we finish execution
+    ctx.addSubContext(rewrittenCtx);
     rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
     rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
     rewrittenCtx.setStatsSource(ctx.getStatsSource());

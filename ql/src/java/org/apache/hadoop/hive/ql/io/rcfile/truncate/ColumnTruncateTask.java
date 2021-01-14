@@ -87,15 +87,9 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     Context ctx = context;
     boolean ctxCreated = false;
-    try {
-      if (ctx == null) {
-        ctx = new Context(job);
-        ctxCreated = true;
-      }
-    }catch (IOException e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      setException(e);
-      return 5;
+    if (ctx == null) {
+      ctx = new Context(job);
+      ctxCreated = true;
     }
 
     job.setMapOutputKeyClass(NullWritable.class);

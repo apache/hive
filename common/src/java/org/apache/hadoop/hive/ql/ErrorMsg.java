@@ -387,8 +387,6 @@ public enum ErrorMsg {
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
-  UPDATEDELETE_IO_ERROR(10291, "Encountered I/O error while parsing rewritten update or " +
-      "delete query"),
   UPDATE_CANNOT_UPDATE_PART_VALUE(10292, "Updating values of partition columns is not supported"),
   INSERT_CANNOT_CREATE_TEMP_FILE(10293, "Unable to create temp file for insert values "),
   ACID_OP_ON_NONACID_TXNMGR(10294, "Attempt to do update or delete using transaction manager that" +
@@ -461,7 +459,6 @@ public enum ErrorMsg {
       true),
   ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
     "insert-only transactional", true),
-  LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
@@ -542,7 +539,6 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, "Invalid partitioning key/value specified in " +
     "ANALYZE statement"),
   COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
-  COLUMNSTATSCOLLECTOR_IO_ERROR(30010, "Encountered I/O exception while parsing rewritten query"),
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
