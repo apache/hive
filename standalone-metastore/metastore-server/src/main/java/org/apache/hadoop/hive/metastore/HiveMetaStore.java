@@ -3474,7 +3474,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               LOG.warn("Unexpected resultset size:" + ret.size());
               throw new MetaException("Unexpected result from metadata transformer:return list size is " + ret.size());
             }
-            t = (ret.keySet().iterator().next());
+            t = ret.keySet().iterator().next();
           }
         }
 
@@ -3942,7 +3942,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
       List<Long> partsWriteIds = new ArrayList<>(parts.size());
 
-      Lock tableLock = tablelocks.get(dbName + "." + tblName);
+      Lock tableLock = getTableLockFor(dbName, tblName);
       tableLock.lock();
       try {
         ms.openTransaction();
@@ -4056,6 +4056,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       return newParts;
+    }
+
+    private Lock getTableLockFor(String dbName, String tblName) {
+      return tablelocks.get(dbName + "." + tblName);
     }
 
     /**
@@ -4335,7 +4339,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table tbl = null;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Database db = null;
-      Lock tableLock = tablelocks.get(dbName + tblName);
+      Lock tableLock = getTableLockFor(dbName, tblName);
       tableLock.lock();
       try {
         ms.openTransaction();
@@ -5654,7 +5658,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // all prehooks are fired together followed by all post hooks
       List<Partition> oldParts = null;
       Exception ex = null;
-      Lock tableLock = tablelocks.get(db_name + "." + tbl_name);
+      Lock tableLock = getTableLockFor(db_name, tbl_name);
       tableLock.lock();
       try {
         for (Partition tmpPart : new_parts) {
