@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.create.show;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -347,7 +348,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   }
 
   private static final Set<String> PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES = Sets.union(
-      ImmutableSet.<String>of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE),
+      ImmutableSet.<String>of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE, TABLE_IS_CTAS),
       new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
 
   private String getProperties(Table table) {

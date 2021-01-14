@@ -64,6 +64,7 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.ALIGNMENT;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.DEFAULT_STRINGBUILDER_SIZE;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.FIELD_DELIM;
@@ -341,6 +342,9 @@ class TextDescTableFormatter extends DescTableFormatter {
     Collections.sort(keys);
     for (String key : keys) {
       String value = params.get(key);
+      if (TABLE_IS_CTAS.equals(key)) {
+        continue;
+      }
       if (key.equals(StatsSetupConst.NUM_ERASURE_CODED_FILES)) {
         if ("0".equals(value)) {
           continue;
