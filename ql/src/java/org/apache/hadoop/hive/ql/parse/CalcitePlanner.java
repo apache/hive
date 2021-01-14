@@ -5352,6 +5352,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RowResolver newRR = new RowResolver();
         String alias = qb.getParseInfo().getAlias();
         List<String> targetColNames = processTableColumnNames(qb.getParseInfo().getColAliases(), alias);
+        if (targetColNames.size() > rr.getColumnInfos().size()) {
+          throw new SemanticException(ErrorMsg.WITH_COL_LIST_NUM_OVERFLOW, alias,
+                  Integer.toString(rr.getColumnInfos().size()), Integer.toString(targetColNames.size()));
+        }
 
         for (int i = 0; i < rr.getColumnInfos().size(); ++i) {
           ColumnInfo colInfo = rr.getColumnInfos().get(i);
