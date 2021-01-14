@@ -810,7 +810,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       } catch (LockException e1) {
         throw new IOException(e1);
       }
-      LOG.debug("LocalTableLock; unlocked");
+      LOG.debug("LocalTableLock; unlocked: " + lock);
     }
 
   }
@@ -833,10 +833,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     if (mode == LockFileMoveMode.NONE) {
       return new LocalTableLock();
     }
-    if (mode == LockFileMoveMode.DP) {
-      if (loadTableWork.getDPCtx() == null) {
-        return new LocalTableLock();
-      }
+    if (mode == LockFileMoveMode.DP && loadTableWork.getDPCtx() == null) {
+      return new LocalTableLock();
     }
 
     WriteEntity output = context.getLoadTableOutputMap().get(loadTableWork);
@@ -845,7 +843,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return new LocalTableLock();
     }
     TableDesc table = loadTableWork.getTable();
-    if(table == null) {
+    if (table == null) {
       return new LocalTableLock();
     }
 
