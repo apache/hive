@@ -12360,7 +12360,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.addSubContext(rewriteCtx);
         rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
         return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
-      } catch (ParseException | IOException e) {
+      } catch (ParseException e) {
         throw new SemanticException(e);
       }
     } else {
