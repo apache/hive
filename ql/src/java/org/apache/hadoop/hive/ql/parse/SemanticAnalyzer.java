@@ -1986,8 +1986,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       //we have "insert into foo(a,b)..."; parser will enforce that 1+ columns are listed if TOK_TABCOLNAME is present
       String fullTableName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0),
           SessionState.get().getCurrentDatabase());
-      List<String> targetColumns = processTableColumnNames(tabColName, fullTableName);
-      qbp.setDestSchemaForClause(ctx_1.dest, targetColumns);
+      List<String> targetColumnNames = processTableColumnNames(tabColName, fullTableName);
+      qbp.setDestSchemaForClause(ctx_1.dest, targetColumnNames);
       Table targetTable;
       try {
         targetTable = getTableObjectByName(fullTableName);
@@ -1999,6 +1999,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(generateErrorMessage(ast,
             "Unable to access metadata for table " + fullTableName));
       }
+      Set<String> targetColumns = new HashSet<>(targetColumnNames);
       for(FieldSchema f : targetTable.getCols()) {
         //parser only allows foo(a,b), not foo(foo.a, foo.b)
         targetColumns.remove(f.getName());
