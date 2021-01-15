@@ -160,22 +160,12 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    BaseSharedWorkOptimizer swo;
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-      swo = new BaseSharedWorkOptimizer();
-    } else {
-      swo = new SchemaAwareSharedWorkOptimizer();
-    }
-    BaseSharedWorkOptimizer schemaAwareSharedWorkOptimizer = swo;
-
-
     for (Entry<String, Long> tablePair : sortedTables) {
       String tableName = tablePair.getKey();
       List<TableScanOperator> scans = tableNameToOps.get(tableName);
 
       // Execute shared work optimization
-      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
-      schemaAwareSharedWorkOptimizer.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
+      runSWO(pctx, optimizerCache, scans, Mode.SubtreeMerge);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -193,8 +183,8 @@ public class SharedWorkOptimizer extends Transform {
       if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_SEMIJOIN_OPTIMIZATION)) {
 
         // Execute shared work optimization with semijoin removal
-        boolean optimized =
-            schemaAwareSharedWorkOptimizer.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.RemoveSemijoin);
+
+        boolean optimized = runSWO(pctx, optimizerCache, scans, Mode.RemoveSemijoin);
         if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
           // If it was further optimized, execute a second round of extended shared work optimizer
           sharedWorkExtendedOptimization(pctx, optimizerCache);
@@ -206,7 +196,7 @@ public class SharedWorkOptimizer extends Transform {
       }
 
       if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
-        boolean optimized = swo.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.DPPUnion);
+        boolean optimized = runSWO(pctx, optimizerCache, scans, Mode.DPPUnion);
 
         if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
           // If it was further optimized, do a round of extended shared work optimizer
@@ -295,6 +285,18 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     return pctx;
+  }
+
+  private boolean runSWO(ParseContext pctx, SharedWorkOptimizerCache optimizerCache, List<TableScanOperator> scans,
+      Mode mode) throws SemanticException {
+    boolean ret = false;
+    ret |= new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode);
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+      ret |= new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode);
+    } else {
+      ret |= new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode);
+    }
+    return ret;
   }
 
   /** SharedWorkOptimization strategy modes */
@@ -675,25 +677,19 @@ public class SharedWorkOptimizer extends Transform {
     @Override
     protected boolean areMergeable(ParseContext pctx, TableScanOperator tsOp1, TableScanOperator tsOp2)
         throws SemanticException {
+
+      if (!compatibleSchema(tsOp1, tsOp2)) {
+        return false;
+      }
+      return super.areMergeable(pctx, tsOp1, tsOp2);
+    }
+
+    private boolean compatibleSchema(TableScanOperator tsOp1, TableScanOperator tsOp2) {
       // First we check if the two table scan operators can actually be merged
       // If schemas do not match, we currently do not merge
-      List<String> prevTsOpNeededColumns = tsOp1.getNeededColumns();
-      List<String> tsOpNeededColumns = tsOp2.getNeededColumns();
-      if (prevTsOpNeededColumns.size() != tsOpNeededColumns.size()) {
-        return false;
-      }
-      boolean notEqual = false;
-      for (int i = 0; i < prevTsOpNeededColumns.size(); i++) {
-        if (!prevTsOpNeededColumns.get(i).equals(tsOpNeededColumns.get(i))) {
-          notEqual = true;
-          break;
-        }
-      }
-      if (notEqual) {
-        return false;
-      }
-
-      return super.areMergeable(pctx, tsOp1, tsOp2);
+      assert (tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns()) == tsOp1.getNeededColumnIDs()
+          .equals(tsOp2.getNeededColumnIDs()));
+      return tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns());
     }
 
     @Override
