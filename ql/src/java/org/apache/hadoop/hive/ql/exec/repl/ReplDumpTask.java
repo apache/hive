@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -181,9 +180,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             initiateAuthorizationDumpTask();
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
-          dmd.setReplScope(work.replScope);
-          //write the dmd to enable checkpointing in table level replication
-          dmd.writeReplScope(true);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
@@ -573,53 +569,57 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         : "?";
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
         maxEventLimit);
-    replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents,
-            work.eventFrom, work.eventTo, maxEventLimit);
-    replLogger.startLog();
-    Map<String, Long> metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
-    work.getMetricCollector().reportStageStart(getName(), metricMap);
-    long dumpedCount = resumeFrom - work.eventFrom;
-    if (dumpedCount > 0) {
-      LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
-    }
-    cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
-    while (evIter.hasNext()) {
-      NotificationEvent ev = evIter.next();
-      lastReplId = ev.getEventId();
-      if (ev.getEventId() <= resumeFrom) {
-        continue;
+    try {
+      replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents,
+        work.eventFrom, work.eventTo, maxEventLimit);
+      replLogger.startLog();
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
+      long dumpedCount = resumeFrom - work.eventFrom;
+      if (dumpedCount > 0) {
+        LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
       }
+      cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
+      while (evIter.hasNext()) {
+        NotificationEvent ev = evIter.next();
+        lastReplId = ev.getEventId();
+        if (ev.getEventId() <= resumeFrom) {
+          continue;
+        }
 
-      //disable materialized-view replication if not configured
-      if(!isMaterializedViewsReplEnabled()){
-        String tblName = ev.getTableName();
-        if(tblName != null) {
-          try {
-            Table table = hiveDb.getTable(dbName, tblName);
-            if (table != null && TableType.MATERIALIZED_VIEW.equals(table.getTableType())){
-              LOG.info("Attempt to dump materialized view : " + tblName);
-              continue;
+        //disable materialized-view replication if not configured
+        if (!isMaterializedViewsReplEnabled()) {
+          String tblName = ev.getTableName();
+          if (tblName != null) {
+            try {
+              Table table = hiveDb.getTable(dbName, tblName);
+              if (table != null && TableType.MATERIALIZED_VIEW.equals(table.getTableType())) {
+                LOG.info("Attempt to dump materialized view : " + tblName);
+                continue;
+              }
+            } catch (InvalidTableException te) {
+              LOG.debug(te.getMessage());
             }
-          } catch (InvalidTableException te) {
-            LOG.debug(te.getMessage());
           }
         }
-      }
 
-      Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
-      dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
-      Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
+        Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
+        dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
+        Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
+      }
+      replLogger.endLog(lastReplId.toString());
+      LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
+    } finally {
+      //write the dmd always irrespective of success/failure to enable checkpointing in table level replication
+      long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+      dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId,
+        previousReplScopeModified());
+      // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
+      // so that REPL LOAD would drop the tables which are not included in current policy.
+      dmd.setReplScope(work.replScope);
+      dmd.write(true);
     }
-    replLogger.endLog(lastReplId.toString());
-    LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
-    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId,
-      previousReplScopeModified());
-    // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
-    // so that REPL LOAD would drop the tables which are not included in current policy.
-    dmd.setReplScope(work.replScope);
-    dmd.write(true);
     int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
          FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
@@ -945,17 +945,19 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         replLogger.endLog(bootDumpBeginReplId.toString());
         work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
       }
-      Long bootDumpEndReplId = currentNotificationId(hiveDb);
+      work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
+      setDataCopyIterators(extTableFileList, managedTblList);
       LOG.info("Preparing to return {},{}->{}",
-              dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
+        dumpRoot.toUri(), bootDumpBeginReplId, currentNotificationId(hiveDb));
+      return bootDumpBeginReplId;
+    } finally {
+      //write the dmd always irrespective of success/failure to enable checkpointing in table level replication
+      Long bootDumpEndReplId = currentNotificationId(hiveDb);
       long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
       dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId,
         previousReplScopeModified());
       dmd.setReplScope(work.replScope);
       dmd.write(true);
-      work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
-      setDataCopyIterators(extTableFileList, managedTblList);
-      return bootDumpBeginReplId;
     }
   }
 
