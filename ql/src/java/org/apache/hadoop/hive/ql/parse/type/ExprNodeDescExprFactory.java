@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
@@ -338,7 +339,7 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    */
   @Override
   protected Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType, Object constantValue,
-      PrimitiveTypeInfo sourceType) {
+      PrimitiveTypeInfo sourceType, boolean isEqual) {
     if (constantValue instanceof Number || constantValue instanceof String) {
       try {
         PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
@@ -358,6 +359,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
           return HiveDecimal.create(constantValue.toString());
         }
       } catch (NumberFormatException | ArithmeticException nfe) {
+        if (!isEqual && (constantValue instanceof Number ||
+            NumberUtils.isNumber(constantValue.toString()))) {
+          // The target is a number, if constantToInterpret can be interpreted as a number,
+          // return the constantToInterpret directly, GenericUDFBaseCompare will do
+          // type conversion for us.
+          return constantValue;
+        }
         LOG.trace("Failed to narrow type of constant", nfe);
         return null;
       }
@@ -755,6 +763,12 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
   protected boolean isEqualFunction(FunctionInfo fi) {
     return fi.getGenericUDF() instanceof GenericUDFOPEqual
         && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
+  }
+
+  @Override
+  protected boolean isNSCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqualNS ||
+        fi.getGenericUDF() instanceof GenericUDFOPNotEqualNS;
   }
 
   /**
