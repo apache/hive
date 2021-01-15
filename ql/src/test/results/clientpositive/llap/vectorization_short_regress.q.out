@@ -795,7 +795,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 2.5109214708344376E18	-2.5109214708344376E18	5.0218429416688753E18	2780	75.198	62	2.5109214708344402E18	2.5109214708344376E18	-1.0	2780	-2780	9460.675803068356	-2.5109214708344376E18	-2118360	1072872630	-2118298	-2.5109214697615652E18	185935.34910862715	0	758	-1.733509234828496	-3728
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
@@ -966,7 +966,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
        ((AVG(ctinyint) + 6981) + AVG(ctinyint)),
@@ -1592,7 +1592,7 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 -462839731	988888	ss	false	-51.0	NULL	NULL	NULL	Lml5J2QBU77	false	-468.04059812638036	44.210	468.04059812638036	10.175	51.0	-102.0	-102.0	NULL	NULL	-988888	417.04059812638036	NULL	3569	NULL	NULL
 -635141101	-89010	ss	false	-51.0	NULL	NULL	NULL	rVWAj4N1MCg8Scyp7wj2C	true	7135.6151106617235	-69.746	-7135.6151106617235	10.175	51.0	-102.0	-102.0	NULL	NULL	89010	-7186.6151106617235	NULL	3569	NULL	NULL
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing double and bigint may result in loss of information.
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cint,
          cstring1,
@@ -1778,7 +1778,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing double and bigint may result in loss of information.
 PREHOOK: query: SELECT   cint,
          cstring1,
          cboolean2,
@@ -2489,7 +2489,7 @@ POSTHOOK: Input: default@alltypesorc
 -84	-9	NULL	0.016535714	NULL	NULL	9	0.0	-9	1	89011
 -89	-14	NULL	0.015606742	NULL	NULL	14	0.0	-14	1	89011
 -95	-20	NULL	0.014621053	NULL	NULL	20	0.0	-20	1	89011
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing double and bigint may result in loss of information.
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cdouble,
          VAR_SAMP(cdouble),
@@ -2704,7 +2704,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing double and bigint may result in loss of information.
 PREHOOK: query: SELECT   cdouble,
          VAR_SAMP(cdouble),
          (2563.58 * VAR_SAMP(cdouble)),
