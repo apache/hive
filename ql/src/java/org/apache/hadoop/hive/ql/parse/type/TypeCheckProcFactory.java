@@ -19,21 +19,17 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -102,15 +98,6 @@ public class TypeCheckProcFactory<T> {
   static final HashMap<Integer, String> SPECIAL_UNARY_OPERATOR_TEXT_MAP;
   static final HashMap<Integer, String> CONVERSION_FUNCTION_TEXT_MAP;
   static final HashSet<Integer> WINDOWING_TOKENS;
-  private static final Set<Set<PrimitiveObjectInspector.PrimitiveCategory>> DECIMAL_CHARACTER_CATEGORIES =
-      ImmutableSet.<Set<PrimitiveObjectInspector.PrimitiveCategory>>builder()
-          .add(EnumSet.of(
-              PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.CHAR))
-          .add(EnumSet.of(
-              PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.VARCHAR))
-          .add(EnumSet.of(
-              PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.STRING))
-          .build();
   
   static {
     SPECIAL_UNARY_OPERATOR_TEXT_MAP = new HashMap<>();
@@ -794,30 +781,6 @@ public class TypeCheckProcFactory<T> {
       return getDefaultExprProcessor().getFuncExprNodeDescWithUdfData(baseType, tableFieldTypeInfo, column);
     }
 
-    private boolean unSafeCompareWithBigInt(TypeInfo otherTypeInfo, TypeInfo bigintCandidate) {
-      Set<PrimitiveObjectInspector.PrimitiveCategory> unsafeConventionTyps = Sets.newHashSet(
-          PrimitiveObjectInspector.PrimitiveCategory.STRING,
-          PrimitiveObjectInspector.PrimitiveCategory.VARCHAR,
-          PrimitiveObjectInspector.PrimitiveCategory.CHAR);
-
-      if (bigintCandidate.equals(TypeInfoFactory.longTypeInfo) && otherTypeInfo instanceof PrimitiveTypeInfo) {
-        PrimitiveObjectInspector.PrimitiveCategory pCategory =
-            ((PrimitiveTypeInfo)otherTypeInfo).getPrimitiveCategory();
-        return unsafeConventionTyps.contains(pCategory);
-      }
-      return false;
-    }
-    
-    private boolean isDecimalCharacterComparison(TypeInfo type1, TypeInfo type2) {
-      if(type1 instanceof PrimitiveTypeInfo && type2 instanceof PrimitiveTypeInfo) {
-        PrimitiveTypeInfo pt1 = (PrimitiveTypeInfo) type1;
-        PrimitiveTypeInfo pt2 = (PrimitiveTypeInfo) type2;
-        return DECIMAL_CHARACTER_CATEGORIES
-            .contains(EnumSet.of(pt1.getPrimitiveCategory(), pt2.getPrimitiveCategory()));
-      }
-      return false;
-    }
-
     protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
         List<T> children) throws SemanticException {
       // Check if a bigint is implicitely cast to a double as part of a comparison
@@ -831,28 +794,14 @@ public class TypeCheckProcFactory<T> {
 
         LogHelper console = new LogHelper(LOG);
 
-        // For now, if a bigint is going to be cast to a double throw an error or warning
-        if (unSafeCompareWithBigInt(oiTypeInfo0, oiTypeInfo1) || unSafeCompareWithBigInt(oiTypeInfo1, oiTypeInfo0)) {
+        if (TypeInfoUtils.isConversionLossy(oiTypeInfo0, oiTypeInfo1)) {
           String error = StrictChecks.checkTypeSafety(conf);
           if (error != null) {
             throw new UDFArgumentException(error);
           }
-          // To  make the error output be consistency, get the other side type name that comparing with biginit.
-          String type = oiTypeInfo0.getTypeName();
-          if (!oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) {
-            type = oiTypeInfo1.getTypeName();
-          }
-          console.printError("WARNING: Comparing a bigint and a " + type + " may result in a loss of precision.");
-        } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
-            (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
-          console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
-        } else if (isDecimalCharacterComparison(oiTypeInfo0, oiTypeInfo1)) {
-          String error = StrictChecks.checkTypeSafety(conf);
-          if (error != null) {
-            throw new UDFArgumentException(error);
-          }
-          console.printError("WARNING: Comparing " + oiTypeInfo0.getTypeName() + " and " + oiTypeInfo1.getTypeName()
-              + " may result in loss of precision.");
+          String tName0 = oiTypeInfo0.getTypeName();
+          String tName1 = oiTypeInfo1.getTypeName();
+          console.printError("WARNING: Comparing " + tName0 + " and " + tName1 + " may result in loss of information.");
         }
       }
 
