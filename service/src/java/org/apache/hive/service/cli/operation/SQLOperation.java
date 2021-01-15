@@ -220,7 +220,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private void runQuery() throws HiveSQLException {
     try {
-      OperationState opState = getStatus().getState();
+      OperationState opState = getState();
       // Operation may have been cancelled by another thread
       if (opState.isTerminal()) {
         log.info("Not running the query. Operation is already in terminal state: " + opState
@@ -237,8 +237,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if (getStatus().getState().isTerminal()) {
-        log.warn("Ignore exception in terminal state: {}", getStatus().getState(), e);
+      if (getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: {}", getState(), e);
         return;
       }
       setState(OperationState.ERROR);
