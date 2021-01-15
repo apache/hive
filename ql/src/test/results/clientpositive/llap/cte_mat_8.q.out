@@ -1,0 +1,40 @@
+PREHOOK: query: with x as ( select 'x' as id ), -- not materialized
+a1 as ( select 'a1' as id ), -- materialized by a2 and the root
+a2 as ( select 'a2 <- ' || id as id from a1) -- materialized by the root
+select * from a1
+union all
+select * from x
+union all
+select * from a2
+union all
+select * from a2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@a1
+PREHOOK: Input: default@a2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a1
+PREHOOK: Output: default@a2
+#### A masked pattern was here ####
+POSTHOOK: query: with x as ( select 'x' as id ), -- not materialized
+a1 as ( select 'a1' as id ), -- materialized by a2 and the root
+a2 as ( select 'a2 <- ' || id as id from a1) -- materialized by the root
+select * from a1
+union all
+select * from x
+union all
+select * from a2
+union all
+select * from a2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@a1
+POSTHOOK: Input: default@a2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a1
+POSTHOOK: Output: default@a2
+#### A masked pattern was here ####
+a1
+x
+a2 <- a1
+a2 <- a1
