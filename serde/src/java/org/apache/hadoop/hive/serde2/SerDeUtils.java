@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -523,46 +521,6 @@ public final class SerDeUtils {
       props.putAll(partProps);
     }
     return props;
-  }
-
-  /**
-   * Initializes a SerDe.
-   * @param deserializer
-   * @param conf
-   * @param tblProps
-   * @param partProps
-   * @throws SerDeException
-   */
-  public static void initializeSerDe(Deserializer deserializer, Configuration conf,
-                                            Properties tblProps, Properties partProps)
-                                                throws SerDeException {
-    if (deserializer instanceof AbstractSerDe) {
-      ((AbstractSerDe) deserializer).initialize(conf, tblProps, partProps);
-      String msg = ((AbstractSerDe) deserializer).getConfigurationErrors();
-      if (msg != null && !msg.isEmpty()) {
-        throw new SerDeException(msg);
-      }
-    } else {
-      deserializer.initialize(conf, createOverlayedProperties(tblProps, partProps));
-    }
-  }
-
-  /**
-   * Initializes a SerDe.
-   * @param deserializer
-   * @param conf
-   * @param tblProps
-   * @param partProps
-   * @throws SerDeException
-   */
-  public static void initializeSerDeWithoutErrorCheck(Deserializer deserializer,
-                                                      Configuration conf, Properties tblProps,
-                                                      Properties partProps) throws SerDeException {
-    if (deserializer instanceof AbstractSerDe) {
-      ((AbstractSerDe) deserializer).initialize(conf, tblProps, partProps);
-    } else {
-      deserializer.initialize(conf, createOverlayedProperties(tblProps, partProps));
-    }
   }
 
   private SerDeUtils() {

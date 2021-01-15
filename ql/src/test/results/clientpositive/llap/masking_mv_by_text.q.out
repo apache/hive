@@ -1,0 +1,266 @@
+PREHOOK: query: create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
+select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n_mv
+POSTHOOK: query: create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
+select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n_mv
+POSTHOOK: Lineage: masking_test_n_mv.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n_mv.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: query: explain
+create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: masking_test_n_mv
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.masking_test_view_n_mv
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: col1
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector(col1, 'hll')
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Materialized View
+      columns: key int
+      expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
+      name: default.masking_test_view_n_mv
+      original text: select key from masking_test_n_mv
+      rewrite enabled: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.masking_test_view_n_mv
+
+  Stage: Stage-5
+    Materialized View Update
+      name: default.masking_test_view_n_mv
+      retrieve and include: true
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: query: create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv
+PREHOOK: query: describe formatted `masking_test_view_n_mv`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: query: describe formatted `masking_test_view_n_mv`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@masking_test_view_n_mv
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	2000                
+	totalSize           	976                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	select key from masking_test_n_mv	 
+Expanded Query:     	select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+PREHOOK: query: explain cbo
+select key from `masking_test_n_mv`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select key from `masking_test_n_mv`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0])
+  HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
+    HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
+
+PREHOOK: query: create materialized view `masking_test_view_n_mv_masked` as
+select `masking_test_n_mv`.`key` from (SELECT `masking_test_n_mv`.`key`, CAST(reverse(`masking_test_n_mv`.`value`) AS string) AS `value`, `masking_test_n_mv`.`block__offset__inside__file`, `masking_test_n_mv`.`input__file__name`, `masking_test_n_mv`.`row__id` FROM `default`.`masking_test_n_mv`  WHERE `masking_test_n_mv`.`key` % 2 = 0 and `masking_test_n_mv`.`key` < 10)`masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: query: create materialized view `masking_test_view_n_mv_masked` as
+select `masking_test_n_mv`.`key` from (SELECT `masking_test_n_mv`.`key`, CAST(reverse(`masking_test_n_mv`.`value`) AS string) AS `value`, `masking_test_n_mv`.`block__offset__inside__file`, `masking_test_n_mv`.`input__file__name`, `masking_test_n_mv`.`row__id` FROM `default`.`masking_test_n_mv`  WHERE `masking_test_n_mv`.`key` % 2 = 0 and `masking_test_n_mv`.`key` < 10)`masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv_masked
+PREHOOK: query: explain cbo
+select key from `masking_test_n_mv`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select key from `masking_test_n_mv`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, masking_test_view_n_mv_masked]], table:alias=[default.masking_test_view_n_mv_masked])
+
+PREHOOK: query: select key from `masking_test_n_mv`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+POSTHOOK: query: select key from `masking_test_n_mv`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_masked
+#### A masked pattern was here ####
+0
+4
+8
+0
+0
+2
+PREHOOK: query: drop materialized view `masking_test_view_n_mv`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_view_n_mv
+PREHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: query: drop materialized view `masking_test_view_n_mv`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_view_n_mv
+POSTHOOK: Output: default@masking_test_view_n_mv
+PREHOOK: query: drop materialized view `masking_test_view_n_mv_masked`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_view_n_mv_masked
+PREHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: query: drop materialized view `masking_test_view_n_mv_masked`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_view_n_mv_masked
+POSTHOOK: Output: default@masking_test_view_n_mv_masked
+PREHOOK: query: drop table `masking_test_n_mv`
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: default@masking_test_n_mv
+POSTHOOK: query: drop table `masking_test_n_mv`
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: default@masking_test_n_mv

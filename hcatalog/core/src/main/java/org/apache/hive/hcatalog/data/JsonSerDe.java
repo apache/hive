@@ -41,32 +41,30 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
                           serdeConstants.LIST_COLUMN_TYPES,
                           serdeConstants.TIMESTAMP_FORMATS})
 public class JsonSerDe extends AbstractSerDe {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
   private HCatSchema schema;
 
   private HCatRecordObjectInspector cachedObjectInspector;
   private org.apache.hadoop.hive.serde2.JsonSerDe jsonSerde = new org.apache.hadoop.hive.serde2.JsonSerDe();
 
   @Override
-  public void initialize(Configuration conf, Properties tbl)
-    throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    jsonSerde.initialize(conf, tbl, false);
+    jsonSerde.initialize(configuration, tableProperties, partitionProperties, false);
 
     StructTypeInfo rowTypeInfo = jsonSerde.getTypeInfo();
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
       schema = HCatSchemaUtils.getHCatSchema(rowTypeInfo).get(0).getStructSubSchema();
-      LOG.debug("schema : {}", schema);
-      LOG.debug("fields : {}", schema.getFieldNames());
+      log.debug("schema : {}", schema);
+      log.debug("fields : {}", schema.getFieldNames());
     } catch (HCatException e) {
       throw new SerDeException(e);
     }

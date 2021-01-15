@@ -254,7 +254,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
     props.put(serdeConstants.ESCAPE_CHAR, "\\");
     AbstractSerDe createdSerDe = createSerDe();
-    createdSerDe.initialize(conf, props);
+    createdSerDe.initialize(conf, props, null);
 
     return createdSerDe;
   }

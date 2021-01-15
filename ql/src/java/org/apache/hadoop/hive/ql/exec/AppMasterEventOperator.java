@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
@@ -46,7 +46,7 @@ import org.apache.tez.runtime.api.events.InputInitializerEvent;
 @SuppressWarnings({ "deprecation", "serial" })
 public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
 
-  protected transient Serializer serializer;
+  protected transient AbstractSerDe serializer;
   protected transient DataOutputBuffer buffer;
   protected transient boolean hasReachedMaxSize = false;
   protected transient long MAX_SIZE;
@@ -66,9 +66,9 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
 
     MAX_SIZE = HiveConf.getLongVar(hconf, ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE);
     serializer =
-        (Serializer) ReflectionUtils.newInstance(conf.getTable().getDeserializerClass(), null);
+        (AbstractSerDe) ReflectionUtils.newInstance(conf.getTable().getSerDeClass(), null);
     try {
-      serializer.initialize(null, conf.getTable().getProperties());
+      serializer.initialize(null, conf.getTable().getProperties(), null);
     } catch (SerDeException e) {
       LOG.error("Initialization failed for serializer", e);
       throw new HiveException(e.getMessage());

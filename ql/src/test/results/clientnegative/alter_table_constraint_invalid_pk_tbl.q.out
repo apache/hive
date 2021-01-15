@@ -14,6 +14,4 @@ POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2
-PREHOOK: query: alter table table3 add constraint pk3 primary key (a) disable novalidate rely
-PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:Parent table not found: table3)
+FAILED: SemanticException [Error 10001]: Table not found default.table3

@@ -53,13 +53,13 @@ public class Mysql extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/" + HIVE_DB;
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:mysql://" + hostAddress + ":3306/" + HIVE_DB;
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/?allowPublicKeyRetrieval=true";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:mysql://" + hostAddress + ":3306/?allowPublicKeyRetrieval=true";
   }
 
   @Override

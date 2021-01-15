@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.cache;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 import com.google.common.collect.Lists;
@@ -30,7 +32,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
@@ -63,7 +65,7 @@ public class TestCachedStoreUpdateUsingEvents {
     MetastoreConf.setVar(conf, ConfVars.REPLCMDIR, "cmroot");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.prepDb(conf);
 
     hmsHandler = new HiveMetaStore.HMSHandler("testCachedStore", conf, true);
 
@@ -82,9 +84,9 @@ public class TestCachedStoreUpdateUsingEvents {
     HiveMetaStore.HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
   }
 
-  private Database createTestDb(String dbName, String dbOwner) {
+  private Database createTestDb(String dbName, String dbOwner) throws IOException {
     String dbDescription = dbName;
-    String dbLocation = "file:/tmp";
+    String dbLocation = Files.createTempDirectory(dbName).toString();
     Map<String, String> dbParams = new HashMap<>();
     Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
     db.setOwnerName(dbOwner);
@@ -94,8 +96,9 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   private Table createTestTblParam(String dbName, String tblName, String tblOwner,
-                              List<FieldSchema> cols, List<FieldSchema> ptnCols, Map<String, String> tblParams) {
-    String serdeLocation = "file:/tmp";
+                              List<FieldSchema> cols, List<FieldSchema> ptnCols, Map<String, String> tblParams)
+      throws IOException {
+    String serdeLocation = Files.createTempDirectory(dbName + "_" + tblName).toString();
     Map<String, String> serdeParams = new HashMap<>();
     SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
     StorageDescriptor sd = new StorageDescriptor(cols, serdeLocation,
@@ -112,7 +115,8 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   private Table createTestTbl(String dbName, String tblName, String tblOwner,
-                              List<FieldSchema> cols, List<FieldSchema> ptnCols) {
+                              List<FieldSchema> cols, List<FieldSchema> ptnCols)
+      throws IOException {
     return createTestTblParam(dbName, tblName, tblOwner, cols, ptnCols, new HashMap<>());
   }
 

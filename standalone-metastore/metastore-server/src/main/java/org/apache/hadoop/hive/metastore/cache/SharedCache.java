@@ -247,6 +247,9 @@ public class SharedCache {
   }
 
   private ObjectEstimator getMemorySizeEstimator(Class<?> clazz) {
+    if (sizeEstimators == null) {
+      return null;
+    }
     ObjectEstimator estimator = sizeEstimators.get(clazz);
     if (estimator == null) {
       IncrementalObjectSizeEstimator.createEstimators(clazz, sizeEstimators);

@@ -201,12 +201,12 @@ POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
 STAGE DEPENDENCIES:
@@ -340,11 +340,11 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: alter materialized view mv_1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: alter materialized view mv_1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
 POSTHOOK: Lineage: mv_1._c0 SIMPLE []

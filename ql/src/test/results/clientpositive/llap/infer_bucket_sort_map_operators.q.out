@@ -211,6 +211,7 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 WARNING: Comparing a bigint and a string may result in a loss of precision.
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
 	SELECT key, count(*) AS value FROM test_table1_n14 GROUP BY key

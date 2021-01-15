@@ -217,13 +217,13 @@ POSTHOOK: Lineage: tv_view_data.program SCRIPT []
 POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 PREHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
@@ -427,12 +427,12 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 PREHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
@@ -528,13 +528,13 @@ POSTHOOK: Lineage: tv_view_data.program SCRIPT []
 POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 PREHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
@@ -738,12 +738,12 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 PREHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: query: alter materialized view mv_tv_view_data_av1 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
@@ -890,12 +890,12 @@ POSTHOOK: Input: arc_view@tv_view_data
 40000000	9.0000	scream3
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av2 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: query: explain
 alter materialized view mv_tv_view_data_av2 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 STAGE DEPENDENCIES:
@@ -1031,11 +1031,11 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: alter materialized view mv_tv_view_data_av2 rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: query: alter materialized view mv_tv_view_data_av2 rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
