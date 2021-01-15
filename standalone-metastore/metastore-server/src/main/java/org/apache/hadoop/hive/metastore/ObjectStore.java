@@ -8560,6 +8560,28 @@ public class ObjectStore implements RawStore, Configurable {
             }
           }
         }
+
+        // if managed location is set, perform location update for managed location URI as well
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(mDB.getManagedLocationUri())) {
+          URI managedLocationURI = null;
+          String managedLocation = mDB.getManagedLocationUri();
+          try {
+            managedLocationURI = new Path(managedLocation).toUri();
+          } catch (IllegalArgumentException e) {
+            badRecords.add(managedLocation);
+          }
+          if (managedLocationURI == null) {
+            badRecords.add(managedLocation);
+          } else {
+            if (shouldUpdateURI(managedLocationURI, oldLoc)) {
+              String dbLoc = mDB.getManagedLocationUri().replaceAll(oldLoc.toString(), newLoc.toString());
+              updateLocations.put(managedLocationURI.toString(), dbLoc);
+              if (!dryRun) {
+                mDB.setManagedLocationUri(dbLoc);
+              }
+            }
+          }
+        }
       }
       committed = commitTransaction();
       if (committed) {
