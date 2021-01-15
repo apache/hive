@@ -95,3 +95,55 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 col1	col2
 a	b
 b	c
+PREHOOK: query: EXPLAIN CBO
+VALUES(1, 'a', NULL, 10.0)
+UNION ALL
+VALUES(2, 'b', NULL, 20.0)
+UNION ALL
+VALUES(3, 'c', NULL, 30.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+VALUES(1, 'a', NULL, 10.0)
+UNION ALL
+VALUES(2, 'b', NULL, 20.0)
+UNION ALL
+VALUES(3, 'c', NULL, 30.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveProject(col1=[$0], col2=[$1], col3=[null:NULL], col4=[$2])
+  HiveUnion(all=[true])
+    HiveProject(col1=[$0], col2=[$1], col4=[$3])
+      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, _UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 10:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
+        HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+    HiveProject(col1=[$0], col2=[$1], col4=[$3])
+      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(2, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 20:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
+        HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+    HiveProject(col1=[$0], col2=[$1], col4=[$3])
+      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(3, _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", null:NULL, 30:DECIMAL(2, 0))))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2, NULL col3, DECIMAL(2, 0) col4)])
+        HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: VALUES(1, 'a', NULL, 10.0)
+UNION ALL
+VALUES(2, 'b', NULL, 20.0)
+UNION ALL
+VALUES(3, 'c', NULL, 30.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1, 'a', NULL, 10.0)
+UNION ALL
+VALUES(2, 'b', NULL, 20.0)
+UNION ALL
+VALUES(3, 'c', NULL, 30.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+col1	col2	col3	col4
+1	a	NULL	10
+2	b	NULL	20
+3	c	NULL	30
