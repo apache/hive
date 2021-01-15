@@ -2799,8 +2799,6 @@ queryStatementExpression
       }
     }
     ->  queryStatementExpressionBody
-    |
-    valuesSource
     ;
 
 queryStatementExpressionBody
@@ -2857,13 +2855,8 @@ regularBody
    :
    i=insertClause
    (
-   s=selectStatement
-     {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
-     |
-     valuesClause
-      -> ^(TOK_QUERY
-            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause))))
-          )
+   s=selectStatement {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);}
+   -> {$s.tree}
    )
    |
    selectStatement
@@ -2881,6 +2874,8 @@ atomSelectStatement
                      $s $w? $g? $h? $win?))
    |
    LPAREN! selectStatement RPAREN!
+   |
+   valuesSource
    ;
 
 selectStatement
