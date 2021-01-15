@@ -512,13 +512,9 @@ public class Driver implements IDriver {
       closeInProcess(false);
     }
 
-    try {
-      if (context == null) {
-        context = new Context(driverContext.getConf());
+    if (context == null) {
+      context = new Context(driverContext.getConf());
       }
-    } catch (IOException e) {
-      throw new CommandProcessorException(e);
-    }
 
     context.setHiveTxnManager(driverContext.getTxnManager());
     context.setStatsSource(driverContext.getStatsSource());
@@ -881,7 +877,7 @@ public class Driver implements IDriver {
     } finally {
       driverState.unlock();
     }
-    driverTxnHandler.destroy();
+    driverTxnHandler.destroy(driverContext.getQueryState().getQueryId());
   }
 
   @Override

@@ -35,12 +35,12 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col5, _col6
-                        Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                         Top N Key Operator
                           sort order: ++
                           keys: _col5 (type: int), _col6 (type: int)
                           null sort order: zz
-                          Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 500 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                           top n: 3
                           Group By Operator
                             keys: _col5 (type: int), _col6 (type: int)
@@ -63,12 +63,12 @@ STAGE PLANS:
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col5, _col6
-                          Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 500 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                           Top N Key Operator
                             sort order: ++
                             keys: _col5 (type: int), _col6 (type: int)
                             null sort order: zz
-                            Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 500 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                             top n: 3
                             Group By Operator
                               keys: _col5 (type: int), _col6 (type: int)

@@ -87,7 +87,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final boolean isVectorized;
   private final boolean probeDecodeEnabled;
   private VectorizedOrcAcidRowBatchReader acidReader;
-  private final Object[] partitionValues;
+  private Object[] partitionValues;
 
   private final ArrayBlockingQueue<Object> queue;
   private final AtomicReference<Throwable> pendingError = new AtomicReference<>(null);
@@ -608,7 +608,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     return 0.0f;
   }
 
-  
+  void setPartitionValues(Object[] partitionValues) {
+    this.partitionValues = partitionValues;
+  }
+
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific
    *  to LLAP IO but in LLAP IO in particular, I want to encapsulate all this mess for now until
    *  we have smth better like Schema Evolution v2. This can also hypothetically encapsulate

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
@@ -192,8 +192,8 @@ public class TestJdbcDriver2 {
   public static void setUpBeforeClass() throws Exception {
     conf = new HiveConf(TestJdbcDriver2.class);
     HiveConf initConf = new HiveConf(conf);
-    TxnDbUtil.setConfValues(initConf);
-    TxnDbUtil.prepDb(initConf);
+    TestTxnDbUtil.setConfValues(initConf);
+    TestTxnDbUtil.prepDb(initConf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");

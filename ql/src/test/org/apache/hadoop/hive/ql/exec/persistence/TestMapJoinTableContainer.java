@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.io.Text;
 import org.junit.Before;
@@ -55,12 +54,12 @@ public class TestMapJoinTableContainer {
     Properties keyProps = new Properties();
     keyProps.put(serdeConstants.LIST_COLUMNS, "v1");
     keyProps.put(serdeConstants.LIST_COLUMN_TYPES, "string");
-    SerDeUtils.initializeSerDe(keySerde, null, keyProps, null);
+    keySerde.initialize(null, keyProps, null);
     LazyBinarySerDe valueSerde = new LazyBinarySerDe();
     Properties valueProps = new Properties();
     valueProps.put(serdeConstants.LIST_COLUMNS, "v1");
     valueProps.put(serdeConstants.LIST_COLUMN_TYPES, "string");
-    SerDeUtils.initializeSerDe(valueSerde, null, keyProps, null);
+    valueSerde.initialize(null, keyProps, null);
     containerSerde = new MapJoinTableContainerSerDe(
         new MapJoinObjectSerDeContext(keySerde, false),
         new MapJoinObjectSerDeContext(valueSerde, false));

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.orc.tools.FileDump;
 import org.apache.orc.FileFormatException;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
@@ -99,9 +99,7 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
   }
 
   private void printFileStatus(SessionState.LogHelper console, FileSystem fs, Path dir) throws Exception {
-    List<FileStatus> fileList = HdfsUtils.listLocatedStatus(fs, dir,
-        hiddenFileFilter);
-
+    List<FileStatus> fileList = Arrays.asList(fs.listStatus(dir, hiddenFileFilter));
     Collections.sort(fileList);
 
     for (FileStatus fileStatus : fileList) {

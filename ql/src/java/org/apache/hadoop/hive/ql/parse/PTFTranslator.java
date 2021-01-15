@@ -817,19 +817,8 @@ public class PTFTranslator {
     p.setProperty(
         org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
         serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES));
-    SerDeUtils.initializeSerDe(serDe, cfg, p, null);
+    serDe.initialize(cfg, p, null);
     return serDe;
-  }
-
-  @SuppressWarnings({"unchecked"})
-
-  private static ArrayList<? extends Object>[] getTypeMap(
-      StructObjectInspector oi) {
-    StructTypeInfo t = (StructTypeInfo) TypeInfoUtils
-        .getTypeInfoFromObjectInspector(oi);
-    ArrayList<String> fnames = t.getAllStructFieldNames();
-    ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
-    return new ArrayList<?>[] {fnames, fields};
   }
 
   /**

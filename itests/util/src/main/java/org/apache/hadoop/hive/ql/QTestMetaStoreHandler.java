@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.PostgresTPCDS;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +109,7 @@ public class QTestMetaStoreHandler {
 
     // special qtest logic, which doesn't fit quite well into Derby.after()
     if (isDerby()) {
-      TxnDbUtil.cleanDb(qt.getConf());
+      TestTxnDbUtil.cleanDb(qt.getConf());
     }
   }
 

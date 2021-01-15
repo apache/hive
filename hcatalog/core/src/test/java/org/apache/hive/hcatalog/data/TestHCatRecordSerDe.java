@@ -30,7 +30,6 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
@@ -129,7 +128,7 @@ public class TestHCatRecordSerDe {
       HCatRecord r = e.getValue();
 
       HCatRecordSerDe hrsd = new HCatRecordSerDe();
-      SerDeUtils.initializeSerDe(hrsd, conf, tblProps, null);
+      hrsd.initialize(conf, tblProps, null);
 
       LOG.info("ORIG: {}", r);
 
@@ -150,7 +149,7 @@ public class TestHCatRecordSerDe {
 
       // serialize using another serde, and read out that object repr.
       LazySimpleSerDe testSD = new LazySimpleSerDe();
-      SerDeUtils.initializeSerDe(testSD, conf, tblProps, null);
+      testSD.initialize(conf, tblProps, null);
 
       Writable s3 = testSD.serialize(s, hrsd.getObjectInspector());
       LOG.info("THREE: {}", s3);

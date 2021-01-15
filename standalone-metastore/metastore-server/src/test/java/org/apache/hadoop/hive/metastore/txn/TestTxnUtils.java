@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -164,14 +165,14 @@ public class TestTxnUtils {
     ResultSet rs = null;
 
     try {
-      conn = TxnDbUtil.getConnection(conf);
+      conn = TestTxnDbUtil.getConnection(conf);
       stmt = conn.createStatement();
       for (String query : queries) {
         rs = stmt.executeQuery(query);
         Assert.assertTrue("The query is not valid", rs.next());
       }
     } finally {
-      TxnDbUtil.closeResources(conn, stmt, rs);
+      TestTxnDbUtil.closeResources(conn, stmt, rs);
     }
   }
   @Test
@@ -250,14 +251,14 @@ public class TestTxnUtils {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
-    TxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.setConfValues(conf);
     DatabaseProduct.reset();
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.prepDb(conf);
   }
 
   @After
   public void tearDown() throws Exception {
     DatabaseProduct.reset();
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 }

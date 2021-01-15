@@ -304,7 +304,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         List<FieldSchema> fieldSchemas = ParseUtils.parseQueryAndGetSchema(conf, query);
         Schema schema = new Schema(convertSchema(fieldSchemas));
         return new PlanFragment(null, schema, null);
-      } catch (IOException | ParseException e) {
+      } catch (ParseException e) {
         throw new HiveException(e);
       }
     }

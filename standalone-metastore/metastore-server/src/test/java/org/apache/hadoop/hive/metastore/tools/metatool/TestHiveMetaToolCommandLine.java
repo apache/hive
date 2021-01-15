@@ -44,6 +44,8 @@ public class TestHiveMetaToolCommandLine {
     assertNull(cl.getJDOQLQuery());
     assertFalse(cl.isUpdateLocation());
     assertNull(cl.getUpddateLocationParams());
+    assertFalse(cl.isListExtTblLocs());
+    assertNull(cl.getListExtTblLocsParams());
     assertFalse(cl.isDryRun());
     assertNull(cl.getSerdePropKey());
     assertNull(cl.getTablePropKey());
@@ -57,6 +59,8 @@ public class TestHiveMetaToolCommandLine {
     assertEquals("select a from b", cl.getJDOQLQuery());
     assertFalse(cl.isUpdateLocation());
     assertNull(cl.getUpddateLocationParams());
+    assertFalse(cl.isListExtTblLocs());
+    assertNull(cl.getListExtTblLocsParams());
     assertFalse(cl.isDryRun());
     assertNull(cl.getSerdePropKey());
     assertNull(cl.getTablePropKey());
@@ -73,6 +77,8 @@ public class TestHiveMetaToolCommandLine {
     assertTrue(cl.isUpdateLocation());
     assertEquals("hdfs://new.loc", cl.getUpddateLocationParams()[0]);
     assertEquals("hdfs://old.loc", cl.getUpddateLocationParams()[1]);
+    assertFalse(cl.isListExtTblLocs());
+    assertNull(cl.getListExtTblLocsParams());
     assertTrue(cl.isDryRun());
     assertEquals("abc", cl.getSerdePropKey());
     assertEquals("def", cl.getTablePropKey());
@@ -81,7 +87,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testNoTask() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("exectly one of -listFSRoot, -executeJDOQL, -updateLocation must be set");
+    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs must be set");
 
     new HiveMetaToolCommandLine(new String[] {});
   }
@@ -89,7 +95,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testMultipleTask() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("exectly one of -listFSRoot, -executeJDOQL, -updateLocation must be set");
+    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs must be set");
 
     new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-executeJDOQL", "select a from b"});
   }
@@ -100,6 +106,26 @@ public class TestHiveMetaToolCommandLine {
     exception.expectMessage("HiveMetaTool:updateLocation takes in 2 arguments but was passed 1 arguments");
 
     new HiveMetaToolCommandLine(new String[] {"-updateLocation", "hdfs://abc.de"});
+  }
+
+  @Test
+  public void testListExtTblLocsOneArgument() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("HiveMetaTool:listExtTblLocs takes in 2 arguments but was passed 1 arguments");
+
+    new HiveMetaToolCommandLine(new String[] {"-listExtTblLocs", "db1"});
+  }
+
+  @Test
+  public void testDiffExtTblLocsArgCount() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("HiveMetaTool:diffExtTblLocs takes in 3 arguments but was passed 1 arguments");
+    new HiveMetaToolCommandLine(new String[] {"-diffExtTblLocs", "file1"});
+
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("HiveMetaTool:diffExtTblLocs takes in 3 arguments but was passed 2 arguments");
+    new HiveMetaToolCommandLine(new String[] {"-diffExtTblLocs", "file1", "file2"});
+
   }
 
   @Test
