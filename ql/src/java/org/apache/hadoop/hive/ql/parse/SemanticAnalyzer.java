@@ -324,6 +324,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /** Marks the temporary table created for a serialized CTE. The table is scoped to the query. */
   static final String MATERIALIZATION_MARKER = "$MATERIALIZATION";
+  private static final String RESULTS_CACHE_KEY_TOKEN_REWRITE_PROGRAM = "RESULTS_CACHE_KEY_PROGRAM";
 
   private Map<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private Map<TableScanOperator, PrunedPartitionList> opToPartList;
@@ -12105,74 +12106,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return getTableObjectByName(tableName, true);
   }
 
-  private void walkASTAndQualifyNames(ASTNode ast, Set<String> cteAlias, UnparseTranslator unparseTranslator)
-      throws SemanticException {
-    Queue<Node> queue = new LinkedList<>();
-    queue.add(ast);
-    while (!queue.isEmpty()) {
-      ASTNode astNode = (ASTNode) queue.poll();
-      if (astNode.getToken().getType() == HiveParser.TOK_TABNAME) {
-        // Check if this is table name is qualified or not
-        String tabIdName = getUnescapedName(astNode).toLowerCase();
-        // if alias to CTE contains the table name, we do not do the translation because
-        // cte is actually a subquery.
-        if (!cteAlias.contains(tabIdName)) {
-          unparseTranslator.addTableNameTranslation(astNode, SessionState.get().getCurrentDatabase());
-        }
-      }
-
-      if (astNode.getChildCount() > 0 && !IGNORED_TOKENS.contains(astNode.getToken().getType())) {
-        for (Node child : astNode.getChildren()) {
-          queue.offer(child);
-        }
-      }
-    }
-  }
-
-  // Walk through the AST.
-  // Replace all TOK_TABREF with fully qualified table name, if it is not already fully qualified.
-  private String rewriteQueryWithQualifiedNames(ASTNode ast, TokenRewriteStream tokenRewriteStream)
-      throws SemanticException {
-    UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
-    unparseTranslator.enable();
-
-    // 1. collect information about CTE if there is any.
-    // The base table of CTE should be masked.
-    // The CTE itself should not be masked in the references in the following main query.
-    Set<String> cteAlias = new HashSet<>();
-    if (ast.getChildCount() > 0
-        && HiveParser.TOK_CTE == ((ASTNode) ast.getChild(0)).getToken().getType()) {
-      // the structure inside CTE is like this
-      // TOK_CTE
-      // TOK_SUBQUERY
-      // sq1 (may refer to sq2)
-      // ...
-      // TOK_SUBQUERY
-      // sq2
-      ASTNode cte = (ASTNode) ast.getChild(0);
-      // we start from sq2, end up with sq1.
-      for (int index = cte.getChildCount() - 1; index >= 0; index--) {
-        ASTNode subq = (ASTNode) cte.getChild(index);
-        String alias = unescapeIdentifier(subq.getChild(1).getText());
-        if (cteAlias.contains(alias)) {
-          throw new SemanticException("Duplicate definition of " + alias);
-        } else {
-          cteAlias.add(alias);
-          walkASTAndQualifyNames(ast, cteAlias, unparseTranslator);
-        }
-      }
-      // walk the other part of ast
-      for (int index = 1; index < ast.getChildCount(); index++) {
-        walkASTAndQualifyNames(ast, cteAlias, unparseTranslator);
-      }
-    } else { // there is no CTE, walk the whole AST
-      walkASTAndQualifyNames(ast, cteAlias, unparseTranslator);
-    }
-
-    unparseTranslator.applyTranslations(tokenRewriteStream);
-    return tokenRewriteStream.toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
-  }
-
   private void walkASTMarkTABREF(TableMask tableMask, ASTNode ast, Set<String> cteAlias, Context ctx)
       throws SemanticException {
     Queue<Node> queue = new LinkedList<>();
@@ -14951,32 +14884,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadTableWork = tblWork;
   }
 
-  private String getQueryStringFromAst(ASTNode ast) {
-    StringBuilder sb = new StringBuilder();
-    int startIdx = ast.getTokenStartIndex();
-    int endIdx = ast.getTokenStopIndex();
-
-    boolean queryNeedsQuotes = true;
-    Quotation quotation = Quotation.from(conf);
-    if (quotation == Quotation.NONE) {
-      queryNeedsQuotes = false;
-    }
-
-    for (int idx = startIdx; idx <= endIdx; idx++) {
-      Token curTok = ctx.getTokenRewriteStream().get(idx);
-      if (curTok.getType() == Token.EOF) {
-        continue;
-      } else if (queryNeedsQuotes && curTok.getType() == HiveLexer.Identifier) {
-        // The Tokens have no distinction between Identifiers and QuotedIdentifiers.
-        // Ugly solution is just to surround all identifiers with quotes.
-        sb.append(HiveUtils.unparseIdentifier(curTok.getText(), conf));
-      } else {
-        sb.append(curTok.getText());
-      }
-    }
-    return sb.toString();
-  }
-
   private void quoteIdentifierTokens(TokenRewriteStream tokenRewriteStream) {
     if (conf.getVar(ConfVars.HIVE_QUOTEDID_SUPPORT).equals("none")) {
       return;
@@ -14999,20 +14906,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return The query string with resolved references. NULL if an error occurred.
    */
   private String getQueryStringForCache(ASTNode ast) {
-    // Use the UnparseTranslator to resolve unqualified table names.
-    String queryString = getQueryStringFromAst(ast);
-
-    // Re-using the TokenRewriteStream map for views so we do not overwrite the current TokenRewriteStream
-    String rewriteStreamName = "__qualified_query_string__";
-    try {
-      ASTNode astNode = ParseUtils.parse(queryString, ctx, rewriteStreamName);
-      TokenRewriteStream tokenRewriteStream = ctx.getViewTokenRewriteStream(rewriteStreamName);
-      return rewriteQueryWithQualifiedNames(astNode, tokenRewriteStream);
-    } catch (Exception err) {
-      LOG.error("Unexpected error while reparsing the query string [" + queryString + "]", err);
-      // Don't fail the query - just return null (caller should skip cache lookup).
-      return null;
-    }
+    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), RESULTS_CACHE_KEY_TOKEN_REWRITE_PROGRAM);
+    return ctx.getTokenRewriteStream()
+            .toString(RESULTS_CACHE_KEY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
   }
 
   private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
