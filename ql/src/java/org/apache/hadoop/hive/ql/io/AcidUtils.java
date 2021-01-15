@@ -999,17 +999,15 @@ public class AcidUtils {
     public static ParsedDeltaLight parse(Path deltaDir) {
       String filename = deltaDir.getName();
       int idxOfVis = filename.indexOf(VISIBILITY_PREFIX);
-      long visibilityTxnId = 0;//visibilityTxnId:0 is always visible
+      long visibilityTxnId = 0; // visibilityTxnId:0 is always visible
       if (idxOfVis >= 0) {
         visibilityTxnId = Long.parseLong(filename.substring(idxOfVis + VISIBILITY_PREFIX.length()));
         filename = filename.substring(0, idxOfVis);
       }
       boolean isDeleteDelta = filename.startsWith(DELETE_DELTA_PREFIX);
-      //make sure it's null for delete delta no matter what was passed in - this
-      //doesn't apply to delete deltas
       String rest = filename.substring((isDeleteDelta ? DELETE_DELTA_PREFIX : DELTA_PREFIX).length());
       int split = rest.indexOf('_');
-      //split2 may be -1 if no statementId
+      // split2 may be -1 if no statementId
       int split2 = rest.indexOf('_', split + 1);
       long min = Long.parseLong(rest.substring(0, split));
       long max =
