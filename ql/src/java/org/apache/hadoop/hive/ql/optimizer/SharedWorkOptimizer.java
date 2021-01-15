@@ -290,11 +290,11 @@ public class SharedWorkOptimizer extends Transform {
   private boolean runSWO(ParseContext pctx, SharedWorkOptimizerCache optimizerCache, List<TableScanOperator> scans,
       Mode mode) throws SemanticException {
     boolean ret = false;
-    ret |= new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode);
+    ret |= new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode, false);
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-      ret |= new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode);
+      ret |= new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode, true);
     } else {
-      ret |= new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode);
+      ret |= new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, mode, false);
     }
     return ret;
   }
@@ -371,7 +371,7 @@ public class SharedWorkOptimizer extends Transform {
   private static class BaseSharedWorkOptimizer {
 
     public boolean sharedWorkOptimization(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
-        List<TableScanOperator> tableScans, Mode mode) throws SemanticException {
+        List<TableScanOperator> tableScans, Mode mode, boolean schemaMerge) throws SemanticException {
       // Boolean to keep track of whether this method actually merged any TS operators
       boolean mergedExecuted = false;
 
@@ -391,6 +391,13 @@ public class SharedWorkOptimizer extends Transform {
           LOG.debug("Can we merge {} into {} to remove a scan on {}?", discardableTsOp, retainableTsOp, tableName1);
 
           SharedResult sr;
+
+          if (!schemaMerge && !compatibleSchema(retainableTsOp, discardableTsOp)) {
+            LOG.debug("incompatible schemas: {} {} for {} (and merge disabled)", discardableTsOp, retainableTsOp,
+                tableName1);
+            continue;
+          }
+
           if (mode == Mode.RemoveSemijoin) {
             // We check if the two table scan operators can actually be merged modulo SJs.
             // Hence, two conditions should be met:
@@ -669,34 +676,15 @@ public class SharedWorkOptimizer extends Transform {
     }
   }
 
-  /**
-   * More strict implementation of shared work optimizer.
-   * This implementation doesn't merge {@link TableScanOperator}s with different schema.
-   */
-  private static class SchemaAwareSharedWorkOptimizer extends BaseSharedWorkOptimizer {
-    @Override
-    protected boolean areMergeable(ParseContext pctx, TableScanOperator tsOp1, TableScanOperator tsOp2)
-        throws SemanticException {
 
-      if (!compatibleSchema(tsOp1, tsOp2)) {
-        return false;
-      }
-      return super.areMergeable(pctx, tsOp1, tsOp2);
-    }
-
-    private boolean compatibleSchema(TableScanOperator tsOp1, TableScanOperator tsOp2) {
-      // First we check if the two table scan operators can actually be merged
-      // If schemas do not match, we currently do not merge
-      assert (tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns()) == tsOp1.getNeededColumnIDs()
-          .equals(tsOp2.getNeededColumnIDs()));
-      return tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns());
-    }
-
-    @Override
-    protected void mergeSchema(TableScanOperator discardableTsOp, TableScanOperator retainableTsOp) {
-      // nop
-    }
+  private static boolean compatibleSchema(TableScanOperator tsOp1, TableScanOperator tsOp2) {
+    // First we check if the two table scan operators can actually be merged
+    // If schemas do not match, we currently do not merge
+    assert (tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns()) == tsOp1.getNeededColumnIDs()
+        .equals(tsOp2.getNeededColumnIDs()));
+    return tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns());
   }
+
 
   /**
    * When we call this method, we have already verified that the SJ expressions targeting
