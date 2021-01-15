@@ -165,13 +165,12 @@ def saveWS() {
   sh '''#!/bin/bash -e
     tar --exclude=archive.tar -cf archive.tar .
     ls -l archive.tar
-    rsync -rltD --stats archive.tar rsync://rsync/data/$LOCKED_RESOURCE'''
+    rsync -rltDq --stats archive.tar rsync://rsync/data/$LOCKED_RESOURCE'''
 }
 
 def loadWS() {
   sh '''#!/bin/bash -e
-    hostname
-    rsync -rltD --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
+    rsync -rltDq --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
     time tar -xf archive.tar
     rm archive.tar
 '''
@@ -222,7 +221,7 @@ jobWrappers {
   }
 
   def branches = [:]
-    for (def d in ['derby','postgres','mysql','mssql']) {
+  for (def d in ['derby','postgres','mysql','mssql']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -244,11 +243,11 @@ reinit_metastore $dbType
 time docker rm -f dev_$dbType || true
 '''
           }
-          }
           stage('verify') {
             sh """#!/bin/bash -e
 mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
 """
+          }
         }
       }
     }
