@@ -1,0 +1,116 @@
+PREHOOK: query: drop table if exists cte_mat_9_a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists cte_mat_9_a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table cte_mat_9_a (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_mat_9_a
+POSTHOOK: query: create table cte_mat_9_a (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_mat_9_a
+PREHOOK: query: insert into cte_mat_9_a (id) values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cte_mat_9_a
+POSTHOOK: query: insert into cte_mat_9_a (id) values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cte_mat_9_a
+POSTHOOK: Lineage: cte_mat_9_a.id SCRIPT []
+PREHOOK: query: drop table if exists cte_mat_9_b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists cte_mat_9_b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table cte_mat_9_b (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_mat_9_b
+POSTHOOK: query: create table cte_mat_9_b (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_mat_9_b
+PREHOOK: query: insert into cte_mat_9_b (id) values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cte_mat_9_b
+POSTHOOK: query: insert into cte_mat_9_b (id) values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cte_mat_9_b
+POSTHOOK: Lineage: cte_mat_9_b.id SCRIPT []
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+PREHOOK: query: with a0 AS (
+  select id, 'a0' as tag from cte_mat_9_a
+),
+a1 as (
+  select id, 'a1 <- ' || tag as tag from a0
+),
+b0 as (
+  select id, 'b0' as tag from cte_mat_9_b
+),
+b1 as (
+  select id, 'b1 <- ' || tag as tag from b0
+),
+b2 as (
+  select id, 'b2 <- ' || tag as tag  from b1
+),
+b3 as (
+  select id, 'b3 <- ' || tag as tag from b2
+),
+c as (
+  select b2.id, 'c <- (' || b2.tag || ' & ' || b3.tag || ')' as tag
+  from b2
+  full outer join b3 on b2.id = b3.id
+)
+select b1.id, b1.tag, a1.tag, c.tag
+from b1
+full outer join a1 on b1.id = a1.id
+full outer join c on c.id = c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b1
+PREHOOK: Input: default@b2
+PREHOOK: Input: default@cte_mat_9_a
+PREHOOK: Input: default@cte_mat_9_b
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b1
+PREHOOK: Output: default@b2
+#### A masked pattern was here ####
+POSTHOOK: query: with a0 AS (
+  select id, 'a0' as tag from cte_mat_9_a
+),
+a1 as (
+  select id, 'a1 <- ' || tag as tag from a0
+),
+b0 as (
+  select id, 'b0' as tag from cte_mat_9_b
+),
+b1 as (
+  select id, 'b1 <- ' || tag as tag from b0
+),
+b2 as (
+  select id, 'b2 <- ' || tag as tag  from b1
+),
+b3 as (
+  select id, 'b3 <- ' || tag as tag from b2
+),
+c as (
+  select b2.id, 'c <- (' || b2.tag || ' & ' || b3.tag || ')' as tag
+  from b2
+  full outer join b3 on b2.id = b3.id
+)
+select b1.id, b1.tag, a1.tag, c.tag
+from b1
+full outer join a1 on b1.id = a1.id
+full outer join c on c.id = c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b1
+POSTHOOK: Input: default@b2
+POSTHOOK: Input: default@cte_mat_9_a
+POSTHOOK: Input: default@cte_mat_9_b
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b1
+POSTHOOK: Output: default@b2
+#### A masked pattern was here ####
+1	b1 <- b0	a1 <- a0	c <- (b2 <- b1 <- b0 & b3 <- b2 <- b1 <- b0)
