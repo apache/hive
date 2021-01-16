@@ -52,7 +52,7 @@ public class AdjustScaleFunctionResolver extends ImpalaFunctionResolverImpl {
     Preconditions.checkState(operands.size() > 0);
     RexNode nodeToAdjust = operands.get(0);
     if (nodeToAdjust.getType().getSqlTypeName() != SqlTypeName.DECIMAL) {
-      return nodeToAdjust.getType();
+      return super.getRetType(funcSig, operands);
     }
 
     int precision = nodeToAdjust.getType().getPrecision();
