@@ -469,7 +469,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Metrics.getOpenConnectionsCounter().dec();
         // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
         // cleaned up thread local RawStore. Otherwise, do it now.
-        cleanupRawStore();
+        HMSHandler.cleanupRawStore();
       }
 
       @Override
@@ -581,26 +581,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return msHost.trim();
     } else {
       return InetAddress.getLocalHost().getHostName();
-    }
-  }
-
-  static void cleanupRawStore() {
-    try {
-      RawStore rs = HMSHandler.getRawStore();
-      if (rs != null) {
-        HMSHandler.logAndAudit("Cleaning up thread local RawStore...");
-        rs.shutdown();
-      }
-    } finally {
-      HMSHandler handler = HMSHandler.THREAD_LOCAL_HMS_HANDLER.get();
-      if (handler != null) {
-        handler.notifyMetaListenersOnShutDown();
-      }
-      HMSHandler.THREAD_LOCAL_HMS_HANDLER.remove();
-      HMSHandler.THREAD_LOCAL_CONF.remove();
-      HMSHandler.THREAD_LOCAL_MODIFIED_CONFIG.remove();
-      HMSHandler.removeRawStore();
-      HMSHandler.logAndAudit("Done cleaning up thread local RawStore");
     }
   }
 

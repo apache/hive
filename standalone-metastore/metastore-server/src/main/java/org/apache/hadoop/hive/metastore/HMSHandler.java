@@ -177,6 +177,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
 
+/**
+ * Default handler for all Hive Metastore methods. Implements methods defined in hive_metastore.thrift.
+ */
 public class HMSHandler extends FacebookBase implements IHMSHandler {
   public static final Logger LOG = LoggerFactory.getLogger(HMSHandler.class);
   private final Configuration conf; // stores datastore (jpox) properties,
@@ -319,6 +322,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return null;
     }
   };
+
+  static void cleanupRawStore() {
+    try {
+      RawStore rs = getRawStore();
+      if (rs != null) {
+        logAndAudit("Cleaning up thread local RawStore...");
+        rs.shutdown();
+      }
+    } finally {
+      HMSHandler handler = THREAD_LOCAL_HMS_HANDLER.get();
+      if (handler != null) {
+        handler.notifyMetaListenersOnShutDown();
+      }
+      THREAD_LOCAL_HMS_HANDLER.remove();
+      THREAD_LOCAL_CONF.remove();
+      THREAD_LOCAL_MODIFIED_CONFIG.remove();
+      removeRawStore();
+      logAndAudit("Done cleaning up thread local RawStore");
+    }
+  }
 
   /**
    * Internal function to notify listeners for meta config change events.
@@ -1063,7 +1086,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void shutdown() {
-    HiveMetaStore.cleanupRawStore();
+    cleanupRawStore();
     PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
     ThreadPool.shutdown();
   }
