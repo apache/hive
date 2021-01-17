@@ -348,6 +348,7 @@ public class Executor {
       taskQueue.incCurJobNo(1);
       CONSOLE.printInfo("Launching Job " + taskQueue.getCurJobNo() + " out of " + jobCount);
     }
+    driverContext.getConf().set(ConfVars.HIVEQUERYSTRING.varname, driverContext.getConf().getQueryString());
 
     task.initialize(driverContext.getQueryState(), driverContext.getPlan(), taskQueue, context);
     TaskRunner taskRun = new TaskRunner(task, taskQueue);
