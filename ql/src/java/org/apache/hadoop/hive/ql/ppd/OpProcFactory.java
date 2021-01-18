@@ -811,7 +811,8 @@ public final class OpProcFactory {
       return replaceMap;
     }
 
-    private Map<ExprNodeDesc, String> searchForEqualities(Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet) {
+    private Map<ExprNodeDesc, String> searchForEqualities(
+            Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet) {
       if (exprNodeDescSet.isEmpty()) {
         return Collections.emptyMap();
       }
