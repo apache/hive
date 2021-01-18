@@ -397,6 +397,12 @@ public class HiveConf extends Configuration {
       ConfVars.HIVEQUERYSTRING
   };
 
+  private boolean isHiveQueryStringEncoded = true;
+
+  public void setHiveQueryStringEncoded(boolean hiveQueryStringEncoded) {
+    isHiveQueryStringEncoded = hiveQueryStringEncoded;
+  }
+
   /**
    * Variables used by LLAP daemons.
    * TODO: Eventually auto-populate this based on prefixes. The conf variables
@@ -6016,7 +6022,10 @@ public class HiveConf extends Configuration {
   }
 
   public static String getQueryString(Configuration conf) {
-    return getVar(conf, ConfVars.HIVEQUERYSTRING, EncoderDecoderFactory.URL_ENCODER_DECODER);
+    if (((HiveConf) conf).isHiveQueryStringEncoded) {
+      return getVar(conf, ConfVars.HIVEQUERYSTRING, EncoderDecoderFactory.URL_ENCODER_DECODER);
+    }
+    return getVar(conf, ConfVars.HIVEQUERYSTRING);
   }
 
   public void setQueryString(String query) {
