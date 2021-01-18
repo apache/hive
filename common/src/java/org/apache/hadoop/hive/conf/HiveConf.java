@@ -6022,7 +6022,7 @@ public class HiveConf extends Configuration {
   }
 
   public static String getQueryString(Configuration conf) {
-    if (((HiveConf) conf).isHiveQueryStringEncoded) {
+    if (!(conf instanceof HiveConf) || ((HiveConf) conf).isHiveQueryStringEncoded) {
       return getVar(conf, ConfVars.HIVEQUERYSTRING, EncoderDecoderFactory.URL_ENCODER_DECODER);
     }
     return getVar(conf, ConfVars.HIVEQUERYSTRING);
@@ -6033,6 +6033,9 @@ public class HiveConf extends Configuration {
   }
 
   public static void setQueryString(Configuration conf, String query) {
+    if (conf instanceof HiveConf) {
+      ((HiveConf) conf).setHiveQueryStringEncoded(true);
+    }
     setVar(conf, ConfVars.HIVEQUERYSTRING, query, EncoderDecoderFactory.URL_ENCODER_DECODER);
   }
   public void logVars(PrintStream ps) {
