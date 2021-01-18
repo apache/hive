@@ -1638,8 +1638,18 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> clause = getHdfsNameserviceClause();
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
     primary.run("use " + primaryDbName)
-            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            .run("create table  acid_table (key int, value int) partitioned by (load_time timestamp) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.125') values(1,4)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.126') values(1,5)")
+            .run("show partitions acid_table")
+            .verifyResults(new String[] {
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124",
+                    "load_time=2012-02-21 07%3A08%3A09.125",
+                    "load_time=2012-02-21 07%3A08%3A09.126"})
             .run("create table table1 (i int)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
@@ -1660,7 +1670,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   public void testHdfsNameserviceLazyCopyIncr() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     primary.run("use " + primaryDbName)
-            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            .run("create table  acid_table (key int, value int) partitioned by (load_time timestamp) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
             .run("create table table1 (i String)")
             .run("insert into table1 values (1)")
@@ -1676,6 +1686,16 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("use " + primaryDbName)
             .run("insert into table1 values (3)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.125') values(1,4)")
+            .run("insert into acid_table partition(load_time = '2012-02-21 07:08:09.126') values(1,5)")
+            .run("show partitions acid_table")
+            .verifyResults(new String[] {
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124",
+                    "load_time=2012-02-21 07%3A08%3A09.125",
+                    "load_time=2012-02-21 07%3A08%3A09.126"})
             .dump(primaryDbName, clause);
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
