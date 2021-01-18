@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -391,7 +392,7 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, fileStatuses.length);
     // Rename the deltaDir to add a higher visibility transactionId
     Path deltaDir = fileStatuses[0].getPath();
-    AcidUtils.ParsedDelta parsedDelta = AcidUtils.parsedDelta(deltaDir, fs);
+    ParsedDeltaLight parsedDelta =  ParsedDeltaLight.parse(deltaDir);
     long oldTxnId = parsedDelta.getVisibilityTxnId();
     String newDeltaDir = AcidUtils.addVisibilitySuffix(deltaDir.toString().substring(0, deltaDir.toString().length() - 9), oldTxnId + 100);
     fs.rename(deltaDir, new Path(newDeltaDir));
