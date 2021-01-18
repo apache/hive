@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -77,14 +79,20 @@ public class TestValuesClause {
           "               TOK_FUNCTION\n" +
           "                  array\n" +
           "                  TOK_FUNCTION\n" +
-          "                     struct\n" +
+          "                     named_struct\n" +
+          "                     col1\n" +
           "                     1\n" +
+          "                     col2\n" +
           "                     2\n" +
+          "                     col3\n" +
           "                     3\n" +
           "                  TOK_FUNCTION\n" +
-          "                     struct\n" +
+          "                     named_struct\n" +
+          "                     col1\n" +
           "                     4\n" +
+          "                     col2\n" +
           "                     5\n" +
+          "                     col3\n" +
           "                     6\n";
 
   @Test
@@ -103,4 +111,104 @@ public class TestValuesClause {
   public void testParseInsertFromValuesAsSubQuery() throws Exception {
     parseDriver.parse("insert into table FOO select a,b from (values(1,2),(3,4)) as BAR", null);
   }
+
+  @Test
+  public void testParseValuesWithOneCol() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "VALUES(1),(4)", null).getTree();
+
+    assertArrayOfStructsEquals("\n" +
+            "TOK_FUNCTION\n" +
+            "   array\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      col1\n" +
+            "      1\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      col1\n" +
+            "      4\n", tree);
+  }
+
+  @Test
+  public void testParseValuesWithOneColAndAlias() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "VALUES(1 a),(4)", null).getTree();
+
+    assertArrayOfStructsEquals("\n" +
+            "TOK_FUNCTION\n" +
+            "   array\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      a\n" +
+            "      1\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      a\n" +
+            "      4\n", tree);
+  }
+
+  @Test
+  public void testParseValuesWithMultipleColumnsAndFirstColHasNoAliases() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "VALUES(1, 2 b, 3),(4, 5, 6)", null).getTree();
+
+    assertArrayOfStructsEquals("\n" +
+            "TOK_FUNCTION\n" +
+            "   array\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      col1\n" +
+            "      1\n" +
+            "      b\n" +
+            "      2\n" +
+            "      col3\n" +
+            "      3\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      col1\n" +
+            "      4\n" +
+            "      b\n" +
+            "      5\n" +
+            "      col3\n" +
+            "      6\n", tree);
+  }
+
+  @Test
+  public void testParseValuesWithMultipleColumnsAndFirstColHasAlias() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "VALUES(1 a, 2 b, 3),(4, 5, 6)", null).getTree();
+
+    assertArrayOfStructsEquals("\n" +
+            "TOK_FUNCTION\n" +
+            "   array\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      a\n" +
+            "      1\n" +
+            "      b\n" +
+            "      2\n" +
+            "      col3\n" +
+            "      3\n" +
+            "   TOK_FUNCTION\n" +
+            "      named_struct\n" +
+            "      a\n" +
+            "      4\n" +
+            "      b\n" +
+            "      5\n" +
+            "      col3\n" +
+            "      6\n", tree);
+  }
+
+  private void assertArrayOfStructsEquals(String expected, ASTNode tree) {
+    ASTNode queryNode = (ASTNode) tree.getChild(0);
+    ASTNode insertNode = (ASTNode) queryNode.getChild(0);
+    ASTNode selectNode = (ASTNode) insertNode.getChild(1);
+    ASTNode selectExprNode = (ASTNode) selectNode.getChild(0);
+    ASTNode inlineFuncNode = (ASTNode) selectExprNode.getChild(0);
+    ASTNode arrayFuncNode = (ASTNode) inlineFuncNode.getChild(1);
+
+    assertEquals(expected, arrayFuncNode.dump());
+  }
+
 }

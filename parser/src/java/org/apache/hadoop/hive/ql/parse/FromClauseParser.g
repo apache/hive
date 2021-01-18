@@ -316,14 +316,21 @@ valuesTableConstructor
 @init { gParent.pushMsg("values table constructor", state); }
 @after { gParent.popMsg(state); }
     :
-    valueRowConstructor (COMMA! valueRowConstructor)*
+    firstValueRowConstructor (COMMA! valueRowConstructor)*
+    ;
+
+firstValueRowConstructor
+@init { gParent.pushMsg("value row constructor", state); }
+@after { gParent.popMsg(state); }
+    :
+    LPAREN! firstExpressionsWithAlias RPAREN!
     ;
 
 valueRowConstructor
 @init { gParent.pushMsg("value row constructor", state); }
 @after { gParent.popMsg(state); }
     :
-    expressionsInParenthesis[true, true]
+    LPAREN! moreExpressionsWithAlias RPAREN!
     ;
 
 /*
