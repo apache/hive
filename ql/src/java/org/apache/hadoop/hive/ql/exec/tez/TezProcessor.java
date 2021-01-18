@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.api.events.CustomProcessorEvent;
 import org.slf4j.Logger;
@@ -53,6 +54,11 @@ import com.google.common.base.Throwables;
  * Does what ExecMapper and ExecReducer does for hive in MR framework.
  */
 public class TezProcessor extends AbstractLogicalIOProcessor {
+  // attributes that are available at runtime
+  public static final String HIVE_TEZ_VERTEX_NAME = "hive.tez.vertex.name";
+  public static final String HIVE_TEZ_VERTEX_INDEX = "hive.tez.vertex.index";
+  public static final String HIVE_TEZ_TASK_INDEX = "hive.tez.task.index";
+  public static final String HIVE_TEZ_TASK_ATTEMPT_NUMBER = "hive.tez.task.attempt.number";
 
   /**
    * This provides the ability to pass things into TezProcessor, which is normally impossible
@@ -176,12 +182,21 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     Configuration conf = TezUtils.createConfFromBaseConfAndPayload(getContext());
     this.jobConf = new JobConf(conf);
     this.processorContext = getContext();
+    initTezAttributes();
     ExecutionContext execCtx = processorContext.getExecutionContext();
     if (execCtx instanceof Hook) {
       ((Hook)execCtx).initializeHook(this);
     }
     setupMRLegacyConfigs(processorContext);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
+  }
+
+
+  private void initTezAttributes() {
+    jobConf.set(HIVE_TEZ_VERTEX_NAME, processorContext.getTaskVertexName());
+    jobConf.setInt(HIVE_TEZ_VERTEX_INDEX, processorContext.getTaskVertexIndex());
+    jobConf.setInt(HIVE_TEZ_TASK_INDEX, processorContext.getTaskIndex());
+    jobConf.setInt(HIVE_TEZ_TASK_ATTEMPT_NUMBER, processorContext.getTaskAttemptNumber());
   }
 
   private void setupMRLegacyConfigs(ProcessorContext processorContext) {
@@ -266,7 +281,16 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
-      //done - output does not need to be committed as hive does not use outputcommitter
+      // commit the output tasks
+      for (LogicalOutput output : outputs.values()) {
+        if (output instanceof MROutput) {
+          MROutput mrOutput = (MROutput) output;
+          if (mrOutput.isCommitRequired()) {
+            mrOutput.commit();
+          }
+        }
+      }
+
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
       originalThrowable = t;
@@ -290,6 +314,15 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       }
       if (originalThrowable != null) {
         LOG.error(StringUtils.stringifyException(originalThrowable));
+        // abort the output tasks
+        for (LogicalOutput output : outputs.values()) {
+          if (output instanceof MROutput) {
+            MROutput mrOutput = (MROutput) output;
+            if (mrOutput.isCommitRequired()) {
+              mrOutput.abort();
+            }
+          }
+        }
         if (originalThrowable instanceof InterruptedException) {
           throw (InterruptedException) originalThrowable;
         } else {
