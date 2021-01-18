@@ -48,10 +48,36 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 /**
- * Inserts an extrea RS to avoid parallel edges.
+ * Inserts an extra RS to avoid parallel edges.
  *
  * For mapjoins, semijoins its less costly to sometimes reshuffle the existing data - than computing it from scratch.
  * Parallel edges are introduced by the {@link SharedWorkOptimizer} in case this fixer could patch them up.
+ *
+ * +--------------------+           +--------------------+
+ * |                    |           |                    |
+ * |   [...]    [...]   |           |   [...]    [...]   |
+ * |     |        |     |           |     |        |     |
+ * |  +-----+  +-----+  |           |  +-----+  +-----+  |
+ * |  |RS_1 |  |RS_2 |  |           |  |RS_1 |  |RS_2 |  |
+ * |  +-----+  +-----+  |           |  +-----+  +-----+  |
+ * |     |        |     |           |     |        |     |
+ * +---- | ------ | ----+           +---- | ------ | ----+
+ *       |        |                       |        |
+ *       |        |                       |   +--- | ---+
+ *       |        |                       |   | +-----+ |
+ *       |        |         >>>>          |   | |RS_T | |
+ *       |        |                       |   | +-----+ |
+ *       |        |                       |   +--- | ---+
+ *       |        |                       |        |
+ * +---- | ------ | ----+           +---- | ------ | ----+
+ * |  +-----+  +-----+  |           |  +-----+  +-----+  |
+ * |  |OP_1 |  |OP_2 |  |           |  |OP_1 |  |OP_2 |  |
+ * |  +-----+  +-----+  |           |  +-----+  +-----+  |
+ * |     |        |     |           |     |        |     |
+ * |   [...]    [...]   |           |   [...]    [...]   |
+ * |                    |           |                    |
+ * +--------------------+           +--------------------+
+ *
  */
 public class ParallelEdgeFixer extends Transform {
 
