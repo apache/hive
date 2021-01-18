@@ -809,7 +809,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       retryable.executeCallable((Callable<Void>) () -> {
         Path tableListFile = new Path(dbRoot, ReplUtils.REPL_TABLE_LIST_DIR_NAME);
         tableListFile = new Path(tableListFile, dbName.toLowerCase());
-        FSDataOutputStream writer = FileSystem.get(hiveConf).create(tableListFile);
+        FSDataOutputStream writer = tableListFile.getFileSystem(hiveConf).create(tableListFile);
         for (String tableName : tableList) {
           String line = tableName.toLowerCase().concat("\n");
           writer.write(line.getBytes(StandardCharsets.UTF_8));
