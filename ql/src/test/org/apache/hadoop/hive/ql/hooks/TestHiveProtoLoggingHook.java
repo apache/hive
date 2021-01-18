@@ -234,6 +234,7 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testFailureEventLog() throws Exception {
     context.setHookType(HookType.ON_FAILURE_HOOK);
+    context.setErrorMessage("test_errormessage");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);
@@ -247,6 +248,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals("test_op_id", event.getOperationId());
 
     assertOtherInfo(event, OtherInfoType.STATUS, Boolean.FALSE.toString());
+    assertOtherInfo(event, OtherInfoType.ERROR_MESSAGE, "test_errormessage");
     assertOtherInfo(event, OtherInfoType.PERF, null);
   }
 
