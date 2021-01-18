@@ -281,8 +281,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     boolean jobNameSet = !HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME).equals("HIVE-%s");
 
     /*
-     * if the user has specified a queue name themselves or job name is set, we create a
-     * new session. also a new session is created if the user tries to submit to a queue using
+     * if the user has specified a queue name themselves or job name is set, we create a new
+     * session. also a new session is created if the user tries to submit to a queue using
      * their own credentials. We expect that with the new security model, things will
      * run as user hive in most cases.
      */
