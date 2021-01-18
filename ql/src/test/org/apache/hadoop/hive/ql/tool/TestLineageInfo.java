@@ -39,7 +39,7 @@ public class TestLineageInfo {
   private Context ctx;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     HiveConf conf = new HiveConf();
     SessionState.start(conf);
     ctx = new Context(conf);
