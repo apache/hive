@@ -37,11 +37,16 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hive.common.util.Ref;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +66,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -1124,6 +1128,48 @@ public class TestWorker extends CompactorTest {
     return timeoutWorker;
   }
 
+  /**
+   * If worker is timed out (that is, takes longer than value of hive.compactor.worker.timeout) then the
+   * corresponding entry in COMPACTION_QUEUE should be in "failed" state so that compaction can be run again 
+   * on the table/partition.
+   */
+  @Test public void testWorkerTimedOutStatus() throws Exception {
+    String database = "default";
+    String table = "test_worker_timed_out_status";
+    Table t = newTable(database, table, false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    burnThroughTransactions(database, table, 25);
+
+    CompactionRequest rqst = new CompactionRequest(database, table, CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 3, TimeUnit.SECONDS);
+
+    // get worker
+    TestTxnDbUtil.setConfValues(conf);
+    Worker worker = Mockito.spy(new Worker());
+    worker.setThreadId((int) worker.getId());
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    // sleep 5s on the first checkInterrupt() call, Worker should time out since threshold is 3s
+    Mockito.doAnswer((Answer<Void>) invocation -> {
+      Thread.sleep(5000);
+      return null;
+    }).when(worker).checkInterrupt();
+
+    worker.run();
+
+    // compaction should be in failed state
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("Compaction queue entry should be in 'failed' state since worker timed out.",
+        "failed", compacts.get(0).getState());
+  }
+
   @After
   public void tearDown() throws Exception {
     compactorTestCleanup();
@@ -1140,7 +1186,8 @@ public class TestWorker extends CompactorTest {
       this.looped = new AtomicBoolean(false);
     }
 
-    protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
+    protected Boolean findNextCompactionAndExecute(boolean computeStats, Ref<CompactionInfo> ci)
+        throws InterruptedException {
       looped.set(true);
       if (runForever) {
         while (!stop.get()) {
