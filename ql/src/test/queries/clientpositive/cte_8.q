@@ -32,3 +32,9 @@ with cte1(c1, c2) as (
     select int_col x, bigint_col y from t1 where int_col = 2
 )
 select * from cte1;
+
+with cte1(a) as (select int_col x, bigint_col a from t1)
+select * from cte1;
+
+with cte1(a) as (select int_col x, bigint_col a from t1)
+select cte1.* from cte1;

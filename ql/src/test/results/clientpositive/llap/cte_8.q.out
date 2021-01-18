@@ -131,3 +131,29 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 cte1.c1	cte1.c2
 1	2
+PREHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select * from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select * from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.a	cte1._col1
+1	2
+3	4
+PREHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select cte1.* from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select cte1.* from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.a	cte1._col1
+1	2
+3	4
