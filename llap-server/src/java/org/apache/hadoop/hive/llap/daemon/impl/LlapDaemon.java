@@ -208,6 +208,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     Preconditions.checkArgument(simpleAverageWindowDataSize >= 0,
         "hive.llap.daemon.metrics.simple.average.data.points should be greater or equal to 0");
 
+    if (ioEnabled) {
+      int numThreads = HiveConf.getIntVar(daemonConf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
+      Preconditions.checkArgument(numThreads >= numExecutors,
+          "hive.llap.io.threadpool.size (%s) should be greater or equal to hive.llap.daemon.num.executors (%s)",
+          numThreads, numExecutors);
+    }
+
     final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
       "maxJvmMemory=" + maxJvmMemory + " ("
       + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
