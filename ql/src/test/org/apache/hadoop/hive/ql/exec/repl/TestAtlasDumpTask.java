@@ -24,7 +24,11 @@ import org.apache.atlas.AtlasClientV2;
 import org.apache.atlas.AtlasServiceException;
 import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasServer;
+import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
@@ -56,7 +60,11 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -68,7 +76,9 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * Unit test class for testing Atlas metadata Dump.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class})
+@PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class,
+        FileSystem.class, IOUtils.class})
+
 public class TestAtlasDumpTask {
 
   @Mock
@@ -240,6 +250,30 @@ public class TestAtlasDumpTask {
             AtlasRestClientBuilder.ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS));
     Assert.assertEquals("500", propsCaptor.getValue().getProperty(
             AtlasRestClientBuilder.ATLAS_PROPERTY_READ_TIMEOUT_IN_MS));
+  }
+
+  @Test
+  public void testCreateExportRequest() throws Exception {
+    mockStatic(FileSystem.class);
+    FileSystem fs = mock(FileSystem.class);
+    FileStatus fileStatus = mock(FileStatus.class);
+    when(FileSystem.get(Mockito.any(URI.class), Mockito.any(HiveConf.class))).thenReturn(fs);
+    when(fs.getFileStatus(Mockito.any(Path.class))).thenReturn(fileStatus);
+    mockStatic(IOUtils.class);
+    List<String> listOfTable = Arrays.asList(new String [] {"t1", "t2"});
+    when(IOUtils.readLines(Mockito.any(InputStream.class), Mockito.any(Charset.class))).thenReturn(listOfTable);
+    AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
+    AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
+            "src","tgt", new Path("/tmp/staging"), new Path("/tmp/list"), conf);
+    AtlasExportRequest atlasExportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);
+    List<AtlasObjectId> itemsToExport = atlasExportRequest.getItemsToExport();
+    Assert.assertEquals(2, itemsToExport.size());
+    Assert.assertEquals(AtlasRequestBuilder.ATLAS_TYPE_HIVE_TABLE, itemsToExport.get(0).getTypeName());
+    Assert.assertEquals("srcdb.t1@src", itemsToExport.get(0).getUniqueAttributes().get(
+            AtlasRequestBuilder.ATTRIBUTE_QUALIFIED_NAME));
+    Assert.assertEquals(AtlasRequestBuilder.ATLAS_TYPE_HIVE_TABLE, itemsToExport.get(1).getTypeName());
+    Assert.assertEquals("srcdb.t2@src", itemsToExport.get(1).getUniqueAttributes().get(
+            AtlasRequestBuilder.ATTRIBUTE_QUALIFIED_NAME));
   }
 
   private void setupConfForRetry() {

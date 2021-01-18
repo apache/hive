@@ -35,9 +35,10 @@ public class AtlasReplInfo {
   private String srcFsUri;
   private String tgtFsUri;
   private long timeStamp;
+  private Path tableListFile;
 
   public AtlasReplInfo(String atlasEndpoint, String srcDB, String tgtDB, String srcCluster,
-                       String tgtCluster, Path stagingDir, HiveConf conf) {
+                       String tgtCluster, Path stagingDir, Path tableListFile, HiveConf conf) {
     this.atlasEndpoint = atlasEndpoint;
     this.srcDB = srcDB;
     this.tgtDB = tgtDB;
@@ -45,6 +46,7 @@ public class AtlasReplInfo {
     this.tgtCluster = tgtCluster;
     this.stagingDir = stagingDir;
     this.conf = conf;
+    this.tableListFile = tableListFile;
   }
 
   public String getSrcDB() {
@@ -97,5 +99,17 @@ public class AtlasReplInfo {
 
   public void setTimeStamp(long timeStamp) {
     this.timeStamp = timeStamp;
+  }
+
+  public Path getTableListFile() {
+    return tableListFile;
+  }
+
+  public void setTableListFile(Path tableListFile) {
+    this.tableListFile = tableListFile;
+  }
+
+  public boolean isTableLevelRepl() {
+    return this.tableListFile != null;
   }
 }
