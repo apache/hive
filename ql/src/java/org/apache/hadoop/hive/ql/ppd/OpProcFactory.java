@@ -715,10 +715,14 @@ public final class OpProcFactory {
             continue;
           }
 
-          Set<ExprNodeColumnDesc> columnsInPredicates = owi.getColumnsInPredicates().get(source);
-          if (columnsInPredicates == null) {
-            columnsInPredicates = collectColumnsInPredicates(entry.getValue());
-            owi.getColumnsInPredicates().put(source, columnsInPredicates);
+          Set<ExprNodeColumnDesc> columnsInPredicates = null;
+          if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+                  HiveConf.ConfVars.HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES)) {
+            columnsInPredicates = owi.getColumnsInPredicates().get(source);
+            if (columnsInPredicates == null) {
+              columnsInPredicates = collectColumnsInPredicates(entry.getValue());
+              owi.getColumnsInPredicates().put(source, columnsInPredicates);
+            }
           }
 
           for (ExprNodeDesc predicate : entry.getValue()) {
@@ -728,6 +732,11 @@ public final class OpProcFactory {
             }
             ExprNodeDesc replaced = ExprNodeDescUtils.replace(backtrack, sourceKeys, targetKeys);
             if (replaced == null) {
+              if (!HiveConf.getBoolVar(owi.getParseContext().getConf(),
+                      HiveConf.ConfVars.HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES)) {
+                continue;
+              }
+
               Map<ExprNodeDesc, ExprNodeDesc> equalities = owi.getEqualities().get(source);
               if (equalities == null) {
                 equalities = searchForEqualities(join, sourcePos, source, columnsInPredicates);
