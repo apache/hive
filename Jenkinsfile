@@ -221,7 +221,7 @@ jobWrappers {
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres','mysql','mssql']) {
+  for (def d in ['derby','postgres','mysql']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
