@@ -61,6 +61,7 @@ import org.apache.kafka.clients.admin.CreateDelegationTokenResult;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.security.token.delegation.DelegationToken;
+import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.output.MROutput;
@@ -1469,7 +1470,9 @@ public class DagUtils {
         TezConfigurationFactory
             .wrapWithJobConf(hiveConf, skipAMConf ? findDefaults.negate() : null);
 
-    conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    if (conf.get("mapred.output.committer.class") == null) {
+      conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
+    }
 
     conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
     conf.setBoolean("mapred.committer.job.task.cleanup.needed", false);
@@ -1600,9 +1603,13 @@ public class DagUtils {
     // final vertices need to have at least one output
     boolean endVertex = tezWork.getLeaves().contains(workUnit);
     if (endVertex) {
+      OutputCommitterDescriptor ocd = null;
+      if (HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER) != null) {
+        ocd = OutputCommitterDescriptor.create(HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER));
+      }
       vertex.addDataSink("out_"+workUnit.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(outputKlass.getName())
-          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), null, null));
+          .setUserPayload(vertex.getProcessorDescriptor().getUserPayload()), ocd, null));
     }
 
     return vertex;

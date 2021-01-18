@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -1145,7 +1146,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
   private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) throws IOException {
     String tableDir = "";//hdfs://localhost:59316/base/warehouse/acid_test/";
     AcidOutputFormat.Options ao = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(tableDir + splitPath), conf);
-    AcidUtils.ParsedDelta parsedDelta = AcidUtils.parsedDelta(new Path(tableDir + deleteDeltaPath), false);
+    ParsedDeltaLight parsedDelta = ParsedDeltaLight.parse(new Path(tableDir + deleteDeltaPath));
     AcidInputFormat.DeltaMetaData deltaMetaData =
         new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(), parsedDelta.getMaxWriteId(), new ArrayList<>(),
             parsedDelta.getVisibilityTxnId(), new ArrayList<>());
