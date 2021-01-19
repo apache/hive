@@ -37,7 +37,7 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public String[] getDockerAdditionalArgs() {
-    return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(), "-d", "-e", "POSTGRES_DB=" + HIVE_DB );
+    return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(), "-d");
   }
 
   @Override
