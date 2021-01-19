@@ -1,4 +1,4 @@
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
@@ -188,7 +188,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
        STDDEV_POP(ctinyint),

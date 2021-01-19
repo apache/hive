@@ -1,4 +1,4 @@
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 3,2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
@@ -62,7 +62,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 3,2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet

@@ -65,7 +65,7 @@ POSTHOOK: Input: default@sketch_input
 13	20	20
 14	21	21
 15	22	22
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',rank() over (order by id) from sketch_input order by id
@@ -185,7 +185,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select id,'rewrite',rank() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -217,7 +217,7 @@ POSTHOOK: Input: default@sketch_input
 13	rewrite	20
 14	rewrite	21
 15	rewrite	22
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',count(id) over ()*rank() over (order by id) from sketch_input order by id
@@ -372,7 +372,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select id,'rewrite',count(id) over ()*rank() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -414,7 +414,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sketch_input
 POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id EXPRESSION []
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',rank() over (order by id nulls first) from sketch_input order by id nulls first
@@ -534,7 +534,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select id,'rewrite',rank() over (order by id nulls first) from sketch_input order by id nulls first
 PREHOOK: type: QUERY
@@ -568,7 +568,7 @@ NULL	rewrite	1
 13	rewrite	20
 14	rewrite	21
 15	rewrite	22
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',rank() over (order by id nulls last) from sketch_input order by id nulls last
@@ -688,7 +688,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select id,'rewrite',rank() over (order by id nulls last) from sketch_input order by id nulls last
 PREHOOK: type: QUERY
@@ -722,7 +722,7 @@ POSTHOOK: Input: default@sketch_input
 15	rewrite	22
 NULL	rewrite	22
 NULL	rewrite	22
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select id,rank() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
