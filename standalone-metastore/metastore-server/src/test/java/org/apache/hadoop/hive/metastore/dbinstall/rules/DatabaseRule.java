@@ -95,7 +95,7 @@ public abstract class DatabaseRule extends ExternalResource {
   public abstract String getInitialJdbcUrl(String hostAddress);
 
   public final String getInitialJdbcUrl() {
-    return getJdbcUrl(getContainerHostAddress());
+    return getInitialJdbcUrl(getContainerHostAddress());
   }
 
   /**
