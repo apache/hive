@@ -2,6 +2,7 @@
 --! qt:dataset:src
 set hive.vectorized.execution.enabled=true;
 set hive.test.vectorized.execution.enabled.override=enable;
+set hive.strict.checks.type.safety=false;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;

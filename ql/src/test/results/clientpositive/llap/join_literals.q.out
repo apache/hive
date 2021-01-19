@@ -1,5 +1,5 @@
-WARNING: Comparing a bigint and a string may result in a loss of precision.
-WARNING: Comparing a bigint and a string may result in a loss of precision.
+WARNING: Comparing string and bigint may result in loss of information.
+WARNING: Comparing string and bigint may result in loss of information.
 PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -27,6 +27,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 9
+WARNING: Comparing string and decimal(1,0) may result in loss of information.
+WARNING: Comparing string and decimal(1,0) may result in loss of information.
 PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0BD
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

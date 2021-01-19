@@ -1772,7 +1772,8 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings/(var)chars.\n" +
-        "  Comparing bigints and doubles."),
+        "  Comparing bigints and doubles.\n" +
+        "  Comparing decimals and strings/(var)chars."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +
         "  Cartesian product (cross join)."),
