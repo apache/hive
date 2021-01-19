@@ -6,7 +6,7 @@ jobs:
   assign_reviewer:
     runs-on: ubuntu-latest
     steps:
-    - uses: shufo/auto-assign-reviewer-by-files@ab8886ea02d340fae4801ae980d265f8ec5bb425
+    - uses: shufo/auto-assign-reviewer-by-files@v1.1.1
       with:
         config: '.github/assign-by-files.yml'
         token: ${{ secrets.GITHUB_TOKEN }}
