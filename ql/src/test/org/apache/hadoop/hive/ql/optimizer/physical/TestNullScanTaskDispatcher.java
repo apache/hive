@@ -82,7 +82,7 @@ public class TestNullScanTaskDispatcher {
   private Map aliasToWork = new HashMap();
 
   @Before
-  public void setup() throws IOException {
+  public void setup() {
     hiveConf = new HiveConf();
     hiveConf.set("fs.mock.impl", MockFileSystem.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, true);

@@ -469,7 +469,8 @@ public final class FunctionRegistry {
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
-    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
+    system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
+    system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
@@ -826,7 +827,7 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static synchronized TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
+  public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
     // If same return one of them
     if (a.equals(b)) {
       return a;

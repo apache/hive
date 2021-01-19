@@ -140,7 +140,7 @@ public class ColumnStatsAutoGatherContext {
     Operator<?> selOp = null;
     try {
       selOp = genSelOp(command, rewritten, origCtx);
-    } catch (IOException | ParseException e) {
+    } catch (ParseException e) {
       throw new SemanticException(e);
     }
 
@@ -158,7 +158,7 @@ public class ColumnStatsAutoGatherContext {
   }
 
   private Operator genSelOp(String command, boolean rewritten, Context origCtx)
-      throws IOException, ParseException, SemanticException {
+      throws ParseException, SemanticException {
     // 1. initialization
     Context ctx = new Context(conf);
     origCtx.addSubContext(ctx);
