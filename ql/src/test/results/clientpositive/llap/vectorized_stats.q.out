@@ -1,0 +1,1862 @@
+PREHOOK: query: explain vectorization detail
+create table table_onestring as select cstring1 as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onestring
+POSTHOOK: query: explain vectorization detail
+create table table_onestring as select cstring1 as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onestring
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: cstring1 (type: string)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                    Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.table_onestring
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6]
+                      Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector_hll(col1)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMaxLong(StringLength(col 6:string) -> 13:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [14, 15])(children: StringLength(col 6:string) -> 14:int, ConstantVectorExpression(val 0) -> 15:int) -> 16:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 17:int) -> bigint, VectorUDAFCount(col 6:string) -> bigint, VectorUDAFComputeBitVectorString(col 6:string) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:int, 1:struct<count:bigint,sum:double,input:int>, 2:bigint, 3:bigint, 4:binary
+                          Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [6]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFAvgFinal(col 1:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [5, 7, 9, 10, 13, 4]
+                      selectExpressions: ConstantVectorExpression(val STRING) -> 5:string, VectorCoalesce(columns [0, 6])(children: col 0:int, ConstantVectorExpression(val 0) -> 6:int) -> 7:int, VectorCoalesce(columns [1, 8])(children: col 1:double, ConstantVectorExpression(val 0.0) -> 8:double) -> 9:double, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 10:bigint, VectorCoalesce(columns [11, 12])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 11:bigint, ConstantVectorExpression(val 0) -> 12:bigint) -> 13:bigint
+                  Statistics: Num rows: 1 Data size: 266 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 266 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: val1 string
+      name: default.table_onestring
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: val1
+          Column Types: string
+          Table: default.table_onestring
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create table table_onestring as select cstring1 as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onestring
+POSTHOOK: query: create table table_onestring as select cstring1 as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onestring
+POSTHOOK: Lineage: table_onestring.val1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: describe formatted table_onestring
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onestring
+POSTHOOK: query: describe formatted table_onestring
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onestring
+# col_name            	data_type           	comment             
+val1                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	12288               
+	rawDataSize         	134109              
+	totalSize           	146397              
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted table_onestring val1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onestring
+POSTHOOK: query: describe formatted table_onestring val1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onestring
+col_name            	val1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	3114                
+distinct_count      	5979                
+avg_col_len         	10.406982421875     
+max_col_len         	24                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+PREHOOK: query: explain
+select distinct(val1) from table_onestring
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_onestring
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct(val1) from table_onestring
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_onestring
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onestring
+                  Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: string)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: string)
+                      minReductionHashAggr: 0.5133463
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain vectorization detail
+create table table_onebigint as select cbigint as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onebigint
+POSTHOOK: query: explain vectorization detail
+create table table_onebigint as select cbigint as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onebigint
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: cbigint (type: bigint)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.table_onebigint
+                    Select Operator
+                      expressions: _col0 (type: bigint)
+                      outputColumnNames: col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [3]
+                      Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMinLong(col 3:bigint) -> bigint, VectorUDAFMaxLong(col 3:bigint) -> bigint, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorLong(col 3:bigint) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:bigint, 1:bigint, 2:bigint, 3:bigint, 4:binary
+                          Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [3]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:bigint) -> bigint, VectorUDAFMaxLong(col 1:bigint) -> bigint, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col0 (type: bigint), _col1 (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
+                      selectExpressions: ConstantVectorExpression(val LONG) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                  Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: val1 bigint
+      name: default.table_onebigint
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: val1
+          Column Types: bigint
+          Table: default.table_onebigint
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create table table_onebigint as select cbigint as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onebigint
+POSTHOOK: query: create table table_onebigint as select cbigint as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onebigint
+POSTHOOK: Lineage: table_onebigint.val1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+PREHOOK: query: describe formatted table_onebigint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onebigint
+POSTHOOK: query: describe formatted table_onebigint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onebigint
+# col_name            	data_type           	comment             
+val1                	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	12288               
+	rawDataSize         	99809               
+	totalSize           	112097              
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted table_onebigint val1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onebigint
+POSTHOOK: query: describe formatted table_onebigint val1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onebigint
+col_name            	val1                
+data_type           	bigint              
+min                 	-2147311592         
+max                 	2145498388          
+num_nulls           	3115                
+distinct_count      	5917                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+PREHOOK: query: explain
+select distinct(val1) from table_onebigint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_onebigint
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct(val1) from table_onebigint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_onebigint
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onebigint
+                  Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: bigint)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: bigint)
+                      minReductionHashAggr: 0.51839197
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain vectorization detail
+create table table_onedouble as select cdouble as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onedouble
+POSTHOOK: query: explain vectorization detail
+create table table_onedouble as select cdouble as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onedouble
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: cdouble (type: double)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                    Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.table_onedouble
+                    Select Operator
+                      expressions: _col0 (type: double)
+                      outputColumnNames: col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [5]
+                      Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFMaxDouble(col 5:double) -> double, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFComputeBitVectorDouble(col 5:double) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:double, 1:double, 2:bigint, 3:bigint, 4:binary
+                          Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [5]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:double, VALUE._col1:double, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinDouble(col 0:double) -> double, VectorUDAFMaxDouble(col 1:double) -> double, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DOUBLE' (type: string), _col0 (type: double), _col1 (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
+                      selectExpressions: ConstantVectorExpression(val DOUBLE) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                  Statistics: Num rows: 1 Data size: 266 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 266 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: val1 double
+      name: default.table_onedouble
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: val1
+          Column Types: double
+          Table: default.table_onedouble
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create table table_onedouble as select cdouble as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onedouble
+POSTHOOK: query: create table table_onedouble as select cdouble as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onedouble
+POSTHOOK: Lineage: table_onedouble.val1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+PREHOOK: query: describe formatted table_onedouble
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onedouble
+POSTHOOK: query: describe formatted table_onedouble
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onedouble
+# col_name            	data_type           	comment             
+val1                	double              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	12288               
+	rawDataSize         	68383               
+	totalSize           	80671               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted table_onedouble val1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onedouble
+POSTHOOK: query: describe formatted table_onedouble val1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onedouble
+col_name            	val1                
+data_type           	double              
+min                 	-16379.0            
+max                 	9763215.5639        
+num_nulls           	3114                
+distinct_count      	5527                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+PREHOOK: query: explain
+select distinct(val1) from table_onedouble
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_onedouble
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct(val1) from table_onedouble
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_onedouble
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onedouble
+                  Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: double)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: double)
+                      minReductionHashAggr: 0.55013025
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain vectorization detail
+create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onetimestamp
+POSTHOOK: query: explain vectorization detail
+create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onetimestamp
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: ctimestamp1 (type: timestamp)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [8]
+                    Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.table_onetimestamp
+                    Select Operator
+                      expressions: _col0 (type: timestamp)
+                      outputColumnNames: col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [8]
+                      Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMinTimestamp(col 8:timestamp) -> timestamp, VectorUDAFMaxTimestamp(col 8:timestamp) -> timestamp, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 8:timestamp) -> bigint, VectorUDAFComputeBitVectorTimestamp(col 8:timestamp) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:timestamp, 1:timestamp, 2:bigint, 3:bigint, 4:binary
+                          Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [8]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:timestamp, VALUE._col1:timestamp, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinTimestamp(col 0:timestamp) -> timestamp, VectorUDAFMaxTimestamp(col 1:timestamp) -> timestamp, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'TIMESTAMP' (type: string), _col0 (type: timestamp), _col1 (type: timestamp), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
+                      selectExpressions: ConstantVectorExpression(val TIMESTAMP) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                  Statistics: Num rows: 1 Data size: 333 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 333 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: val1 timestamp
+      name: default.table_onetimestamp
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: val1
+          Column Types: timestamp
+          Table: default.table_onetimestamp
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onetimestamp
+POSTHOOK: query: create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onetimestamp
+POSTHOOK: Lineage: table_onetimestamp.val1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+PREHOOK: query: describe formatted table_onetimestamp
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onetimestamp
+POSTHOOK: query: describe formatted table_onetimestamp
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onetimestamp
+# col_name            	data_type           	comment             
+val1                	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	12288               
+	rawDataSize         	216589              
+	totalSize           	228877              
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted table_onetimestamp val1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onetimestamp
+POSTHOOK: query: describe formatted table_onetimestamp val1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onetimestamp
+col_name            	val1                
+data_type           	timestamp           
+min                 	1969-12-31 15:59:30 
+max                 	1969-12-31 16:00:31 
+num_nulls           	3115                
+distinct_count      	35                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+PREHOOK: query: explain
+select distinct(val1) from table_onetimestamp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_onetimestamp
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct(val1) from table_onetimestamp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_onetimestamp
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onetimestamp
+                  Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: timestamp)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: timestamp)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: timestamp)
+                        Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain vectorization detail
+create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onedecimal
+POSTHOOK: query: explain vectorization detail
+create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onedecimal
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: CAST( cbigint AS decimal(10,2)) (type: decimal(10,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [13]
+                        selectExpressions: CastLongToDecimal(col 3:bigint) -> 13:decimal(10,2)
+                    Statistics: Num rows: 12288 Data size: 1027488 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 12288 Data size: 1027488 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.table_onedecimal
+                    Select Operator
+                      expressions: _col0 (type: decimal(10,2))
+                      outputColumnNames: col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [13]
+                      Statistics: Num rows: 12288 Data size: 1027488 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMinDecimal(col 13:decimal(10,2)) -> decimal(10,2), VectorUDAFMaxDecimal(col 13:decimal(10,2)) -> decimal(10,2), VectorUDAFCount(ConstantVectorExpression(val 1) -> 14:int) -> bigint, VectorUDAFCount(col 13:decimal(10,2)) -> bigint, VectorUDAFComputeBitVectorDecimal(col 13:decimal(10,2)) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:decimal(10,2), 1:decimal(10,2), 2:bigint, 3:bigint, 4:binary
+                          Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: decimal(10,2)), _col1 (type: decimal(10,2)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [3]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(10,2), bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:decimal(10,2)/DECIMAL_64, VALUE._col1:decimal(10,2)/DECIMAL_64, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinDecimal64(col 0:decimal(10,2)/DECIMAL_64) -> decimal(10,2)/DECIMAL_64, VectorUDAFMaxDecimal64(col 1:decimal(10,2)/DECIMAL_64) -> decimal(10,2)/DECIMAL_64, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(10,2)), _col1 (type: decimal(10,2)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
+                      selectExpressions: ConstantVectorExpression(val DECIMAL) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                  Statistics: Num rows: 1 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: val1 decimal(10,2)
+      name: default.table_onedecimal
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: val1
+          Column Types: decimal(10,2)
+          Table: default.table_onedecimal
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onedecimal
+POSTHOOK: query: create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onedecimal
+POSTHOOK: Lineage: table_onedecimal.val1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+PREHOOK: query: describe formatted table_onedecimal
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onedecimal
+POSTHOOK: query: describe formatted table_onedecimal
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onedecimal
+# col_name            	data_type           	comment             
+val1                	decimal(10,2)       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	12288               
+	rawDataSize         	27511               
+	totalSize           	39799               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted table_onedecimal val1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onedecimal
+POSTHOOK: query: describe formatted table_onedecimal val1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onedecimal
+col_name            	val1                
+data_type           	decimal(10,2)       
+min                 	-99245274           
+max                 	99984127            
+num_nulls           	11968               
+distinct_count      	305                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+PREHOOK: query: explain
+select distinct(val1) from table_onedecimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_onedecimal
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct(val1) from table_onedecimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_onedecimal
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onedecimal
+                  Statistics: Num rows: 12288 Data size: 35952 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: decimal(10,2))
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 35952 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: decimal(10,2))
+                      minReductionHashAggr: 0.97509766
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(10,2))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(10,2))
+                        Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: decimal(10,2))
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain vectorization detail
+create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@lineitem
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onedate
+POSTHOOK: query: explain vectorization detail
+create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@lineitem
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onedate
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:l_orderkey:int, 1:l_partkey:int, 2:l_suppkey:int, 3:l_linenumber:int, 4:l_quantity:double, 5:l_extendedprice:double, 6:l_discount:double, 7:l_tax:double, 8:l_returnflag:string, 9:l_linestatus:string, 10:l_shipdate:string, 11:l_commitdate:string, 12:l_receiptdate:string, 13:l_shipinstruct:string, 14:l_shipmode:string, 15:l_comment:string, 16:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: CAST( l_commitdate AS DATE) (type: date)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: CastStringToDate(col 11:string) -> 17:date
+                    Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.table_onedate
+                    Select Operator
+                      expressions: _col0 (type: date)
+                      outputColumnNames: col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [17]
+                      Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMinLong(col 17:date) -> date, VectorUDAFMaxLong(col 17:date) -> date, VectorUDAFCount(ConstantVectorExpression(val 1) -> 18:int) -> bigint, VectorUDAFCount(col 17:date) -> bigint, VectorUDAFComputeBitVectorLong(col 17:date) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:date, 1:date, 2:bigint, 3:bigint, 4:binary
+                          Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: date), _col1 (type: date), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 16
+                    includeColumns: [11]
+                    dataColumns: l_orderkey:int, l_partkey:int, l_suppkey:int, l_linenumber:int, l_quantity:double, l_extendedprice:double, l_discount:double, l_tax:double, l_returnflag:string, l_linestatus:string, l_shipdate:string, l_commitdate:string, l_receiptdate:string, l_shipinstruct:string, l_shipmode:string, l_comment:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:date, VALUE._col1:date, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:date) -> date, VectorUDAFMaxLong(col 1:date) -> date, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col0 (type: date), _col1 (type: date), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
+                      selectExpressions: ConstantVectorExpression(val DATE) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                  Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: val1 date
+      name: default.table_onedate
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: val1
+          Column Types: date
+          Table: default.table_onedate
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@lineitem
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_onedate
+POSTHOOK: query: create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@lineitem
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_onedate
+POSTHOOK: Lineage: table_onedate.val1 EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_commitdate, type:string, comment:null), ]
+PREHOOK: query: describe formatted table_onedate
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onedate
+POSTHOOK: query: describe formatted table_onedate
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onedate
+# col_name            	data_type           	comment             
+val1                	date                	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	1000                
+	totalSize           	1100                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted table_onedate val1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_onedate
+POSTHOOK: query: describe formatted table_onedate val1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_onedate
+col_name            	val1                
+data_type           	date                
+min                 	1992-05-15          
+max                 	1998-10-16          
+num_nulls           	0                   
+distinct_count      	95                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
+PREHOOK: query: explain
+select distinct(val1) from table_onedate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_onedate
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct(val1) from table_onedate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_onedate
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onedate
+                  Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: date)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: date)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 50 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: date)
+                        Statistics: Num rows: 50 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 25 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 25 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

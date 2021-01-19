@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -165,6 +166,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setKeyCols(new ArrayList<ExprNodeDesc>(getKeyCols()));
     desc.setValueCols(new ArrayList<ExprNodeDesc>(getValueCols()));
     desc.setOutputKeyColumnNames(new ArrayList<String>(getOutputKeyColumnNames()));
+    desc.setColumnExprMap(new HashMap<>(getColumnExprMap()));
     List<List<Integer>> distinctColumnIndicesClone = new ArrayList<List<Integer>>();
     for (List<Integer> distinctColumnIndex : getDistinctColumnIndices()) {
       List<Integer> tmp = new ArrayList<Integer>();
