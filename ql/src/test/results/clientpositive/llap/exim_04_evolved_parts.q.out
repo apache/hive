@@ -40,14 +40,14 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@exim_employee_n12
 POSTHOOK: Output: default@exim_employee_n12@emp_country=in/emp_state=tn
 PREHOOK: query: alter table exim_employee_n12 set fileformat 
-	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	inputformat  "org.apache.hadoop.hive.ql.io.RCFileInputFormat"
 	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
         serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@exim_employee_n12
 PREHOOK: Output: default@exim_employee_n12
 POSTHOOK: query: alter table exim_employee_n12 set fileformat 
-	inputformat  "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
+	inputformat  "org.apache.hadoop.hive.ql.io.RCFileInputFormat"
 	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
         serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
@@ -176,7 +176,7 @@ POSTHOOK: query: show table extended like exim_employee_n12
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:exim_employee_n12
 #### A masked pattern was here ####
-inputformat:org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { i32 emp_id, string emp_name, string emp_dob, string emp_sex, i32 emp_dept}
 partitioned:true

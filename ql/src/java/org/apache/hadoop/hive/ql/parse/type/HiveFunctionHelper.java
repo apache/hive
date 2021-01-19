@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -590,6 +591,12 @@ public class HiveFunctionHelper implements FunctionHelper {
   public boolean isEqualFunction(FunctionInfo fi) {
     return fi.getGenericUDF() instanceof GenericUDFOPEqual
         && !(fi.getGenericUDF() instanceof GenericUDFOPEqualNS);
+  }
+
+  @Override
+  public boolean isNSCompareFunction(FunctionInfo fi) {
+    return fi.getGenericUDF() instanceof GenericUDFOPEqualNS ||
+        fi.getGenericUDF() instanceof GenericUDFOPNotEqualNS;
   }
 
   /**

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -328,8 +329,7 @@ public class VectorizedOrcAcidRowBatchReader
             readerOptions.includeAcidColumns(false);
             break;
           } else {
-            AcidUtils.ParsedDelta pd =
-                AcidUtils.parsedDelta(parent, isOriginal);
+            ParsedDeltaLight pd = ParsedDeltaLight.parse(parent);
             if (validWriteIdList.isWriteIdRangeValid(pd.getMinWriteId(),
                 pd.getMaxWriteId()) == ValidWriteIdList.RangeResponse.ALL) {
               //all write IDs in range are committed (and visible in current

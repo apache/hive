@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OpEdge;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -78,6 +80,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -142,6 +145,13 @@ public class SharedWorkOptimizer extends Transform {
     if (tablesReferencedOnlyOnce) {
       // Nothing to do, bail out
       return pctx;
+    }
+
+    try {
+      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/0.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/0.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
     }
 
     if (LOG.isDebugEnabled()) {
@@ -284,6 +294,13 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    try {
+      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/1.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/1.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
+    }
+
     return pctx;
   }
 
@@ -376,6 +393,9 @@ public class SharedWorkOptimizer extends Transform {
     Set<Operator<?>> removedOps = new HashSet<>();
     for (TableScanOperator discardableTsOp : tableScans) {
       TableName tableName1 = discardableTsOp.getTableName();
+        if (discardableTsOp.getNumChild() == 0) {
+          removedOps.add(discardableTsOp);
+        }
       if (removedOps.contains(discardableTsOp)) {
         LOG.debug("Skip {} as it has already been removed", discardableTsOp);
         continue;
@@ -1756,46 +1776,8 @@ public class SharedWorkOptimizer extends Transform {
         return false;
       }
     }
-    // 2) We check whether output works when we merge the operators will collide.
-    //
-    //   Work1   Work2    (merge TS in W1 & W2)        Work1
-    //       \   /                  ->                  | |       X
-    //       Work3                                     Work3
-    //
-    // If we do, we cannot merge. The reason is that Tez currently does
-    // not support parallel edges, i.e., multiple edges from same work x
-    // into same work y.
-    final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1, false);
-    final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2, false);
-    if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
-      // We cannot merge
-      return false;
-    }
-    // 3) We check whether we will end up with same operators inputing on same work.
-    //
-    //       Work1        (merge TS in W2 & W3)        Work1
-    //       /   \                  ->                  | |       X
-    //   Work2   Work3                                 Work2
-    //
-    // If we do, we cannot merge. The reason is the same as above, currently
-    // Tez does not support parallel edges.
-    //
-    // In the check, we exclude the inputs to the root operator that we are trying
-    // to merge (only useful for extended merging as TS do not have inputs).
-    final Set<Operator<?>> excludeOps1 = sr.retainableOps.get(0).getNumParent() > 0 ?
-        ImmutableSet.copyOf(sr.retainableOps.get(0).getParentOperators()) : ImmutableSet.of();
-    final Set<Operator<?>> inputWorksOps1 =
-        findParentWorkOperators(pctx, optimizerCache, op1, excludeOps1);
-    final Set<Operator<?>> excludeOps2 = sr.discardableOps.get(0).getNumParent() > 0 ?
-        Sets.union(ImmutableSet.copyOf(sr.discardableOps.get(0).getParentOperators()), sr.discardableInputOps) :
-            sr.discardableInputOps;
-    final Set<Operator<?>> inputWorksOps2 =
-        findParentWorkOperators(pctx, optimizerCache, op2, excludeOps2);
-    if (!Collections.disjoint(inputWorksOps1, inputWorksOps2)) {
-      // We cannot merge
-      return false;
-    }
-    // 4) We check whether one of the operators is part of a work that is an input for
+
+    // 2) We check whether one of the operators is part of a work that is an input for
     // the work of the other operator.
     //
     //   Work1            (merge TS in W1 & W3)        Work1
@@ -1806,21 +1788,81 @@ public class SharedWorkOptimizer extends Transform {
     //
     // If we do, we cannot merge, as we would end up with a cycle in the DAG.
     final Set<Operator<?>> descendantWorksOps1 =
-            findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps);
+        findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps);
     final Set<Operator<?>> descendantWorksOps2 =
-            findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
-    if (!Collections.disjoint(descendantWorksOps1, workOps2)
-            || !Collections.disjoint(workOps1, descendantWorksOps2)) {
+        findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
+    if (!Collections.disjoint(descendantWorksOps1, workOps2) || !Collections.disjoint(workOps1, descendantWorksOps2)) {
       return false;
     }
 
+    // 3) We check whether output works when we merge the operators will collide.
+    //
+    //   Work1   Work2    (merge TS in W1 & W2)        Work1
+    //       \   /                  ->                  | |       X
+    //       Work3                                     Work3
+    //
+    // If we do, we cannot merge. The reason is that Tez currently does
+    // not support parallel edges, i.e., multiple edges from same work x
+    // into same work y.
     OperatorGraph og = new OperatorGraph(pctx);
+    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new NonParallelizableEdgePredicate());
+
+    if (!Collections.disjoint(cc1, cc2)) {
+      LOG.debug("merge would create an unsupported parallel edge(CHILDS)", op1, op2);
+      return false;
+    }
+
     if (!og.mayMerge(op1, op2)) {
       LOG.debug("merging {} and {} would violate dag properties", op1, op2);
       return false;
     }
 
+    // 4) We check whether we will end up with same operators inputing on same work.
+    //
+    //       Work1        (merge TS in W2 & W3)        Work1
+    //       /   \                  ->                  | |       X
+    //   Work2   Work3                                 Work2
+    //
+    // If we do, we cannot merge. The reason is the same as above, currently
+    // Tez does not support parallel edges.
+    //
+    // In the check, we exclude the inputs to the root operator that we are trying
+    // to merge (only useful for extended merging as TS do not have inputs).
+    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(new NonParallelizableEdgePredicate());
+    Set<Cluster> pc = new HashSet<>(Sets.intersection(pc1, pc2));
+
+    for (Operator<?> o : sr.discardableOps.get(0).getParentOperators()) {
+      pc.remove(og.clusterOf(o));
+    }
+    for (Operator<?> o : sr.discardableInputOps) {
+      pc.remove(og.clusterOf(o));
+    }
+
+    if (pc.size() > 0) {
+      LOG.debug("merge would create an unsupported parallel edge(PARENTS)", op1, op2);
+      return false;
+    }
+
     return true;
+  }
+
+  static class NonParallelizableEdgePredicate implements Function<OpEdge, Boolean> {
+
+    @Override
+    public Boolean apply(OpEdge input) {
+      switch (input.getEdgeType()) {
+      case BROADCAST:
+      case DPP:
+      case SEMIJOIN:
+        return false;
+      default:
+        return true;
+      }
+
+    }
+
   }
 
   private static Set<Operator<?>> findParentWorkOperators(ParseContext pctx,

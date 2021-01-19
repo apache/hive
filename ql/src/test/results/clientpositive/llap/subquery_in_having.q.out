@@ -1632,8 +1632,12 @@ POSTHOOK: Lineage: src_null_n4.value EXPRESSION []
 Warning: Map Join MAPJOIN[130][bigTable=?] in task 'Map 6' is a cross product
 Warning: Map Join MAPJOIN[127][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[128][bigTable=?] in task 'Map 1' is a cross product
+<<<<<<< HEAD
 Warning: Map Join MAPJOIN[129][bigTable=?] in task 'Reducer 3' is a cross product
 Warning: Map Join MAPJOIN[131][bigTable=?] in task 'Reducer 7' is a cross product
+=======
+Warning: Map Join MAPJOIN[129][bigTable=?] in task 'Reducer 4' is a cross product
+>>>>>>> apache/master
 PREHOOK: query: explain
 select key, value, count(*)
 from src_null_n4 b
@@ -1661,6 +1665,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
+<<<<<<< HEAD
         Map 1 <- Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
         Map 6 <- Map 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
@@ -1669,6 +1674,16 @@ STAGE PLANS:
         Reducer 7 <- Map 1 (BROADCAST_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
         Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+=======
+        Map 1 <- Map 8 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE)
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Reducer 3 (BROADCAST_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
+>>>>>>> apache/master
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1688,7 +1703,11 @@ STAGE PLANS:
                         1 
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
+<<<<<<< HEAD
                         1 Map 5
+=======
+                        1 Map 8
+>>>>>>> apache/master
                       residual filter predicates: {(_col2 <> _col1)}
                       Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
@@ -1755,6 +1774,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col1 (type: string)
+<<<<<<< HEAD
             Execution mode: llap
             LLAP IO: all inputs
         Map 5 
@@ -1794,6 +1814,8 @@ STAGE PLANS:
                   alias: s1
                   filterExpr: ((key > '9') or value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+=======
+>>>>>>> apache/master
                   Filter Operator
                     predicate: (key > '9') (type: boolean)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -1821,7 +1843,11 @@ STAGE PLANS:
                           1 
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
+<<<<<<< HEAD
                           1 Map 5
+=======
+                          1 Reducer 9
+>>>>>>> apache/master
                         residual filter predicates: {(_col2 <> _col1)}
                         Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
@@ -1857,6 +1883,37 @@ STAGE PLANS:
                           value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: all inputs
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: src_null_n4
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: string)
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1878,7 +1935,11 @@ STAGE PLANS:
                       1 _col0 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col4, _col5
                     input vertices:
+<<<<<<< HEAD
                       1 Reducer 4
+=======
+                      1 Reducer 5
+>>>>>>> apache/master
                     Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -1888,7 +1949,11 @@ STAGE PLANS:
                         1 _col2 (type: string), _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7
                       input vertices:
+<<<<<<< HEAD
                         1 Reducer 9
+=======
+                        1 Reducer 7
+>>>>>>> apache/master
                       Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (_col4 is null or (_col4 = 0L) or (_col7 is not null or _col2 is null or (_col5 < _col4)) is not true) (type: boolean)
@@ -1905,6 +1970,20 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 3 
+<<<<<<< HEAD
+=======
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+        Reducer 4 
+>>>>>>> apache/master
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -1929,7 +2008,11 @@ STAGE PLANS:
                         1 
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
+<<<<<<< HEAD
                         0 Map 6
+=======
+                        0 Reducer 3
+>>>>>>> apache/master
                       residual filter predicates: {(_col1 <> _col2)}
                       Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
@@ -1950,7 +2033,18 @@ STAGE PLANS:
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col2 (type: bigint)
+<<<<<<< HEAD
         Reducer 4 
+=======
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: string)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                            Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col2 (type: bigint)
+        Reducer 5 
+>>>>>>> apache/master
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -1976,6 +2070,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint)
+<<<<<<< HEAD
         Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2023,6 +2118,9 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col2 (type: bigint)
         Reducer 8 
+=======
+        Reducer 6 
+>>>>>>> apache/master
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2054,7 +2152,11 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
         Reducer 9 
+=======
+        Reducer 7 
+>>>>>>> apache/master
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2073,6 +2175,17 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string), _col0 (type: bigint)
                     Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: boolean)
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string)
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -2082,9 +2195,13 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 1' is a cross product
+<<<<<<< HEAD
 Warning: Map Join MAPJOIN[136][bigTable=?] in task 'Map 8' is a cross product
 Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 3' is a cross product
 Warning: Map Join MAPJOIN[137][bigTable=?] in task 'Reducer 9' is a cross product
+=======
+Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 4' is a cross product
+>>>>>>> apache/master
 PREHOOK: query: select key, value, count(*)
 from src_null_n4 b
 where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
@@ -2104,9 +2221,13 @@ POSTHOOK: Input: default@src_null_n4
 5444	NULL	1
 Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 1' is a cross product
+<<<<<<< HEAD
 Warning: Map Join MAPJOIN[136][bigTable=?] in task 'Map 8' is a cross product
 Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 3' is a cross product
 Warning: Map Join MAPJOIN[137][bigTable=?] in task 'Reducer 9' is a cross product
+=======
+Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 4' is a cross product
+>>>>>>> apache/master
 PREHOOK: query: explain
 select key, value, count(*)
 from src_null_n4 b
@@ -2134,6 +2255,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
+<<<<<<< HEAD
         Map 1 <- Reducer 6 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE)
         Map 8 <- Reducer 6 (BROADCAST_EDGE)
         Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
@@ -2144,6 +2266,17 @@ STAGE PLANS:
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
         Reducer 7 <- Map 5 (SIMPLE_EDGE)
         Reducer 9 <- Map 1 (BROADCAST_EDGE), Map 8 (SIMPLE_EDGE)
+=======
+        Map 1 <- Reducer 10 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
+        Reducer 10 <- Reducer 9 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE)
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Reducer 3 (BROADCAST_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE)
+>>>>>>> apache/master
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2163,7 +2296,11 @@ STAGE PLANS:
                         1 
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
+<<<<<<< HEAD
                         1 Reducer 6
+=======
+                        1 Reducer 10
+>>>>>>> apache/master
                       residual filter predicates: {(_col3 <> _col1)}
                       Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
@@ -2236,6 +2373,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col1 (type: string)
+<<<<<<< HEAD
             Execution mode: llap
             LLAP IO: all inputs
         Map 5 
@@ -2273,6 +2411,8 @@ STAGE PLANS:
                   alias: s1
                   filterExpr: ((key > '9') or value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+=======
+>>>>>>> apache/master
                   Filter Operator
                     predicate: (key > '9') (type: boolean)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -2300,7 +2440,11 @@ STAGE PLANS:
                           1 
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
+<<<<<<< HEAD
                           1 Reducer 6
+=======
+                          1 Reducer 9
+>>>>>>> apache/master
                         residual filter predicates: {(_col3 <> _col1)}
                         Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                         Filter Operator
@@ -2324,6 +2468,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: all inputs
+<<<<<<< HEAD
         Reducer 10 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2375,6 +2520,42 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string), _col0 (type: bigint)
                     Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: boolean)
+=======
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: src_null_n4
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: value (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 10 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: boolean), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: boolean), _col1 (type: string)
+>>>>>>> apache/master
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2396,7 +2577,11 @@ STAGE PLANS:
                       1 _col0 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col4, _col5
                     input vertices:
+<<<<<<< HEAD
                       1 Reducer 4
+=======
+                      1 Reducer 5
+>>>>>>> apache/master
                     Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -2406,7 +2591,11 @@ STAGE PLANS:
                         1 _col2 (type: string), _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7
                       input vertices:
+<<<<<<< HEAD
                         1 Reducer 11
+=======
+                        1 Reducer 7
+>>>>>>> apache/master
                       Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (_col4 is null or (_col4 = 0L) or (_col7 is not null or _col2 is null or (_col5 < _col4)) is not true) (type: boolean)
@@ -2423,6 +2612,20 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 3 
+<<<<<<< HEAD
+=======
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+        Reducer 4 
+>>>>>>> apache/master
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -2447,7 +2650,11 @@ STAGE PLANS:
                         1 
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
+<<<<<<< HEAD
                         0 Map 8
+=======
+                        0 Reducer 3
+>>>>>>> apache/master
                       residual filter predicates: {(_col1 <> _col2)}
                       Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
@@ -2468,7 +2675,18 @@ STAGE PLANS:
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col2 (type: bigint)
+<<<<<<< HEAD
         Reducer 4 
+=======
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: string)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                            Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col2 (type: bigint)
+        Reducer 5 
+>>>>>>> apache/master
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2503,6 +2721,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+<<<<<<< HEAD
                   expressions: true (type: boolean), _col0 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -2516,6 +2735,30 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: boolean), _col1 (type: string)
+=======
+                  expressions: _col0 (type: string), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col2
+                  Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: _col2 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col2 (type: bigint)
+                      outputColumnNames: _col1, _col2
+                      Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col1 (type: string), _col2 (type: bigint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                          Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> apache/master
         Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2529,6 +2772,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+<<<<<<< HEAD
                     null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -2579,6 +2823,36 @@ STAGE PLANS:
                             Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                             Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col2 (type: bigint)
+=======
+                    key expressions: _col2 (type: string), _col0 (type: bigint)
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: _col2 (type: string), _col0 (type: bigint)
+                    Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: boolean)
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: true (type: boolean), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: boolean), _col1 (type: string)
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: boolean), _col1 (type: string)
+>>>>>>> apache/master
 
   Stage: Stage-0
     Fetch Operator
@@ -2588,9 +2862,13 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 1' is a cross product
+<<<<<<< HEAD
 Warning: Map Join MAPJOIN[136][bigTable=?] in task 'Map 8' is a cross product
 Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 3' is a cross product
 Warning: Map Join MAPJOIN[137][bigTable=?] in task 'Reducer 9' is a cross product
+=======
+Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 4' is a cross product
+>>>>>>> apache/master
 PREHOOK: query: select key, value, count(*)
 from src_null_n4 b
 where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
