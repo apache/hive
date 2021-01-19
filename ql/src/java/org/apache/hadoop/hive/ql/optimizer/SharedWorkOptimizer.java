@@ -668,11 +668,8 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static boolean compatibleSchema(TableScanOperator tsOp1, TableScanOperator tsOp2) {
-    // First we check if the two table scan operators can actually be merged
-    // If schemas do not match, we currently do not merge
-    assert (tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns()) == tsOp1.getNeededColumnIDs()
-        .equals(tsOp2.getNeededColumnIDs()));
-    return tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns());
+    return tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns())
+        && tsOp1.getNeededColumnIDs().equals(tsOp2.getNeededColumnIDs());
   }
 
 
