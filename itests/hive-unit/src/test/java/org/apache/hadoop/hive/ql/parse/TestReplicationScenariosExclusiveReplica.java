@@ -138,7 +138,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .run("insert into table t1 values (100)")
             .run("create table t2 (id int)")
             .run("insert into table t2 values (200)")
-            .dump(primaryDbName +".'t[0-9]+'", null, withClauseOptions);
+            .dump(primaryDbName +".'t[0-9]+'", withClauseOptions);
 
     // verify that the external table info is written correctly for bootstrap
     assertExternalFileInfo(Arrays.asList("t1"), tuple.dumpLocation, false, replica);
@@ -166,7 +166,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .run("create table t5 (id int) partitioned by (p int)")
             .run("insert into t5 partition(p=1) values(10)")
             .run("insert into t5 partition(p=2) values(20)")
-            .dump(primaryDbName + ".'t[0-9]+'", null, withClauseOptions);
+            .dump(primaryDbName + ".'t[0-9]+'", withClauseOptions);
 
     // verify that the external table info is written correctly for incremental
     assertExternalFileInfo(Arrays.asList("t1", "t3"), tuple.dumpLocation, true, replica);

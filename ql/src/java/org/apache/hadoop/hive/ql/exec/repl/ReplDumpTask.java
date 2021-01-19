@@ -163,6 +163,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isBootstrap = (previousValidHiveDumpPath == null);
         work.setBootstrap(isBootstrap);
+        if (previousValidHiveDumpPath != null) {
+          work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+        }
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
@@ -410,10 +413,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    * @return true if need to examine tables for dump and false if not.
    */
   private boolean shouldExamineTablesToDump() {
-    return (work.oldReplScope != null)
+    return (previousReplScopeModified())
             || !tablesForBootstrap.isEmpty()
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
             || conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
+  }
+
+  private boolean previousReplScopeModified() {
+    return work.oldReplScope != null && !work.oldReplScope.equals(work.replScope);
   }
 
   /**
@@ -562,53 +569,57 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         : "?";
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
         maxEventLimit);
-    replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents,
-            work.eventFrom, work.eventTo, maxEventLimit);
-    replLogger.startLog();
-    Map<String, Long> metricMap = new HashMap<>();
-    metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
-    work.getMetricCollector().reportStageStart(getName(), metricMap);
-    long dumpedCount = resumeFrom - work.eventFrom;
-    if (dumpedCount > 0) {
-      LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
-    }
-    cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
-    while (evIter.hasNext()) {
-      NotificationEvent ev = evIter.next();
-      lastReplId = ev.getEventId();
-      if (ev.getEventId() <= resumeFrom) {
-        continue;
+    try {
+      replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents,
+        work.eventFrom, work.eventTo, maxEventLimit);
+      replLogger.startLog();
+      Map<String, Long> metricMap = new HashMap<>();
+      metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
+      work.getMetricCollector().reportStageStart(getName(), metricMap);
+      long dumpedCount = resumeFrom - work.eventFrom;
+      if (dumpedCount > 0) {
+        LOG.info("Event id {} to {} are already dumped, skipping {} events", work.eventFrom, resumeFrom, dumpedCount);
       }
+      cleanFailedEventDirIfExists(dumpRoot, resumeFrom);
+      while (evIter.hasNext()) {
+        NotificationEvent ev = evIter.next();
+        lastReplId = ev.getEventId();
+        if (ev.getEventId() <= resumeFrom) {
+          continue;
+        }
 
-      //disable materialized-view replication if not configured
-      if(!isMaterializedViewsReplEnabled()){
-        String tblName = ev.getTableName();
-        if(tblName != null) {
-          try {
-            Table table = hiveDb.getTable(dbName, tblName);
-            if (table != null && TableType.MATERIALIZED_VIEW.equals(table.getTableType())){
-              LOG.info("Attempt to dump materialized view : " + tblName);
-              continue;
+        //disable materialized-view replication if not configured
+        if (!isMaterializedViewsReplEnabled()) {
+          String tblName = ev.getTableName();
+          if (tblName != null) {
+            try {
+              Table table = hiveDb.getTable(dbName, tblName);
+              if (table != null && TableType.MATERIALIZED_VIEW.equals(table.getTableType())) {
+                LOG.info("Attempt to dump materialized view : " + tblName);
+                continue;
+              }
+            } catch (InvalidTableException te) {
+              LOG.debug(te.getMessage());
             }
-          } catch (InvalidTableException te) {
-            LOG.debug(te.getMessage());
           }
         }
-      }
 
-      Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
-      dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
-      Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
+        Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
+        dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
+        Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
+      }
+      replLogger.endLog(lastReplId.toString());
+      LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
+    } finally {
+      //write the dmd always irrespective of success/failure to enable checkpointing in table level replication
+      long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+      dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId,
+        previousReplScopeModified());
+      // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
+      // so that REPL LOAD would drop the tables which are not included in current policy.
+      dmd.setReplScope(work.replScope);
+      dmd.write(true);
     }
-    replLogger.endLog(lastReplId.toString());
-    LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
-    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId,
-      work.oldReplScope != null);
-    // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
-    // so that REPL LOAD would drop the tables which are not included in current policy.
-    dmd.setReplScope(work.replScope);
-    dmd.write(true);
     int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
          FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
@@ -762,7 +773,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // may not satisfying the old policy but satisfying the new policy. For filter, it may happen that the table
     // is renamed and started satisfying the policy.
     return ((!work.replScope.includeAllTables())
-            || (work.oldReplScope != null)
+            || (previousReplScopeModified())
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES));
   }
 
@@ -934,17 +945,19 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         replLogger.endLog(bootDumpBeginReplId.toString());
         work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId);
       }
-      Long bootDumpEndReplId = currentNotificationId(hiveDb);
-      LOG.info("Preparing to return {},{}->{}",
-              dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
-      long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-      dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId,
-        work.oldReplScope != null);
-      dmd.setReplScope(work.replScope);
-      dmd.write(true);
       work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
       setDataCopyIterators(extTableFileList, managedTblList);
+      LOG.info("Preparing to return {},{}->{}",
+        dumpRoot.toUri(), bootDumpBeginReplId, currentNotificationId(hiveDb));
       return bootDumpBeginReplId;
+    } finally {
+      //write the dmd always irrespective of success/failure to enable checkpointing in table level replication
+      Long bootDumpEndReplId = currentNotificationId(hiveDb);
+      long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+      dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId,
+        previousReplScopeModified());
+      dmd.setReplScope(work.replScope);
+      dmd.write(true);
     }
   }
 
@@ -968,8 +981,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return false;
     }
     Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf);
+    if (tableExpressionModified(dumpMetaData)) {
+      return false;
+    }
     if (isBootStrap) {
-      return shouldResumePreviousDump(new DumpMetaData(hiveDumpPath, conf));
+      return shouldResumePreviousDump(dumpMetaData);
     }
     // In case of incremental we should resume if _events_dump file is present and is valid
     Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
@@ -980,6 +997,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       LOG.info("Could not get last repl id from {}, because of:", lastEventFile, ex.getMessage());
     }
     return resumeFrom > 0L;
+  }
+
+  private boolean tableExpressionModified(DumpMetaData dumpMetaData) {
+    try {
+      //Check if last dump was with same repl scope. If not table expression was modified. So restart the dump
+      //Dont use checkpointing if repl scope if modified
+      return !dumpMetaData.getReplScope().equals(work.replScope);
+    } catch (Exception e) {
+      LOG.info("No previous dump present");
+      return false;
+    }
   }
 
   long currentNotificationId(Hive hiveDb) throws TException {
