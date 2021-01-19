@@ -37,3 +37,7 @@
   - abstractdog
 '**/*Tez*java':
   - abstractdog
+'**/*TopNKey*java':
+  - kasakrisz
+'**/*CardinalityPreserving*java':
+  - kasakrisz
