@@ -93,7 +93,7 @@ public class Derby extends DatabaseRule {
   @Override
   public void after() {
      try {
-     java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s.%d;drop=true", getDb())).close();
+     java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s;drop=true", getDb())).close();
      } catch(Exception e) {
        if(!e.getMessage().contains("dropped")) {
          throw new RuntimeException(e);
