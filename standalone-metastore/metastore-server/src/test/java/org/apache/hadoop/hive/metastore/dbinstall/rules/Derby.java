@@ -67,14 +67,13 @@ public class Derby extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return String.format("jdbc:derby:memory:%s/%s;create=true", System.getProperty("test.tmp.dir"),
-        getDb());
+
+    return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return String.format("jdbc:derby:memory:%s/%s;create=true", System.getProperty("test.tmp.dir"),
-        getDb());
+    return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
   public String getDb() {
@@ -93,7 +92,13 @@ public class Derby extends DatabaseRule {
 
   @Override
   public void after() {
-    // no-op, no need for docker container for derby
+     try {
+     java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s.%d;drop=true", getDb())).close();
+     } catch(Exception e) {
+       if(!e.getMessage().contains("dropped")) {
+         throw new RuntimeException(e);
+       }
+     }
   }
 
   @Override

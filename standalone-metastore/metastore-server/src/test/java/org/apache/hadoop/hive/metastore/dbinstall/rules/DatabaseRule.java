@@ -264,7 +264,8 @@ public abstract class DatabaseRule extends ExternalResource {
         "-url",
         getJdbcUrl(),
         "-driver",
-        getJdbcDriver()
+        getJdbcDriver(),
+        "-verbose"
     ));
   }
 
