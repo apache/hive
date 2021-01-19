@@ -1336,6 +1336,7 @@
                   <bannedImports>
                     <bannedImport>**.shaded.**</bannedImport>
                     <bannedImport>org.spark_project.guava.**</bannedImport>
+                    <bannedImport>org.apache.spark.api.java.Optional</bannedImport>
                     <bannedImport>jersey.repackaged.com.google.**</bannedImport>
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
