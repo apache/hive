@@ -138,13 +138,13 @@ public class ImpalaQueryContext {
     queryCtx.setPid(1000);
     String requestPool = conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_REQUEST_POOL);
     queryCtx.setRequest_pool(requestPool); // for admission control
-    queryCtx.setCoord_address(hostLocation);
+    queryCtx.setCoord_hostname("127.0.0.1");
     queryCtx.setStatus_report_interval_ms(5000);
 
     TNetworkAddress krpcCordAddr = new TNetworkAddress();
     krpcCordAddr.setHostname("127.0.0.1");
     krpcCordAddr.setPort(27000);
-    queryCtx.setCoord_krpc_address(krpcCordAddr);
+    queryCtx.setCoord_ip_address(krpcCordAddr);
 
     return queryCtx;
   }

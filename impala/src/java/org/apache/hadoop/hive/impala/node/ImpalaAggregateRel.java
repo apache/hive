@@ -111,17 +111,19 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     // aggregation functions and grouping exprs belonging to multiple
     // aggregation classes - such as in the case of multiple DISTINCT
     // aggregates or multiple Grouping Sets.
-    MultiAggregateInfo multiAggInfo =
-        new MultiAggregateInfo(groupingExprs, aggExprs);
-
+    MultiAggregateInfo multiAggInfo;
     if (Aggregate.isSimple(aggregate)) {
+      multiAggInfo =
+          new MultiAggregateInfo(groupingExprs, aggExprs, null);
       // this is a 'simple' aggregate with no grouping sets..use the default analyze call
       multiAggInfo.analyze(analyzer);
     } else {
       List<List<Expr>> groupingSets = getGroupingSets(analyzer);
-      multiAggInfo.setIsGroupingSet(true);
+      multiAggInfo =
+          new MultiAggregateInfo(groupingExprs, aggExprs, groupingSets);
       if (generateGroupingId) {
-        multiAggInfo.setGenerateGroupingId(true);
+        // TODO
+	// multiAggInfo.setGenerateGroupingId(true);
       }
       List<AggregateInfo> aggInfos = Lists.newArrayList();
       List<List<FunctionCallExpr>> aggClasses = Lists.newArrayList();

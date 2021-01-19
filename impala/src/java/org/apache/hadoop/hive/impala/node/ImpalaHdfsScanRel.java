@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.impala.plan.ImpalaPlannerContext;
 import org.apache.hadoop.hive.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.impala.funcmapper.ImpalaConjuncts;
 import org.apache.hadoop.hive.impala.prune.ImpalaPrunedPartitionList;
-import org.apache.impala.analysis.AggregateInfo;
+import org.apache.impala.analysis.MultiAggregateInfo;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BaseTableRef;
 import org.apache.impala.analysis.Expr;
@@ -104,7 +104,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     // count(*) could be satisfied by the scan directly. In the new planner
     // this could be done through a rule (not implemented yet), so for now
     // we will pass a null and re-visit this later.
-    AggregateInfo aggInfo = null;
+    MultiAggregateInfo aggInfo = null;
 
     String tableName = scan.getTable().getQualifiedName().get(1);
     TableName impalaTblName = TableName.parse(tableName);

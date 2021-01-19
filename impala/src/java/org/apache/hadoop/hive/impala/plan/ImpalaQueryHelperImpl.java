@@ -342,9 +342,6 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
         continue;
       }
       switch (field) {
-      case SENTRY_CONFIG:
-        cfg.setSentry_config(kv.getValue());
-        break;
       case LOAD_AUTH_TO_LOCAL_RULES:
         cfg.setLoad_auth_to_local_rules(
             Boolean.parseBoolean(kv.getValue()));
@@ -378,9 +375,6 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
       case SERVER_NAME:
         cfg.setServer_name(kv.getValue());
         break;
-      case AUTHORIZATION_POLICY_PROVIDER_CLASS:
-        cfg.setAuthorization_policy_provider_class(kv.getValue());
-        break;
       case KUDU_MASTER_HOSTS:
         cfg.setKudu_master_hosts(kv.getValue());
         break;
@@ -402,10 +396,6 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
       case ENABLE_STATS_EXTRAPOLATION:
         cfg.setEnable_stats_extrapolation(
             Boolean.parseBoolean(kv.getValue()));
-        break;
-      case SENTRY_CATALOG_POLLING_FREQUENCY_S:
-        cfg.setSentry_catalog_polling_frequency_s(
-            Long.parseLong(kv.getValue()));
         break;
       case MAX_HDFS_PARTITIONS_PARALLEL_LOAD:
         cfg.setMax_hdfs_partitions_parallel_load(

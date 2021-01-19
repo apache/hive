@@ -42,10 +42,10 @@ public class ImpalaHdfsScanNode extends HdfsScanNode {
   private ImpalaNodeInfo nodeInfo;
 
   public ImpalaHdfsScanNode(PlanNodeId id, List<? extends FeFsPartition> partitions,
-      TableRef hdfsTblRef, AggregateInfo aggInfo, List<Expr> partConjuncts,
+      TableRef hdfsTblRef, MultiAggregateInfo aggInfo, List<Expr> partConjuncts,
       ImpalaNodeInfo nodeInfo) {
     super(id, nodeInfo.getTupleDesc(), nodeInfo.getAssignedConjuncts(),
-        partitions, hdfsTblRef, aggInfo, partConjuncts);
+        partitions, hdfsTblRef, aggInfo, partConjuncts, false);
     this.nodeInfo = nodeInfo;
     if (LOG.isDebugEnabled()) {
       if (partitions != null && partitions.size() > 1) {
@@ -69,11 +69,9 @@ public class ImpalaHdfsScanNode extends HdfsScanNode {
       FunctionCallExpr countStarExpr) throws ImpalaException, HiveException {
     // Only optimize scan/agg plan if there is a single aggregation class.
     // (This mirrors the check done by Impala's single node planner)
-    AggregateInfo scanAggInfo = null;
     if (multiAggInfo != null && multiAggInfo.getMaterializedAggClasses().size() == 1) {
-      scanAggInfo = multiAggInfo.getMaterializedAggClass(0);
+      aggInfo_ = multiAggInfo;
     }
-    aggInfo_ = scanAggInfo;
     if (canApplyCountStarOptimization(analyzer, getFileFormats())) {
       TupleDescriptor desc = getTupleDesc();
       Preconditions.checkNotNull(desc.getPath().destTable());
@@ -85,6 +83,7 @@ public class ImpalaHdfsScanNode extends HdfsScanNode {
       // Supply our own countStarExpr instead of letting Impala create one. This
       // allows equality checks of the count expr to succeed within Impala.
       countStarSlot_ = applyCountStarOptimization(analyzer, countStarExpr);
+      AggregateInfo scanAggInfo = multiAggInfo.getMaterializedAggClass(0);
       scanAggInfo.substitute(getOptimizedAggSmap(), analyzer);
       scanAggInfo.getMergeAggInfo().substitute(getOptimizedAggSmap(), analyzer);
       // re-compute the mem layout

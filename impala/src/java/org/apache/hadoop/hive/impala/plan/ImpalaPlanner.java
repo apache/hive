@@ -361,7 +361,7 @@ public class ImpalaPlanner {
       TableSink sink = TableSink.create(ctx_.getTargetTable(),
             isUpsert ? TableSink.Op.UPSERT : TableSink.Op.INSERT,
             partitionKeyExprs, ctx_.getResultExprs(), referencedColumns,
-            isOverwrite, inputIsClustered, sortProperties, writeId);
+            isOverwrite, inputIsClustered, sortProperties, writeId, 0);
       Preconditions.checkState(sink instanceof HdfsTableSink, "Currently only HDFS table sinks are supported");
       Preconditions.checkNotNull(destination, "Invalid destination for Impala sink");
       HdfsTableSink s = (HdfsTableSink) sink;
@@ -393,7 +393,7 @@ public class ImpalaPlanner {
         // desired location of query results
         TableSink sink = TableSink.create(resultLocation, TableSink.Op.INSERT,
             ImmutableList.<Expr>of(), resultExprs, referencedColumns, false, false,
-            new Pair<>(ImmutableList.<Integer> of(), TSortingOrder.LEXICAL), -1, true);
+            new Pair<>(ImmutableList.<Integer> of(), TSortingOrder.LEXICAL), -1, 0, true);
         rootFragment.setSink(sink);
       } else { // Streaming query results
         rootFragment.setSink(new PlanRootSink(ctx_.getResultExprs()));
