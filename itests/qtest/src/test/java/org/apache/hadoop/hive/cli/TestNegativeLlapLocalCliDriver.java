@@ -31,9 +31,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TestNegativeCliDriver {
+public class TestNegativeLlapLocalCliDriver {
 
-  static CliAdapter adapter = new CliConfigs.NegativeCliConfig().getCliAdapter();
+  static CliAdapter adapter = new CliConfigs.NegativeLlapLocalCliConfig().getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
@@ -49,7 +49,7 @@ public class TestNegativeCliDriver {
   private String name;
   private File qfile;
 
-  public TestNegativeCliDriver(String name, File qfile) {
+  public TestNegativeLlapLocalCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
