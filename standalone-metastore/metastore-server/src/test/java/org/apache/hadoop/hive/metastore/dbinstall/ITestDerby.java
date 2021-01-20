@@ -27,7 +27,7 @@ import org.junit.Rule;
 public class ITestDerby extends DbInstallBase {
 
   @Rule
-  public final DatabaseRule databaseRule = new Derby();
+  public final DatabaseRule databaseRule = new Derby(true);
 
   @Override
   protected DatabaseRule getRule() {

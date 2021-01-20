@@ -25,6 +25,17 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
  */
 public class Derby extends DatabaseRule {
 
+  boolean purgeInAfter;
+
+  public Derby() {
+    this(false);
+  }
+
+  public Derby(boolean purgeInAfter) {
+    super();
+    this.purgeInAfter = purgeInAfter;
+  }
+
   @Override
   public String getDockerImageName() {
     return null;
@@ -92,13 +103,15 @@ public class Derby extends DatabaseRule {
 
   @Override
   public void after() {
-     try {
-     java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s;drop=true", getDb())).close();
-     } catch(Exception e) {
-       if(!e.getMessage().contains("dropped")) {
-         throw new RuntimeException(e);
-       }
-     }
+    if(purgeInAfter) {
+      try {
+        java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s;drop=true", getDb())).close();
+      } catch(Exception e) {
+        if(!e.getMessage().contains("dropped")) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
   }
 
   @Override
