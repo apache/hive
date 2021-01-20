@@ -2689,7 +2689,7 @@ public class AcidUtils {
           return true;
         }
         path = path.getParent();
-      } while (!path.equals(basePath));
+      } while (path != null && !path.equals(basePath));
       return false;
     }
   }
