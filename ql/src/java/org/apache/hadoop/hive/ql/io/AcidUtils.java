@@ -2671,6 +2671,28 @@ public class AcidUtils {
     }
   }
 
+  /**
+   * Full recursive PathFilter version of IdPathFilter (filtering files for a given writeId and stmtId).
+   * This can be used by recursive filelisting, when we want to match the delta / base pattern on the bucketFiles.
+   */
+  public static class IdFullPathFiler extends IdPathFilter {
+    private final Path basePath;
+
+    public IdFullPathFiler(long writeId, int stmtId, Path basePath) {
+      super(writeId, stmtId);
+      this.basePath = basePath;
+    }
+    @Override
+    public boolean accept(Path path) {
+      do {
+        if (super.accept(path)) {
+          return true;
+        }
+        path = path.getParent();
+      } while (!path.equals(basePath));
+      return false;
+    }
+  }
 
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();
