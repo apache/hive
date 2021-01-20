@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,9 +11,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
@@ -31,7 +28,7 @@
     <hive.path.to.root>..</hive.path.to.root>
     <powermock.version>1.6.6</powermock.version>
     <reflections.version>0.9.10</reflections.version>
-    <atlas.version>2.1.0</atlas.version>
+    <atlas.version>2.1.0.7.2.8.0-SNAPSHOT</atlas.version>
     <commons-configuration.version>1.10</commons-configuration.version>
   </properties>
 
@@ -908,14 +905,14 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <property name="protobuf.src.dir"  location="${basedir}/src/protobuf/java"/>
-                    <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-java"/>
+                    <property location="${basedir}/src/protobuf/java" name="protobuf.src.dir" />
+                    <property location="${basedir}/src/gen/protobuf/gen-java" name="protobuf.build.dir" />
                     <echo>Building ql Protobuf</echo>
-                    <mkdir dir="${protobuf.build.dir}"/>
+                    <mkdir dir="${protobuf.build.dir}" />
                     <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}"/>
-                      <arg value="${protobuf.src.dir}/HiveEvents.proto"/>
+                      <arg value="--java_out=${protobuf.build.dir}" />
+                      <arg value="-I=${protobuf.src.dir}" />
+                      <arg value="${protobuf.src.dir}/HiveEvents.proto" />
                     </exec>
                   </target>
                 </configuration>
@@ -928,14 +925,14 @@
                 <phase>generate-test-sources</phase>
                 <configuration>
                   <target>
-                    <property name="protobuf.src.dir"  location="${basedir}/src/protobuf/test"/>
-                    <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-test"/>
+                    <property location="${basedir}/src/protobuf/test" name="protobuf.src.dir" />
+                    <property location="${basedir}/src/gen/protobuf/gen-test" name="protobuf.build.dir" />
                     <echo>Building ql test Protobuf</echo>
-                    <mkdir dir="${protobuf.build.dir}"/>
+                    <mkdir dir="${protobuf.build.dir}" />
                     <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}"/>
-                      <arg value="${protobuf.src.dir}/SampleProtos.proto"/>
+                      <arg value="--java_out=${protobuf.build.dir}" />
+                      <arg value="-I=${protobuf.src.dir}" />
+                      <arg value="${protobuf.src.dir}/SampleProtos.proto" />
                     </exec>
                   </target>
                 </configuration>
@@ -984,13 +981,12 @@
             <phase>generate-sources</phase>
             <configuration>
               <target>
-                <property name="compile.classpath" refid="maven.compile.classpath"/>
-                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.tools.GenVectorCode"
-                    classpath="${compile.classpath}"/>
-                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
-                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/"/>
-                <mkdir dir="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
-                <vectorcodegen templateBaseDir="${basedir}/src/gen/vectorization/" buildDir="${project.build.directory}" />
+                <property name="compile.classpath" refid="maven.compile.classpath" />
+                <taskdef classname="org.apache.hadoop.hive.tools.GenVectorCode" classpath="${compile.classpath}" name="vectorcodegen" />
+                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/" />
+                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/" />
+                <mkdir dir="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/" />
+                <vectorcodegen buildDir="${project.build.directory}" templateBaseDir="${basedir}/src/gen/vectorization/" />
               </target>
             </configuration>
             <goals>
