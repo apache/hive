@@ -18,21 +18,25 @@
 
 package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.zookeeper.KeeperException;
+
+import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Semaphore;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
@@ -41,9 +45,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestZookeeperLockManager {
 
@@ -61,6 +62,7 @@ public class TestZookeeperLockManager {
   @Before
   public void setup() {
     conf = new HiveConf();
+    conf.setVar(ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, "100ms");
     lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables", conf);
     hiveLock = new HiveLockObject(TABLE, lockObjData);
     zLock = new ZooKeeperHiveLock(TABLE_LOCK_PATH, hiveLock, HiveLockMode.SHARED);
@@ -145,7 +147,63 @@ public class TestZookeeperLockManager {
     zMgr.unlock(curLock);
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS, 0);
+
+    testLockModeTiming(zMgr, HiveLockMode.SHARED, HiveLockMode.SHARED, 1000, 2000);
+    testLockModeTiming(zMgr, HiveLockMode.SEMI_SHARED, HiveLockMode.SEMI_SHARED, 2000, 3000);
+    testLockModeTiming(zMgr, HiveLockMode.EXCLUSIVE, HiveLockMode.SHARED, 2000, 3000);
+    testLockModeTiming(zMgr, HiveLockMode.EXCLUSIVE, HiveLockMode.SEMI_SHARED, 2000, 3000);
+
     zMgr.close();
+  }
+
+  static class LockTesterThread extends Thread {
+    private CyclicBarrier barrier;
+    private ZooKeeperHiveLockManager zMgr;
+    private HiveLockObject hiveLock;
+    private HiveLockMode lockMode;
+    private Semaphore semaphore;
+
+    public LockTesterThread(CyclicBarrier barrier, Semaphore semaphore, ZooKeeperHiveLockManager zMgr,
+        HiveLockObject hiveLock,
+        HiveLockMode semiShared) {
+      this.barrier = barrier;
+      this.semaphore = semaphore;
+      this.zMgr = zMgr;
+      this.hiveLock = hiveLock;
+      this.lockMode = semiShared;
+
+    }
+
+    public void run() {
+      try {
+        barrier.await();
+        ZooKeeperHiveLock l = zMgr.lock(hiveLock, lockMode, false);
+        Thread.sleep(1000);
+        zMgr.unlock(l);
+        semaphore.release();
+      } catch (LockException | InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private void testLockModeTiming(ZooKeeperHiveLockManager zMgr, HiveLockMode lock1mode, HiveLockMode lock2mode,
+      int minT, int maxT)
+      throws Exception, LockException, InterruptedException, BrokenBarrierException {
+
+    CyclicBarrier barrier = new CyclicBarrier(3);
+    Semaphore semaphore = new Semaphore(0);
+
+    new LockTesterThread(barrier, semaphore, zMgr, hiveLock, lock1mode).start();
+    new LockTesterThread(barrier, semaphore, zMgr, hiveLock, lock2mode).start();
+    barrier.await();
+    long t0 = System.currentTimeMillis();
+    semaphore.acquire(2);
+    long t1 = System.currentTimeMillis();
+    long dt = t1 - t0;
+    assertTrue(String.format("%d>%d", dt, minT), dt > minT);
+    assertTrue(String.format("%d<%d", dt, maxT), dt < maxT);
   }
 
 }
