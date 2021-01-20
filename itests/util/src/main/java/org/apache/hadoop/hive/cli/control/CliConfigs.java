@@ -348,13 +348,13 @@ public class CliConfigs {
     }
   }
 
-  public static class NegativeCliConfig extends AbstractCliConfig {
-    public NegativeCliConfig() {
+  public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
+    public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientnegative");
 
-        excludesFrom(testConfigProps, "minimr.query.negative.files");
+        excludesFrom(testConfigProps, "llap.query.negative.files");
         excludesFrom(testConfigProps, "spark.only.query.negative.files");
 
         setResultsDir("ql/src/test/results/clientnegative");
@@ -363,21 +363,21 @@ public class CliConfigs {
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.NONE);
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
     }
   }
 
-  public static class NegativeMinimrCli extends AbstractCliConfig {
-    public NegativeMinimrCli() {
+  public static class NegativeLlapCliDriver extends AbstractCliConfig {
+    public NegativeLlapCliDriver() {
       super(CoreNegativeCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientnegative");
 
-        includesFrom(testConfigProps, "minimr.query.negative.files");
+        includesFrom(testConfigProps, "llap.query.negative.files");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
@@ -385,8 +385,8 @@ public class CliConfigs {
         setInitScript("q_test_init_src.sql");
         setCleanupScript("q_test_cleanup_src.sql");
 
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.MR);
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
