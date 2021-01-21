@@ -1941,7 +1941,11 @@ public class TezCompiler extends TaskCompiler {
                 LOG.debug("Unwrapped column expression from ExprNodeFieldDesc");
                 tsExpr = ((ExprNodeFieldDesc) tsExpr).getDesc();
               }
-              colNames.add(ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn());
+              List<ExprNodeColumnDesc> allReferencedColumns = new ArrayList<>();
+              ExprNodeDescUtils.findAllColumnDescs(allReferencedColumns, tsExpr);
+              for (ExprNodeColumnDesc c : allReferencedColumns) {
+                colNames.add(c.getColumn());
+              }
             }
             // We check whether there was already another SJ over this TS that was selected
             // in previous iteration
