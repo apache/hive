@@ -2225,7 +2225,10 @@ public class Hive {
     // If config is set, table is not temporary and partition being inserted exists, capture
     // the list of files added. For not yet existing partitions (insert overwrite to new partition
     // or dynamic partition inserts), the add partition event will capture the list of files added.
-    List<Path> newFiles = Collections.synchronizedList(new ArrayList<>());
+    List<Path> newFiles = null;
+    if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
+      newFiles = Collections.synchronizedList(new ArrayList<>());
+    }
 
     Partition newTPart = loadPartitionInternal(loadPath, tbl, partSpec, oldPart,
             loadFileType, inheritTableSpecs,
@@ -3520,7 +3523,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       InsertEventRequestData insertData) throws IOException {
     LinkedList<Path> directories = null;
     for (Path p : newFiles) {
-      if (fileSystem.isDirectory(p)) {
+      if (!AcidUtils.bucketFileFilter.accept(p) && !AcidUtils.originalBucketFilter.accept(p)
+          && fileSystem.isDirectory(p)) { // Avoid the fs call if it is possible
         if (directories == null) {
           directories = new LinkedList<>();
         }
