@@ -63,8 +63,8 @@ public class Mysql extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("MySQL init process done. Ready for start up.");
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stderr.contains("ready for connections");
   }
 
   @Override

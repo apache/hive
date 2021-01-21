@@ -92,7 +92,7 @@ public class Derby extends DatabaseRule {
   };
 
   @Override
-  public boolean isContainerReady(String logOutput) {
+  public boolean isContainerReady(ProcessResults pr) {
     return true;
   }
 
