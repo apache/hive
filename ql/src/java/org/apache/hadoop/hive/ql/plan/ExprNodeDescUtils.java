@@ -839,22 +839,6 @@ public class ExprNodeDescUtils {
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
   }
 
-  /*
-   * Extracts all referenced columns from the subtree.
-   */
-  public static void findAllColumnDescs(List<ExprNodeColumnDesc> ret, ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
-      for (ExprNodeDesc c : func.getChildren()) {
-        findAllColumnDescs(ret, c);
-      }
-    }
-
-    if (expr instanceof ExprNodeColumnDesc) {
-      ret.add((ExprNodeColumnDesc) expr);
-    }
-  }
-
   // Find the constant origin of a certain column if it is originated from a constant
   // Otherwise, it returns the expression that originated the column
   public static ExprNodeDesc findConstantExprOrigin(String dpCol, Operator<? extends OperatorDesc> op) {
