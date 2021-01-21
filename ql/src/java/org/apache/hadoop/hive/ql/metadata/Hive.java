@@ -3523,7 +3523,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       InsertEventRequestData insertData) throws IOException {
     LinkedList<Path> directories = null;
     for (Path p : newFiles) {
-      if (!AcidUtils.bucketFileFilter.accept(p) && fileSystem.isDirectory(p)) { // Avoid the fs call if it is possible
+      if (!AcidUtils.bucketFileFilter.accept(p) && !AcidUtils.originalBucketFilter.accept(p)
+          && fileSystem.isDirectory(p)) { // Avoid the fs call if it is possible
         if (directories == null) {
           directories = new LinkedList<>();
         }
