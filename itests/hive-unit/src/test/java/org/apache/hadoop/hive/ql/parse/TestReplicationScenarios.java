@@ -4086,8 +4086,6 @@ public class TestReplicationScenarios {
   @Test
   public void testDumpNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
-    verifyFail("REPL DUMP " + dbName, driver);
-    verifyFail("REPL DUMP " + dbName, driver);
     assertTrue(run("REPL DUMP " + dbName + " with ('hive.repl.dump.metadata.only' = 'true')",
             true, driver));
     //Dump again before load will print a warning
@@ -4218,6 +4216,48 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replDbName + ".unptned", data_after_ovwrite, driverMirror);
     verifyRun("SELECT count(*) from " + replDbName + ".unptned", "1", driverMirror);
     verifyRun("SELECT count(*) from " + replDbName + ".unptned_late ", "3", driverMirror);
+  }
+
+  @Test
+  public void testPolicyIdImplicitly() throws Exception {
+    // Create a database.
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+
+    // Remove SOURCE_OF_REPLICATION property.
+    run("ALTER DATABASE " + name + " Set DBPROPERTIES ( '"
+        + SOURCE_OF_REPLICATION + "' = '')", driver);
+
+    // Create a table with some data.
+    run("CREATE TABLE " + dbName + ".dataTable(a string) STORED AS TEXTFILE",
+        driver);
+
+    String[] unptn_data = new String[] {"eleven", "twelve"};
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    createTestDataFile(unptn_locn, unptn_data);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE "
+        + dbName + ".dataTable", driver);
+
+    // Perform Dump & Load and verify the data is replicated properly.
+    String replicatedDbName = dbName + "_dupe";
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath =
+        new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+    verifyRun("SELECT * from " + replicatedDbName + ".dataTable", unptn_data,
+        driverMirror);
+
+    // Check the value of SOURCE_OF_REPLICATION in the database, it should
+    // get set automatically.
+    run("DESCRIBE DATABASE EXTENDED " + dbName, driver);
+    List<String> result = getOutput(driver);
+    System.out.print(result);
+    assertTrue(result.get(0),
+        result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
   }
 
   private static String createDB(String name, IDriver myDriver) {
