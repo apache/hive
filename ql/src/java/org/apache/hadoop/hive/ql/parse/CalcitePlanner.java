@@ -3567,7 +3567,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       List<RexNode> newStructExprs = new ArrayList<>();
       for (RexNode structExpr : valuesExpr.getOperands()) {
         RexCall structCall = (RexCall) structExpr;
-        List<RexNode> exprs = new ArrayList<>(inputRefs);
+        List<RexNode> exprs = new ArrayList<>();
+        if (structCall.op.kind == SqlKind.OTHER_FUNCTION && "named_struct".equals(structCall.op.getName())) {
+          for (int i = 0; i < inputRefs.size(); ++i) {
+            exprs.add(rexBuilder.makeLiteral("colref" + i));
+            exprs.add(inputRefs.get(i));
+          }
+        } else {
+          exprs.addAll(inputRefs);
+        }
         exprs.addAll(structCall.getOperands());
         newStructExprs.add(rexBuilder.makeCall(structCall.op, exprs));
       }
