@@ -100,7 +100,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: array(const struct(1,'101'),const struct(2,'202'),const struct(3,'303'),const struct(4,'404'),const struct(5,'505')) (type: array<struct<col1:int,col2:string>>)
+              expressions: array(named_struct('col1',1,'col2','101'),named_struct('col1',2,'col2','202'),named_struct('col1',3,'col2','303'),named_struct('col1',4,'col2','404'),named_struct('col1',5,'col2','505')) (type: array<struct<col1:int,col2:string>>)
               outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
               UDTF Operator

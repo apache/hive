@@ -36,7 +36,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(1,'original'),const struct(2,'original'),const struct(3,'original'),const struct(4,'original')) (type: array<struct<col1:int,col2:string>>)
+                    expressions: array(named_struct('col1',1,'col2','original'),named_struct('col1',2,'col2','original'),named_struct('col1',3,'col2','original'),named_struct('col1',4,'col2','original')) (type: array<struct<col1:int,col2:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -262,7 +262,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(1,'new',10,'ten'),const struct(2,'new',20,'twenty'),const struct(3,'new',30,'thirty'),const struct(4,'new',40,'forty')) (type: array<struct<col1:int,col2:string,col3:int,col4:string>>)
+                    expressions: array(named_struct('col1',1,'col2','new','col3',10,'col4','ten'),named_struct('col1',2,'col2','new','col3',20,'col4','twenty'),named_struct('col1',3,'col2','new','col3',30,'col4','thirty'),named_struct('col1',4,'col2','new','col3',40,'col4','forty')) (type: array<struct<col1:int,col2:string,col3:int,col4:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -446,7 +446,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(5,'new',100,'hundred'),const struct(6,'new',200,'two hundred')) (type: array<struct<col1:int,col2:string,col3:int,col4:string>>)
+                    expressions: array(named_struct('col1',5,'col2','new','col3',100,'col4','hundred'),named_struct('col1',6,'col2','new','col3',200,'col4','two hundred')) (type: array<struct<col1:int,col2:string,col3:int,col4:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator

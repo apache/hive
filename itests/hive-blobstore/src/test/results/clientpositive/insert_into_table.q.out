@@ -68,7 +68,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: array(const struct(1)) (type: array<struct<col1:int>>)
+              expressions: array(named_struct('col1',1)) (type: array<struct<col1:int>>)
               outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
               UDTF Operator

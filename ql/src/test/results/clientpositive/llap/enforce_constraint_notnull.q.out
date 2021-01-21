@@ -35,7 +35,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('not','null','constraint')) (type: array<struct<col1:string,col2:string,col3:string>>)
+                    expressions: array(named_struct('col1','not','col2','null','col3','constraint')) (type: array<struct<col1:string,col2:string,col3:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -163,7 +163,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('1','2')) (type: array<struct<col1:string,col2:string>>)
+                    expressions: array(named_struct('col1','1','col2','2')) (type: array<struct<col1:string,col2:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -2574,7 +2574,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(1,109.23,'mary had a little lamb'),const struct(6553,923.19,'its fleece was white as snow')) (type: array<struct<col1:int,col2:decimal(5,2),col3:string>>)
+                    expressions: array(named_struct('col1',1,'col2',109.23,'col3','mary had a little lamb'),named_struct('col1',6553,'col2',923.19,'col3','its fleece was white as snow')) (type: array<struct<col1:int,col2:decimal(5,2),col3:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -3844,7 +3844,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('not','null','constraint')) (type: array<struct<col1:string,col2:string,col3:string>>)
+                    expressions: array(named_struct('col1','not','col2','null','col3','constraint')) (type: array<struct<col1:string,col2:string,col3:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -5827,7 +5827,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(2,3)) (type: array<struct<col1:int,col2:int>>)
+                    expressions: array(named_struct('col1',2,'col2',3)) (type: array<struct<col1:int,col2:int>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -5939,7 +5939,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(2,3)) (type: array<struct<col1:int,col2:int>>)
+                    expressions: array(named_struct('col1',2,'col2',3)) (type: array<struct<col1:int,col2:int>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -6060,7 +6060,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(1)) (type: array<struct<col1:int>>)
+                    expressions: array(named_struct('col1',1)) (type: array<struct<col1:int>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator

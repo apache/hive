@@ -791,7 +791,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(1,'abc')) (type: array<struct<col1:int,col2:string>>)
+                    expressions: array(named_struct('col1',1,'col2','abc')) (type: array<struct<col1:int,col2:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator

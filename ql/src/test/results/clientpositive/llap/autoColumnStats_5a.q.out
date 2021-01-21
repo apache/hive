@@ -39,7 +39,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
-                    expressions: array(const struct(1,'original')) (type: array<struct<col1:int,col2:string>>)
+                    expressions: array(named_struct('col1',1,'col2','original')) (type: array<struct<col1:int,col2:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -298,7 +298,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
-                    expressions: array(const struct(2,'original'),const struct(3,'original'),const struct(4,'original')) (type: array<struct<col1:int,col2:string>>)
+                    expressions: array(named_struct('col1',2,'col2','original'),named_struct('col1',3,'col2','original'),named_struct('col1',4,'col2','original')) (type: array<struct<col1:int,col2:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -516,7 +516,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct(1,'original'),const struct(2,'original'),const struct(3,'original'),const struct(4,'original')) (type: array<struct<col1:int,col2:string>>)
+                    expressions: array(named_struct('col1',1,'col2','original'),named_struct('col1',2,'col2','original'),named_struct('col1',3,'col2','original'),named_struct('col1',4,'col2','original')) (type: array<struct<col1:int,col2:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
