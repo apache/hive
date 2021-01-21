@@ -316,18 +316,18 @@ valuesTableConstructor
 @init { gParent.pushMsg("values table constructor", state); }
 @after { gParent.popMsg(state); }
     :
-    firstValueRowConstructor (COMMA! valueRowConstructor)*
+    firstValueRowConstructor (COMMA! moreValueRowConstructor)*
     ;
 
 firstValueRowConstructor
-@init { gParent.pushMsg("value row constructor", state); }
+@init { gParent.pushMsg("first value row constructor", state); }
 @after { gParent.popMsg(state); }
     :
     LPAREN! firstExpressionsWithAlias RPAREN!
     ;
 
-valueRowConstructor
-@init { gParent.pushMsg("value row constructor", state); }
+moreValueRowConstructor
+@init { gParent.pushMsg("more value row constructor", state); }
 @after { gParent.popMsg(state); }
     :
     LPAREN! moreExpressionsWithAlias RPAREN!

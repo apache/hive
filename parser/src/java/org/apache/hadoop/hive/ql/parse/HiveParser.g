@@ -2779,6 +2779,12 @@ whenNotMatchedClause
   KW_WHEN KW_NOT KW_MATCHED (KW_AND expression)? KW_THEN KW_INSERT (targetCols=columnParenthesesList)? KW_VALUES valueRowConstructor ->
     ^(TOK_NOT_MATCHED ^(TOK_INSERT $targetCols? valueRowConstructor) expression?)
   ;
+valueRowConstructor
+@init { pushMsg("value row constructor", state); }
+@after { popMsg(state); }
+    :
+    expressionsInParenthesis[true, true]
+    ;
 whenMatchedAndClause
 @init { pushMsg("WHEN MATCHED AND clause", state); }
 @after { popMsg(state); }
