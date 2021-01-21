@@ -1,4 +1,4 @@
-/*
+ /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,6 +35,7 @@ public class TableFields {
             .put("tableName", "tableName")
             .put("dbName", "database.name")
             .put("owner", "owner")
+            .put("ownerType", "ownerType")
             .put("createTime", "createTime")
             .put("lastAccessTime", "lastAccessTime")
             .put("retention", "retention")
@@ -49,6 +50,7 @@ public class TableFields {
             .put("sd.serdeInfo.serializerClass", "sd.serDeInfo.serializerClass")
             .put("sd.serdeInfo.deserializerClass", "sd.serDeInfo.deserializerClass")
             .put("sd.serdeInfo.serdeType", "sd.serDeInfo.serdeType")
+            .put("sd.storedAsSubDirectories", "isStoredAsSubDirectories")
             .put("viewOriginalText", "viewOriginalText")
             .put("viewExpandedText", "viewExpandedText")
             .put("rewriteEnabled", "rewriteEnabled")

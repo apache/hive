@@ -20,18 +20,18 @@ package org.apache.hive.storage.jdbc;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.db.DBOutputFormat.DBRecordWriter;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JdbcRecordWriter is wrapper class to write data to the underlying database.
  */
 public class JdbcRecordWriter implements RecordWriter {
-  private static final Log LOG = LogFactory.getLog(JdbcRecordWriter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JdbcRecordWriter.class);
 
   @SuppressWarnings("rawtypes")
   private final DBRecordWriter dbRecordWriter;

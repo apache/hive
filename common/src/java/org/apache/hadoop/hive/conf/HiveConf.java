@@ -1772,7 +1772,8 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings/(var)chars.\n" +
-        "  Comparing bigints and doubles."),
+        "  Comparing bigints and doubles.\n" +
+        "  Comparing decimals and strings/(var)chars."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +
         "  Cartesian product (cross join)."),
@@ -2860,6 +2861,9 @@ public class HiveConf extends Configuration {
         "this is set to false, however unless MAPREDUCE-7086 fix is present (hadoop 3.1.1+),\n" +
         "queries that read non-orc MM tables with original files will fail. The default in\n" +
         "Hive 3.0 is false."),
+    HIVE_LOCK_FILE_MOVE_MODE("hive.lock.file.move.protect", "all", new StringSet("none", "dp", "all"),
+        "During file move operations acqueires a SEMI_SHARED lock at the table level."
+            + "none:never; dp: only in case of dynamic partitioning operations; all: all table operations"),
 
     // Zookeeper related configs
     HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,
