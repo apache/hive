@@ -107,6 +107,7 @@
     <cron-utils.version>8.1.1</cron-utils.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
+    <slf4j.version>1.7.30</slf4j.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
@@ -317,6 +318,11 @@
         <artifactId>caffeine</artifactId>
         <version>${caffeine.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
 
       <!-- test scope dependencies -->
 
@@ -380,6 +386,12 @@
         <groupId>org.apache.curator</groupId>
         <artifactId>curator-test</artifactId>
         <version>${curator.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
