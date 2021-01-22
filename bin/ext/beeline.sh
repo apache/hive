@@ -20,10 +20,7 @@ export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 beeline () {
   CLASS=org.apache.hive.beeline.BeeLine;
 
-  # include only the beeline client jar and its dependencies
-  for f in ${HIVE_LIB}/hive-beeline-*.jar; do
-    beelineJarPath=${beelineJarPath}:$f;
-  done
+  beelineJarPath=`ls ${HIVE_LIB}/hive-beeline-*.jar`
   superCsvJarPath=`ls ${HIVE_LIB}/super-csv-*.jar`
   jlineJarPath=`ls ${HIVE_LIB}/jline-*.jar`
   hadoopClasspath=""

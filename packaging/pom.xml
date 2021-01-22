@@ -53,6 +53,7 @@
                   <descriptors>
                     <descriptor>src/main/assembly/bin.xml</descriptor>
                     <descriptor>src/main/assembly/src.xml</descriptor>
+                    <descriptor>src/main/assembly/beeline.xml</descriptor>
                   </descriptors>
                   <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
