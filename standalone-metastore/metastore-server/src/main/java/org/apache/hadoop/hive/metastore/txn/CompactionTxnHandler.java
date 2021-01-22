@@ -1028,7 +1028,7 @@ class CompactionTxnHandler extends TxnHandler {
         return (numFailed == failedThreshold) && !needsRetry;
       }
       catch (SQLException e) {
-        LOG.error("Unable to check for failed compactions" + e.getMessage());
+        LOG.error("Unable to check for failed compactions", e);
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "checkFailedCompactions(" + ci + ")");
