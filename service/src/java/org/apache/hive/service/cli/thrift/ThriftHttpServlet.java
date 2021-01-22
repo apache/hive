@@ -216,6 +216,7 @@ public class ThriftHttpServlet extends TServlet {
             // check if this request needs a SAML redirect
             if (needsRedirect(request, response)) {
               doSamlRedirect(request, response);
+              return;
             } else {
               // redirect is not needed. Do SAML auth.
               clientUserName = doSamlAuth(request, response);
@@ -294,14 +295,21 @@ public class ThriftHttpServlet extends TServlet {
   /**
    * A request needs redirect if it does not have a bearer token and it contains a valid
    * response port in its header.
-   * @throws HttpSamlAuthenticationException
    */
   private boolean needsRedirect(HttpServletRequest request,
-      HttpServletResponse response) throws HttpSamlAuthenticationException {
+      HttpServletResponse response) {
     String token = extractBearerToken(request, response);
-    if (token == null) {
+    // if there is a bearer token; we use to authenticate else we look for
+    // the response port header just to make sure we are not generating
+    // SAML requests for any random http post requests.
+    if (token != null) {
+      return false;
+    }
+    try {
       HiveSamlUtils.validateSamlResponsePort(request);
       return true;
+    } catch (HttpSamlAuthenticationException e) {
+      LOG.debug("Response port could not be validated: " + e.getMessage());
     }
     return false;
   }
@@ -333,6 +341,7 @@ public class ThriftHttpServlet extends TServlet {
       throw new HttpSamlAuthenticationException("Client identifier not found.");
     }
     String user = HiveSamlAuthTokenGenerator.get(hiveConf).validate(token);
+    LOG.info("Successfully validated the token for user {}", user);
     // token is valid; now confirm if the client identifier matches with the relay state.
     Map<String, String> keyValues = new HashMap<>();
     if (HiveSamlAuthTokenGenerator.parse(token, keyValues)) {

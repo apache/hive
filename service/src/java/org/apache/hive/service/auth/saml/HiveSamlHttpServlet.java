@@ -56,7 +56,7 @@ public class HiveSamlHttpServlet extends HttpServlet {
       return;
     }
     try {
-      LOG.debug("RelayState = {}. Driver side port on localhost = {}", relayState, port);
+      LOG.info("RelayState = {}. Driver side port on localhost = {}", relayState, port);
       nameId = HiveSaml2Client.get(conf).validate(request, response);
     } catch (HttpSamlAuthenticationException e) {
       if (e instanceof HttpSamlNoGroupsMatchedException) {
@@ -69,8 +69,9 @@ public class HiveSamlHttpServlet extends HttpServlet {
       return;
     }
     Preconditions.checkState(nameId != null);
-    LOG.debug(
-        "Successfully validated saml response. Forwarding the token to port " + port);
+    LOG.info(
+        "Successfully validated saml response for user {}. Forwarding the token to port {}",
+        nameId, port);
     generateFormData(response, HiveSamlUtils.getLoopBackAddress(port),
         tokenGenerator.get(nameId, relayState), true, "");
   }
