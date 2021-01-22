@@ -1426,7 +1426,9 @@ public class VectorizedOrcAcidRowBatchReader
           }
           // To prevent the record reader from allocating empty vectors for the actual table schema in its batch, we
           // specify the original schema to be an empty struct, thus only ACID columns will be read.
-          readerOptions.schema(DELETE_DELTA_EMPTY_STRUCT).include(new boolean[] { true });
+          // Note: clone() here makes sure not to alter the original options object, which is also used by
+          // SortMergeDeleteEventRegistry should a DeleteEventsOverflowMemoryException be thrown...
+          readerOptions = readerOptions.clone().schema(DELETE_DELTA_EMPTY_STRUCT).include(new boolean[] { true });
           this.recordReader = deleteDeltaReader.rowsOptions(readerOptions, conf);
         }
 
