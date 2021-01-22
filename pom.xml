@@ -125,6 +125,7 @@
     <arrow.version>0.8.0.7.2.8.0-SNAPSHOT</arrow.version>
     <avatica.version>1.16.0.7.2.8.0-SNAPSHOT</avatica.version>
     <avro.version>1.8.2.7.2.8.0-SNAPSHOT</avro.version>
+    <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.21.0.7.2.8.0-SNAPSHOT</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
@@ -218,6 +219,7 @@
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.12.0</xerces.version>
+    <xmlsec.version>2.2.1</xmlsec.version>
     <zookeeper.version>3.5.5.7.2.8.0-SNAPSHOT</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
