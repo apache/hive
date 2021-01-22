@@ -192,6 +192,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Utilities.PartitionDetails;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.TableSnapshot;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -202,6 +203,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedV
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -2855,32 +2857,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * Given a source directory name of the load path, load all dynamically generated partitions
    * into the specified table and return a list of strings that represent the dynamic partition
    * paths.
-   * @param loadPath
-   * @param tableName
-   * @param partSpec
-   * @param loadFileType
-   * @param numDP number of dynamic partitions
+   * @param tbd table descriptor
+   * @param numLB number of buckets
    * @param isAcid true if this is an ACID operation
    * @param writeId writeId, can be 0 unless isAcid == true
+   * @param stmtId statementId
    * @param resetStatistics if true, reset statistics. Do not reset statistics otherwise.
+   * @param operation ACID operation type
+   * @param partitionDetailsMap full dynamic partition specification
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
-  public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
-      final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
-      final int numDP, final int numLB, final boolean isAcid, final long writeId, final int stmtId,
-      final boolean resetStatistics, final AcidUtils.Operation operation,
-      boolean isInsertOverwrite, boolean isDirectInsert, Set<String> dynamiPartitionSpecs) throws HiveException {
+  public Map<Map<String, String>, Partition> loadDynamicPartitions(final LoadTableDesc tbd, final int numLB,
+      final boolean isAcid, final long writeId, final int stmtId, final boolean resetStatistics,
+      final AcidUtils.Operation operation, Map<Path, PartitionDetails> partitionDetailsMap) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
 
-    // Get all valid partition paths and existing partitions for them (if any)
-    final Table tbl = getTable(tableName);
-    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, writeId, stmtId,
-        AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite, isDirectInsert, operation, dynamiPartitionSpecs);
+    final Path loadPath = tbd.getSourcePath();
+    final Table tbl = getTable(tbd.getTable().getTableName());
+    final Map<String, String> partSpec = tbd.getPartitionSpec();
 
-    final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
     final boolean inPlaceEligible = conf.getLong("fs.trash.interval", 0) <= 0
         && InPlaceUpdate.canRenderInPlace(conf) && !SessionState.getConsole().getIsSilent();
@@ -2888,34 +2886,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     final SessionState parentSession = SessionState.get();
     List<Callable<Partition>> tasks = Lists.newLinkedList();
-
-    final class PartitionDetails {
-      Map<String, String> fullSpec;
-      Partition partition;
-      List<Path> newFiles;
-      boolean hasOldPartition = false;
-      AcidUtils.TableSnapshot tableSnapshot;
-    }
-
-    Map<Path, PartitionDetails> partitionDetailsMap =
-            Collections.synchronizedMap(new LinkedHashMap<>());
-
-    // calculate full path spec for each valid partition path
-    validPartitions.forEach(partPath -> {
-      Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-      String staticParts =  Warehouse.makeDynamicPartName(partSpec);
-      Path computedPath = partPath;
-      if (!staticParts.isEmpty() ) {
-        computedPath = new Path(new Path(partPath.getParent(), staticParts), partPath.getName());
-      }
-      if (!Warehouse.makeSpecFromName(fullPartSpec, computedPath, new HashSet<>(partSpec.keySet()))) {
-        Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
-      } else {
-        PartitionDetails details = new PartitionDetails();
-        details.fullSpec = fullPartSpec;
-        partitionDetailsMap.put(partPath, details);
-      }
-    });
 
     // fetch all the partitions matching the part spec using the partition iterable
     // this way the maximum batch size configuration parameter is considered
@@ -2950,8 +2920,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           Partition oldPartition = partitionDetails.partition;
           // load the partition
           Partition partition = loadPartitionInternal(entry.getKey(), tbl,
-                  fullPartSpec, oldPartition, loadFileType, true, false, numLB > 0, false, isAcid,
-                  resetStatistics, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles, isDirectInsert);
+                  fullPartSpec, oldPartition, tbd.getLoadFileType(), true, false, numLB > 0, false, isAcid,
+                  resetStatistics, writeId, stmtId, tbd.isInsertOverwrite(), isTxnTable, newFiles, tbd.isDirectInsert());
           // if the partition already existed before the loading, no need to add it again to the
           // metastore
 
@@ -2969,7 +2939,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               InPlaceUpdate.rePositionCursor(ps);
               partitionsLoaded.incrementAndGet();
               InPlaceUpdate.reprintLine(ps, "Loaded : " + partitionsLoaded.get() + "/"
-                  + partsToLoad + " partitions.");
+                  + partitionDetailsMap.size() + " partitions.");
             }
           }
 
@@ -2979,7 +2949,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   + " partPath=" + entry.getKey() + ", "
                   + " table=" + tbl.getTableName() + ", "
                   + " partSpec=" + fullPartSpec + ", "
-                  + " loadFileType=" + loadFileType.toString() + ", "
+                  + " loadFileType=" + tbd.getLoadFileType().toString() + ", "
                   + " listBucketingLevel=" + numLB + ", "
                   + " isAcid=" + isAcid + ", "
                   + " resetStatistics=" + resetStatistics, e);
@@ -3036,7 +3006,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                       .collect(Collectors.toList()), tableSnapshot);
 
     } catch (InterruptedException | ExecutionException e) {
-      throw new HiveException("Exception when loading " + validPartitions.size() + " partitions"
+      throw new HiveException("Exception when loading " + partitionDetailsMap.size() + " partitions"
               + " in table " + tbl.getTableName()
               + " with loadPath=" + loadPath, e);
     } catch (TException e) {
@@ -3047,10 +3017,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       StringBuffer logMsg = new StringBuffer();
       logMsg.append("Exception when loading partitionsToAdd with parameters ");
       logMsg.append("partPaths=");
-      validPartitions.forEach(path -> logMsg.append(path + ", "));
+      partitionDetailsMap.keySet().forEach(path -> logMsg.append(path + ", "));
       logMsg.append("table=" + tbl.getTableName() + ", ").
               append("partSpec=" + partSpec + ", ").
-              append("loadFileType=" + loadFileType.toString() + ", ").
+              append("loadFileType=" + tbd.getLoadFileType().toString() + ", ").
               append("listBucketingLevel=" + numLB + ", ").
               append("isAcid=" + isAcid + ", ").
               append("resetStatistics=" + resetStatistics);
@@ -3080,7 +3050,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (TException te) {
       LOG.error(StringUtils.stringifyException(te));
       throw new HiveException("Exception updating metastore for acid table "
-          + tableName + " with partitions " + result.values(), te);
+          + tbd.getTable().getTableName() + " with partitions " + result.values(), te);
     }
   }
 

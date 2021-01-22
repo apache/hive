@@ -551,8 +551,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     DataContainer dc;
 
     Set<String> dynamiPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(),
-          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
-    List<LinkedHashMap<String, String>> dps =
+        tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+    Map<Path, Utilities.PartitionDetails> dps =
         Utilities.getFullDPSpecs(conf, dpCtx, work.getLoadTableWork().getWriteId(), tbd.isMmTable(),
             tbd.isDirectInsert(), tbd.isInsertOverwrite(), work.getLoadTableWork().getWriteType(), dynamiPartitionSpecs);
 
@@ -580,12 +580,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // The reason we don't do inside HIVE-1361 is the latter is large and we
     // want to isolate any potential issue it may introduce.
     Map<Map<String, String>, Partition> dp =
-      db.loadDynamicPartitions(
-        tbd.getSourcePath(),
-        tbd.getTable().getTableName(),
-        tbd.getPartitionSpec(),
-        tbd.getLoadFileType(),
-        dpCtx.getNumDPCols(),
+      db.loadDynamicPartitions(tbd,
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
@@ -593,13 +588,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         statementId,
         resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
-        tbd.isInsertOverwrite(),
-        tbd.isDirectInsert(),
-        dynamiPartitionSpecs
+        dps
         );
 
     // publish DP columns to its subscribers
-    if (dps != null && dps.size() > 0) {
+    if (dp != null && dp.size() > 0) {
       pushFeed(FeedType.DYNAMIC_PARTITIONS, dp.values());
     }
 
