@@ -145,13 +145,8 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
         multiAggInfo.getTransposeAggInfo() : multiAggInfo.getAggClasses().get(0);
 
     if (input instanceof ImpalaHdfsScanNode && countStarExpr != null) {
-      List<FunctionCallExpr> newAggExprs =
-          ((ImpalaHdfsScanNode) input).checkAndApplyCountStarOptimization(multiAggInfo,
-            analyzer, countStarExpr);
-      if (newAggExprs != null) {
-        // Since the count(*) optimization was applied, use the new aggregate expr
-        aggExprs = newAggExprs;
-      }
+      ((ImpalaHdfsScanNode) input).checkAndApplyCountStarOptimization(multiAggInfo, analyzer,
+          countStarExpr);
     }
 
     aggNode = getTopLevelAggNode(input, multiAggInfo, ctx);
