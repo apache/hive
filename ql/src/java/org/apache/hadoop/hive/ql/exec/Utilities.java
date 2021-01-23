@@ -2861,8 +2861,9 @@ public final class Utilities {
    * Construct a list of full partition spec from Dynamic Partition Context and the directory names
    * corresponding to these dynamic partitions.
    */
-  public static Map<Path, PartitionDetails> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
-      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite, AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
+  public static Map<Path, PartitionDetails> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx, long writeId,
+      int stmtId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite,
+      AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
@@ -2870,7 +2871,11 @@ public final class Utilities {
       int numDPCols = dpCtx.getNumDPCols();
       List<Path> allPartition = new ArrayList<>();
       if (isMmTable || isDirectInsert) {
-        Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(fs, loadPath, numDPCols, null, writeId, -1,
+        int stmtIdToUse = -1;
+        if (isDirectInsert) {
+          stmtIdToUse = stmtId;
+        }
+        Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(fs, loadPath, numDPCols, null, writeId, stmtIdToUse,
             conf, isInsertOverwrite, acidOperation);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent();
