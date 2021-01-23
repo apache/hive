@@ -198,7 +198,7 @@ public class Optimizer {
         !isTezExecEngine) {
       transformations.add(new ReduceSinkDeDuplication());
     }
-    transformations.add(new NonBlockingOpDeDupProc());
+    transformations.add(new NonBlockingOpDeDupProc(true));
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEIDENTITYPROJECTREMOVER)
         && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
       transformations.add(new IdentityProjectRemover());

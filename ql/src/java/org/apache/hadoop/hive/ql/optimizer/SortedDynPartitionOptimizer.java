@@ -136,6 +136,8 @@ public class SortedDynPartitionOptimizer extends Transform {
       // introduce RS and EX before FS. If the operator tree already contains
       // RS then ReduceSinkDeDuplication optimization should merge them
       FileSinkOperator fsOp = (FileSinkOperator) nd;
+      DynamicPartitionCtx dynamicPartitionCtx = fsOp.getConf().getDynPartCtx();
+      AcidUtils.Operation fsOpWriteType = fsOp.getConf().getWriteType();
 
       LOG.info("Sorted dynamic partitioning optimization kicked in..");
 
@@ -170,14 +172,13 @@ public class SortedDynPartitionOptimizer extends Transform {
       // unlink connection between FS and its parent
       Operator<? extends OperatorDesc> fsParent = fsOp.getParentOperators().get(0);
       // if all dp columns got constant folded then disable this optimization
-      if (allStaticPartitions(fsParent, fsOp.getConf().getDynPartCtx())) {
+      if (allStaticPartitions(fsParent, dynamicPartitionCtx)) {
         LOG.debug("Bailing out of sorted dynamic partition optimizer as all dynamic partition" +
             " columns got constant folded (static partitioning)");
         return null;
       }
 
-      DynamicPartitionCtx dpCtx = fsOp.getConf().getDynPartCtx();
-      List<Integer> partitionPositions = getPartitionPositions(dpCtx, fsParent.getSchema());
+      List<Integer> partitionPositions = getPartitionPositions(dynamicPartitionCtx, fsParent.getSchema());
 
       if (!shouldDo(partitionPositions, fsParent)) {
         return null;
@@ -196,16 +197,17 @@ public class SortedDynPartitionOptimizer extends Transform {
         return null;
       }
 
+      removeCastingSelectBeforeFileSink(fsOp);
       // unlink connection between FS and its parent
       fsParent = fsOp.getParentOperators().get(0);
       // store the index of the file sink operator to later insert the modified operator with RS at the same position
       int fsOpIndex = fsParent.getChildOperators().indexOf(fsOp);
-      fsParent.getChildOperators().remove(fsOp);
+      fsParent.getChildOperators().remove(fsOpIndex);
 
       // if enforce bucketing/sorting is disabled numBuckets will not be set.
       // set the number of buckets here to ensure creation of empty buckets
       int numBuckets = destTable.getNumBuckets();
-      dpCtx.setNumBuckets(numBuckets);
+      dynamicPartitionCtx.setNumBuckets(numBuckets);
 
       // Get the positions for partition, bucket and sort columns
       List<Integer> bucketPositions = getBucketPositions(destTable.getBucketCols(),
@@ -213,8 +215,8 @@ public class SortedDynPartitionOptimizer extends Transform {
       List<Integer> sortPositions = null;
       List<Integer> sortOrder = null;
       ArrayList<ExprNodeDesc> bucketColumns = null;
-      if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
-          fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
+      if (fsOpWriteType == AcidUtils.Operation.UPDATE ||
+          fsOpWriteType == AcidUtils.Operation.DELETE) {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
         // reader will expect this sort order when doing reads.  So
         // ignore whatever comes from the table and enforce this sort order instead.
@@ -285,7 +287,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
-          allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
+          allRSCols, bucketColumns, numBuckets, fsParent, fsOpWriteType);
       // we have to make sure not to reorder the child operators as it might cause weird behavior in the tasks at
       // the same level. when there is auto stats gather at the same level as another operation then it might
       // cause unnecessary preemption. Maintaining the order here to avoid such preemption and possible errors
@@ -350,8 +352,6 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // update partition column info in FS descriptor
       fsOp.getConf().setPartitionCols(rsOp.getConf().getPartitionCols());
-
-      rsOp.setStatistics(rsOp.getParentOperators().get(0).getStatistics());
 
       LOG.info("Inserted " + rsOp.getOperatorId() + " and " + selOp.getOperatorId()
           + " as parent of " + fsOp.getOperatorId() + " and child of " + fsParent.getOperatorId());
@@ -456,6 +456,30 @@ public class SortedDynPartitionOptimizer extends Transform {
             + " as it was introduced by enforce bucketing/sorting.");
       }
       return true;
+    }
+
+    /**
+     * If the final operator before FileSink produces column types that do not match
+     * the table definition, a Select operator is added between final operator and
+     * FileSink. The only purpose of this select is to cast types so they match the
+     * table definition. Since we introduce a ReduceSink and another Select in this
+     * optimization, that casting Select causes column types in ReduceSink to be
+     * incorrect. We just remove such casting Select here and this optimizer adds
+     * it again in the end after all changes to operator plan is applied.
+     * @param fileSinkOperator
+     */
+    private void removeCastingSelectBeforeFileSink(FileSinkOperator fileSinkOperator) {
+      if (fileSinkOperator.getParentOperators().get(0) instanceof SelectOperator) {
+        SelectOperator selectOperator = (SelectOperator) fileSinkOperator.getParentOperators().get(0);
+        if (selectOperator.isCastForInsert()) {
+          Operator<? extends OperatorDesc> parent = selectOperator.getParentOperators().get(0);
+          int removeIndex = parent.getChildren().indexOf(selectOperator);
+          parent.getChildOperators().set(removeIndex, fileSinkOperator);
+          fileSinkOperator.getParentOperators().set(0, parent);
+          LOG.info("Removed {} as its only purpose was to cast types before {}. We will add" +
+              "a new select operator that does appropriate casts on reducer side", selectOperator, fileSinkOperator);
+        }
+      }
     }
 
     private List<Integer> getPartitionPositions(DynamicPartitionCtx dpCtx, RowSchema schema) {

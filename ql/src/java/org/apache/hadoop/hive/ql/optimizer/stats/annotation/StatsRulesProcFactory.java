@@ -3029,8 +3029,8 @@ public class StatsRulesProcFactory {
       HiveConf hconf = aspCtx.getConf();
 
       if (conf != null) {
-        Statistics stats = conf.getStatistics();
-        if (stats == null && op.getParentOperators() != null) {
+        if (op.getParentOperators() != null) {
+          Statistics stats = null;
 
           // if parent statistics is null then that branch of the tree is not
           // walked yet. don't update the stats until all branches are walked

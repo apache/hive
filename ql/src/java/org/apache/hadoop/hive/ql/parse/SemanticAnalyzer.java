@@ -8491,6 +8491,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = putOpInsertMap(OperatorFactory.getAndMakeChild(
           new SelectDesc(expressions, colNames), new RowSchema(rowResolver
               .getColumnInfos()), input), rowResolver);
+      ((SelectOperator)input).setCastForInsert(true);
       input.setColumnExprMap(colExprMap);
     }
     return input;
