@@ -76,8 +76,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * Unit test class for testing Atlas metadata Dump.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class,
-        FileSystem.class, IOUtils.class})
+@PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class})
 
 public class TestAtlasDumpTask {
 
@@ -254,15 +253,10 @@ public class TestAtlasDumpTask {
 
   @Test
   public void testCreateExportRequest() throws Exception {
-    mockStatic(FileSystem.class);
-    FileSystem fs = mock(FileSystem.class);
-    FileStatus fileStatus = mock(FileStatus.class);
-    when(FileSystem.get(Mockito.any(URI.class), Mockito.any(HiveConf.class))).thenReturn(fs);
-    when(fs.getFileStatus(Mockito.any(Path.class))).thenReturn(fileStatus);
-    mockStatic(IOUtils.class);
     List<String> listOfTable = Arrays.asList(new String [] {"t1", "t2"});
-    when(IOUtils.readLines(Mockito.any(InputStream.class), Mockito.any(Charset.class))).thenReturn(listOfTable);
-    AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
+    AtlasRequestBuilder atlasRequestBuilder = Mockito.spy(AtlasRequestBuilder.class);
+    Mockito.doReturn(listOfTable).when(atlasRequestBuilder)
+            .getFileAsList(Mockito.any(Path.class), Mockito.any(HiveConf.class));
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
             "src","tgt", new Path("/tmp/staging"), new Path("/tmp/list"), conf);
     AtlasExportRequest atlasExportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);

@@ -145,7 +145,7 @@ public class AtlasRequestBuilder {
     return qualifiedNames;
   }
 
-  private static List<String> getFileAsList(Path listOfTablesFile, HiveConf conf) throws SemanticException {
+  public List<String> getFileAsList(Path listOfTablesFile, HiveConf conf) throws SemanticException {
     List<String> list = new ArrayList<>();
     InputStream is = null;
     try {
