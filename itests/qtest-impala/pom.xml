@@ -510,6 +510,11 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.impala</groupId>
+      <artifactId>impala-frontend</artifactId>
+      <version>${impala.version}</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

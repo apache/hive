@@ -238,6 +238,11 @@
           <artifactId>hive-impala</artifactId>
           <version>${project.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.apache.impala</groupId>
+          <artifactId>impala-frontend</artifactId>
+          <version>${impala.version}</version>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
