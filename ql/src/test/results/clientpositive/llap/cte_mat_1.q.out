@@ -1,17 +1,17 @@
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
-with q1 as (select * from src where key= '5')
-select a.key
+with q1(srcKey, srcValue) as (select * from src where key= '5')
+select a.srcKey
 from q1 a join q1 b
-on a.key=b.key
+on a.srcKey=b.srcKey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-with q1 as (select * from src where key= '5')
-select a.key
+with q1(srcKey, srcValue) as (select * from src where key= '5')
+select a.srcKey
 from q1 a join q1 b
-on a.key=b.key
+on a.srcKey=b.srcKey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

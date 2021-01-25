@@ -2416,8 +2416,6 @@ queryStatementExpression
       }
     }
     ->  queryStatementExpressionBody
-    |
-    valuesSource
     ;
 
 queryStatementExpressionBody
@@ -2433,8 +2431,8 @@ withClause
 
 cteStatement
    :
-   identifier KW_AS LPAREN queryStatementExpression RPAREN
-   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+   identifier (LPAREN colAliases=columnNameList RPAREN)? KW_AS LPAREN queryStatementExpression RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier $colAliases?)
 ;
 
 fromStatement
@@ -2474,13 +2472,8 @@ regularBody
    :
    i=insertClause
    (
-   s=selectStatement
-     {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
-     |
-     valuesClause
-      -> ^(TOK_QUERY
-            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause))))
-          )
+   s=selectStatement {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);}
+   -> {$s.tree}
    )
    |
    selectStatement
@@ -2498,6 +2491,8 @@ atomSelectStatement
                      $s $w? $g? $h? $win?))
    |
    LPAREN! selectStatement RPAREN!
+   |
+   valuesSource
    ;
 
 selectStatement

@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestValuesClause {
   ParseDriver parseDriver = new ParseDriver();
+
   @Test
   public void testParseValues() throws Exception {
     ASTNode tree = parseDriver.parse(
@@ -85,4 +86,21 @@ public class TestValuesClause {
           "                     4\n" +
           "                     5\n" +
           "                     6\n";
+
+  @Test
+  public void testParseValuesInUnion() throws Exception {
+    parseDriver.parse("values(1,2,3),(4,5,6)\n" +
+            "union all\n" +
+            "values(1,2,3),(4,5,6)", null);
+  }
+
+  @Test
+  public void testParseInsertValues() throws Exception {
+    parseDriver.parse("INSERT INTO t1(a, b) VALUES (1,2),(3,4)", null);
+  }
+
+  @Test
+  public void testParseInsertFromValuesAsSubQuery() throws Exception {
+    parseDriver.parse("insert into table FOO select a,b from (values(1,2),(3,4)) as BAR", null);
+  }
 }

@@ -14,7 +14,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/int.txt" INTO TABLE ta
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tab_int
-PREHOOK: query: select compute_stats(a, 10000) from tab_int
+PREHOOK: query: select compute_stats(a, 'fm', 10000) from tab_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_int
 #### A masked pattern was here ####

@@ -133,7 +133,7 @@ import com.google.common.annotations.VisibleForTesting;
  *
  */
 public class HiveConnection implements java.sql.Connection {
-  public static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
   private String jdbcUriString;
   private String host;
   private int port;
@@ -853,9 +853,11 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private void openSession() throws SQLException {
+    LOG.debug("Opening Hive connection session");
+
     TOpenSessionReq openReq = new TOpenSessionReq();
 
-    Map<String, String> openConf = new HashMap<String, String>();
+    Map<String, String> openConf = new HashMap<>();
     // for remote JDBC client, try to set the conf var using 'set foo=bar'
     for (Entry<String, String> hiveConf : connParams.getHiveConfs().entrySet()) {
       openConf.put("set:hiveconf:" + hiveConf.getKey(), hiveConf.getValue());
@@ -864,8 +866,11 @@ public class HiveConnection implements java.sql.Connection {
     for (Entry<String, String> hiveVar : connParams.getHiveVars().entrySet()) {
       openConf.put("set:hivevar:" + hiveVar.getKey(), hiveVar.getValue());
     }
+
     // switch the database
+    LOG.debug("Default database: {}", connParams.getDbName());
     openConf.put("use:database", connParams.getDbName());
+    
     if (wmPool != null) {
       openConf.put("set:hivevar:wmpool", wmPool);
     }
@@ -886,6 +891,13 @@ public class HiveConnection implements java.sql.Connection {
     }
     if (isHplSqlMode()) {
       openConf.put("set:hivevar:mode", HPLSQL);
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Dumping initial configuration...");
+      for (Map.Entry<String, String> entry : openConf.entrySet()) {
+        LOG.debug("{}={}", entry.getKey(), entry.getValue());
+      }
     }
 
     openReq.setConfiguration(openConf);
@@ -913,6 +925,15 @@ public class HiveConnection implements java.sql.Connection {
       }
       protocol = openResp.getServerProtocolVersion();
       sessHandle = openResp.getSessionHandle();
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Opened new session with protocol: {}", protocol);
+        LOG.debug("Session handle: {}", sessHandle);
+        LOG.debug("Dumping configuration...");
+        for (Map.Entry<String, String> entry : serverHiveConf.entrySet()) {
+          LOG.debug("{}={}", entry.getKey(), entry.getValue());
+        }
+      }
 
       final String serverFetchSizeString =
           openResp.getConfiguration().get(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname);

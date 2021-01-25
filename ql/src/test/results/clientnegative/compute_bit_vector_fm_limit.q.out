@@ -1,0 +1,21 @@
+PREHOOK: query: create table tab_int(a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_int
+POSTHOOK: query: create table tab_int(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_int
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/int.txt" INTO TABLE tab_int
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tab_int
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/int.txt" INTO TABLE tab_int
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tab_int
+PREHOOK: query: select compute_bit_vector_fm(a, 10000) from tab_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_int
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

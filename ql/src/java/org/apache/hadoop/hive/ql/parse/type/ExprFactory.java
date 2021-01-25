@@ -270,7 +270,7 @@ public abstract class ExprFactory<T> {
    * Interpret the input constant value of source type as target type.
    */
   protected abstract Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType,
-      Object constantValue, PrimitiveTypeInfo sourceType);
+      Object constantValue, PrimitiveTypeInfo sourceType, boolean isEqual);
 
   /**
    * Returns value stored in a constant expression.
@@ -336,6 +336,8 @@ public abstract class ExprFactory<T> {
   protected abstract boolean isCompareFunction(FunctionInfo fi);
 
   protected abstract boolean isEqualFunction(FunctionInfo fi);
+
+  protected abstract boolean isNSCompareFunction(FunctionInfo fi);
 
   protected abstract boolean isConsistentWithinQuery(FunctionInfo fi);
 

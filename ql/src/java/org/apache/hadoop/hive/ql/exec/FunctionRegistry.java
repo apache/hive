@@ -68,8 +68,6 @@ import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFJson;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFApproximateDistinct;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
@@ -469,12 +467,14 @@ public final class FunctionRegistry {
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
-    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
+    system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
+    system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
     system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
     system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
+    system.registerGenericUDAF("exception_in_vertex_udaf", new GenericUDAFExceptionInVertex());
 
     system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
@@ -482,6 +482,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
     system.registerGenericUDF("reflect2", GenericUDFReflect2.class);
     system.registerGenericUDF("java_method", GenericUDFReflect.class);
+    system.registerGenericUDF("exception_in_vertex_udf", GenericUDFExceptionInVertex.class);
 
     system.registerGenericUDF("array", GenericUDFArray.class);
     system.registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
@@ -826,7 +827,7 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static synchronized TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
+  public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
     // If same return one of them
     if (a.equals(b)) {
       return a;

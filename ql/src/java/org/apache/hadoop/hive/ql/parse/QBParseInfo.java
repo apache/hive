@@ -53,6 +53,7 @@ public class QBParseInfo {
   private String alias;
   private ASTNode joinExpr;
   private ASTNode hints;
+  private ASTNode colAliases;
   private List<ASTNode> hintList;
   private final Map<String, ASTNode> aliasToSrc;
   /**
@@ -725,6 +726,14 @@ public class QBParseInfo {
     }
 
     return true;
+  }
+
+  public ASTNode getColAliases() {
+    return colAliases;
+  }
+
+  public void setColAliases(ASTNode colAliases) {
+    this.colAliases = colAliases;
   }
 }
 
