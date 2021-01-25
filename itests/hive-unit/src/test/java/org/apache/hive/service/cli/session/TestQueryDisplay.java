@@ -61,12 +61,11 @@ public class TestQueryDisplay {
         .createSession(new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
             TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8, "testuser", "", "",
             new HashMap<String, String>(), false, "");
-
+    session.getSessionState().setIsHiveServerQuery(false);
     SessionState.start(conf);
     OperationHandle opHandle1 = session.executeStatement("show databases", null);
     SessionState.start(conf);
     OperationHandle opHandle2 = session.executeStatement("show tables", null);
-
 
     List<QueryInfo> liveSqlOperations, historicSqlOperations;
     liveSqlOperations = sessionManager.getOperationManager().getLiveQueryInfos();
