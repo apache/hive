@@ -23,6 +23,8 @@ import com.google.common.collect.Multimap;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class ExprNodeDescUtils {
@@ -842,7 +845,13 @@ public class ExprNodeDescUtils {
   /*
    * Extracts all referenced columns from the subtree.
    */
-  public static void findAllColumnDescs(List<ExprNodeColumnDesc> ret, ExprNodeDesc expr) {
+  public static Set<ExprNodeColumnDesc> findAllColumnDescs(ExprNodeDesc expr) {
+    Set<ExprNodeColumnDesc> ret = new HashSet<>();
+    findAllColumnDescs(ret, expr);
+    return ret;
+  }
+
+  private static void findAllColumnDescs(Set<ExprNodeColumnDesc> ret, ExprNodeDesc expr) {
     if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
       for (ExprNodeDesc c : func.getChildren()) {

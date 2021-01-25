@@ -1935,10 +1935,9 @@ public class TezCompiler extends TaskCompiler {
           if (filterStats != null) {
             ImmutableSet.Builder<String> colNames = ImmutableSet.builder();
             for (ExprNodeDesc tsExpr : targetColumns) {
-              List<ExprNodeColumnDesc> allReferencedColumns = new ArrayList<>();
-              ExprNodeDescUtils.findAllColumnDescs(allReferencedColumns, tsExpr);
-              for (ExprNodeColumnDesc c : allReferencedColumns) {
-                colNames.add(c.getColumn());
+              Set<ExprNodeColumnDesc> allReferencedColumns = ExprNodeDescUtils.findAllColumnDescs(tsExpr);
+              for (ExprNodeColumnDesc col : allReferencedColumns) {
+                colNames.add(col.getColumn());
               }
             }
             // We check whether there was already another SJ over this TS that was selected
