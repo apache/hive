@@ -1678,7 +1678,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   public void testHdfsNSLazyCopyBootStrapExtTbls() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
-    clause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'");
     Tuple tuple = primary.run("use " + primaryDbName)
             .run("create external table ext_table1 (id int)")
             .run("insert into ext_table1 values (3)")
@@ -1745,7 +1744,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   public void testHdfsNSLazyCopyIncrExtTbls() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
-    clause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'");
 
     primary.run("use " + primaryDbName)
             .run("create table  acid_table (key int, value int) partitioned by (load_time timestamp) " +
@@ -1815,7 +1813,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[]{"1", "2", "3"});
 
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
-    clause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'");
     primary.run("use " + primaryDbName)
             .run("create external table ext_table1 (id int)")
             .run("insert into ext_table1 values (3)")
