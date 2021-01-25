@@ -2861,6 +2861,9 @@ public class HiveConf extends Configuration {
         "this is set to false, however unless MAPREDUCE-7086 fix is present (hadoop 3.1.1+),\n" +
         "queries that read non-orc MM tables with original files will fail. The default in\n" +
         "Hive 3.0 is false."),
+    HIVE_LOCK_FILE_MOVE_MODE("hive.lock.file.move.protect", "all", new StringSet("none", "dp", "all"),
+        "During file move operations acqueires a SEMI_SHARED lock at the table level."
+            + "none:never; dp: only in case of dynamic partitioning operations; all: all table operations"),
 
     // Zookeeper related configs
     HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,
@@ -4000,6 +4003,8 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true,
         "Setting this property to true will have HiveServer2 execute\n" +
         "Hive operations as the user making the calls to it."),
+    HIVE_SERVER2_SERVICE_USERS("hive.server2.service.users", null,
+        "Comma separated list of users to have HiveServer2 skip authorization when compiling queries."),
     HIVE_DISTCP_DOAS_USER("hive.distcp.privileged.doAs","hive",
         "This property allows privileged distcp executions done by hive\n" +
         "to run as this user."),
@@ -5186,6 +5191,7 @@ public class HiveConf extends Configuration {
             "hive.server2.authentication.ldap.userMembershipKey," +
             "hive.server2.authentication.ldap.groupClassKey," +
             "hive.server2.authentication.ldap.customLDAPQuery," +
+            "hive.server2.service.users," +
             "hive.privilege.synchronizer," +
             "hive.privilege.synchronizer.interval," +
             "hive.spark.client.connect.timeout," +
