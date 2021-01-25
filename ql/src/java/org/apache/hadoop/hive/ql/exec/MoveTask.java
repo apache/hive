@@ -562,11 +562,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
     }
-    Set<String> dynamiPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(),
-        tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
-    Map<Path, Utilities.PartitionDetails> dps =
-        Utilities.getFullDPSpecs(conf, dpCtx, work.getLoadTableWork().getWriteId(),statementId, tbd.isMmTable(),
-            tbd.isDirectInsert(), tbd.isInsertOverwrite(), work.getLoadTableWork().getWriteType(), dynamiPartitionSpecs);
+    Set<String> dynamicPartitionSpecs = null;
+    if (tbd.isMmTable() || tbd.isDirectInsert()) {
+      dynamicPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId(),
+          work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+    }
+    Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs);
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();

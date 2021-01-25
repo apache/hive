@@ -1470,7 +1470,7 @@ public class AcidUtils {
     return dirToSnapshots;
   }
 
-  private static boolean isChildOfDelta(Path childDir, Path rootPath) {
+  public static boolean isChildOfDelta(Path childDir, Path rootPath) {
     if (childDir.toUri().toString().length() <= rootPath.toUri().toString().length()) {
       return false;
     }
