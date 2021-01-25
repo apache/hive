@@ -37,16 +37,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
-import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -54,16 +48,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Serializer;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantMapObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,7 +213,7 @@ public class SerializationUtilities {
   // Bounded queue could be specified here but that will lead to blocking.
   // ConcurrentLinkedQueue is unbounded and will release soft referenced kryo instances under
   // memory pressure.
-  private static Pool<Kryo> kryoPool = new Pool<Kryo>(true, false, 8) {
+  private static Pool<Kryo> kryoPool = new Pool<Kryo>(true, true, 32) {
     protected Kryo create() {
       return createNewKryo();
     }
@@ -236,8 +222,9 @@ public class SerializationUtilities {
   public static Kryo createNewKryo() {
     KryoWithHooks kryo = new KryoWithHooks();
 
+    // references was true by default in kryo4, so we need to set this here for unchanged behavior
     kryo.setReferences(true);
-    kryo.setCopyReferences(true);
+    // registrationRequired=false lets kryo users skip the kryo.register call for all serialized classes
     kryo.setRegistrationRequired(false);
 
     kryo.register(java.sql.Date.class, new SqlDateSerializer());
@@ -254,23 +241,6 @@ public class SerializationUtilities {
             new StdInstantiatorStrategy());
     removeField(kryo, AbstractOperatorDesc.class, "colExprMap");
     removeField(kryo, AbstractOperatorDesc.class, "statistics");
-    kryo.register(ReduceWork.class);
-    kryo.register(TableDesc.class);
-    kryo.register(UnionOperator.class);
-    kryo.register(FileSinkOperator.class);
-    kryo.register(VectorFileSinkOperator.class);
-    kryo.register(HiveIgnoreKeyTextOutputFormat.class);
-    kryo.register(StandardConstantListObjectInspector.class);
-    kryo.register(StandardConstantMapObjectInspector.class);
-    kryo.register(StandardConstantStructObjectInspector.class);
-    kryo.register(SequenceFileInputFormat.class);
-    kryo.register(RCFileInputFormat.class);
-    kryo.register(HiveSequenceFileOutputFormat.class);
-    kryo.register(LlapOutputFormat.class);
-    kryo.register(SparkEdgeProperty.class);
-    kryo.register(SparkWork.class);
-    kryo.register(Pair.class);
-    kryo.register(MemoryMonitorInfo.class);
 
     // This must be called after all the explicit register calls.
     return kryo.processHooks(kryoTypeHooks, globalHook);
