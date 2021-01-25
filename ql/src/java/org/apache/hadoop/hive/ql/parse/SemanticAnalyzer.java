@@ -3570,6 +3570,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (!filterCond.getTypeInfo().accept(TypeInfoFactory.booleanTypeInfo)) {
+      if (filterCond.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .createConversionCast(filterCond, TypeInfoFactory.booleanTypeInfo);
+      } else {
+        filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .getFuncExprNodeDesc("isnotnull", filterCond);
+      }
+    }
+
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);

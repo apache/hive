@@ -836,6 +836,24 @@ public class TypeCheckProcFactory<T> {
           children.set(0, newColumn);
         }
       }
+
+      if (funcText.equalsIgnoreCase("and") || funcText.equalsIgnoreCase("or")
+          || funcText.equalsIgnoreCase("not") || funcText.equalsIgnoreCase("!")) {
+        for (int i = 0; i < children.size(); i++) {
+          T child = children.get(i);
+          TypeInfo typeInfo = exprFactory.getTypeInfo(child);
+          if (!TypeInfoFactory.booleanTypeInfo.accept(typeInfo)) {
+            if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+              children.set(i, createConversionCast(child, TypeInfoFactory.booleanTypeInfo));
+            } else {
+              // for Map/List/Struct, create isnotnull function on the expr
+              child = exprFactory.createFuncCallExpr(TypeInfoFactory.booleanTypeInfo,
+                  exprFactory.getFunctionInfo("isnotnull"),"isnotnull", Arrays.asList(child));
+              children.set(i, child);
+            }
+          }
+        }
+      }
     }
 
     protected T getXpathOrFuncExprNodeDesc(ASTNode node,
