@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * A random access file appender that conditionally renames the file when the appender is stopped.
  *
- * If the appender receives an event with a {@link Log4jQueryCompleteMarker} then the underlying file will be remained
+ * If the appender receives an event with a {@link Log4jQueryCompleteMarker} then the underlying file will be renamed
  * (using the ".done" suffix) when the appender is stopped. 
  *
  * Moreover, the appender filters events with {@link Log4jQueryCompleteMarker} so they never appear in the logs.
