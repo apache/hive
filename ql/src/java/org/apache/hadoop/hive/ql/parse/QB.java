@@ -482,7 +482,7 @@ public class QB {
     QBExpr qbexpr = new QBExpr(alias);
 
     ASTNode subqref = (ASTNode) expressionTree.getChild(1);
-    semanticAnalyzer.doPhase1QBExpr(subqref, qbexpr, getId(), alias, isInsideView());
+    semanticAnalyzer.doPhase1QBExpr(subqref, qbexpr, getId(), alias, isInsideView(), null);
 
     // Insert this map into the stats
     aliasToSubqExpr.put(alias, qbexpr);
