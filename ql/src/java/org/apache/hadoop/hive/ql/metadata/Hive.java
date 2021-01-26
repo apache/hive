@@ -85,6 +85,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -4380,11 +4381,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
       while (!parent.getParent().equals(fullDestPath)) {
         parent = parent.getParent();
       }
-      FileStatus[] existingFiles = destFS.listStatus(
-          dest, FileUtils.HIDDEN_FILES_PATH_FILTER);
-      for (FileStatus fileStatus : existingFiles) {
-        if (!fileStatus.getPath().getName().equals(parent.getName())) {
-          destFS.delete(fileStatus.getPath(), true);
+      RemoteIterator<FileStatus> fileIterator = destFS.listStatusIterator(dest);
+      while (fileIterator.hasNext()) {
+        FileStatus fileStatus = fileIterator.next();
+        Path filePath = fileStatus.getPath();
+
+        if (FileUtils.HIDDEN_FILES_PATH_FILTER.accept(filePath) &&
+            !filePath.getName().equals(parent.getName())) {
+          destFS.delete(filePath, true);
         }
       }
     }
@@ -4482,7 +4486,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               conf);
         } else {
           if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
-            FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            RemoteIterator<FileStatus> fileIterator = destFs.listStatusIterator(srcf);
 
             List<Future<Void>> futures = new LinkedList<>();
             final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
@@ -4495,7 +4499,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
               destFs.mkdirs(destf);
             }
             /* Move files one by one because source is a subdirectory of destination */
-            for (final FileStatus srcStatus : srcs) {
+            while (fileIterator.hasNext()) {
+              FileStatus srcStatus = fileIterator.next();
+              if (!FileUtils.HIDDEN_FILES_PATH_FILTER.accept(srcStatus.getPath())) {
+                continue;
+              }
 
               final Path destFile = new Path(destf, srcStatus.getPath().getName());
 
@@ -5011,29 +5019,80 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
     }
-    FileStatus[] statuses = fs.listStatus(path, pathFilter);
-    if (statuses == null || statuses.length == 0) {
-      return;
-    }
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      String s = "Deleting files under " + path + " for replace: ";
-      for (FileStatus file : statuses) {
-        s += file.getPath().getName() + ", ";
-      }
-      Utilities.FILE_OP_LOGGER.trace(s);
-    }
 
-    if (!trashFiles(fs, statuses, conf, purge)) {
+    if (!trashDirectoryContent(fs, path, pathFilter, conf, purge)) {
       throw new HiveException("Old path " + path + " has not been cleaned up.");
     }
   }
 
+  private static ExecutorService createDeleteProcessorPool(final Configuration conf) {
+    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
+        Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Delete-Thread-%d").build()) : null;
+    return pool;
+  }
 
   /**
-   * Trashes or deletes all files under a directory. Leaves the directory as is.
+   * Trashes or deletes files in given directory. Deletion happens in a
+   * seperate thread pool if {@link ConfVars.HIVE_MOVE_FILES_THREAD_COUNT}
+   * is set accordingly
+   * @param fs FileSystem to use
+   * @param path directory to be cleaned up
+   * @param pathFilter filter to be applied
+   * @param conf hive configuration
+   * @param purge skip trash if true
+   * @return true if deletion successful
+   * @throws IOException
+   */
+  public static boolean trashDirectoryContent(final FileSystem fs, final Path path, PathFilter pathFilter,
+                                   final Configuration conf, final boolean purge)
+      throws IOException {
+    boolean result = true;
+
+    final List<Future<Boolean>> futures = new LinkedList<>();
+    final ExecutorService pool = createDeleteProcessorPool(conf);
+    final SessionState parentSession = SessionState.get();
+    RemoteIterator<FileStatus> remoteIterator = fs.listStatusIterator(path);
+    while (remoteIterator.hasNext()){
+      FileStatus status = remoteIterator.next();
+      if (!pathFilter.accept(status.getPath())) {
+        continue;
+      }
+      if (null == pool) {
+        result &= FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
+      } else {
+        futures.add(pool.submit(new Callable<Boolean>() {
+          @Override
+          public Boolean call() throws Exception {
+            SessionState.setCurrentSessionState(parentSession);
+            return FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
+          }
+        }));
+      }
+    }
+    if (null != pool) {
+      pool.shutdown();
+      for (Future<Boolean> future : futures) {
+        try {
+          result &= future.get();
+        } catch (InterruptedException | ExecutionException e) {
+          LOG.error("Failed to delete: ", e);
+          pool.shutdownNow();
+          throw new IOException(e);
+        }
+      }
+    }
+    return result;
+  }
+
+
+  /**
+   * Trashes or deletes given files. Deletion happens in a seperate thread pool
+   * if {@link ConfVars.HIVE_MOVE_FILES_THREAD_COUNT} is set accordingly
    * @param fs FileSystem to use
    * @param statuses fileStatuses of files to be deleted
    * @param conf hive configuration
+   * @param purge skip trash if true
    * @return true if deletion successful
    * @throws IOException
    */
@@ -5046,9 +5105,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
     final List<Future<Boolean>> futures = new LinkedList<>();
-    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
-        Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Delete-Thread-%d").build()) : null;
+    final ExecutorService pool = createDeleteProcessorPool(conf);
     final SessionState parentSession = SessionState.get();
     for (final FileStatus status : statuses) {
       if (null == pool) {

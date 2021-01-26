@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -501,6 +504,54 @@ public class TestHive {
     // Make the 2nd plan active in a different namespace.
     changes.unsetNs();
     hm2.alterResourcePlan("hm", changes, true, false, false);
+  }
+
+  @Test
+  public void testLoadPath() throws Throwable {
+    String dbName = "db_for_testloadpath";
+    String tableName = "table_name";
+    String stagingDir = ".hive-staging";
+    hm.dropDatabase(dbName, true, true, true);
+
+    Database db = new Database();
+    db.setName(dbName);
+    hm.createDatabase(db);
+    SessionState.get().setCurrentDatabase(dbName);
+
+    Table tbl1 = createTestTable(dbName, tableName);
+    hm.createTable(tbl1);
+
+    Table table1 = hm.getTable(dbName, tableName);
+    assertNotNull(table1);
+    assertEquals(tableName, table1.getTableName());
+    Path tablePath = table1.getPath();
+    FileSystem fs = tablePath.getFileSystem(hiveConf);
+    assertTrue(fs.exists(tablePath));
+
+    fs.create(new Path(tablePath, "oldfile")).close();
+
+    FileStatus[] filesBeforeOverwrite = fs.listStatus(tablePath);
+
+    assertEquals(1, filesBeforeOverwrite.length);
+    assertEquals(new Path(tablePath, "oldfile"), filesBeforeOverwrite[0].getPath());
+
+
+    Path stagingPath = new Path(tablePath, stagingDir);
+    assertTrue(fs.mkdirs(stagingPath));
+    fs.create(new Path(stagingPath, "file1")).close();
+
+    hm.loadTable(stagingPath, tableName, LoadTableDesc.LoadFileType.REPLACE_ALL, false, false,
+        false, false, 0l, 0, true, false);
+
+
+    FileStatus[] filesAfterOverwrite = fs.listStatus(tablePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    assertEquals(1, filesAfterOverwrite.length);
+    assertEquals(new Path(tablePath, "file1"), filesAfterOverwrite[0].getPath());
+
+    Table table = hm.getTable(dbName, tableName);
+    hm.dropTable(dbName, tableName);
+    assertFalse(fs.exists(table.getPath()));
+    hm.dropDatabase(dbName);
   }
 
   @Test
