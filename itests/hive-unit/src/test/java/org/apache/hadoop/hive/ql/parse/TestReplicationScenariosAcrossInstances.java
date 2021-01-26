@@ -85,7 +85,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         GzipJSONMessageEncoder.class.getCanonicalName());
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
-
+    overrides.put(MetastoreConf.ConfVars.HIVE_TXN_MANAGER.getVarname(),
+        "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    overrides.put(MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.getVarname(),
+        "true");
     internalBeforeClassSetup(overrides, TestReplicationScenariosAcrossInstances.class);
   }
 
