@@ -126,7 +126,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -1936,12 +1935,10 @@ public class TezCompiler extends TaskCompiler {
           if (filterStats != null) {
             ImmutableSet.Builder<String> colNames = ImmutableSet.builder();
             for (ExprNodeDesc tsExpr : targetColumns) {
-              // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
-              if (tsExpr instanceof ExprNodeFieldDesc) {
-                LOG.debug("Unwrapped column expression from ExprNodeFieldDesc");
-                tsExpr = ((ExprNodeFieldDesc) tsExpr).getDesc();
+              Set<ExprNodeColumnDesc> allReferencedColumns = ExprNodeDescUtils.findAllColumnDescs(tsExpr);
+              for (ExprNodeColumnDesc col : allReferencedColumns) {
+                colNames.add(col.getColumn());
               }
-              colNames.add(ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn());
             }
             // We check whether there was already another SJ over this TS that was selected
             // in previous iteration
