@@ -121,7 +121,8 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       for (String partitionName : partitionNames) {
         List<LiteralExpr> partitionExprs = FeCatalogUtils.parsePartitionKeyValues(this,
             Warehouse.getPartValuesFromPartName(partitionName));
-        ImpalaBasicPartition partition = new ImpalaBasicPartition(partitionName, partitionExprs);
+        ImpalaBasicPartition partition =
+            new ImpalaBasicPartition(partitionName, partitionExprs);
         partitionMap_.put(partition.getId(), partition);
         updatePartitionMdAndColStats(partition);
         nameToIdMapBuilder.put(partitionName, partition.getId());

@@ -146,7 +146,7 @@ public class ImpalaHdfsPartitionLoader {
                 fileFormatDescriptor, fds, 1,
                 partitionLocationCompressor.new Location(
                 table.getMetaStoreTable().getSd().getLocation()),
-                TAccessLevel.READ_ONLY, name, hostIndex));
+                TAccessLevel.READ_ONLY, name, hostIndex, -1L /*numRows*/));
       return r;
     } catch (Exception e ) {
       throw new HiveException(e);

@@ -182,11 +182,11 @@ public class ImpalaPartitionConverter implements HMSPartitionConverter {
     Long id = basicHdfsTable.getIdFromName(partitionName);
     Preconditions.checkNotNull(id);
 
+    long numRows = FeCatalogUtils.getRowCount(partition.getParameters());
     HdfsPartition newPartition =  new ImpalaHdfsPartition(partition, keyValues,
         fileFormatDescriptor, fds, id,
         cachedLocationCompressor.new Location(partition.getSd().getLocation()),
-        TAccessLevel.READ_ONLY, partitionName, cachedHostIndex);
-    newPartition.setNumRows(FeCatalogUtils.getRowCount(partition.getParameters()));
+        TAccessLevel.READ_ONLY, partitionName, cachedHostIndex, numRows);
     return newPartition;
   }
 

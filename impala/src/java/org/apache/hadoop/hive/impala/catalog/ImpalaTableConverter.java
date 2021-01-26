@@ -88,7 +88,7 @@ public class ImpalaTableConverter implements HMSTableConverter {
           new ImpalaHdfsPartition(partition, keyValues,
               fileFormatDescriptor, fds, 1,
               partitionLocationCompressor.new Location(hmsTable.getSd().getLocation()),
-              TAccessLevel.READ_ONLY, name, hostIndex));
+              TAccessLevel.READ_ONLY, name, hostIndex, -1L /*numRows*/));
       response.partitionInfo.locationPrefixes = partitionLocationCompressor.getPrefixes();
       response.partitionInfo.hostIndex = hostIndex.getList();
       return response;

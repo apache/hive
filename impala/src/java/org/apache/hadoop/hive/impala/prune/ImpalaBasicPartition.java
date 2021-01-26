@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.impala.prune;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,9 @@ import org.apache.impala.thrift.TAccessLevel;
 import org.apache.impala.thrift.THdfsPartitionLocation;
 import org.apache.impala.thrift.TPartitionStats;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 /**
  * The basic partition information contains only the partition name.
  * Most methods are overridden to throw a RuntimeException since they
@@ -46,17 +50,15 @@ import org.apache.impala.thrift.TPartitionStats;
  */
 public class ImpalaBasicPartition extends HdfsPartition {
 
-  private final String partitionName;
-
-  public ImpalaBasicPartition(String partitionName, List<LiteralExpr> partitionExprs)
+  public ImpalaBasicPartition(String partitionName, List<LiteralExpr> partitionKeyValues)
       throws MetaException, CatalogException {
-    super(null, partitionExprs, null);
-    this.partitionName = partitionName;
-  }
-
-  @Override
-  public String getPartitionName() {
-    return partitionName;
+    super(null /*table*/, -1L /*prevId*/, partitionName,
+        partitionKeyValues, null /*fileFormatDescriptor*/,
+        ImmutableList.copyOf(new ArrayList<byte[]>()) /*fileDescriptors*/,
+        null /*encodedInsertFileDescriptors*/, null /*encodedDeleteFileDescriptors*/,
+        null /*location*/, false, null /*accessLevel*/, Maps.newHashMap() /*hmsParameters*/,
+        null /*cachedMsPartitionDescriptor*/, null /*partitionStats*/, false, -1L, -1L,
+        null /*inFlightEvents*/);
   }
 
   @Override

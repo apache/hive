@@ -34,12 +34,18 @@ import org.apache.impala.thrift.TAccessLevel;
 import org.apache.impala.thrift.TNetworkAddress;
 import org.apache.impala.util.ListMap;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 /**
  * Extension of Impala's HdfsPartition.  In this extension, the partition name and hostIndex
  * get overridden.  The parent class has dependencies on the Table object in these methods.
  * We would like to avoid this because this object can be stored in the HMS client and the table
  * object using this partition will be instantiated for each query. Because of this, we pass in
  * null for the table object.
+ * Also, the fileDescriptors are tracked here.  In the parent object, they are tracked in
+ * a compressed format, but here they are expanded in order to save on compilation time.
  */
 public class ImpalaHdfsPartition extends HdfsPartition {
 
@@ -51,13 +57,13 @@ public class ImpalaHdfsPartition extends HdfsPartition {
   // Impala also declares this Configuration object as static when they fetch the FileSystem object.
   private static final Configuration CONF = new Configuration();
 
-  private final String partitionName;
-
   private final ListMap<TNetworkAddress> hostIndex;
 
   private final FileSystemUtil.FsType fsType;
 
   private final FileSystem fs;
+
+  private final List<HdfsPartition.FileDescriptor> fileDescriptors;
 
   public ImpalaHdfsPartition(
         org.apache.hadoop.hive.metastore.api.Partition msPartition,
@@ -65,29 +71,25 @@ public class ImpalaHdfsPartition extends HdfsPartition {
         HdfsStorageDescriptor fileFormatDescriptor,
         List<HdfsPartition.FileDescriptor> fileDescriptors, long id,
         HdfsPartitionLocationCompressor.Location location, TAccessLevel accessLevel,
-        String partitionName, ListMap<TNetworkAddress> hostIndex) throws HiveException {
-    super(null /*table*/, msPartition, partitionKeyValues, fileFormatDescriptor, fileDescriptors,
-        id, location, accessLevel);
+        String partitionName, ListMap<TNetworkAddress> hostIndex, long numRows
+        ) throws HiveException {
+    super(null /*table*/, id, -1, partitionName, partitionKeyValues,
+        fileFormatDescriptor,
+        null /*encodedFileDescriptors*/,
+        null /*encodedInsertFileDescriptors*/, null /*encodedDeleteFileDescriptors*/,
+        location, false, accessLevel, Maps.newHashMap() /*hmsParameters*/,
+        null /*cachedMsPartitionDescriptor*/, null /*partitionStats*/, false, numRows, -1L,
+        null /*inFlightEvents*/);
     try {
-      this.partitionName = partitionName;
       this.hostIndex = hostIndex;
       Preconditions.checkNotNull(getLocationPath().toUri().getScheme(),
           "Cannot get scheme from path " + getLocationPath());
       fsType = FileSystemUtil.FsType.getFsType(getLocationPath().toUri().getScheme());
       fs = getLocationPath().getFileSystem(CONF);
+      this.fileDescriptors = fileDescriptors;
     } catch (Exception e) {
       throw new HiveException("Could not create ImpalaHdfsPartition.", e);
     }
-  }
-
-  @Override
-  public String getPartitionName() {
-    return partitionName;
-  }
-
-  @Override
-  public ListMap<TNetworkAddress> getHostIndex() {
-    return hostIndex;
   }
 
   @Override
@@ -96,7 +98,27 @@ public class ImpalaHdfsPartition extends HdfsPartition {
   }
 
   @Override
+  public ListMap<TNetworkAddress> getHostIndex() {
+    return hostIndex;
+  }
+
+  @Override
   public FileSystem getFileSystem(Configuration conf) {
     return fs;
+  }
+
+  @Override
+  public List<HdfsPartition.FileDescriptor> getFileDescriptors() {
+    return fileDescriptors;
+  }
+
+  @Override
+  public int getNumFileDescriptors() {
+    return fileDescriptors.size();
+  }
+
+  @Override
+  public boolean hasFileDescriptors() {
+    return !fileDescriptors.isEmpty();
   }
 }
