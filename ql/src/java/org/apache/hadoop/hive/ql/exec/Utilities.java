@@ -4508,7 +4508,7 @@ public final class Utilities {
 
     Set<String> dynamicPartitionSpecs = new HashSet<>();
     Set<Path> committed = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    ArrayList<Path> directInsertDirectories = new ArrayList<>();
+    Set<Path> directInsertDirectories = new HashSet<>();
     for (Path mfp : manifests) {
       Utilities.FILE_OP_LOGGER.info("Looking at manifest file: {}", mfp);
       try (FSDataInputStream mdis = fs.open(mfp)) {
@@ -4579,10 +4579,9 @@ public final class Utilities {
     if (!isDirectInsert) {
       // Create fake file statuses to avoid querying the file system. removeTempOrDuplicateFiles
       // doesn't need to check anything except path and directory status for MM directories.
-      FileStatus[] finalResults = new FileStatus[directInsertDirectories.size()];
-      for (int i = 0; i < directInsertDirectories.size(); ++i) {
-        finalResults[i] = new PathOnlyFileStatus(directInsertDirectories.get(i));
-      }
+      FileStatus[] finalResults = directInsertDirectories.stream()
+          .map(PathOnlyFileStatus::new)
+          .toArray(FileStatus[]::new);
       List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
           unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
             isMmTable, null, isInsertOverwrite);
@@ -4656,7 +4655,7 @@ public final class Utilities {
   }
 
   private static void cleanDirectInsertDirectoriesConcurrently(
-          List<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
+          Set<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
           throws IOException, HiveException {
 
     ExecutorService executor = createCleanTaskExecutor(hconf, directInsertDirectories.size());
@@ -4671,7 +4670,7 @@ public final class Utilities {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Clean-Direct-Insert-Dirs-Thread-%d").build());
   }
 
-  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, List<Path> directInsertDirectories,
+  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, Set<Path> directInsertDirectories,
                                                                     Set<Path> committed, FileSystem fs, String unionSuffix, int lbLevels) {
     List<Future<Void>> cleanTaskFutures = new ArrayList<>(directInsertDirectories.size());
     for (Path directory : directInsertDirectories) {
