@@ -39,7 +39,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(named_struct('col1',1),named_struct('col1',2),named_struct('col1',3),named_struct('col1',4),named_struct('col1',9)) (type: array<struct<col1:int>>)
+                    expressions: array(const struct(1),const struct(2),const struct(3),const struct(4),const struct(9)) (type: array<struct<col1:int>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator

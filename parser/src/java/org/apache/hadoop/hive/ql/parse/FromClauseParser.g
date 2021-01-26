@@ -316,7 +316,16 @@ valuesTableConstructor
 @init { gParent.pushMsg("values table constructor", state); }
 @after { gParent.popMsg(state); }
     :
+    (valueRowConstructor (COMMA! valueRowConstructor)*) => (valueRowConstructor (COMMA! valueRowConstructor)*)
+    |
     firstValueRowConstructor (COMMA! moreValueRowConstructor)*
+    ;
+
+valueRowConstructor
+@init { gParent.pushMsg("value row constructor", state); }
+@after { gParent.popMsg(state); }
+    :
+    expressionsInParenthesis[true, true]
     ;
 
 firstValueRowConstructor

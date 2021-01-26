@@ -287,7 +287,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(named_struct('col1',5555,'col2','AAAAAAAADLFBAAAA','col3','126','col4','Highland Park','col5','Court','col6','Suite E','col7','San Jose','col8','King George County','col9','VA','col10','28003','col11','United States','col12','-5','col13','single family')) (type: array<struct<col1:int,col2:string,col3:string,col4:string,col5:string,col6:string,col7:string,col8:string,col9:string,col10:string,col11:string,col12:string,col13:string>>)
+                    expressions: array(const struct(5555,'AAAAAAAADLFBAAAA','126','Highland Park','Court','Suite E','San Jose','King George County','VA','28003','United States','-5','single family')) (type: array<struct<col1:int,col2:string,col3:string,col4:string,col5:string,col6:string,col7:string,col8:string,col9:string,col10:string,col11:string,col12:string,col13:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
@@ -409,7 +409,7 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(named_struct('col1',5555,'col2','AAAAAAAADLFBAAAA','col3','126','col4','Highland Park','col5','Court','col6','Suite E','col7','San Jose','col8','King George County','col9','VA','col10','28003','col11','United States','col12','-5','col13','single family')) (type: array<struct<col1:int,col2:string,col3:string,col4:string,col5:string,col6:string,col7:string,col8:string,col9:string,col10:string,col11:string,col12:string,col13:string>>)
+                    expressions: array(const struct(5555,'AAAAAAAADLFBAAAA','126','Highland Park','Court','Suite E','San Jose','King George County','VA','28003','United States','-5','single family')) (type: array<struct<col1:int,col2:string,col3:string,col4:string,col5:string,col6:string,col7:string,col8:string,col9:string,col10:string,col11:string,col12:string,col13:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
