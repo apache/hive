@@ -279,7 +279,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Task<?>> rootTasks = getRootTasks();
     assert rootTasks != null && rootTasks.size() == 1;
     Task task = rootTasks.get(0);
-    return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();
+    if (task instanceof ExplainTask &&
+        ((ExplainTask)task).getWork().isAuthorize()) {
+      return true;
+    }
+    return super.skipAuthorization();
   }
 
 }

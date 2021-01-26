@@ -40,6 +40,10 @@ public class TestReplAcrossInstancesWithJsonMessageFormat
     Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             JSONMessageEncoder.class.getCanonicalName());
+    overrides.put(MetastoreConf.ConfVars.HIVE_TXN_MANAGER.getVarname(),
+        "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    overrides.put(MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.getVarname(),
+        "true");
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
   }
 

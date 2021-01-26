@@ -2431,8 +2431,8 @@ withClause
 
 cteStatement
    :
-   identifier KW_AS LPAREN queryStatementExpression RPAREN
-   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+   identifier (LPAREN colAliases=columnNameList RPAREN)? KW_AS LPAREN queryStatementExpression RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier $colAliases?)
 ;
 
 fromStatement
