@@ -1793,9 +1793,9 @@ public class SharedWorkOptimizer extends Transform {
     // not support parallel edges, i.e., multiple edges from same work x
     // into same work y.
     EdgePredicate edgePredicate;
-    if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT)) {
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT)) {
       edgePredicate = new EdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP, EdgeType.SEMIJOIN, EdgeType.BROADCAST));
-    }else {
+    } else {
       edgePredicate = new EdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP));
     }
 
