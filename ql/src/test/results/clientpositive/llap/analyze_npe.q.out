@@ -133,7 +133,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: Const map<string,string> null (type: map<string,string>)
+              expressions: null (type: void)
               outputColumnNames: _col0
               ListSink
 
@@ -159,7 +159,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: Const array<string> null (type: array<string>)
+              expressions: null (type: void)
               outputColumnNames: _col0
               ListSink
 
