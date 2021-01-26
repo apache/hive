@@ -699,6 +699,8 @@ public final class OpProcFactory {
       List<ExprNodeDesc> targetKeys = target.getConf().getKeyCols();
 
       ExprWalkerInfo rsPreds = owi.getPrunedPreds(target);
+      boolean recogniseColumnEqualities = HiveConf.getBoolVar(owi.getParseContext().getConf(),
+              HiveConf.ConfVars.HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES);
       for (int sourcePos = 0; sourcePos < parentOperators.size(); sourcePos++) {
         ReduceSinkOperator source = (ReduceSinkOperator) parentOperators.get(sourcePos);
         List<ExprNodeDesc> sourceKeys = source.getConf().getKeyCols();
@@ -716,8 +718,7 @@ public final class OpProcFactory {
           }
 
           Set<ExprNodeColumnDesc> columnsInPredicates = null;
-          if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-                  HiveConf.ConfVars.HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES)) {
+          if (recogniseColumnEqualities) {
             columnsInPredicates = owi.getColumnsInPredicates().get(source);
             if (columnsInPredicates == null) {
               columnsInPredicates = collectColumnsInPredicates(entry.getValue());
@@ -732,8 +733,7 @@ public final class OpProcFactory {
             }
             ExprNodeDesc replaced = ExprNodeDescUtils.replace(backtrack, sourceKeys, targetKeys);
             if (replaced == null) {
-              if (!HiveConf.getBoolVar(owi.getParseContext().getConf(),
-                      HiveConf.ConfVars.HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES)) {
+              if (!recogniseColumnEqualities) {
                 continue;
               }
 
