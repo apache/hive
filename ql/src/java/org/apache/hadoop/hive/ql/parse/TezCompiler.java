@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 
@@ -122,7 +123,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -957,7 +957,7 @@ public class TezCompiler extends TaskCompiler {
     GraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
   }
-    
+
   private class SemiJoinRemovalProc implements NodeProcessor {
 
     private final boolean removeBasedOnStats;
@@ -1869,18 +1869,17 @@ public class TezCompiler extends TaskCompiler {
         } else {
           // This semijoin qualifies, add it to the result set
           if (filterStats != null) {
-            // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
-            if (tsExpr instanceof ExprNodeFieldDesc) {
-              LOG.info("Unwrapped column expression from ExprNodeFieldDesc");
-              tsExpr = ((ExprNodeFieldDesc)tsExpr).getDesc();
+            ImmutableSet.Builder<String> colNames = ImmutableSet.builder();
+            Set<ExprNodeColumnDesc> allReferencedColumns = ExprNodeDescUtils.findAllColumnDescs(tsExpr);
+            for (ExprNodeColumnDesc col : allReferencedColumns) {
+              colNames.add(col.getColumn());
             }
 
-            String colName = ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn();
             SemijoinOperatorInfo prevResult = reductionFactorMap.get(filterOperator);
             if (prevResult != null) {
               if (prevResult.reductionFactor < reductionFactor) {
                 reductionFactorMap.put(filterOperator, new SemijoinOperatorInfo(rs, filterOperator,
-                    filterStats, colName, reductionFactor));
+                    filterStats, colNames.build(), reductionFactor));
                 semiJoinRsOpsNewIter.add(prevResult.rsOperator);
                 if (LOG.isDebugEnabled()) {
                   LOG.debug("Adding " + OperatorUtils.getOpNamePretty(prevResult.rsOperator)
@@ -1894,7 +1893,7 @@ public class TezCompiler extends TaskCompiler {
               }
             } else {
               reductionFactorMap.put(filterOperator, new SemijoinOperatorInfo(rs, filterOperator,
-                  filterStats, colName, reductionFactor));
+                  filterStats, colNames.build(), reductionFactor));
             }
           }
         }
@@ -1910,7 +1909,7 @@ public class TezCompiler extends TaskCompiler {
         }
         StatsUtils.updateStats(roi.filterStats, newNumRows,
             roi.filterStats.getColumnStats() != null, roi.filterOperator,
-            Sets.newHashSet(roi.colName));
+            roi.colNames);
         if (LOG.isDebugEnabled()) {
           LOG.debug("New stats for {}: {}", roi.filterOperator, roi.filterStats);
         }
@@ -1943,15 +1942,15 @@ public class TezCompiler extends TaskCompiler {
   private class SemijoinOperatorInfo {
     final ReduceSinkOperator rsOperator;
     final FilterOperator filterOperator;
-    final String colName;
+    final ImmutableSet<String> colNames;
     final Statistics filterStats;
     final double reductionFactor;
 
     private SemijoinOperatorInfo(ReduceSinkOperator rsOperator, FilterOperator filterOperator,
-          Statistics filterStats, String colName, double reductionFactor) {
+          Statistics filterStats, Collection<String> colNames, double reductionFactor) {
       this.rsOperator = rsOperator;
       this.filterOperator = filterOperator;
-      this.colName = colName;
+      this.colNames = ImmutableSet.copyOf(colNames);
       this.filterStats = filterStats;
       this.reductionFactor = reductionFactor;
     }

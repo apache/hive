@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import com.google.common.collect.Multimap;
 import java.util.Collection;
+import java.util.HashSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -55,6 +57,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class ExprNodeDescUtils {
@@ -835,6 +838,28 @@ public class ExprNodeDescUtils {
       expr = expr.getChildren().get(0);
     }
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
+  }
+
+  /*
+   * Extracts all referenced columns from the subtree.
+   */
+  public static Set<ExprNodeColumnDesc> findAllColumnDescs(ExprNodeDesc expr) {
+    Set<ExprNodeColumnDesc> ret = new HashSet<>();
+    findAllColumnDescs(ret, expr);
+    return ret;
+  }
+
+  private static void findAllColumnDescs(Set<ExprNodeColumnDesc> ret, ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
+      for (ExprNodeDesc c : func.getChildren()) {
+        findAllColumnDescs(ret, c);
+      }
+    }
+
+    if (expr instanceof ExprNodeColumnDesc) {
+      ret.add((ExprNodeColumnDesc) expr);
+    }
   }
 
   // Find the constant origin of a certain column if it is originated from a constant
