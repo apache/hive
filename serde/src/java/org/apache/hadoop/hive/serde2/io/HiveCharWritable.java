@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveBaseChar;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -83,8 +84,8 @@ public class HiveCharWritable extends HiveBaseCharWritable
       return value;
     }
     // A lot of these methods could be done more efficiently by operating on the Text value
-    // directly, rather than converting to HiveChar.
-    return new Text(getHiveChar().getStrippedValue());
+    // directly, rather than converting to String
+    return new Text(StringUtils.stripEnd(value.toString(), " "));
   }
 
   public Text getPaddedValue() {
