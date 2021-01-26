@@ -46,8 +46,8 @@ final class MinorQueryCompactor extends QueryCompactor {
   void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     LOG.info("Running query based minor compaction");
-    AcidUtils
-        .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    AcidUtils.setAcidOperationalProperties(
+            hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()), false);
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");

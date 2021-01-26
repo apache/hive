@@ -325,8 +325,9 @@ public class QOutProcessor {
   private final PatternReplacementPair[] partialPlanMask;
   {
     ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
-    ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"writeid\":[1-9][0-9]*,\"bucketid\":"),
-        "{\"writeid\":### Masked writeid ###,\"bucketid\":"));
+    // TODO: uncomment these
+//    ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"writeid\":[1-9][0-9]*,\"bucketid\":"),
+//        "{\"writeid\":### Masked writeid ###,\"bucketid\":"));
     
     ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));

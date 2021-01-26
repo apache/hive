@@ -665,7 +665,7 @@ public class TestAcidUtils {
     AcidUtils.AcidOperationalProperties oprProps = AcidUtils.AcidOperationalProperties.getDefault();
     Configuration testConf = new Configuration();
     // Test setter for configuration object.
-    AcidUtils.setAcidOperationalProperties(testConf, true, oprProps);
+    AcidUtils.setAcidOperationalProperties(testConf, true, oprProps, false);
     assertEquals(1, testConf.getInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1));
     // Test getter for configuration object.
     assertEquals(oprProps.toString(), AcidUtils.getAcidOperationalProperties(testConf).toString());

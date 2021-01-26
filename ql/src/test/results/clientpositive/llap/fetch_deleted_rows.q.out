@@ -34,19 +34,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: select t1.ROW__IS__DELETED, * from t1
+PREHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.ROW__IS__DELETED, * from t1
+POSTHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -56,14 +48,6 @@ false	3	three
 false	4	four
 false	4	four again
 false	5	five
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='false')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='false')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
 PREHOOK: query: update t1
 set b = 'updated'
 where a = 3
@@ -76,19 +60,11 @@ where a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: select t1.ROW__IS__DELETED, * from t1
+PREHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.ROW__IS__DELETED, * from t1
+POSTHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -117,14 +93,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.a SCRIPT []
 POSTHOOK: Lineage: t2.c SCRIPT []
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='false')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='false')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
 PREHOOK: query: select t1.*, t2.* from t1
 join t2 on t1.a = t2.a
 PREHOOK: type: QUERY
@@ -144,30 +112,14 @@ POSTHOOK: Input: default@t2
 4	four again	4	4.4
 4	four again	4	4.5
 5	five	5	5.5
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: alter table t2 set tblproperties ('acid.fetch.deleted.rows'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: alter table t2 set tblproperties ('acid.fetch.deleted.rows'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
-PREHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1
-join t2 on t1.a = t2.a
+PREHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1
-join t2 on t1.a = t2.a
+POSTHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -189,22 +141,6 @@ POSTHOOK: query: delete from t2 where a in (1, 4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@t2
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='false')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='false')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: alter table t2 set tblproperties ('acid.fetch.deleted.rows'='false')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: alter table t2 set tblproperties ('acid.fetch.deleted.rows'='false')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
 PREHOOK: query: select t1.*, t2.* from t1
 join t2 on t1.a = t2.a
 PREHOOK: type: QUERY
@@ -220,30 +156,14 @@ POSTHOOK: Input: default@t2
 2	two	2	2.0
 3	updated	3	3.3
 5	five	5	5.5
-PREHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 set tblproperties ('acid.fetch.deleted.rows'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: alter table t2 set tblproperties ('acid.fetch.deleted.rows'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: alter table t2 set tblproperties ('acid.fetch.deleted.rows'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
-PREHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1
-join t2 on t1.a = t2.a
+PREHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1
-join t2 on t1.a = t2.a
+POSTHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
