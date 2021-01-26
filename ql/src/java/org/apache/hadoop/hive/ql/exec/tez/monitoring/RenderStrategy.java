@@ -31,6 +31,7 @@ import java.io.StringWriter;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 class RenderStrategy {
 
@@ -39,7 +40,7 @@ class RenderStrategy {
   }
 
   private abstract static class BaseUpdateFunction implements UpdateFunction {
-    private static final int PRINT_INTERVAL = 3000;
+    private final long print_interval;
 
     final TezJobMonitor monitor;
     private final PerfLogger perfLogger;
@@ -49,6 +50,11 @@ class RenderStrategy {
 
     BaseUpdateFunction(TezJobMonitor monitor) {
       this.monitor = monitor;
+      print_interval = HiveConf.getTimeVar(
+          monitor.getHiveConf(),
+          HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS_INTERVAL,
+          TimeUnit.MILLISECONDS
+      );
       perfLogger = SessionState.getPerfLogger();
     }
 
@@ -65,7 +71,7 @@ class RenderStrategy {
 
     private boolean showReport(String report) {
       return !report.equals(lastReport)
-          || System.currentTimeMillis() >= lastPrintTime + PRINT_INTERVAL;
+          || System.currentTimeMillis() >= lastPrintTime + print_interval;
     }
 
     /*
