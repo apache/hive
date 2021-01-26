@@ -4504,6 +4504,10 @@ public final class Utilities {
     } catch (FileNotFoundException ex) {
       Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
+      if (!fs.exists(specPath)) {
+        // Empty insert to new partition
+        fs.mkdirs(specPath);
+      }
     }
 
     Set<String> dynamicPartitionSpecs = new HashSet<>();
@@ -4530,7 +4534,7 @@ public final class Utilities {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
           Path parentDirPath = path.getParent();
-          while (AcidUtils.isChildOfDelta(parentDirPath, path)) {
+          while (AcidUtils.isChildOfDelta(parentDirPath, specPath)) {
             // Some cases there are other directory layers between the delta and the datafiles
             // (export-import mm table, insert with union all to mm table, skewed tables).
             // But it does not matter for the AcidState, we just need the deltas and the data files
