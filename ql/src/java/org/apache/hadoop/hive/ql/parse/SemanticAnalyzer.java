@@ -1970,8 +1970,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String queryHintStr = ast.getText();
     LOG.debug("QUERY HINT: {} ", queryHintStr);
     try {
-      ASTNode hintNode = pd.parseHint(queryHintStr);
-      qbp.setHints(hintNode);
+      ASTNode hintListNode = pd.parseHint(queryHintStr);
+      qbp.setHints(hintListNode);
+      for (int i = 0; i < hintListNode.getChildCount(); ++i) {
+        ASTNode hintNode = (ASTNode) hintListNode.getChild(i);
+        if (hintNode.getChild(0).getType() != HintParser.TOK_FETCH_DELETED_ROWS) {
+          continue;
+        }
+        ASTNode hintArgs = (ASTNode) hintNode.getChild(1);
+        if (hintArgs != null) {
+          for (int j = 0; j < hintArgs.getChildCount(); ++j) {
+            ctx.fetchDeletedRows(Collections.singleton(
+                    SessionState.get().getCurrentDatabase() + "." + hintArgs.getChild(j).getText()));
+          }
+        }
+        break;
+      }
     } catch (ParseException e) {
       throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
     }
@@ -11472,6 +11486,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
+      tsDesc.setFetchDeletedRows(
+              ctx.getFetchDeletedRowsScans().contains(tsDesc.getDatabaseName() + "." + tsDesc.getTableName()));
+
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {
         tsDesc.setRowLimit(sample.getRowCount());
@@ -15257,7 +15274,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     NONE,
     INSERT_OVERWRITE_REBUILD,
     AGGREGATE_REBUILD,
-    NO_AGGREGATE_REBUILD
+    NO_AGGREGATE_REBUILD,
+    JOIN_REBUILD
   }
 
   /**

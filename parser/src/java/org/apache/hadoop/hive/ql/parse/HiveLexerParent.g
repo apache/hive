@@ -378,6 +378,7 @@ KW_TRAILING: 'TRAILING';
 KW_TRIM: 'TRIM';
 KW_IGNORE: 'IGNORE';
 KW_RESPECT: 'RESPECT';
+KW_FETCH_DELETED_ROWS: 'FETCH_DELETED_ROWS';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

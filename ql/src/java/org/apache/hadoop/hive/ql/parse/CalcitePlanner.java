@@ -169,6 +169,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
@@ -590,6 +591,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               fixUpASTAggregateIncrementalRebuild(newAST);
             } else if (mvRebuildMode == MaterializationRebuildMode.NO_AGGREGATE_REBUILD) {
               fixUpASTNoAggregateIncrementalRebuild(newAST);
+            } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_REBUILD) {
+              fixUpASTJoinIncrementalRebuild(newAST);
             }
 
             // 2. Regen OP plan from optimized AST
@@ -1287,6 +1290,136 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // operation with INSERT/UPDATE
     ctx.setOperation(Context.Operation.MERGE);
     ctx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
+    ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
+  }
+
+  private void fixUpASTJoinIncrementalRebuild(ASTNode newAST) throws SemanticException {
+    // Replace INSERT OVERWRITE by MERGE equivalent rewriting.
+    // Here we need to do this complex AST rewriting that generates the same plan
+    // that a MERGE clause would generate because CBO does not support MERGE yet.
+    // TODO: Support MERGE as first class member in CBO to simplify this logic.
+    // 1) Replace INSERT OVERWRITE by INSERT
+    ASTNode deleteNode = new ASTSearcher().simpleBreadthFirstSearch(
+        newAST, HiveParser.TOK_QUERY, HiveParser.TOK_INSERT);
+    ASTNode destinationNode = (ASTNode) deleteNode.getChild(0);
+    ASTNode newInsertInto = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.TOK_INSERT_INTO, "TOK_INSERT_INTO");
+    newInsertInto.addChildren(destinationNode.getChildren());
+    ASTNode destinationParentNode = (ASTNode) destinationNode.getParent();
+    int childIndex = destinationNode.childIndex;
+    destinationParentNode.deleteChild(childIndex);
+    destinationParentNode.insertChild(childIndex, newInsertInto);
+    // 1.1) Extract name as we will need it afterwards:
+    // TOK_DESTINATION TOK_TAB TOK_TABNAME <materialization_name>
+    ASTNode materializationNode = new ASTSearcher().simpleBreadthFirstSearch(
+        newInsertInto, HiveParser.TOK_INSERT_INTO, HiveParser.TOK_TAB, HiveParser.TOK_TABNAME);
+    // 2) Copy INSERT branch and duplicate it, the first branch will be the UPDATE
+    // for the MERGE statement while the new branch will be the INSERT for the
+    // MERGE statement
+    ASTNode deleteParent = (ASTNode) deleteNode.getParent();
+    ASTNode insertNode = (ASTNode) ParseDriver.adaptor.dupTree(deleteNode);
+    insertNode.setParent(deleteParent);
+    deleteParent.addChild(insertNode);
+    // 3) Create ROW_ID column in select clause from left input for the RIGHT OUTER JOIN.
+    // This is needed for the UPDATE clause. Hence, we find the following node:
+    // TOK_QUERY
+    //   TOK_FROM
+    //      TOK_RIGHTOUTERJOIN
+    //         TOK_SUBQUERY
+    //            TOK_QUERY
+    //               ...
+    //               TOK_INSERT
+    //                  ...
+    //                  TOK_SELECT
+    // And then we create the following child node:
+    // TOK_SELEXPR
+    //    .
+    //       TOK_TABLE_OR_COL
+    //          cmv_mat_view
+    //       ROW__ID
+    ASTNode subqueryNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
+        newAST, HiveParser.TOK_QUERY, HiveParser.TOK_FROM, HiveParser.TOK_RIGHTOUTERJOIN,
+        HiveParser.TOK_SUBQUERY);
+    ASTNode selectNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
+        subqueryNodeInputROJ, HiveParser.TOK_SUBQUERY, HiveParser.TOK_QUERY,
+        HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
+    ASTNode selectExprNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    ASTNode dotNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.DOT, ".");
+    ASTNode columnTokNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+    ASTNode tableNameNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.Identifier, Warehouse.getQualifiedName(
+            materializationNode.getChild(0).getText(),
+            materializationNode.getChild(1).getText()));
+    ASTNode rowIdNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.Identifier, VirtualColumn.ROWID.getName());
+    ParseDriver.adaptor.addChild(selectNodeInputROJ, selectExprNodeInputROJ);
+    ParseDriver.adaptor.addChild(selectExprNodeInputROJ, dotNodeInputROJ);
+    ParseDriver.adaptor.addChild(dotNodeInputROJ, columnTokNodeInputROJ);
+    ParseDriver.adaptor.addChild(dotNodeInputROJ, rowIdNodeInputROJ);
+    ParseDriver.adaptor.addChild(columnTokNodeInputROJ, tableNameNodeInputROJ);
+    // 4) Transform first INSERT branch into a DELETE
+    ASTNode selectNodeInDelete = (ASTNode) deleteNode.getChild(1);
+    if (selectNodeInDelete.getType() != HiveParser.TOK_SELECT) {
+      throw new SemanticException("TOK_SELECT expected in incremental rewriting");
+    }
+    // 4.1) Remove all fields
+    while (selectNodeInDelete.getChildCount() > 0) {
+      selectNodeInDelete.deleteChild(0);
+    }
+    // 4.2) Adding ROW__ID field
+    ASTNode selectExprNodeInDelete = (ASTNode) ParseDriver.adaptor.dupNode(selectExprNodeInputROJ);
+    ASTNode dotNodeInDelete = (ASTNode) ParseDriver.adaptor.dupNode(dotNodeInputROJ);
+    ASTNode columnTokNodeInDelete = (ASTNode) ParseDriver.adaptor.dupNode(columnTokNodeInputROJ);
+    ASTNode tableNameNodeInDelete = (ASTNode) ParseDriver.adaptor.dupNode(subqueryNodeInputROJ.getChild(1));
+    ASTNode rowIdNodeInDelete = (ASTNode) ParseDriver.adaptor.dupNode(rowIdNodeInputROJ);
+    ParseDriver.adaptor.addChild(selectExprNodeInDelete, dotNodeInDelete);
+    ParseDriver.adaptor.addChild(dotNodeInDelete, columnTokNodeInDelete);
+    ParseDriver.adaptor.addChild(dotNodeInDelete, rowIdNodeInDelete);
+    ParseDriver.adaptor.addChild(columnTokNodeInDelete, tableNameNodeInDelete);
+    selectNodeInDelete.insertChild(0, ParseDriver.adaptor.dupTree(selectExprNodeInDelete));
+
+    // 4.3) Add filter condition to delete
+    ASTNode dotNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.dupTree(dotNodeInDelete);
+    ASTNode isNullNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "isnotnull");
+    ASTNode funcNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+    funcNodeInDeleteFilter.addChild(isNullNodeInDeleteFilter);
+    funcNodeInDeleteFilter.addChild(dotNodeInDeleteFilter);
+    ASTNode whereNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_WHERE, "TOK_WHERE");
+    whereNodeInDeleteFilter.addChild(funcNodeInDeleteFilter);
+    deleteNode.addChild(whereNodeInDeleteFilter);
+    // 4.4) Finally, we add SORT clause, this is needed for the DELETE.
+    //       TOK_SORTBY
+    //         TOK_TABSORTCOLNAMEASC
+    //            TOK_NULLS_FIRST
+    //               .
+    //                  TOK_TABLE_OR_COL
+    //                     cmv_basetable_2
+    //                  ROW__ID
+    ASTNode sortExprNode = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.TOK_SORTBY, "TOK_SORTBY");
+    ASTNode orderExprNode = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC");
+    ASTNode nullsOrderExprNode = (ASTNode) ParseDriver.adaptor.create(
+        HiveParser.TOK_NULLS_FIRST, "TOK_NULLS_FIRST");
+    ASTNode dotNodeInSort = (ASTNode) ParseDriver.adaptor.dupTree(dotNodeInDelete);
+    ParseDriver.adaptor.addChild(deleteNode, sortExprNode);
+    ParseDriver.adaptor.addChild(sortExprNode, orderExprNode);
+    ParseDriver.adaptor.addChild(orderExprNode, nullsOrderExprNode);
+    ParseDriver.adaptor.addChild(nullsOrderExprNode, dotNodeInSort);
+    // 5) Add filter condition to insert
+    ASTNode whereNodeInInsertFilter = (ASTNode) ParseDriver.adaptor.dupTree(whereNodeInDeleteFilter);
+    ASTNode funcNodeInInsertFilter = (ASTNode) whereNodeInInsertFilter.getChild(0);
+    ASTNode isNotNullNodeInInsertFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "isnull");
+    funcNodeInInsertFilter.deleteChild(0);
+    funcNodeInInsertFilter.insertChild(0, isNotNullNodeInInsertFilter);
+    insertNode.addChild(whereNodeInInsertFilter);
+    // 6) Now we set some tree properties related to multi-insert
+    // operation with INSERT/UPDATE
+    ctx.setOperation(Context.Operation.MERGE);
+    ctx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
   }
 
@@ -2290,9 +2423,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   HiveAggregateIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
             } else {
+//              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+//                  HiveNoAggregateIncrementalRewritingRule.INSTANCE);
+              CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveNoAggregateIncrementalRewritingRule.INSTANCE);
-              mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
+                  HiveJoinIncrementalRewritingRule.INSTANCE);
+              mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
             }
             basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
           }

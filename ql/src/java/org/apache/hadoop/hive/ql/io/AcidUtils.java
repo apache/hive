@@ -1943,15 +1943,17 @@ public class AcidUtils {
    *                   we assume this is a full transactional table.
    */
   public static void setAcidOperationalProperties(
-      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties, boolean fetchDeletedRows) {
     if (isTxnTable) {
       HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isTxnTable);
       if (properties != null) {
         HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
       }
+      HiveConf.setBoolVar(conf, ConfVars.HIVE_ACID_FETCH_DELETED_ROWS, fetchDeletedRows);
     } else {
       conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
       conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
+      conf.unset(ConfVars.HIVE_ACID_FETCH_DELETED_ROWS.varname);
     }
   }
 

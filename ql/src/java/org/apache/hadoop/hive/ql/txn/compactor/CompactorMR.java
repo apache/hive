@@ -159,7 +159,7 @@ public class CompactorMR {
 
     // Set appropriate Acid readers/writers based on the table properties.
     AcidUtils.setAcidOperationalProperties(job, true,
-            AcidUtils.getAcidOperationalProperties(t.getParameters()));
+            AcidUtils.getAcidOperationalProperties(t.getParameters()), false);
 
     return job;
   }

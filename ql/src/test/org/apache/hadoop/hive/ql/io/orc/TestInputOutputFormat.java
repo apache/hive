@@ -915,7 +915,7 @@ public class TestInputOutputFormat {
   public void testEtlCombinedStrategy() throws Exception {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS.varname, "1000000");
-    AcidUtils.setAcidOperationalProperties(conf, true, null);
+    AcidUtils.setAcidOperationalProperties(conf, true, null, false);
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
     conf.set(ValidTxnList.VALID_TXNS_KEY,
@@ -4324,6 +4324,6 @@ public class TestInputOutputFormat {
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
-    AcidUtils.setAcidOperationalProperties(conf, true, AcidUtils.AcidOperationalProperties.getDefault());
+    AcidUtils.setAcidOperationalProperties(conf, true, AcidUtils.AcidOperationalProperties.getDefault(), false);
   }
 }

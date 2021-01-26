@@ -40,8 +40,8 @@ final class MajorQueryCompactor extends QueryCompactor {
   @Override
   void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
-    AcidUtils
-        .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    AcidUtils.setAcidOperationalProperties(
+            hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()), false);
 
     HiveConf conf = new HiveConf(hiveConf);
     // Set up the session for driver.

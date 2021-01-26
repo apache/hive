@@ -975,7 +975,7 @@ public class TestStreaming {
     job.set(BUCKET_COUNT, Integer.toString(buckets));
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "id,msg");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "bigint:string");
-    AcidUtils.setAcidOperationalProperties(job, true, null);
+    AcidUtils.setAcidOperationalProperties(job, true, null, false);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIds.writeToString());
     job.set(ValidTxnList.VALID_TXNS_KEY, conf.get(ValidTxnList.VALID_TXNS_KEY));

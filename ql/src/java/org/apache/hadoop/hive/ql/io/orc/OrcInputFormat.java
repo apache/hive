@@ -2091,60 +2091,80 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
       LOG.debug("Creating merger for {} and {}", split.getPath(), Arrays.toString(deltas));
     }
+    boolean fetchDeletedRows = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_FETCH_DELETED_ROWS);
 
     Map<String, Integer> deltaToAttemptId = AcidUtils.getDeltaToAttemptIdMap(pathToDeltaMetaData, deltas, bucket);
-    final OrcRawRecordMerger records = new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
+    OrcRawRecordMerger records = new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
         validWriteIdList, readOptions, deltas, mergerOptions, deltaToAttemptId);
-    return new RowReader<OrcStruct>() {
-      OrcStruct innerRecord = records.createValue();
 
-      @Override
-      public ObjectInspector getObjectInspector() {
-        return OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(readOptions.getSchema()));
-      }
-
-      @Override
-      public boolean next(RecordIdentifier recordIdentifier,
-                          OrcStruct orcStruct) throws IOException {
-        boolean result;
-        // filter out the deleted records
-        do {
-          result = records.next(recordIdentifier, innerRecord);
-        } while (result &&
-            OrcRecordUpdater.getOperation(innerRecord) ==
-                OrcRecordUpdater.DELETE_OPERATION);
-        if (result) {
-          // swap the fields with the passed in orcStruct
-          orcStruct.linkFields(OrcRecordUpdater.getRow(innerRecord));
+    if (fetchDeletedRows) {
+      records = new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
+              validWriteIdList, readOptions, deltas, mergerOptions, deltaToAttemptId) {
+        @Override
+        protected boolean collapse(RecordIdentifier recordIdentifier) {
+          ((ReaderKey) recordIdentifier).setValues(prevKey.getCurrentWriteId(), prevKey.getBucketProperty(), prevKey.getRowId(), prevKey.getCurrentWriteId(), true);
+          return false;
         }
-        return result;
-      }
+      };
+    }
+    return new OrcRowReader(records, readOptions);
+  }
 
-      @Override
-      public RecordIdentifier createKey() {
-        return records.createKey();
-      }
+  private static class OrcRowReader implements RowReader<OrcStruct> {
+    protected final OrcRawRecordMerger records;
+    protected final OrcStruct innerRecord;
+    private final Reader.Options readOptions;
 
-      @Override
-      public OrcStruct createValue() {
-        return new OrcStruct(records.getColumns());
-      }
+    public OrcRowReader(OrcRawRecordMerger records, Reader.Options readOptions) {
+      this.records = records;
+      this.innerRecord = records.createValue();
+      this.readOptions = readOptions;
+    }
 
-      @Override
-      public long getPos() throws IOException {
-        return records.getPos();
-      }
+    @Override
+    public ObjectInspector getObjectInspector() {
+      return OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(readOptions.getSchema()));
+    }
 
-      @Override
-      public void close() throws IOException {
-        records.close();
+    @Override
+    public boolean next(RecordIdentifier recordIdentifier,
+            OrcStruct orcStruct) throws IOException {
+      boolean result;
+      // filter out the deleted records
+      do {
+        result = records.next(recordIdentifier, innerRecord);
+      } while (result && OrcRecordUpdater.getOperation(innerRecord) == OrcRecordUpdater.DELETE_OPERATION);
+      if (result) {
+        // swap the fields with the passed in orcStruct
+        orcStruct.linkFields(OrcRecordUpdater.getRow(innerRecord));
       }
+      return result;
+    }
 
-      @Override
-      public float getProgress() throws IOException {
-        return records.getProgress();
-      }
-    };
+    @Override
+    public RecordIdentifier createKey() {
+      return records.createKey();
+    }
+
+    @Override
+    public OrcStruct createValue() {
+      return new OrcStruct(records.getColumns());
+    }
+
+    @Override
+    public long getPos() throws IOException {
+      return records.getPos();
+    }
+
+    @Override
+    public void close() throws IOException {
+      records.close();
+    }
+
+    @Override
+    public float getProgress() throws IOException {
+      return records.getProgress();
+    }
   }
 
   static Reader.Options createOptionsForReader(Configuration conf) {
