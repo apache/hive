@@ -1477,9 +1477,8 @@ public class AcidUtils {
     // We do not want to look outside the original directory
     String fullName = childDir.toUri().toString().substring(rootPath.toUri().toString().length() + 1);
     String dirName = childDir.getName();
-    return (fullName.contains(BASE_PREFIX) && !dirName.startsWith(BASE_PREFIX)) ||
-        (fullName.contains(DELTA_PREFIX) && !dirName.startsWith(DELTA_PREFIX)) ||
-        (fullName.contains(DELETE_DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX));
+    return (!dirName.startsWith(BASE_PREFIX)) && !dirName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX)
+          && (fullName.contains(BASE_PREFIX) || fullName.contains(DELTA_PREFIX) || fullName.contains(DELETE_DELTA_PREFIX));
   }
 
   /**
