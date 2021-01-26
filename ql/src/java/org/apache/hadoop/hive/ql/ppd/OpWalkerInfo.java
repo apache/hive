@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -43,8 +44,12 @@ public class OpWalkerInfo implements NodeProcessorCtx {
     opToPushdownPredMap;
   private final ParseContext pGraphContext;
   private final List<FilterOperator> candidateFilterOps;
-  private final Map<Operator<?>, Set<ExprNodeColumnDesc>> columnsInPredicates;
-  private final Map<Operator<?>, Map<ExprNodeDesc, ExprNodeDesc>> equalities;
+  // The following two maps required for traversing join branches to discover transitive propagation opportunities
+  // over equijoin conditions:
+  // Contains column expression desc referenced in all predicates associated to ReduceSink operators.
+  private final Map<ReduceSinkOperator, Set<ExprNodeColumnDesc>> columnsInPredicates;
+  // Contains equal column pairs in ReduceSinkOperator row schema.
+  private final Map<ReduceSinkOperator, Map<ExprNodeDesc, ExprNodeDesc>> equalities;
 
   public OpWalkerInfo(ParseContext pGraphContext) {
     this.pGraphContext = pGraphContext;
@@ -75,11 +80,11 @@ public class OpWalkerInfo implements NodeProcessorCtx {
     candidateFilterOps.add(fop);
   }
 
-  public Map<Operator<?>, Set<ExprNodeColumnDesc>> getColumnsInPredicates() {
+  public Map<ReduceSinkOperator, Set<ExprNodeColumnDesc>> getColumnsInPredicates() {
     return columnsInPredicates;
   }
 
-  public Map<Operator<?>, Map<ExprNodeDesc, ExprNodeDesc>> getEqualities() {
+  public Map<ReduceSinkOperator, Map<ExprNodeDesc, ExprNodeDesc>> getEqualities() {
     return equalities;
   }
 }

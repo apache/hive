@@ -764,6 +764,11 @@ public final class OpProcFactory {
       }
     }
 
+    /**
+     * Traverse each predicate expression trees given in the predicates list and collect all ExprNodeColumnDesc.
+     * @param predicates list of predicate expressions
+     * @return union of ExprNodeColumnDescs referenced form the given predicates.
+     */
     private Set<ExprNodeColumnDesc> collectColumnsInPredicates(List<ExprNodeDesc> predicates) {
       Set<ExprNodeColumnDesc> columnsInPredicates;
       columnsInPredicates = new HashSet<>();
@@ -773,6 +778,19 @@ public final class OpProcFactory {
       return columnsInPredicates;
     }
 
+    /**
+     * Traverse the operator tree and collect equal columns.
+     * Traversal starts from the specified source operator to TableScan operators.
+     * This method calls searchForEqualities(Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet)
+     * to find equalities. Since it returns a map where values are names of input columns of the join operator
+     * this method maps these names to output column expression using the join operators columnExprMap.
+     *
+     * @param join Parent operator of source operator
+     * @param sourcePos Index of source operator in parent join branches. (0 or 1).
+     * @param source root of operator tree to traverse
+     * @param startNodes set of columns search equal columns for
+     * @return Map of equal columns: key column coming from the passed exprNodeDescSet, value column equals to the key.
+     */
     private Map<ExprNodeDesc, ExprNodeDesc> searchForEqualities(
             JoinOperator join, int sourcePos, ReduceSinkOperator source, Set<ExprNodeColumnDesc> startNodes) {
       Map<ExprNodeDesc, String> equalities = searchForEqualities(source, startNodes);
@@ -799,6 +817,14 @@ public final class OpProcFactory {
       return replaceMap;
     }
 
+    /**
+     * Dispatcher method for column equality search traversal.
+     *
+     * @param operator root of subtree to traverse
+     * @param exprNodeDescSet set of columns search equal columns for
+     * @return Map of equal columns: key column coming from the passed exprNodeDescSet, value the name of equal input
+     * column of current operator.
+     */
     private Map<ExprNodeDesc, String> searchForEqualities(
             Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet) {
       if (exprNodeDescSet.isEmpty()) {
@@ -812,6 +838,14 @@ public final class OpProcFactory {
       }
     }
 
+    /**
+     * Search equal columns in the join expressions for each column specified in the given set.
+     *
+     * @param join CommonJoinOperator which join expressions are scanned
+     * @param exprNodeDescSet set of columns search equal columns for
+     * @return Map of equal columns: key column coming from the passed exprNodeDescSet, value the name of equal input
+     * column of current operator.
+     */
     private Map<ExprNodeDesc, String> searchForEqualitiesInJoin(
             CommonJoinOperator<?> join, Set<ExprNodeColumnDesc> exprNodeDescSet) {
       Map<ExprNodeDesc, String> equalities = new HashMap<>();
@@ -854,6 +888,17 @@ public final class OpProcFactory {
       return equalities;
     }
 
+    /**
+     * Default equality search method.
+     * 1. Maps all columns specified in exprNodeDescSet to the input column using operators columnExprMap.
+     * 2. Search for equalities in the parent operator.
+     * 3. Map back the keys and values in the result equalities map using operators columnExprMap.
+     * If columnExprMap is null no remapping is required.
+     * @param operator operator to traverse.
+     * @param exprNodeDescSet set of columns search equal columns for
+     * @return Map of equal columns: key column coming from the passed exprNodeDescSet, value the name of equal input
+     * column of current operator.
+     */
     private Map<ExprNodeDesc, String> searchForEqualitiesDefault(
             Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet) {
       Map<String, ExprNodeDesc> columnExprMap = operator.getColumnExprMap();
@@ -895,6 +940,12 @@ public final class OpProcFactory {
       }
     }
 
+    /**
+     * Replaces exprNodeDescs in the specified exprNodeDesc using replaceMap by traversing the expression tree.
+     * @param exprNodeDesc expression where exprNodeDescs should be replaced.
+     * @param replaceMap Map containing replacements: key exprNodeDesc should be replaced to value exprNodeDesc.
+     * @return The new expression with replaced exprNodeDescs.
+     */
     private ExprNodeDesc replaceColumnExprNodes(ExprNodeDesc exprNodeDesc, Map<ExprNodeDesc, ExprNodeDesc> replaceMap) {
       if (exprNodeDesc instanceof ExprNodeColumnDesc) {
         return replaceMap.getOrDefault(exprNodeDesc, exprNodeDesc);
