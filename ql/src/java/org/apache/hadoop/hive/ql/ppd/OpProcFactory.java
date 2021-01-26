@@ -768,21 +768,9 @@ public final class OpProcFactory {
       Set<ExprNodeColumnDesc> columnsInPredicates;
       columnsInPredicates = new HashSet<>();
       for (ExprNodeDesc predicate : predicates) {
-        extractColumnExprNodes(predicate, columnsInPredicates);
+        columnsInPredicates.addAll(ExprNodeDescUtils.findAllColumnDescs(predicate));
       }
       return columnsInPredicates;
-    }
-
-    private void extractColumnExprNodes(ExprNodeDesc exprNodeDesc, Set<ExprNodeColumnDesc> result) {
-      if (exprNodeDesc instanceof ExprNodeColumnDesc) {
-        result.add((ExprNodeColumnDesc) exprNodeDesc);
-        return;
-      }
-      if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
-        for (ExprNodeDesc child : exprNodeDesc.getChildren()) {
-          extractColumnExprNodes(child, result);
-        }
-      }
     }
 
     private Map<ExprNodeDesc, ExprNodeDesc> searchForEqualities(
