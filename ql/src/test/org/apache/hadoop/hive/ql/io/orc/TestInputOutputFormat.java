@@ -915,7 +915,7 @@ public class TestInputOutputFormat {
   public void testEtlCombinedStrategy() throws Exception {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS.varname, "1000000");
-    AcidUtils.setAcidOperationalProperties(conf, true, null);
+    AcidUtils.setAcidOperationalProperties(conf, true, null, false);
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
     conf.set(ValidTxnList.VALID_TXNS_KEY,
@@ -4056,7 +4056,7 @@ public class TestInputOutputFormat {
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
     int record = 0;
-    RecordIdentifier id = reader.createKey();
+    OrcRawRecordMerger.ReaderKey id = reader.createKey();
     OrcStruct struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
@@ -4203,7 +4203,7 @@ public class TestInputOutputFormat {
         new AcidInputFormat.Options(conf));
 
     int record = 0;
-    RecordIdentifier id = reader.createKey();
+    OrcRawRecordMerger.ReaderKey id = reader.createKey();
     OrcStruct struct = reader.createValue();
     // Iterate through any records.
     // Because our read offset was past the stripe offset, the rows from the last stripe will
@@ -4324,6 +4324,6 @@ public class TestInputOutputFormat {
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
-    AcidUtils.setAcidOperationalProperties(conf, true, AcidUtils.AcidOperationalProperties.getDefault());
+    AcidUtils.setAcidOperationalProperties(conf, true, AcidUtils.AcidOperationalProperties.getDefault(), false);
   }
 }
