@@ -163,9 +163,11 @@ public interface SearchArgument {
   public ExpressionTree getExpression();
 
   /**
-   * Get the expression tree without the
+   * Get the expression tree without the normalization to conjunctive normal
+   * form. It will still have the negations pushed to the leaves, but it
+   * won't have the potentially exponential expansion.
    */
-  public ExpressionTree getUnexpandedExpression();
+  public ExpressionTree getCompactExpression();
 
   /**
    * Evaluate the entire predicate based on the values for the leaf predicates.

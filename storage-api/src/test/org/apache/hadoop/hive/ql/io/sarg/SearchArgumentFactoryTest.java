@@ -38,7 +38,7 @@ public class SearchArgumentFactoryTest {
     Assert.assertEquals("(or "
                         + "(and leaf-(IN f1 1 6) leaf-(IN f2 a c)) "
                         + "(and leaf-(IN f1 3 4) leaf-(IN f2 c e)))",
-                        sArg.getUnexpandedExpression().toString());
+                        sArg.getCompactExpression().toString());
   }
 
   @Test
@@ -85,7 +85,7 @@ public class SearchArgumentFactoryTest {
                         + "(or "
                         + "(and leaf-(IN f1 1 5) leaf-(IN f2 a d)) "
                         + "(and leaf-(IN f1 3 5) leaf-(IN f2 b e))))",
-                        sArg.getUnexpandedExpression().toString());
+                        sArg.getCompactExpression().toString());
   }
 
   @Test
@@ -103,7 +103,7 @@ public class SearchArgumentFactoryTest {
       .end()
       .build();
 
-    ExpressionTree unexpanded = sArg.getUnexpandedExpression();
+    ExpressionTree unexpanded = sArg.getCompactExpression();
     Assert.assertEquals(ExpressionTree.Operator.OR, unexpanded.getOperator());
     Assert.assertEquals(2, unexpanded.getChildren().size());
     for (ExpressionTree child : unexpanded.getChildren()) {
@@ -137,7 +137,7 @@ public class SearchArgumentFactoryTest {
         nnSArg.getExpression().toString());
     Assert.assertEquals("(or (and leaf-(IN f1 1 6) leaf-(IN f2 a c))" +
             " (and leaf-(IN f1 3 4) leaf-(IN f2 c e)))",
-        nnSArg.getUnexpandedExpression().toString());
+        nnSArg.getCompactExpression().toString());
   }
 
   @Test
