@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Assert;
@@ -291,8 +292,25 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
       String result = primary.getOutput().get(0);
       assertTrue(result, result.contains("repl.source.for=s1_t2"));
-    } finally {
+
+      // Test the new policy id is appended
       primary.run("drop scheduled query s1_t2");
+      fs.delete(new Path(dumpRoot, String.valueOf(next)), true);
+      primary.run(
+          "create scheduled query s1_t2_new every 5 seconds as repl " + "dump "
+              + primaryDbName + withClause);
+
+      GenericTestUtils.waitFor(() -> {
+        try {
+          primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
+          return primary.getOutput().get(0)
+              .contains("repl.source.for=s1_t2, s1_t2_new");
+        } catch (Throwable e) {
+          return false;
+        }
+      }, 100, 10000);
+    } finally {
+      primary.run("drop scheduled query s1_t2_new");
       replica.run("drop scheduled query s2_t2");
     }
   }

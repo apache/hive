@@ -113,6 +113,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -882,18 +883,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             // as default.
             String value = conf.get(SCHEDULED_QUERY_SCHEDULENAME,
                 "default_" + getQueryState().getQueryString());
-            Map<String, String> params = db.getParameters();
-            if (params != null) {
-              params.put("repl.source.for", value);
-              db.setParameters(params);
-            } else {
-              db.setParameters(
-                  Collections.singletonMap("repl.source.for", value));
+            updateReplSourceFor(hiveDb, dbName, db, value);
+          } else {
+            // If a schedule name is available and that isn't part of the
+            // existing conf, append the schedule name to the conf.
+            String scheduleQuery = conf.get(SCHEDULED_QUERY_SCHEDULENAME);
+            if (scheduleQuery != null && !scheduleQuery.isEmpty()) {
+              if (!getReplPolicyIdString(db).contains(scheduleQuery)) {
+                updateReplSourceFor(hiveDb, dbName, db,
+                    getReplPolicyIdString(db) + ", " + scheduleQuery);
+              }
             }
-            hiveDb.alterDatabase(dbName, db);
-            LOG.warn(
-                "repl.source.for isn't specified for {} using value of {} ",
-                dbName, value);
           }
         }
 
@@ -983,6 +983,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dmd.setReplScope(work.replScope);
       dmd.write(true);
     }
+  }
+
+  private void updateReplSourceFor(Hive hiveDb, String dbName, Database db,
+      String value) throws HiveException {
+    Map<String, String> params = db.getParameters();
+    if (params != null) {
+      params.put("repl.source.for", value);
+      db.setParameters(params);
+    } else {
+      db.setParameters(Collections.singletonMap("repl.source.for", value));
+    }
+    hiveDb.alterDatabase(dbName, db);
+    LOG.warn("repl.source.for isn't specified for {} using value of {} ",
+        dbName, value);
   }
 
   private FileList createTableFileList(Path dumpRoot, String fileName, int cacheSize) {
