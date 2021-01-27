@@ -1076,12 +1076,12 @@ public class TestVectorFilterExpressions {
 
     VectorExpression ve1 = new CastStringToBoolean(0,2);
     VectorExpression ve2 = new CastLongToBooleanViaLongToLong(1, 3);
-    FilterExprOrExpr ve3 = new FilterExprOrExpr();
-    ve3.setChildExpressions(new VectorExpression[] {ve1, ve2});
-    ve3.evaluate(vrb);
+    VectorExpression orExpr = new FilterExprOrExpr();
+    orExpr.setChildExpressions(new VectorExpression[] {ve1, ve2});
+    orExpr.evaluate(vrb);
 
-    // check that all row(s) are selected
-    assertEquals(false, vrb.selectedInUse);
+    // Only one row should be filtered out, but both filters fail to take effect
+    assertFalse(vrb.selectedInUse);
     assertEquals(0, vrb.selected[0]);
     assertEquals(1, vrb.selected[1]);
     assertEquals(2, vrb.selected[2]);
@@ -1089,16 +1089,27 @@ public class TestVectorFilterExpressions {
 
     SelectColumnIsTrue filter1 = new SelectColumnIsTrue(2);
     filter1.setChildExpressions(new VectorExpression[]{ ve1 });
-    SelectColumnIsTrue filter2 = new SelectColumnIsTrue(3);
-    filter2.setChildExpressions(new VectorExpression[]{ ve2 });
+    VectorExpression andExpr = new FilterExprAndExpr();
+    // SelectColumnIsTrue(cast string) and CastLongToBooleanViaLongToLong
+    andExpr.setChildExpressions(new VectorExpression[]{filter1, ve2});
+    andExpr.evaluate(vrb);
 
-    ve3.setChildExpressions(new VectorExpression[]{filter1, filter2});
-    ve3.evaluate(vrb);
-
-    // check that right row(s) are selected
-    assertEquals(true, vrb.selectedInUse);
+    // All should be filtered out, but CastLongToBooleanViaLongToLong fails to take effect
+    assertTrue(vrb.selectedInUse);
     assertEquals(2, vrb.selected[0]);
     assertEquals(1, vrb.size);
+
+    // restore
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+
+    SelectColumnIsTrue filter2 = new SelectColumnIsTrue(3);
+    filter2.setChildExpressions(new VectorExpression[]{ ve2 });
+    andExpr.setChildExpressions(new VectorExpression[]{filter1, filter2});
+    andExpr.evaluate(vrb);
+
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.size);
   }
 
 }

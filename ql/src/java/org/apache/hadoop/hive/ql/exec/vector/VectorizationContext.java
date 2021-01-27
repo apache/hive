@@ -1466,6 +1466,10 @@ import com.google.common.annotations.VisibleForTesting;
     // Boolean is purposely excluded.
   }
 
+  public static boolean isCastToBoolean(Class<? extends UDF> udfClass) {
+    return udfClass.equals(UDFToBoolean.class);
+  }
+
   public static boolean isCastToFloatFamily(Class<? extends UDF> udfClass) {
     return udfClass.equals(UDFToDouble.class)
         || udfClass.equals(UDFToFloat.class);
@@ -2979,7 +2983,7 @@ import com.google.common.annotations.VisibleForTesting;
       PrimitiveCategory integerPrimitiveCategory =
           getAnyIntegerPrimitiveCategoryFromUdfClass(cl);
       ve = getCastToLongExpression(childExpr, integerPrimitiveCategory);
-    } else if (cl.equals(UDFToBoolean.class)) {
+    } else if (isCastToBoolean(cl)) {
       ve = getCastToBooleanExpression(childExpr, mode);
     } else if (isCastToFloatFamily(cl)) {
       ve = getCastToDoubleExpression(cl, childExpr, returnType);
@@ -3482,20 +3486,16 @@ import com.google.common.annotations.VisibleForTesting;
           VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo);
     }
 
-    if (ve == null) {
-      return null;
-    }
-
-    if (mode == VectorExpressionDescriptor.Mode.FILTER) {
-      int outputColumnNum = ve.getOutputColumnNum();
-      SelectColumnIsTrue filterVectorExpr = new SelectColumnIsTrue(outputColumnNum);
-      filterVectorExpr.setChildExpressions(new VectorExpression[] { ve });
-      filterVectorExpr.setInputTypeInfos(ve.getOutputTypeInfo());
-      filterVectorExpr.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
-      return filterVectorExpr;
-    } else {
+    if (ve == null || mode == VectorExpressionDescriptor.Mode.PROJECTION) {
       return ve;
     }
+
+    int outputColumnNum = ve.getOutputColumnNum();
+    SelectColumnIsTrue filterVectorExpr = new SelectColumnIsTrue(outputColumnNum);
+    filterVectorExpr.setChildExpressions(new VectorExpression[] { ve });
+    filterVectorExpr.setInputTypeInfos(ve.getOutputTypeInfo());
+    filterVectorExpr.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
+    return filterVectorExpr;
   }
 
   private VectorExpression getCastToLongExpression(List<ExprNodeDesc> childExpr, PrimitiveCategory integerPrimitiveCategory)
