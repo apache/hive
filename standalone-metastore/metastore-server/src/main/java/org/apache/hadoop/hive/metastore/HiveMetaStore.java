@@ -3264,18 +3264,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void truncateTableInternal(String dbName, String tableName, List<String> partNames,
         String validWriteIds, long writeId) throws MetaException, NoSuchObjectException {
+      boolean isSkipTrash = false, needCmRecycle = false;
       try {
         String[] parsedDbName = parseDbName(dbName, conf);
         Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
 
         boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
             !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+
+        if (truncateFiles) {
+          isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+          Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+          needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
+        }
         // This is not transactional
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME],
             parsedDbName[DB_NAME], tableName, tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
           if (truncateFiles) {
-            truncateDataFiles(tbl, parsedDbName, location, fs);
+            truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
           } else {
             // For Acid tables we don't need to delete the old files, only write an empty baseDir.
             // Compaction and cleaner will take care of the rest
@@ -3310,16 +3317,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       AcidMetaDataFile.writeToFile(fs, basePath, AcidMetaDataFile.DataFormat.TRUNCATED);
     }
 
-    private void truncateDataFiles(Table tbl, String[] parsedDbName, Path location, FileSystem fs)
+    private void truncateDataFiles(Path location, FileSystem fs, boolean isSkipTrash, boolean needCmRecycle)
         throws IOException, MetaException, NoSuchObjectException {
-      boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
       if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
           !FileUtils.pathHasSnapshotSubDir(location, fs)) {
         HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        wh.deleteDir(location, true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
+        wh.deleteDir(location, true, isSkipTrash, needCmRecycle);
         fs.mkdirs(location);
         HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
       } else {
@@ -3328,7 +3333,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return;
         }
         for (final FileStatus status : statuses) {
-          wh.deleteDir(status.getPath(), true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
+          wh.deleteDir(status.getPath(), true, isSkipTrash, needCmRecycle);
         }
       }
     }
