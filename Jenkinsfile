@@ -94,7 +94,7 @@ OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePl
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
-if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
+if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt"; sed -i '/\/ITest/d' $PWD/inclusions.txt;fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
