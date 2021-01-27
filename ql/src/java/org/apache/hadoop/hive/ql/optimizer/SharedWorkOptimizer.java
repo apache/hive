@@ -1853,7 +1853,7 @@ public class SharedWorkOptimizer extends Transform {
 
     @Override
     public Boolean apply(OpEdge input) {
-      return nonTraverseableEdgeTypes.contains(input.getEdgeType());
+      return !nonTraverseableEdgeTypes.contains(input.getEdgeType());
     }
 
   }
