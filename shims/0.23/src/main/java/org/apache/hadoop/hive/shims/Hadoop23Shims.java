@@ -71,6 +71,7 @@ import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
+import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -1434,7 +1435,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public long getFileId(FileSystem fs, String path) throws IOException {
-    return ensureDfs(fs).getClient().getFileInfo(path).getFileId();
+    HdfsFileStatus fileInfo = ensureDfs(fs).getClient().getFileInfo(path);
+    if (fileInfo == null) {
+      throw new FileNotFoundException(path + " does not exist.");
+    }
+    return fileInfo.getFileId();
   }
 
 
