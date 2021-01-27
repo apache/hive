@@ -41,3 +41,6 @@
   - kasakrisz
 '**/*CardinalityPreserving*java':
   - kasakrisz
+# query optimizer
+'**/ql/optimizer/**':
+  - jcamachor
