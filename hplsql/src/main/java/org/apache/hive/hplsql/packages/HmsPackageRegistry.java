@@ -75,7 +75,7 @@ public class HmsPackageRegistry implements PackageRegistry {
     return new PackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name.toUpperCase());
   }
 
-  protected Package makePackage(String name, String header, String body) {
+  private Package makePackage(String name, String header, String body) {
     return new Package(
             hplSqlSession.currentCatalog(),
             hplSqlSession.currentDatabase(),
