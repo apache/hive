@@ -4084,19 +4084,6 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testDumpNonReplDatabase() throws IOException {
-    String dbName = createDBNonRepl(testName.getMethodName(), driver);
-    assertTrue(run("REPL DUMP " + dbName + " with ('hive.repl.dump.metadata.only' = 'true')",
-            true, driver));
-    //Dump again before load will print a warning
-    assertTrue(run("REPL DUMP " + dbName + " with ('hive.repl.dump.metadata.only' = 'true')",
-            true, driver));
-    dbName = createDBNonRepl(testName.getMethodName() + "_case", driver);
-    run("alter database " + dbName + " set dbproperties ('repl.source.for' = '1, 2, 3')", driver);
-    assertTrue(run("REPL DUMP " + dbName, true, driver));
-  }
-
-  @Test
   public void testRecycleFileNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
 
