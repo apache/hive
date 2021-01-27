@@ -38,6 +38,11 @@ public class AtlasReplInfo {
   private Path tableListFile;
 
   public AtlasReplInfo(String atlasEndpoint, String srcDB, String tgtDB, String srcCluster,
+                       String tgtCluster, Path stagingDir, HiveConf conf) {
+    this(atlasEndpoint, srcDB, tgtDB, srcCluster, tgtCluster, stagingDir, null, conf);
+  }
+
+  public AtlasReplInfo(String atlasEndpoint, String srcDB, String tgtDB, String srcCluster,
                        String tgtCluster, Path stagingDir, Path tableListFile, HiveConf conf) {
     this.atlasEndpoint = atlasEndpoint;
     this.srcDB = srcDB;

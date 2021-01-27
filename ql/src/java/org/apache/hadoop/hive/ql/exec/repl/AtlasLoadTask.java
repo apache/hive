@@ -121,7 +121,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
     String srcCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, conf, errorFormat);
     String tgtCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, conf, errorFormat);
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo(endpoint, work.getSrcDB(), work.getTgtDB(),
-            srcCluster, tgtCluster, work.getStagingDir(), null, conf);
+            srcCluster, tgtCluster, work.getStagingDir(), conf);
     atlasReplInfo.setSrcFsUri(getStoredFsUri(atlasReplInfo.getStagingDir()));
     atlasReplInfo.setTgtFsUri(conf.get(ReplUtils.DEFAULT_FS_CONFIG));
     return atlasReplInfo;
