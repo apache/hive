@@ -49,4 +49,9 @@ public class ImpalaFunctionInfo extends FunctionInfo {
   public ImpalaFunctionSignature getImpalaFunctionSignature() {
     return impalaFunctionSignature;
   }
+
+  @Override
+  public boolean isGenericUDAFResolver() {
+    return AggFunctionDetails.isAggFunction(getDisplayName());
+  }
 }

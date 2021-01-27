@@ -1,0 +1,22 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+PREHOOK: query: EXPLAIN CBO PHYSICAL
+SELECT COUNT(*)
+ FROM impala_tpch_lineitem
+ GROUP BY l_quantity ORDER BY COUNT(*)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: streaming
+POSTHOOK: query: EXPLAIN CBO PHYSICAL
+SELECT COUNT(*)
+ FROM impala_tpch_lineitem
+ GROUP BY l_quantity ORDER BY COUNT(*)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+CBO PLAN:
+ImpalaProjectPassthroughRel(_o__c0=[$0])
+  ImpalaSortRel(sort0=[$1], dir0=[ASC])
+    ImpalaProjectRel(_o__c0=[$1], (tok_functionstar count)=[$1])
+      ImpalaAggregateRel(group=[{4}], agg#0=[count()])
+        ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
+

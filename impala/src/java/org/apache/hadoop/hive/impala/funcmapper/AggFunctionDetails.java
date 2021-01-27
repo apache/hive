@@ -229,4 +229,8 @@ public class AggFunctionDetails implements FunctionDetails {
     }
     return null;
   }
+
+  public static boolean isAggFunction(String fnName) {
+    return AGG_BUILTINS.contains(fnName.toUpperCase());
+  }
 }

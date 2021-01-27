@@ -158,7 +158,12 @@ public class FunctionInfo {
     return genericUDAFResolver;
   }
 
-
+  /**
+   * Get the GenericUDAFResolver object for the function.
+   */
+  public boolean isGenericUDAFResolver() {
+    return genericUDAFResolver != null;
+  }
 
   /**
    * Get the Class of the UDF.
