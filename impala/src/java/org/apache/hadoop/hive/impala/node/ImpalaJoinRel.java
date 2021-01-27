@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.impala.node;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -34,6 +35,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -52,11 +54,16 @@ import org.apache.hadoop.hive.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.ExprSubstitutionMap;
+import org.apache.impala.analysis.FunctionCallExpr;
 import org.apache.impala.analysis.JoinOperator;
 import org.apache.impala.analysis.TupleId;
+import org.apache.impala.analysis.TupleIsNullPredicate;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
+import org.apache.impala.common.AnalysisException;
 import org.apache.impala.common.ImpalaException;
+import org.apache.impala.common.InternalException;
 import org.apache.impala.planner.JoinNode;
 import org.apache.impala.planner.PlanNode;
 
@@ -108,37 +115,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     // currently supporting hints from the new planner.
     JoinNode.DistributionMode distMode = JoinNode.DistributionMode.NONE;
 
-    // create the output exprs map by combining the left and right input's
-    // output expr map
-    // NOTE: for some operators the output exprs are created using the
-    // TupleDescriptor; however, for Joins Impala does not seem to require
-    // an associated TupleDescriptor.  Hence, we project whatever exprs (slots)
-    // are coming from the child inputs.
-    Map<Integer, Expr> exprMap = Maps.newHashMap();
-    for (Map.Entry<Integer, Expr> e : leftInputRel.getOutputExprsMap().entrySet()) {
-      Expr expr = e.getValue();
-      if ((joinOp == JoinOperator.RIGHT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN)
-          && Expr.IS_NON_NULL_LITERAL.apply(expr)) {
-        expr = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr, leftInputNode.getTupleIds());
-      }
-      exprMap.put(e.getKey(), expr);
-    }
-
-    // For (left) semi joins don't project the right input's output exprs
-    if (!(join instanceof HiveSemiJoin)) {
-      int sizeLeft = leftInputRel.numOutputExprs();
-      for (Map.Entry<Integer, Expr> e : rightInputRel.getOutputExprsMap().entrySet()) {
-        int newKey = e.getKey() + sizeLeft;
-        Expr expr = e.getValue();
-        if ((joinOp == JoinOperator.LEFT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN)
-            && Expr.IS_NON_NULL_LITERAL.apply(expr)) {
-          expr = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr, rightInputNode.getTupleIds());
-        }
-        exprMap.put(newKey, expr);
-      }
-    }
-
-    this.outputExprs = ImmutableMap.copyOf(exprMap);
+    this.outputExprs = checkAndAddNullWrapping(ctx, leftInputRel, leftInputNode,
+        rightInputRel, rightInputNode, joinOp);
 
     int numEquiJoins = 0;
 
@@ -190,6 +168,99 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
   }
 
   /**
+   * Checks and adds null wrapping for expressions fed into the null producing side of an
+   * outer join (hence, both sides for a Full Outer Join).
+   * This method populates 2 maps:
+   *  1. The output exprs map of the Impala RelNode by combining the left and right input's
+   *     output expr map
+   *     Note: for some operators the output exprs are created using the TupleDescriptor.
+   *     However, for Joins Impala does not require an associated TupleDescriptor.  Hence,
+   *     we project whatever exprs (slots) are coming from the child inputs.
+   *  2. The expr substitution output map of the Impala PlanNode inputs of this join if this
+   *     is an outer join. The reason is that suppose the input tuple is null (e.g if it was
+   *     previously produced by the null side of an outer join) and the expr is
+   *     COALESCE(int_col, 10), we should not change the existing nullability of the tuple.
+   *     Otherwise, if the int_col itself was null then apply the COALESCE.
+   *
+   *     Note that the COALESCE expression may be fed into the equijoin conjuncts of the outer
+   *     join (if the join is on that expr) as well as projected by the outer join. Hence,
+   *     by populating the substitution map of the inputs, we are ensuring both these
+   *     situations are handled.
+   *
+   *     Returns an ImmutableMap where key is the ordinal position of the output expr and
+   *     value is the output expr itself.
+   */
+  private ImmutableMap<Integer, Expr> checkAndAddNullWrapping(ImpalaPlannerContext ctx,
+      ImpalaPlanRel leftInputRel, PlanNode leftInputNode, ImpalaPlanRel rightInputRel,
+      PlanNode rightInputNode, JoinOperator joinOp) throws HiveException, ImpalaException {
+    Map<Integer, Expr> exprMap = Maps.newHashMap();
+    List<Expr> lhs = Lists.newArrayList();
+    List<Expr> rhs = Lists.newArrayList();
+    PlanNode candidateInputNode = null;
+    for (Map.Entry<Integer, Expr> e : leftInputRel.getOutputExprsMap().entrySet()) {
+      Expr expr = e.getValue();
+      if ((joinOp == JoinOperator.RIGHT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN)
+          && requiresNullWrapping(ctx, expr)) {
+        Expr expr2 = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr,
+            leftInputNode.getTupleIds());
+        if (!Expr.IS_NON_NULL_LITERAL.apply(expr)) {
+          lhs.add(expr);
+          rhs.add(expr2);
+          candidateInputNode = leftInputNode;
+        }
+        exprMap.put(e.getKey(), expr2);
+      } else {
+        exprMap.put(e.getKey(), expr);
+      }
+    }
+
+    if (candidateInputNode != null && lhs.size() > 0) {
+      ExprSubstitutionMap newSmap = new ExprSubstitutionMap(lhs, rhs);
+      ExprSubstitutionMap candidateSmap =
+          ExprSubstitutionMap.compose(candidateInputNode.getOutputSmap(), newSmap,
+              ctx.getRootAnalyzer());
+      // See method comments about why we are populating the input smap
+      candidateInputNode.setOutputSmap(candidateSmap);
+    }
+    lhs.clear();
+    rhs.clear();
+    candidateInputNode = null;
+
+    // For (left) semi joins don't project the right input's output exprs
+    if (!(join instanceof HiveSemiJoin)) {
+      int sizeLeft = leftInputRel.numOutputExprs();
+      for (Map.Entry<Integer, Expr> e : rightInputRel.getOutputExprsMap().entrySet()) {
+        int newKey = e.getKey() + sizeLeft;
+        Expr expr = e.getValue();
+        if ((joinOp == JoinOperator.LEFT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN)
+            && requiresNullWrapping(ctx, expr)) {
+          Expr expr2 = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr,
+              rightInputNode.getTupleIds());
+          if (!Expr.IS_NON_NULL_LITERAL.apply(expr)) {
+            lhs.add(expr);
+            rhs.add(expr2);
+            candidateInputNode = rightInputNode;
+          }
+          exprMap.put(newKey, expr2);
+        } else {
+          exprMap.put(newKey, expr);
+        }
+      }
+    }
+
+    if (candidateInputNode != null && lhs.size() > 0) {
+      ExprSubstitutionMap newSmap = new ExprSubstitutionMap(lhs, rhs);
+      ExprSubstitutionMap candidateSmap =
+          ExprSubstitutionMap.compose(candidateInputNode.getOutputSmap(), newSmap,
+              ctx.getRootAnalyzer());
+      // See method comments about why we are populating the input smap
+      candidateInputNode.setOutputSmap(candidateSmap);
+    }
+
+    return ImmutableMap.copyOf(exprMap);
+  }
+
+  /**
    * Returns a new conditional expr 'IF(TupleIsNull(tids), NULL, expr)' to
    * make an input expr nullable.  This is especially useful in cases where the Hive
    * planner generates a literal TRUE and later does a IS_NULL($x) or IS_NOT_NULL($x)
@@ -218,6 +289,43 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
         typeNames, expr.getType());
     Function conditionalFunc = ImpalaFunctionUtil.create(conditionalFuncDetails);
     return new ImpalaFunctionCallExpr(analyzer, conditionalFunc, tmpArgs, null, expr.getType());
+  }
+
+  /**
+   * This function is a substitute for Impala's
+   * {@link org.apache.impala.analysis.TupleIsNullPredicate.requiresNullWrapping()} and
+   * is meant to check whether an expression needs to be wrapped with a TupleIsNullPredicate.
+   * If we are executing this logic in the HIVE_IN_TEST mode, we fall back to a local
+   * implementation of the function. Otherwise, we rely on the corresponding Impala method
+   * which does an actual function evaluation to determine nullability.
+   * The reason for the fallback in test mode is that we don't want to load libfesupport.so
+   * which is indirectly invoked by Impala.
+   *
+   * Local test mode behavior:
+   * Currently, this method returns True for the following types of expressions:
+   * COALESCE, IFNULL (if they are the top level expression), any non-null constant literals,
+   * a previously wrapped TupleIsNullPredicate and constant FunctionCallExprs (such as
+   * CAST('2020-01-01' as TIMESTAMP) ).
+   * Returns False for all other expressions.
+   *
+   * While this takes care of the common cases, it could miss doing null wrapping for
+   * complex expressions. That's the main reason why for normal production mode, we
+   * go through the function evaluation in Impala.
+   */
+  private static boolean requiresNullWrapping(ImpalaPlannerContext ctx, Expr expr) throws ImpalaException {
+    if (!ctx.getQueryContext().getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+      return TupleIsNullPredicate.requiresNullWrapping(expr, ctx.getRootAnalyzer());
+    }
+    // If the expr is already wrapped in an IF(TupleIsNull(), NULL, expr)
+    // then it must definitely be wrapped again at this level.
+    if (expr.contains(TupleIsNullPredicate.class)) return true;
+    if (expr instanceof FunctionCallExpr) {
+      if (expr.isConstant()) return true;
+      String name = ((FunctionCallExpr) expr).getFnName().getFunction();
+      return name.equalsIgnoreCase("coalesce") || name.equalsIgnoreCase("ifnull");
+    }
+    return Expr.IS_NON_NULL_LITERAL.apply(expr);
+
   }
 
   private static class MinIndexVisitor extends RexVisitorImpl<Void> {
