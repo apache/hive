@@ -202,81 +202,14 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-saml-opensamlv3</artifactId>
-      <version>4.0.3</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.shibboleth.tool</groupId>
-          <artifactId>xmlsectool</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-collections</groupId>
-          <artifactId>commons-collections</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.hibernate.javax.persistence</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.javassist</groupId>
-          <artifactId>javassist</artifactId>
-        </exclusion>
-        <exclusion>
-          <!-- The dependency included in pac4j is old and has known CVEs.
-          We exclude it from here and add a separate dependency down below.-->
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>org.bouncycastle</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.santuario</groupId>
-          <artifactId>xmlsec</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>${bcprov-jdk15on.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.santuario</groupId>
       <artifactId>xmlsec</artifactId>
-      <version>${xmlsec.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

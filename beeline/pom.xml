@@ -105,6 +105,12 @@
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.pac4j</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- test inter-project -->
     <dependency>
