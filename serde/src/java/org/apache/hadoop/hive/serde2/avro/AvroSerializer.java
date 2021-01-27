@@ -228,8 +228,8 @@ class AvroSerializer {
         ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
       long millis = defaultProleptic ? timestamp.toEpochMilli() :
           CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
-      timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC);
+      timestamp = TimestampTZUtil.convertTimestampToZone(Timestamp.ofEpochMilli(millis),
+          TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, false);
       return timestamp.toEpochMilli();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");

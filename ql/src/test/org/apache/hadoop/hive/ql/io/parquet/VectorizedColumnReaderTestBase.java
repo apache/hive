@@ -65,6 +65,8 @@ import org.apache.parquet.schema.MessageType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
@@ -211,7 +213,7 @@ public class VectorizedColumnReaderTestBase {
   protected static NanoTime getNanoTime(int index) {
     Timestamp ts = new Timestamp();
     ts.setTimeInMillis(index);
-    return NanoTimeUtils.getNanoTime(ts, false);
+    return NanoTimeUtils.getNanoTime(ts, Optional.of(TimeZone.getDefault().toZoneId()));
   }
 
   protected static HiveDecimal getDecimal(

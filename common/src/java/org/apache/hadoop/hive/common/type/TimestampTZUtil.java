@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -132,7 +131,7 @@ public class TimestampTZUtil {
 
   // Converts Timestamp to TimestampTZ.
   public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
-    return parse(ts.toString(), defaultTimeZone);
+    return new TimestampTZ(ts.toEpochSecond(), ts.getSeconds(), defaultTimeZone);
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {
@@ -156,10 +155,6 @@ public class TimestampTZUtil {
       LEGACY_DATE_FORMATTER.set(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }
     return LEGACY_DATE_FORMATTER.get();
-  }
-
-  public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
-    return convertTimestampToZone(ts, fromZone, toZone, false);
   }
 
   /**
@@ -186,11 +181,9 @@ public class TimestampTZUtil {
     }
 
     // get nanos since [epoch at fromZone]
-    Instant instant = convert(ts, fromZone).getZonedDateTime().toInstant();
-    // get [local time at toZone]
-    LocalDateTime localDateTimeAtToZone = LocalDateTime.ofInstant(instant, toZone);
-    // get nanos between [epoch at toZone] and [local time at toZone]
-    return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
-        localDateTimeAtToZone.getNano());
+    Instant instant = Instant.ofEpochSecond(ts.toEpochSecond(), ts.getNanos());
+    Instant tzInstant = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC).withZoneSameLocal(fromZone).toInstant();
+
+    return Timestamp.ofEpochSecond(tzInstant.getEpochSecond(), tzInstant.getNano(), toZone);
   }
 }
