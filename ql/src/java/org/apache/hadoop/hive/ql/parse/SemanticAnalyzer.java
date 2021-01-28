@@ -873,14 +873,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> defaultConstraints = null;
     for(int i=1; i<valueArrClause.getChildCount(); i++) {
       ASTNode valueClause = (ASTNode)valueArrClause.getChild(i);
-      //skip first 2 child since it is named_struct and the first field name
-      for(int j=2; j<valueClause.getChildCount(); j+=2) {
+      //skip first child since it is struct
+      for(int j=1; j<valueClause.getChildCount(); j++) {
         if(valueClause.getChild(j).getType() == HiveParser.TOK_TABLE_OR_COL
             && valueClause.getChild(j).getChild(0).getText().toLowerCase().equals("default")) {
           if(defaultConstraints == null) {
             defaultConstraints = getDefaultConstraints(targetTable, targetSchema);
           }
-          ASTNode newNode = getNodeReplacementforDefault(defaultConstraints.get(j/2-1));
+          ASTNode newNode = getNodeReplacementforDefault(defaultConstraints.get(j-1));
           // replace the node in place
           valueClause.replaceChildren(j, j, newNode);
           LOG.debug("DEFAULT keyword replacement - Inserted {} for table: {}", newNode.getText(),
