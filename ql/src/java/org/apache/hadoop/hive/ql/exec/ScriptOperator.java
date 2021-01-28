@@ -54,7 +54,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Shell;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkEnv;
 import org.apache.spark.SparkFiles;
@@ -449,8 +448,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             outThread.join(0);
           }
         } catch (Exception e2) {
-          LOG.warn("Exception in closing outThread: "
-              + StringUtils.stringifyException(e2));
+          LOG.warn("Exception in closing outThread", e2);
         }
         setDone(true);
         LOG.warn("Got broken pipe during write: ignoring exception and setting operator to done");
@@ -538,8 +536,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         outThread.join(0);
       }
     } catch (Exception e) {
-      LOG.warn("Exception in closing outThread: "
-          + StringUtils.stringifyException(e));
+      LOG.warn("Exception in closing outThread", e);
     }
 
     try {
@@ -547,8 +544,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         errThread.join(0);
       }
     } catch (Exception e) {
-      LOG.warn("Exception in closing errThread: "
-          + StringUtils.stringifyException(e));
+      LOG.warn("Exception in closing errThread", e);
     }
 
     try {
@@ -556,8 +552,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         scriptPid.destroy();
       }
     } catch (Exception e) {
-      LOG.warn("Exception in destroying scriptPid: "
-          + StringUtils.stringifyException(e));
+      LOG.warn("Exception in destroying scriptPid", e);
     }
 
     super.close(new_abort);
@@ -742,17 +737,14 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
       } catch (Throwable th) {
         scriptError = th;
-        LOG.warn("Exception in StreamThread.run(): " + th.getMessage() +
-            "\nCause: " + th.getCause());
-        LOG.warn(StringUtils.stringifyException(th));
+        LOG.warn("Exception in StreamThread.run()", th);
       } finally {
         try {
           if (in != null) {
             in.close();
           }
         } catch (Exception e) {
-          LOG.warn(name + ": error in closing ..");
-          LOG.warn(StringUtils.stringifyException(e));
+          LOG.warn(name + ": error in closing ..", e);
         }
         try
         {
@@ -760,7 +752,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             proc.close();
           }
         }catch (Exception e) {
-          LOG.warn(": error in closing .."+StringUtils.stringifyException(e));
+          LOG.warn(": error in closing ..", e);
         }
       }
     }

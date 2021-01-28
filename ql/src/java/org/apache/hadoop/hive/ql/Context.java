@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -676,8 +675,7 @@ public class Context {
         fs.delete(p, true);
         fs.cancelDeleteOnExit(p);
       } catch (Exception e) {
-        LOG.warn("Error Removing result cache dir: "
-                     + StringUtils.stringifyException(e));
+        LOG.warn("Error Removing result cache dir:", e);
       }
     }
   }
@@ -707,8 +705,7 @@ public class Context {
           sessionState.getCleanupService().deleteRecursive(p, fs);
         }
       } catch (Exception e) {
-        LOG.warn("Error Removing Scratch: "
-            + StringUtils.stringifyException(e));
+        LOG.warn("Error Removing Scratch", e);
       }
     }
     fsScratchDirs.clear();
@@ -737,8 +734,7 @@ public class Context {
             + materializedTable.getTableName() + ", status=" + status);
       } catch (IOException e) {
         // ignore
-        LOG.warn("Error removing " + location + " for materialized " + materializedTable.getTableName() +
-                ": " + StringUtils.stringifyException(e));
+        LOG.warn("Error removing " + location + " for materialized " + materializedTable.getTableName(), e);
       }
     }
     cteTables.clear();
@@ -893,7 +889,7 @@ public class Context {
           LOG.debug("Deleting result dir: {}", resDir);
           fs.delete(resDir, true);
         } catch (IOException e) {
-          LOG.info("Context clear error: " + StringUtils.stringifyException(e));
+          LOG.info("Context clear error", e);
         }
       }
 
@@ -903,7 +899,7 @@ public class Context {
         LOG.debug("Deleting result file: {}",  resFile);
         fs.delete(resFile, false);
       } catch (IOException e) {
-        LOG.info("Context clear error: " + StringUtils.stringifyException(e));
+        LOG.info("Context clear error", e);
       }
     }
     if(deleteResultDir) {
@@ -951,13 +947,10 @@ public class Context {
       } else {
         return getNextStream();
       }
-    } catch (FileNotFoundException e) {
-      LOG.info("getStream error: " + StringUtils.stringifyException(e));
-      return null;
     } catch (IOException e) {
-      LOG.info("getStream error: " + StringUtils.stringifyException(e));
-      return null;
+      LOG.info("getStream error", e);
     }
+    return null;
   }
 
   private DataInput getNextStream() {
@@ -966,14 +959,9 @@ public class Context {
           && (resDirPaths[resDirFilesNum] != null)) {
         return resFs.open(resDirPaths[resDirFilesNum++]);
       }
-    } catch (FileNotFoundException e) {
-      LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
-      return null;
     } catch (IOException e) {
-      LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
-      return null;
+      LOG.info("getNextStream error", e);
     }
-
     return null;
   }
 

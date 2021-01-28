@@ -447,7 +447,7 @@ public class Driver implements IDriver {
         try {
           driverTxnHandler.endTransactionAndCleanup(false);
         } catch (LockException e) {
-          LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
+          LOG.warn("Exception in releasing locks", e);
         }
         throw cpe;
       }
