@@ -18,17 +18,23 @@
 
 package org.apache.hadoop.hive.impala.expr;
 
+import com.google.common.base.Preconditions;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.impala.node.ImpalaRelUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.FunctionCallExpr;
 import org.apache.impala.analysis.FunctionParams;
+import org.apache.impala.analysis.NumericLiteral;
+import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.Function;
+import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -56,6 +62,16 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
     super(fn.getFunctionName(), params);
     this.addedCost = getFunctionCallCost(rexCall);
     this.analyzer = analyzer;
+    init(analyzer, fn, retType);
+  }
+
+  // c'tor which does not depend on Calcite's RexCall but is used when Impala's
+  // FunctionParams are created or there is some modifications to it
+  public ImpalaFunctionCallExpr(Analyzer analyzer, Function fn, FunctionParams funcParams,
+      float addedCost, Type retType) throws HiveException {
+    super(fn.getFunctionName(), funcParams);
+    this.analyzer = analyzer;
+    this.addedCost = addedCost;
     init(analyzer, fn, retType);
   }
 
@@ -111,6 +127,16 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
   @Override
   public Expr clone() { return new ImpalaFunctionCallExpr(this); }
 
+  @Override
+  public FunctionCallExpr cloneWithNewParams(FunctionParams params) {
+    try {
+      return new ImpalaFunctionCallExpr(this.analyzer, this.getFn(), params,
+          this.addedCost, this.type_);
+    } catch (HiveException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   /**
    * We need to override resetAnalysisState so that Impala Analyzer keeps
    * the Expr in its analyzed state.
@@ -140,6 +166,43 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
         return true;
       default:
         return false;
+    }
+  }
+
+  public void resetFunction() throws HiveException, AnalysisException {
+    if (fn_ instanceof AggregateFunction) {
+      // since the function lookup is based on exact match of data types (unlike Impala's
+      // builtin db which does allow matches based on implicit cast), we need to adjust
+      // one or more operands based on the function type
+      List<Type> operandTypes = Arrays.asList(collectChildReturnTypes());
+      String funcName = getFnName().getFunction().toLowerCase();
+      switch (funcName) {
+      case "lag":
+      case "lead":
+        // at this point the function should have been standardized into
+        // a 3 operand function and the second operand is the 'offset' which
+        // should be an integer (tinyint/smallint/int/bigint) type
+        Preconditions.checkArgument(operandTypes.size() == 3 &&
+            operandTypes.get(1).isIntegerType());
+        // upcast the second argument (offset) since it must always be BIGINT
+        if (operandTypes.get(1) != Type.BIGINT) {
+          operandTypes.set(1, Type.BIGINT);
+          uncheckedCastChild(Type.BIGINT, 1);
+        }
+        // Last argument could be NULL with TYPE_NULL but since Impala BE expects
+        // a concrete type, we cast it to the type of the first argument
+        if (operandTypes.get(2) == Type.NULL) {
+          Preconditions.checkArgument(operandTypes.get(0) != Type.NULL);
+          operandTypes.set(2, operandTypes.get(0));
+          uncheckedCastChild(operandTypes.get(0), 2);
+        }
+        fn_ = ImpalaRelUtil.getAggregateFunction(getFnName().getFunction(), getReturnType(), operandTypes);
+        type_ = fn_.getReturnType();
+
+        break;
+      default:
+        throw new HiveException("Unsupported aggregate function.");
+      }
     }
   }
 }

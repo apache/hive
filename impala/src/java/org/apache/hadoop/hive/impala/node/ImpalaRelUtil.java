@@ -23,6 +23,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.impala.funcmapper.AggFunctionDetails;
@@ -32,6 +33,7 @@ import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.BuiltinsDb;
+import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 
 import java.util.List;
@@ -47,7 +49,7 @@ public class ImpalaRelUtil {
    * Returns the aggregation function for the provided parameters. In Impala,
    * this could be either an aggregation or analytic function.
    */
-  protected static AggregateFunction getAggregateFunction(SqlAggFunction aggFunction, RelDataType retType,
+  public static AggregateFunction getAggregateFunction(SqlAggFunction aggFunction, RelDataType retType,
       List<RelDataType> operandTypes) throws HiveException {
 
     AggFunctionDetails funcDetails = AggFunctionDetails.get(aggFunction.getName(), operandTypes,
@@ -65,20 +67,47 @@ public class ImpalaRelUtil {
     Type intermediateType = ImpalaTypeConverter.createImpalaType(funcDetails.getIntermediateType(),
         intermediateTypePrecision, retType.getScale());
 
+    return createAggFunction(funcDetails,aggFunction.getName(), argTypes, impalaRetType, intermediateType);
+  }
+
+  public static AggregateFunction getAggregateFunction(String aggFuncName, Type retType,
+      List<Type> operandTypes) throws HiveException {
+
+    AggFunctionDetails funcDetails = AggFunctionDetails.get(aggFuncName, operandTypes, retType, false);
+
+    if (funcDetails == null) {
+      throw new SemanticException("Could not find function \"" + aggFuncName + "\"");
+    }
+
+    int intermediateTypePrecision = funcDetails.intermediateTypeLength != 0 ?
+        funcDetails.intermediateTypeLength :
+        // use getColumnSize() instead of getPrecision() because getPrecision()
+        // is only applicable to numeric types
+        retType.getColumnSize();
+
+    int intermediateTypeScale = retType.isDecimal() ? ((ScalarType) retType).decimalScale() : 0;
+    Type intermediateType = ImpalaTypeConverter
+        .createImpalaType(funcDetails.getIntermediateType(), intermediateTypePrecision,
+            intermediateTypeScale);
+
+    return createAggFunction(funcDetails, aggFuncName, operandTypes, retType, intermediateType);
+  }
+
+  private static AggregateFunction createAggFunction(AggFunctionDetails funcDetails, String aggFuncName,
+      List<Type> operandTypes, Type retType, Type intermediateType) {
     Preconditions.checkState(funcDetails.isAgg || funcDetails.isAnalyticFn);
     if (!funcDetails.isAgg) {
-      return AggregateFunction.createAnalyticBuiltin(BuiltinsDb.getInstance(true), aggFunction.getName(),
-          argTypes, impalaRetType, intermediateType, funcDetails.initFnSymbol,
-          funcDetails.updateFnSymbol, funcDetails.removeFnSymbol, funcDetails.getValueFnSymbol,
-          funcDetails.finalizeFnSymbol);
+      return AggregateFunction
+          .createAnalyticBuiltin(BuiltinsDb.getInstance(true), aggFuncName, operandTypes, retType, intermediateType,
+              funcDetails.initFnSymbol, funcDetails.updateFnSymbol, funcDetails.removeFnSymbol, funcDetails.getValueFnSymbol,
+              funcDetails.finalizeFnSymbol);
     }
     // Some agg functions are used both in analytic functions and regular aggregations (e.g. count)
     // We can treat them both as a regular builtin.
-    return AggregateFunction.createBuiltin(BuiltinsDb.getInstance(true), aggFunction.getName(),
-        argTypes, impalaRetType, intermediateType, funcDetails.initFnSymbol,
-        funcDetails.updateFnSymbol, funcDetails.mergeFnSymbol, funcDetails.serializeFnSymbol,
-        funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol, funcDetails.finalizeFnSymbol,
-        funcDetails.ignoresDistinct, funcDetails.isAnalyticFn, funcDetails.returnsNonNullOnEmpty);
+    return AggregateFunction
+        .createBuiltin(BuiltinsDb.getInstance(true), aggFuncName, operandTypes, retType, intermediateType, funcDetails.initFnSymbol,
+            funcDetails.updateFnSymbol, funcDetails.mergeFnSymbol, funcDetails.serializeFnSymbol, funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol,
+            funcDetails.finalizeFnSymbol, funcDetails.ignoresDistinct, funcDetails.isAnalyticFn, funcDetails.returnsNonNullOnEmpty);
   }
 
   /**

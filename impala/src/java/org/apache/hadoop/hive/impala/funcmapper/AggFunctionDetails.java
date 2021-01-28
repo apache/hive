@@ -233,4 +233,16 @@ public class AggFunctionDetails implements FunctionDetails {
   public static boolean isAggFunction(String fnName) {
     return AGG_BUILTINS.contains(fnName.toUpperCase());
   }
+
+  public static AggFunctionDetails get(String name, List<Type> operandTypes,
+      Type retType, boolean hasVarArgs) {
+
+    ImpalaFunctionSignature sig = ImpalaFunctionSignature.create(name.toLowerCase(), operandTypes, retType,
+        hasVarArgs);
+
+    if (sig != null) {
+      return AGG_BUILTINS_MAP.get(sig);
+    }
+    return null;
+  }
 }

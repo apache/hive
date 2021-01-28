@@ -239,9 +239,12 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
         orderByElements.add(orderByElement);
       }
     }
-    // Fourth parameter is the window frame spec
+    // Fourth parameter is the window frame spec.
+    // For offset functions like LEAD/LAG, we skip this and let Impala assign
+    // the window frame as part of the AnalyticExpr's standardization.
     AnalyticWindow window = null;
-    if (!partitionExprs.isEmpty() || !orderByElements.isEmpty()) {
+    if ((!partitionExprs.isEmpty() || !orderByElements.isEmpty()) &&
+        !AnalyticExpr.isOffsetFn(fn)) {
       Boundary lBoundary = getWindowBoundary(rexWindow.getLowerBound(),
           ctx, inputRel);
       Boundary rBoundary = getWindowBoundary(rexWindow.getUpperBound(),
