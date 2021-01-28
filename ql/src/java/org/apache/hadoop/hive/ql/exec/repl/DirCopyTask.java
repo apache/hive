@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -70,7 +71,27 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
             destPath, sourcePath, status.getOwner(), status.getGroup(), status.getPermission());
     destPath.getFileSystem(conf).setOwner(destPath, status.getOwner(), status.getGroup());
     destPath.getFileSystem(conf).setPermission(destPath, status.getPermission());
+    setAclsToTarget(sourcePath, destPath);
     return createdDir;
+  }
+
+  private void setAclsToTarget(Path sourcePath, Path destPath)
+      throws IOException {
+    AclStatus sourceAcls;
+    try {
+      sourceAcls = sourcePath.getFileSystem(conf).getAclStatus(sourcePath);
+    } catch (Exception e) {
+      // The sourceFs doesn't have ACL's enabled, just log and ignore.
+      LOG.info("Couldn't get ACL's for the source {}, skiping ACL to {}",
+          sourcePath, destPath, e);
+      return;
+    }
+    // if sourceFs has ACL's enabled and set, then add the same set of ACL's
+    // even to destination.
+    if (sourceAcls != null && sourceAcls.getEntries().size() > 0) {
+      destPath.getFileSystem(conf)
+          .modifyAclEntries(destPath, sourceAcls.getEntries());
+    }
   }
 
   private boolean setTargetPathOwner(Path targetPath, Path sourcePath, UserGroupInformation proxyUser)
