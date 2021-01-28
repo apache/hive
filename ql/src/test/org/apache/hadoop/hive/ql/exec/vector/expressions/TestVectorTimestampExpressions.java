@@ -31,8 +31,6 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 
@@ -782,8 +780,7 @@ public class TestVectorTimestampExpressions {
   }
 
   private void compareToUDFUnixTimeStampLong(Timestamp ts, long y) {
-    TimestampTZ tsTZ = TimestampTZUtil.convert(
-        org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime()),
+    TimestampTZ tsTZ = new TimestampTZ(org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime()),
         ZoneId.systemDefault());
     if(tsTZ.getEpochSecond() != y) {
       System.out.printf("%d vs %d for %s\n", tsTZ.getEpochSecond(), y, ts.toString());

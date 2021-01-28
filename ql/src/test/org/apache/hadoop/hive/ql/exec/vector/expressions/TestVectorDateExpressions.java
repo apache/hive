@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
@@ -71,11 +71,8 @@ public class TestVectorDateExpressions {
   }
 
   private TimestampLocalTZWritable toTimestampLocalTZWritable(long daysSinceEpoch) {
-    return new TimestampLocalTZWritable(
-        TimestampTZUtil.convert(
-            Timestamp.ofEpochMilli(
-                DateWritableV2.daysToMillis((int) daysSinceEpoch)),
-            ZoneId.systemDefault()));
+    return new TimestampLocalTZWritable(new TimestampTZ(
+        Timestamp.ofEpochMilli(DateWritableV2.daysToMillis(Math.toIntExact(daysSinceEpoch))), ZoneId.systemDefault()));
   }
 
   private int[] getAllBoundaries() {

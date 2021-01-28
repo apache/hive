@@ -108,12 +108,8 @@ public class TestTimestampTZ {
     try {
       // Use system zone when converting from timestamp to timestamptz
       String s = "2017-06-12 23:12:56.34";
-      TimestampTZ tstz1 = TimestampTZUtil.convert(
-          Timestamp.valueOf(s),
-          TimeZone.getTimeZone("Europe/London").toZoneId());
-      TimestampTZ tstz2 = TimestampTZUtil.convert(
-          Timestamp.valueOf(s),
-          TimeZone.getTimeZone("America/Los_Angeles").toZoneId());
+      TimestampTZ tstz1 = new TimestampTZ(Timestamp.valueOf(s), TimeZone.getTimeZone("Europe/London").toZoneId());
+      TimestampTZ tstz2 = new TimestampTZ(Timestamp.valueOf(s), TimeZone.getTimeZone("America/Los_Angeles").toZoneId());
       Assert.assertTrue(tstz1.compareTo(tstz2) < 0);
     } finally {
       TimeZone.setDefault(defaultZone);

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import java.time.ZoneId;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
@@ -51,7 +52,7 @@ public final class VectorUDFUnixTimeStampTimestamp extends VectorUDFTimestampFie
   protected long getTimestampField(TimestampColumnVector timestampColVector, int elementNum) {
     java.sql.Timestamp ts = timestampColVector.asScratchTimestamp(elementNum);
     timestamp.setTimeInMillis(ts.getTime(), ts.getNanos());
-    return TimestampTZUtil.convert(timestamp, timeZone).getEpochSecond();
+    return new TimestampTZ(timestamp, timeZone).getEpochSecond();
   }
 
   public VectorUDFUnixTimeStampTimestamp(int colNum, int outputColumnNum) {

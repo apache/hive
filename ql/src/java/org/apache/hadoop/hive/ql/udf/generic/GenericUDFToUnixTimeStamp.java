@@ -178,8 +178,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           inputDateOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
       retValue.set(timestampTZ.getEpochSecond());
     } else if (inputTimestampOI != null)  {
-      TimestampTZ timestampTZ = TimestampTZUtil.convert(
-          inputTimestampOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
+      TimestampTZ timestampTZ = new TimestampTZ(inputTimestampOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
       retValue.set(timestampTZ.getEpochSecond());
     } else {
       TimestampTZ timestampTZ =

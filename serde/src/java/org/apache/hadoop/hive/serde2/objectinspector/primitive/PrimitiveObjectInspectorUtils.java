@@ -1322,7 +1322,7 @@ public final class PrimitiveObjectInspectorUtils {
     }
     case TIMESTAMP: {
       Timestamp ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getTimestamp();
-      return TimestampTZUtil.convert(ts, timeZone);
+      return new TimestampTZ(ts, timeZone);
     }
     case TIMESTAMPLOCALTZ: {
       return ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o).getTimestampTZ();

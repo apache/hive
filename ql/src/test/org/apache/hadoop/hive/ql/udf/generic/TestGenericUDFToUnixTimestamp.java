@@ -82,13 +82,13 @@ public class TestGenericUDFToUnixTimestamp {
     udf.initialize(arguments);
 
     Timestamp ts = Timestamp.valueOf("1970-01-01 00:00:00");
-    TimestampTZ tstz = TimestampTZUtil.convert(ts, ZoneId.systemDefault());
+    TimestampTZ tstz = new TimestampTZ(ts, ZoneId.systemDefault());
     runAndVerify(udf,
         new TimestampWritableV2(ts),
         new LongWritable(tstz.getEpochSecond()));
 
     ts = Timestamp.valueOf("2001-02-03 01:02:03");
-    tstz = TimestampTZUtil.convert(ts, ZoneId.systemDefault());
+    tstz = new TimestampTZ(ts, ZoneId.systemDefault());
     runAndVerify(udf,
         new TimestampWritableV2(ts),
         new LongWritable(tstz.getEpochSecond()));

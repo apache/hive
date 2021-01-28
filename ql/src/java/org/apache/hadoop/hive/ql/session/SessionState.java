@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
@@ -2073,8 +2072,8 @@ public class SessionState implements ISessionAuthState{
       String overrideTimestampString =
           HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
-        TimestampTZ zonedDateTime = TimestampTZUtil.convert(
-            Timestamp.valueOf(overrideTimestampString), sessionConf.getLocalTimeZone());
+        TimestampTZ zonedDateTime =
+            new TimestampTZ(Timestamp.valueOf(overrideTimestampString), sessionConf.getLocalTimeZone());
         queryCurrentTimestamp = zonedDateTime.getZonedDateTime().toInstant();
       }
     }

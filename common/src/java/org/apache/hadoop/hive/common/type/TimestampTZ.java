@@ -47,14 +47,19 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
     set(seconds, nanos, timeZone);
   }
 
+  public TimestampTZ(Timestamp ts, ZoneId defaultTimeZone) {
+    this(ts.toEpochSecond(), ts.getNanos(), defaultTimeZone);
+  }
+
   /**
-   * Obtains an instance of Instant using seconds from the epoch of 1970-01-01T00:00:00Z and
-   * nanosecond fraction of second. Then, it creates a zoned date-time with the same instant
-   * as that specified but in the given time-zone.
+   * Obtains an instance of Instant using seconds from the epoch of
+   * 1970-01-01T00:00:00Z and nanosecond fraction of second. Then, it creates a
+   * zoned date-time with the same instant as that specified but in the given
+   * time-zone.
    */
   public void set(long seconds, int nanos, ZoneId timeZone) {
     Instant instant = Instant.ofEpochSecond(seconds, nanos);
-    setZonedDateTime(ZonedDateTime.ofInstant(instant, timeZone));
+    setZonedDateTime(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC).withZoneSameLocal(timeZone));
   }
 
   public ZonedDateTime getZonedDateTime() {
