@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -888,7 +889,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             // If a schedule name is available and that isn't part of the
             // existing conf, append the schedule name to the conf.
             String scheduleQuery = conf.get(SCHEDULED_QUERY_SCHEDULENAME);
-            if (scheduleQuery != null && !scheduleQuery.isEmpty()) {
+            if (!StringUtils.isEmpty(scheduleQuery)) {
               if (!getReplPolicyIdString(db).contains(scheduleQuery)) {
                 updateReplSourceFor(hiveDb, dbName, db,
                     getReplPolicyIdString(db) + ", " + scheduleQuery);
@@ -995,8 +996,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       db.setParameters(Collections.singletonMap("repl.source.for", value));
     }
     hiveDb.alterDatabase(dbName, db);
-    LOG.warn("repl.source.for isn't specified for {} using value of {} ",
-        dbName, value);
   }
 
   private FileList createTableFileList(Path dumpRoot, String fileName, int cacheSize) {
