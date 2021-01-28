@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.impala.node;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.SlotDescriptor;
 import com.google.common.base.Preconditions;
 import org.apache.calcite.plan.RelOptCost;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.impala.funcmapper.ImpalaConjuncts;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.ExprSubstitutionMap;
 import org.apache.impala.analysis.SortInfo;
+import org.apache.impala.common.AnalysisException;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.SingleNodePlanner;
@@ -105,7 +107,7 @@ public class ImpalaSortRel extends ImpalaPlanRel {
 
     // createOutputExprs also marks the slot materialized, so call this before calling
     // materializeRequiredSlots because the latter checks for the isMaterialized flag
-    this.outputExprs = createMappedOutputExprs(sortInfo);
+    this.outputExprs = createMappedOutputExprs(sortInfo, ctx.getRootAnalyzer());
 
     sortInfo.materializeRequiredSlots(ctx.getRootAnalyzer(), new ExprSubstitutionMap());
 
@@ -175,20 +177,22 @@ public class ImpalaSortRel extends ImpalaPlanRel {
    * do not necessarily line up with the indexes.   So we need to walk through the
    * expressions of the input node and match them up with the corresponding SlotRef.
    */
-  public ImmutableMap<Integer, Expr> createMappedOutputExprs(SortInfo sortInfo) {
+  public ImmutableMap<Integer, Expr> createMappedOutputExprs(SortInfo sortInfo,
+      Analyzer analyzer) throws AnalysisException  {
     Map<Integer, Expr> childOutputExprsMap = getImpalaRelInput(0).getOutputExprsMap();
     Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
 
+    // project all columns coming from the child since Sort does not change
+    // any projections but do the mapping based on its own substitution map
     for (Map.Entry<Integer, Expr> e : childOutputExprsMap.entrySet()) {
-      Expr slotRefExpr = sortInfo.getOutputSmap().get(e.getValue());
-      Preconditions.checkNotNull(slotRefExpr);
-      exprs.put(e.getKey(), slotRefExpr);
+      exprs.put(e.getKey(), e.getValue().trySubstitute(sortInfo.getOutputSmap(),
+          analyzer, true));
     }
+
     for (SlotDescriptor slotDesc : sortInfo.getSortTupleDescriptor().getSlots()) {
       slotDesc.setIsMaterialized(true);
     }
     return ImmutableMap.copyOf(exprs);
   }
-
 
 }
