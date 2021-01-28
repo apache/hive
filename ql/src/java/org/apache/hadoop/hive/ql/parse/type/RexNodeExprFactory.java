@@ -25,6 +25,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
@@ -1003,20 +1005,16 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
 
   @Override
   protected RexNode replaceFieldNamesInStruct(RexNode expr, List<String> newFieldNames) {
-    RexCall structCall = (RexCall) expr;
-    List<RelDataType> newTypes = new ArrayList<>();
-    List<String> allNewFieldNames = new ArrayList<>();
-    List<RexNode> newOperands = new ArrayList<>();
-    int fieldNameIdx = 0;
-    for (RexNode rexNode : structCall.operands) {
-        if ("_UTF-16LE'tok_alias':VARCHAR(2147483647) CHARACTER SET \"UTF-16LE\"".compareTo(rexNode.toString()) == 0) {
-        allNewFieldNames.add(newFieldNames.get(fieldNameIdx++));
-      } else {
-        newOperands.add(rexNode);
-        newTypes.add(rexNode.getType());
-      }
+    if (newFieldNames.isEmpty()) {
+      return expr;
     }
-    RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, allNewFieldNames);
+
+    RexCall structCall = (RexCall) expr;
+    List<RexNode> newOperands = structCall.operands.stream()
+            .filter(rexNode -> "_UTF-16LE'tok_alias':VARCHAR(2147483647) CHARACTER SET \"UTF-16LE\"".compareTo(rexNode.toString()) != 0)
+            .collect(Collectors.toList());
+    List<RelDataType> newTypes = newOperands.stream().map(RexNode::getType).collect(Collectors.toList());
+    RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, newFieldNames);
     return rexBuilder.makeCall(newType, structCall.op, newOperands);
   }
 

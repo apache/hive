@@ -32,9 +32,34 @@ public class TestValuesClause {
   ParseDriver parseDriver = new ParseDriver();
 
   @Test
+  public void testParseSelect() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "select 1 a, 2 as b, 3", null).getTree();
+
+    System.out.println(tree.dump());
+  }
+
+  @Test
+  public void testParseInsertInto() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "insert into t1(a,b,c) values (1,2,3),(4,5,6)", null).getTree();
+
+    System.out.println(tree.dump());
+  }
+  @Test
+  public void testParseInsert() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "insert into t1 select 1 a, 2 b, 3", null).getTree();
+
+    System.out.println(tree.dump());
+  }
+
+  @Test
   public void testParseValues() throws Exception {
     ASTNode tree = parseDriver.parse(
             "VALUES(1,2,3),(4,5,6)", null).getTree();
+
+    System.out.println(tree.dump());
 
     ASTNode queryNode = (ASTNode) tree.getChild(0);
     Assert.assertEquals(EXPECTED_VALUES_CLAUSE_TREE, queryNode.dump());
@@ -152,6 +177,8 @@ public class TestValuesClause {
   public void testParseValuesWithMultipleColumnsAndFirstColHasNoAliases() throws Exception {
     ASTNode tree = parseDriver.parse(
             "VALUES(1, 2 b, 3),(4, 5, 6)", null).getTree();
+
+    System.out.println(tree.dump());
 
     assertArrayOfStructsEquals("\n" +
             "TOK_FUNCTION\n" +

@@ -196,7 +196,7 @@ firstExpressionsWithAlias
     :
     first=expression colAlias=identifier? (COMMA expressionWithAlias)*
     -> {colAlias != null}? ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS identifier?) expressionWithAlias*)
-    -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} expressionWithAlias*)
+    -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias()) }) expressionWithAlias*)
     ;
 
 // Parses expressions which may have alias and store the alias.
@@ -205,7 +205,7 @@ expressionWithAlias
     :
     expression alias=identifier?
     -> { alias != null }? expression ^(TOK_ALIAS identifier?)
-    -> expression
+    -> expression ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias()) })
     ;
 
 // Parses comma separated list of expressions and assigns a previously stored to each expression.
