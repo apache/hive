@@ -930,6 +930,30 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
   @Override
+  public void commitTxnWithKeyValue(long txnid, long tableId, String key,
+      String value) throws NoSuchTxnException,
+      TxnAbortedException, TException {
+    try {
+      super.commitTxnWithKeyValue(txnid, tableId, key, value);
+    } finally {
+      CacheKey.clearTransactionInfo(txnid, OPEN_WRITE_TXNS.containsKey(txnid));
+      OPEN_WRITE_TXNS.remove(txnid);
+    }
+  }
+
+  @Override
+  public void commitTxn(CommitTxnRequest rqst)
+          throws NoSuchTxnException, TxnAbortedException, TException {
+    try {
+      super.commitTxn(rqst);
+    } finally {
+      long txnid = rqst.getTxnid();
+      CacheKey.clearTransactionInfo(txnid, OPEN_WRITE_TXNS.containsKey(txnid));
+      OPEN_WRITE_TXNS.remove(txnid);
+    }
+  }
+
+  @Override
   public void abortTxns(List<Long> txnids) throws NoSuchTxnException, TException {
     try {
       super.abortTxns(txnids);
