@@ -337,6 +337,13 @@ public class HiveConnection implements java.sql.Connection {
           LOG.warn("Failed to connect to " + connParams.getHost() + ":" + connParams.getPort());
           String errMsg = null;
           String warnMsg = "Could not open client transport with JDBC Uri: " + jdbcUriString + ": ";
+          try {
+            close();
+          } catch (Exception ex) {
+            // Swallow the exception to let the connection have a chance to retry or
+            // bring the real cause to the front
+            LOG.debug("Error while closing the connection", ex);
+          }
           if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(sessConfMap)) {
             errMsg = "Could not open client transport for any of the Server URI's in ZooKeeper: ";
             // Try next available server in zookeeper, or retry all the servers again if retry is enabled
@@ -357,15 +364,6 @@ public class HiveConnection implements java.sql.Connection {
           }
 
           if (numRetries >= maxRetries) {
-            try {
-              // Cleaning up the server resources early
-              if (!isClosed) {
-                // close the session
-                close();
-              } else if (transport != null) {
-                transport.close();
-              }
-            } catch (SQLException ignore) { }
             throw new SQLException(errMsg + e.getMessage(), " 08S01", e);
           } else {
             LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries+" with retry interval "+retryInterval+"ms");
@@ -1104,18 +1102,18 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public void close() throws SQLException {
-    if (!isClosed) {
-      TCloseSessionReq closeReq = new TCloseSessionReq(sessHandle);
       try {
-        client.CloseSession(closeReq);
+        if (!isClosed) {
+          TCloseSessionReq closeReq = new TCloseSessionReq(sessHandle);
+          client.CloseSession(closeReq);
+        }
       } catch (TException e) {
         throw new SQLException("Error while cleaning up the server resources", e);
       } finally {
         isClosed = true;
-        if (transport != null) {
+        if (transport != null && transport.isOpen()) {
           transport.close();
         }
-      }
     }
   }
 
