@@ -31,7 +31,7 @@ public class ExpressionTree {
   public enum Operator {OR, AND, NOT, LEAF, CONSTANT}
   private final Operator operator;
   private final List<ExpressionTree> children;
-  private final SearchArgumentImpl.PredicateLeafImpl leaf;
+  private final PredicateLeaf leaf;
   private final SearchArgument.TruthValue constant;
 
   ExpressionTree() {
@@ -43,7 +43,7 @@ public class ExpressionTree {
 
   ExpressionTree(Operator op, ExpressionTree... kids) {
     operator = op;
-    children = new ArrayList<ExpressionTree>();
+    children = new ArrayList<>();
     leaf = null;
     this.constant = null;
     Collections.addAll(children, kids);
@@ -68,7 +68,7 @@ public class ExpressionTree {
     if (other.children == null) {
       this.children = null;
     } else {
-      this.children = new ArrayList<ExpressionTree>();
+      this.children = new ArrayList<>();
       for(ExpressionTree child: other.children) {
         children.add(new ExpressionTree(child));
       }

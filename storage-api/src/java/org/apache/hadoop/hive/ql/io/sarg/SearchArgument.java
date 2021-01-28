@@ -157,8 +157,9 @@ public interface SearchArgument {
   public List<PredicateLeaf> getLeaves();
 
   /**
-   * Get the expression tree. This should only needed for file formats that
-   * need to translate the expression to an internal form.
+   * Get the expression tree normalized into conjunctive normal form.
+   * This should only needed for file formats that need to translate
+   * the expression to an internal form.
    */
   public ExpressionTree getExpression();
 

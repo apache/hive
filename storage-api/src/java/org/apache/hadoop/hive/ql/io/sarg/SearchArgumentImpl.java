@@ -130,6 +130,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       return literalList;
     }
 
+    @Override
     public int getId() {
       return id;
     }
@@ -214,14 +215,14 @@ public final class SearchArgumentImpl implements SearchArgument {
   }
 
   private final List<PredicateLeaf> leaves;
-  private final ExpressionTree expression;
-  private final ExpressionTree unexpandedExpression;
+  private final ExpressionTree normalizedExpression;
+  private final ExpressionTree compactExpression;
 
-  SearchArgumentImpl(ExpressionTree expression,
-                     ExpressionTree unexpandedExpression,
+  SearchArgumentImpl(ExpressionTree normalizedExpression,
+                     ExpressionTree compactExpression,
                      List<PredicateLeaf> leaves) {
-    this.expression = expression;
-    this.unexpandedExpression = unexpandedExpression;
+    this.normalizedExpression = normalizedExpression;
+    this.compactExpression = compactExpression;
     this.leaves = leaves;
   }
 
@@ -229,8 +230,8 @@ public final class SearchArgumentImpl implements SearchArgument {
   @SuppressWarnings("unused")
   SearchArgumentImpl() {
         leaves = null;
-        expression = null;
-        unexpandedExpression = null;
+        normalizedExpression = null;
+        compactExpression = null;
   }
 
   @Override
@@ -240,22 +241,23 @@ public final class SearchArgumentImpl implements SearchArgument {
 
   @Override
   public TruthValue evaluate(TruthValue[] leaves) {
-    return expression == null ? TruthValue.YES : expression.evaluate(leaves);
+    return normalizedExpression == null ? TruthValue.YES
+        : normalizedExpression.evaluate(leaves);
   }
 
   @Override
   public ExpressionTree getExpression() {
-    return expression;
+    return normalizedExpression;
   }
 
   @Override
   public ExpressionTree getCompactExpression() {
-    return unexpandedExpression;
+    return compactExpression;
   }
 
   @Override
   public String toString() {
-    return expression.toString();
+    return normalizedExpression.toString();
   }
 
   /**
@@ -272,7 +274,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       buffer.append(", ");
     }
     buffer.append("expr = ");
-    buffer.append(expression.toOldString());
+    buffer.append(normalizedExpression.toOldString());
     return buffer.toString();
   }
 

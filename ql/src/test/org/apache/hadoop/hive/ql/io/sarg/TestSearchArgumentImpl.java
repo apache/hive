@@ -126,7 +126,6 @@ public class TestSearchArgumentImpl {
 
   @Test
   public void testFlatten() throws Exception {
-    PredicateLeafImpl leaf1 = new PredicateLeafImpl();
     assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.flatten(leaf(1)).toOldString());
     assertEquals("NO",
         SearchArgumentImpl.BuilderImpl.flatten(constant(TruthValue.NO)).toString());
