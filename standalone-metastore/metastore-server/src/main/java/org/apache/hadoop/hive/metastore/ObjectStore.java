@@ -10907,54 +10907,51 @@ public class ObjectStore implements RawStore, Configurable {
   private int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize) {
     final Transaction tx = pm.currentTransaction();
     int eventsCount = 0;
-
+    Query query = null;
     try {
       tx.begin();
-
-      try (Query query = pm.newQuery(MNotificationLog.class, "eventTime <= tooOld")) {
-        query.declareParameters("java.lang.Integer tooOld");
-        query.setOrdering("eventId ascending");
-        if (batchSize.isPresent()) {
-          query.setRange(0, batchSize.get());
-        }
-
-        List<MNotificationLog> events = (List) query.execute(ageSec);
-        if (CollectionUtils.isNotEmpty(events)) {
-          eventsCount = events.size();
-
-          if (LOG.isDebugEnabled()) {
-            int minEventTime, maxEventTime;
-            long minEventId, maxEventId;
-            Iterator<MNotificationLog> iter = events.iterator();
-            MNotificationLog firstNotification = iter.next();
-
-            minEventTime = maxEventTime = firstNotification.getEventTime();
-            minEventId = maxEventId = firstNotification.getEventId();
-
-            while (iter.hasNext()) {
-              MNotificationLog notification = iter.next();
-              minEventTime = Math.min(minEventTime, notification.getEventTime());
-              maxEventTime = Math.max(maxEventTime, notification.getEventTime());
-              minEventId = Math.min(minEventId, notification.getEventId());
-              maxEventId = Math.max(maxEventId, notification.getEventId());
-            }
-
-            LOG.debug(
-                "Remove notification batch of {} events with eventTime < {}, min eventId {}, max eventId {}, min eventTime {}, max eventTime {}",
-                eventsCount, ageSec, minEventId, maxEventId, minEventTime, maxEventTime);
-          }
-
-          pm.deletePersistentAll(events);
-        }
+      query = pm.newQuery(MNotificationLog.class, "eventTime <= tooOld");
+      query.declareParameters("java.lang.Integer tooOld");
+      query.setOrdering("eventId ascending");
+      if (batchSize.isPresent()) {
+        query.setRange(0, batchSize.get());
       }
-
+      List<MNotificationLog> events = (List) query.execute(ageSec);
+      if (CollectionUtils.isNotEmpty(events)) {
+        eventsCount = events.size();
+        if (LOG.isDebugEnabled()) {
+          int minEventTime, maxEventTime;
+          long minEventId, maxEventId;
+          Iterator<MNotificationLog> iter = events.iterator();
+          MNotificationLog firstNotification = iter.next();
+          minEventTime = maxEventTime = firstNotification.getEventTime();
+          minEventId = maxEventId = firstNotification.getEventId();
+          while (iter.hasNext()) {
+            MNotificationLog notification = iter.next();
+            minEventTime = Math.min(minEventTime, notification.getEventTime());
+            maxEventTime = Math.max(maxEventTime, notification.getEventTime());
+            minEventId = Math.min(minEventId, notification.getEventId());
+            maxEventId = Math.max(maxEventId, notification.getEventId());
+          }
+          LOG.debug(
+                  "Remove notification batch of {} events with eventTime < {}, min eventId {}, max eventId {}, min eventTime {}, max eventTime {}",
+                  eventsCount, ageSec, minEventId, maxEventId, minEventTime, maxEventTime);
+        }
+        pm.deletePersistentAll(events);
+      }
       tx.commit();
     } catch (Exception e) {
       LOG.error("Unable to delete batch of notification events", e);
       eventsCount = 0;
     } finally {
-      if (tx.isActive()) {
-        tx.rollback();
+      try {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+      } finally {
+        if (query != null) {
+          query.closeAll();
+        }
       }
     }
 
