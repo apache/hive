@@ -92,6 +92,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.transaction.NotSupportedException;
+
 /**
  * Expression factory for Hive {@link ExprNodeDesc}.
  */
@@ -908,6 +910,11 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
   @Override
   protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
     return FunctionRegistry.getFunctionInfo(funcName);
+  }
+
+  @Override
+  protected ExprNodeDesc replaceFieldNamesInStruct(ExprNodeDesc expr, List<String> columnAliases) {
+    return expr;
   }
 
 

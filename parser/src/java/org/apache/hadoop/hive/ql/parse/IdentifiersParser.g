@@ -195,8 +195,8 @@ firstExpressionsWithAlias
 @init { initAliases(); }
     :
     first=expression colAlias=identifier? (COMMA expressionWithAlias)*
-    -> {colAlias != null}? ^(TOK_FUNCTION Identifier["named_struct"] { adaptor.create(Identifier, addAlias($colAlias.tree.getText())) } {$first.tree} expressionWithAlias*)
-    -> ^(TOK_FUNCTION Identifier["named_struct"] { adaptor.create(Identifier, addImplicitAlias(1)) } {$first.tree} expressionWithAlias*)
+    -> {colAlias != null}? ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS identifier?) expressionWithAlias*)
+    -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} expressionWithAlias*)
     ;
 
 // Parses expressions which may have alias and store the alias.
@@ -204,8 +204,8 @@ firstExpressionsWithAlias
 expressionWithAlias
     :
     expression alias=identifier?
-    -> { alias != null }? { adaptor.create(Identifier, addAlias($alias.tree.getText())) } expression
-    -> { adaptor.create(Identifier, generateColumnAlias()) } expression
+    -> { alias != null }? expression ^(TOK_ALIAS identifier?)
+    -> expression
     ;
 
 // Parses comma separated list of expressions and assigns a previously stored to each expression.
@@ -215,7 +215,7 @@ moreExpressionsWithAlias
 @after { resetAliasIndex(); }
     :
     first=expression (COMMA expressionWithStoredAlias)*
-    -> ^(TOK_FUNCTION Identifier["named_struct"] { adaptor.create(Identifier, getNextAlias()) } {$first.tree} expressionWithStoredAlias*)
+    -> ^(TOK_FUNCTION Identifier["struct"] { adaptor.create(Identifier, getNextAlias()) } {$first.tree} expressionWithStoredAlias*)
     ;
 
 // Parses expression and assigns the next alias stored in rule expressionWithAlias.

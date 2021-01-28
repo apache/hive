@@ -1,46 +1,10 @@
-PREHOOK: query: EXPLAIN CBO
-VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+PREHOOK: query: VALUES(1 a,2 b)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+POSTHOOK: query: VALUES(1 a,2 b)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-Explain
-CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(named_struct(_UTF-16LE'col1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 1, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 2, _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 3), named_struct(_UTF-16LE'col1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 4, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 5, _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 6), named_struct(_UTF-16LE'col1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 11, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 12, _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 13)))], rowType=[RecordType(INTEGER col1, INTEGER b, INTEGER c)])
-  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
-
-PREHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-col1	b	c
-1	2	3
-4	5	6
-11	12	13
-PREHOOK: query: VALUES(1 a,2 b,3),(4,5,6),(11,12,13)
-UNION ALL
-VALUES(100 f,200 g,300 h),(400,500,600),(110,120,130)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: VALUES(1 a,2 b,3),(4,5,6),(11,12,13)
-UNION ALL
-VALUES(100 f,200 g,300 h),(400,500,600),(110,120,130)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-a	b	col3
-1	2	3
-4	5	6
-11	12	13
-100	200	300
-400	500	600
-110	120	130
+a	b
+1	2

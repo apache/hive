@@ -318,7 +318,7 @@ valuesTableConstructor
     :
     (valueRowConstructor (COMMA! valueRowConstructor)*) => (valueRowConstructor (COMMA! valueRowConstructor)*)
     |
-    firstValueRowConstructor (COMMA! moreValueRowConstructor)*
+    firstValueRowConstructor (COMMA! valueRowConstructor)*
     ;
 
 valueRowConstructor

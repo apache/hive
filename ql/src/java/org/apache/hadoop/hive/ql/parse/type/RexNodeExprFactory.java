@@ -29,6 +29,7 @@ import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -1000,6 +1001,25 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     return functionHelper.getFunctionInfo(funcName);
   }
 
+  @Override
+  protected RexNode replaceFieldNamesInStruct(RexNode expr, List<String> newFieldNames) {
+    RexCall structCall = (RexCall) expr;
+    List<RelDataType> newTypes = new ArrayList<>();
+    List<String> allNewFieldNames = new ArrayList<>();
+    List<RexNode> newOperands = new ArrayList<>();
+    int fieldNameIdx = 0;
+    for (RexNode rexNode : structCall.operands) {
+        if ("_UTF-16LE'tok_alias':VARCHAR(2147483647) CHARACTER SET \"UTF-16LE\"".compareTo(rexNode.toString()) == 0) {
+        allNewFieldNames.add(newFieldNames.get(fieldNameIdx++));
+      } else {
+        newOperands.add(rexNode);
+        newTypes.add(rexNode.getType());
+      }
+    }
+    RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, allNewFieldNames);
+    return rexBuilder.makeCall(newType, structCall.op, newOperands);
+  }
+
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
     throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
         "Invalid operator:" + comparisonOp.toString()));
@@ -1065,5 +1085,4 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   public static NlsString makeHiveUnicodeString(String text) {
     return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
-
 }
