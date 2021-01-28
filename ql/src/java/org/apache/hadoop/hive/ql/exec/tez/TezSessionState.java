@@ -485,8 +485,10 @@ public class TezSessionState {
       if (isOnThread && !isSuccessful) {
         closeAndIgnoreExceptions(session);
       }
-      cleanupScratchDir();
-      cleanupDagResources();
+      if (!isSuccessful) {
+        cleanupScratchDir();
+        cleanupDagResources();
+      }
     }
   }
 
