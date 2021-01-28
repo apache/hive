@@ -24,4 +24,5 @@ public interface PackageRegistry {
   Optional<String> findPackage(String name);
   void createPackage(String name, String header);
   void createPackageBody(String name, String body);
+  void dropPackage(String name);
 }

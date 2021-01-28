@@ -334,7 +334,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   public Var findVariable(String name) {
     Var var;
-    String name1 = name;
+    String name1 = name.toUpperCase();
     String name1a = null;
     String name2 = null;
     Scope cur = exec.currentScope;
@@ -342,8 +342,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     Package packCallContext = exec.getPackageCallContext();
     ArrayList<String> qualified = exec.meta.splitIdentifier(name);
     if (qualified != null) {
-      name1 = qualified.get(0);
-      name2 = qualified.get(1);
+      name1 = qualified.get(0).toUpperCase();
+      name2 = qualified.get(1).toUpperCase();
       pack = findPackage(name1);
       if (pack != null) {        
         var = pack.findVariable(name2);
@@ -775,7 +775,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       initRoutines = true;
       visit(tree);
       initRoutines = false;
-      exec.function.exec(execMain, null);
+      exec.function.exec(execMain.toUpperCase(), null);
     }
     else {
       visit(tree);
@@ -1495,7 +1495,26 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     addLocalUdf(ctx);                      // Add procedures as they can be invoked by functions
     return 0; 
   }
-  
+
+  public void dropProcedure(String name, boolean checkIfExists) {
+    if (checkIfExists && !function.exists(name)) {
+      trace(null, name + " DOES NOT EXIST");
+      return;
+    }
+    function.remove(name);
+    trace(null, name + " DROPPED");
+  }
+
+  public void dropPackage(String name, boolean checkIfExists) {
+    if (checkIfExists && !packageRegistry.findPackage(name).isPresent()) {
+      trace(null, name + " DOES NOT EXIST");
+      return;
+    }
+    packages.remove(name);
+    packageRegistry.dropPackage(name);
+    trace(null, name + " DROPPED");
+  }
+
   /**
    * CREATE INDEX statement
    */
@@ -1668,11 +1687,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitExpr_func(HplsqlParser.Expr_funcContext ctx) {
-    String name = ctx.ident().getText();  
+    String name = ctx.ident().getText();
     if (exec.buildSql) {
       exec.execSql(name, ctx.expr_func_params());
-    }
-    else {
+    } else {
+      name = name.toUpperCase();
       Package packCallContext = exec.getPackageCallContext();
       ArrayList<String> qualified = exec.meta.splitIdentifier(name);
       boolean executed = false;
@@ -1861,7 +1880,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitCall_stmt(HplsqlParser.Call_stmtContext ctx) {
-    String name = ctx.ident().getText();
+    String name = ctx.ident().getText().toUpperCase();
     Package packCallContext = exec.getPackageCallContext();
     ArrayList<String> qualified = exec.meta.splitIdentifier(name);
     exec.inCallStmt = true;    
@@ -2247,7 +2266,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       }
     }
     else {
-      if (!exec.buildSql && !exec.inCallStmt && exec.function.exec(ident, null)) {
+      if (!exec.buildSql && !exec.inCallStmt && exec.function.exec(ident.toUpperCase(), null)) {
         return 0;
       } else {
         exec.stackPush(new Var(Var.Type.IDENT, ident));

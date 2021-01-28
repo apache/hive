@@ -71,6 +71,15 @@ public class HmsPackageRegistry implements PackageRegistry {
     }
   }
 
+  @Override
+  public void dropPackage(String name) {
+    try {
+      msc.dropPackage(new PackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name));
+    } catch (TException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
   private PackageRequest request(String name) {
     return new PackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name.toUpperCase());
   }

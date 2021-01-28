@@ -25,4 +25,5 @@ public interface Function {
   void addUserFunction(HplsqlParser.Create_function_stmtContext ctx);
   void addUserProcedure(HplsqlParser.Create_procedure_stmtContext ctx);
   boolean exists(String name);
+  void remove(String name);
 }

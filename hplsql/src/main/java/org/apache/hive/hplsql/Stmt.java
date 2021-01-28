@@ -383,8 +383,11 @@ public class Stmt {
         sql += "IF EXISTS ";
       }
       sql += evalPop(ctx.table_name()).toString();
-    }
-    else if (ctx.T_DATABASE() != null || ctx.T_SCHEMA() != null) {
+    } else if (ctx.T_PACKAGE() != null) {
+      exec.dropPackage(ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
+    } else if (ctx.T_PROCEDURE() != null || ctx.T_FUNCTION() != null) {
+      exec.dropProcedure(ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
+    } else if (ctx.T_DATABASE() != null || ctx.T_SCHEMA() != null) {
       sql = "DROP DATABASE ";
       if (ctx.T_EXISTS() != null) {
         sql += "IF EXISTS ";
@@ -1045,7 +1048,7 @@ public class Stmt {
    * EXEC to execute a stored procedure
    */
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
-    String name = evalPop(ctx.expr()).toString();
+    String name = evalPop(ctx.expr()).toString().toUpperCase();
     if (exec.function.exec(name, ctx.expr_func_params())) {
       return true;
     }

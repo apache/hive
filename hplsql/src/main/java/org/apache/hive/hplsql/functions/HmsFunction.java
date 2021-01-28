@@ -61,8 +61,19 @@ public class HmsFunction implements Function {
 
   @Override
   public boolean exists(String name) {
-    name = name.toUpperCase();
     return isCached(name) || getProcFromHMS(name).isPresent();
+  }
+
+  @Override
+  public void remove(String name) {
+    try {
+      msc.dropStoredProcedure(new StoredProcedureRequest(
+              hplSqlSession.currentCatalog(),
+              hplSqlSession.currentDatabase(),
+              name));
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   protected boolean isCached(String name) {
@@ -71,7 +82,6 @@ public class HmsFunction implements Function {
 
   @Override
   public boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx) {
-    name = name.toUpperCase();
     if (builtinFunctions.exec(name, ctx)) {
       return true;
     }

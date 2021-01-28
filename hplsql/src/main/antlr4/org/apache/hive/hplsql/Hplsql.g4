@@ -492,6 +492,8 @@ create_routine_option :
      
 drop_stmt :             // DROP statement
        T_DROP T_TABLE (T_IF T_EXISTS)? table_name
+     | T_DROP T_PACKAGE (T_IF T_EXISTS)? ident
+     | T_DROP (T_PROCEDURE | T_FUNCTION) (T_IF T_EXISTS)? ident
      | T_DROP (T_DATABASE | T_SCHEMA) (T_IF T_EXISTS)? expr
      ;
 

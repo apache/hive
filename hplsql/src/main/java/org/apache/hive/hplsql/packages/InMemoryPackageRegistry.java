@@ -35,12 +35,17 @@ public class InMemoryPackageRegistry implements PackageRegistry {
 
   @Override
   public void createPackage(String name, String header) {
-    registry.put(name.toUpperCase(), new Source(header, ""));
+    registry.put(name, new Source(header, ""));
   }
 
   @Override
   public void createPackageBody(String name, String body) {
-    registry.getOrDefault(name.toUpperCase(), new Source("", "")).body = body;
+    registry.getOrDefault(name, new Source("", "")).body = body;
+  }
+
+  @Override
+  public void dropPackage(String name) {
+    registry.remove(name);
   }
 
   private static class Source {
