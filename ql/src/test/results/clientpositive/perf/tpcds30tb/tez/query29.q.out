@@ -111,15 +111,15 @@ STAGE PLANS:
                         Statistics: Num rows: 1101 Data size: 8808 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5004541
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 550 Data size: 4400 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1101 Data size: 8808 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: cs_sold_date_sk (bigint)
                             Target Input: catalog_sales
                             Partition key expr: cs_sold_date_sk
-                            Statistics: Num rows: 550 Data size: 4400 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1101 Data size: 8808 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
                   Filter Operator
                     predicate: ((d_year = 1999) and (d_moy = 4)) (type: boolean)
@@ -140,15 +140,15 @@ STAGE PLANS:
                         Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.516129
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
-                            Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 3
                   Filter Operator
                     predicate: ((d_year = 1999) and d_moy BETWEEN 4 AND 7) (type: boolean)
@@ -169,15 +169,15 @@ STAGE PLANS:
                         Statistics: Num rows: 122 Data size: 976 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 61 Data size: 488 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 122 Data size: 976 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: sr_returned_date_sk (bigint)
                             Target Input: store_returns
                             Partition key expr: sr_returned_date_sk
-                            Statistics: Num rows: 61 Data size: 488 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 122 Data size: 976 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 8
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
