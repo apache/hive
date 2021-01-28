@@ -357,6 +357,15 @@ public class HiveConnection implements java.sql.Connection {
           }
 
           if (numRetries >= maxRetries) {
+            try {
+              // Cleaning up the server resources early
+              if (!isClosed) {
+                // close the session
+                close();
+              } else if (transport != null) {
+                transport.close();
+              }
+            } catch (SQLException ignore) { }
             throw new SQLException(errMsg + e.getMessage(), " 08S01", e);
           } else {
             LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries+" with retry interval "+retryInterval+"ms");
