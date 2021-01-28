@@ -26,7 +26,9 @@ import com.google.common.collect.Lists;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelWriter;
@@ -74,6 +76,7 @@ import org.apache.impala.planner.AnalyticPlanner;
 import org.apache.impala.planner.PlanNode;
 
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,15 +131,22 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     PlanNode inputPlanNode = inputRel.getPlanNode(ctx);
     // We generate the analytic expressions
     List<AnalyticExpr> analyticExprs = new ArrayList<>();
+    Set<RexOver> overExprsSet = new LinkedHashSet<>();
     for (RexOver over : overExprs) {
-      analyticExprs.add(getAnalyticExpr(over, ctx, inputRel));
+      // remove duplicate RexOver exprs (note that Impala's
+      // AnalyticInfo.create() call further below removes duplicate
+      // AnalyticExprs but we also want that list to be consistent
+      // with the list of RexOver exprs)
+      if (!overExprsSet.contains(over)) {
+        overExprsSet.add(over);
+        analyticExprs.add(getAnalyticExpr(over, ctx, inputRel));
+      }
     }
+
     // We create the analytic info from them
     AnalyticInfo analyticInfo = AnalyticInfo.create(
         analyticExprs, ctx.getRootAnalyzer());
-    // Note: There should not be duplicates anymore after
-    //       Calcite planner has run
-    Preconditions.checkArgument(overExprs.size() == analyticExprs.size());
+    Preconditions.checkArgument(overExprsSet.size() == analyticExprs.size());
     AnalyticPlanner analyticPlanner =
         new AnalyticPlanner(analyticInfo, ctx.getRootAnalyzer(), ctx);
     // TODO: We should either pass the existing partitioning coming from
@@ -155,11 +165,12 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
           /* preserveRootType = */true);
       mapping.put(RexInputRef.of(pos, inputRel.getRowType()), e);
     }
+    Iterator<RexOver> overExprsIter = overExprsSet.iterator();
     for (int i = 0; i < analyticExprs.size(); i++) {
       SlotDescriptor slotDesc =
           analyticInfo.getOutputTupleDesc().getSlots().get(i);
       SlotRef logicalOutputSlot = new SlotRef(slotDesc);
-      mapping.put(overExprs.get(i),
+      mapping.put(overExprsIter.next(),
           outputExprMap.get(logicalOutputSlot));
     }
     LOG.debug("Mapping from nodes created by analytic planner : {}", mapping);
