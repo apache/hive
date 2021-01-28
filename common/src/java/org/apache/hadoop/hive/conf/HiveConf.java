@@ -1807,6 +1807,13 @@ public class HiveConf extends Configuration {
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "CONSERVATIVE",
+        new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS", "TEST"),
+        "The strategy defines when Hive fallbacks to legacy optimizer when CBO fails:" 
+            + "NEVER, never use the legacy optimizer (all CBO errors are fatal);"
+            + "ALWAYS, always use the legacy optimizer (CBO errors are not fatal);"
+            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views;"
+            + "TEST, specific behavior only for tests, do not use in production"), 
     HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
         "the expression exceeds this threshold; the threshold is expressed in terms of number of nodes (leaves and" +
         "interior nodes). -1 to not set up a threshold."),
