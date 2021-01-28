@@ -49,7 +49,7 @@ public class ExpressionTree {
     Collections.addAll(children, kids);
   }
 
-  ExpressionTree(SearchArgumentImpl.PredicateLeafImpl leaf) {
+  ExpressionTree(PredicateLeaf leaf) {
     operator = Operator.LEAF;
     children = null;
     this.leaf = leaf;

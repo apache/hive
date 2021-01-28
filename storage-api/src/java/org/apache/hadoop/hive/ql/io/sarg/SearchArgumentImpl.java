@@ -291,7 +291,7 @@ public final class SearchArgumentImpl implements SearchArgument {
 
     private final Deque<ExpressionTree> currentTree =
         new ArrayDeque<>();
-    private final Map<PredicateLeafImpl, PredicateLeafImpl> leaves =
+    private final Map<PredicateLeaf, PredicateLeaf> leaves =
         new HashMap<>();
     private final ExpressionTree root =
         new ExpressionTree(ExpressionTree.Operator.AND);
@@ -338,8 +338,8 @@ public final class SearchArgumentImpl implements SearchArgument {
       return this;
     }
 
-    private PredicateLeafImpl addLeaf(PredicateLeafImpl leaf) {
-      PredicateLeafImpl result = leaves.get(leaf);
+    private PredicateLeaf addLeaf(PredicateLeaf leaf) {
+      PredicateLeaf result = leaves.get(leaf);
       if (result == null) {
         leaves.put(leaf, leaf);
         return leaf;
