@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
+import org.apache.hadoop.fs.permission.AclUtil;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -74,19 +76,22 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
             destPath, sourcePath, status.getOwner(), status.getGroup(), status.getPermission());
     destPath.getFileSystem(conf).setOwner(destPath, status.getOwner(), status.getGroup());
     destPath.getFileSystem(conf).setPermission(destPath, status.getPermission());
-    setAclsToTarget(sourcePath, destPath);
+    setAclsToTarget(status, sourcePath, destPath);
     return createdDir;
   }
 
-  private void setAclsToTarget(Path sourcePath, Path destPath)
-      throws IOException {
+  private void setAclsToTarget(FileStatus sourceStatus, Path sourcePath,
+      Path destPath) throws IOException {
     // Check if distCp options contains preserve ACL.
     if (isPreserveAcl()) {
       AclStatus sourceAcls =
           sourcePath.getFileSystem(conf).getAclStatus(sourcePath);
       if (sourceAcls != null && sourceAcls.getEntries().size() > 0) {
-        destPath.getFileSystem(conf)
-            .modifyAclEntries(destPath, sourceAcls.getEntries());
+        destPath.getFileSystem(conf).removeAcl(destPath);
+        List<AclEntry> effectiveAclEntries = AclUtil
+            .getAclFromPermAndEntries(sourceStatus.getPermission(),
+                sourceAcls.getEntries());
+        destPath.getFileSystem(conf).setAcl(destPath, effectiveAclEntries);
       }
     }
   }
