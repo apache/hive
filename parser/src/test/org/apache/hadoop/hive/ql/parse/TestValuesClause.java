@@ -59,8 +59,6 @@ public class TestValuesClause {
     ASTNode tree = parseDriver.parse(
             "VALUES(1,2,3),(4,5,6)", null).getTree();
 
-    System.out.println(tree.dump());
-
     ASTNode queryNode = (ASTNode) tree.getChild(0);
     Assert.assertEquals(EXPECTED_VALUES_CLAUSE_TREE, queryNode.dump());
   }
@@ -104,20 +102,14 @@ public class TestValuesClause {
           "               TOK_FUNCTION\n" +
           "                  array\n" +
           "                  TOK_FUNCTION\n" +
-          "                     named_struct\n" +
-          "                     col1\n" +
+          "                     struct\n" +
           "                     1\n" +
-          "                     col2\n" +
           "                     2\n" +
-          "                     col3\n" +
           "                     3\n" +
           "                  TOK_FUNCTION\n" +
-          "                     named_struct\n" +
-          "                     col1\n" +
+          "                     struct\n" +
           "                     4\n" +
-          "                     col2\n" +
           "                     5\n" +
-          "                     col3\n" +
           "                     6\n";
 
   @Test
@@ -146,12 +138,10 @@ public class TestValuesClause {
             "TOK_FUNCTION\n" +
             "   array\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      col1\n" +
+            "      struct\n" +
             "      1\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      col1\n" +
+            "      struct\n" +
             "      4\n", tree);
   }
 
@@ -164,12 +154,12 @@ public class TestValuesClause {
             "TOK_FUNCTION\n" +
             "   array\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      a\n" +
+            "      struct\n" +
             "      1\n" +
+            "      TOK_ALIAS\n" +
+            "         a\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      a\n" +
+            "      struct\n" +
             "      4\n", tree);
   }
 
@@ -178,26 +168,24 @@ public class TestValuesClause {
     ASTNode tree = parseDriver.parse(
             "VALUES(1, 2 b, 3),(4, 5, 6)", null).getTree();
 
-    System.out.println(tree.dump());
-
     assertArrayOfStructsEquals("\n" +
             "TOK_FUNCTION\n" +
             "   array\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      col1\n" +
+            "      struct\n" +
             "      1\n" +
-            "      b\n" +
+            "      TOK_ALIAS\n" +
+            "         col1\n" +
             "      2\n" +
-            "      col3\n" +
+            "      TOK_ALIAS\n" +
+            "         b\n" +
             "      3\n" +
+            "      TOK_ALIAS\n" +
+            "         col3\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      col1\n" +
+            "      struct\n" +
             "      4\n" +
-            "      b\n" +
             "      5\n" +
-            "      col3\n" +
             "      6\n", tree);
   }
 
@@ -210,20 +198,20 @@ public class TestValuesClause {
             "TOK_FUNCTION\n" +
             "   array\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      a\n" +
+            "      struct\n" +
             "      1\n" +
-            "      b\n" +
+            "      TOK_ALIAS\n" +
+            "         a\n" +
             "      2\n" +
-            "      col3\n" +
+            "      TOK_ALIAS\n" +
+            "         b\n" +
             "      3\n" +
+            "      TOK_ALIAS\n" +
+            "         col3\n" +
             "   TOK_FUNCTION\n" +
-            "      named_struct\n" +
-            "      a\n" +
+            "      struct\n" +
             "      4\n" +
-            "      b\n" +
             "      5\n" +
-            "      col3\n" +
             "      6\n", tree);
   }
 

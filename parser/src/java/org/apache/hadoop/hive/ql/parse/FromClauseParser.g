@@ -335,13 +335,6 @@ firstValueRowConstructor
     LPAREN! firstExpressionsWithAlias RPAREN!
     ;
 
-moreValueRowConstructor
-@init { gParent.pushMsg("more value row constructor", state); }
-@after { gParent.popMsg(state); }
-    :
-    LPAREN! moreExpressionsWithAlias RPAREN!
-    ;
-
 /*
 This represents a clause like this:
 TABLE(VALUES(1,2),(2,3)) as VirtTable(col1,col2)

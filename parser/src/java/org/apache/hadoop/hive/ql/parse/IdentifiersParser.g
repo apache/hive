@@ -39,35 +39,21 @@ k=3;
   int parameterIdx = 0;
   public int getParameterIdx() { return ++parameterIdx;}
 
-  private void initAliases() {
-    colAliasList.clear();
+  private int columnAliasCounter = 1;
+  private void incAliasCounter() {
+    ++columnAliasCounter;
   }
 
   private String generateColumnAlias() {
-    return addImplicitAlias(colAliasList.size() + 2);
+    return generateColumnAlias(columnAliasCounter);
   }
 
-  private String addImplicitAlias(int index) {
-    String alias = "col" + index;
-    colAliasList.add(alias);
-    return alias;
+  private String generateColumnAlias(int index) {
+    return "col" + index;
   }
 
-  private final List<String> colAliasList = new ArrayList<String>();
-  private String addAlias(String alias) {
-    colAliasList.add(alias);
-    return alias;
-  }
-
-  // index of next alias to read.
-  private int aliasIndex = 0;
-
-  private void resetAliasIndex() {
-    aliasIndex = 0;
-  }
-
-  private String getNextAlias() {
-    return colAliasList.get(aliasIndex++);
+  private void resetAliasCounter() {
+    columnAliasCounter = 1;
   }
 }
 
@@ -192,36 +178,20 @@ expressionPart[CommonTree firstExprTree, boolean isStruct]
 // Parses comma separated list of expressions with optionally specified aliases and store the aliases for further usage.
 // <expression> [<alias>] [, <expression> [<alias>]]
 firstExpressionsWithAlias
-@init { initAliases(); }
+@after { resetAliasCounter(); }
     :
-    first=expression colAlias=identifier? (COMMA expressionWithAlias)*
+    first=expression colAlias=identifier? (COMMA expressionWithAlias)* { incAliasCounter(); }
     -> {colAlias != null}? ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS identifier?) expressionWithAlias*)
-    -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias()) }) expressionWithAlias*)
+    -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias(1)) }) expressionWithAlias*)
     ;
 
 // Parses expressions which may have alias and store the alias.
 // If alias is not specified generate one and store it.
 expressionWithAlias
     :
-    expression alias=identifier?
+    expression alias=identifier? { incAliasCounter(); }
     -> { alias != null }? expression ^(TOK_ALIAS identifier?)
     -> expression ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias()) })
-    ;
-
-// Parses comma separated list of expressions and assigns a previously stored to each expression.
-// The number of expressions must match the number of expressions parsed by rule firstExpressionsWithAlias.
-// <expression> [, <expression>]
-moreExpressionsWithAlias
-@after { resetAliasIndex(); }
-    :
-    first=expression (COMMA expressionWithStoredAlias)*
-    -> ^(TOK_FUNCTION Identifier["struct"] { adaptor.create(Identifier, getNextAlias()) } {$first.tree} expressionWithStoredAlias*)
-    ;
-
-// Parses expression and assigns the next alias stored in rule expressionWithAlias.
-expressionWithStoredAlias
-    :
-    expression -> { adaptor.create(Identifier, getNextAlias()) } expression
     ;
 
 expressions
