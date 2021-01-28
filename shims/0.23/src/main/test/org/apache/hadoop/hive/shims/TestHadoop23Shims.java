@@ -20,13 +20,19 @@ package org.apache.hadoop.hive.shims;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 
 public class TestHadoop23Shims {
@@ -86,6 +92,19 @@ public class TestHadoop23Shims {
     assertEquals(copySrc.toString(), paramsWithCustomParamInjection.get(6));
     assertEquals(copyDst.toString(), paramsWithCustomParamInjection.get(7));
 
+  }
+
+  @Test(expected = FileNotFoundException.class)
+  public void testGetFileIdForNonexistingPath() throws Exception {
+    Hadoop23Shims shims = new Hadoop23Shims();
+
+    DistributedFileSystem fs = mock(DistributedFileSystem.class);
+    DFSClient dfsClient = mock(DFSClient.class);
+    doAnswer(invocationOnMock -> {
+      return dfsClient;
+    }).when(fs).getClient();
+
+    shims.getFileId(fs, "badpath");
   }
 
 }

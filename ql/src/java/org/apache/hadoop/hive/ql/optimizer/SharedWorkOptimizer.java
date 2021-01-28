@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.EdgeType;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OpEdge;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -1804,9 +1805,16 @@ public class SharedWorkOptimizer extends Transform {
     // If we do, we cannot merge. The reason is that Tez currently does
     // not support parallel edges, i.e., multiple edges from same work x
     // into same work y.
+    EdgePredicate edgePredicate;
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT)) {
+      edgePredicate = new EdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP, EdgeType.SEMIJOIN, EdgeType.BROADCAST));
+    } else {
+      edgePredicate = new EdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP));
+    }
+
     OperatorGraph og = new OperatorGraph(pctx);
-    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(new NonParallelizableEdgePredicate());
-    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> cc1 = og.clusterOf(op1).childClusters(edgePredicate);
+    Set<OperatorGraph.Cluster> cc2 = og.clusterOf(op2).childClusters(edgePredicate);
 
     if (!Collections.disjoint(cc1, cc2)) {
       LOG.debug("merge would create an unsupported parallel edge(CHILDS)", op1, op2);
@@ -1829,8 +1837,8 @@ public class SharedWorkOptimizer extends Transform {
     //
     // In the check, we exclude the inputs to the root operator that we are trying
     // to merge (only useful for extended merging as TS do not have inputs).
-    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(new NonParallelizableEdgePredicate());
-    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(new NonParallelizableEdgePredicate());
+    Set<OperatorGraph.Cluster> pc1 = og.clusterOf(op1).parentClusters(edgePredicate);
+    Set<OperatorGraph.Cluster> pc2 = og.clusterOf(op2).parentClusters(edgePredicate);
     Set<Cluster> pc = new HashSet<>(Sets.intersection(pc1, pc2));
 
     for (Operator<?> o : sr.discardableOps.get(0).getParentOperators()) {
@@ -1848,19 +1856,17 @@ public class SharedWorkOptimizer extends Transform {
     return true;
   }
 
-  static class NonParallelizableEdgePredicate implements Function<OpEdge, Boolean> {
+  static class EdgePredicate implements Function<OpEdge, Boolean> {
+
+    private EnumSet<EdgeType> nonTraverseableEdgeTypes;
+
+    public EdgePredicate(EnumSet<EdgeType> nonTraverseableEdgeTypes) {
+      this.nonTraverseableEdgeTypes = nonTraverseableEdgeTypes;
+    }
 
     @Override
     public Boolean apply(OpEdge input) {
-      switch (input.getEdgeType()) {
-      case BROADCAST:
-      case DPP:
-      case SEMIJOIN:
-        return false;
-      default:
-        return true;
-      }
-
+      return !nonTraverseableEdgeTypes.contains(input.getEdgeType());
     }
 
   }

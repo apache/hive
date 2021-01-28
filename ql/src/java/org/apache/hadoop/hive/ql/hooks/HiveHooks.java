@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import com.cronutils.utils.VisibleForTesting;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;

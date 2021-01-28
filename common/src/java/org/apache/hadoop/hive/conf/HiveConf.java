@@ -2461,6 +2461,10 @@ public class HiveConf extends Configuration {
         "Whether to enable predicate pushdown through windowing"),
     HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true,
         "Whether to transitively replicate predicate filters over equijoin conditions."),
+    HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES("hive.ppd.recognize.column.equalities", true,
+        "Whether we should traverse the join branches to discover transitive propagation opportunities over" +
+                " equijoin conditions. \n" +
+                "Requires hive.ppd.recognizetransivity to be set to true."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "During query optimization, filters may be pushed down in the operator tree. \n" +
         "If this config is true only pushed down filters remain in the operator tree, \n" +
@@ -2615,6 +2619,8 @@ public class HiveConf extends Configuration {
         "Enables DPPUnion to merge EventOperators (right now this is used during DynamicPartitionPruning)"),
     HIVE_SHARED_WORK_DOWNSTREAM_MERGE("hive.optimize.shared.work.downstream.merge", true,
         "Analyzes and merges equiv downstream operators after a successfull shared work optimization step."),
+    HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT("hive.optimize.shared.work.parallel.edge.support", true,
+        "Lets the shared work optimizer to create parallel edges in case they are for semijoins or mapjoins."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),
