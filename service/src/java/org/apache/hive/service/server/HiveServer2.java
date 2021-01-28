@@ -30,7 +30,6 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,7 +40,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.api.BackgroundCallback;
@@ -88,6 +86,7 @@ import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -670,9 +669,14 @@ public class HiveServer2 extends CompositeService {
   @Override
   public synchronized void start() {
     super.start();
+
+    HiveConf hiveConf = getHiveConf();
+
+    // Initialize the server-wide pool of scheduler workers
+    SchedulerThreadPool.initialize(hiveConf);
+
     // If we're supporting dynamic service discovery, we'll add the service uri for this
     // HiveServer2 instance to Zookeeper as a znode.
-    HiveConf hiveConf = getHiveConf();
     if (!serviceDiscovery || !activePassiveHA) {
       allowClientSessions();
     }
@@ -955,6 +959,8 @@ public class HiveServer2 extends CompositeService {
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
     }
+
+    SchedulerThreadPool.shutdown();
   }
 
   private void shutdownExecutor(final ExecutorService leaderActionsExecutorService) {
@@ -976,12 +982,7 @@ public class HiveServer2 extends CompositeService {
   @VisibleForTesting
   public static void scheduleClearDanglingScratchDir(HiveConf hiveConf, int initialWaitInSec) {
     if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR)) {
-      ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-          new BasicThreadFactory.Builder()
-          .namingPattern("cleardanglingscratchdir-%d")
-          .daemon(true)
-          .build());
-      executor.scheduleAtFixedRate(new ClearDanglingScratchDir(false, false, false,
+      SchedulerThreadPool.getInstance().scheduleAtFixedRate(new ClearDanglingScratchDir(false, false, false,
           HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCHDIR), hiveConf), initialWaitInSec,
           HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR_INTERVAL,
           TimeUnit.SECONDS), TimeUnit.SECONDS);

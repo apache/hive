@@ -21,21 +21,18 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ONE;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 public class SmallTableCache {
@@ -90,7 +87,6 @@ public class SmallTableCache {
 
     private final Cache<K, V> cacheL1;
     private final Cache<K, V> cacheL2;
-    private final ScheduledExecutorService cleanupService;
 
     SmallTableLocalCache() {
       this(Ticker.systemTicker());
@@ -98,14 +94,11 @@ public class SmallTableCache {
 
     @VisibleForTesting
     SmallTableLocalCache(Ticker ticker) {
-      cleanupService = Executors.newScheduledThreadPool(INTEGER_ONE,
-              new ThreadFactoryBuilder().setNameFormat("SmallTableCache Cleanup Thread").setDaemon(true).build());
       cacheL1 = CacheBuilder.newBuilder().expireAfterAccess(L1_CACHE_EXPIRE_DURATION, TimeUnit.SECONDS)
               .ticker(ticker).build();
       cacheL2 = CacheBuilder.newBuilder().softValues().build();
-      cleanupService.scheduleAtFixedRate(() -> {
-        cleanup();
-      }, INTEGER_ZERO, MAINTENANCE_THREAD_CLEANUP_PERIOD, TimeUnit.SECONDS);
+      SchedulerThreadPool.getInstance().scheduleAtFixedRate(
+          this::cleanup, INTEGER_ZERO, MAINTENANCE_THREAD_CLEANUP_PERIOD, TimeUnit.SECONDS);
     }
 
     /**

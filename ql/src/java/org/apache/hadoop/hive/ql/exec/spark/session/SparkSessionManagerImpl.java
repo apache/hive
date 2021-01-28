@@ -20,13 +20,12 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Sets;
 
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,14 +177,14 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
             TimeUnit.MILLISECONDS);
     long sessionTimeoutPeriod = conf.getTimeVar(HiveConf.ConfVars.SPARK_SESSION_TIMEOUT_PERIOD,
             TimeUnit.MILLISECONDS);
-    ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
 
     // Schedules a thread that does the following: iterates through all the active SparkSessions
     // and calls #triggerTimeout(long) on each one. If #triggerTimeout(long) returns true, then
     // the SparkSession is removed from the set of active sessions managed by this class.
-    timeoutFuture = es.scheduleAtFixedRate(() -> createdSessions.stream()
-                    .filter(sparkSession -> sparkSession.triggerTimeout(sessionTimeout))
-                    .forEach(createdSessions::remove),
-            0, sessionTimeoutPeriod, TimeUnit.MILLISECONDS);
+    timeoutFuture = SchedulerThreadPool.getInstance().scheduleAtFixedRate(
+        () -> createdSessions.stream()
+            .filter(sparkSession -> sparkSession.triggerTimeout(sessionTimeout))
+            .forEach(createdSessions::remove),
+        0, sessionTimeoutPeriod, TimeUnit.MILLISECONDS);
   }
 }

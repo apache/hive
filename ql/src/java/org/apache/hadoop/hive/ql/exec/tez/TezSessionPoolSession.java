@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,11 +28,11 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 import org.apache.tez.dag.api.TezException;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * TezSession that is aware of the session pool, and also keeps track of expiration and use.
@@ -61,24 +60,23 @@ class TezSessionPoolSession extends TezSessionState {
   }
 
   public static abstract class AbstractTriggerValidator {
-    private ScheduledExecutorService scheduledExecutorService = null;
+    private ScheduledFuture<?> triggerValidator;
+
     abstract Runnable getTriggerValidatorRunnable();
 
     void startTriggerValidator(long triggerValidationIntervalMs) {
-      if (scheduledExecutorService == null) {
-        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("TriggerValidator").build());
+      if (triggerValidator == null) {
         Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
-        scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
-          triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
+        triggerValidator = SchedulerThreadPool.getInstance().scheduleWithFixedDelay(
+            triggerValidatorRunnable, triggerValidationIntervalMs,
+            triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
         LOG.info("Started trigger validator with interval: {} ms", triggerValidationIntervalMs);
       }
     }
 
     void stopTriggerValidator() {
-      if (scheduledExecutorService != null) {
-        scheduledExecutorService.shutdownNow();
-        scheduledExecutorService = null;
+      if (triggerValidator != null) {
+        triggerValidator.cancel(true);
         LOG.info("Stopped trigger validator");
       }
     }

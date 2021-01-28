@@ -27,12 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.LongAdder;
 
 import com.google.common.base.Predicate;
@@ -50,6 +45,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.cleanup.EventualCleanupService;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
@@ -98,6 +94,7 @@ public class SessionManager extends CompositeService {
   private long checkInterval;
   private long sessionTimeout;
   private boolean checkOperation;
+  private ScheduledFuture<?> timeoutCheckerTask;
 
   private volatile boolean shutdown;
   // The HiveServer2 instance running this service
@@ -288,7 +285,7 @@ public class SessionManager extends CompositeService {
   public synchronized void start() {
     super.start();
     if (checkInterval > 0) {
-      startTimeoutChecker();
+      startTimeoutChecker(Math.max(checkInterval, 3000L)); // minimum 3 seconds
     }
   }
 
@@ -296,60 +293,15 @@ public class SessionManager extends CompositeService {
     return cleanupService;
   }
 
-  private final Object timeoutCheckerLock = new Object();
-
-  private void startTimeoutChecker() {
-    final long interval = Math.max(checkInterval, 3000l);  // minimum 3 seconds
-    final Runnable timeoutChecker = new Runnable() {
-      @Override
-      public void run() {
-        sleepFor(interval);
-        while (!shutdown) {
-          long current = System.currentTimeMillis();
-          for (HiveSession session : new ArrayList<HiveSession>(handleToSession.values())) {
-            if (shutdown) {
-              break;
-            }
-            if (sessionTimeout > 0 && session.getLastAccessTime() + sessionTimeout <= current
-                && (!checkOperation || session.getNoOperationTime() > sessionTimeout)) {
-              SessionHandle handle = session.getSessionHandle();
-              LOG.warn("Session " + handle + " is Timed-out (last access : " +
-                  new Date(session.getLastAccessTime()) + ") and will be closed");
-              try {
-                closeSession(handle);
-              } catch (HiveSQLException e) {
-                LOG.warn("Exception is thrown closing session " + handle, e);
-              } finally {
-                Metrics metrics = MetricsFactory.getInstance();
-                if (metrics != null) {
-                  metrics.incrementCounter(MetricsConstant.HS2_ABANDONED_SESSIONS);
-                }
-              }
-            } else {
-              session.closeExpiredOperations();
-            }
-          }
-          sleepFor(interval);
-        }
-      }
-
-      private void sleepFor(long interval) {
-        synchronized (timeoutCheckerLock) {
-          try {
-            timeoutCheckerLock.wait(interval);
-          } catch (InterruptedException e) {
-            // Ignore, and break.
-          }
-        }
-      }
-    };
-    backgroundOperationPool.execute(timeoutChecker);
+  private void startTimeoutChecker(long interval) {
+    timeoutCheckerTask = SchedulerThreadPool.getInstance().scheduleAtFixedRate(
+        new SessionIdleTimeoutChecker(), interval, interval, TimeUnit.MILLISECONDS);
   }
 
   private void shutdownTimeoutChecker() {
     shutdown = true;
-    synchronized (timeoutCheckerLock) {
-      timeoutCheckerLock.notify();
+    if (timeoutCheckerTask != null) {
+      timeoutCheckerTask.cancel(false);
     }
   }
 
@@ -761,6 +713,37 @@ public class SessionManager extends CompositeService {
   public void allowSessions(boolean b) {
     synchronized (sessionAddLock) {
       this.allowSessions = b;
+    }
+  }
+
+  private class SessionIdleTimeoutChecker implements Runnable {
+
+    @Override
+    public void run() {
+      long current = System.currentTimeMillis();
+      for (HiveSession session : handleToSession.values()) {
+        if (shutdown) {
+          break;
+        }
+        if (sessionTimeout > 0 && session.getLastAccessTime() + sessionTimeout <= current
+            && (!checkOperation || session.getNoOperationTime() > sessionTimeout)) {
+          SessionHandle handle = session.getSessionHandle();
+          LOG.warn("Session " + handle + " is Timed-out (last access : " +
+              new Date(session.getLastAccessTime()) + ") and will be closed");
+          try {
+            closeSession(handle);
+          } catch (HiveSQLException e) {
+            LOG.warn("Exception is thrown closing session " + handle, e);
+          } finally {
+            Metrics metrics = MetricsFactory.getInstance();
+            if (metrics != null) {
+              metrics.incrementCounter(MetricsConstant.HS2_ABANDONED_SESSIONS);
+            }
+          }
+        } else {
+          session.closeExpiredOperations();
+        }
+      }
     }
   }
 }

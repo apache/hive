@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,6 +65,7 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -75,7 +74,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -146,13 +144,10 @@ public final class HiveMaterializedViewsRegistry {
       LOG.info("Using dummy materialized views registry");
     } else {
       // We initialize the cache
-      long period = HiveConf.getTimeVar(db.getConf(), ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, TimeUnit.SECONDS);
-      ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor(
-          new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("HiveMaterializedViewsRegistry-%d")
-              .build());
-      pool.scheduleAtFixedRate(new Loader(db), 0, period, TimeUnit.SECONDS);
+      long period = HiveConf.getTimeVar(
+          db.getConf(), ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH, TimeUnit.SECONDS);
+      SchedulerThreadPool.getInstance().scheduleAtFixedRate(
+          new Loader(db), 0, period, TimeUnit.SECONDS);
     }
   }
 

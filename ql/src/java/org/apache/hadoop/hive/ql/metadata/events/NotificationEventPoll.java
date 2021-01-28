@@ -20,10 +20,7 @@ package org.apache.hadoop.hive.ql.metadata.events;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,9 +29,8 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +41,6 @@ public class NotificationEventPoll {
   private static NotificationEventPoll instance;
 
   Configuration conf;
-  ScheduledExecutorService executorService;
   List<EventConsumer> eventConsumers = new ArrayList<>();
   ScheduledFuture<?> pollFuture;
   long lastCheckedEventId;
@@ -101,13 +96,7 @@ public class NotificationEventPoll {
     LOG.info("Initializing lastCheckedEventId to {}", lastCheckedEventId);
 
     // Start the scheduled poll task
-    ThreadFactory threadFactory =
-        new ThreadFactoryBuilder()
-            .setDaemon(true)
-            .setNameFormat("NotificationEventPoll %d")
-            .build();
-    executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-    pollFuture = executorService.scheduleAtFixedRate(new Poller(),
+    pollFuture = SchedulerThreadPool.getInstance().scheduleAtFixedRate(new Poller(),
         pollInterval, pollInterval, TimeUnit.MILLISECONDS);
   }
 
@@ -115,10 +104,6 @@ public class NotificationEventPoll {
     if (pollFuture != null) {
       pollFuture.cancel(true);
       pollFuture = null;
-    }
-    if (executorService != null) {
-      executorService.shutdown();
-      executorService = null;
     }
   }
 
