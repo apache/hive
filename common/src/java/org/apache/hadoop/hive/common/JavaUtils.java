@@ -28,7 +28,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
-
+import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +138,7 @@ public final class JavaUtils {
         newOutputStream.close();
       }
     }
+  LogFactory.release(loader);
   }
 
   /**
