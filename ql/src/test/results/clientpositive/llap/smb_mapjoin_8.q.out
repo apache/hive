@@ -414,7 +414,7 @@ POSTHOOK: Input: default@smb_bucket4_2_n1
 POSTHOOK: Input: default@smb_bucket4_3
 #### A masked pattern was here ####
 NULL	NULL	4000	val_125	NULL	NULL
-NULL	NULL	NULL	NULL	4000	val_125
+NULL	NULL	NULL	NULL	5000	val_125
 PREHOOK: query: insert overwrite table smb_bucket4_1_n1 select * from smb_bucket_input where key=1000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
