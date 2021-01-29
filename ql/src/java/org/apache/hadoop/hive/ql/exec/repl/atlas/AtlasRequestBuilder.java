@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,28 +147,33 @@ public class AtlasRequestBuilder {
   }
 
   public List<String> getFileAsList(Path listOfTablesFile, HiveConf conf) throws SemanticException {
-    List<String> list = new ArrayList<>();
-    InputStream is = null;
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(IOException.class).build();
     try {
-      FileSystem fs = FileSystem.get(listOfTablesFile.toUri(), conf);
-      FileStatus fileStatus = fs.getFileStatus(listOfTablesFile);
-      if (fileStatus == null) {
-        throw new SemanticException("Table list file not found: " + listOfTablesFile);
-      }
-      is = fs.open(listOfTablesFile);
-      list.addAll(IOUtils.readLines(is, Charset.defaultCharset()));
-    } catch (IOException e) {
-      throw new SemanticException(e);
-    } finally {
-      if (is != null) {
+      return retryable.executeCallable(() -> {
+        List<String> list = new ArrayList<>();
+        InputStream is = null;
         try {
-          is.close();
-        } catch (IOException e) {
-          throw new SemanticException(e);
+          FileSystem fs = getFileSystem(listOfTablesFile, conf);
+          FileStatus fileStatus = fs.getFileStatus(listOfTablesFile);
+          if (fileStatus == null) {
+            throw new SemanticException("Table list file not found: " + listOfTablesFile);
+          }
+          is = fs.open(listOfTablesFile);
+          list.addAll(IOUtils.readLines(is, Charset.defaultCharset()));
+          return list;
+        } finally {
+          org.apache.hadoop.io.IOUtils.closeStream(is);
         }
-      }
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
-    return list;
+  }
+
+  public FileSystem getFileSystem(Path listOfTablesFile, HiveConf conf) throws IOException {
+    return FileSystem.get(listOfTablesFile.toUri(), conf);
   }
 
   public AtlasImportRequest createImportRequest(String sourceDataSet, String targetDataSet,

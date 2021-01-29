@@ -26,8 +26,6 @@ import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -60,8 +58,6 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -268,6 +264,30 @@ public class TestAtlasDumpTask {
     Assert.assertEquals(AtlasRequestBuilder.ATLAS_TYPE_HIVE_TABLE, itemsToExport.get(1).getTypeName());
     Assert.assertEquals("srcdb.t2@src", itemsToExport.get(1).getUniqueAttributes().get(
             AtlasRequestBuilder.ATTRIBUTE_QUALIFIED_NAME));
+  }
+
+  @Test
+  public void testGetFileAsListRetry() throws Exception {
+    AtlasRequestBuilder atlasRequestBuilder = Mockito.spy(AtlasRequestBuilder.class);
+    FileSystem fs = Mockito.mock(FileSystem.class);
+    Mockito.doReturn(fs).when(atlasRequestBuilder).getFileSystem(Mockito.any(Path.class), Mockito.any(HiveConf.class));
+    when(fs.getFileStatus(Mockito.any(Path.class))).thenThrow(new IOException("Unable to connect"));
+    Path tableListPath = new Path("/tmp/list");
+    AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
+            "src","tgt", new Path("/tmp/staging"), tableListPath, conf);
+    setupConfForRetry();
+    try {
+      atlasRequestBuilder.createExportRequest(atlasReplInfo);
+    } catch (Exception e) {
+      Assert.assertEquals(SemanticException.class.getName(), e.getClass().getName());
+      Assert.assertTrue(e.getMessage().contains("Unable to connect"));
+    }
+    ArgumentCaptor<Path> getServerReqCaptor = ArgumentCaptor.forClass(Path.class);
+    Mockito.verify(fs, Mockito.times(4)).getFileStatus(getServerReqCaptor.capture());
+    List<Path>  pathList = getServerReqCaptor.getAllValues();
+    for (Path path: pathList) {
+      Assert.assertTrue(tableListPath.equals(path));
+    }
   }
 
   private void setupConfForRetry() {
