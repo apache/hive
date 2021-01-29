@@ -77,7 +77,7 @@ public class TestTezOutputCommitter {
   }
 
   @Test
-  public void testAbortTask() throws Exception {
+  public void testAbortTask() {
     driver = getDriverWithCommitter(TaskAbortingOutputCommitter.class.getName());
 
     try {
@@ -95,7 +95,7 @@ public class TestTezOutputCommitter {
   }
 
   @Test
-  public void testAbortJob() throws Exception {
+  public void testAbortJob() {
     driver = getDriverWithCommitter(JobAbortingOutputCommitter.class.getName());
 
     try {

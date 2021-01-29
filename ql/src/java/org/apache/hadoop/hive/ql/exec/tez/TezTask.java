@@ -18,15 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.JobContextImpl;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -632,6 +639,10 @@ public class TezTask extends Task<TezWork> {
   @VisibleForTesting
   int close(TezWork work, int rc, DAGClient dagClient) {
     try {
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER_ON_HS2)) {
+        rc = commitOrAbortJob(work, rc, dagClient);
+      }
+
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {
         if (w instanceof MergeJoinWork) {
@@ -654,6 +665,91 @@ public class TezTask extends Task<TezWork> {
       closeDagClientWithoutEx(dagClient);
     }
     return rc;
+  }
+
+  // CDPD-21827: downstream-only change to enable Hive-Iceberg integration for TP release
+  // TODO: change Iceberg specific file listing logic to make this more generally usable
+  private int commitOrAbortJob(TezWork work, int rc, DAGClient dagClient) {
+    int res = rc;
+    // prefix because it doesn't contain the vertexId
+    String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
+
+    // list the folders to see what we need to commit/abort
+    List<JobContext> jobContexts;
+    try {
+      jobContexts = getJobContextsForCommitAbort(work, jobIdPrefix);
+      LOG.debug("Assembled the following job contexts for job commit/abort: " + jobContexts);
+    } catch (Exception e) {
+      LOG.error("Job context assembly failed for job commit/abort for jobID prefix: " + jobIdPrefix, e);
+      return 3;
+    }
+
+    // if DAG was successful, attempt to commit all eligible jobs
+    if (res == 0) {
+      try {
+        LOG.info("Committing " + jobContexts.size() + " jobs for jobID prefix: " + jobIdPrefix);
+        for (JobContext ctx : jobContexts) {
+          OutputCommitter committer = ctx.getJobConf().getOutputCommitter();
+          committer.commitJob(ctx);
+        }
+      } catch (Exception e) {
+        // if the commit failed, we should subsequently abort the jobs
+        LOG.error("Output committer job commit failed for jobID prefix: " + jobIdPrefix, e);
+        res = 3;
+      }
+    }
+
+    // or abort them, if unsuccessful
+    if (res != 0) {
+      LOG.info("Aborting " + jobContexts.size() + " jobs for jobID prefix: " + jobIdPrefix);
+      for (JobContext ctx : jobContexts) {
+        try {
+          OutputCommitter committer = ctx.getJobConf().getOutputCommitter();
+          committer.abortJob(ctx, res);
+        } catch (Exception e) {
+          // we want to continue with closing the operators, so only logging, not rethrowing here
+          LOG.error("Output committer job abort failed for jobID: " + ctx.getJobID(), e);
+        }
+      }
+    }
+    LOG.info("Commit/abort job operation finished with return code: " + res);
+    return res;
+  }
+
+  private List<JobContext> getJobContextsForCommitAbort(TezWork work, String jobIdPrefix) throws IOException {
+    List<JobContext> jobContexts = new ArrayList<>();
+    Set<String> seenLocations = new HashSet<>();
+    for (BaseWork w : work.getAllWork()) {
+      JobConf jobConf = workToConf.get(w);
+      // we should only consider jobs where an output committer is defined
+      if (jobConf != null && "org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter".equals(
+          jobConf.get("mapred.output.committer.class"))) {
+        String tableLocationRoot = jobConf.get("location");
+        if (tableLocationRoot != null && !seenLocations.contains(tableLocationRoot)) {
+          seenLocations.add(tableLocationRoot);
+          Path path = new Path(tableLocationRoot + "/temp");
+          LOG.debug("Table temp directory path is: " + path);
+          // list the directories inside the temp directory
+          FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
+          LOG.debug("Listing the table temp directory yielded these files: " + children);
+          for (FileStatus child : children) {
+            // pick only directories that contain the correct jobID prefix
+            if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
+              // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
+              String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
+              JobID jobID = JobID.forName(jobIdStr);
+              // check once more against prefix to be safe
+              if (jobID.getJtIdentifier().startsWith(jobIdPrefix)) {
+                jobContexts.add(new JobContextImpl(jobConf, jobID, null));
+              }
+            }
+          }
+        } else {
+          LOG.warn("Table location not found in config for base work: " + w.getName());
+        }
+      }
+    }
+    return jobContexts;
   }
 
   /**
@@ -762,13 +858,11 @@ public class TezTask extends Task<TezWork> {
     }
 
     public String getDagIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getDagIdentifierString();
     }
 
     public String getSessionIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getSessionIdentifierString();
     }
 
 

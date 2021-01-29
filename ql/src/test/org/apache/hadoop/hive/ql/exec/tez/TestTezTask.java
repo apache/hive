@@ -153,6 +153,7 @@ public class TestTezTask {
     work.connect(rws[0], rws[1], edgeProp);
 
     task = new TezTask(utils);
+    task.setConf(new HiveConf());
     task.setWork(work);
     task.setConsole(mock(LogHelper.class));
     QueryPlan mockQueryPlan = mock(QueryPlan.class);
