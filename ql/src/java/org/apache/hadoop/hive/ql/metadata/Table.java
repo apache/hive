@@ -351,6 +351,10 @@ public class Table implements Serializable {
     return storageHandler;
   }
 
+  public void setStorageHandler(HiveStorageHandler sh){
+    storageHandler = sh;
+  }
+
   public StorageHandlerInfo getStorageHandlerInfo() {
     return storageHandlerInfo;
   }
