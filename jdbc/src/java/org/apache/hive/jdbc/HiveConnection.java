@@ -1114,12 +1114,12 @@ public class HiveConnection implements java.sql.Connection {
         if (!isClosed) {
           TCloseSessionReq closeReq = new TCloseSessionReq(sessHandle);
           client.CloseSession(closeReq);
-          client = null;
         }
       } catch (TException e) {
         throw new SQLException("Error while cleaning up the server resources", e);
       } finally {
         isClosed = true;
+        client = null;
         if (transport != null && transport.isOpen()) {
           transport.close();
           transport = null;
