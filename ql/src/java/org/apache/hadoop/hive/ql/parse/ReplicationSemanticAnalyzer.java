@@ -177,11 +177,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (!isMetaDataOnly && !ReplChangeManager.isSourceOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbNameOrPattern +
-                  " as it is not a source of replication (repl.source.for)");
-          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
-        }
         if (ReplUtils.isTargetOfReplication(database)) {
           LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
           throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
