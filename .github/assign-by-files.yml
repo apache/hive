@@ -21,6 +21,7 @@
   - kgyrtkirk
 '.github/**':
   - kgyrtkirk
+  - HiveQA
 # ddl changes
 '**/ddl/**':
   - miklosgergely
