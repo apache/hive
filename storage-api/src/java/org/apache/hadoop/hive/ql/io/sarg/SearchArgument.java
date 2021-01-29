@@ -157,10 +157,18 @@ public interface SearchArgument {
   public List<PredicateLeaf> getLeaves();
 
   /**
-   * Get the expression tree. This should only needed for file formats that
-   * need to translate the expression to an internal form.
+   * Get the expression tree normalized into conjunctive normal form.
+   * This should only needed for file formats that need to translate
+   * the expression to an internal form.
    */
   public ExpressionTree getExpression();
+
+  /**
+   * Get the expression tree without the normalization to conjunctive normal
+   * form. It will still have the negations pushed to the leaves, but it
+   * won't have the potentially exponential expansion.
+   */
+  public ExpressionTree getCompactExpression();
 
   /**
    * Evaluate the entire predicate based on the values for the leaf predicates.

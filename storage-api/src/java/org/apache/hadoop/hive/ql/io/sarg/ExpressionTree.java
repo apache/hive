@@ -31,25 +31,25 @@ public class ExpressionTree {
   public enum Operator {OR, AND, NOT, LEAF, CONSTANT}
   private final Operator operator;
   private final List<ExpressionTree> children;
-  private int leaf;
+  private final PredicateLeaf leaf;
   private final SearchArgument.TruthValue constant;
 
   ExpressionTree() {
     operator = null;
     children = null;
-    leaf = 0;
+    leaf = null;
     constant = null;
   }
 
   ExpressionTree(Operator op, ExpressionTree... kids) {
     operator = op;
-    children = new ArrayList<ExpressionTree>();
-    leaf = -1;
+    children = new ArrayList<>();
+    leaf = null;
     this.constant = null;
     Collections.addAll(children, kids);
   }
 
-  ExpressionTree(int leaf) {
+  ExpressionTree(PredicateLeaf leaf) {
     operator = Operator.LEAF;
     children = null;
     this.leaf = leaf;
@@ -59,7 +59,7 @@ public class ExpressionTree {
   ExpressionTree(SearchArgument.TruthValue constant) {
     operator = Operator.CONSTANT;
     children = null;
-    this.leaf = -1;
+    this.leaf = null;
     this.constant = constant;
   }
 
@@ -68,7 +68,7 @@ public class ExpressionTree {
     if (other.children == null) {
       this.children = null;
     } else {
-      this.children = new ArrayList<ExpressionTree>();
+      this.children = new ArrayList<>();
       for(ExpressionTree child: other.children) {
         children.add(new ExpressionTree(child));
       }
@@ -94,7 +94,7 @@ public class ExpressionTree {
       case NOT:
         return children.get(0).evaluate(leaves).not();
       case LEAF:
-        return leaves[leaf];
+        return leaves[leaf.getId()];
       case CONSTANT:
         return constant;
       default:
@@ -102,39 +102,57 @@ public class ExpressionTree {
     }
   }
 
+  private void buildString(boolean useLeafIds, StringBuilder output) {
+    switch (operator) {
+      case OR:
+        output.append("(or");
+        for(ExpressionTree child: children) {
+          output.append(' ');
+          child.buildString(useLeafIds, output);
+        }
+        output.append(')');
+        break;
+      case AND:
+        output.append("(and");
+        for(ExpressionTree child: children) {
+          output.append(' ');
+          child.buildString(useLeafIds, output);
+        }
+        output.append(')');
+        break;
+      case NOT:
+        output.append("(not ");
+        children.get(0).buildString(useLeafIds, output);
+        output.append(')');
+        break;
+      case LEAF:
+        output.append("leaf-");
+        if (useLeafIds) {
+          output.append(leaf.getId());
+        } else {
+          output.append(leaf);
+        }
+        break;
+      case CONSTANT:
+        output.append(constant);
+        break;
+    }
+  }
+
   @Override
   public String toString() {
     StringBuilder buffer = new StringBuilder();
-    switch (operator) {
-      case OR:
-        buffer.append("(or");
-        for(ExpressionTree child: children) {
-          buffer.append(' ');
-          buffer.append(child.toString());
-        }
-        buffer.append(')');
-        break;
-      case AND:
-        buffer.append("(and");
-        for(ExpressionTree child: children) {
-          buffer.append(' ');
-          buffer.append(child.toString());
-        }
-        buffer.append(')');
-        break;
-      case NOT:
-        buffer.append("(not ");
-        buffer.append(children.get(0));
-        buffer.append(')');
-        break;
-      case LEAF:
-        buffer.append("leaf-");
-        buffer.append(leaf);
-        break;
-      case CONSTANT:
-        buffer.append(constant);
-        break;
-    }
+    buildString(false, buffer);
+    return buffer.toString();
+  }
+
+  /**
+   * Generate the old string for the old test cases.
+   * @return the expression as a string using the leaf ids
+   */
+  public String toOldString() {
+    StringBuilder buffer = new StringBuilder();
+    buildString(true, buffer);
     return buffer.toString();
   }
 
@@ -151,10 +169,10 @@ public class ExpressionTree {
   }
 
   public int getLeaf() {
-    return leaf;
+    return leaf.getId();
   }
 
-  public void setLeaf(int leaf) {
-    this.leaf = leaf;
+  public PredicateLeaf getPredicateLeaf() {
+    return leaf;
   }
 }
