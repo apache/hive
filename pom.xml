@@ -114,7 +114,7 @@
     <arrow.version>0.10.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
-    <calcite.version>1.21.0</calcite.version>
+    <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.2</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
