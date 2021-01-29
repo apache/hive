@@ -70,10 +70,6 @@ public class ConvertAstToSearchArg {
 
   private static final int KRYO_OUTPUT_BUFFER_SIZE = 4 * 1024;
   private static final int KRYO_OUTPUT_BUFFER_MAX_SIZE = 10 * 1024 * 1024;
-  private static final GregorianCalendar PROLEPTIC = new GregorianCalendar();
-  {
-    PROLEPTIC.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
-  }
 
   private final SearchArgument.Builder builder;
   private final Configuration conf;

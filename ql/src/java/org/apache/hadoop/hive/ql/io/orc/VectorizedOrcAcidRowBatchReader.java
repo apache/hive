@@ -2022,18 +2022,13 @@ public class VectorizedOrcAcidRowBatchReader
   }
 
   private static OrcRawRecordMerger.KeyInterval getKeyInterval(List<OrcProto.ColumnStatistics> colStats) {
-    IntegerColumnStatistics origWriteId = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ORIGINAL_WRITEID + 1);
-    IntegerColumnStatistics bucketProperty = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.BUCKET + 1);
-    IntegerColumnStatistics rowId = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ROW_ID + 1);
-
-    // We may want to change bucketProperty from int to long in the future(across the stack) this protects
-    // the following cast to int
-    assert bucketProperty.getMaximum() <= Integer.MAX_VALUE :
-        "was bucketProperty (max) changed to a long (" + bucketProperty.getMaximum() + ")?!";
-    assert bucketProperty.getMinimum() <= Integer.MAX_VALUE :
-        "was bucketProperty (min) changed to a long (" + bucketProperty.getMaximum() + ")?!";
-    RecordIdentifier maxKey = new RecordIdentifier(origWriteId.getMaximum(), (int) bucketProperty.getMaximum(), rowId.getMaximum());
-    RecordIdentifier minKey = new RecordIdentifier(origWriteId.getMinimum(), (int) bucketProperty.getMinimum(), rowId.getMinimum());
-    return new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
+    ColumnStatistics[] columnStatsArray = new ColumnStatistics[colStats.size()];
+    columnStatsArray[OrcRecordUpdater.ORIGINAL_WRITEID + 1] =
+        deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ORIGINAL_WRITEID + 1);
+    columnStatsArray[OrcRecordUpdater.BUCKET + 1]  =
+        deserializeIntColumnStatistics(colStats, OrcRecordUpdater.BUCKET + 1);
+    columnStatsArray[OrcRecordUpdater.ROW_ID + 1]  =
+        deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ROW_ID + 1);
+    return getKeyInterval(columnStatsArray);
   }
 }

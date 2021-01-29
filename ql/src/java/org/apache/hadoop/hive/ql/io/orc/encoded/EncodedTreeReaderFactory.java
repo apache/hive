@@ -2590,7 +2590,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setColumnEncoding(columnEncoding)
             .setVectors(vectors)
             .setContext(context)
-            .setIsInstant(columnType.getCategory()  == TypeDescription.Category.TIMESTAMP_INSTANT)
+            .setIsInstant(false)
             .build();
       case DATE:
         return DateStreamReader.builder()

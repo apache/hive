@@ -280,7 +280,14 @@ class EncodedReaderImpl implements EncodedReader {
     }
   }
 
-  public static boolean[] findPresentStreamsByColumn(
+  /**
+   * Given a list of Streams find out which of them have a present stream.
+   * (Present stream means that there are Null values)
+   * @param streamList a list of streams
+   * @param types stream types
+   * @return a boolean array indexed by streamIds (true when a stream has Nulls)
+   */
+  private static boolean[] findPresentStreamsByColumn(
       List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
     boolean[] hasNull = new boolean[types.size()];
     for(OrcProto.Stream stream: streamList) {
@@ -291,12 +298,36 @@ class EncodedReaderImpl implements EncodedReader {
     return hasNull;
   }
 
-  public static void addEntireStreamToRanges(
+  /**
+   * Add an entire Stream to the given DiskRange list.
+   *
+   * @param offset Stream offset in relation to the stripe
+   * @param length Stream length
+   * @param list DiskRangeList to add range to
+   * @param doMergeBuffers whether we want to merge DiskRange offsets
+   */
+  private static void addEntireStreamToRanges(
       long offset, long length, DiskRangeList.CreateHelper list, boolean doMergeBuffers) {
     list.addOrMerge(offset, offset + length, doMergeBuffers, false);
   }
 
-  public static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
+  /**
+   * Add includedRowGroups from a Stream to the given DiskRange list.
+   *
+   * @param stream
+   * @param includedRowGroups
+   * @param isCompressed
+   * @param index
+   * @param encoding
+   * @param colType
+   * @param compressionSize
+   * @param hasNull
+   * @param offset
+   * @param length
+   * @param list
+   * @param doMergeBuffers
+   */
+  private static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
       boolean[] includedRowGroups, boolean isCompressed, OrcProto.RowIndex index,
       OrcProto.ColumnEncoding encoding, TypeDescription.Category colType, int compressionSize, boolean hasNull,
       long offset, long length, DiskRangeList.CreateHelper list, boolean doMergeBuffers) {
@@ -320,7 +351,17 @@ class EncodedReaderImpl implements EncodedReader {
   // of rows (long vint literal group).
   static final int WORST_UNCOMPRESSED_SLOP = 2 + 8 * 512;
 
-  public static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
+  /**
+   * Estimate the RowGroup offset given the next RG offset and isLast.
+   *
+   * @param isCompressed is the RowGroup compressed
+   * @param isLast is this the last RowGroup
+   * @param nextGroupOffset the offset of the next RowGroup
+   * @param streamLength the length of the whole Stream
+   * @param bufferSize the size of the buffer
+   * @return
+   */
+  private static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
       long nextGroupOffset, long streamLength, int bufferSize) {
     // figure out the worst case last location
     // if adjacent groups have the same compressed block offset then stretch the slop

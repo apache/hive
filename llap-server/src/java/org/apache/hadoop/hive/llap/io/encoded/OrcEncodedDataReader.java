@@ -162,6 +162,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final UserGroupInformation ugi;
   private final SchemaEvolution evolution;
   private final boolean useCodecPool, useObjectPools;
+  private static final String STRIPE_STATS_STREAM = "stripe stats";
 
   // Read state.
   private int stripeIxFrom;
@@ -616,6 +617,26 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
+   * Convenience method to retrieve StripeStatic from an existing OrcTail without create a new Reader.
+   *
+   * @param orcTail The existing OrcTail from metadataCache
+   * @return StripeStatistics
+   * @throws IOException
+   */
+  private static List<OrcProto.StripeStatistics> getStripeStatsFromOrcTail(OrcTail orcTail) throws IOException {
+    CompressionKind compressionKind = orcTail.getCompressionKind();
+    InStream.StreamOptions options = null;
+    if (compressionKind != CompressionKind.NONE) {
+      options = InStream.options().withCodec(OrcCodecPool.getCodec(compressionKind))
+          .withBufferSize(orcTail.getCompressionBufferSize());
+    }
+    InStream stream = InStream
+        .create(STRIPE_STATS_STREAM, orcTail.getTailBuffer(),
+            orcTail.getMetadataOffset(), orcTail.getMetadataSize(), options);
+    return OrcProto.Metadata.parseFrom(InStream.createCodedInputStream(stream)).getStripeStatsList();
+  }
+
+  /**
    *  Gets file metadata for the split from cache, or reads it from the file.
    */
   private OrcFileMetadata getFileFooterFromCacheOrDisk() throws IOException {
@@ -630,15 +651,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           OrcTail orcTail = getOrcTailFromLlapBuffers(tailBuffers);
           counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
           FileTail tail = orcTail.getFileTail();
-          CompressionKind compressionKind = orcTail.getCompressionKind();
-          InStream.StreamOptions options = null;
-          if (compressionKind != CompressionKind.NONE) {
-            options = InStream.options()
-                .withCodec(OrcCodecPool.getCodec(compressionKind)).withBufferSize(orcTail.getCompressionBufferSize());
-          }
-          InStream stream = InStream.create("stripe stats", orcTail.getTailBuffer(),
-              orcTail.getMetadataOffset(), orcTail.getMetadataSize(), options);
-          stats = OrcProto.Metadata.parseFrom(InStream.createCodedInputStream(stream)).getStripeStatsList();
+          stats = getStripeStatsFromOrcTail(orcTail);
           stripes = new ArrayList<>(tail.getFooter().getStripesCount());
           int stripeIdx = 0;
           for (OrcProto.StripeInformation stripeProto : tail.getFooter().getStripesList()) {
@@ -841,12 +854,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           .withCodec(OrcCodecPool.getCodec(orcReader.getCompressionKind())).withBufferSize(orcReader.getCompressionSize());
     }
 
-    int maxDiskRangeChunkLimit = OrcConf.ORC_MAX_DISK_RANGE_CHUNK_LIMIT.getInt(daemonConf);
     rawDataReader = LlapRecordReaderUtils.createDefaultLlapDataReader(
         DataReaderProperties.builder()
         .withFileSystemSupplier(fsSupplier).withPath(path)
         .withCompression(options)
-        .withMaxDiskRangeChunkLimit(maxDiskRangeChunkLimit)
         .withZeroCopy(useZeroCopy)
         .build());
 
