@@ -16616,7 +16616,7 @@ module ThriftHiveMetastore
     REQUEST = 1
 
     FIELDS = {
-      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::PackageRequest}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetPackageRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -16716,7 +16716,7 @@ module ThriftHiveMetastore
     REQUEST = 1
 
     FIELDS = {
-      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::PackageRequest}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::DropPackageRequest}
     }
 
     def struct_fields; FIELDS; end

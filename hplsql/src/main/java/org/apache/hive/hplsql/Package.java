@@ -18,7 +18,7 @@
 
 package org.apache.hive.hplsql;
 
-import static org.apache.hive.hplsql.functions.InMemoryFunction.setCallParameters;
+import static org.apache.hive.hplsql.functions.InMemoryFunctionRegistry.setCallParameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ import org.apache.hive.hplsql.HplsqlParser.Package_body_itemContext;
 import org.apache.hive.hplsql.HplsqlParser.Create_function_stmtContext;
 import org.apache.hive.hplsql.HplsqlParser.Create_procedure_stmtContext;
 import org.apache.hive.hplsql.functions.BuiltinFunctions;
-import org.apache.hive.hplsql.functions.InMemoryFunction;
+import org.apache.hive.hplsql.functions.InMemoryFunctionRegistry;
 
 /**
  * Program package
@@ -49,13 +49,13 @@ public class Package {
   boolean allMembersPublic = false;
     
   Exec exec;
-  InMemoryFunction function;
+  InMemoryFunctionRegistry function;
   boolean trace = false;
   
   Package(String name, Exec exec, BuiltinFunctions builtinFunctions) {
     this.name = name;
     this.exec = exec;
-    this.function = new InMemoryFunction(exec, builtinFunctions);
+    this.function = new InMemoryFunctionRegistry(exec, builtinFunctions);
     this.trace = exec.getTrace();
   }
   

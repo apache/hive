@@ -21,7 +21,8 @@ package org.apache.hive.hplsql.packages;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.PackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hive.hplsql.HplSqlSessionState;
 import org.apache.thrift.TException;
@@ -36,7 +37,7 @@ public class HmsPackageRegistry implements PackageRegistry {
   }
 
   @Override
-  public Optional<String> findPackage(String name) {
+  public Optional<String> getPackage(String name) {
     try {
       Package pkg = msc.findPackage(request(name));
       return pkg == null
@@ -74,14 +75,14 @@ public class HmsPackageRegistry implements PackageRegistry {
   @Override
   public void dropPackage(String name) {
     try {
-      msc.dropPackage(new PackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name));
+      msc.dropPackage(new DropPackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name));
     } catch (TException e) {
       throw new RuntimeException(e.getCause());
     }
   }
 
-  private PackageRequest request(String name) {
-    return new PackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name.toUpperCase());
+  private GetPackageRequest request(String name) {
+    return new GetPackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name.toUpperCase());
   }
 
   private Package makePackage(String name, String header, String body) {

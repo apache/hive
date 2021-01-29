@@ -1275,7 +1275,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_all_stored_procedures\n");
   }
 
-  void find_package(Package& _return, const PackageRequest& request) {
+  void find_package(Package& _return, const GetPackageRequest& request) {
     // Your implementation goes here
     printf("find_package\n");
   }
@@ -1290,7 +1290,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_all_packages\n");
   }
 
-  void drop_package(const PackageRequest& request) {
+  void drop_package(const DropPackageRequest& request) {
     // Your implementation goes here
     printf("drop_package\n");
   }

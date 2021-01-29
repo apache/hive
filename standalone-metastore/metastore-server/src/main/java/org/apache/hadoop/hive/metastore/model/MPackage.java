@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Package;
 
 public class MPackage {
   private String name;
@@ -30,6 +31,15 @@ public class MPackage {
   public static final int MAX_SOURCE_SIZE = 1073741823;
 
   public MPackage() {}
+
+  public static MPackage populate(MPackage result, MDatabase mDatabase, Package pkg) throws MetaException {
+    result.setName(pkg.getPackageName());
+    result.setOwner(pkg.getOwnerName());
+    result.setHeader(pkg.getHeader());
+    result.setBody(pkg.getBody());
+    result.setDatabase(mDatabase);
+    return result;
+  }
 
   public String getName() {
     return name;
@@ -75,5 +85,15 @@ public class MPackage {
       throw new MetaException("Source code is too long: " + body.length() + " max size: " + MAX_SOURCE_SIZE);
     }
     this.body = body;
+  }
+
+  public Package toPackage() {
+    return new Package(
+            getDatabase().getCatalogName(),
+            getDatabase().getName(),
+            getName(),
+            getOwner(),
+            getHeader(),
+            getBody());
   }
 }

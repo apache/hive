@@ -25,12 +25,12 @@ class ThriftHiveMetastore_find_package_args
             'var' => 'request',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\PackageRequest',
+            'class' => '\metastore\GetPackageRequest',
         ),
     );
 
     /**
-     * @var \metastore\PackageRequest
+     * @var \metastore\GetPackageRequest
      */
     public $request = null;
 
@@ -64,7 +64,7 @@ class ThriftHiveMetastore_find_package_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->request = new \metastore\PackageRequest();
+                        $this->request = new \metastore\GetPackageRequest();
                         $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);

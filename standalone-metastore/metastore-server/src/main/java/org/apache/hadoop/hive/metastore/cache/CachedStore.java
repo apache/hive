@@ -3153,7 +3153,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public Package findPackage(PackageRequest request) {
+  public Package findPackage(GetPackageRequest request) {
     return rawStore.findPackage(request);
   }
 
@@ -3163,7 +3163,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropPackage(PackageRequest request) {
+  public void dropPackage(DropPackageRequest request) {
     rawStore.dropPackage(request);
   }
 

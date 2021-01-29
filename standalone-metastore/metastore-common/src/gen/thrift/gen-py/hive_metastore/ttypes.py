@@ -25968,7 +25968,7 @@ class StoredProcedure(object):
         return not (self == other)
 
 
-class PackageRequest(object):
+class GetPackageRequest(object):
     """
     Attributes:
      - catName
@@ -26016,7 +26016,92 @@ class PackageRequest(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('PackageRequest')
+        oprot.writeStructBegin('GetPackageRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.packageName is not None:
+            oprot.writeFieldBegin('packageName', TType.STRING, 3)
+            oprot.writeString(self.packageName.encode('utf-8') if sys.version_info[0] == 2 else self.packageName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.packageName is None:
+            raise TProtocolException(message='Required field packageName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class DropPackageRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - packageName
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, packageName=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.packageName = packageName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.packageName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('DropPackageRequest')
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 1)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
@@ -29204,8 +29289,15 @@ StoredProcedure.thrift_spec = (
     (4, TType.STRING, 'ownerName', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'source', 'UTF8', None, ),  # 5
 )
-all_structs.append(PackageRequest)
-PackageRequest.thrift_spec = (
+all_structs.append(GetPackageRequest)
+GetPackageRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'packageName', 'UTF8', None, ),  # 3
+)
+all_structs.append(DropPackageRequest)
+DropPackageRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2

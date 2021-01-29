@@ -58000,7 +58000,7 @@ class find_package_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.request = PackageRequest()
+                    self.request = GetPackageRequest()
                     self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -58037,7 +58037,7 @@ class find_package_args(object):
 all_structs.append(find_package_args)
 find_package_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'request', [PackageRequest, None], None, ),  # 1
+    (1, TType.STRUCT, 'request', [GetPackageRequest, None], None, ),  # 1
 )
 
 
@@ -58409,7 +58409,7 @@ class drop_package_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.request = PackageRequest()
+                    self.request = DropPackageRequest()
                     self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -58446,7 +58446,7 @@ class drop_package_args(object):
 all_structs.append(drop_package_args)
 drop_package_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'request', [PackageRequest, None], None, ),  # 1
+    (1, TType.STRUCT, 'request', [DropPackageRequest, None], None, ),  # 1
 )
 
 

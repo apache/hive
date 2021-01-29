@@ -4207,9 +4207,9 @@ public interface IMetaStoreClient {
 
   void addPackage(Package request) throws NoSuchObjectException, MetaException, TException;
 
-  Package findPackage(PackageRequest request) throws TException;
+  Package findPackage(GetPackageRequest request) throws TException;
 
   List<String> listPackages(ListPackageRequest request) throws TException;
 
-  void dropPackage(PackageRequest request) throws TException;
+  void dropPackage(DropPackageRequest request) throws TException;
 }

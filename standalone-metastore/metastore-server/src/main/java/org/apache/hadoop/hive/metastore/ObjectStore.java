@@ -53,7 +53,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -89,11 +88,12 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.PackageRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -10547,30 +10547,15 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mProc);
       if (mProc == null) { // create new
         mProc = new MStoredProc();
-        populate(proc, db, mProc);
+        MStoredProc.populate(mProc, proc, db);
         pm.makePersistent(mProc);
       } else { // update existing
-        populate(proc, db, mProc);
+        MStoredProc.populate(mProc, proc, db);
       }
       committed = commitTransaction();
     } finally {
       rollbackAndCleanup(committed, query);
     }
-  }
-
-  private static void populate(StoredProcedure proc, MDatabase mDatabase, MStoredProc result) throws MetaException {
-    result.setName(proc.getName());
-    result.setOwner(proc.getOwnerName());
-    result.setSource(proc.getSource());
-    result.setDatabase(mDatabase);
-  }
-
-  private static void populate(Package pkg, MDatabase mDatabase, MPackage result) throws MetaException {
-    result.setName(pkg.getPackageName());
-    result.setOwner(pkg.getOwnerName());
-    result.setHeader(pkg.getHeader());
-    result.setBody(pkg.getBody());
-    result.setDatabase(mDatabase);
   }
 
   @Override
@@ -10620,16 +10605,6 @@ public class ObjectStore implements RawStore, Configurable {
             catName,
             proc.getOwner(),
             proc.getSource());
-  }
-
-  private Package convertToPackage(String catName, MPackage mPkg) {
-    return new Package(
-            catName,
-            mPkg.getDatabase().getName(),
-            mPkg.getName(),
-            mPkg.getOwner(),
-            mPkg.getHeader(),
-            mPkg.getBody());
   }
 
   @Override
@@ -10694,10 +10669,10 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mPkg);
       if (mPkg == null) { // create new
         mPkg = new MPackage();
-        populate(request, db, mPkg);
+        MPackage.populate(mPkg, db, request);
         pm.makePersistent(mPkg);
       } else { // update existing
-        populate(request, db, mPkg);
+        MPackage.populate(mPkg, db, request);
       }
       committed = commitTransaction();
     } finally {
@@ -10706,9 +10681,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Package findPackage(PackageRequest request) {
+  public Package findPackage(GetPackageRequest request) {
     MPackage mPkg = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
-    return mPkg == null ? null : convertToPackage(request.getCatName(), mPkg);
+    return mPkg == null ? null : mPkg.toPackage();
   }
 
   public List<String> listPackages(ListPackageRequest request) {
@@ -10739,7 +10714,7 @@ public class ObjectStore implements RawStore, Configurable {
     return names;
   }
 
-  public void dropPackage(PackageRequest request) {
+  public void dropPackage(DropPackageRequest request) {
     boolean success = false;
     try {
       openTransaction();

@@ -2113,7 +2113,13 @@ struct StoredProcedure {
   5: string           source
 }
 
-struct PackageRequest {
+struct GetPackageRequest {
+  1: required string catName,
+  2: required string dbName,
+  3: required string packageName
+}
+
+struct DropPackageRequest {
   1: required string catName,
   2: required string dbName,
   3: required string packageName
@@ -2881,10 +2887,10 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 
-  Package find_package(1: PackageRequest request) throws (1:MetaException o1)
+  Package find_package(1: GetPackageRequest request) throws (1:MetaException o1)
   void add_package(1: Package request) throws (1:MetaException o1)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
-  void drop_package(1: PackageRequest request) throws (1:MetaException o1)
+  void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

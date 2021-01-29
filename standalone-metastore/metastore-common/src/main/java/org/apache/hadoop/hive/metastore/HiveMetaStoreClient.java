@@ -4735,7 +4735,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public Package findPackage(PackageRequest request) throws TException {
+  public Package findPackage(GetPackageRequest request) throws TException {
     return client.find_package(request);
   }
 
@@ -4745,7 +4745,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void dropPackage(PackageRequest request) throws TException {
+  public void dropPackage(DropPackageRequest request) throws TException {
     client.drop_package(request);
   }
 }

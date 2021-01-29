@@ -1789,7 +1789,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       for (String pkgName : allPackages) {
-        drop_package(new PackageRequest(catName, name, pkgName));
+        drop_package(new DropPackageRequest(catName, name, pkgName));
       }
 
       final int tableBatchSize = MetastoreConf.getIntVar(conf,
@@ -10268,7 +10268,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  public Package find_package(PackageRequest request) throws MetaException {
+  public Package find_package(GetPackageRequest request) throws MetaException {
     startFunction("find_package");
     Exception ex = null;
     try {
@@ -10310,7 +10310,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  public void drop_package(PackageRequest request) throws MetaException {
+  public void drop_package(DropPackageRequest request) throws MetaException {
     startFunction("drop_package");
     Exception ex = null;
     try {

@@ -36,10 +36,11 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
-import org.apache.hadoop.hive.metastore.api.PackageRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
@@ -1966,7 +1967,7 @@ public interface RawStore extends Configurable {
   List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
 
   void addPackage(Package request) throws MetaException, NoSuchObjectException;
-  Package findPackage(PackageRequest request);
+  Package findPackage(GetPackageRequest request);
   List<String> listPackages(ListPackageRequest request);
-  void dropPackage(PackageRequest request);
+  void dropPackage(DropPackageRequest request);
 }

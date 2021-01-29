@@ -778,7 +778,9 @@ class ListStoredProcedureRequest; end
 
 class StoredProcedure; end
 
-class PackageRequest; end
+class GetPackageRequest; end
+
+class DropPackageRequest; end
 
 class ListPackageRequest; end
 
@@ -7139,7 +7141,30 @@ class StoredProcedure
   ::Thrift::Struct.generate_accessors self
 end
 
-class PackageRequest
+class GetPackageRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PACKAGENAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PACKAGENAME => {:type => ::Thrift::Types::STRING, :name => 'packageName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field packageName is unset!') unless @packageName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DropPackageRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   CATNAME = 1
   DBNAME = 2

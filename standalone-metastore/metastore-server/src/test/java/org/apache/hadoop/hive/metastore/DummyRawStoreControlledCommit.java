@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.PackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
@@ -1401,7 +1402,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public Package findPackage(PackageRequest request) {
+  public Package findPackage(GetPackageRequest request) {
     return objectStore.findPackage(request);
   }
 
@@ -1411,7 +1412,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void dropPackage(PackageRequest request) {
+  public void dropPackage(DropPackageRequest request) {
     objectStore.dropPackage(request);
   }
 }

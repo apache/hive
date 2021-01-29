@@ -3883,7 +3883,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public Package findPackage(PackageRequest request) throws TException {
+  public Package findPackage(GetPackageRequest request) throws TException {
     return client.find_package(request);
   }
 
@@ -3893,7 +3893,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void dropPackage(PackageRequest request) throws TException {
+  public void dropPackage(DropPackageRequest request) throws TException {
     client.drop_package(request);
   }
 

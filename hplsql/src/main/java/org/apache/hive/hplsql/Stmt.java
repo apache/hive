@@ -1049,7 +1049,7 @@ public class Stmt {
    */
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
     String name = evalPop(ctx.expr()).toString().toUpperCase();
-    if (exec.function.exec(name, ctx.expr_func_params())) {
+    if (exec.functions.exec(name, ctx.expr_func_params())) {
       return true;
     }
     return false;

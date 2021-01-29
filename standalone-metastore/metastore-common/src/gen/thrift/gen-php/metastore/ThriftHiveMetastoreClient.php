@@ -16194,13 +16194,13 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_all_stored_procedures failed: unknown result");
     }
 
-    public function find_package(\metastore\PackageRequest $request)
+    public function find_package(\metastore\GetPackageRequest $request)
     {
         $this->send_find_package($request);
         return $this->recv_find_package();
     }
 
-    public function send_find_package(\metastore\PackageRequest $request)
+    public function send_find_package(\metastore\GetPackageRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_find_package_args();
         $args->request = $request;
@@ -16377,13 +16377,13 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_all_packages failed: unknown result");
     }
 
-    public function drop_package(\metastore\PackageRequest $request)
+    public function drop_package(\metastore\DropPackageRequest $request)
     {
         $this->send_drop_package($request);
         $this->recv_drop_package();
     }
 
-    public function send_drop_package(\metastore\PackageRequest $request)
+    public function send_drop_package(\metastore\DropPackageRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_drop_package_args();
         $args->request = $request;

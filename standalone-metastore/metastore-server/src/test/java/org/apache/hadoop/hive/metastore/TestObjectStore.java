@@ -33,9 +33,10 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.PackageRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -1306,7 +1307,7 @@ public class TestObjectStore {
             .build(conf));
     Package pkg = new Package("hive", DB1, "pkg1", "user1", "src", "src");
     objectStore.addPackage(pkg);
-    Package found = objectStore.findPackage(new PackageRequest("hive", DB1, "pkg1"));
+    Package found = objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1"));
     Assert.assertEquals(pkg, found);
   }
 
@@ -1319,9 +1320,9 @@ public class TestObjectStore {
             .build(conf));
     Package pkg = new Package("hive", DB1, "pkg1", "user1", "header", "body");
     objectStore.addPackage(pkg);
-    Assert.assertNotNull(objectStore.findPackage(new PackageRequest("hive", DB1, "pkg1")));
-    objectStore.dropPackage(new PackageRequest("hive", DB1, "pkg1"));
-    Assert.assertNull(objectStore.findPackage(new PackageRequest("hive", DB1, "pkg1")));
+    Assert.assertNotNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
+    objectStore.dropPackage(new DropPackageRequest("hive", DB1, "pkg1"));
+    Assert.assertNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
   }
 
   @Test

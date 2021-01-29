@@ -21,7 +21,7 @@ package org.apache.hive.hplsql.packages;
 import java.util.Optional;
 
 public interface PackageRegistry {
-  Optional<String> findPackage(String name);
+  Optional<String> getPackage(String name);
   void createPackage(String name, String header);
   void createPackageBody(String name, String body);
   void dropPackage(String name);

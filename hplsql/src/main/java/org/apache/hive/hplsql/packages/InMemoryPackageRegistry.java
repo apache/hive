@@ -26,7 +26,7 @@ public class InMemoryPackageRegistry implements PackageRegistry {
   private Map<String, Source> registry = new HashMap<>();
 
   @Override
-  public Optional<String> findPackage(String name) {
+  public Optional<String> getPackage(String name) {
     Source src = registry.get(name.toUpperCase());
     return src == null
             ? Optional.empty()

@@ -25,12 +25,12 @@ class ThriftHiveMetastore_drop_package_args
             'var' => 'request',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\PackageRequest',
+            'class' => '\metastore\DropPackageRequest',
         ),
     );
 
     /**
-     * @var \metastore\PackageRequest
+     * @var \metastore\DropPackageRequest
      */
     public $request = null;
 
@@ -64,7 +64,7 @@ class ThriftHiveMetastore_drop_package_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->request = new \metastore\PackageRequest();
+                        $this->request = new \metastore\DropPackageRequest();
                         $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
