@@ -19,9 +19,8 @@
 # Build system
 'Jenkinsfile':
   - kgyrtkirk
-  - HiveQA
+  - kasakrisz
 '.github/**':
-  - HiveQA
   - kgyrtkirk
 # ddl changes
 '**/ddl/**':
