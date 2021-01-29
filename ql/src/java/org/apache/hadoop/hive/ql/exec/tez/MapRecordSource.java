@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.mapreduce.lib.MRReader;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
@@ -96,7 +95,7 @@ public class MapRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        LOG.error(StringUtils.stringifyException(e));
+        LOG.error("Failed to process row", e);
         closeReader();
         throw new RuntimeException(e);
       }

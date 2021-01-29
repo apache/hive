@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
@@ -327,7 +326,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     } finally {
       if (originalThrowable != null && (originalThrowable instanceof Error ||
         Throwables.getRootCause(originalThrowable) instanceof Error)) {
-        LOG.error("Cannot recover from this FATAL error", StringUtils.stringifyException(originalThrowable));
+        LOG.error("Cannot recover from this FATAL error", originalThrowable);
         getContext().reportFailure(TaskFailureType.FATAL, originalThrowable,
                       "Cannot recover from this error");
         throw new RuntimeException(originalThrowable);
@@ -343,7 +342,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
         }
       }
       if (originalThrowable != null) {
-        LOG.error(StringUtils.stringifyException(originalThrowable));
+        LOG.error("Failed initializeAndRunProcessor", originalThrowable);
         // abort the output tasks
         for (LogicalOutput output : outputs.values()) {
           if (output instanceof MROutput) {

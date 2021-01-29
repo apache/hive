@@ -54,7 +54,7 @@ public class JdbcRecordWriter implements RecordWriter {
       try {
         conn.rollback();
       } catch (SQLException ex) {
-        LOG.warn(StringUtils.stringifyException(ex));
+        LOG.warn("Failed to perform rollback on connection", ex);
       } finally {
         try {
           conn.close();

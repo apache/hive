@@ -2092,9 +2092,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     } catch (HiveException e) {
-      // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang3.StringUtils
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to get Materialization Metadata", e);
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
       }
@@ -2700,7 +2698,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // an old SQL construct which has been eliminated in a later Hive
       // version, so we need to provide full debugging info to help
       // with fixing the view definition.
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to replaceViewReferenceWithDefinition", e);
       StringBuilder sb = new StringBuilder();
       sb.append(e.getMessage());
       ASTErrorUtils.renderOrigin(sb, viewOrigin);
