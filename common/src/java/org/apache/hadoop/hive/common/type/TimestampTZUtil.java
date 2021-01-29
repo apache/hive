@@ -51,7 +51,7 @@ public class TimestampTZUtil {
   static {
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
     // Date part
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
     // Time part
     builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
         optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).

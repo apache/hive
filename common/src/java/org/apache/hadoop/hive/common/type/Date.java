@@ -51,7 +51,7 @@ public class Date implements Comparable<Date> {
         .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL);
     PARSE_FORMATTER = builder.toFormatter().withResolverStyle(ResolverStyle.LENIENT);
     builder = new DateTimeFormatterBuilder();
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
     PRINT_FORMATTER = builder.toFormatter();
   }
 

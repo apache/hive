@@ -72,7 +72,7 @@ public class Timestamp implements Comparable<Timestamp> {
     PARSE_FORMATTER = builder.toFormatter().withResolverStyle(ResolverStyle.LENIENT);
     builder = new DateTimeFormatterBuilder();
     // Date and time parts
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss"));
     // Fractional part
     builder.optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd();
     PRINT_FORMATTER = builder.toFormatter();
