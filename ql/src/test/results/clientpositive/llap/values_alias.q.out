@@ -44,3 +44,15 @@ a	b	col3
 100	200	300
 400	500	600
 110	120	130
+PREHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+col1	b	c
+1	2	3
+4	5	6
+11	12	13

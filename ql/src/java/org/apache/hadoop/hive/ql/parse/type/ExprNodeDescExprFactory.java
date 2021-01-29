@@ -60,12 +60,10 @@ import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
@@ -91,8 +89,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.transaction.NotSupportedException;
 
 /**
  * Expression factory for Hive {@link ExprNodeDesc}.
@@ -913,9 +909,18 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
   }
 
   @Override
-  protected ExprNodeDesc replaceFieldNamesInStruct(ExprNodeDesc expr, List<String> columnAliases) {
-    return expr;
+  protected ExprNodeDesc replaceFieldNamesInStruct(ExprNodeDesc expr, List<String> newFieldNames) {
+    if (newFieldNames.isEmpty()) {
+      return expr;
+    }
+
+    ExprNodeGenericFuncDesc structCall = (ExprNodeGenericFuncDesc) expr;
+    List<ExprNodeDesc> newOperands = structCall.getChildren().stream()
+            .filter(exprNodeDesc -> !(exprNodeDesc instanceof ExprNodeConstantDesc && "'tok_alias'".equals(exprNodeDesc.getExprString())))
+            .collect(Collectors.toList());
+    List<TypeInfo> newTypes = newOperands.stream().map(ExprNodeDesc::getTypeInfo).collect(Collectors.toList());
+    TypeInfo newType = TypeInfoFactory.getStructTypeInfo(newFieldNames, newTypes);
+
+    return new ExprNodeGenericFuncDesc(newType, structCall.getGenericUDF(), newOperands);
   }
-
-
 }
