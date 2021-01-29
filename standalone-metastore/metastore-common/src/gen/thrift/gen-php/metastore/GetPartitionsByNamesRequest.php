@@ -69,6 +69,16 @@ class GetPartitionsByNamesRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        9 => array(
+            'var' => 'getFileMetadata',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
+        10 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -103,6 +113,14 @@ class GetPartitionsByNamesRequest
      * @var string
      */
     public $validWriteIdList = null;
+    /**
+     * @var bool
+     */
+    public $getFileMetadata = null;
+    /**
+     * @var int
+     */
+    public $id = -1;
 
     public function __construct($vals = null)
     {
@@ -130,6 +148,12 @@ class GetPartitionsByNamesRequest
             }
             if (isset($vals['validWriteIdList'])) {
                 $this->validWriteIdList = $vals['validWriteIdList'];
+            }
+            if (isset($vals['getFileMetadata'])) {
+                $this->getFileMetadata = $vals['getFileMetadata'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
             }
         }
     }
@@ -227,6 +251,20 @@ class GetPartitionsByNamesRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->getFileMetadata);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 10:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -293,6 +331,16 @@ class GetPartitionsByNamesRequest
         if ($this->validWriteIdList !== null) {
             $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 8);
             $xfer += $output->writeString($this->validWriteIdList);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->getFileMetadata !== null) {
+            $xfer += $output->writeFieldBegin('getFileMetadata', TType::BOOL, 9);
+            $xfer += $output->writeBool($this->getFileMetadata);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::I64, 10);
+            $xfer += $output->writeI64($this->id);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

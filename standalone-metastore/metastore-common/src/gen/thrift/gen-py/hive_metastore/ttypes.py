@@ -10732,11 +10732,13 @@ class GetPartitionsByNamesRequest(object):
      - processorIdentifier
      - engine
      - validWriteIdList
+     - getFileMetadata
+     - id
 
     """
 
 
-    def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None, validWriteIdList=None,):
+    def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None, validWriteIdList=None, getFileMetadata=None, id=-1,):
         self.db_name = db_name
         self.tbl_name = tbl_name
         self.names = names
@@ -10745,6 +10747,8 @@ class GetPartitionsByNamesRequest(object):
         self.processorIdentifier = processorIdentifier
         self.engine = engine
         self.validWriteIdList = validWriteIdList
+        self.getFileMetadata = getFileMetadata
+        self.id = id
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -10805,6 +10809,16 @@ class GetPartitionsByNamesRequest(object):
                     self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.BOOL:
+                    self.getFileMetadata = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.I64:
+                    self.id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -10852,6 +10866,14 @@ class GetPartitionsByNamesRequest(object):
         if self.validWriteIdList is not None:
             oprot.writeFieldBegin('validWriteIdList', TType.STRING, 8)
             oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.getFileMetadata is not None:
+            oprot.writeFieldBegin('getFileMetadata', TType.BOOL, 9)
+            oprot.writeBool(self.getFileMetadata)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.I64, 10)
+            oprot.writeI64(self.id)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27679,6 +27701,8 @@ GetPartitionsByNamesRequest.thrift_spec = (
     (6, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 6
     (7, TType.STRING, 'engine', 'UTF8', None, ),  # 7
     (8, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 8
+    (9, TType.BOOL, 'getFileMetadata', None, None, ),  # 9
+    (10, TType.I64, 'id', None, -1, ),  # 10
 )
 all_structs.append(GetPartitionsByNamesResult)
 GetPartitionsByNamesResult.thrift_spec = (
