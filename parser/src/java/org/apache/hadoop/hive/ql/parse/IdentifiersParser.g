@@ -175,7 +175,7 @@ expressionPart[CommonTree firstExprTree, boolean isStruct]
     -> {$firstExprTree} expression+
     ;
 
-// Parses comma separated list of expressions with optionally specified aliases and store the aliases for further usage.
+// Parses comma separated list of expressions with optionally specified aliases.
 // <expression> [<alias>] [, <expression> [<alias>]]
 firstExpressionsWithAlias
 @after { resetAliasCounter(); }
@@ -185,8 +185,8 @@ firstExpressionsWithAlias
     -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias(1)) }) expressionWithAlias*)
     ;
 
-// Parses expressions which may have alias and store the alias.
-// If alias is not specified generate one and store it.
+// Parses expressions which may have alias.
+// If alias is not specified generate one.
 expressionWithAlias
     :
     expression alias=identifier? { incAliasCounter(); }
