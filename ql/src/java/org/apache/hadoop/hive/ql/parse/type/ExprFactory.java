@@ -413,5 +413,5 @@ public abstract class ExprFactory<T> {
    */
   protected abstract FunctionInfo getFunctionInfo(String funcName) throws SemanticException;
 
-  protected abstract T replaceFieldNamesInStruct(T expr, List<String> columnAliases);
+  protected abstract T replaceFieldNamesInStruct(T expr, List<String> newFieldNames);
 }

@@ -98,7 +98,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private RexBuilder rexBuilder;
 
-  private List<String> columnAliases = new ArrayList<>();
+  private final List<String> columnAliases;
 
   /**
    * Constructor.
@@ -149,6 +149,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this.outerRR = null;
     this.subqueryToRelNode = null;
     this.rexBuilder = rexBuilder;
+    this.columnAliases = new ArrayList<>();
   }
 
   /**
