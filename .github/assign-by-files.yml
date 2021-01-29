@@ -19,6 +19,7 @@
 # Build system
 'Jenkinsfile':
   - kgyrtkirk
+  - HiveQA
 '.github/**':
   - HiveQA
   - kgyrtkirk
