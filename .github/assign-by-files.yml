@@ -20,8 +20,8 @@
 'Jenkinsfile':
   - kgyrtkirk
 '.github/**':
-  - kgyrtkirk
   - HiveQA
+  - kgyrtkirk
 # ddl changes
 '**/ddl/**':
   - miklosgergely
