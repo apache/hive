@@ -1,3 +1,5 @@
+# before adding yourself please make sure that your userid is listed 
+# https://github.com/orgs/apache/teams/hive-committers/members
 ---
 # thrift changes
 '**/*.thrift':
@@ -19,7 +21,7 @@
 # Build system
 'Jenkinsfile':
   - kgyrtkirk
-  - kasakrisz
+  - abstractdog
 '.github/**':
   - kgyrtkirk
 # ddl changes
