@@ -384,9 +384,9 @@ public class Stmt {
       }
       sql += evalPop(ctx.table_name()).toString();
     } else if (ctx.T_PACKAGE() != null) {
-      exec.dropPackage(ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
+      exec.dropPackage(ctx, ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
     } else if (ctx.T_PROCEDURE() != null || ctx.T_FUNCTION() != null) {
-      exec.dropProcedure(ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
+      exec.dropProcedure(ctx, ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
     } else if (ctx.T_DATABASE() != null || ctx.T_SCHEMA() != null) {
       sql = "DROP DATABASE ";
       if (ctx.T_EXISTS() != null) {

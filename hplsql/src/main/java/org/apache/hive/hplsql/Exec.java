@@ -1496,23 +1496,23 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     return 0; 
   }
 
-  public void dropProcedure(String name, boolean checkIfExists) {
+  public void dropProcedure(HplsqlParser.Drop_stmtContext ctx, String name, boolean checkIfExists) {
     if (checkIfExists && !function.exists(name)) {
-      trace(null, name + " DOES NOT EXIST");
+      trace(ctx, name + " DOES NOT EXIST");
       return;
     }
     function.remove(name);
-    trace(null, name + " DROPPED");
+    trace(ctx, name + " DROPPED");
   }
 
-  public void dropPackage(String name, boolean checkIfExists) {
+  public void dropPackage(HplsqlParser.Drop_stmtContext ctx, String name, boolean checkIfExists) {
     if (checkIfExists && !packageRegistry.findPackage(name).isPresent()) {
-      trace(null, name + " DOES NOT EXIST");
+      trace(ctx, name + " DOES NOT EXIST");
       return;
     }
     packages.remove(name);
     packageRegistry.dropPackage(name);
-    trace(null, name + " DROPPED");
+    trace(ctx, name + " DROPPED");
   }
 
   /**
