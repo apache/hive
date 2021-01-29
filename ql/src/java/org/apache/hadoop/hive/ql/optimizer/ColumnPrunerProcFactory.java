@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -831,6 +832,7 @@ public final class ColumnPrunerProcFactory {
         }
         op.getSchema().setSignature(rs_newsignature);
         conf.setColList(newColList);
+        conf.getColumnExprMap().keySet().retainAll(colNames);
         conf.setOutputColumnNames(newOutputColumnNames);
         handleChildren(op, toColumnNames(cols), cppCtx);
       }

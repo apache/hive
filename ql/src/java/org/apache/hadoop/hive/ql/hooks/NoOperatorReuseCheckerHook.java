@@ -21,10 +21,14 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import com.google.common.collect.Lists;
+
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -35,8 +39,11 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
@@ -52,7 +59,9 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
+
       Operator op = (Operator) nd;
+      checkOperator(op);
       String opKey = op.getOperatorId();
       Operator<?> found = opMap.get(opKey);
       if (found != null) {
@@ -60,6 +69,23 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
       }
       opMap.put(opKey, op);
       return null;
+    }
+  }
+
+  public static void checkOperator(Operator op) {
+    OperatorDesc conf = op.getConf();
+    Map<String, ExprNodeDesc> exprMap = conf.getColumnExprMap();
+    RowSchema schema = op.getSchema();
+    if (schema != null && exprMap != null) {
+      for (Entry<String, ExprNodeDesc> c : exprMap.entrySet()) {
+        if (c.getValue() instanceof ExprNodeConstantDesc) {
+          continue;
+        }
+        ColumnInfo ci = schema.getColumnInfo(c.getKey());
+        if (ci == null) {
+          throw new RuntimeException("schema not found for " + c + " in " + schema);
+        }
+      }
     }
   }
 
