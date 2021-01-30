@@ -1425,7 +1425,7 @@ public class HiveConnection implements java.sql.Connection {
       throw new SQLException("timeout value was negative");
     }
     if (isClosed) {
-      throw new SQLException("Connection is closed");
+      return false;
     }
     boolean rc = false;
     try {
