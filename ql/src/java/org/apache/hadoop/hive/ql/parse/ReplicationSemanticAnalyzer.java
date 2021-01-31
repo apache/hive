@@ -328,11 +328,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       DumpMetaData dmd = new DumpMetaData(loadPath, conf);
       if (!dmd.isVersionCompatible()) {
-        throw new SemanticException
-            (
-                "Dump version: " + dmd.getDumpFormatVersion() + ". Versions older than "
-                + Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT + " are not supported."
-            );
+        String exceptionMessage = String.format("Dump format version: %d. Versions older than %d are not supported",
+            dmd.getDumpFormatVersion(), Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT);
+        throw new SemanticException(exceptionMessage);
       }
 
       if (!shouldLoadProceed(loadPath)) {
