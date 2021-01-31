@@ -297,7 +297,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // import job in its place.
     try {
       assert(sourceDbNameOrPattern != null);
-      Path loadPath = getCurrentLoadPath();
+      Path loadPath = getCurrentLoadPath(); // rename to hiveDumpPath?
 
       // Now, the dumped path can be one of three things:
       // a) It can be a db dump, in which case we expect a set of dirs, each with a
@@ -319,35 +319,44 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
-      if (loadPath != null) {
-        DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
-        if (!dmd.isVersionCompatible()) {
-          throw new SemanticException
-              (
-                  "Dump version: " + dmd.getHiveVersion() + ". Versions older than "
-                  + Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT + " are not supported."
-              );
-        }
-
-        boolean evDump = false;
-        // we will decide what hdfs locations needs to be copied over here as well.
-        if (dmd.isIncrementalDump()) {
-          LOG.debug("{} contains an incremental dump", loadPath);
-          evDump = true;
-        } else {
-          LOG.debug("{} contains an bootstrap dump", loadPath);
-        }
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
-                replScope.getDbName(),
-                dmd.getReplScope(),
-                queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
-            initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
-              dmd.getDumpExecutionId()), dmd.isReplScopeModified());
-        rootTasks.add(TaskFactory.get(replLoadWork, conf));
-      } else {
-        LOG.warn("Previous Dump Already Loaded");
+      if (loadPath == null) {
+        // Possible reasons of loadPath being null: (with reference to getCurrentLoadPath() method)
+        // 1. fs.exists(loadPathBase) == false
+        // 2. loadPathBase.getFileSystem(conf).listStatus(loadPathBase).length == 0
+        // 3. loadPathBase.getFileSystem(conf).exists(hiveDumpPath) == false
+        return;
       }
+
+      DumpMetaData dmd = new DumpMetaData(loadPath, conf);
+      if (!dmd.isVersionCompatible()) {
+        throw new SemanticException
+            (
+                "Dump version: " + dmd.getHiveVersion() + ". Versions older than "
+                + Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT + " are not supported."
+            );
+      }
+
+      if (!shouldLoadProceed(loadPath)) {
+        LOG.warn("Previous Dump Already Loaded");
+        return;
+      }
+
+      boolean evDump = false;
+      // we will decide what hdfs locations needs to be copied over here as well.
+      if (dmd.isIncrementalDump()) {
+        LOG.debug("{} contains an incremental dump", loadPath);
+        evDump = true;
+      } else {
+        LOG.debug("{} contains an bootstrap dump", loadPath);
+      }
+      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
+              replScope.getDbName(),
+              dmd.getReplScope(),
+              queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
+          initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
+            dmd.getDumpExecutionId()), dmd.isReplScopeModified());
+      rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
@@ -381,14 +390,20 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-        if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath,
-                ReplAck.DUMP_ACKNOWLEDGEMENT.toString()))
-                && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()))) {
+        if (loadPathBase.getFileSystem(conf).exists(hiveDumpPath)) {
           return hiveDumpPath;
         }
       }
     }
     return null;
+  }
+
+  private boolean shouldLoadProceed (Path hiveDumpPath) throws IOException {
+    if (hiveDumpPath != null) { // Is null check necessary?
+      return hiveDumpPath.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplAck.DUMP_ACKNOWLEDGEMENT.toString()))
+          && !hiveDumpPath.getFileSystem(conf).exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
+    }
+    return false;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {
