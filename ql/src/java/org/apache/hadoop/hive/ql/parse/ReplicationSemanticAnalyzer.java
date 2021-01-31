@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
@@ -56,7 +55,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
@@ -332,7 +330,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!dmd.isVersionCompatible()) {
         throw new SemanticException
             (
-                "Dump version: " + dmd.getHiveVersion() + ". Versions older than "
+                "Dump version: " + dmd.getDumpFormatVersion() + ". Versions older than "
                 + Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT + " are not supported."
             );
       }

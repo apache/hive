@@ -185,7 +185,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             initiateAuthorizationDumpTask();
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
-          dmd.setHiveVersion(MIN_VERSION_FOR_NEW_DUMP_FORMAT);
+          dmd.setDumpFormatVersion(MIN_VERSION_FOR_NEW_DUMP_FORMAT);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));

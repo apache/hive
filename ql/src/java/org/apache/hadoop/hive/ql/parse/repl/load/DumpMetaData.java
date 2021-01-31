@@ -53,7 +53,7 @@ public class DumpMetaData {
   private final HiveConf hiveConf;
   private Long dumpExecutionId;
   private boolean replScopeModified = false;
-  private int hiveVersion;
+  private int dumpFormatVersion;
 
   public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -133,7 +133,7 @@ public class DumpMetaData {
           lineContents[4].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[4]),
           Boolean.valueOf(lineContents[6]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
-        setHiveVersion((lineContents.length < 8
+        setDumpFormatVersion((lineContents.length < 8
             || lineContents[7].equals(Utilities.nullStringOutput)) ? -1 : Integer.parseInt(lineContents[7]));
       } else {
         throw new IOException(
@@ -239,7 +239,7 @@ public class DumpMetaData {
             dumpExecutionId != null ? dumpExecutionId.toString() : null,
             payload,
             String.valueOf(replScopeModified),
-            String.valueOf(hiveVersion))
+            String.valueOf(dumpFormatVersion))
     );
     if (replScope != null) {
       listValues.add(prepareReplScopeValues());
@@ -247,16 +247,16 @@ public class DumpMetaData {
     Utils.writeOutput(listValues, dumpFile, hiveConf, replace);
   }
 
-  public int getHiveVersion() {
-    return this.hiveVersion;
+  public int getDumpFormatVersion() {
+    return this.dumpFormatVersion;
   }
 
-  public void setHiveVersion(int hiveVersion) {
-    this.hiveVersion = hiveVersion;
+  public void setDumpFormatVersion(int dumpFormatVersion) {
+    this.dumpFormatVersion = dumpFormatVersion;
   }
 
   public boolean isVersionCompatible() throws SemanticException {
     initializeIfNot();
-    return this.hiveVersion >= Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT;
+    return this.dumpFormatVersion >= Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT;
   }
 }

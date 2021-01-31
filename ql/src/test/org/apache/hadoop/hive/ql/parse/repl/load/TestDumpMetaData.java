@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -44,7 +45,7 @@ public class TestDumpMetaData {
 
   @Test
   public void testIncompatibleVersion() throws SemanticException {
-    dmd.setHiveVersion(2);
+    dmd.setDumpFormatVersion(Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT - 1);
     dmd.write(true);
 
     DumpMetaData dmdLoad = new DumpMetaData(dumpRoot, conf);
@@ -53,7 +54,7 @@ public class TestDumpMetaData {
 
   @Test
   public void testCompatibleVersion() throws SemanticException {
-    dmd.setHiveVersion(3);
+    dmd.setDumpFormatVersion(Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT);
     dmd.write(true);
 
     DumpMetaData dmdLoad = new DumpMetaData(dumpRoot, conf);
