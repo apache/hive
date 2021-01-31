@@ -59,7 +59,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
    */
   public void set(long seconds, int nanos, ZoneId timeZone) {
     Instant instant = Instant.ofEpochSecond(seconds, nanos);
-    setZonedDateTime(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC).withZoneSameLocal(timeZone));
+    setZonedDateTime(ZonedDateTime.ofInstant(instant, ZoneOffset.UTC).withZoneSameInstant(timeZone));
   }
 
   public ZonedDateTime getZonedDateTime() {
