@@ -65,7 +65,6 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Replication Scope
   private ReplScope replScope = new ReplScope();
-  private ReplScope oldReplScope = null;
 
   // Source DB Name for REPL LOAD
   private String sourceDbNameOrPattern;
@@ -143,34 +142,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void setOldReplPolicy(Tree oldReplPolicyTree) throws HiveException {
-    oldReplScope = new ReplScope();
-    int childCount = oldReplPolicyTree.getChildCount();
-
-    // First child is DB name and optional second child is tables list.
-    assert(childCount <= 2);
-
-    // First child is always the DB name. So set it.
-    oldReplScope.setDbName(oldReplPolicyTree.getChild(0).getText());
-    LOG.info("Old ReplScope: Set DB Name: {}", oldReplScope.getDbName());
-    if (!oldReplScope.getDbName().equalsIgnoreCase(replScope.getDbName())) {
-      LOG.error("DB name {} cannot be replaced to {} in the replication policy.",
-              oldReplScope.getDbName(), replScope.getDbName());
-      throw new SemanticException("DB name cannot be replaced in the replication policy.");
-    }
-
-    // If the old policy is just <db_name>, then tables list won't be there.
-    if (childCount <= 1) {
-      return;
-    }
-
-    // Traverse the children which can be either just include tables list or both include
-    // and exclude tables lists.
-    Tree oldPolicyTablesListNode = oldReplPolicyTree.getChild(1);
-    assert(oldPolicyTablesListNode.getType() == TOK_REPL_TABLES);
-    setReplDumpTablesList(oldPolicyTablesListNode, oldReplScope);
-  }
-
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     boolean isMetaDataOnly = false;
@@ -196,9 +167,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       case TOK_REPL_TABLES:
         setReplDumpTablesList(currNode, replScope);
         break;
-      case TOK_REPLACE:
-        setOldReplPolicy(currNode);
-        break;
       default:
         throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
       }
@@ -209,11 +177,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (!isMetaDataOnly && !ReplChangeManager.isSourceOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbNameOrPattern +
-                  " as it is not a source of replication (repl.source.for)");
-          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
-        }
         if (ReplUtils.isTargetOfReplication(database)) {
           LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
           throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
@@ -237,7 +200,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task<ReplDumpWork> replDumpWorkTask = TaskFactory
           .get(new ReplDumpWork(
               replScope,
-              oldReplScope,
               ASTErrorUtils.getMsg(ErrorMsg.INVALID_PATH.getMsg(), ast),
               ctx.getResFile().toUri().toString()
       ), conf);

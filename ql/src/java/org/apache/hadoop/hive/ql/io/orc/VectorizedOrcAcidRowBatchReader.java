@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -328,8 +329,7 @@ public class VectorizedOrcAcidRowBatchReader
             readerOptions.includeAcidColumns(false);
             break;
           } else {
-            AcidUtils.ParsedDelta pd =
-                AcidUtils.parsedDelta(parent, isOriginal);
+            ParsedDeltaLight pd = ParsedDeltaLight.parse(parent);
             if (validWriteIdList.isWriteIdRangeValid(pd.getMinWriteId(),
                 pd.getMaxWriteId()) == ValidWriteIdList.RangeResponse.ALL) {
               //all write IDs in range are committed (and visible in current
@@ -1377,6 +1377,9 @@ public class VectorizedOrcAcidRowBatchReader
       private static final List<Integer> DELETE_DELTA_INCLUDE_COLUMNS =
           IntStream.range(0, OrcInputFormat.getRootColumn(false)).boxed().collect(toList());
 
+      private static final TypeDescription DELETE_DELTA_EMPTY_STRUCT =
+          new TypeDescription(TypeDescription.Category.STRUCT);
+
       private VectorizedRowBatch batch;
       private RecordReader recordReader;
       private int indexPtrInBatch;
@@ -1408,7 +1411,7 @@ public class VectorizedOrcAcidRowBatchReader
         this.deleteDeltaFile = deleteDeltaFile;
 
         // ACID schema with empty row struct will be used for reading delete deltas
-        TypeDescription sch = SchemaEvolution.createEventSchema(new TypeDescription(TypeDescription.Category.STRUCT));
+        TypeDescription acidEmptyStructSchema = SchemaEvolution.createEventSchema(DELETE_DELTA_EMPTY_STRUCT);
 
         // If configured try with LLAP reader. This may still return null if LLAP record reader can't be created
         // e.g. due to unsupported schema evolution
@@ -1421,6 +1424,11 @@ public class VectorizedOrcAcidRowBatchReader
             // delete delta files were served out by LLAP, but a record reader for DD content could not be created.
             deleteDeltaReader = OrcFile.createReader(deleteDeltaFile, OrcFile.readerOptions(conf));
           }
+          // To prevent the record reader from allocating empty vectors for the actual table schema in its batch, we
+          // specify the original schema to be an empty struct, thus only ACID columns will be read.
+          // Note: clone() here makes sure not to alter the original options object, which is also used by
+          // SortMergeDeleteEventRegistry should a DeleteEventsOverflowMemoryException be thrown...
+          readerOptions = readerOptions.clone().schema(DELETE_DELTA_EMPTY_STRUCT).include(new boolean[] { true });
           this.recordReader = deleteDeltaReader.rowsOptions(readerOptions, conf);
         }
 
@@ -1429,9 +1437,9 @@ public class VectorizedOrcAcidRowBatchReader
         final boolean useDecimal64ColumnVector = HiveConf.getVar(conf, ConfVars
           .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
         if (useDecimal64ColumnVector) {
-          this.batch = sch.createRowBatchV2();
+          this.batch = acidEmptyStructSchema.createRowBatchV2();
         } else {
-          this.batch = sch.createRowBatch();
+          this.batch = acidEmptyStructSchema.createRowBatch();
         }
 
         if (!recordReader.nextBatch(batch)) { // Read the first batch.

@@ -67,8 +67,8 @@ public class Oracle extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("DATABASE IS READY TO USE!");
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout.contains("DATABASE IS READY TO USE!");
   }
 
   @Override

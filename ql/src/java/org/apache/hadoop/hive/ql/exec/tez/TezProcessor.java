@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.api.events.CustomProcessorEvent;
 import org.slf4j.Logger;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
@@ -310,14 +310,23 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
-      //done - output does not need to be committed as hive does not use outputcommitter
+      // commit the output tasks
+      for (LogicalOutput output : outputs.values()) {
+        if (output instanceof MROutput) {
+          MROutput mrOutput = (MROutput) output;
+          if (mrOutput.isCommitRequired()) {
+            mrOutput.commit();
+          }
+        }
+      }
+
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
       originalThrowable = t;
     } finally {
       if (originalThrowable != null && (originalThrowable instanceof Error ||
         Throwables.getRootCause(originalThrowable) instanceof Error)) {
-        LOG.error("Cannot recover from this FATAL error", StringUtils.stringifyException(originalThrowable));
+        LOG.error("Cannot recover from this FATAL error", originalThrowable);
         getContext().reportFailure(TaskFailureType.FATAL, originalThrowable,
                       "Cannot recover from this error");
         throw new RuntimeException(originalThrowable);
@@ -333,7 +342,16 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
         }
       }
       if (originalThrowable != null) {
-        LOG.error(StringUtils.stringifyException(originalThrowable));
+        LOG.error("Failed initializeAndRunProcessor", originalThrowable);
+        // abort the output tasks
+        for (LogicalOutput output : outputs.values()) {
+          if (output instanceof MROutput) {
+            MROutput mrOutput = (MROutput) output;
+            if (mrOutput.isCommitRequired()) {
+              mrOutput.abort();
+            }
+          }
+        }
         if (originalThrowable instanceof InterruptedException) {
           throw (InterruptedException) originalThrowable;
         } else {

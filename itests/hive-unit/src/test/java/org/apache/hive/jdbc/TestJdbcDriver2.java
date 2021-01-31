@@ -3109,20 +3109,6 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
-  @Test
-  public void testReplErrorScenarios() throws Exception {
-    HiveStatement stmt = (HiveStatement) con.createStatement();
-
-    try {
-      // source of replication not set
-      stmt.execute("repl dump default");
-    } catch(SQLException e){
-      assertTrue(e.getErrorCode() == ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getErrorCode());
-    }
-
-    stmt.close();
-  }
-
   /**
    * Test {@link HiveStatement#executeAsync(String)} for an insert overwrite into a table
    * @throws Exception

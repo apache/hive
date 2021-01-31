@@ -22,10 +22,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  filterExpr: (cs_bill_customer_sk is not null and cs_bill_customer_sk BETWEEN DynamicValue(RS[196]_col0) AND DynamicValue(RS[196]_col1) and cs_item_sk BETWEEN DynamicValue(RS[196]_col2) AND DynamicValue(RS[196]_col3) and in_bloom_filter(hash(cs_bill_customer_sk,cs_item_sk), DynamicValue(RS[196]_col4))) (type: boolean)
+                  filterExpr: (cs_bill_customer_sk is not null and cs_bill_customer_sk BETWEEN DynamicValue(RS[197]_col0) AND DynamicValue(RS[197]_col1) and cs_item_sk BETWEEN DynamicValue(RS[197]_col2) AND DynamicValue(RS[197]_col3) and in_bloom_filter(hash(cs_bill_customer_sk,cs_item_sk), DynamicValue(RS[197]_col4))) (type: boolean)
                   Statistics: Num rows: 43005109025 Data size: 5847849100352 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cs_bill_customer_sk is not null and cs_bill_customer_sk BETWEEN DynamicValue(RS[196]_col0) AND DynamicValue(RS[196]_col1) and cs_item_sk BETWEEN DynamicValue(RS[196]_col2) AND DynamicValue(RS[196]_col3) and in_bloom_filter(hash(cs_bill_customer_sk,cs_item_sk), DynamicValue(RS[196]_col4))) (type: boolean)
+                    predicate: (cs_bill_customer_sk is not null and cs_bill_customer_sk BETWEEN DynamicValue(RS[197]_col0) AND DynamicValue(RS[197]_col1) and cs_item_sk BETWEEN DynamicValue(RS[197]_col2) AND DynamicValue(RS[197]_col3) and in_bloom_filter(hash(cs_bill_customer_sk,cs_item_sk), DynamicValue(RS[197]_col4))) (type: boolean)
                     Statistics: Num rows: 42899393143 Data size: 5833473819384 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cs_bill_customer_sk (type: bigint), cs_item_sk (type: bigint), cs_net_profit (type: decimal(7,2)), cs_sold_date_sk (type: bigint)
@@ -168,10 +168,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: (ss_customer_sk is not null and ss_store_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS[206]_col0) AND DynamicValue(RS[206]_col1) and ss_item_sk BETWEEN DynamicValue(RS[206]_col2) AND DynamicValue(RS[206]_col3) and ss_ticket_number BETWEEN DynamicValue(RS[206]_col4) AND DynamicValue(RS[206]_col5) and in_bloom_filter(hash(ss_customer_sk,ss_item_sk,ss_ticket_number), DynamicValue(RS[206]_col6))) (type: boolean)
+                  filterExpr: (ss_customer_sk is not null and ss_store_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS[207]_col0) AND DynamicValue(RS[207]_col1) and ss_item_sk BETWEEN DynamicValue(RS[207]_col2) AND DynamicValue(RS[207]_col3) and ss_ticket_number BETWEEN DynamicValue(RS[207]_col4) AND DynamicValue(RS[207]_col5) and in_bloom_filter(hash(ss_customer_sk,ss_item_sk,ss_ticket_number), DynamicValue(RS[207]_col6))) (type: boolean)
                   Statistics: Num rows: 82510879939 Data size: 12292602293640 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_store_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS[206]_col0) AND DynamicValue(RS[206]_col1) and ss_item_sk BETWEEN DynamicValue(RS[206]_col2) AND DynamicValue(RS[206]_col3) and ss_ticket_number BETWEEN DynamicValue(RS[206]_col4) AND DynamicValue(RS[206]_col5) and in_bloom_filter(hash(ss_customer_sk,ss_item_sk,ss_ticket_number), DynamicValue(RS[206]_col6))) (type: boolean)
+                    predicate: (ss_customer_sk is not null and ss_store_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS[207]_col0) AND DynamicValue(RS[207]_col1) and ss_item_sk BETWEEN DynamicValue(RS[207]_col2) AND DynamicValue(RS[207]_col3) and ss_ticket_number BETWEEN DynamicValue(RS[207]_col4) AND DynamicValue(RS[207]_col5) and in_bloom_filter(hash(ss_customer_sk,ss_item_sk,ss_ticket_number), DynamicValue(RS[207]_col6))) (type: boolean)
                     Statistics: Num rows: 78670147920 Data size: 11720403920960 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_item_sk (type: bigint), ss_customer_sk (type: bigint), ss_store_sk (type: bigint), ss_ticket_number (type: bigint), ss_net_profit (type: decimal(7,2)), ss_sold_date_sk (type: bigint)

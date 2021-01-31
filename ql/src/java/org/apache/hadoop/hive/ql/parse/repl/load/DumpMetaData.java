@@ -84,6 +84,10 @@ public class DumpMetaData {
     this.replScope = replScope;
   }
 
+  public void setDumpType(DumpType dumpType) {
+    this.dumpType = dumpType;
+  }
+
   private void readReplScope(String line) throws IOException {
     if (line == null) {
       return;
@@ -121,9 +125,12 @@ public class DumpMetaData {
       String line;
       if ((line = br.readLine()) != null) {
         String[] lineContents = line.split("\t", 7);
-        setDump(DumpType.valueOf(lineContents[0]), Long.valueOf(lineContents[1]),
-            Long.valueOf(lineContents[2]),
-            new Path(lineContents[3]), Long.valueOf(lineContents[4]), Boolean.valueOf(lineContents[6]));
+        setDump(lineContents[0].equals(Utilities.nullStringOutput) ? null : DumpType.valueOf(lineContents[0]),
+          lineContents[1].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[1]),
+          lineContents[2].equals(Utilities.nullStringOutput) ? null :  Long.valueOf(lineContents[2]),
+          lineContents[3].equals(Utilities.nullStringOutput) ? null : new Path(lineContents[3]),
+          lineContents[4].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[4]),
+          Boolean.valueOf(lineContents[6]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
       } else {
         throw new IOException(
@@ -222,11 +229,11 @@ public class DumpMetaData {
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(
         Arrays.asList(
-            dumpType.toString(),
-            eventFrom.toString(),
-            eventTo.toString(),
-            cmRoot.toString(),
-            dumpExecutionId.toString(),
+            dumpType != null ? dumpType.toString() : null,
+            eventFrom != null ? eventFrom.toString() : null,
+            eventTo != null ? eventTo.toString() : null,
+            cmRoot != null ? cmRoot.toString() : null,
+            dumpExecutionId != null ? dumpExecutionId.toString() : null,
             payload,
             String.valueOf(replScopeModified))
     );

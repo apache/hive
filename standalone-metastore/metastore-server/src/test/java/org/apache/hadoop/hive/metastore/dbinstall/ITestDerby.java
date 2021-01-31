@@ -18,16 +18,16 @@
 package org.apache.hadoop.hive.metastore.dbinstall;
 
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
 import org.junit.Rule;
 
 /**
  * Mssql-specific DbInstallBase child test class.
  */
-public class ITestSqlServer extends DbInstallBase {
+public class ITestDerby extends DbInstallBase {
 
   @Rule
-  public final DatabaseRule databaseRule = new Mssql();
+  public final DatabaseRule databaseRule = new Derby(true);
 
   @Override
   protected DatabaseRule getRule() {

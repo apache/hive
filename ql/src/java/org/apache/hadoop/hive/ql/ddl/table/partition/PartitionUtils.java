@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +135,7 @@ public final class PartitionUtils {
         try {
           parts = db.getPartitions(table, partitionSpec);
         } catch (HiveException e) {
-          LOG.error("Got HiveException during obtaining list of partitions" + StringUtils.stringifyException(e));
+          LOG.error("Got HiveException during obtaining list of partitions", e);
           throw new SemanticException(e.getMessage(), e);
         }
       } else {
@@ -147,7 +146,7 @@ public final class PartitionUtils {
             parts.add(p);
           }
         } catch (HiveException e) {
-          LOG.debug("Wrong specification" + StringUtils.stringifyException(e));
+          LOG.debug("Wrong specification", e);
           throw new SemanticException(e.getMessage(), e);
         }
       }

@@ -86,6 +86,18 @@ public class TestLlapDaemon {
     daemon.shutdown();
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testEnforceProperNumberOfIOThreads() throws IOException {
+    Configuration thisHiveConf = new HiveConf();
+    HiveConf.setVar(thisHiveConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "@llap");
+    HiveConf.setIntVar(thisHiveConf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS, 4);
+    HiveConf.setIntVar(thisHiveConf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, 3);
+
+    LlapDaemon thisDaemon = new LlapDaemon(thisHiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
+            -1, new String[1], 0, false, 0,0, 0, -1, "TestLlapDaemon");
+    thisDaemon.close();
+  }
+
   @Test
   public void testUpdateRegistration() throws IOException {
     // Given
