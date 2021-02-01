@@ -38,7 +38,7 @@ Stage-0
             <-Reducer 3 [SIMPLE_EDGE] vectorized, llap
               SHUFFLE [RS_43]
                 PartitionCols:0
-                Select Operator [SEL_42] (rows=2 width=20)
+                Select Operator [SEL_42] (rows=2 width=16)
                   Output:["_col1","_col2"]
                   Group By Operator [GBY_41] (rows=2 width=20)
                     Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
