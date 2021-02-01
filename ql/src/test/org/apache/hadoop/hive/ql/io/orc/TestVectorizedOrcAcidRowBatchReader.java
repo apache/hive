@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.Columniz
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.SortMergedDeleteEventRegistry;
 
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -471,7 +472,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
           " leaf-4 = (LESS_THAN_EQUALS bucket 536936448)," +
           " leaf-5 = (LESS_THAN_EQUALS rowId 2)," +
           " expr = (and (not leaf-0) (not leaf-1) " +
-          "(not leaf-2) leaf-3 leaf-4 leaf-5)", sarg.toString());
+          "(not leaf-2) leaf-3 leaf-4 leaf-5)",
+          ((SearchArgumentImpl) sarg).toOldString());
     }
     else {
       assertEquals(new OrcRawRecordMerger.KeyInterval(null, null), keyInterval);

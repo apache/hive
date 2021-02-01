@@ -7695,15 +7695,15 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ds (string)
                             Target Input: srcpart_orc_n0
                             Partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col1 (type: double)
@@ -7711,15 +7711,15 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: double)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: hr (int)
                             Target Input: srcpart_orc_n0
                             Partition key expr: UDFToDouble(hr)
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: all inputs

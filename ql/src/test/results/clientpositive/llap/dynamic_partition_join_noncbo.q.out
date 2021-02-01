@@ -1055,10 +1055,10 @@ STAGE PLANS:
                     predicate: pli is not null (type: boolean)
                     Statistics: Num rows: 15390381 Data size: 116471238533 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: pli (type: bigint), p1 (type: string)
+                      key expressions: pli (type: bigint), 'P30' (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: pli (type: bigint), p1 (type: string)
+                      Map-reduce partition columns: pli (type: bigint), 'P30' (type: string)
                       Statistics: Num rows: 15390381 Data size: 116471238533 Basic stats: COMPLETE Column stats: NONE
                       value expressions: dtpi (type: bigint)
             Execution mode: vectorized, llap

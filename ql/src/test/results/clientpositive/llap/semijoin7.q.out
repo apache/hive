@@ -193,13 +193,13 @@ STAGE PLANS:
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -213,10 +213,10 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 nullSafes: [true]
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -293,11 +293,11 @@ STAGE PLANS:
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -312,14 +312,14 @@ STAGE PLANS:
                   1 
                 outputColumnNames: _col0, _col1, _col5
                 residual filter predicates: {(_col1 <> _col5)}
-                Statistics: Num rows: 18 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 30 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 18 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 30 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 18 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 30 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -407,13 +407,13 @@ STAGE PLANS:
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -428,14 +428,14 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col6
                 residual filter predicates: {(_col1 <> _col6)}
-                Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -510,11 +510,11 @@ STAGE PLANS:
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -529,14 +529,14 @@ STAGE PLANS:
                   1 
                 outputColumnNames: _col0, _col1, _col5, _col6
                 residual filter predicates: {((_col0 = _col5) or (_col1 <> _col6))}
-                Statistics: Num rows: 18 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 30 Data size: 476 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 18 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 30 Data size: 476 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 18 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 30 Data size: 476 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -622,13 +622,13 @@ STAGE PLANS:
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -641,10 +641,10 @@ STAGE PLANS:
                   0 a (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -736,13 +736,13 @@ STAGE PLANS:
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col3 (type: int)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col3 (type: int)
-                          Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 5 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

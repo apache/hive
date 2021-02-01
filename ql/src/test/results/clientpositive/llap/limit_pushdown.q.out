@@ -232,16 +232,16 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(_col1)
                         keys: _col0 (type: string)
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -253,7 +253,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: double)
                   outputColumnNames: _col0, _col1
@@ -342,16 +342,16 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(_col1), count(_col1)
                         keys: _col0 (type: string)
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 307 Data size: 32849 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 307 Data size: 32849 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: double), _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -363,11 +363,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 32849 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), (_col1 / _col2) (type: double)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
                     Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
@@ -927,16 +927,16 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(key)
                       keys: value (type: string)
-                      minReductionHashAggr: 0.5
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -948,18 +948,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                 Top N Key Operator
                   sort order: +
                   keys: _col1 (type: double)
                   null sort order: z
-                  Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 20
                   Reduce Output Operator
                     key expressions: _col1 (type: double)
                     null sort order: z
                     sort order: +
-                    Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -967,7 +967,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1064,16 +1064,16 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: count()
                         keys: key (type: string)
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
                   Top N Key Operator
                     sort order: +
@@ -1088,16 +1088,16 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: count()
                         keys: key (type: string)
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1109,7 +1109,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
@@ -1155,7 +1155,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
                   Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE

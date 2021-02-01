@@ -291,16 +291,16 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: max(_col0), min(_col1)
                   keys: _col0 (type: int)
-                  minReductionHashAggr: 0.5020576
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 121 Data size: 23232 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 154 Data size: 29568 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 121 Data size: 23232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 154 Data size: 29568 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: int), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized
@@ -310,22 +310,22 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 121 Data size: 23232 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 154 Data size: 29568 Basic stats: COMPLETE Column stats: COMPLETE
                 Top N Key Operator
                   sort order: +
                   keys: _col2 (type: string)
                   null sort order: z
-                  Statistics: Num rows: 121 Data size: 23232 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 154 Data size: 29568 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 10
                   Select Operator
                     expressions: _col1 (type: int), _col2 (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 154 Data size: 28952 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string)
                       null sort order: z
                       sort order: +
-                      Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 154 Data size: 28952 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
         Reducer 4 
             Execution mode: vectorized
@@ -333,7 +333,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 154 Data size: 28952 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE

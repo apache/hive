@@ -116,15 +116,15 @@ STAGE PLANS:
                         Statistics: Num rows: 157 Data size: 1256 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5031847
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 78 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 157 Data size: 1256 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
-                            Statistics: Num rows: 78 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 157 Data size: 1256 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 2
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)

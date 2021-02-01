@@ -1807,6 +1807,13 @@ public class HiveConf extends Configuration {
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "CONSERVATIVE",
+        new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS", "TEST"),
+        "The strategy defines when Hive fallbacks to legacy optimizer when CBO fails:" 
+            + "NEVER, never use the legacy optimizer (all CBO errors are fatal);"
+            + "ALWAYS, always use the legacy optimizer (CBO errors are not fatal);"
+            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views;"
+            + "TEST, specific behavior only for tests, do not use in production"), 
     HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
         "the expression exceeds this threshold; the threshold is expressed in terms of number of nodes (leaves and" +
         "interior nodes). -1 to not set up a threshold."),
@@ -2461,6 +2468,10 @@ public class HiveConf extends Configuration {
         "Whether to enable predicate pushdown through windowing"),
     HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true,
         "Whether to transitively replicate predicate filters over equijoin conditions."),
+    HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES("hive.ppd.recognize.column.equalities", true,
+        "Whether we should traverse the join branches to discover transitive propagation opportunities over" +
+                " equijoin conditions. \n" +
+                "Requires hive.ppd.recognizetransivity to be set to true."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "During query optimization, filters may be pushed down in the operator tree. \n" +
         "If this config is true only pushed down filters remain in the operator tree, \n" +
@@ -2615,6 +2626,8 @@ public class HiveConf extends Configuration {
         "Enables DPPUnion to merge EventOperators (right now this is used during DynamicPartitionPruning)"),
     HIVE_SHARED_WORK_DOWNSTREAM_MERGE("hive.optimize.shared.work.downstream.merge", true,
         "Analyzes and merges equiv downstream operators after a successful shared work optimization step."),
+    HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT("hive.optimize.shared.work.parallel.edge.support", true,
+        "Lets the shared work optimizer to create parallel edges in case they are for semijoins or mapjoins."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),

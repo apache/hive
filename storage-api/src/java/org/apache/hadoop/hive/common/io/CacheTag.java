@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
  * Comes in 3 flavours to optimize for minimal memory overhead:
  * - TableCacheTag for tables without partitions: DB/table level
  * - SinglePartitionCacheTag for tables with 1 partition level: DB/table/1st_partition
- * - MultiPartitionCacheTag for tables with >1 partition levels:
+ * - MultiPartitionCacheTag for tables with &gt; 1 partition levels:
  *     DB/table/1st_partition/.../nth_partition .
  */
 public abstract class CacheTag implements Comparable<CacheTag> {
