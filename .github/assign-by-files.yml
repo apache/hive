@@ -1,3 +1,7 @@
+# Important!
+# Before adding yourself please make sure that your userid is listed at:
+# https://github.com/orgs/apache/teams/hive-committers/members
+# non-members can't be assigned for reviews - and the plugin will stop with an error!
 ---
 # thrift changes
 '**/*.thrift':
@@ -21,7 +25,6 @@
   - kgyrtkirk
 '.github/**':
   - kgyrtkirk
-  - HiveQA
 # ddl changes
 '**/ddl/**':
   - miklosgergely
