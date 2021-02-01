@@ -270,19 +270,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: ws_sold_date_sk (bigint)
                             Target Input: web_sales
                             Partition key expr: ws_sold_date_sk
-                            Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 13
-=======
-                            Target column: cs_sold_date_sk (bigint)
-                            Target Input: catalog_sales
-                            Partition key expr: cs_sold_date_sk
                             Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 11
->>>>>>> apache/master
+                            Target Vertex: Map 13
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -300,19 +292,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: cs_sold_date_sk (bigint)
                             Target Input: catalog_sales
                             Partition key expr: cs_sold_date_sk
-                            Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 9
-=======
-                            Target column: ws_sold_date_sk (bigint)
-                            Target Input: web_sales
-                            Partition key expr: ws_sold_date_sk
                             Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 13
->>>>>>> apache/master
+                            Target Vertex: Map 9
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 

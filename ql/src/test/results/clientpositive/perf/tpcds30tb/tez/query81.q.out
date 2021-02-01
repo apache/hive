@@ -173,13 +173,8 @@ STAGE PLANS:
                             Target column: cr_returned_date_sk (bigint)
                             Target Input: catalog_returns
                             Partition key expr: cr_returned_date_sk
-<<<<<<< HEAD
-                            Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 2
-=======
                             Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 4
->>>>>>> apache/master
+                            Target Vertex: Map 2
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z

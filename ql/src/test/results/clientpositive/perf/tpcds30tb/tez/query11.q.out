@@ -105,13 +105,8 @@ STAGE PLANS:
                               Target column: ss_sold_date_sk (bigint)
                               Target Input: store_sales
                               Partition key expr: ss_sold_date_sk
-<<<<<<< HEAD
-                              Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 2
-=======
                               Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 1
->>>>>>> apache/master
+                              Target Vertex: Map 2
                     Filter Operator
                       predicate: (_col1 = 2000) (type: boolean)
                       Statistics: Num rows: 367 Data size: 4404 Basic stats: COMPLETE Column stats: COMPLETE
@@ -136,19 +131,11 @@ STAGE PLANS:
                             outputColumnNames: _col0
                             Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
                             Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                               Target column: ws_sold_date_sk (bigint)
                               Target Input: web_sales
                               Partition key expr: ws_sold_date_sk
-                              Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 13
-=======
-                              Target column: ss_sold_date_sk (bigint)
-                              Target Input: store_sales
-                              Partition key expr: ss_sold_date_sk
                               Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 1
->>>>>>> apache/master
+                              Target Vertex: Map 13
                     Filter Operator
                       predicate: (_col1 = 2000) (type: boolean)
                       Statistics: Num rows: 367 Data size: 4404 Basic stats: COMPLETE Column stats: COMPLETE
@@ -173,19 +160,11 @@ STAGE PLANS:
                             outputColumnNames: _col0
                             Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
                             Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                               Target column: ss_sold_date_sk (bigint)
                               Target Input: store_sales
                               Partition key expr: ss_sold_date_sk
-                              Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 2
-=======
-                              Target column: ws_sold_date_sk (bigint)
-                              Target Input: web_sales
-                              Partition key expr: ws_sold_date_sk
                               Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 13
->>>>>>> apache/master
+                              Target Vertex: Map 2
                     Filter Operator
                       predicate: (_col1 = 1999) (type: boolean)
                       Statistics: Num rows: 367 Data size: 4404 Basic stats: COMPLETE Column stats: COMPLETE

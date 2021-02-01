@@ -93,19 +93,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: cs_sold_date_sk (bigint)
                             Target Input: catalog_sales
                             Partition key expr: cs_sold_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 8
-=======
-                            Target column: ss_sold_date_sk (bigint)
-                            Target Input: store_sales
-                            Partition key expr: ss_sold_date_sk
-                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
->>>>>>> apache/master
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -123,19 +115,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: cr_returned_date_sk (bigint)
                             Target Input: catalog_returns
                             Partition key expr: cr_returned_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 11
-=======
-                            Target column: sr_returned_date_sk (bigint)
-                            Target Input: store_returns
-                            Partition key expr: sr_returned_date_sk
                             Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 7
->>>>>>> apache/master
+                            Target Vertex: Map 11
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -153,19 +137,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
-=======
-                            Target column: cs_sold_date_sk (bigint)
-                            Target Input: catalog_sales
-                            Partition key expr: cs_sold_date_sk
                             Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 9
->>>>>>> apache/master
+                            Target Vertex: Map 1
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -183,19 +159,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: ws_sold_date_sk (bigint)
                             Target Input: web_sales
                             Partition key expr: ws_sold_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 13
-=======
-                            Target column: cr_returned_date_sk (bigint)
-                            Target Input: catalog_returns
-                            Partition key expr: cr_returned_date_sk
                             Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 11
->>>>>>> apache/master
+                            Target Vertex: Map 13
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -213,19 +181,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: sr_returned_date_sk (bigint)
                             Target Input: store_returns
                             Partition key expr: sr_returned_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 6
-=======
-                            Target column: ws_sold_date_sk (bigint)
-                            Target Input: web_sales
-                            Partition key expr: ws_sold_date_sk
-                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 13
->>>>>>> apache/master
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z

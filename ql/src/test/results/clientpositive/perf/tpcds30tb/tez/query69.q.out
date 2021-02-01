@@ -193,19 +193,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 92 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: ws_sold_date_sk (bigint)
                             Target Input: web_sales
                             Partition key expr: ws_sold_date_sk
-                            Statistics: Num rows: 46 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 12
-=======
-                            Target column: ss_sold_date_sk (bigint)
-                            Target Input: store_sales
-                            Partition key expr: ss_sold_date_sk
                             Statistics: Num rows: 92 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 11
->>>>>>> apache/master
+                            Target Vertex: Map 12
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
@@ -223,19 +215,11 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 92 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
-<<<<<<< HEAD
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
-                            Statistics: Num rows: 46 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 11
-=======
-                            Target column: ws_sold_date_sk (bigint)
-                            Target Input: web_sales
-                            Partition key expr: ws_sold_date_sk
                             Statistics: Num rows: 92 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 13
->>>>>>> apache/master
+                            Target Vertex: Map 11
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
