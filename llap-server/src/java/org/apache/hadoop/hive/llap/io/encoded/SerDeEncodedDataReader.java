@@ -539,7 +539,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
               buffers == null ? new ArrayList<MemoryBuffer>() : new ArrayList<>(buffers)));
           receiver.clear();
         }
-        if (doesSourceHaveIncludes) {
+        if (doesSourceHaveIncludes && colIx > 0) {
           int newColIx = getSparseOrcIndexFromDenseDest(colIx);
           if (LlapIoImpl.LOG.isTraceEnabled()) {
             LlapIoImpl.LOG.trace("Mapping the ORC writer column " + colIx + " to " + newColIx);
