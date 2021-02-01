@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -164,7 +165,27 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   @Override
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap) {
-    this.colExprMap = colExprMap;
+    this.colExprMap = new SX(colExprMap);
+  }
+
+  public static class SX extends LinkedHashMap<String, ExprNodeDesc> {
+
+    public SX() {
+      super();
+    }
+
+    public SX(Map<String, ExprNodeDesc> colExprMap) {
+      super(colExprMap);
+    }
+
+    @Override
+    public ExprNodeDesc put(String key, ExprNodeDesc value) {
+      if (key.contains("org.apache")) {
+        int asd = 1;
+      }
+      return super.put(key, value);
+    }
+
   }
 
   @Override

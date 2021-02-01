@@ -101,7 +101,41 @@ public class SelectDesc extends AbstractOperatorDesc {
 
   public void setOutputColumnNames(
     List<java.lang.String> outputColumnNames) {
-    this.outputColumnNames = outputColumnNames;
+    this.outputColumnNames = new SQ(outputColumnNames);
+  }
+
+  public static void fx() {
+
+    System.out.println("asd");
+  }
+
+  static class SQ extends ArrayList<String> {
+
+    public SQ() {
+      super();
+    }
+    public SQ(List<String> li) {
+      super(li);
+    }
+
+    @Override
+    public boolean add(String e) {
+      chk(e);
+      return super.add(e);
+    }
+
+    @Override
+    public void add(int index, String element) {
+      chk(element);
+      super.add(index, element);
+    }
+
+    private void chk(String e) {
+      if (e.contains("org.apa")) {
+        fx();
+      }
+
+    }
   }
 
   @Signature
