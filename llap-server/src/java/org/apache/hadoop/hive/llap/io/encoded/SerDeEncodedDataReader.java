@@ -490,6 +490,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
+    public void writeStatistics(StreamName streamName, OrcProto.ColumnStatistics.Builder builder) throws IOException {
+    }
+
+    @Override
     public void finalizeStripe(
         OrcProto.StripeFooter.Builder footer,
         OrcProto.StripeInformation.Builder dirEntry)
@@ -547,11 +551,6 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       startStripe();
     }
 
-    @Override
-    public void writeStatistics(StreamName streamName, OrcProto.ColumnStatistics.Builder builder) throws IOException {
-
-    }
-
     private int getSparseOrcIndexFromDenseDest(int denseColIx) {
       // denseColIx is index in ORC writer with includes. We -1 to skip the root column; get the
       // original text file index; then add the root column again. This makes many assumptions.
@@ -574,6 +573,18 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       throw new UnsupportedOperationException(); // Only used in ACID writer.
     }
 
+    public void setCurrentStripeOffsets(long currentKnownTornStart, long firstStartOffset, long lastStartOffset, long currentFileOffset) {
+      currentStripe.knownTornStart = currentKnownTornStart;
+      currentStripe.firstRowStart = firstStartOffset;
+      currentStripe.lastRowStart = lastStartOffset;
+      currentStripe.lastRowEnd = currentFileOffset;
+    }
+
+    @Override
+    public StreamOptions getStreamOptions() {
+      return this.options;
+    }
+
     @Override
     public long getFileBytes(int column, WriterEncryptionVariant writerEncryptionVariant) {
       long size = 0L;
@@ -590,19 +601,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       }
       return size;
     }
-
-    @Override
-    public StreamOptions getStreamOptions() {
-      return this.options;
-    }
-
-    public void setCurrentStripeOffsets(long currentKnownTornStart, long firstStartOffset, long lastStartOffset, long currentFileOffset) {
-      currentStripe.knownTornStart = currentKnownTornStart;
-      currentStripe.firstRowStart = firstStartOffset;
-      currentStripe.lastRowStart = lastStartOffset;
-      currentStripe.lastRowEnd = currentFileOffset;
-    }
   }
+
   private interface CacheOutput {
     List<MemoryBuffer> getData();
     StreamName getName();
