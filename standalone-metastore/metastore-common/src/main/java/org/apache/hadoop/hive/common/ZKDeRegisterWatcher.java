@@ -20,12 +20,17 @@ package org.apache.hadoop.hive.common;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The watcher class which sets the de-register flag when the given znode is deleted.
  */
 public class ZKDeRegisterWatcher implements Watcher {
-  private ZooKeeperHiveHelper zooKeeperHiveHelper;
+  private static final Logger LOG = LoggerFactory.getLogger(ZKDeRegisterWatcher.class);
+  private final ZooKeeperHiveHelper zooKeeperHiveHelper;
+  private String zNodePath;
+  private boolean needToSetAgain;
 
   public ZKDeRegisterWatcher(ZooKeeperHiveHelper zooKeeperHiveHelper) {
     this.zooKeeperHiveHelper = zooKeeperHiveHelper;
@@ -33,8 +38,35 @@ public class ZKDeRegisterWatcher implements Watcher {
 
   @Override
   public void process(WatchedEvent event) {
-    if (event.getType().equals(Watcher.Event.EventType.NodeDeleted)) {
+    if (event.getType().equals(Event.EventType.NodeDeleted)) {
       zooKeeperHiveHelper.deregisterZnode();
+    } else {
+      if (Event.KeeperState.SyncConnected == event.getState() && Event.EventType.None == event.getType()) {
+        needToSetAgain = true; // connection reestablishment
+      } else if (needToSetAgain &&
+          zNodePath != null &&
+          Event.KeeperState.SyncConnected == event.getState() &&
+          Event.EventType.NodeDataChanged == event.getType() &&
+          zNodePath.equals(event.getPath())) {
+        LOG.warn("DeRegisterWatcher is called with WatchedEvent[{}] other than NodeDeleted event. "
+            + "DeRegisterWatcher will be registered again.", event.toString());
+        try {
+          zooKeeperHiveHelper.setDeRegisterWatcher(this);
+          needToSetAgain = false;
+        } catch (Exception e) {
+          LOG.error("It's failed to register DeRegisterWatcher again for this HiveServer2 instance on ZooKeeper.", e);
+        }
+      } else {
+        LOG.info("DeRegisterWatcher is called with WatchedEvent[{}] which server doesn't expect.", event.toString());
+      }
     }
+  }
+
+  public void setZNodePath(String zNodePath) {
+    this.zNodePath = zNodePath;
+  }
+
+  public String getZNodePath() {
+    return zNodePath;
   }
 }

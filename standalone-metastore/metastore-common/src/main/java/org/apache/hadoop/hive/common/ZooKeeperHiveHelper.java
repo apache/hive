@@ -32,6 +32,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -263,8 +264,7 @@ public class ZooKeeperHiveHelper {
       String pathPrefix = ZOOKEEPER_PATH_SEPARATOR + rootNamespace
                       + ZOOKEEPER_PATH_SEPARATOR + znodePathPrefix;
       byte[] znodeDataUTF8 = znodeData.getBytes(StandardCharsets.UTF_8);
-      znode =
-              new PersistentNode(zooKeeperClient, CreateMode.EPHEMERAL_SEQUENTIAL, false, pathPrefix, znodeDataUTF8);
+      znode = new PersistentNode(zooKeeperClient, CreateMode.EPHEMERAL_SEQUENTIAL, false, pathPrefix, znodeDataUTF8);
       znode.start();
       // We'll wait for 120s for node creation
       long znodeCreationTimeout = 120;
@@ -273,7 +273,8 @@ public class ZooKeeperHiveHelper {
       }
       setDeregisteredWithZooKeeper(false);
       final String znodePath = znode.getActualPath();
-      if (zooKeeperClient.checkExists().usingWatcher(watcher).forPath(znodePath) == null) {
+      watcher.setZNodePath(znodePath);
+      if (setDeRegisterWatcher(watcher) == null) {
         // No node exists, throw exception
         throw new Exception("Unable to create znode with path prefix " + znodePathPrefix +
                 " and data " + znodeData + " on ZooKeeper.");
@@ -288,6 +289,11 @@ public class ZooKeeperHiveHelper {
       }
       throw (e);
     }
+  }
+
+  public Stat setDeRegisterWatcher(ZKDeRegisterWatcher watcher) throws Exception {
+    if (zooKeeperClient == null) throw new IllegalStateException();
+    return zooKeeperClient.checkExists().usingWatcher(watcher).forPath(watcher.getZNodePath());
   }
 
   public CuratorFramework startZookeeperClient(ACLProvider zooKeeperAclProvider,
