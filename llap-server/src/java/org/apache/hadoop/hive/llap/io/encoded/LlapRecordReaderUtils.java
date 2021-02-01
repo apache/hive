@@ -54,7 +54,7 @@ public class LlapRecordReaderUtils {
   static HadoopShims.ZeroCopyReaderShim createZeroCopyShim(FSDataInputStream file, CompressionCodec codec,
       RecordReaderUtils.ByteBufferAllocatorPool pool) throws IOException {
     return codec == null || (codec instanceof DirectDecompressionCodec && ((DirectDecompressionCodec) codec)
-        .isAvailable()) ? null : SHIMS.getZeroCopyReader(file, pool);
+        .isAvailable()) ? SHIMS.getZeroCopyReader(file, pool): null;
   }
 
   public static LlapDataReader createDefaultLlapDataReader(DataReaderProperties properties) {
