@@ -82,7 +82,7 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
 
   private void interpret() throws HiveSQLException {
     try {
-      OperationState opState = getStatus().getState();
+      OperationState opState = getState();
       // Operation may have been cancelled by another thread
       if (opState.isTerminal()) {
         log.info("Not running the query. Operation is already in terminal state: " + opState
@@ -96,8 +96,8 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
       }
       setState(OperationState.FINISHED);
     } catch (Throwable e) {
-      if (getStatus().getState().isTerminal()) {
-        log.warn("Ignore exception in terminal state: {}", getStatus().getState(), e);
+      if (getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: {}", getState(), e);
         return;
       }
       setState(OperationState.ERROR);
