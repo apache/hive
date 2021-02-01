@@ -1056,7 +1056,10 @@ public final class ColumnPrunerProcFactory {
         if (lookupColumn(cols, i.getInternalName()) != null) {
           rs.add(i);
         } else {
-          op.getColumnExprMap().remove(i.getInternalName());
+          Map<String, ExprNodeDesc> columnExprMap = op.getColumnExprMap();
+          if (columnExprMap != null) {
+            columnExprMap.remove(i.getInternalName());
+          }
         }
       }
       op.getSchema().setSignature(rs);
