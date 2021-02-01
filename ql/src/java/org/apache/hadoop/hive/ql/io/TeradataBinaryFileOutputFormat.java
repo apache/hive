@@ -23,8 +23,6 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 import org.apache.commons.io.EndianUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -34,6 +32,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Progressable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 
@@ -51,7 +51,7 @@ import static java.lang.String.format;
  */
 public class TeradataBinaryFileOutputFormat<K extends WritableComparable, V extends Writable>
     extends HiveIgnoreKeyTextOutputFormat<K, V> {
-  private static final Log LOG = LogFactory.getLog(TeradataBinaryFileOutputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TeradataBinaryFileOutputFormat.class);
 
   static final byte RECORD_END_BYTE = (byte) 0x0a;
 
