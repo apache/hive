@@ -26,8 +26,6 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.EndianUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -41,6 +39,8 @@ import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 
@@ -58,7 +58,7 @@ import static java.lang.String.format;
  */
 public class TeradataBinaryRecordReader implements RecordReader<NullWritable, BytesWritable> {
 
-  private static final Log LOG = LogFactory.getLog(TeradataBinaryRecordReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TeradataBinaryRecordReader.class);
 
   private CompressionCodecFactory compressionCodecs = null;
   private InputStream in;

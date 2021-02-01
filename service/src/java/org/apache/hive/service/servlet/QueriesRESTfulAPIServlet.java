@@ -18,8 +18,6 @@
 
 package org.apache.hive.service.servlet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -31,6 +29,8 @@ import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializerProvider;
 import org.codehaus.jackson.map.module.SimpleModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -47,7 +47,7 @@ import java.util.Collection;
  */
 public class QueriesRESTfulAPIServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(QueriesRESTfulAPIServlet.class);
+  private static final Logger LOG = LoggerFactory.getLogger(QueriesRESTfulAPIServlet.class);
 
   private static final String API_V1 = "v1";
   private static final String REQ_QUERIES = "queries";

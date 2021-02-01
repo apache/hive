@@ -1360,6 +1360,13 @@
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
                 </restrictImports>
+                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                  <reason>Do not use commons-logging; use slf4j</reason>
+                  <bannedImports>
+                    <bannedImport>org.apache.commons.logging.**</bannedImport>
+                  </bannedImports>
+                  <includeTestCode>true</includeTestCode>
+                </restrictImports>
               </rules>
             </configuration>
           </execution>
