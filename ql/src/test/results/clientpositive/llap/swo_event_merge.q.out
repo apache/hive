@@ -172,13 +172,13 @@ Stage-0
     Stage-1
       Reducer 5 vectorized, llap
       File Output Operator [FS_89]
-        Group By Operator [GBY_88] (rows=1 width=8)
+        Group By Operator [GBY_88] (rows=2 width=8)
           Output:["_col0"],keys:KEY._col0
         <-Union 4 [SIMPLE_EDGE]
           <-Reducer 3 [CONTAINS] vectorized, llap
             Reduce Output Operator [RS_87]
               PartitionCols:_col0
-              Group By Operator [GBY_86] (rows=1 width=8)
+              Group By Operator [GBY_86] (rows=2 width=8)
                 Output:["_col0"],keys:_col0
                 Group By Operator [GBY_85] (rows=1 width=8)
                   Output:["_col0"],aggregations:["count(VALUE._col0)"]
@@ -209,7 +209,7 @@ Stage-0
           <-Reducer 7 [CONTAINS] vectorized, llap
             Reduce Output Operator [RS_93]
               PartitionCols:_col0
-              Group By Operator [GBY_92] (rows=1 width=8)
+              Group By Operator [GBY_92] (rows=2 width=8)
                 Output:["_col0"],keys:_col0
                 Select Operator [SEL_91] (rows=2 width=8)
                   Output:["_col0"]

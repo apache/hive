@@ -408,15 +408,15 @@ STAGE PLANS:
                         Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
                       Select Operator
                         expressions: _col0 (type: bigint)
@@ -424,15 +424,15 @@ STAGE PLANS:
                         Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: sr_returned_date_sk (bigint)
                             Target Input: store_returns
                             Partition key expr: sr_returned_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 7
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
@@ -446,15 +446,15 @@ STAGE PLANS:
                         Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: cs_sold_date_sk (bigint)
                             Target Input: catalog_sales
                             Partition key expr: cs_sold_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 10
                       Select Operator
                         expressions: _col0 (type: bigint)
@@ -462,15 +462,15 @@ STAGE PLANS:
                         Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: cr_returned_date_sk (bigint)
                             Target Input: catalog_returns
                             Partition key expr: cr_returned_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 13
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
@@ -484,15 +484,15 @@ STAGE PLANS:
                         Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ws_sold_date_sk (bigint)
                             Target Input: web_sales
                             Partition key expr: ws_sold_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 15
                       Select Operator
                         expressions: _col0 (type: bigint)
@@ -500,15 +500,15 @@ STAGE PLANS:
                         Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: wr_returned_date_sk (bigint)
                             Target Input: web_returns
                             Partition key expr: wr_returned_date_sk
-                            Statistics: Num rows: 4058 Data size: 32464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 20
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)

@@ -152,13 +152,13 @@ STAGE PLANS:
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
                           null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -248,10 +248,10 @@ STAGE PLANS:
                   0 key (type: string), value (type: string)
                   1 _col0 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 262 Data size: 46636 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 262 Data size: 46636 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -260,7 +260,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: key, value
-                  Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 262 Data size: 46636 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                     minReductionHashAggr: 0.99
@@ -615,10 +615,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       input vertices:
                         1 Map 4
-                      Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 262 Data size: 46636 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 262 Data size: 46636 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -627,7 +627,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: key, value
-                        Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 262 Data size: 46636 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                           minReductionHashAggr: 0.99
@@ -692,13 +692,13 @@ STAGE PLANS:
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
                           null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
                     Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
