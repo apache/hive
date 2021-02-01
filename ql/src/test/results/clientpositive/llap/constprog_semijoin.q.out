@@ -90,7 +90,7 @@ Stage-0
           <-Map 3 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_34]
               PartitionCols:_col0
-              Group By Operator [GBY_33] (rows=2 width=4)
+              Group By Operator [GBY_33] (rows=4 width=4)
                 Output:["_col0"],keys:_col0
                 Select Operator [SEL_32] (rows=5 width=4)
                   Output:["_col0"]
@@ -143,7 +143,7 @@ Stage-0
           <-Map 5 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_58]
               PartitionCols:_col0
-              Group By Operator [GBY_57] (rows=2 width=4)
+              Group By Operator [GBY_57] (rows=4 width=4)
                 Output:["_col0"],keys:_col0
                 Select Operator [SEL_56] (rows=5 width=4)
                   Output:["_col0"]
@@ -244,7 +244,7 @@ Stage-0
               <-Map 5 [SIMPLE_EDGE] vectorized, llap
                 SHUFFLE [RS_59]
                   PartitionCols:_col0
-                  Group By Operator [GBY_58] (rows=2 width=4)
+                  Group By Operator [GBY_58] (rows=4 width=4)
                     Output:["_col0"],keys:_col0
                     Select Operator [SEL_57] (rows=5 width=4)
                       Output:["_col0"]
