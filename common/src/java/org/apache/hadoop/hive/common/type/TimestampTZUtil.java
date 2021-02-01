@@ -97,10 +97,7 @@ public class TimestampTZUtil {
       zonedDateTime = ZonedDateTime.of(localDate, localTime, zoneId);
     }
 
-    if (defaultTimeZone == null) {
-      return new TimestampTZ(zonedDateTime);
-    }
-    return new TimestampTZ(zonedDateTime.withZoneSameInstant(defaultTimeZone));
+    return new TimestampTZ(zonedDateTime);
   }
 
   private static String handleSingleDigitHourOffset(String s) {

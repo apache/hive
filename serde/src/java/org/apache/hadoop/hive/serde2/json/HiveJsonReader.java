@@ -405,9 +405,7 @@ public class HiveJsonReader {
     case TIMESTAMPLOCALTZ:
       final Timestamp ts = tsParser.parseTimestamp(leafNode.asText());
       final ZoneId zid = ((TimestampLocalTZTypeInfo) typeInfo).timeZone();
-      final TimestampTZ tstz = new TimestampTZ();
-      tstz.set(ts.toEpochSecond(), ts.getNanos(), zid);
-      return tstz;
+      return new TimestampTZ(ts, zid);
     case VARCHAR:
       return new HiveVarchar(leafNode.asText(),
           ((BaseCharTypeInfo) typeInfo).getLength());

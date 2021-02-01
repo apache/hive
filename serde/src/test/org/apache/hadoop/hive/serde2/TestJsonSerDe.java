@@ -275,7 +275,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "timestamp with local time zone");
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS,
-        "yyyy-MM-dd'T'HH:mm:ss'Z'");
+        "yyyy-MM-dd'T'HH:mm:ss");
 
     final TimeZone localTz = TimeZone.getDefault();
     TimeZone.setDefault(TimeZone.getTimeZone("US/Pacific"));
@@ -285,12 +285,12 @@ public class TestJsonSerDe {
       serde.initialize(new Configuration(), props, null, false);
 
       List<?> results = (List<?>) serde
-          .deserialize(new Text("{\"__time\":\"2013-08-31T01:02:33Z\"}"));
+          .deserialize(new Text("{\"__time\":\"2013-08-31T01:02:33\"}"));
 
       Assert.assertNotNull(results);
       Assert.assertEquals(1, results.size());
       Assert.assertTrue(results.get(0) instanceof TimestampTZ);
-      Assert.assertEquals("2013-08-30 18:02:33.0 US/Pacific",
+      Assert.assertEquals("2013-08-31 01:02:33.0 US/Pacific",
           results.get(0).toString());
 
     } finally {
