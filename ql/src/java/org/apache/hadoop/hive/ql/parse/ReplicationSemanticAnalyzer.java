@@ -295,7 +295,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // import job in its place.
     try {
       assert(sourceDbNameOrPattern != null);
-      Path loadPath = getCurrentLoadPath(); // rename to hiveDumpPath?
+      Path loadPath = getCurrentLoadPath();
 
       // Now, the dumped path can be one of three things:
       // a) It can be a db dump, in which case we expect a set of dirs, each with a
@@ -319,10 +319,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (loadPath == null) {
-        // Possible reasons of loadPath being null: (with reference to getCurrentLoadPath() method)
-        // 1. fs.exists(loadPathBase) == false
-        // 2. loadPathBase.getFileSystem(conf).listStatus(loadPathBase).length == 0
-        // 3. loadPathBase.getFileSystem(conf).exists(hiveDumpPath) == false
         return;
       }
 
