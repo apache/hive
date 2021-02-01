@@ -310,7 +310,7 @@ public class ExternalCache implements FooterCache {
     FileStatus fs = file.getFileStatus();
     ByteBuffer copy = bb.duplicate();
     try {
-      OrcTail orcTail = ReaderImpl.extractFileTail(copy, fs.getLen(), fs.getModificationTime());
+      OrcTail orcTail = ReaderImpl.extractFileTail(copy, copy.limit(), fs.getModificationTime());
       return orcTail;
     } catch (Exception ex) {
       byte[] data = new byte[bb.remaining()];
