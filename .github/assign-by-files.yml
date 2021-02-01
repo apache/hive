@@ -21,6 +21,9 @@
 # Build system
 'Jenkinsfile':
   - kgyrtkirk
+  - abstractdog
+  - miklosgergely
+  - kasakrisz
 '.github/**':
   - kgyrtkirk
 # ddl changes
