@@ -72,8 +72,9 @@ public class Mssql extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains(
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout
+        .contains(
         "Recovery is complete. This is an informational message only. No user action is required.");
   }
 

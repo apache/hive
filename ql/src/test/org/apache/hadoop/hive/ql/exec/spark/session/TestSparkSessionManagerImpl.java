@@ -25,6 +25,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.spark.client.SparkClientFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.slf4j.Logger;
@@ -48,6 +49,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@Ignore("HIVE-22944: Kryo 5 upgrade conflicts with Spark, which is not supported anymore")
 public class TestSparkSessionManagerImpl {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestSparkSessionManagerImpl.class);

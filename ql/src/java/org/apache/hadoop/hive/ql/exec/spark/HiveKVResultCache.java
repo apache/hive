@@ -228,7 +228,7 @@ class HiveKVResultCache {
             pair.setLeft(readHiveKey(input));
             pair.setRight(readValue(input));
           }
-          if (input.eof()) {
+          if (input.end()) {
             input.close();
             input = null;
           }

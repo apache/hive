@@ -71,14 +71,15 @@ STAGE PLANS:
                         Statistics: Num rows: 73049 Data size: 584392 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.50000685
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 36524 Data size: 292192 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 67850 Data size: 542800 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
+<<<<<<< HEAD
                             Statistics: Num rows: 36524 Data size: 292192 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 6
             Execution mode: vectorized, llap
@@ -107,6 +108,10 @@ STAGE PLANS:
                   alias: date_dim
                   filterExpr: (d_week_seq is not null or (d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null) or (d_month_seq BETWEEN 1185 AND 1196 and d_week_seq is not null)) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 7524047 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            Statistics: Num rows: 67850 Data size: 542800 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 3
+>>>>>>> apache/master
                   Filter Operator
                     predicate: d_week_seq is not null (type: boolean)
                     Statistics: Num rows: 73049 Data size: 7524047 Basic stats: COMPLETE Column stats: COMPLETE
@@ -127,16 +132,29 @@ STAGE PLANS:
                         Statistics: Num rows: 73049 Data size: 584392 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.50000685
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 36524 Data size: 292192 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 67850 Data size: 542800 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ss_sold_date_sk (bigint)
                             Target Input: store_sales
                             Partition key expr: ss_sold_date_sk
+<<<<<<< HEAD
                             Statistics: Num rows: 36524 Data size: 292192 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 6
+=======
+                            Statistics: Num rows: 67850 Data size: 542800 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 3
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: ((d_month_seq BETWEEN 1185 AND 1196 and d_week_seq is not null) or (d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null)) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 584392 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> apache/master
                   Filter Operator
                     predicate: (d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null) (type: boolean)
                     Statistics: Num rows: 359 Data size: 2872 Basic stats: COMPLETE Column stats: COMPLETE

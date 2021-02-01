@@ -148,6 +148,12 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-spark-client</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.esotericsoftware</groupId>
+          <artifactId>kryo-shaded</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -156,7 +162,11 @@
     <!-- inter-project -->
     <dependency>
       <groupId>com.esotericsoftware</groupId>
-      <artifactId>kryo-shaded</artifactId>
+      <artifactId>kryo</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>reflectasm</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -1060,7 +1070,8 @@
                   <include>org.apache.hive:hive-standalone-metastore-common</include>
                   <include>org.apache.hive:hive-standalone-metastore-server</include>
                   <include>org.apache.hive:hive-service-rpc</include>
-                  <include>com.esotericsoftware:kryo-shaded</include>
+                  <include>com.esotericsoftware:kryo</include>
+                  <include>com.esotericsoftware:reflectasm</include>
                   <include>com.esotericsoftware:minlog</include>
                   <include>org.objenesis:objenesis</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>

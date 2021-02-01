@@ -71,8 +71,8 @@ public class Postgres extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    if (logOutput.contains("PostgreSQL init process complete; ready for start up")) {
+  public boolean isContainerReady(ProcessResults pr) {
+    if (pr.stdout.contains("PostgreSQL init process complete; ready for start up")) {
       try (Socket socket = new Socket()) {
         socket.connect(new InetSocketAddress(getContainerHostAddress(), 5432), 1000);
         return true;

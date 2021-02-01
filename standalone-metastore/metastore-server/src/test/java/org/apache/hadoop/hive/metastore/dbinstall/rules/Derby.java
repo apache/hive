@@ -25,6 +25,17 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
  */
 public class Derby extends DatabaseRule {
 
+  boolean purgeInAfter;
+
+  public Derby() {
+    this(false);
+  }
+
+  public Derby(boolean purgeInAfter) {
+    super();
+    this.purgeInAfter = purgeInAfter;
+  }
+
   @Override
   public String getDockerImageName() {
     return null;
@@ -67,14 +78,13 @@ public class Derby extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return String.format("jdbc:derby:memory:%s/%s;create=true", System.getProperty("test.tmp.dir"),
-        getDb());
+
+    return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
   @Override
   public String getInitialJdbcUrl(String hostAddress) {
-    return String.format("jdbc:derby:memory:%s/%s;create=true", System.getProperty("test.tmp.dir"),
-        getDb());
+    return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
   public String getDb() {
@@ -82,7 +92,7 @@ public class Derby extends DatabaseRule {
   };
 
   @Override
-  public boolean isContainerReady(String logOutput) {
+  public boolean isContainerReady(ProcessResults pr) {
     return true;
   }
 
@@ -93,7 +103,15 @@ public class Derby extends DatabaseRule {
 
   @Override
   public void after() {
-    // no-op, no need for docker container for derby
+    if(purgeInAfter) {
+      try {
+        java.sql.DriverManager.getConnection(String.format("jdbc:derby:memory:%s;drop=true", getDb())).close();
+      } catch(Exception e) {
+        if(!e.getMessage().contains("dropped")) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
   }
 
   @Override
