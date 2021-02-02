@@ -9274,12 +9274,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genJoinReduceSinkChild(ExprNodeDesc[] joinKeys,
-                                          Operator<?> child, String[] srcs, int tag) throws SemanticException {
+                                          Operator<?> parent, String[] srcs, int tag) throws SemanticException {
 
     Operator dummy = Operator.createDummy();  // dummy for backtracking
-    dummy.setParentOperators(Arrays.asList(child));
+    dummy.setParentOperators(Arrays.asList(parent));
 
-    RowResolver inputRR = opParseCtx.get(child).getRowResolver();
+    RowResolver inputRR = opParseCtx.get(parent).getRowResolver();
     RowResolver outputRR = new RowResolver();
     List<String> outputColumns = new ArrayList<String>();
     List<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
@@ -9288,7 +9288,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Compute join keys and store in reduceKeys
     for (ExprNodeDesc joinKey : joinKeys) {
       reduceKeys.add(joinKey);
-      reduceKeysBack.add(ExprNodeDescUtils.backtrack(joinKey, dummy, child));
+      reduceKeysBack.add(ExprNodeDescUtils.backtrack(joinKey, dummy, parent));
     }
 
     // Walk over the input row resolver and copy in the output
@@ -9304,7 +9304,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ExprNodeDesc expr = new ExprNodeColumnDesc(colInfo);
 
       // backtrack can be null when input is script operator
-      ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, child);
+      ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, parent);
       int kindex;
       if (exprBack == null) {
         kindex = -1;
@@ -9402,7 +9402,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(newColumnInfos), child), outputRR);
+        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(newColumnInfos), parent), outputRR);
 
     rsOp.setValueIndex(index);
     rsOp.setColumnExprMap(colExprMap2);

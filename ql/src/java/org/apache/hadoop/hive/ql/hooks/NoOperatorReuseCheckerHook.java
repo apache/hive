@@ -82,6 +82,9 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
           continue;
         }
         ColumnInfo ci = schema.getColumnInfo(c.getKey());
+        if (c.getKey().startsWith("KEY.reducesinkkey")) {
+          continue;
+        }
         if (ci == null) {
           throw new RuntimeException("schema not found for " + c + " in " + schema);
         }
