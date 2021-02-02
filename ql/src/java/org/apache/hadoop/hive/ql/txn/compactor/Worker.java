@@ -504,8 +504,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
         return false;
       }
-      AcidDirectory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
-          tblValidWriteIds, Ref.from(false), true);
+      AcidDirectory dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
         if (needsCleaning(dir, sd)) {
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
@@ -572,6 +571,35 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
     return true;
+  }
+
+  /**
+   * Just AcidUtils.getAcidState, but with impersonation if needed.
+   */
+  private AcidDirectory getAcidStateForWorker(CompactionInfo ci, StorageDescriptor sd,
+          ValidCompactorWriteIdList tblValidWriteIds) throws IOException, InterruptedException {
+    Ref<AcidDirectory> acidDirectoryRef = Ref.from(null);
+    if (runJobAsSelf(ci.runAs)) {
+      acidDirectoryRef.value = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
+              tblValidWriteIds, Ref.from(false), true);
+    } else {
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+      try {
+        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+          acidDirectoryRef.value = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
+                  tblValidWriteIds, Ref.from(false), true);
+          return null;
+        });
+      } finally {
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+                  exception);
+        }
+      }
+    }
+    return acidDirectoryRef.value;
   }
 
   private void failCompactionIfSetForTest() {
