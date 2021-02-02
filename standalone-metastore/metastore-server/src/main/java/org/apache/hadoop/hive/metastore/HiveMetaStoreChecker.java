@@ -340,8 +340,8 @@ public class HiveMetaStoreChecker {
           result.getExpiredPartitions().add(pr);
           if (LOG.isDebugEnabled()) {
             LOG.debug("{}.{}.{}.{} expired. createdAt: {} current: {} age: {}s expiry: {}s", partition.getCatName(),
-              partition.getDbName(), partition.getTableName(), pr.getPartitionName(), createdTime, currentEpochSecs,
-              partitionAgeSeconds, partitionExpirySeconds);
+                partition.getDbName(), partition.getTableName(), pr.getPartitionName(), createdTime, currentEpochSecs,
+                partitionAgeSeconds, partitionExpirySeconds);
           }
         }
       }

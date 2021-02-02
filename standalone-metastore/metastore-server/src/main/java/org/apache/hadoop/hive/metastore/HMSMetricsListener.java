@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
