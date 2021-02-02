@@ -1251,21 +1251,13 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: string)
                   outputColumnNames: _col1
-<<<<<<< HEAD
-                  Statistics: Num rows: 83 Data size: 7553 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> apache/master
+                  Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
-<<<<<<< HEAD
-                    Statistics: Num rows: 83 Data size: 7553 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> apache/master
+                    Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
