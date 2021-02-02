@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -87,6 +88,20 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
         }
         if (ci == null) {
           throw new RuntimeException("schema not found for " + c + " in " + schema);
+        }
+      }
+      //      if (false)
+      {
+        for (ColumnInfo sig : schema.getSignature()) {
+          String iName = sig.getInternalName();
+          ExprNodeDesc e = exprMap.get(iName);
+          if (op.getConf() instanceof GroupByDesc) {
+            continue;
+          }
+
+          if (e == null) {
+            throw new RuntimeException("expr not found for " + iName + " in " + exprMap);
+          }
         }
       }
     }
