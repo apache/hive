@@ -176,14 +176,21 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
 
     public SX(Map<String, ExprNodeDesc> colExprMap) {
       super(colExprMap);
+      for (String e : colExprMap.keySet()) {
+        chk(e);
+      }
     }
 
     @Override
     public ExprNodeDesc put(String key, ExprNodeDesc value) {
-      if (key.contains("org.apache")) {
+      chk(key);
+      return super.put(key, value);
+    }
+
+    private void chk(String key) {
+      if (key.contains("KEY.reducesinkkey0")) {
         int asd = 1;
       }
-      return super.put(key, value);
     }
 
   }

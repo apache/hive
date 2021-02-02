@@ -9315,7 +9315,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (kindex >= 0) {
         ColumnInfo newColInfo = new ColumnInfo(colInfo);
-        newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
+        String internalColName = Utilities.ReduceField.KEY + ".reducesinkkey" + kindex;
+        newColInfo.setInternalName(internalColName);
+        colExprMap.put(internalColName, expr);
         newColInfo.setTabAlias(nm[0]);
         outputRR.put(nm[0], nm[1], newColInfo);
         if (nm2 != null) {
@@ -9330,8 +9332,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceValues.add(expr);
 
       ColumnInfo newColInfo = new ColumnInfo(colInfo);
-      newColInfo.setInternalName(Utilities.ReduceField.VALUE + "." + outputColName);
+      String internalColName = Utilities.ReduceField.VALUE + "." + outputColName;
+      newColInfo.setInternalName(internalColName);
       newColInfo.setTabAlias(nm[0]);
+      colExprMap.put(internalColName, expr);
 
       outputRR.put(nm[0], nm[1], newColInfo);
       if (nm2 != null) {
@@ -9358,6 +9362,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Map<String, String> translatorMap = new HashMap<String, String>();
 
+    if (true) {
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
       String oldName = keyColNames.get(i);
@@ -9378,15 +9383,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new RuntimeException("Expected to have disjunct keys/vals");
       }
     }
+    }
     RowSchema defaultRs = new RowSchema(outputRR.getColumnInfos());
 
     List<ColumnInfo> newColumnInfos = new ArrayList<ColumnInfo>();
+    if (false) {
     for (ColumnInfo ci : outputRR.getColumnInfos()) {
       if (translatorMap.containsKey(ci.getInternalName())) {
         ci = new ColumnInfo(ci);
         ci.setInternalName(translatorMap.get(ci.getInternalName()));
       }
       newColumnInfos.add(ci);
+    }
+    } else {
+      newColumnInfos = outputRR.getColumnInfos();
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
