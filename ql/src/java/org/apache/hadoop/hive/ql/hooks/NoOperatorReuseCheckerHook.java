@@ -28,7 +28,9 @@ import com.google.common.collect.Lists;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -95,6 +97,9 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
         for (ColumnInfo sig : schema.getSignature()) {
           String iName = sig.getInternalName();
           ExprNodeDesc e = exprMap.get(iName);
+          if (isSemiJoinRS(op)) {
+            continue;
+          }
           if (op.getConf() instanceof GroupByDesc) {
             continue;
           }
@@ -105,6 +110,20 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
         }
       }
     }
+  }
+
+  private static boolean isSemiJoinRS(Operator op) {
+    if (op instanceof ReduceSinkOperator) {
+      List<Operator<?>> children = op.getChildOperators();
+      for (Operator<?> c : children) {
+        if (!(c instanceof TableScanOperator)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+
   }
 
   @Override

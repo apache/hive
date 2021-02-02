@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -185,6 +186,16 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
     public ExprNodeDesc put(String key, ExprNodeDesc value) {
       chk(key);
       return super.put(key, value);
+    }
+
+    @Override
+    public Set<String> keySet() {
+      return super.keySet();
+    }
+
+    @Override
+    public ExprNodeDesc remove(Object key) {
+      return super.remove(key);
     }
 
     private void chk(String key) {
