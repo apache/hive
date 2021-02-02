@@ -3047,7 +3047,7 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testDBOwner() throws TException {
     Database db = client.getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
-    assertEquals(db.getOwnerName(), HiveMetaStore.PUBLIC);
+    assertEquals(db.getOwnerName(), HMSHandler.PUBLIC);
     assertEquals(db.getOwnerType(), PrincipalType.ROLE);
   }
 
@@ -3408,7 +3408,7 @@ public abstract class TestHiveMetaStore {
     part.getSd().setLocation(tbl.getSd().getLocation() + "/partCol=1");
     Warehouse wh = mock(Warehouse.class);
     //Execute initializeAddedPartition() and it should not trigger updatePartitionStatsFast() as DO_NOT_UPDATE_STATS is true
-    HiveMetaStore.HMSHandler hms = new HiveMetaStore.HMSHandler("", conf, false);
+    HMSHandler hms = new HMSHandler("", conf, false);
     Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class,
             boolean.class, EnvironmentContext.class);
     m.setAccessible(true);

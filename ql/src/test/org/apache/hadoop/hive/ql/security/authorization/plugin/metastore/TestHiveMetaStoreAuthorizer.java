@@ -62,7 +62,7 @@ public class TestHiveMetaStoreAuthorizer {
   private static final String TEST_DATA_DIR = new File("file:///testdata").getPath();
   private RawStore rawStore;
   private Configuration conf;
-  private HiveMetaStore.HMSHandler hmsHandler;
+  private HMSHandler hmsHandler;
 
   @Before
   public void setUp() throws Exception {
@@ -82,11 +82,11 @@ public class TestHiveMetaStoreAuthorizer {
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    hmsHandler = new HiveMetaStore.HMSHandler("test", conf, true);
+    hmsHandler = new HMSHandler("test", conf, true);
     rawStore   = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory
-    HiveMetaStore.HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
     try {
       hmsHandler.drop_table(dbName, tblName, true);
       hmsHandler.drop_database(dbName, true, false);
