@@ -40,7 +40,7 @@ public class TestDumpMetaData {
 
   @Before
   public void setUp() {
-    dmd.setDump(DumpType.BOOTSTRAP, 12L, 14L, new Path("file:///tmp/cmroot"), 1L, false);
+    dmd.setDump(DumpType.BOOTSTRAP, 12L, 14L, new Path("file:///tmp/cmroot"), 2L, false);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class TestDumpMetaData {
             "12",
             "14",
             "file:///tmp/cmroot",
-            "1",
+            "2",
             "payload",
             "false")
     );
