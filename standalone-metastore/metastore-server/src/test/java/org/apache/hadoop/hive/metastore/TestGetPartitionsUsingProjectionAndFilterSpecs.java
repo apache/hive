@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.Comparator;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -774,6 +775,12 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
       Assert.assertNotNull(partitionSpecWithSharedSD);
       Assert.assertEquals("Invalid number of partitions returned", expectedPartitions,
           partitionSpecWithSharedSD.getPartitionsSize());
+      // in case of listPartitions, the partitions are not sorted by name and hence
+      // the order it non-determistic. To reduce flakiness we sort the partitions by
+      // locations before comparing.
+      Collections.sort(partitions, Comparator.comparing(o -> o.getSd().getLocation()));
+      Collections.sort(partitionSpecWithSharedSD.getPartitions(),
+          Comparator.comparing(o -> o.getRelativePath()));
       verifyLocations(partitions, partitionSpecWithSharedSD.getSd(),
           partitionSpecWithSharedSD.getPartitions());
     } else {

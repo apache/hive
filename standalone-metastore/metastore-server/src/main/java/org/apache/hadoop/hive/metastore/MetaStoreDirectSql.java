@@ -721,14 +721,14 @@ class MetaStoreDirectSql {
       case BY_EXPR:
         partitionIds =
             getPartitionIdsViaSqlFilter(catName, dbName, tblName, filter.filter, filter.params,
-                filter.joins, null);
+                filter.joins, -1);
         break;
       case BY_NAMES:
         String partNamesFilter =
             "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(filterSpec.getFilters().size())
                 + ")";
         partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, partNamesFilter,
-            filterSpec.getFilters(), Collections.EMPTY_LIST, null);
+            filterSpec.getFilters(), Collections.EMPTY_LIST, -1);
         break;
       case BY_VALUES:
         // we are going to use the SQL regex pattern in the LIKE clause below. So the default string
@@ -738,7 +738,7 @@ class MetaStoreDirectSql {
             "" + PARTITIONS + ".\"PART_NAME\" LIKE (?)";
         partitionIds =
             getPartitionIdsViaSqlFilter(catName, dbName, tblName, partNamesLikeFilter, Arrays.asList(partNameMatcher),
-                Collections.EMPTY_LIST, null);
+                Collections.EMPTY_LIST, -1);
         break;
         default:
           throw new MetaException("Unsupported filter mode " + filterSpec.getFilterMode());
