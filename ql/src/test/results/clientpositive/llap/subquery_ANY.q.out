@@ -246,7 +246,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -266,7 +266,7 @@ HiveAggregate(group=[{}], agg#0=[count()])
           HiveAggregate(group=[{0}], agg#0=[max($5)])
             HiveTableScan(table=[[default, part]], table:alias=[part])
 
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -345,7 +345,7 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 0
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -366,7 +366,7 @@ HiveProject($f0=[$3])
       HiveAggregate(group=[{}], agg#0=[count()])
         HiveTableScan(table=[[default, part]], table:alias=[part])
 
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -376,7 +376,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
 PREHOOK: type: QUERY
@@ -402,7 +402,7 @@ HiveAggregate(group=[{}], agg#0=[count()])
         HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
           HiveTableScan(table=[[default, part]], table:alias=[part])
 
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
 PREHOOK: type: QUERY
@@ -414,8 +414,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey 
 	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
 PREHOOK: type: QUERY
@@ -444,8 +444,8 @@ HiveAggregate(group=[{}], agg#0=[count()])
                 HiveAggregate(group=[{5}])
                   HiveTableScan(table=[[default, part_null_n0]], table:alias=[part_null_n0])
 
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*) from part where p_partkey 
 	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
 PREHOOK: type: QUERY
@@ -530,7 +530,7 @@ POSTHOOK: Input: default@part_null_n0
 86428	true
 90681	true
 NULL	NULL
-Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select p_partkey, (p_partkey > ANY (select null from part_null_n0)) from part_null_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null_n0
