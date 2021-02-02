@@ -17,27 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
-import com.google.common.util.concurrent.SettableFuture;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.hadoop.fs.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -47,6 +43,15 @@ import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Distinct from TezSessionPool manager in that it implements a session pool, and nothing else.
@@ -107,32 +112,11 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     this.parentSessionState = SessionState.get();
     if (initialSize == 0) return; // May be resized later.
 
-    int threadCount = Math.min(initialSize,
-        HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
-    Preconditions.checkArgument(threadCount > 0);
-    if (threadCount == 1) {
-      for (int i = 0; i < initialSize; ++i) {
-        SessionType session = sessionObjFactory.create(null);
-        if (session == null) break;
-        startInitialSession(session);
-      }
-    } else {
-      final AtomicInteger remaining = new AtomicInteger(initialSize);
-      @SuppressWarnings("unchecked")
-      FutureTask<Boolean>[] threadTasks = new FutureTask[threadCount];
-      for (int i = threadTasks.length - 1; i >= 0; --i) {
-        threadTasks[i] = new FutureTask<Boolean>(new CreateSessionsRunnable(remaining));
-        if (i == 0) {
-          // Start is blocking, so run one of the tasks on the main thread.
-          threadTasks[i].run();
-        } else {
-          new Thread(threadTasks[i], "Tez session init " + i).start();
-        }
-      }
-      for (int i = 0; i < threadTasks.length; ++i) {
-        threadTasks[i].get();
-      }
-    }
+    final int threadCount =
+        Math.min(initialSize, HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
+
+    // Create and wait (get) for sessions to build
+    createSessions(initialSize, threadCount).get();
   }
 
   SessionType getSession() throws Exception {
@@ -395,20 +379,38 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     } while (!deltaRemaining.compareAndSet(oldVal, oldVal + delta));
     int toStart = oldVal + delta;
     if (toStart <= 0) return createDummyFuture();
-    LOG.info("Resizing the pool; adding " + toStart + " sessions");
+    LOG.info("Resizing the pool; adding {} sessions", toStart);
 
-    // 2) If we need to create some extra sessions, we'd do it just like startup does.
-    int threadCount = Math.max(1, Math.min(toStart,
-        HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS)));
-    List<ListenableFutureTask<Boolean>> threadTasks = new ArrayList<>(threadCount);
-    // This is an async method, so always launch threads, even for a single task.
-    for (int i = 0; i < threadCount; ++i) {
-      ListenableFutureTask<Boolean> task = ListenableFutureTask.create(
-          new CreateSessionsRunnable(deltaRemaining));
-      new Thread(task, "Tez pool resize " + i).start();
-      threadTasks.add(task);
+    final int threadCount =
+        Math.min(toStart, HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
+
+    return createSessions(toStart, threadCount);
+  }
+
+  private ListenableFuture<List<Boolean>> createSessions(int sessionCount, int maxParallel) {
+    Preconditions.checkArgument(sessionCount > 0);
+    Preconditions.checkArgument(maxParallel > 0);
+
+    ListeningExecutorService execService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(maxParallel,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("tez-session-init-%d").build()));
+
+    Collection<Callable<Boolean>> tasks =
+        Stream.generate(() -> (new CreateSessionCallable(Optional.ofNullable(parentSessionState), sessionObjFactory)))
+            .limit(sessionCount).collect(Collectors.toList());
+
+    try {
+      @SuppressWarnings("unchecked") // guaranteed by invokeAll contract
+      List<ListenableFuture<Boolean>> futures = (List) execService.invokeAll(tasks);
+      return Futures.allAsList(futures);
+    } catch (InterruptedException e) {
+      LOG.info("Interrupted while creating sessions", e);
+      Thread.currentThread().interrupt();
+      return Futures.allAsList(Collections.emptyList());
+    } finally {
+      // Initiates an orderly shutdown in which previously submitted tasks are
+      // executed but no new tasks will be accepted.
+      execService.shutdown();
     }
-    return Futures.allAsList(threadTasks);
   }
 
   private ListenableFuture<Boolean> resizeDownInternal(int delta, List<SessionType> toClose) {
@@ -448,23 +450,22 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     return f;
   }
 
-  private final class CreateSessionsRunnable implements Callable<Boolean> {
-    private final AtomicInteger remaining;
+  private final class CreateSessionCallable implements Callable<Boolean> {
+    private final Optional<SessionState> sessionState;
+    private final SessionObjectFactory<SessionType> sessionObjFactory;
 
-    private CreateSessionsRunnable(AtomicInteger remaining) {
-      this.remaining = remaining;
+    private CreateSessionCallable(Optional<SessionState> sessionState,
+        SessionObjectFactory<SessionType> sessionObjFactory) {
+      this.sessionState = Objects.requireNonNull(sessionState);
+      this.sessionObjFactory = Objects.requireNonNull(sessionObjFactory);
     }
 
     public Boolean call() throws Exception {
-      if (parentSessionState != null) {
-        SessionState.setCurrentSessionState(parentSessionState);
+      if (sessionState.isPresent()) {
+        SessionState.setCurrentSessionState(SessionState.get());
       }
-      while (true) {
-        int oldVal = remaining.get();
-        if (oldVal <= 0) return true;
-        if (!remaining.compareAndSet(oldVal, oldVal - 1)) continue;
-        startInitialSession(sessionObjFactory.create(null));
-      }
+      startInitialSession(this.sessionObjFactory.create(null));
+      return true;
     }
   }
 
