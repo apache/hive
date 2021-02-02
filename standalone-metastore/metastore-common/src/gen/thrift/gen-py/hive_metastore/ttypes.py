@@ -3324,15 +3324,17 @@ class Catalog(object):
      - description
      - locationUri
      - createTime
+     - id
 
     """
 
 
-    def __init__(self, name=None, description=None, locationUri=None, createTime=None,):
+    def __init__(self, name=None, description=None, locationUri=None, createTime=None, id=None,):
         self.name = name
         self.description = description
         self.locationUri = locationUri
         self.createTime = createTime
+        self.id = id
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -3363,6 +3365,11 @@ class Catalog(object):
                     self.createTime = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -3388,6 +3395,10 @@ class Catalog(object):
         if self.createTime is not None:
             oprot.writeFieldBegin('createTime', TType.I32, 4)
             oprot.writeI32(self.createTime)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.I64, 5)
+            oprot.writeI64(self.id)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -3784,11 +3795,12 @@ class Database(object):
      - catalogName
      - createTime
      - managedLocationUri
+     - id
 
     """
 
 
-    def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None, managedLocationUri=None,):
+    def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None, managedLocationUri=None, id=None,):
         self.name = name
         self.description = description
         self.locationUri = locationUri
@@ -3799,6 +3811,7 @@ class Database(object):
         self.catalogName = catalogName
         self.createTime = createTime
         self.managedLocationUri = managedLocationUri
+        self.id = id
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -3866,6 +3879,11 @@ class Database(object):
                     self.managedLocationUri = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.I64:
+                    self.id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -3919,6 +3937,10 @@ class Database(object):
         if self.managedLocationUri is not None:
             oprot.writeFieldBegin('managedLocationUri', TType.STRING, 10)
             oprot.writeString(self.managedLocationUri.encode('utf-8') if sys.version_info[0] == 2 else self.managedLocationUri)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.I64, 11)
+            oprot.writeI64(self.id)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -6451,11 +6473,12 @@ class Partition(object):
      - writeId
      - isStatsCompliant
      - colStats
+     - id
 
     """
 
 
-    def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, writeId=-1, isStatsCompliant=None, colStats=None,):
+    def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, writeId=-1, isStatsCompliant=None, colStats=None, id=None,):
         self.values = values
         self.dbName = dbName
         self.tableName = tableName
@@ -6468,6 +6491,7 @@ class Partition(object):
         self.writeId = writeId
         self.isStatsCompliant = isStatsCompliant
         self.colStats = colStats
+        self.id = id
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6552,6 +6576,11 @@ class Partition(object):
                     self.colStats.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 13:
+                if ftype == TType.I64:
+                    self.id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6617,6 +6646,10 @@ class Partition(object):
             oprot.writeFieldBegin('colStats', TType.STRUCT, 12)
             self.colStats.write(oprot)
             oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.I64, 13)
+            oprot.writeI64(self.id)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -6644,17 +6677,19 @@ class PartitionWithoutSD(object):
      - relativePath
      - parameters
      - privileges
+     - id
 
     """
 
 
-    def __init__(self, values=None, createTime=None, lastAccessTime=None, relativePath=None, parameters=None, privileges=None,):
+    def __init__(self, values=None, createTime=None, lastAccessTime=None, relativePath=None, parameters=None, privileges=None, id=None,):
         self.values = values
         self.createTime = createTime
         self.lastAccessTime = lastAccessTime
         self.relativePath = relativePath
         self.parameters = parameters
         self.privileges = privileges
+        self.id = id
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6707,6 +6742,11 @@ class PartitionWithoutSD(object):
                     self.privileges.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I64:
+                    self.id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6747,6 +6787,10 @@ class PartitionWithoutSD(object):
         if self.privileges is not None:
             oprot.writeFieldBegin('privileges', TType.STRUCT, 6)
             self.privileges.write(oprot)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.I64, 7)
+            oprot.writeI64(self.id)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27106,6 +27150,7 @@ Catalog.thrift_spec = (
     (2, TType.STRING, 'description', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'locationUri', 'UTF8', None, ),  # 3
     (4, TType.I32, 'createTime', None, None, ),  # 4
+    (5, TType.I64, 'id', None, None, ),  # 5
 )
 all_structs.append(CreateCatalogRequest)
 CreateCatalogRequest.thrift_spec = (
@@ -27151,6 +27196,7 @@ Database.thrift_spec = (
     (8, TType.STRING, 'catalogName', 'UTF8', None, ),  # 8
     (9, TType.I32, 'createTime', None, None, ),  # 9
     (10, TType.STRING, 'managedLocationUri', 'UTF8', None, ),  # 10
+    (11, TType.I64, 'id', None, None, ),  # 11
 )
 all_structs.append(SerDeInfo)
 SerDeInfo.thrift_spec = (
@@ -27370,6 +27416,7 @@ Partition.thrift_spec = (
     (10, TType.I64, 'writeId', None, -1, ),  # 10
     (11, TType.BOOL, 'isStatsCompliant', None, None, ),  # 11
     (12, TType.STRUCT, 'colStats', [ColumnStatistics, None], None, ),  # 12
+    (13, TType.I64, 'id', None, None, ),  # 13
 )
 all_structs.append(PartitionWithoutSD)
 PartitionWithoutSD.thrift_spec = (
@@ -27380,6 +27427,7 @@ PartitionWithoutSD.thrift_spec = (
     (4, TType.STRING, 'relativePath', 'UTF8', None, ),  # 4
     (5, TType.MAP, 'parameters', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 5
     (6, TType.STRUCT, 'privileges', [PrincipalPrivilegeSet, None], None, ),  # 6
+    (7, TType.I64, 'id', None, None, ),  # 7
 )
 all_structs.append(PartitionSpecWithSharedSD)
 PartitionSpecWithSharedSD.thrift_spec = (

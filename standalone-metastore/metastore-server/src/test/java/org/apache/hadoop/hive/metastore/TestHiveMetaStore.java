@@ -269,8 +269,10 @@ public abstract class TestHiveMetaStore {
       assertNotNull("Unable to create partition " + part3, retp3);
       Partition retp4 = client.add_partition(part4);
       assertNotNull("Unable to create partition " + part4, retp4);
+      assertTrue(retp.getId() > 0);
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
+      assertTrue(part_get.getId() > 0);
       // since we are using thrift, 'part' will not have the create time and
       // last DDL time set since it does not get updated in the add_partition()
       // call - likewise part2 and part3 - set it correctly so that equals check
@@ -295,6 +297,7 @@ public abstract class TestHiveMetaStore {
           LOG.info("Found partition " + p + " having null field schema");
           foundPart = true;
         }
+        assertTrue(p.getId() > 0);
       }
       assertTrue(foundPart);
 
@@ -317,7 +320,9 @@ public abstract class TestHiveMetaStore {
           (short) -1);
       assertTrue("Should have returned 2 partitions", partial.size() == 2);
       assertTrue("Not all parts returned", partial.containsAll(parts));
-
+      for (Partition p : partial) {
+        assertTrue(p.getId() > 0);
+      }
       Set<String> partNames = new HashSet<>();
       partNames.add(partName);
       partNames.add(part2Name);
@@ -378,6 +383,7 @@ public abstract class TestHiveMetaStore {
       assertTrue("Append partition by name failed", part5.getValues().equals(vals));
       Path part5Path = new Path(part5.getSd().getLocation());
       assertTrue(fs.exists(part5Path));
+      assertTrue(part5.getId() > 0);
 
       // Test drop_partition_by_name
       assertTrue("Drop partition by name failed",
@@ -591,6 +597,9 @@ public abstract class TestHiveMetaStore {
     // Requesting less partitions than allowed should work
     maxParts = DEFAULT_LIMIT_PARTITION_REQUEST / 2;
     partitions = client.listPartitions(dbName, tblName, maxParts);
+    for (Partition p : partitions) {
+      assertTrue(p.getId() > 0);
+    }
     assertNotNull("should have returned partitions", partitions);
     assertEquals(" should have returned 50 partitions", maxParts, partitions.size());
   }
@@ -753,6 +762,7 @@ public abstract class TestHiveMetaStore {
           returnedPartitionWithoutSD.isSetCreateTime());
       Assert.assertTrue("Partition parameters were requested but are not set",
           returnedPartitionWithoutSD.isSetParameters());
+      assertTrue(returnedPartitionWithoutSD.isSetId());
       // first partition has parameters set
       if (i == 0) {
         Assert.assertTrue("partition parameters not set",
@@ -990,6 +1000,7 @@ public abstract class TestHiveMetaStore {
           .getParameters().get("abc"), "1");
       assertEquals("couldn't alter partition", part3.getSd().getNumBuckets(),
           12);
+      assertTrue(part3.isSetId());
 
       client.dropTable(dbName, tblName);
 

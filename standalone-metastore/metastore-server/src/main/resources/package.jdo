@@ -27,10 +27,10 @@
 -->
 <jdo>
   <package name="org.apache.hadoop.hive.metastore.model">
-    <class name="MDatabase" identity-type="datastore" table="DBS" detachable="true">  
-      <datastore-identity>
-        <column name="DB_ID"/>
-      </datastore-identity>
+    <class name="MDatabase" identity-type="application" table="DBS" detachable="true">
+      <field name="id" primary-key="true" value-strategy="native">
+        <column name="DB_ID" jdbc-type="BIGINT" />
+      </field>
       <index name="UniqueDatabase" unique="true">
         <column name="NAME"/>
         <column name="CTLG_NAME"/>
@@ -75,10 +75,10 @@
 
     </class>
 
-    <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
-      <datastore-identity>
-        <column name="CTLG_ID"/>
-      </datastore-identity>
+    <class name="MCatalog" identity-type="application" table="CTLGS" detachable="true">
+      <field name="id" primary-key="true" value-strategy="native">
+        <column name="CTLG_ID" jdbc-type="BIGINT" />
+      </field>
       <field name="name">
         <column name="NAME" length="256" jdbc-type="VARCHAR"/>
         <index name="UniqueCatalog" unique="true"/>
@@ -468,14 +468,14 @@
       </field>
     </class>
 
-    <class name="MPartition" table="PARTITIONS" identity-type="datastore" detachable="true">
+    <class name="MPartition" table="PARTITIONS" identity-type="application" detachable="true">
+      <field name="id" primary-key="true" value-strategy="native">
+        <column name="PART_ID" jdbc-type="BIGINT" />
+      </field>
       <index name="UniquePartition" unique="true">
         <column name="PART_NAME"/>
         <column name="TBL_ID"/>
       </index>
-      <datastore-identity>
-        <column name="PART_ID"/>
-      </datastore-identity>
       <field name="partitionName">
         <column name="PART_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>

@@ -64,6 +64,11 @@ class PartitionWithoutSD
             'type' => TType::STRUCT,
             'class' => '\metastore\PrincipalPrivilegeSet',
         ),
+        7 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -90,6 +95,10 @@ class PartitionWithoutSD
      * @var \metastore\PrincipalPrivilegeSet
      */
     public $privileges = null;
+    /**
+     * @var int
+     */
+    public $id = null;
 
     public function __construct($vals = null)
     {
@@ -111,6 +120,9 @@ class PartitionWithoutSD
             }
             if (isset($vals['privileges'])) {
                 $this->privileges = $vals['privileges'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
             }
         }
     }
@@ -198,6 +210,13 @@ class PartitionWithoutSD
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -258,6 +277,11 @@ class PartitionWithoutSD
             }
             $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 6);
             $xfer += $this->privileges->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::I64, 7);
+            $xfer += $output->writeI64($this->id);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -168,6 +168,7 @@ public class TestCatalogs extends MetaStoreClientTest {
     fetchedNewCat = client.getCatalog(catNames[1]);
     Assert.assertEquals(location[1], fetchedNewCat.getLocationUri());
     Assert.assertEquals(newDescription, fetchedNewCat.getDescription());
+    Assert.assertTrue(fetchedNewCat.getId() > 0);
 
     for (int i = 0; i < catNames.length; i++) {
       client.dropCatalog(catNames[i]);

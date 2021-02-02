@@ -143,6 +143,7 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
           partSD,
           partWithoutSD.getParameters()
       );
+      p.setId(partWithoutSD.getId());
       p.setCatName(partitionSpecWithSharedSDProxy.partitionSpec.getCatName());
       return p;
     }

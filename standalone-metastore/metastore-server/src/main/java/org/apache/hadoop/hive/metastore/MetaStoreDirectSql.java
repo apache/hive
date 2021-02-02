@@ -417,6 +417,7 @@ class MetaStoreDirectSql {
         }
       }
       Database db = new Database();
+      db.setId(dbid);
       db.setName(MetastoreDirectSqlUtils.extractSqlString(dbline[1]));
       db.setLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[2]));
       db.setDescription(MetastoreDirectSqlUtils.extractSqlString(dbline[3]));
@@ -979,6 +980,7 @@ class MetaStoreDirectSql {
       part.setCatName(catName);
       part.setDbName(dbName);
       part.setTableName(tblName);
+      part.setId(partitionId);
       if (fields[4] != null) {
         part.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(fields[4]));
       }

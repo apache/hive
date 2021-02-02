@@ -127,6 +127,9 @@ public class TestDatabases extends MetaStoreClientTest {
 
     // The createTime will be set on the server side, so the comparison should skip it
     database.setCreateTime(createdDatabase.getCreateTime());
+    Assert.assertTrue(createdDatabase.getId() > 0);
+    // unset id to compare
+    createdDatabase.unsetId();
     Assert.assertEquals("Comparing databases", database, createdDatabase);
     Assert.assertTrue("The directory should be created", metaStore.isPathExists(
         new Path(database.getLocationUri())));
@@ -158,6 +161,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing owner name", SecurityUtils.getUser(),
         createdDatabase.getOwnerName());
     Assert.assertEquals("Comparing owner type", PrincipalType.USER, createdDatabase.getOwnerType());
+    Assert.assertTrue(createdDatabase.getId() > 0);
   }
 
   @Test
@@ -224,6 +228,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertNull("Default database privileges", database.getPrivileges());
     Assert.assertTrue("database create time should be set", database.isSetCreateTime());
     Assert.assertTrue("Database create time should be non-zero", database.getCreateTime() > 0);
+    Assert.assertTrue(database.getId() > 0);
   }
 
   @Test
@@ -477,6 +482,9 @@ public class TestDatabases extends MetaStoreClientTest {
 
     client.alterDatabase(originalDatabase.getName(), newDatabase);
     Database alteredDatabase = client.getDatabase(newDatabase.getName());
+    Assert.assertTrue(alteredDatabase.getId() > 0);
+    // unset id for comparison
+    alteredDatabase.unsetId();
     Assert.assertEquals("Comparing Databases", newDatabase, alteredDatabase);
   }
 

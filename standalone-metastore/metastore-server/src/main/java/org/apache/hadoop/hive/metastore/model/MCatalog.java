@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MCatalog {
+  private long id;
   private String name;
   private String description;
   private String locationUri;
@@ -27,7 +28,8 @@ public class MCatalog {
 
   }
 
-  public MCatalog(String name, String description, String locationUri) {
+  public MCatalog(String name, String description, String locationUri, long id) {
+    this.id = id;
     this.name = name;
     this.description = description;
     this.locationUri = locationUri;
@@ -63,5 +65,13 @@ public class MCatalog {
 
   public void setCreateTime(int createTime) {
     this.createTime = createTime;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public long getId() {
+    return id;
   }
 }

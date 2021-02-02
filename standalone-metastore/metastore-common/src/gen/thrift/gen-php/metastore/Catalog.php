@@ -41,6 +41,11 @@ class Catalog
             'isRequired' => false,
             'type' => TType::I32,
         ),
+        5 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -59,6 +64,10 @@ class Catalog
      * @var int
      */
     public $createTime = null;
+    /**
+     * @var int
+     */
+    public $id = null;
 
     public function __construct($vals = null)
     {
@@ -74,6 +83,9 @@ class Catalog
             }
             if (isset($vals['createTime'])) {
                 $this->createTime = $vals['createTime'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
             }
         }
     }
@@ -125,6 +137,13 @@ class Catalog
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 5:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -157,6 +176,11 @@ class Catalog
         if ($this->createTime !== null) {
             $xfer += $output->writeFieldBegin('createTime', TType::I32, 4);
             $xfer += $output->writeI32($this->createTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::I64, 5);
+            $xfer += $output->writeI64($this->id);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

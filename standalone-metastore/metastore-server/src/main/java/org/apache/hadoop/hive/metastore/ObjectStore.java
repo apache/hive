@@ -759,6 +759,7 @@ public class ObjectStore implements RawStore, Configurable {
       cat.setDescription(mCat.getDescription());
     }
     cat.setCreateTime(mCat.getCreateTime());
+    cat.setId(mCat.getId());
     return cat;
   }
 
@@ -863,6 +864,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     Database db = new Database();
+    db.setId(mdb.getId());
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
@@ -2651,7 +2653,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
         .getCreateTime(), part.getLastAccessTime(),
-        msd, part.getParameters());
+        msd, part.getParameters(), part.getId());
   }
 
   private Partition convertToPart(MPartition mpart, boolean isAcidTable) throws MetaException {
@@ -2670,6 +2672,7 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false, isAcidTable),
         params);
     p.setCatName(catName);
+    p.setId(mpart.getId());
     if(mpart.getWriteId()>0) {
       p.setWriteId(mpart.getWriteId());
     }else {
@@ -2688,6 +2691,7 @@ public class ObjectStore implements RawStore, Configurable {
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),
         convertToStorageDescriptor(mpart.getSd(), false, isAcidTable), params);
+    p.setId(mpart.getId());
     p.setCatName(catName);
     if(mpart.getWriteId()>0) {
       p.setWriteId(mpart.getWriteId());

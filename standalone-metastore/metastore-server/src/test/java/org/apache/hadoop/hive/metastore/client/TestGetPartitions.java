@@ -193,6 +193,13 @@ public class TestGetPartitions extends MetaStoreClientTest {
     assertEquals(Lists.newArrayList("1997", "05", "16"), partition.getValues());
   }
 
+  @Test
+  public void testPartitionId() throws Exception {
+    createTable3PartCols1Part(client);
+    Partition partition = client.getPartition(DB_NAME, TABLE_NAME, "yyyy=1997/mm=05/dd=16");
+    assertTrue(partition.getId() > 0);
+  }
+
   @Test(expected = NoSuchObjectException.class)
   public void testGetPartitionCaseSensitive() throws Exception {
     createTable3PartCols1Part(client);
@@ -372,6 +379,9 @@ public class TestGetPartitions extends MetaStoreClientTest {
     partitions = client.getPartitionsByNames(DB_NAME, TABLE_NAME,
         Lists.newArrayList("yyyy=2017", "yyyy=1999/mm=01/dd=02"));
     assertEquals(testValues.get(0), partitions.get(0).getValues());
+    for (Partition p : partitions) {
+      assertTrue(p.getId() > 0);
+    }
   }
 
   @Test
@@ -451,6 +461,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
         "1997", "05", "16"), "", Lists.newArrayList());
     assertNotNull(partition);
     assertNull(partition.getPrivileges());
+    assertTrue(partition.getId() > 0);
   }
 
   @Test
@@ -460,6 +471,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Lists.newArrayList("1997", "05", "16"), "user0", Lists.newArrayList("group0"));
     assertNotNull(partition);
     assertAuthInfoReturned("user0", "group0", partition);
+    assertTrue(partition.getId() > 0);
   }
 
   @Test
@@ -594,7 +606,10 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Arrays.asList("partcol=a0", "partcol=a1"));
     Assert.assertEquals(2, fetchedParts.size());
     Set<String> vals = new HashSet<>(fetchedParts.size());
-    for (Partition part : fetchedParts) vals.add(part.getValues().get(0));
+    for (Partition part : fetchedParts) {
+      assertTrue(part.getId() > 0);
+      vals.add(part.getValues().get(0));
+    }
     Assert.assertTrue(vals.contains("a0"));
     Assert.assertTrue(vals.contains("a1"));
 

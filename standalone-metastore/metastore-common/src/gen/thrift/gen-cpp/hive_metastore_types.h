@@ -2723,11 +2723,12 @@ void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b);
 std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse& obj);
 
 typedef struct _Catalog__isset {
-  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false) {}
+  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false), id(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
   bool createTime :1;
+  bool id :1;
 } _Catalog__isset;
 
 class Catalog : public virtual ::apache::thrift::TBase {
@@ -2735,7 +2736,7 @@ class Catalog : public virtual ::apache::thrift::TBase {
 
   Catalog(const Catalog&);
   Catalog& operator=(const Catalog&);
-  Catalog() : name(), description(), locationUri(), createTime(0) {
+  Catalog() : name(), description(), locationUri(), createTime(0), id(0) {
   }
 
   virtual ~Catalog() noexcept;
@@ -2743,6 +2744,7 @@ class Catalog : public virtual ::apache::thrift::TBase {
   std::string description;
   std::string locationUri;
   int32_t createTime;
+  int64_t id;
 
   _Catalog__isset __isset;
 
@@ -2753,6 +2755,8 @@ class Catalog : public virtual ::apache::thrift::TBase {
   void __set_locationUri(const std::string& val);
 
   void __set_createTime(const int32_t val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const Catalog & rhs) const
   {
@@ -2767,6 +2771,10 @@ class Catalog : public virtual ::apache::thrift::TBase {
     if (__isset.createTime != rhs.__isset.createTime)
       return false;
     else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }
@@ -3045,7 +3053,7 @@ void swap(DropCatalogRequest &a, DropCatalogRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj);
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), id(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -3056,6 +3064,7 @@ typedef struct _Database__isset {
   bool catalogName :1;
   bool createTime :1;
   bool managedLocationUri :1;
+  bool id :1;
 } _Database__isset;
 
 class Database : public virtual ::apache::thrift::TBase {
@@ -3063,7 +3072,7 @@ class Database : public virtual ::apache::thrift::TBase {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri() {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri(), id(0) {
   }
 
   virtual ~Database() noexcept;
@@ -3077,6 +3086,7 @@ class Database : public virtual ::apache::thrift::TBase {
   std::string catalogName;
   int32_t createTime;
   std::string managedLocationUri;
+  int64_t id;
 
   _Database__isset __isset;
 
@@ -3099,6 +3109,8 @@ class Database : public virtual ::apache::thrift::TBase {
   void __set_createTime(const int32_t val);
 
   void __set_managedLocationUri(const std::string& val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const Database & rhs) const
   {
@@ -3133,6 +3145,10 @@ class Database : public virtual ::apache::thrift::TBase {
     if (__isset.managedLocationUri != rhs.__isset.managedLocationUri)
       return false;
     else if (__isset.managedLocationUri && !(managedLocationUri == rhs.managedLocationUri))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }
@@ -4667,7 +4683,7 @@ void swap(Table &a, Table &b);
 std::ostream& operator<<(std::ostream& out, const Table& obj);
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false), id(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -4680,6 +4696,7 @@ typedef struct _Partition__isset {
   bool writeId :1;
   bool isStatsCompliant :1;
   bool colStats :1;
+  bool id :1;
 } _Partition__isset;
 
 class Partition : public virtual ::apache::thrift::TBase {
@@ -4687,7 +4704,7 @@ class Partition : public virtual ::apache::thrift::TBase {
 
   Partition(const Partition&);
   Partition& operator=(const Partition&);
-  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), writeId(-1LL), isStatsCompliant(0) {
+  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), writeId(-1LL), isStatsCompliant(0), id(0) {
   }
 
   virtual ~Partition() noexcept;
@@ -4703,6 +4720,7 @@ class Partition : public virtual ::apache::thrift::TBase {
   int64_t writeId;
   bool isStatsCompliant;
   ColumnStatistics colStats;
+  int64_t id;
 
   _Partition__isset __isset;
 
@@ -4729,6 +4747,8 @@ class Partition : public virtual ::apache::thrift::TBase {
   void __set_isStatsCompliant(const bool val);
 
   void __set_colStats(const ColumnStatistics& val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const Partition & rhs) const
   {
@@ -4766,6 +4786,10 @@ class Partition : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.colStats && !(colStats == rhs.colStats))
       return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
     return true;
   }
   bool operator != (const Partition &rhs) const {
@@ -4785,13 +4809,14 @@ void swap(Partition &a, Partition &b);
 std::ostream& operator<<(std::ostream& out, const Partition& obj);
 
 typedef struct _PartitionWithoutSD__isset {
-  _PartitionWithoutSD__isset() : values(false), createTime(false), lastAccessTime(false), relativePath(false), parameters(false), privileges(false) {}
+  _PartitionWithoutSD__isset() : values(false), createTime(false), lastAccessTime(false), relativePath(false), parameters(false), privileges(false), id(false) {}
   bool values :1;
   bool createTime :1;
   bool lastAccessTime :1;
   bool relativePath :1;
   bool parameters :1;
   bool privileges :1;
+  bool id :1;
 } _PartitionWithoutSD__isset;
 
 class PartitionWithoutSD : public virtual ::apache::thrift::TBase {
@@ -4799,7 +4824,7 @@ class PartitionWithoutSD : public virtual ::apache::thrift::TBase {
 
   PartitionWithoutSD(const PartitionWithoutSD&);
   PartitionWithoutSD& operator=(const PartitionWithoutSD&);
-  PartitionWithoutSD() : createTime(0), lastAccessTime(0), relativePath() {
+  PartitionWithoutSD() : createTime(0), lastAccessTime(0), relativePath(), id(0) {
   }
 
   virtual ~PartitionWithoutSD() noexcept;
@@ -4809,6 +4834,7 @@ class PartitionWithoutSD : public virtual ::apache::thrift::TBase {
   std::string relativePath;
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
+  int64_t id;
 
   _PartitionWithoutSD__isset __isset;
 
@@ -4823,6 +4849,8 @@ class PartitionWithoutSD : public virtual ::apache::thrift::TBase {
   void __set_parameters(const std::map<std::string, std::string> & val);
 
   void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const PartitionWithoutSD & rhs) const
   {
@@ -4839,6 +4867,10 @@ class PartitionWithoutSD : public virtual ::apache::thrift::TBase {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }

@@ -80,6 +80,11 @@ class Database
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        11 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -122,6 +127,10 @@ class Database
      * @var string
      */
     public $managedLocationUri = null;
+    /**
+     * @var int
+     */
+    public $id = null;
 
     public function __construct($vals = null)
     {
@@ -155,6 +164,9 @@ class Database
             }
             if (isset($vals['managedLocationUri'])) {
                 $this->managedLocationUri = $vals['managedLocationUri'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
             }
         }
     }
@@ -261,6 +273,13 @@ class Database
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 11:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -334,6 +353,11 @@ class Database
         if ($this->managedLocationUri !== null) {
             $xfer += $output->writeFieldBegin('managedLocationUri', TType::STRING, 10);
             $xfer += $output->writeString($this->managedLocationUri);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::I64, 11);
+            $xfer += $output->writeI64($this->id);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

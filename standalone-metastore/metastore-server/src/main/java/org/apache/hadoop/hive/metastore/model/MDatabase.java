@@ -33,6 +33,7 @@ import java.util.Set;
  *
  */
 public class MDatabase {
+  private long id;
   private String name;
   private String locationUri;
   private String managedLocationUri;
@@ -57,12 +58,13 @@ public class MDatabase {
    * @param parameters Parameters for the database
    */
   public MDatabase(String catalogName, String name, String locationUri, String description,
-      Map<String, String> parameters) {
-    this(catalogName, name, locationUri, description, parameters, null);
+      Map<String, String> parameters, long id) {
+    this(catalogName, name, locationUri, description, parameters, null, id);
   }
 
   /**
    * To create a database object
+   * @param id The id of the database object
    * @param catalogName Name of the catalog, the database belongs to.
    * @param name of the database
    * @param locationUri Default external Location of the database
@@ -70,8 +72,9 @@ public class MDatabase {
    * @param parameters Parameters for the database
    * @param managedLocationUri Default location for managed tables in database in the warehouse
    */
-  public MDatabase(String catalogName, String name, String locationUri, String description,
-      Map<String, String> parameters, String managedLocationUri) {
+  public MDatabase(String catalogName, String name, String locationUri,
+      String description, Map<String, String> parameters, String managedLocationUri, long id) {
+    this.id = id;
     this.name = name;
     this.locationUri = locationUri;
     this.managedLocationUri = managedLocationUri;
@@ -194,5 +197,13 @@ public class MDatabase {
 
   public void setCreateTime(int createTime) {
     this.createTime = createTime;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public long getId() {
+    return id;
   }
 }

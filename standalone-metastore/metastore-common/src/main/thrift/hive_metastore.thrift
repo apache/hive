@@ -357,7 +357,8 @@ struct Catalog {
   3: string locationUri,              // default storage location.  When databases are created in
                                       // this catalog, if they do not specify a location, they will
                                       // be placed in this location.
-  4: optional i32 createTime          // creation time of catalog in seconds since epoch
+  4: optional i32 createTime,          // creation time of catalog in seconds since epoch
+  5: optional i64 id // unique identifier of this catalog
 }
 
 struct CreateCatalogRequest {
@@ -395,8 +396,9 @@ struct Database {
   6: optional string ownerName,
   7: optional PrincipalType ownerType,
   8: optional string catalogName,
-  9: optional i32 createTime               // creation time of database in seconds since epoch
-  10: optional string managedLocationUri // directory for managed tables
+  9: optional i32 createTime,               // creation time of database in seconds since epoch
+  10: optional string managedLocationUri, // directory for managed tables
+  11: optional i64 id // unique identifier of this database
 }
 
 // This object holds the information needed by SerDes
@@ -601,7 +603,8 @@ struct Partition {
   9: optional string catName,
   10: optional i64 writeId=-1,
   11: optional bool isStatsCompliant,
-  12: optional ColumnStatistics colStats // column statistics for partition
+  12: optional ColumnStatistics colStats, // column statistics for partition
+  13: optional i64 id // unique identifier of this partition object
 }
 
 struct PartitionWithoutSD {
@@ -611,6 +614,7 @@ struct PartitionWithoutSD {
   4: string       relativePath,
   5: map<string, string> parameters,
   6: optional PrincipalPrivilegeSet privileges
+  7: optional i64 id
 }
 
 struct PartitionSpecWithSharedSD {

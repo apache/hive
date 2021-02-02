@@ -96,6 +96,11 @@ class Partition
             'type' => TType::STRUCT,
             'class' => '\metastore\ColumnStatistics',
         ),
+        13 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -146,6 +151,10 @@ class Partition
      * @var \metastore\ColumnStatistics
      */
     public $colStats = null;
+    /**
+     * @var int
+     */
+    public $id = null;
 
     public function __construct($vals = null)
     {
@@ -185,6 +194,9 @@ class Partition
             }
             if (isset($vals['colStats'])) {
                 $this->colStats = $vals['colStats'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
             }
         }
     }
@@ -316,6 +328,13 @@ class Partition
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 13:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -412,6 +431,11 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('colStats', TType::STRUCT, 12);
             $xfer += $this->colStats->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::I64, 13);
+            $xfer += $output->writeI64($this->id);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

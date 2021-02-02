@@ -5783,6 +5783,11 @@ void Catalog::__set_createTime(const int32_t val) {
   this->createTime = val;
 __isset.createTime = true;
 }
+
+void Catalog::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
+}
 std::ostream& operator<<(std::ostream& out, const Catalog& obj)
 {
   obj.printTo(out);
@@ -5843,6 +5848,14 @@ uint32_t Catalog::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5878,6 +5891,11 @@ uint32_t Catalog::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI32(this->createTime);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5889,6 +5907,7 @@ void swap(Catalog &a, Catalog &b) {
   swap(a.description, b.description);
   swap(a.locationUri, b.locationUri);
   swap(a.createTime, b.createTime);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -5897,6 +5916,7 @@ Catalog::Catalog(const Catalog& other178) {
   description = other178.description;
   locationUri = other178.locationUri;
   createTime = other178.createTime;
+  id = other178.id;
   __isset = other178.__isset;
 }
 Catalog& Catalog::operator=(const Catalog& other179) {
@@ -5904,6 +5924,7 @@ Catalog& Catalog::operator=(const Catalog& other179) {
   description = other179.description;
   locationUri = other179.locationUri;
   createTime = other179.createTime;
+  id = other179.id;
   __isset = other179.__isset;
   return *this;
 }
@@ -5914,6 +5935,7 @@ void Catalog::printTo(std::ostream& out) const {
   out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
   out << ", " << "locationUri=" << to_string(locationUri);
   out << ", " << "createTime="; (__isset.createTime ? (out << to_string(createTime)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 
@@ -6559,6 +6581,11 @@ void Database::__set_managedLocationUri(const std::string& val) {
   this->managedLocationUri = val;
 __isset.managedLocationUri = true;
 }
+
+void Database::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
+}
 std::ostream& operator<<(std::ostream& out, const Database& obj)
 {
   obj.printTo(out);
@@ -6684,6 +6711,14 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -6756,6 +6791,11 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeString(this->managedLocationUri);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -6773,6 +6813,7 @@ void swap(Database &a, Database &b) {
   swap(a.catalogName, b.catalogName);
   swap(a.createTime, b.createTime);
   swap(a.managedLocationUri, b.managedLocationUri);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -6787,6 +6828,7 @@ Database::Database(const Database& other207) {
   catalogName = other207.catalogName;
   createTime = other207.createTime;
   managedLocationUri = other207.managedLocationUri;
+  id = other207.id;
   __isset = other207.__isset;
 }
 Database& Database::operator=(const Database& other208) {
@@ -6800,6 +6842,7 @@ Database& Database::operator=(const Database& other208) {
   catalogName = other208.catalogName;
   createTime = other208.createTime;
   managedLocationUri = other208.managedLocationUri;
+  id = other208.id;
   __isset = other208.__isset;
   return *this;
 }
@@ -6816,6 +6859,7 @@ void Database::printTo(std::ostream& out) const {
   out << ", " << "catalogName="; (__isset.catalogName ? (out << to_string(catalogName)) : (out << "<null>"));
   out << ", " << "createTime="; (__isset.createTime ? (out << to_string(createTime)) : (out << "<null>"));
   out << ", " << "managedLocationUri="; (__isset.managedLocationUri ? (out << to_string(managedLocationUri)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11289,6 +11333,11 @@ void Partition::__set_colStats(const ColumnStatistics& val) {
   this->colStats = val;
 __isset.colStats = true;
 }
+
+void Partition::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
+}
 std::ostream& operator<<(std::ostream& out, const Partition& obj)
 {
   obj.printTo(out);
@@ -11440,6 +11489,14 @@ uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11527,6 +11584,11 @@ uint32_t Partition::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += this->colStats.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 13);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11546,6 +11608,7 @@ void swap(Partition &a, Partition &b) {
   swap(a.writeId, b.writeId);
   swap(a.isStatsCompliant, b.isStatsCompliant);
   swap(a.colStats, b.colStats);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -11562,6 +11625,7 @@ Partition::Partition(const Partition& other372) {
   writeId = other372.writeId;
   isStatsCompliant = other372.isStatsCompliant;
   colStats = other372.colStats;
+  id = other372.id;
   __isset = other372.__isset;
 }
 Partition& Partition::operator=(const Partition& other373) {
@@ -11577,6 +11641,7 @@ Partition& Partition::operator=(const Partition& other373) {
   writeId = other373.writeId;
   isStatsCompliant = other373.isStatsCompliant;
   colStats = other373.colStats;
+  id = other373.id;
   __isset = other373.__isset;
   return *this;
 }
@@ -11595,6 +11660,7 @@ void Partition::printTo(std::ostream& out) const {
   out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "isStatsCompliant="; (__isset.isStatsCompliant ? (out << to_string(isStatsCompliant)) : (out << "<null>"));
   out << ", " << "colStats="; (__isset.colStats ? (out << to_string(colStats)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11626,6 +11692,11 @@ void PartitionWithoutSD::__set_parameters(const std::map<std::string, std::strin
 void PartitionWithoutSD::__set_privileges(const PrincipalPrivilegeSet& val) {
   this->privileges = val;
 __isset.privileges = true;
+}
+
+void PartitionWithoutSD::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
 }
 std::ostream& operator<<(std::ostream& out, const PartitionWithoutSD& obj)
 {
@@ -11730,6 +11801,14 @@ uint32_t PartitionWithoutSD::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11789,6 +11868,11 @@ uint32_t PartitionWithoutSD::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += this->privileges.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 7);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11802,6 +11886,7 @@ void swap(PartitionWithoutSD &a, PartitionWithoutSD &b) {
   swap(a.relativePath, b.relativePath);
   swap(a.parameters, b.parameters);
   swap(a.privileges, b.privileges);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -11812,6 +11897,7 @@ PartitionWithoutSD::PartitionWithoutSD(const PartitionWithoutSD& other388) {
   relativePath = other388.relativePath;
   parameters = other388.parameters;
   privileges = other388.privileges;
+  id = other388.id;
   __isset = other388.__isset;
 }
 PartitionWithoutSD& PartitionWithoutSD::operator=(const PartitionWithoutSD& other389) {
@@ -11821,6 +11907,7 @@ PartitionWithoutSD& PartitionWithoutSD::operator=(const PartitionWithoutSD& othe
   relativePath = other389.relativePath;
   parameters = other389.parameters;
   privileges = other389.privileges;
+  id = other389.id;
   __isset = other389.__isset;
   return *this;
 }
@@ -11833,6 +11920,7 @@ void PartitionWithoutSD::printTo(std::ostream& out) const {
   out << ", " << "relativePath=" << to_string(relativePath);
   out << ", " << "parameters=" << to_string(parameters);
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 
