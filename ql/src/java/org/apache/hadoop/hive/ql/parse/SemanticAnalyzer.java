@@ -9362,19 +9362,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Map<String, String> translatorMap = new HashMap<String, String>();
 
+    Map<String, ExprNodeDesc> colExprMap2 = new HashMap<String, ExprNodeDesc>();
+
     if (true) {
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
       String oldName = keyColNames.get(i);
       String newName = Utilities.ReduceField.KEY + "." + oldName;
-      colExprMap.put(newName, reduceKeys.get(i));
+        colExprMap2.put(newName, reduceKeys.get(i));
       translatorMap.put(oldName, newName);
     }
     List<String> valColNames = rsDesc.getOutputValueColumnNames();
     for (int i = 0 ; i < valColNames.size(); i++) {
       String oldName = valColNames.get(i);
       String newName = Utilities.ReduceField.VALUE + "." + oldName;
-      colExprMap.put(newName, reduceValues.get(i));
+        colExprMap2.put(newName, reduceValues.get(i));
       translatorMap.put(oldName, newName);
     }
 
@@ -9387,7 +9389,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowSchema defaultRs = new RowSchema(outputRR.getColumnInfos());
 
     List<ColumnInfo> newColumnInfos = new ArrayList<ColumnInfo>();
-    if (false) {
+    if (true) {
     for (ColumnInfo ci : outputRR.getColumnInfos()) {
       if (translatorMap.containsKey(ci.getInternalName())) {
         ci = new ColumnInfo(ci);
@@ -9403,7 +9405,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(newColumnInfos), child), outputRR);
 
     rsOp.setValueIndex(index);
-    rsOp.setColumnExprMap(colExprMap);
+    rsOp.setColumnExprMap(colExprMap2);
     rsOp.setInputAliases(srcs);
     return rsOp;
   }
