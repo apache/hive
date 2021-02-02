@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.DirCopyWork;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.junit.Assert;
 
@@ -531,9 +532,9 @@ public class ReplicationTestUtils {
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     Set<String> tableNames = new HashSet<>();
     for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-      String[] components = line.split(",");
-      Assert.assertEquals("The file should have tableName,base64encoded(data_location)",
-              2, components.length);
+      String[] components = line.split(DirCopyWork.URI_SEPARATOR);
+      Assert.assertEquals("The file should have tableName#sourcelocation#targetloation",
+              3, components.length);
       tableNames.add(components[0]);
       Assert.assertTrue(components[1].length() > 0);
     }

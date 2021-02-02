@@ -76,7 +76,6 @@ import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -95,7 +94,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
-    overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
+    overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "true");
 
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
   }
@@ -130,7 +129,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     Path metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
             EximUtil.METADATA_PATH_NAME);
     assertFalse(primary.miniDFSCluster.getFileSystem()
-        .exists(new Path(metadataPath + relativeExtInfoPath(primaryDbName))));
+        .exists(new Path(metadataPath, EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("repl status " + replicatedDbName)
@@ -152,7 +151,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
             EximUtil.METADATA_PATH_NAME);
     assertFalse(primary.miniDFSCluster.getFileSystem()
-        .exists(new Path(metadataPath + relativeExtInfoPath(null))));
+            .exists(new Path(metadataPath, EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
@@ -845,7 +844,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     Path metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
             EximUtil.METADATA_PATH_NAME);
     assertFalse(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(metadataPath + relativeExtInfoPath(null))));
+            .exists(new Path(metadataPath, EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
@@ -867,10 +866,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("create table t4 as select * from t3")
             .dump(primaryDbName, dumpWithClause);
 
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external info should be created as external tables are to be replicated.
     Path hivePath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(hivePath + relativeExtInfoPath(null))));
+            .exists(new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL)));
 
     // verify that the external table info is written correctly for incremental
     assertExternalFileInfo(Arrays.asList("t2", "t3"), tuple.dumpLocation, true);
@@ -1623,21 +1622,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
                                       boolean isIncremental)
       throws IOException {
     Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path metadataPath = new Path(hivePath, EximUtil.METADATA_PATH_NAME);
-    Path externalTableInfoFile;
-    if (isIncremental) {
-      externalTableInfoFile = new Path(hivePath + relativeExtInfoPath(dbName));
-    } else {
-      externalTableInfoFile = new Path(metadataPath + relativeExtInfoPath(dbName));
-    }
+    Path externalTableInfoFile = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
     ReplicationTestUtils.assertExternalFileInfo(primary, expected, externalTableInfoFile);
-  }
-
-  private String relativeExtInfoPath(String dbName) {
-    if (dbName == null) {
-      return File.separator + FILE_NAME;
-    } else {
-      return File.separator + dbName.toLowerCase() + File.separator + FILE_NAME;
-    }
   }
 }

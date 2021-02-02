@@ -69,7 +69,6 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -2229,13 +2228,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                                       WarehouseInstance warehouseInstance)
           throws IOException {
     Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path metadataPath = new Path(hivePath, EximUtil.METADATA_PATH_NAME);
-    Path externalTableInfoFile;
-    if (isIncremental) {
-      externalTableInfoFile = new Path(hivePath, FILE_NAME);
-    } else {
-      externalTableInfoFile = new Path(metadataPath, primaryDbName.toLowerCase() + File.separator + FILE_NAME);
-    }
+    Path externalTableInfoFile = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
     ReplicationTestUtils.assertExternalFileInfo(warehouseInstance, expected, externalTableInfoFile);
   }
 }
