@@ -269,10 +269,9 @@ public abstract class TestHiveMetaStore {
       assertNotNull("Unable to create partition " + part3, retp3);
       Partition retp4 = client.add_partition(part4);
       assertNotNull("Unable to create partition " + part4, retp4);
-      assertTrue(retp.getId() > 0);
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
-      assertTrue(part_get.getId() > 0);
+      assertTrue(part_get.isSetId());
       // since we are using thrift, 'part' will not have the create time and
       // last DDL time set since it does not get updated in the add_partition()
       // call - likewise part2 and part3 - set it correctly so that equals check
@@ -280,7 +279,8 @@ public abstract class TestHiveMetaStore {
       adjust(client, part, dbName, tblName, isThriftClient);
       adjust(client, part2, dbName, tblName, isThriftClient);
       adjust(client, part3, dbName, tblName, isThriftClient);
-      assertTrue("Partitions are not same", part.equals(part_get));
+      MetaStoreTestUtils
+          .comparePartitionIgnoreId("Partitions are not same", part, part_get);
 
       // check null cols schemas for a partition
       List<String> vals6 = makeVals("2016-02-22 00:00:00", "16");
@@ -307,19 +307,21 @@ public abstract class TestHiveMetaStore {
       String part4Name = "ds=" + FileUtils.escapePathName("2008-07-03 14:13:12") + "/hr=151";
 
       part_get = client.getPartition(dbName, tblName, partName);
-      assertTrue("Partitions are not the same", part.equals(part_get));
+      MetaStoreTestUtils
+          .comparePartitionIgnoreId("Partitions are not the same", part, part_get);
 
       // Test partition listing with a partial spec - ds is specified but hr is not
       List<String> partialVals = new ArrayList<>();
       partialVals.add(vals.get(0));
-      Set<Partition> parts = new HashSet<>();
+      List<Partition> parts = new ArrayList<>();
       parts.add(part);
       parts.add(part2);
 
       List<Partition> partial = client.listPartitions(dbName, tblName, partialVals,
           (short) -1);
       assertTrue("Should have returned 2 partitions", partial.size() == 2);
-      assertTrue("Not all parts returned", partial.containsAll(parts));
+      MetaStoreTestUtils
+          .comparePartitionsIgnoreId("Not all parts returned", partial, parts);
       for (Partition p : partial) {
         assertTrue(p.getId() > 0);
       }
@@ -350,7 +352,8 @@ public abstract class TestHiveMetaStore {
 
       partial = client.listPartitions(dbName, tblName, partialVals, (short) -1);
       assertEquals("Should have returned 2 partitions", 2, partial.size());
-      assertTrue("Not all parts returned", partial.containsAll(parts));
+      MetaStoreTestUtils
+          .comparePartitionsIgnoreId("Not all parts returned", partial, parts);
 
       partNames.clear();
       partNames.add(part2Name);
@@ -493,7 +496,9 @@ public abstract class TestHiveMetaStore {
     assertEquals("Should have returned "+expectedPartitions.size()+
         " partitions, returned " + mpartial.size(),
         expectedPartitions.size(), mpartial.size());
-    assertTrue("Not all parts returned", mpartial.containsAll(expectedPartitions));
+    MetaStoreTestUtils
+        .comparePartitionsIgnoreId("Not all parts returned", expectedPartitions,
+            mpartial);
   }
 
   private static List<String> makeVals(String ds, String id) {

@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -1312,7 +1313,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
       partition.getSd().setLocation(resultPart.getSd().getLocation());
       partition.setDbName(destTable.getDbName());
       partition.setTableName(destTable.getTableName());
-      Assert.assertEquals(partition, resultPart);
+      MetaStoreTestUtils.comparePartitionIgnoreId(partition, resultPart);
     }
   }
 

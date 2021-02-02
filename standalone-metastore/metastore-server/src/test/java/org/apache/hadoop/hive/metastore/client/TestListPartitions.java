@@ -249,9 +249,13 @@ public class TestListPartitions extends MetaStoreClientTest {
     assertEquals(testValues.size(), partitions.size());
 
     for (int i = 0; i < partitions.size(); ++i) {
-      assertTrue(partitions.get(i).getId() > 0);
+      assertPartitionId(partitions.get(i));
       assertEquals(testValues.get(i), partitions.get(i).getValues());
     }
+  }
+
+  protected void assertPartitionId(Partition p) {
+    assertTrue(p.isSetId());
   }
 
   private void assertCorrectPartitionValuesResponse(List<List<String>> testValues,

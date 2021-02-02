@@ -1090,6 +1090,7 @@ public class MetaStoreServerUtils {
               (isUnsetKey || !partition.getSd().isSetLocation()) ? null : partition.getSd()
                   .getLocation().substring(tablePath.length()));
           partitionWithoutSD.setParameters(partition.getParameters());
+          partitionWithoutSD.setId(partition.getId());
 
           if (!sdToPartList.containsKey(key)) {
             sdToPartList.put(key, new ArrayList<>());

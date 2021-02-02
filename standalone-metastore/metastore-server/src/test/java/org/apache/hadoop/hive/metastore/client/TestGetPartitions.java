@@ -191,13 +191,14 @@ public class TestGetPartitions extends MetaStoreClientTest {
     Partition partition = client.getPartition(DB_NAME, TABLE_NAME, "yyyy=1997/mm=05/dd=16");
     assertNotNull(partition);
     assertEquals(Lists.newArrayList("1997", "05", "16"), partition.getValues());
+    assertPartitionId(partition);
   }
 
   @Test
   public void testPartitionId() throws Exception {
     createTable3PartCols1Part(client);
     Partition partition = client.getPartition(DB_NAME, TABLE_NAME, "yyyy=1997/mm=05/dd=16");
-    assertTrue(partition.getId() > 0);
+    assertPartitionId(partition);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -297,6 +298,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
     Partition partition = client.getPartition(DB_NAME, TABLE_NAME, parts);
     assertNotNull(partition);
     assertEquals(parts, partition.getValues());
+    assertPartitionId(partition);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -380,8 +382,12 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Lists.newArrayList("yyyy=2017", "yyyy=1999/mm=01/dd=02"));
     assertEquals(testValues.get(0), partitions.get(0).getValues());
     for (Partition p : partitions) {
-      assertTrue(p.getId() > 0);
+      assertPartitionId(p);
     }
+  }
+
+  protected void assertPartitionId(Partition p) {
+    assertTrue(p.isSetId());
   }
 
   @Test
@@ -461,7 +467,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
         "1997", "05", "16"), "", Lists.newArrayList());
     assertNotNull(partition);
     assertNull(partition.getPrivileges());
-    assertTrue(partition.getId() > 0);
+    assertPartitionId(partition);
   }
 
   @Test

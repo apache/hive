@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -797,8 +798,21 @@ public class TestHive {
     List<Partition> allParts3 = new ArrayList<Partition>();
     hm.getPartitionsByExpr(tbl, trueExpr, hm.getConf(), allParts3);
 
-    assertEquals("inconsistent results: getPartitionsByExpr", allParts2, allParts3);
+    comparePartitionsIgnoreId("inconsistent results: getPartitionsByExpr", allParts2,
+        allParts3);
+  }
 
+  private static void comparePartitionsIgnoreId(String msg, List<Partition> expected,
+      List<Partition> actual) {
+    assertEquals(msg, expected.size(), actual.size());
+    for (int i=0; i< expected.size(); i++) {
+      // set the id from the actual partition object to ignore the id difference
+      long beforeId = expected.get(i).getTPartition().getId();
+      expected.get(i).getTPartition().setId(actual.get(i).getTPartition().getId());
+      assertEquals(expected.get(i), actual.get(i));
+      // set the expected TPartition to beforeId back
+      expected.get(i).getTPartition().setId(beforeId);
+    }
   }
 
   @Test

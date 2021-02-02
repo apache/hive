@@ -112,6 +112,10 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     return table;
   }
 
+  protected void assertPartitionId(Partition p) {
+    // no-op we don't have partition ids for temp tables.
+  }
+
   @Override
   protected void addPartition(IMetaStoreClient client, Table table, List<String> values) throws TException {
     PartitionBuilder builder = new PartitionBuilder().inTable(table);

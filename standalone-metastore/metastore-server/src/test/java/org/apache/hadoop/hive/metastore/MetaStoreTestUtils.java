@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.thrift.TException;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -383,6 +385,37 @@ public class MetaStoreTestUtils {
         client.dropDatabase(catName, db, true, false, true);
       }
       client.dropCatalog(catName);
+    }
+  }
+
+
+  /**
+   * Util method to compare two partition objects except for their ids.
+   */
+  public static void comparePartitionIgnoreId(Partition expected, Partition actual) {
+    Partition expectedCopy = expected.deepCopy();
+    Partition actualCopy = actual.deepCopy();
+    expectedCopy.unsetId();
+    actualCopy.unsetId();
+    Assert.assertEquals(expectedCopy, actualCopy);
+  }
+
+  /**
+   * Util method to compare two partition objects except for their ids with a error message.
+   */
+  public static void comparePartitionIgnoreId(String msg, Partition expected, Partition actual) {
+    Partition expectedCopy = expected.deepCopy();
+    Partition actualCopy = actual.deepCopy();
+    expectedCopy.unsetId();
+    actualCopy.unsetId();
+    Assert.assertEquals(msg, expectedCopy, actualCopy);
+  }
+
+  public static void comparePartitionsIgnoreId(String msg, List<Partition> expected,
+      List<Partition> actual) {
+    Assert.assertEquals(msg, expected.size(), actual.size());
+    for (int i=0; i<expected.size(); i++) {
+      comparePartitionIgnoreId(msg, expected.get(i), actual.get(i));
     }
   }
 }

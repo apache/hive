@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,6 +48,7 @@ import java.util.Map;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Test class for get partitions related methods on temporary tables.
@@ -168,6 +170,11 @@ public class TestSessionHiveMetastoreClientGetPartitionsTempTable extends TestGe
   public void testGetPartitionWithAuthInfoNullTblName()
       throws Exception {
     super.testGetPartitionWithAuthInfoNullTblName();
+  }
+
+  @Override
+  protected void assertPartitionId(Partition p) {
+    //no-op; for temp tables we don't set the partition ids
   }
 
   private void assertAuthInfoReturned(String userName, List<String> groups, Partition partition) {

@@ -127,7 +127,7 @@ public class TestMetaStoreEventListener {
   }
 
   private void validateAddPartition(Partition expectedPartition, Partition actualPartition) {
-    assertEquals(expectedPartition, actualPartition);
+    MetaStoreTestUtils.comparePartitionIgnoreId(expectedPartition, actualPartition);
   }
 
   private void validateTableInAddPartition(Table expectedTable, Table actualTable) {
