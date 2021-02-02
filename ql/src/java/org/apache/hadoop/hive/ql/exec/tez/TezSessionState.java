@@ -538,9 +538,9 @@ public class TezSessionState implements TezSession {
   private TezClient startSessionAndContainers(TezClient session, HiveConf conf,
       Map<String, LocalResource> commonLocalResources, TezConfiguration tezConfig,
       boolean isOnThread) throws TezException, IOException {
-    session.start();
     boolean isSuccessful = false;
     try {
+      session.start();
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
         int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
         LOG.info("Prewarming " + n + " containers  (id: " + sessionId
@@ -579,6 +579,10 @@ public class TezSessionState implements TezSession {
     } finally {
       if (isOnThread && !isSuccessful) {
         closeAndIgnoreExceptions(session);
+      }
+      if (!isSuccessful) {
+        cleanupScratchDir();
+        cleanupDagResources();
       }
     }
   }
@@ -818,6 +822,7 @@ public class TezSessionState implements TezSession {
   }
 
   protected final void cleanupScratchDir() throws IOException {
+    LOG.info("Attempting to clean up scratchDir for {} : {}", sessionId, tezScratchDir);
     if (tezScratchDir != null) {
       FileSystem fs = tezScratchDir.getFileSystem(conf);
       fs.delete(tezScratchDir, true);
@@ -826,7 +831,7 @@ public class TezSessionState implements TezSession {
   }
 
   protected final void cleanupDagResources() throws IOException {
-    LOG.info("Attemting to clean up resources for " + sessionId + ": " + resources);
+    LOG.info("Attempting to clean up resources for {} : {}", sessionId, resources);
     if (resources != null) {
       FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
       fs.delete(resources.dagResourcesDir, true);
