@@ -166,7 +166,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   @Override
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap) {
-    this.colExprMap = new SX(colExprMap);
+    this.colExprMap = colExprMap == null ? null : new SX(colExprMap);
   }
 
   public static class SX extends LinkedHashMap<String, ExprNodeDesc> {
