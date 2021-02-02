@@ -81,7 +81,7 @@ Stage-0
           <-Map 1 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_30]
               PartitionCols:_col3
-              Select Operator [SEL_29] (rows=2 width=189)
+              Select Operator [SEL_29] (rows=2 width=98)
                 Output:["_col0","_col2","_col3"]
                 Filter Operator [FIL_28] (rows=2 width=189)
                   predicate:((val = 't1val01') and dimid is not null)
@@ -159,7 +159,7 @@ Stage-0
               <-Map 1 [SIMPLE_EDGE] vectorized, llap
                 SHUFFLE [RS_51]
                   PartitionCols:_col0
-                  Select Operator [SEL_50] (rows=2 width=99)
+                  Select Operator [SEL_50] (rows=2 width=8)
                     Output:["_col0","_col2"]
                     Filter Operator [FIL_49] (rows=2 width=99)
                       predicate:((val = 't1val01') and id is not null and dimid is not null)
@@ -235,7 +235,7 @@ Stage-0
               <-Map 3 [SIMPLE_EDGE] vectorized, llap
                 SHUFFLE [RS_55]
                   PartitionCols:_col2
-                  Select Operator [SEL_54] (rows=2 width=99)
+                  Select Operator [SEL_54] (rows=2 width=8)
                     Output:["_col0","_col2"]
                     Filter Operator [FIL_53] (rows=2 width=99)
                       predicate:((val = 't1val01') and dimid is not null and id is not null)
@@ -320,7 +320,7 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_20]
             PartitionCols:100, true
-            Select Operator [SEL_19] (rows=3 width=193)
+            Select Operator [SEL_19] (rows=3 width=185)
               Output:["_col0","_col1","_col2"]
               Filter Operator [FIL_18] (rows=3 width=189)
                 predicate:(dimid = 100)
@@ -402,7 +402,7 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_20]
             PartitionCols:100, true
-            Select Operator [SEL_19] (rows=3 width=193)
+            Select Operator [SEL_19] (rows=3 width=185)
               Output:["_col0","_col1","_col2"]
               Filter Operator [FIL_18] (rows=3 width=189)
                 predicate:(dimid = 100)
@@ -458,7 +458,7 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_20]
             PartitionCols:100, true
-            Select Operator [SEL_19] (rows=3 width=193)
+            Select Operator [SEL_19] (rows=3 width=185)
               Output:["_col0","_col1","_col2"]
               Filter Operator [FIL_18] (rows=3 width=189)
                 predicate:(dimid = 100)
