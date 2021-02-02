@@ -190,7 +190,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orders_fact
-                  filterExpr: (key2 is not null and key3 is not null) (type: boolean)
+                  filterExpr: (key3 is not null and key2 is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key3, smallTablePos:1, keyRatio:0.16666666666666666
                   Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
@@ -200,8 +200,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: (key2 is not null and key3 is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:int))
+                    predicate: (key3 is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key3 (type: int), key2 (type: int), dt (type: timestamp)

@@ -341,7 +341,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ds\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
-	materializedview.engine	mr                  
+	materializedview.engine	tez                 
 	numFiles            	0                   
 	rewriting.time.window	5min                
 	totalSize           	0                   
@@ -381,7 +381,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ds\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
-	materializedview.engine	mr                  
+	materializedview.engine	tez                 
 	numFiles            	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
@@ -420,7 +420,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ds\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
-	materializedview.engine	mr                  
+	materializedview.engine	tez                 
 	numFiles            	0                   
 	rewriting.time.window	-1min               
 	totalSize           	0                   
@@ -510,7 +510,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	bucketing_version   	2                   
-	materializedview.engine	mr                  
+	materializedview.engine	tez                 
 	numFiles            	0                   
 	rewriting.time.window	0min                
 	totalSize           	0                   

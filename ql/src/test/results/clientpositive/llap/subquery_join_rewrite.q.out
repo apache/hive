@@ -115,7 +115,7 @@ POSTHOOK: Input: default@web_sales
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
   HiveFilter(condition=[IS NULL($2)])
-    HiveJoin(condition=[=($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($0, $3)], joinType=[left])
       HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
         HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
       HiveProject(literalTrue=[true], ws_order_number=[$0])
@@ -187,7 +187,7 @@ POSTHOOK: Input: default@web_sales
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
   HiveFilter(condition=[IS NULL($2)])
-    HiveJoin(condition=[=($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($0, $3)], joinType=[left])
       HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
         HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
       HiveProject(literalTrue=[true], ws_order_number0=[$0])
@@ -224,7 +224,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[true], joinType=[inner])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
       HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
     HiveProject($f0=[true])
@@ -267,7 +267,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[true], joinType=[inner])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
       HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
     HiveProject($f0=[true])
@@ -301,7 +301,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
       HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
@@ -338,7 +338,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
       HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
@@ -376,8 +376,8 @@ CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
   HiveFilter(condition=[AND(OR(IS NULL($5), =($2, 0)), OR(IS NOT NULL($0), =($2, 0), IS NOT NULL($5)), OR(>=($3, $2), =($2, 0), IS NOT NULL($5), IS NULL($0)))])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1], c=[$4], ck=[$5], ws_order_number0=[$2], literalTrue=[$3])
-      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner])
+        HiveJoin(condition=[=($0, $2)], joinType=[left])
           HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
             HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
           HiveProject(ws_order_number=[$0], literalTrue=[true])
@@ -423,8 +423,8 @@ CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
   HiveFilter(condition=[AND(OR(IS NULL($5), =($2, 0)), OR(IS NOT NULL($0), =($2, 0), IS NOT NULL($5)), OR(>=($3, $2), =($2, 0), IS NOT NULL($5), IS NULL($0)))])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1], c=[$4], ck=[$5], ws_order_number0=[$2], literalTrue=[$3])
-      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner])
+        HiveJoin(condition=[=($0, $2)], joinType=[left])
           HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
             HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
           HiveProject(ws_order_number=[$0], literalTrue=[true])
@@ -468,8 +468,8 @@ CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
   HiveFilter(condition=[AND(OR(IS NULL($5), =($2, 0)), OR(IS NOT NULL($0), =($2, 0), IS NOT NULL($5)), OR(>=($3, $2), =($2, 0), IS NOT NULL($5), IS NULL($0)))])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1], c=[$4], ck=[$5], ws_order_number0=[$2], literalTrue=[$3])
-      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner])
+        HiveJoin(condition=[=($0, $2)], joinType=[left])
           HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
             HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
           HiveProject(ws_order_number=[$0], literalTrue=[true])

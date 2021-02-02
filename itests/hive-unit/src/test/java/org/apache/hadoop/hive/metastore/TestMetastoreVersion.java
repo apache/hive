@@ -122,9 +122,8 @@ public class TestMetastoreVersion extends TestCase {
     driver = DriverFactory.newDriver(hiveConf);
     try {
       driver.run("show tables");
-      assert false;
     } catch (CommandProcessorException e) {
-      // this is expected
+      assert false;
     }
 
     // correct version stored by Metastore during startup
@@ -144,9 +143,8 @@ public class TestMetastoreVersion extends TestCase {
     driver = DriverFactory.newDriver(hiveConf);
     try {
       driver.run("show tables");
-      assert false;
     } catch (CommandProcessorException e) {
-      // this is expected
+      assert false;
     }
 
     ObjectStore.setSchemaVerified(false);

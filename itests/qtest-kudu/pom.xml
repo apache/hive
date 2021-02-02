@@ -324,6 +324,12 @@
           </exclusion>
       </exclusions>
    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-parser</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <!-- Set the os.detected.classifier property based on the Maven detected OS
        because Hive's version of Maven doesn't support the os-maven-plugin.  -->

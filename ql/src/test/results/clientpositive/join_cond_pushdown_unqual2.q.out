@@ -259,10 +259,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p2
-            filterExpr: (p2_name is not null and p2_partkey is not null) (type: boolean)
+            filterExpr: (p2_partkey is not null and p2_name is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (p2_name is not null and p2_partkey is not null) (type: boolean)
+              predicate: (p2_partkey is not null and p2_name is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: p2_partkey (type: int), p2_name (type: string), p2_mfgr (type: string), p2_brand (type: string), p2_type (type: string), p2_size (type: int), p2_container (type: string), p2_retailprice (type: double), p2_comment (type: string)

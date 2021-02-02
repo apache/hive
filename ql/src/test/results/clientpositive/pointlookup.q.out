@@ -352,7 +352,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inoutputopt
 #### A masked pattern was here ####
 11
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select orOutput.key, inOutput.key
 from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
 where orOutput.key = null
@@ -369,7 +369,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inoutput
 POSTHOOK: Input: default@oroutput
 #### A masked pattern was here ####
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select orOutput.key, inOutputOpt.key
 from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
 where orOutput.key = null

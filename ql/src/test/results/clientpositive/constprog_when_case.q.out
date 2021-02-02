@@ -52,10 +52,10 @@ STAGE PLANS:
             Select Operator
               expressions: if((bool0 is true or (null and bool0 is not true and bool0 is not false)), key0, if((((not bool0) is true and bool0 is not true) or (null and bool0 is not true and bool0 is not false)), key1, key2)) (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1000 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1000 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

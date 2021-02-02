@@ -108,7 +108,7 @@ POSTHOOK: Output: default@acidtlb
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
   HiveProject(row__id=[$0], a=[CAST(30):INTEGER], _o__c2=[350])
-    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[true], joinType=[inner])
       HiveProject(ROW__ID=[$4])
         HiveFilter(condition=[=($0, 30)])
           HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
@@ -214,7 +214,7 @@ HiveSortExchange(distribution=[any], collation=[[0]])
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
       HiveProject(a=[$0])
-        HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($0, $1)], joinType=[inner])
           HiveProject(a=[$0])
             HiveFilter(condition=[IS NOT NULL($0)])
               HiveTableScan(table=[[default, acidtlb]], table:alias=[a])
@@ -274,7 +274,7 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@merge_tmp_table
 CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[right], algorithm=[none], cost=[not available])
+HiveJoin(condition=[=($0, $2)], joinType=[right])
   HiveProject(a=[$0], ROW__ID=[$4])
     HiveFilter(condition=[IS NOT NULL($0)])
       HiveTableScan(table=[[default, acidtlb]], table:alias=[t])

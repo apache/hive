@@ -12,4 +12,4 @@ POSTHOOK: query: CREATE TABLE addresses (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@addresses
-FAILED: SemanticException [Error 10025]: Line 3:7 Expression not in GROUP BY key 'address'
+FAILED: SemanticException Expression not in GROUP BY key:TOK_TABLE_OR_COL

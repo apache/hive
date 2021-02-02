@@ -1997,7 +1997,7 @@ Table Parameters:
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	4                   
-	totalSize           	4370                
+	totalSize           	4369                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2074,7 +2074,7 @@ Table Parameters:
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	4                   
-	totalSize           	4370                
+	totalSize           	4369                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2152,7 +2152,7 @@ Table Parameters:
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	4                   
-	totalSize           	4370                
+	totalSize           	4369                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
