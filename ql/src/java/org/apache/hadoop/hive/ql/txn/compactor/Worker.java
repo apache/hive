@@ -578,28 +578,24 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    */
   private AcidDirectory getAcidStateForWorker(CompactionInfo ci, StorageDescriptor sd,
           ValidCompactorWriteIdList tblValidWriteIds) throws IOException, InterruptedException {
-    Ref<AcidDirectory> acidDirectoryRef = Ref.from(null);
     if (runJobAsSelf(ci.runAs)) {
-      acidDirectoryRef.value = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
+      return AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
               tblValidWriteIds, Ref.from(false), true);
-    } else {
-      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+    }
+
+    UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+    try {
+      return ugi.doAs((PrivilegedExceptionAction<AcidDirectory>) () ->
+              AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, tblValidWriteIds,
+                      Ref.from(false), true));
+    } finally {
       try {
-        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-          acidDirectoryRef.value = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
-                  tblValidWriteIds, Ref.from(false), true);
-          return null;
-        });
-      } finally {
-        try {
-          FileSystem.closeAllForUGI(ugi);
-        } catch (IOException exception) {
-          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
-                  exception);
-        }
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+                exception);
       }
     }
-    return acidDirectoryRef.value;
   }
 
   private void failCompactionIfSetForTest() {
