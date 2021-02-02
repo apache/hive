@@ -37,10 +37,8 @@ import org.apache.hadoop.hive.impala.prune.ImpalaBasicHdfsTable.TableWithPartiti
 import org.apache.hadoop.hive.impala.prune.ImpalaBasicPartition;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.StmtMetadataLoader;
-import org.apache.impala.analysis.TableName;
 import org.apache.impala.authorization.AuthorizationFactory;
 import org.apache.impala.authorization.NoopAuthorizationFactory;
-import org.apache.impala.common.ImpalaException;
 import org.apache.impala.thrift.TClientRequest;
 import org.apache.impala.thrift.TNetworkAddress;
 import org.apache.impala.thrift.TQueryCtx;

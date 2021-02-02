@@ -102,6 +102,13 @@ public class ImpalaRelUtil {
               funcDetails.initFnSymbol, funcDetails.updateFnSymbol, funcDetails.removeFnSymbol, funcDetails.getValueFnSymbol,
               funcDetails.finalizeFnSymbol);
     }
+    // Use the createRewrittenBuiltin() method for grouping_id since it gets
+    // rewritten internally in Impala.
+    if (aggFuncName.equalsIgnoreCase("grouping_id")) {
+      return AggregateFunction.createRewrittenBuiltin(BuiltinsDb.getInstance(true),
+          aggFuncName, operandTypes, retType, funcDetails.ignoresDistinct, funcDetails.isAnalyticFn,
+          funcDetails.returnsNonNullOnEmpty);
+    }
     // Some agg functions are used both in analytic functions and regular aggregations (e.g. count)
     // We can treat them both as a regular builtin.
     return AggregateFunction

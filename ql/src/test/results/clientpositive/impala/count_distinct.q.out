@@ -22,11 +22,11 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output exprs: count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output: count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=16B cardinality=1
   |  in pipelines: 07(GETNEXT), 03(OPEN)
@@ -123,7 +123,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=28.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]
@@ -136,7 +136,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=08, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output: count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  group by: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=24B cardinality=0
@@ -235,7 +235,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=36.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END, _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END, count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]
@@ -248,7 +248,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=08, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output: count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  group by: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=32B cardinality=0
@@ -347,7 +347,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=36.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]
@@ -360,7 +360,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=08, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output: count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  group by: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=32B cardinality=0
@@ -459,7 +459,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_lineitem.l_partkey, default.impala_tpch_lineitem.l_suppkey, default.impala_tpch_lineitem.l_linenumber, _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)
+  |  output exprs: default.impala_tpch_lineitem.l_partkey, default.impala_tpch_lineitem.l_suppkey, default.impala_tpch_lineitem.l_linenumber, count(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   07:EXCHANGE [UNPARTITIONED]
@@ -472,7 +472,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=07, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |  output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  group by: default.impala_tpch_lineitem.l_partkey, default.impala_tpch_lineitem.l_suppkey, default.impala_tpch_lineitem.l_linenumber
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=28B cardinality=0
@@ -558,7 +558,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=36.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END, _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, _impala_builtins.count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output exprs: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END, count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, count(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]
@@ -571,7 +571,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=08, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), _impala_builtins.count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
+  |  output: count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 1 AND CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_quantity WHEN 3 THEN NULL END IS NOT NULL THEN 1 ELSE NULL END), count:merge(CASE WHEN aggif(valid_tid(2,3) IN (2, 3), CASE valid_tid(2,3) WHEN 2 THEN 1 WHEN 3 THEN 2 END) = 2 AND CASE valid_tid(2,3) WHEN 2 THEN NULL WHEN 3 THEN default.impala_tpch_lineitem.l_suppkey END IS NOT NULL THEN 1 ELSE NULL END)
   |  group by: CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_orderkey WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey END, CASE valid_tid(2,3) WHEN 2 THEN default.impala_tpch_lineitem.l_partkey WHEN 3 THEN default.impala_tpch_lineitem.l_partkey END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=32B cardinality=0
@@ -668,11 +668,11 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=40.00MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: aggif(valid_tid(3,5,6) = 6, _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = 6, _impala_builtins.count(default.impala_tpch_lineitem.l_orderkey))
+  |  output exprs: aggif(valid_tid(3,5,6) = 6, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = 6, count(default.impala_tpch_lineitem.l_orderkey))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(3,5,6) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), _impala_builtins.count(default.impala_tpch_lineitem.l_orderkey))
+  |  output: aggif(valid_tid(3,5,6) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), count(default.impala_tpch_lineitem.l_orderkey))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=32B cardinality=1
   |  in pipelines: 03(GETNEXT), 07(OPEN)
@@ -683,7 +683,7 @@ Per-Host Resources: mem-estimate=40.00MB mem-reservation=0B thread-reservation=1
   |  Class 1
   |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_orderkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity), count:merge(default.impala_tpch_lineitem.l_orderkey)
   |  mem-estimate=30.00MB mem-reservation=0B thread-reservation=0
   |  tuple-ids=3N,5N,6N row-size=32B cardinality=3
   |  in pipelines: 07(GETNEXT), 02(OPEN)
@@ -703,7 +703,7 @@ Per-Host Resources: mem-estimate=296.00MB mem-reservation=68.00MB thread-reserva
   |  Class 1
   |    output: count(default.impala_tpch_lineitem.l_quantity)
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_orderkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity), count:merge(default.impala_tpch_lineitem.l_orderkey)
   |  mem-estimate=30.00MB mem-reservation=0B thread-reservation=0
   |  tuple-ids=3N,5N,6N row-size=32B cardinality=3
   |  in pipelines: 02(GETNEXT), 05(OPEN)
@@ -714,7 +714,7 @@ Per-Host Resources: mem-estimate=296.00MB mem-reservation=68.00MB thread-reserva
   |  Class 1
   |    group by: default.impala_tpch_lineitem.l_quantity
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem.l_orderkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity), count:merge(default.impala_tpch_lineitem.l_orderkey)
   |  mem-estimate=266.00MB mem-reservation=68.00MB thread-reservation=0
   |  tuple-ids=2N,4N,6N row-size=32B cardinality=1
   |  in pipelines: 05(GETNEXT), 00(OPEN)
@@ -780,11 +780,11 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=50.00MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: aggif(valid_tid(3,5,7,8) = 8, _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 3, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,7,8) = 5, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 7, count(default.impala_tpch_lineitem.l_orderkey))
+  |  output exprs: aggif(valid_tid(3,5,7,8) = 8, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 3, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,7,8) = 5, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 7, count(default.impala_tpch_lineitem.l_orderkey))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(3,5,7,8) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,7,8) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = CAST(7 AS INT), count(default.impala_tpch_lineitem.l_orderkey)), aggif(valid_tid(3,5,7,8) = CAST(8 AS INT), _impala_builtins.count(default.impala_tpch_lineitem.l_quantity))
+  |  output: aggif(valid_tid(3,5,7,8) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,7,8) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = CAST(7 AS INT), count(default.impala_tpch_lineitem.l_orderkey)), aggif(valid_tid(3,5,7,8) = CAST(8 AS INT), count(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=32B cardinality=1
   |  in pipelines: 03(GETNEXT), 07(OPEN)
@@ -797,7 +797,7 @@ Per-Host Resources: mem-estimate=50.00MB mem-reservation=0B thread-reservation=1
   |  Class 2
   |    output: count:merge(default.impala_tpch_lineitem.l_orderkey)
   |  Class 3
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=40.00MB mem-reservation=0B thread-reservation=0
   |  tuple-ids=3N,5N,7N,8N row-size=32B cardinality=4
   |  in pipelines: 07(GETNEXT), 02(OPEN)
@@ -819,7 +819,7 @@ Per-Host Resources: mem-estimate=434.00MB mem-reservation=102.00MB thread-reserv
   |  Class 2
   |    output: count(default.impala_tpch_lineitem.l_orderkey)
   |  Class 3
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=40.00MB mem-reservation=0B thread-reservation=0
   |  tuple-ids=3N,5N,7N,8N row-size=32B cardinality=4
   |  in pipelines: 02(GETNEXT), 05(OPEN)
@@ -832,7 +832,7 @@ Per-Host Resources: mem-estimate=434.00MB mem-reservation=102.00MB thread-reserv
   |  Class 2
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  Class 3
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=394.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=2N,4N,6N,8N row-size=32B cardinality=1
   |  in pipelines: 05(GETNEXT), 00(OPEN)
@@ -902,7 +902,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=28.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_lineitem.l_orderkey, count(default.impala_tpch_lineitem.l_quantity), _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey)
+  |  output exprs: default.impala_tpch_lineitem.l_orderkey, count(default.impala_tpch_lineitem.l_quantity), count(default.impala_tpch_lineitem.l_suppkey)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   07:EXCHANGE [UNPARTITIONED]
@@ -938,7 +938,7 @@ Per-Host Resources: mem-estimate=256.03MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 04(GETNEXT)
   |
   04:AGGREGATE
-  |  output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |  output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |  group by: default.impala_tpch_lineitem.l_orderkey, default.impala_tpch_lineitem.l_quantity
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=24B cardinality=0
@@ -1003,7 +1003,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=36.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(3,5,6) WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey WHEN 5 THEN default.impala_tpch_lineitem.l_orderkey WHEN 6 THEN default.impala_tpch_lineitem.l_orderkey END, aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = 6, _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))
+  |  output exprs: CASE valid_tid(3,5,6) WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey WHEN 5 THEN default.impala_tpch_lineitem.l_orderkey WHEN 6 THEN default.impala_tpch_lineitem.l_orderkey END, aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = 6, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]
@@ -1016,7 +1016,7 @@ Per-Host Resources: mem-estimate=512.00MB mem-reservation=136.00MB thread-reserv
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=08, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(3,5,6) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey))
+  |  output: aggif(valid_tid(3,5,6) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), count(default.impala_tpch_lineitem.l_suppkey))
   |  group by: CASE valid_tid(3,5,6) WHEN CAST(3 AS INT) THEN default.impala_tpch_lineitem.l_orderkey WHEN CAST(5 AS INT) THEN default.impala_tpch_lineitem.l_orderkey WHEN CAST(6 AS INT) THEN default.impala_tpch_lineitem.l_orderkey END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=32B cardinality=0
@@ -1030,7 +1030,7 @@ Per-Host Resources: mem-estimate=512.00MB mem-reservation=136.00MB thread-reserv
   |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=384.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=3N,5N,6N row-size=48B cardinality=0
@@ -1053,7 +1053,7 @@ Per-Host Resources: mem-estimate=768.06MB mem-reservation=204.00MB thread-reserv
   |    output: count(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=384.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=3N,5N,6N row-size=48B cardinality=0
@@ -1065,7 +1065,7 @@ Per-Host Resources: mem-estimate=768.06MB mem-reservation=204.00MB thread-reserv
   |  Class 1
   |    group by: default.impala_tpch_lineitem.l_orderkey, default.impala_tpch_lineitem.l_suppkey
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=384.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=2N,4N,6N row-size=48B cardinality=0
@@ -1133,11 +1133,11 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=50.00MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: aggif(valid_tid(3,5,7,8) = 8, _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 3, sum(default.impala_tpch_lineitem.l_suppkey)), casttodecimal(divide(aggif(valid_tid(3,5,7,8) = 5, sum(default.impala_tpch_lineitem.l_quantity)), casttodecimal(aggif(valid_tid(3,5,7,8) = 5, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,7,8) = 7, count(default.impala_tpch_lineitem.l_orderkey))
+  |  output exprs: aggif(valid_tid(3,5,7,8) = 8, count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 3, sum(default.impala_tpch_lineitem.l_suppkey)), casttodecimal(divide(aggif(valid_tid(3,5,7,8) = 5, sum(default.impala_tpch_lineitem.l_quantity)), casttodecimal(aggif(valid_tid(3,5,7,8) = 5, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,7,8) = 7, count(default.impala_tpch_lineitem.l_orderkey))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(3,5,7,8) = CAST(3 AS INT), sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,7,8) = CAST(5 AS INT), sum(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = CAST(7 AS INT), count(default.impala_tpch_lineitem.l_orderkey)), aggif(valid_tid(3,5,7,8) = CAST(8 AS INT), _impala_builtins.count(default.impala_tpch_lineitem.l_quantity))
+  |  output: aggif(valid_tid(3,5,7,8) = CAST(3 AS INT), sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,7,8) = CAST(5 AS INT), sum(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = CAST(5 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = CAST(7 AS INT), count(default.impala_tpch_lineitem.l_orderkey)), aggif(valid_tid(3,5,7,8) = CAST(8 AS INT), count(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=48B cardinality=1
   |  in pipelines: 03(GETNEXT), 07(OPEN)
@@ -1150,7 +1150,7 @@ Per-Host Resources: mem-estimate=50.00MB mem-reservation=0B thread-reservation=1
   |  Class 2
   |    output: count:merge(default.impala_tpch_lineitem.l_orderkey)
   |  Class 3
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=40.00MB mem-reservation=0B thread-reservation=0
   |  tuple-ids=3N,5N,7N,8N row-size=48B cardinality=4
   |  in pipelines: 07(GETNEXT), 02(OPEN)
@@ -1172,7 +1172,7 @@ Per-Host Resources: mem-estimate=434.00MB mem-reservation=102.00MB thread-reserv
   |  Class 2
   |    output: count(default.impala_tpch_lineitem.l_orderkey)
   |  Class 3
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=40.00MB mem-reservation=0B thread-reservation=0
   |  tuple-ids=3N,5N,7N,8N row-size=48B cardinality=4
   |  in pipelines: 02(GETNEXT), 05(OPEN)
@@ -1185,7 +1185,7 @@ Per-Host Resources: mem-estimate=434.00MB mem-reservation=102.00MB thread-reserv
   |  Class 2
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  Class 3
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_quantity)
+  |    output: count:merge(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=394.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=2N,4N,6N,8N row-size=32B cardinality=1
   |  in pipelines: 05(GETNEXT), 00(OPEN)
@@ -1255,7 +1255,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=52.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(3,5,6) WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey WHEN 5 THEN default.impala_tpch_lineitem.l_orderkey WHEN 6 THEN default.impala_tpch_lineitem.l_orderkey END, casttodecimal(divide(aggif(valid_tid(3,5,6) = 3, sum(default.impala_tpch_lineitem.l_quantity)), casttodecimal(aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,6) = 6, _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))
+  |  output exprs: CASE valid_tid(3,5,6) WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey WHEN 5 THEN default.impala_tpch_lineitem.l_orderkey WHEN 6 THEN default.impala_tpch_lineitem.l_orderkey END, casttodecimal(divide(aggif(valid_tid(3,5,6) = 3, sum(default.impala_tpch_lineitem.l_quantity)), casttodecimal(aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,6) = 6, count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]
@@ -1268,7 +1268,7 @@ Per-Host Resources: mem-estimate=512.00MB mem-reservation=136.00MB thread-reserv
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=08, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(3,5,6) = CAST(3 AS INT), sum(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(5 AS INT), sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey))
+  |  output: aggif(valid_tid(3,5,6) = CAST(3 AS INT), sum(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(3 AS INT), count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,6) = CAST(5 AS INT), sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = CAST(6 AS INT), count(default.impala_tpch_lineitem.l_suppkey))
   |  group by: CASE valid_tid(3,5,6) WHEN CAST(3 AS INT) THEN default.impala_tpch_lineitem.l_orderkey WHEN CAST(5 AS INT) THEN default.impala_tpch_lineitem.l_orderkey WHEN CAST(6 AS INT) THEN default.impala_tpch_lineitem.l_orderkey END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=48B cardinality=0
@@ -1282,7 +1282,7 @@ Per-Host Resources: mem-estimate=512.00MB mem-reservation=136.00MB thread-reserv
   |    output: sum:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=384.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=3N,5N,6N row-size=64B cardinality=0
@@ -1305,7 +1305,7 @@ Per-Host Resources: mem-estimate=768.06MB mem-reservation=204.00MB thread-reserv
   |    output: sum(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=384.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=3N,5N,6N row-size=64B cardinality=0
@@ -1317,7 +1317,7 @@ Per-Host Resources: mem-estimate=768.06MB mem-reservation=204.00MB thread-reserv
   |  Class 1
   |    group by: default.impala_tpch_lineitem.l_orderkey, default.impala_tpch_lineitem.l_suppkey
   |  Class 2
-  |    output: _impala_builtins.count:merge(default.impala_tpch_lineitem.l_suppkey)
+  |    output: count:merge(default.impala_tpch_lineitem.l_suppkey)
   |    group by: default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=384.00MB mem-reservation=102.00MB thread-reservation=0
   |  tuple-ids=2N,4N,6N row-size=48B cardinality=0

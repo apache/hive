@@ -5659,5 +5659,18 @@
             "DATE",
             "BIGINT"
         ]
+    },
+    {
+        "fnName": "grouping_id",
+        "impalaFnName": "grouping_id",
+        "binaryType": "BUILTIN",
+        "isAgg": "true",
+        "retType": "BIGINT",
+        "isAnalyticFn": "false",
+        "ignoresDistinct": "true",
+        "returnsNonNullOnEmpty": "false",
+        "intermediateType": "BIGINT",
+        "argTypes": [
+        ]
     }
 ]
