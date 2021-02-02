@@ -1835,6 +1835,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setHavingExprForClause(ctx_1.dest, ast);
         qbp.addAggregationExprsForClause(ctx_1.dest,
             doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
+        // Clause might also refer to aggregations with distinct
+        qbp.setDistinctFuncExprsForClause(ctx_1.dest,
+            doPhase1GetDistinctFuncExprs(qbp.getAggregationExprsForClause(ctx_1.dest)));
         break;
 
       case HiveParser.KW_WINDOW:
