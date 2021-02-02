@@ -110,6 +110,11 @@ public class AppConfig extends Configuration {
   public static final String MAPPER_MEMORY_MB    = "templeton.mapper.memory.mb";
   public static final String MR_AM_MEMORY_MB     = "templeton.mr.am.memory.mb";
   public static final String TEMPLETON_JOBSLIST_ORDER = "templeton.jobs.listorder";
+  public static final String USE_SSL = "templeton.use.ssl";
+  public static final String KEY_STORE_PATH = "templeton.keystore.path";
+  public static final String KEY_STORE_PASSWORD = "templeton.keystore.password";
+  public static final String SSL_PROTOCOL_BLACKLIST = "templeton.ssl.protocol.blacklist";
+  public static final String HOST = "templeton.host";
 
   /*
    * These parameters controls the maximum number of concurrent job submit/status/list
