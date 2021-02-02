@@ -36,14 +36,16 @@ public class AtlasDumpWork implements Serializable {
   private final boolean bootstrap;
   private final Path prevAtlasDumpDir;
   private final transient ReplicationMetricCollector metricCollector;
+  private final Path tableListPath;
 
 
-  public AtlasDumpWork(String srcDB, Path stagingDir, boolean bootstrap, Path prevAtlasDumpDir,
+  public AtlasDumpWork(String srcDB, Path stagingDir, boolean bootstrap, Path prevAtlasDumpDir, Path tableListPath,
                        ReplicationMetricCollector metricCollector) {
     this.srcDB = srcDB;
     this.stagingDir = stagingDir;
     this.bootstrap = bootstrap;
     this.prevAtlasDumpDir = prevAtlasDumpDir;
+    this.tableListPath = tableListPath;
     this.metricCollector = metricCollector;
   }
 
@@ -61,6 +63,10 @@ public class AtlasDumpWork implements Serializable {
 
   public Path getStagingDir() {
     return stagingDir;
+  }
+
+  public Path getTableListPath() {
+    return tableListPath;
   }
 
   public ReplicationMetricCollector getMetricCollector() {
