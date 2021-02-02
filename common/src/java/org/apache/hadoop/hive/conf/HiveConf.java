@@ -746,7 +746,7 @@ public class HiveConf extends Configuration {
         "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
         "The user has to be aware that the dynamic partition value should not contain this value to avoid confusions."),
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__", ""),
-    HIVE_EXEC_SCHEDULED_POOL_NUM_THREADS("hive.exec.scheduler.num.threads", 10,
+    HIVE_EXEC_SCHEDULED_POOL_NUM_THREADS("hive.exec.scheduler.num.threads", 2,
         new RangeValidator(1, Integer.MAX_VALUE), "Number of threads to use commonly for scheduled works"),
 
     // Whether to show a link to the most failed task + debugging tips
