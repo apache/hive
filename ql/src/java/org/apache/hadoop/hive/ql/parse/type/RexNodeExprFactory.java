@@ -1010,12 +1010,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
 
     RexCall structCall = (RexCall) expr;
-    List<RexNode> newOperands = structCall.operands.stream()
-            .filter(rexNode -> "_UTF-16LE'tok_alias':VARCHAR(2147483647) CHARACTER SET \"UTF-16LE\"".compareTo(rexNode.toString()) != 0)
-            .collect(Collectors.toList());
-    List<RelDataType> newTypes = newOperands.stream().map(RexNode::getType).collect(Collectors.toList());
+    List<RelDataType> newTypes = structCall.operands.stream().map(RexNode::getType).collect(Collectors.toList());
     RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, newFieldNames);
-    return rexBuilder.makeCall(newType, structCall.op, newOperands);
+    return rexBuilder.makeCall(newType, structCall.op, structCall.operands);
   }
 
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {

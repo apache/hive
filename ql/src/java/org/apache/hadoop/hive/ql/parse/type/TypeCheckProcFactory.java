@@ -1401,6 +1401,10 @@ public class TypeCheckProcFactory<T> {
       List<T> children = new ArrayList<T>(
           expr.getChildCount() - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
+        if (nodeOutputs[ci] == ALIAS_PLACEHOLDER) {
+          continue;
+        }
+
         T nodeOutput = (T) nodeOutputs[ci];
         if (exprFactory.isExprsListExpr(nodeOutput)) {
           children.addAll(exprFactory.getExprChildren(nodeOutput));
@@ -1641,13 +1645,14 @@ public class TypeCheckProcFactory<T> {
     return new ValueAliasProcessor();
   }
 
-  public class ValueAliasProcessor extends StrExprProcessor {
+  public static final Object ALIAS_PLACEHOLDER = new Object();
+  public static class ValueAliasProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ASTNode astNode = (ASTNode) nd;
       ((TypeCheckCtx) procCtx).addColumnAlias(astNode.getChild(0).getText());
-      return super.process(nd, stack, procCtx, nodeOutputs);
+      return ALIAS_PLACEHOLDER;
     }
   }
 

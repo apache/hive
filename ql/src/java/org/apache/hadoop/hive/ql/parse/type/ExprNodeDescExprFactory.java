@@ -915,12 +915,9 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     }
 
     ExprNodeGenericFuncDesc structCall = (ExprNodeGenericFuncDesc) expr;
-    List<ExprNodeDesc> newOperands = structCall.getChildren().stream()
-            .filter(exprNodeDesc -> !(exprNodeDesc instanceof ExprNodeConstantDesc && "'tok_alias'".equals(exprNodeDesc.getExprString())))
-            .collect(Collectors.toList());
-    List<TypeInfo> newTypes = newOperands.stream().map(ExprNodeDesc::getTypeInfo).collect(Collectors.toList());
+    List<TypeInfo> newTypes = structCall.getChildren().stream().map(ExprNodeDesc::getTypeInfo).collect(Collectors.toList());
     TypeInfo newType = TypeInfoFactory.getStructTypeInfo(newFieldNames, newTypes);
 
-    return new ExprNodeGenericFuncDesc(newType, structCall.getGenericUDF(), newOperands);
+    return new ExprNodeGenericFuncDesc(newType, structCall.getGenericUDF(), structCall.getChildren());
   }
 }
