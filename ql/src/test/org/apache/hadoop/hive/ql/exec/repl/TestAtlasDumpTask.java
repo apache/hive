@@ -24,7 +24,9 @@ import org.apache.atlas.AtlasClientV2;
 import org.apache.atlas.AtlasServiceException;
 import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasServer;
+import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
@@ -57,6 +59,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -69,6 +73,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class})
+
 public class TestAtlasDumpTask {
 
   @Mock
@@ -240,6 +245,49 @@ public class TestAtlasDumpTask {
             AtlasRestClientBuilder.ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS));
     Assert.assertEquals("500", propsCaptor.getValue().getProperty(
             AtlasRestClientBuilder.ATLAS_PROPERTY_READ_TIMEOUT_IN_MS));
+  }
+
+  @Test
+  public void testCreateExportRequest() throws Exception {
+    List<String> listOfTable = Arrays.asList(new String [] {"t1", "t2"});
+    AtlasRequestBuilder atlasRequestBuilder = Mockito.spy(AtlasRequestBuilder.class);
+    Mockito.doReturn(listOfTable).when(atlasRequestBuilder)
+            .getFileAsList(Mockito.any(Path.class), Mockito.any(HiveConf.class));
+    AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
+            "src","tgt", new Path("/tmp/staging"), new Path("/tmp/list"), conf);
+    AtlasExportRequest atlasExportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);
+    List<AtlasObjectId> itemsToExport = atlasExportRequest.getItemsToExport();
+    Assert.assertEquals(2, itemsToExport.size());
+    Assert.assertEquals(AtlasRequestBuilder.ATLAS_TYPE_HIVE_TABLE, itemsToExport.get(0).getTypeName());
+    Assert.assertEquals("srcdb.t1@src", itemsToExport.get(0).getUniqueAttributes().get(
+            AtlasRequestBuilder.ATTRIBUTE_QUALIFIED_NAME));
+    Assert.assertEquals(AtlasRequestBuilder.ATLAS_TYPE_HIVE_TABLE, itemsToExport.get(1).getTypeName());
+    Assert.assertEquals("srcdb.t2@src", itemsToExport.get(1).getUniqueAttributes().get(
+            AtlasRequestBuilder.ATTRIBUTE_QUALIFIED_NAME));
+  }
+
+  @Test
+  public void testGetFileAsListRetry() throws Exception {
+    AtlasRequestBuilder atlasRequestBuilder = Mockito.spy(AtlasRequestBuilder.class);
+    FileSystem fs = Mockito.mock(FileSystem.class);
+    Mockito.doReturn(fs).when(atlasRequestBuilder).getFileSystem(Mockito.any(Path.class), Mockito.any(HiveConf.class));
+    when(fs.getFileStatus(Mockito.any(Path.class))).thenThrow(new IOException("Unable to connect"));
+    Path tableListPath = new Path("/tmp/list");
+    AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:31000", "srcDb", "tgtDb",
+            "src","tgt", new Path("/tmp/staging"), tableListPath, conf);
+    setupConfForRetry();
+    try {
+      atlasRequestBuilder.createExportRequest(atlasReplInfo);
+    } catch (Exception e) {
+      Assert.assertEquals(SemanticException.class.getName(), e.getClass().getName());
+      Assert.assertTrue(e.getMessage().contains("Unable to connect"));
+    }
+    ArgumentCaptor<Path> getServerReqCaptor = ArgumentCaptor.forClass(Path.class);
+    Mockito.verify(fs, Mockito.times(4)).getFileStatus(getServerReqCaptor.capture());
+    List<Path>  pathList = getServerReqCaptor.getAllValues();
+    for (Path path: pathList) {
+      Assert.assertTrue(tableListPath.equals(path));
+    }
   }
 
   private void setupConfForRetry() {

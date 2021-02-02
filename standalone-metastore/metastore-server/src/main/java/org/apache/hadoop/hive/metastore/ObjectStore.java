@@ -5989,9 +5989,9 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (principalType == PrincipalType.USER) {
       // All users belong to public role implicitly, add that role
-      // TODO MS-SPLIT Change this back to HiveMetaStore.PUBLIC once HiveMetaStore has moved to
+      // TODO MS-SPLIT Change this back to HMSHandler.PUBLIC once HiveMetaStore has moved to
       // stand-alone metastore.
-      //MRole publicRole = new MRole(HiveMetaStore.PUBLIC, 0, HiveMetaStore.PUBLIC);
+      //MRole publicRole = new MRole(HMSHandler.PUBLIC, 0, HMSHandler.PUBLIC);
       MRole publicRole = new MRole("public", 0, "public");
       mRoleMember.add(new MRoleMap(principalName, principalType.toString(), publicRole, 0, null,
           null, false));

@@ -1248,13 +1248,13 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 11 (CUSTOM_EDGE), Map 15 (CUSTOM_EDGE), Map 18 (CUSTOM_EDGE), Map 2 (CUSTOM_EDGE), Map 3 (CUSTOM_EDGE), Map 4 (CUSTOM_EDGE), Map 7 (CUSTOM_EDGE), Reducer 10 (CUSTOM_EDGE), Reducer 12 (CUSTOM_EDGE), Reducer 13 (CUSTOM_EDGE), Reducer 14 (CUSTOM_EDGE), Reducer 16 (CUSTOM_EDGE), Reducer 17 (CUSTOM_EDGE), Reducer 19 (CUSTOM_EDGE), Reducer 20 (CUSTOM_EDGE), Reducer 5 (CUSTOM_EDGE), Reducer 6 (CUSTOM_EDGE), Reducer 8 (CUSTOM_EDGE), Reducer 9 (CUSTOM_EDGE)
-        Reducer 10 <- Map 7 (SIMPLE_EDGE)
-        Reducer 12 <- Map 11 (SIMPLE_EDGE)
-        Reducer 13 <- Map 11 (SIMPLE_EDGE)
-        Reducer 14 <- Map 11 (SIMPLE_EDGE)
-        Reducer 16 <- Map 15 (SIMPLE_EDGE)
-        Reducer 17 <- Map 15 (SIMPLE_EDGE)
+        Map 1 <- Map 10 (CUSTOM_EDGE), Map 14 (CUSTOM_EDGE), Map 18 (CUSTOM_EDGE), Map 2 (CUSTOM_EDGE), Map 3 (CUSTOM_EDGE), Map 4 (CUSTOM_EDGE), Map 7 (CUSTOM_EDGE), Reducer 11 (CUSTOM_EDGE), Reducer 12 (CUSTOM_EDGE), Reducer 13 (CUSTOM_EDGE), Reducer 15 (CUSTOM_EDGE), Reducer 16 (CUSTOM_EDGE), Reducer 17 (CUSTOM_EDGE), Reducer 19 (CUSTOM_EDGE), Reducer 20 (CUSTOM_EDGE), Reducer 5 (CUSTOM_EDGE), Reducer 6 (CUSTOM_EDGE), Reducer 8 (CUSTOM_EDGE), Reducer 9 (CUSTOM_EDGE)
+        Reducer 11 <- Map 10 (SIMPLE_EDGE)
+        Reducer 12 <- Map 10 (SIMPLE_EDGE)
+        Reducer 13 <- Map 10 (SIMPLE_EDGE)
+        Reducer 15 <- Map 14 (SIMPLE_EDGE)
+        Reducer 16 <- Map 14 (SIMPLE_EDGE)
+        Reducer 17 <- Map 14 (SIMPLE_EDGE)
         Reducer 19 <- Map 18 (SIMPLE_EDGE)
         Reducer 20 <- Map 18 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
@@ -1300,7 +1300,7 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col0, _col1
                           input vertices:
-                            1 Reducer 17
+                            1 Reducer 20
                           Statistics: Num rows: 43 Data size: 3999 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -1310,7 +1310,7 @@ STAGE PLANS:
                               1 _col0 (type: int)
                             outputColumnNames: _col0, _col1
                             input vertices:
-                              1 Reducer 20
+                              1 Reducer 5
                             Statistics: Num rows: 71 Data size: 6603 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -1320,7 +1320,7 @@ STAGE PLANS:
                                 1 _col0 (type: int)
                               outputColumnNames: _col0, _col1
                               input vertices:
-                                1 Reducer 6
+                                1 Reducer 8
                               Statistics: Num rows: 118 Data size: 10974 Basic stats: COMPLETE Column stats: COMPLETE
                               Map Join Operator
                                 condition map:
@@ -1330,7 +1330,7 @@ STAGE PLANS:
                                   1 _col0 (type: int)
                                 outputColumnNames: _col0, _col1
                                 input vertices:
-                                  1 Reducer 10
+                                  1 Reducer 16
                                 Statistics: Num rows: 196 Data size: 18228 Basic stats: COMPLETE Column stats: COMPLETE
                                 Map Join Operator
                                   condition map:
@@ -1340,7 +1340,7 @@ STAGE PLANS:
                                     1 _col0 (type: int)
                                   outputColumnNames: _col0, _col1
                                   input vertices:
-                                    1 Reducer 14
+                                    1 Reducer 11
                                   Statistics: Num rows: 326 Data size: 30318 Basic stats: COMPLETE Column stats: COMPLETE
                                   Map Join Operator
                                     condition map:
@@ -1350,7 +1350,7 @@ STAGE PLANS:
                                       1 _col0 (type: int)
                                     outputColumnNames: _col0, _col1
                                     input vertices:
-                                      1 Map 15
+                                      1 Map 18
                                     Statistics: Num rows: 543 Data size: 50499 Basic stats: COMPLETE Column stats: COMPLETE
                                     Map Join Operator
                                       condition map:
@@ -1360,7 +1360,7 @@ STAGE PLANS:
                                         1 _col0 (type: int)
                                       outputColumnNames: _col0, _col1
                                       input vertices:
-                                        1 Map 18
+                                        1 Map 4
                                       Statistics: Num rows: 905 Data size: 84165 Basic stats: COMPLETE Column stats: COMPLETE
                                       Map Join Operator
                                         condition map:
@@ -1370,7 +1370,7 @@ STAGE PLANS:
                                           1 _col0 (type: int)
                                         outputColumnNames: _col0, _col1
                                         input vertices:
-                                          1 Map 4
+                                          1 Map 7
                                         Statistics: Num rows: 1508 Data size: 140244 Basic stats: COMPLETE Column stats: COMPLETE
                                         Map Join Operator
                                           condition map:
@@ -1380,7 +1380,7 @@ STAGE PLANS:
                                             1 _col0 (type: int)
                                           outputColumnNames: _col0, _col1
                                           input vertices:
-                                            1 Reducer 8
+                                            1 Reducer 15
                                           Statistics: Num rows: 2513 Data size: 233709 Basic stats: COMPLETE Column stats: COMPLETE
                                           Map Join Operator
                                             condition map:
@@ -1400,7 +1400,7 @@ STAGE PLANS:
                                                 1 _col0 (type: int)
                                               outputColumnNames: _col0, _col1
                                               input vertices:
-                                                1 Map 7
+                                                1 Map 14
                                               Statistics: Num rows: 6980 Data size: 649140 Basic stats: COMPLETE Column stats: COMPLETE
                                               Map Join Operator
                                                 condition map:
@@ -1410,7 +1410,7 @@ STAGE PLANS:
                                                   1 _col0 (type: int)
                                                 outputColumnNames: _col0, _col1
                                                 input vertices:
-                                                  1 Map 11
+                                                  1 Map 10
                                                 Statistics: Num rows: 11633 Data size: 1081869 Basic stats: COMPLETE Column stats: COMPLETE
                                                 Map Join Operator
                                                   condition map:
@@ -1420,7 +1420,7 @@ STAGE PLANS:
                                                     1 _col0 (type: int)
                                                   outputColumnNames: _col0, _col1
                                                   input vertices:
-                                                    1 Reducer 16
+                                                    1 Reducer 19
                                                   Statistics: Num rows: 19388 Data size: 1803084 Basic stats: COMPLETE Column stats: COMPLETE
                                                   Map Join Operator
                                                     condition map:
@@ -1430,7 +1430,7 @@ STAGE PLANS:
                                                       1 _col0 (type: int)
                                                     outputColumnNames: _col0, _col1
                                                     input vertices:
-                                                      1 Reducer 19
+                                                      1 Reducer 6
                                                     Statistics: Num rows: 32313 Data size: 3005109 Basic stats: COMPLETE Column stats: COMPLETE
                                                     Map Join Operator
                                                       condition map:
@@ -1440,7 +1440,7 @@ STAGE PLANS:
                                                         1 _col0 (type: int)
                                                       outputColumnNames: _col0, _col1
                                                       input vertices:
-                                                        1 Reducer 5
+                                                        1 Reducer 9
                                                       Statistics: Num rows: 53855 Data size: 5008515 Basic stats: COMPLETE Column stats: COMPLETE
                                                       Map Join Operator
                                                         condition map:
@@ -1450,7 +1450,7 @@ STAGE PLANS:
                                                           1 _col0 (type: int)
                                                         outputColumnNames: _col0, _col1
                                                         input vertices:
-                                                          1 Reducer 9
+                                                          1 Reducer 17
                                                         Statistics: Num rows: 89758 Data size: 8347494 Basic stats: COMPLETE Column stats: COMPLETE
                                                         Map Join Operator
                                                           condition map:
@@ -1471,10 +1471,10 @@ STAGE PLANS:
                                                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 11 
+        Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: m
+                  alias: h
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1510,10 +1510,10 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 15 
+        Map 14 
             Map Operator Tree:
                 TableScan
-                  alias: p
+                  alias: l
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1523,6 +1523,12 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
@@ -1546,7 +1552,7 @@ STAGE PLANS:
         Map 18 
             Map Operator Tree:
                 TableScan
-                  alias: q
+                  alias: p
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1621,7 +1627,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: k
+                  alias: e
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1654,7 +1660,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: l
+                  alias: f
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1682,15 +1688,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 10 
+        Reducer 11 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -1726,7 +1726,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 14 
+        Reducer 15 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator

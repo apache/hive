@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class EventCleanerTask implements MetastoreTaskThread {
   public void run() {
 
     try {
-      RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
+      RawStore ms = HMSHandler.getMSForConf(conf);
       long deleteCnt = ms.cleanupEvents();
 
       if (deleteCnt > 0L){

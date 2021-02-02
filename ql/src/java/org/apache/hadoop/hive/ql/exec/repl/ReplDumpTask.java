@@ -284,8 +284,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Path atlasDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_ATLAS_BASE_DIR);
     Path prevAtlasDumpDir = prevHiveDumpDir == null ? null
                             : new Path(prevHiveDumpDir.getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    Path tableListLoc = null;
+    if (!work.replScope.includeAllTables()) {
+      Path tableListDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+      tableListLoc = new Path(tableListDir, work.dbNameOrPattern.toLowerCase());
+    }
     AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir,
-        work.getMetricCollector());
+           tableListLoc, work.getMetricCollector());
     Task<?> atlasDumpTask = TaskFactory.get(atlasDumpWork, conf);
     childTasks = new ArrayList<>();
     childTasks.add(atlasDumpTask);

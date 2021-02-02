@@ -785,7 +785,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: spam2
+                  alias: spam1
                   Statistics: Num rows: 1 Data size: 1900 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
