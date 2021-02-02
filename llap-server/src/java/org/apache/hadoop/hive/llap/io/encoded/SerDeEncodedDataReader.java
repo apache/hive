@@ -359,6 +359,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final boolean doesSourceHaveIncludes;
     private final StreamOptions options;
     private final AtomicBoolean isStopped;
+    // Make sure buffer size is less than 2^(3*8 - 1)
+    private static final int ORC_MAX_BUFFER_BYTES = (1 << 23) -1;
 
     public CacheWriter(BufferUsageManager bufferManager, List<Integer> columnIds,
         boolean[] writerIncludes, boolean doesSourceHaveIncludes,
@@ -370,7 +372,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       this.columnIds = columnIds;
       this.bufferFactory = bufferFactory;
       this.isStopped = isStopped;
-      this.options = new StreamOptions(bufferManager.getAllocator().getMaxAllocation());
+      // TODO: HIVE-24721: Align with llap.max.alloc
+      int orcAllocSize = Math.min(bufferManager.getAllocator().getMaxAllocation(), ORC_MAX_BUFFER_BYTES);
+      this.options = new StreamOptions(orcAllocSize);
       startStripe();
     }
 
