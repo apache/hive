@@ -853,13 +853,13 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -874,13 +874,13 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -965,53 +965,7 @@ STAGE PLANS:
                     dataColumns: t_id:string, f_id:string, type:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-<<<<<<< HEAD
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: no inputs
-            Map Vectorization:
-                enabled: false
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
-                inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: no inputs
-            Map Vectorization:
-                enabled: false
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
-                inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
-        Reducer 2 
-=======
         Reducer 3 
->>>>>>> apache/master
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -1030,13 +984,8 @@ STAGE PLANS:
                     1 _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col3
                   input vertices:
-<<<<<<< HEAD
-                    1 Reducer 3
-                  Statistics: Num rows: 22 Data size: 8294 Basic stats: COMPLETE Column stats: NONE
-=======
                     1 Reducer 6
-                  Statistics: Num rows: 22 Data size: 10098 Basic stats: COMPLETE Column stats: NONE
->>>>>>> apache/master
+                  Statistics: Num rows: 22 Data size: 8294 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col3 (type: string), null (type: void)
                     outputColumnNames: _col0, _col1

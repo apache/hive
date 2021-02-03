@@ -692,18 +692,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-<<<<<<< HEAD
                       Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: part
-                  Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> apache/master
                   Select Operator
                     expressions: p_name (type: string)
                     outputColumnNames: _col0

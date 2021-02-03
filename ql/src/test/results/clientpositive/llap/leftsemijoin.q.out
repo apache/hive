@@ -160,10 +160,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-<<<<<<< HEAD
                       Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -178,7 +175,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
->>>>>>> apache/master
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
