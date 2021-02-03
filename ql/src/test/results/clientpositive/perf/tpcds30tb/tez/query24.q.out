@@ -72,13 +72,13 @@ STAGE PLANS:
                           Select Operator
                             expressions: _col8 (type: bigint), _col10 (type: char(20)), _col11 (type: char(30)), _col1 (type: char(2)), _col4 (type: bigint), _col5 (type: varchar(50)), _col6 (type: char(2))
                             outputColumnNames: _col0, _col2, _col3, _col6, _col9, _col10, _col11
-                            Statistics: Num rows: 7981221 Data size: 5203756092 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 7981221 Data size: 3639436776 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col9 (type: bigint), _col0 (type: bigint)
                               null sort order: zz
                               sort order: ++
                               Map-reduce partition columns: _col9 (type: bigint), _col0 (type: bigint)
-                              Statistics: Num rows: 7981221 Data size: 5203756092 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 7981221 Data size: 3639436776 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col2 (type: char(20)), _col3 (type: char(30)), _col6 (type: char(2)), _col10 (type: varchar(50)), _col11 (type: char(2))
                             Select Operator
                               expressions: _col9 (type: bigint), _col0 (type: bigint), hash(_col9,_col0) (type: int)

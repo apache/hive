@@ -764,13 +764,13 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: char(16)), _col2 (type: decimal(24,6))
                   outputColumnNames: _col0, _col2
-                  Statistics: Num rows: 80000000 Data size: 24320000000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 80000000 Data size: 16960000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: char(16))
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: char(16))
-                    Statistics: Num rows: 80000000 Data size: 24320000000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 80000000 Data size: 16960000000 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: decimal(24,6))
         Reducer 4 
             Execution mode: vectorized, llap
