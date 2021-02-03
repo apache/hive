@@ -702,7 +702,8 @@ public class DagUtils {
   public static Resource getContainerResource(Configuration conf) {
     int memorySizeMb = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
     if (memorySizeMb <= 0) {
-      LOG.warn("Falling back to MapReduce container MB {}", MRJobConfig.MAP_MEMORY_MB);
+      LOG.warn("No Tez container size specified by {}. Falling back to MapReduce container MB {}",
+          HiveConf.ConfVars.HIVETEZCONTAINERSIZE,  MRJobConfig.MAP_MEMORY_MB);
       memorySizeMb = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
       // When config is explicitly set to "-1" defaultValue does not work!
       if (memorySizeMb <= 0) {
@@ -712,7 +713,8 @@ public class DagUtils {
     }
     int cpuCores = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES);
     if (cpuCores <= 0) {
-      LOG.warn("Falling back to MapReduce container VCores {}", MRJobConfig.MAP_CPU_VCORES);
+      LOG.warn("No Tez VCore size specified by {}. Falling back to MapReduce container VCores {}",
+          HiveConf.ConfVars.HIVETEZCPUVCORES,  MRJobConfig.MAP_CPU_VCORES);
       cpuCores = conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
       if (cpuCores <= 0) {
         LOG.warn("Falling back to default container VCores {}", MRJobConfig.DEFAULT_MAP_CPU_VCORES);

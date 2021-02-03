@@ -34,10 +34,9 @@ import org.slf4j.LoggerFactory;
 
 public class MemoryInfo {
 
-  private Configuration conf;
-  private boolean isTez;
-  private boolean isLlap;
-  private long maxExecutorMemory; // value in Bytes
+  private final boolean isTez;
+  private final boolean isLlap;
+  private final long maxExecutorMemory;
   private final Logger LOG = LoggerFactory.getLogger(MemoryInfo.class);
 
   public MemoryInfo(Configuration conf) {
@@ -61,32 +60,38 @@ public class MemoryInfo {
         float heapFraction = HiveConf.getFloatVar(conf, HiveConf.ConfVars.TEZ_CONTAINER_MAX_JAVA_HEAP_FRACTION);
         this.maxExecutorMemory = (long) ((containerSizeMb * 1024L * 1024L) * heapFraction);
     } else {
-      this.maxExecutorMemory =
+      long executorMemoryFromConf =
           conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB) * 1024L * 1024L;
       // this can happen when config is explicitly set to "-1", in which case defaultValue also does not work
-      if (maxExecutorMemory < 0) {
+      if (executorMemoryFromConf < 0L) {
         LOG.warn("Falling back to default container MB {}", MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-        maxExecutorMemory = MRJobConfig.DEFAULT_MAP_MEMORY_MB * 1024L * 1024L;
+        this.maxExecutorMemory = MRJobConfig.DEFAULT_MAP_MEMORY_MB * 1024L * 1024L;
+      } else {
+        this.maxExecutorMemory = executorMemoryFromConf;
       }
     }
   }
 
-  public Configuration getConf() {
-    return conf;
-  }
-
-  public void setConf(final Configuration conf) {
-    this.conf = conf;
-  }
-
+  /**
+   * Returns True when in TEZ execution mode.
+   * @return boolean
+   */
   public boolean isTez() {
     return isTez;
   }
 
+  /**
+   * Returns True when in LLAP execution mode.
+   * @return boolean
+   */
   public boolean isLlap() {
     return isLlap;
   }
 
+  /**
+   * Get the Container max Memory value in bytes.
+   * @return bytes value as long
+   */
   public long getMaxExecutorMemory() {
     return maxExecutorMemory;
   }
