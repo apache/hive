@@ -387,7 +387,19 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     return createSessions(toStart, threadCount);
   }
 
-  private ListenableFuture<List<Boolean>> createSessions(int sessionCount, int maxParallel) {
+  /**
+   * Create {@code sessionCount} number of sessions, doing so in parallel, using
+   * a maximum of {@code maxParallel} threads.
+   *
+   * @param sessionCount The number of sessions to launch
+   * @param maxParallel The maximum number of sessions to open in parallel
+   *          (thread count)
+   * @return A single {@code future} which carries all of the outputs from each
+   *         session launch
+   * @throws IllegalArgumentException if {@code sessionCount} or
+   *           {@code maxParallel} is less than or equal to zero
+   */
+  private ListenableFuture<List<Boolean>> createSessions(final int sessionCount, final int maxParallel) {
     Preconditions.checkArgument(sessionCount > 0);
     Preconditions.checkArgument(maxParallel > 0);
 
