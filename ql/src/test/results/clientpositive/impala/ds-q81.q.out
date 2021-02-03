@@ -195,11 +195,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=180.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer.c_customer_id, default.impala_tpcds_customer.c_salutation, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer_address.ca_street_number, default.impala_tpcds_customer_address.ca_street_name, default.impala_tpcds_customer_address.ca_street_type, default.impala_tpcds_customer_address.ca_suite_number, default.impala_tpcds_customer_address.ca_city, default.impala_tpcds_customer_address.ca_county, 'TX', default.impala_tpcds_customer_address.ca_zip, default.impala_tpcds_customer_address.ca_country, default.impala_tpcds_customer_address.ca_gmt_offset, default.impala_tpcds_customer_address.ca_location_type, _impala_builtins.sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax)
+  |  output exprs: default.impala_tpcds_customer.c_customer_id, default.impala_tpcds_customer.c_salutation, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer_address.ca_street_number, default.impala_tpcds_customer_address.ca_street_name, default.impala_tpcds_customer_address.ca_street_type, default.impala_tpcds_customer_address.ca_suite_number, default.impala_tpcds_customer_address.ca_city, default.impala_tpcds_customer_address.ca_county, 'TX', default.impala_tpcds_customer_address.ca_zip, default.impala_tpcds_customer_address.ca_country, default.impala_tpcds_customer_address.ca_gmt_offset, default.impala_tpcds_customer_address.ca_location_type, sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   33:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST, default.impala_tpcds_customer.c_salutation ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_type ASC NULLS LAST, default.impala_tpcds_customer_address.ca_suite_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_city ASC NULLS LAST, default.impala_tpcds_customer_address.ca_county ASC NULLS LAST, default.impala_tpcds_customer_address.ca_zip ASC NULLS LAST, default.impala_tpcds_customer_address.ca_country ASC NULLS LAST, default.impala_tpcds_customer_address.ca_gmt_offset ASC NULLS LAST, default.impala_tpcds_customer_address.ca_location_type ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) ASC NULLS LAST
+     order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST, default.impala_tpcds_customer.c_salutation ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_type ASC NULLS LAST, default.impala_tpcds_customer_address.ca_suite_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_city ASC NULLS LAST, default.impala_tpcds_customer_address.ca_county ASC NULLS LAST, default.impala_tpcds_customer_address.ca_zip ASC NULLS LAST, default.impala_tpcds_customer_address.ca_country ASC NULLS LAST, default.impala_tpcds_customer_address.ca_gmt_offset ASC NULLS LAST, default.impala_tpcds_customer_address.ca_location_type ASC NULLS LAST, sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) ASC NULLS LAST
      limit: 100
      mem-estimate=180.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=20 row-size=176B cardinality=0
@@ -210,7 +210,7 @@ Per-Host Resources: mem-estimate=4.01MB mem-reservation=3.88MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=33, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:TOP-N [LIMIT=100]
-  |  order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST, default.impala_tpcds_customer.c_salutation ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_type ASC NULLS LAST, default.impala_tpcds_customer_address.ca_suite_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_city ASC NULLS LAST, default.impala_tpcds_customer_address.ca_county ASC NULLS LAST, default.impala_tpcds_customer_address.ca_zip ASC NULLS LAST, default.impala_tpcds_customer_address.ca_country ASC NULLS LAST, default.impala_tpcds_customer_address.ca_gmt_offset ASC NULLS LAST, default.impala_tpcds_customer_address.ca_location_type ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST, default.impala_tpcds_customer.c_salutation ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_name ASC NULLS LAST, default.impala_tpcds_customer_address.ca_street_type ASC NULLS LAST, default.impala_tpcds_customer_address.ca_suite_number ASC NULLS LAST, default.impala_tpcds_customer_address.ca_city ASC NULLS LAST, default.impala_tpcds_customer_address.ca_county ASC NULLS LAST, default.impala_tpcds_customer_address.ca_zip ASC NULLS LAST, default.impala_tpcds_customer_address.ca_country ASC NULLS LAST, default.impala_tpcds_customer_address.ca_gmt_offset ASC NULLS LAST, default.impala_tpcds_customer_address.ca_location_type ASC NULLS LAST, sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=20 row-size=176B cardinality=0
   |  in pipelines: 19(GETNEXT), 01(OPEN)
@@ -278,7 +278,7 @@ Per-Host Resources: mem-estimate=130.01MB mem-reservation=35.94MB thread-reserva
   17:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_address_0.ca_state = default.impala_tpcds_customer_address_1.ca_state
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) > multiply(divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)), casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)))), CAST(1.2 AS DECIMAL(2,1)))
+  |  other join predicates: sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) > multiply(divide(sum(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)), casttodecimal(count(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)))), CAST(1.2 AS DECIMAL(2,1)))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=10,18 row-size=68B cardinality=0
   |  in pipelines: 24(GETNEXT), 30(OPEN)
@@ -289,9 +289,9 @@ Per-Host Resources: mem-estimate=130.01MB mem-reservation=35.94MB thread-reserva
   |     in pipelines: 30(GETNEXT)
   |
   24:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax)
+  |  output: sum:merge(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax)
   |  group by: default.impala_tpcds_catalog_returns.cr_returning_customer_sk, default.impala_tpcds_customer_address_0.ca_state
-  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) IS NOT NULL
+  |  having: sum(default.impala_tpcds_catalog_returns.cr_return_amt_inc_tax) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=32B cardinality=0
   |  in pipelines: 24(GETNEXT), 04(OPEN)
@@ -383,9 +383,9 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=31, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   30:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)), _impala_builtins.count:merge(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax))
+  |  output: sum:merge(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)), count:merge(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax))
   |  group by: default.impala_tpcds_customer_address_1.ca_state
-  |  having: casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax))) IS NOT NULL
+  |  having: casttodecimal(count(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=36B cardinality=0
   |  in pipelines: 30(GETNEXT), 28(OPEN)
@@ -400,14 +400,14 @@ Per-Host Resources: mem-estimate=256.04MB mem-reservation=68.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=29, HASH(default.impala_tpcds_customer_address_1.ca_state)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   16:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)), count(_impala_builtins.sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax))
+  |  output: sum(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)), count(sum(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax))
   |  group by: default.impala_tpcds_customer_address_1.ca_state
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=36B cardinality=0
   |  in pipelines: 28(GETNEXT)
   |
   28:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)
+  |  output: sum:merge(default.impala_tpcds_catalog_returns_0.cr_return_amt_inc_tax)
   |  group by: default.impala_tpcds_catalog_returns_0.cr_returning_customer_sk, default.impala_tpcds_customer_address_1.ca_state
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17 row-size=32B cardinality=0

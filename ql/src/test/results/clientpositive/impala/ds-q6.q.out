@@ -178,11 +178,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=143.83MB mem-reservation=39.81MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: a.ca_state, _impala_builtins.count(*)
+  |  output exprs: a.ca_state, count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   21:TOP-N [LIMIT=100]
-  |  order by: _impala_builtins.count(*) ASC NULLS LAST, a.ca_state ASC NULLS LAST
+  |  order by: count(*) ASC NULLS LAST, a.ca_state ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=21 row-size=32B cardinality=0
   |  in pipelines: 21(GETNEXT), 20(OPEN)
@@ -195,7 +195,7 @@ Per-Host Resources: mem-estimate=143.83MB mem-reservation=39.81MB thread-reserva
   20:AGGREGATE [FINALIZE]
   |  output: count(*)
   |  group by: a.ca_state
-  |  having: _impala_builtins.count(*) >= CAST(10 AS BIGINT)
+  |  having: count(*) >= CAST(10 AS BIGINT)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=20B cardinality=0
   |  in pipelines: 20(GETNEXT), 25(OPEN)
@@ -247,8 +247,8 @@ Per-Host Resources: mem-estimate=143.83MB mem-reservation=39.81MB thread-reserva
   |     in pipelines: 01(GETNEXT)
   |
   25:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
-  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
+  |  output: count:merge(*)
+  |  having: sq_count_check(count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=8B cardinality=1
   |  in pipelines: 25(GETNEXT), 07(OPEN)
@@ -375,7 +375,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      predicates: s.ss_customer_sk IS NOT NULL, s.ss_item_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_customer_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -389,7 +389,7 @@ Per-Host Resources: mem-estimate=1.98MB mem-reservation=1.94MB thread-reservatio
   14:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: i.i_category = j.i_category
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: i.i_current_price > multiply(CAST(1.2 AS DECIMAL(2,1)), casttodecimal(casttodecimal(divide(_impala_builtins.sum(j.i_current_price), casttodecimal(_impala_builtins.count(j.i_current_price))))))
+  |  other join predicates: i.i_current_price > multiply(CAST(1.2 AS DECIMAL(2,1)), casttodecimal(casttodecimal(divide(sum(j.i_current_price), casttodecimal(count(j.i_current_price))))))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=10,14 row-size=60B cardinality=0
   |  in pipelines: 11(GETNEXT), 32(OPEN)
@@ -415,9 +415,9 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=33, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   32:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(j.i_current_price), _impala_builtins.count:merge(j.i_current_price)
+  |  output: sum:merge(j.i_current_price), count:merge(j.i_current_price)
   |  group by: j.i_category
-  |  having: casttodecimal(casttodecimal(divide(_impala_builtins.sum(j.i_current_price), casttodecimal(_impala_builtins.count(j.i_current_price))))) IS NOT NULL
+  |  having: casttodecimal(casttodecimal(divide(sum(j.i_current_price), casttodecimal(count(j.i_current_price))))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=36B cardinality=0
   |  in pipelines: 32(GETNEXT), 12(OPEN)

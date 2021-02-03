@@ -513,7 +513,7 @@ STAGE PLANS:
 F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.13MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.count(*), _impala_builtins.count(*), _impala_builtins.count(*), _impala_builtins.count(*), _impala_builtins.count(*), _impala_builtins.count(*), _impala_builtins.count(*), _impala_builtins.count(*)
+  |  output exprs: count(*), count(*), count(*), count(*), count(*), count(*), count(*), count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   70:NESTED LOOP JOIN [CROSS JOIN, BROADCAST]
@@ -587,7 +587,7 @@ Per-Host Resources: mem-estimate=10.13MB mem-reservation=0B thread-reservation=1
   |     in pipelines: 80(GETNEXT)
   |
   75:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=8B cardinality=1
   |  in pipelines: 75(GETNEXT), 07(OPEN)
@@ -648,7 +648,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -708,7 +708,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=81, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   80:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=8B cardinality=1
   |  in pipelines: 80(GETNEXT), 15(OPEN)
@@ -769,7 +769,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_0.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_0.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_0.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -829,7 +829,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=87, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   86:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=23 row-size=8B cardinality=1
   |  in pipelines: 86(GETNEXT), 24(OPEN)
@@ -890,7 +890,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_1.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_1.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_1.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -950,7 +950,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=93, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   92:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=31 row-size=8B cardinality=1
   |  in pipelines: 92(GETNEXT), 33(OPEN)
@@ -1011,7 +1011,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_2.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_2.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_2.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1071,7 +1071,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=99, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   98:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=39 row-size=8B cardinality=1
   |  in pipelines: 98(GETNEXT), 42(OPEN)
@@ -1132,7 +1132,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_3.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_3.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_3.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1192,7 +1192,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=105, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   104:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=47 row-size=8B cardinality=1
   |  in pipelines: 104(GETNEXT), 51(OPEN)
@@ -1253,7 +1253,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_4.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_4.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_4.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1313,7 +1313,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=111, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   110:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=55 row-size=8B cardinality=1
   |  in pipelines: 110(GETNEXT), 60(OPEN)
@@ -1374,7 +1374,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_5.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_5.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_5.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1434,7 +1434,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=117, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   116:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=63 row-size=8B cardinality=1
   |  in pipelines: 116(GETNEXT), 69(OPEN)
@@ -1495,7 +1495,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      predicates: default.impala_tpcds_store_sales_6.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales_6.ss_sold_time_sk IS NOT NULL, default.impala_tpcds_store_sales_6.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

@@ -152,7 +152,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_lineitem.l_shipmode, _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority IN ('1-URGENT', '2-HIGH') THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN 1 ELSE 0 END))
+  |  output exprs: default.impala_tpch_lineitem.l_shipmode, sum(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority IN ('1-URGENT', '2-HIGH') THEN 1 ELSE 0 END)), sum(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN 1 ELSE 0 END))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:MERGING-EXCHANGE [UNPARTITIONED]
@@ -172,7 +172,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   |  in pipelines: 04(GETNEXT), 07(OPEN)
   |
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority IN ('1-URGENT', '2-HIGH') THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN 1 ELSE 0 END))
+  |  output: sum:merge(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority IN ('1-URGENT', '2-HIGH') THEN 1 ELSE 0 END)), sum:merge(casttobigint(CASE WHEN default.impala_tpch_orders.o_orderpriority != '1-URGENT' AND default.impala_tpch_orders.o_orderpriority != '2-HIGH' THEN 1 ELSE 0 END))
   |  group by: default.impala_tpch_lineitem.l_shipmode
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=28B cardinality=0

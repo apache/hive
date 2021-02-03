@@ -441,11 +441,11 @@ STAGE PLANS:
 F35:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=60.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: subtract(CAST(2001 AS INT), CAST(1 AS INT)), CAST(2001 AS INT), i_brand_id, i_class_id, i_category_id, i_manufact_id, _impala_builtins.sum(sales_cnt), _impala_builtins.sum(sales_cnt), subtract(_impala_builtins.sum(sales_cnt), _impala_builtins.sum(sales_cnt)), subtract(_impala_builtins.sum(sales_amt), _impala_builtins.sum(sales_amt))
+  |  output exprs: subtract(CAST(2001 AS INT), CAST(1 AS INT)), CAST(2001 AS INT), i_brand_id, i_class_id, i_category_id, i_manufact_id, sum(sales_cnt), sum(sales_cnt), subtract(sum(sales_cnt), sum(sales_cnt)), subtract(sum(sales_amt), sum(sales_amt))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   86:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: subtract(_impala_builtins.sum(sales_cnt), _impala_builtins.sum(sales_cnt)) ASC NULLS LAST, subtract(_impala_builtins.sum(sales_amt), _impala_builtins.sum(sales_amt)) ASC NULLS LAST
+     order by: subtract(sum(sales_cnt), sum(sales_cnt)) ASC NULLS LAST, subtract(sum(sales_amt), sum(sales_amt)) ASC NULLS LAST
      limit: 100
      mem-estimate=60.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=57 row-size=56B cardinality=0
@@ -456,7 +456,7 @@ Per-Host Resources: mem-estimate=130.02MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F35, EXCHANGE=86, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   54:TOP-N [LIMIT=100]
-  |  order by: subtract(_impala_builtins.sum(sales_cnt), _impala_builtins.sum(sales_cnt)) ASC NULLS LAST, subtract(_impala_builtins.sum(sales_amt), _impala_builtins.sum(sales_amt)) ASC NULLS LAST
+  |  order by: subtract(sum(sales_cnt), sum(sales_cnt)) ASC NULLS LAST, subtract(sum(sales_amt), sum(sales_amt)) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=57 row-size=56B cardinality=0
   |  in pipelines: 54(GETNEXT), 69(OPEN)
@@ -469,7 +469,7 @@ Per-Host Resources: mem-estimate=130.02MB mem-reservation=35.94MB thread-reserva
   53:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: i_brand_id = i_brand_id, i_category_id = i_category_id, i_class_id = i_class_id, i_manufact_id = i_manufact_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: divide(casttodecimal(_impala_builtins.sum(sales_cnt)), casttodecimal(_impala_builtins.sum(sales_cnt))) < CAST(0.9 AS DECIMAL(1,1))
+  |  other join predicates: divide(casttodecimal(sum(sales_cnt)), casttodecimal(sum(sales_cnt))) < CAST(0.9 AS DECIMAL(1,1))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=27,55 row-size=80B cardinality=0
   |  in pipelines: 69(GETNEXT), 84(OPEN)
@@ -480,7 +480,7 @@ Per-Host Resources: mem-estimate=130.02MB mem-reservation=35.94MB thread-reserva
   |     in pipelines: 84(GETNEXT)
   |
   69:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(sales_cnt), _impala_builtins.sum:merge(sales_amt)
+  |  output: sum:merge(sales_cnt), sum:merge(sales_amt)
   |  group by: i_brand_id, i_class_id, i_category_id, i_manufact_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=40B cardinality=0
@@ -644,7 +644,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
   |     predicates: default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL
   |     stored statistics:
   |       table: rows=unavailable size=unavailable
-  |       partitions: 0/0 rows=unavailable
+  |       partitions: 0/0 rows=0
   |       columns missing stats: ss_item_sk, ss_ticket_number, ss_quantity, ss_ext_sales_price
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -844,7 +844,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F34, EXCHANGE=85, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   84:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(sales_cnt), _impala_builtins.sum:merge(sales_amt)
+  |  output: sum:merge(sales_cnt), sum:merge(sales_amt)
   |  group by: i_brand_id, i_class_id, i_category_id, i_manufact_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=55 row-size=40B cardinality=0
@@ -1008,7 +1008,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
   |     predicates: default.impala_tpcds_store_sales_0.ss_item_sk IS NOT NULL
   |     stored statistics:
   |       table: rows=unavailable size=unavailable
-  |       partitions: 0/0 rows=unavailable
+  |       partitions: 0/0 rows=0
   |       columns missing stats: ss_item_sk, ss_ticket_number, ss_quantity, ss_ext_sales_price
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0

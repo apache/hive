@@ -150,11 +150,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
+  |  output exprs: sum(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
+  |  output: sum:merge(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
   |  limit: 100
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=24B cardinality=1
@@ -225,7 +225,7 @@ Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reserva
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_customer_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

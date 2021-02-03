@@ -377,11 +377,11 @@ STAGE PLANS:
 F22:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=104.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_item.i_item_id, _impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), multiply(divide(casttodecimal(divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), casttodouble(add(add(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), _impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), _impala_builtins.sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))))), 3), 100), _impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity)), multiply(divide(casttodecimal(divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), casttodouble(add(add(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), _impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), _impala_builtins.sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))))), 3), 100), _impala_builtins.sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)), multiply(divide(casttodecimal(divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))), casttodouble(add(add(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), _impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), _impala_builtins.sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))))), 3), 100), divide(casttodecimal(add(add(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), _impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), _impala_builtins.sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))), 3)
+  |  output exprs: default.impala_tpcds_item.i_item_id, sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), multiply(divide(casttodecimal(divide(casttodouble(sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), casttodouble(add(add(sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))))), 3), 100), sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity)), multiply(divide(casttodecimal(divide(casttodouble(sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), casttodouble(add(add(sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))))), 3), 100), sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)), multiply(divide(casttodecimal(divide(casttodouble(sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))), casttodouble(add(add(sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))))), 3), 100), divide(casttodecimal(add(add(sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)), sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))), sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity)))), 3)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   63:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, _impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)) ASC NULLS LAST
+     order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)) ASC NULLS LAST
      limit: 100
      mem-estimate=104.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=37 row-size=100B cardinality=0
@@ -392,7 +392,7 @@ Per-Host Resources: mem-estimate=131.95MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=63, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:TOP-N [LIMIT=100]
-  |  order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, _impala_builtins.sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)) ASC NULLS LAST
+  |  order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity)) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=37 row-size=100B cardinality=0
   |  in pipelines: 36(GETNEXT), 44(OPEN)
@@ -427,7 +427,7 @@ Per-Host Resources: mem-estimate=131.95MB mem-reservation=37.88MB thread-reserva
   |     in pipelines: 52(GETNEXT)
   |
   44:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))
+  |  output: sum:merge(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))
   |  group by: default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=20B cardinality=0
@@ -594,7 +594,7 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=53, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   52:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))
+  |  output: sum:merge(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))
   |  group by: default.impala_tpcds_item_0.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=23 row-size=20B cardinality=0
@@ -761,7 +761,7 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=62, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   61:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))
+  |  output: sum:merge(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))
   |  group by: default.impala_tpcds_item_1.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=35 row-size=20B cardinality=0

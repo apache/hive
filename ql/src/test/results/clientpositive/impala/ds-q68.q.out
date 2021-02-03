@@ -245,7 +245,7 @@ STAGE PLANS:
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=108.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_first_name, current_addr.ca_city, default.impala_tpcds_customer_address.ca_city, default.impala_tpcds_store_sales.ss_ticket_number, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_tax), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_list_price)
+  |  output exprs: default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_first_name, current_addr.ca_city, default.impala_tpcds_customer_address.ca_city, default.impala_tpcds_store_sales.ss_ticket_number, sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_store_sales.ss_ext_tax), sum(default.impala_tpcds_store_sales.ss_ext_list_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   24:MERGING-EXCHANGE [UNPARTITIONED]
@@ -326,7 +326,7 @@ Per-Host Resources: mem-estimate=128.08MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=23, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_tax)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), sum:merge(default.impala_tpcds_store_sales.ss_ext_list_price), sum:merge(default.impala_tpcds_store_sales.ss_ext_tax)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk, default.impala_tpcds_store_sales.ss_addr_sk, default.impala_tpcds_store_sales.ss_ticket_number, default.impala_tpcds_customer_address.ca_city
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=76B cardinality=0
@@ -402,7 +402,7 @@ Per-Host Resources: mem-estimate=135.82MB mem-reservation=41.75MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_addr_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_hdemo_sk, ss_addr_sk, ss_store_sk, ss_ticket_number, ss_ext_sales_price, ss_ext_list_price, ss_ext_tax
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

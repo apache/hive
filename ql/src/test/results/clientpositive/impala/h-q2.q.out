@@ -369,7 +369,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=29, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   17:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpch_part.p_partkey = default.impala_tpch_partsupp_0.ps_partkey, default.impala_tpch_partsupp.ps_supplycost = _impala_builtins.min(default.impala_tpch_partsupp_0.ps_supplycost)
+  |  hash predicates: default.impala_tpch_part.p_partkey = default.impala_tpch_partsupp_0.ps_partkey, default.impala_tpch_partsupp.ps_supplycost = min(default.impala_tpch_partsupp_0.ps_supplycost)
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=6,8,18 row-size=76B cardinality=0
@@ -424,9 +424,9 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=28, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   27:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.min:merge(default.impala_tpch_partsupp_0.ps_supplycost)
+  |  output: min:merge(default.impala_tpch_partsupp_0.ps_supplycost)
   |  group by: default.impala_tpch_partsupp_0.ps_partkey
-  |  having: _impala_builtins.min(default.impala_tpch_partsupp_0.ps_supplycost) IS NOT NULL
+  |  having: min(default.impala_tpch_partsupp_0.ps_supplycost) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=16B cardinality=0
   |  in pipelines: 27(GETNEXT), 09(OPEN)

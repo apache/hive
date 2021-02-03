@@ -102,11 +102,11 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=4.02MB mem-reservation=4.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.sum(casttobigint(default.tab_sales_n1.ss_quantity))
+  |  output exprs: sum(casttobigint(default.tab_sales_n1.ss_quantity))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   02:ANALYTIC
-  |  functions: _impala_builtins.sum(casttobigint(default.tab_sales_n1.ss_quantity))
+  |  functions: sum(casttobigint(default.tab_sales_n1.ss_quantity))
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2,4 row-size=20B cardinality=0
   |  in pipelines: 01(GETNEXT)
@@ -179,11 +179,11 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=4.02MB mem-reservation=4.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.sum(default.tab_sales_n1.ss_net_profit)
+  |  output exprs: sum(default.tab_sales_n1.ss_net_profit)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:ANALYTIC
-  |  functions: _impala_builtins.sum(default.tab_sales_n1.ss_net_profit)
+  |  functions: sum(default.tab_sales_n1.ss_net_profit)
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=0,3 row-size=20B cardinality=0
   |  in pipelines: 00(GETNEXT)

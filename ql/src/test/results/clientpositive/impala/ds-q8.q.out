@@ -502,7 +502,7 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_store.s_store_name, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit)
+  |  output exprs: default.impala_tpcds_store.s_store_name, sum(default.impala_tpcds_store_sales.ss_net_profit)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   31:MERGING-EXCHANGE [UNPARTITIONED]
@@ -523,7 +523,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 16(GETNEXT), 30(OPEN)
   |
   30:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_net_profit)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_net_profit)
   |  group by: default.impala_tpcds_store.s_store_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16 row-size=28B cardinality=0
@@ -575,7 +575,7 @@ Per-Host Resources: mem-estimate=131.95MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_store_sk, ss_net_profit
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -630,9 +630,9 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=27, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   26:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge($f1)
+  |  output: count:merge($f1)
   |  group by: ca_zip
-  |  having: _impala_builtins.count($f1) = CAST(2 AS BIGINT)
+  |  having: count($f1) = CAST(2 AS BIGINT)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=20B cardinality=0
   |  in pipelines: 26(GETNEXT), 19(OPEN), 24(OPEN)
@@ -659,7 +659,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 19(GETNEXT), 24(GETNEXT)
   |
   |--24:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge(*)
+  |  |  output: count:merge(*)
   |  |  group by: substring(default.impala_tpcds_customer_address_0.ca_zip, 1, 5)
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=14 row-size=20B cardinality=0
@@ -671,7 +671,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 22(GETNEXT)
   |
   19:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  group by: substring(default.impala_tpcds_customer_address.ca_zip, 1, 5)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=20B cardinality=0
@@ -716,9 +716,9 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 22(GETNEXT)
   |
   22:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  group by: default.impala_tpcds_customer_address_0.ca_zip
-  |  having: _impala_builtins.count(*) > CAST(10 AS BIGINT)
+  |  having: count(*) > CAST(10 AS BIGINT)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=20B cardinality=0
   |  in pipelines: 22(GETNEXT), 07(OPEN)

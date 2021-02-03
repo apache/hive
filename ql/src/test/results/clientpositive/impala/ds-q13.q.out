@@ -276,11 +276,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_sales_price)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)))), casttodecimal(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost))
+  |  output exprs: divide(casttodouble(sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), casttodecimal(count(default.impala_tpcds_store_sales.ss_ext_sales_price)))), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), casttodecimal(count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)))), sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.count:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
+  |  output: sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), count:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), sum:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), count:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=64B cardinality=1
   |  in pipelines: 18(GETNEXT), 11(OPEN)
@@ -368,7 +368,7 @@ Per-Host Resources: mem-estimate=19.69MB mem-reservation=9.69MB thread-reservati
      predicates: default.impala_tpcds_store_sales.ss_addr_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_cdemo_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_hdemo_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_net_profit >= CAST(100 AS DECIMAL(3,0)) AND default.impala_tpcds_store_sales.ss_net_profit <= CAST(200 AS DECIMAL(5,0)) OR default.impala_tpcds_store_sales.ss_net_profit >= CAST(150 AS DECIMAL(5,0)) AND default.impala_tpcds_store_sales.ss_net_profit <= CAST(300 AS DECIMAL(5,0)) OR default.impala_tpcds_store_sales.ss_net_profit >= CAST(50 AS DECIMAL(3,0)) AND default.impala_tpcds_store_sales.ss_net_profit <= CAST(250 AS DECIMAL(5,0)), default.impala_tpcds_store_sales.ss_sales_price >= CAST(100 AS DECIMAL(3,0)) AND default.impala_tpcds_store_sales.ss_sales_price <= CAST(150 AS DECIMAL(3,0)) OR default.impala_tpcds_store_sales.ss_sales_price >= CAST(50 AS DECIMAL(2,0)) AND default.impala_tpcds_store_sales.ss_sales_price <= CAST(100 AS DECIMAL(3,0)) OR default.impala_tpcds_store_sales.ss_sales_price >= CAST(150 AS DECIMAL(3,0)) AND default.impala_tpcds_store_sales.ss_sales_price <= CAST(200 AS DECIMAL(3,0))
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_cdemo_sk, ss_hdemo_sk, ss_addr_sk, ss_store_sk, ss_quantity, ss_sales_price, ss_ext_sales_price, ss_ext_wholesale_cost, ss_net_profit
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

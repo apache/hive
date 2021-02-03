@@ -177,11 +177,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_part.p_brand, default.impala_tpch_part.p_type, default.impala_tpch_part.p_size, _impala_builtins.count(default.impala_tpch_partsupp.ps_suppkey)
+  |  output exprs: default.impala_tpch_part.p_brand, default.impala_tpch_part.p_type, default.impala_tpch_part.p_size, count(default.impala_tpch_partsupp.ps_suppkey)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   13:SORT
-  |  order by: _impala_builtins.count(default.impala_tpch_partsupp.ps_suppkey) DESC NULLS FIRST, default.impala_tpch_part.p_brand ASC NULLS LAST, default.impala_tpch_part.p_type ASC NULLS LAST, default.impala_tpch_part.p_size ASC NULLS LAST
+  |  order by: count(default.impala_tpch_partsupp.ps_suppkey) DESC NULLS FIRST, default.impala_tpch_part.p_brand ASC NULLS LAST, default.impala_tpch_part.p_type ASC NULLS LAST, default.impala_tpch_part.p_size ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=36B cardinality=0
   |  in pipelines: 13(GETNEXT), 12(OPEN)
@@ -200,7 +200,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 11(GETNEXT), 15(OPEN)
   |
   10:SELECT
-  |  predicates: _impala_builtins.if(TupleIsNull(9), NULL, TRUE) IS NULL OR _impala_builtins.count(*) = CAST(0 AS BIGINT), default.impala_tpch_partsupp.ps_suppkey IS NOT NULL OR _impala_builtins.count(*) = CAST(0 AS BIGINT) OR _impala_builtins.if(TupleIsNull(9), NULL, TRUE) IS NOT NULL, _impala_builtins.count(default.impala_tpch_supplier.s_suppkey) >= _impala_builtins.count(*) OR _impala_builtins.count(*) = CAST(0 AS BIGINT) OR _impala_builtins.if(TupleIsNull(9), NULL, TRUE) IS NOT NULL OR default.impala_tpch_partsupp.ps_suppkey IS NULL
+  |  predicates: if(TupleIsNull(9), NULL, TRUE) IS NULL OR count(*) = CAST(0 AS BIGINT), default.impala_tpch_partsupp.ps_suppkey IS NOT NULL OR count(*) = CAST(0 AS BIGINT) OR if(TupleIsNull(9), NULL, TRUE) IS NOT NULL, count(default.impala_tpch_supplier.s_suppkey) >= count(*) OR count(*) = CAST(0 AS BIGINT) OR if(TupleIsNull(9), NULL, TRUE) IS NOT NULL OR default.impala_tpch_partsupp.ps_suppkey IS NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=10 row-size=77B cardinality=0
   |  in pipelines: 15(GETNEXT)
@@ -233,7 +233,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 01(GETNEXT)
   |
   15:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*), _impala_builtins.count:merge(default.impala_tpch_supplier.s_suppkey)
+  |  output: count:merge(*), count:merge(default.impala_tpch_supplier.s_suppkey)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=16B cardinality=1
   |  in pipelines: 15(GETNEXT), 03(OPEN)

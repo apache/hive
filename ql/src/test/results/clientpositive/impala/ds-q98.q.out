@@ -172,11 +172,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=88.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_item.i_item_id, default.impala_tpcds_item.i_item_desc, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_current_price, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), divide(multiply(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 100), _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)))
+  |  output exprs: default.impala_tpcds_item.i_item_id, default.impala_tpcds_item.i_item_desc, default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_current_price, sum(default.impala_tpcds_store_sales.ss_ext_sales_price), divide(multiply(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 100), sum(sum(default.impala_tpcds_store_sales.ss_ext_sales_price)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   15:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: default.impala_tpcds_item.i_category ASC NULLS LAST, default.impala_tpcds_item.i_class ASC NULLS LAST, default.impala_tpcds_item.i_item_id ASC NULLS LAST, default.impala_tpcds_item.i_item_desc ASC NULLS LAST, divide(multiply(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 100), _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))) ASC NULLS LAST
+     order by: default.impala_tpcds_item.i_category ASC NULLS LAST, default.impala_tpcds_item.i_class ASC NULLS LAST, default.impala_tpcds_item.i_item_id ASC NULLS LAST, default.impala_tpcds_item.i_item_desc ASC NULLS LAST, divide(multiply(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 100), sum(sum(default.impala_tpcds_store_sales.ss_ext_sales_price))) ASC NULLS LAST
      mem-estimate=88.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=11 row-size=84B cardinality=0
      in pipelines: 09(GETNEXT)
@@ -186,7 +186,7 @@ Per-Host Resources: mem-estimate=28.07MB mem-reservation=28.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=15, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:SORT
-  |  order by: default.impala_tpcds_item.i_category ASC NULLS LAST, default.impala_tpcds_item.i_class ASC NULLS LAST, default.impala_tpcds_item.i_item_id ASC NULLS LAST, default.impala_tpcds_item.i_item_desc ASC NULLS LAST, divide(multiply(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 100), _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))) ASC NULLS LAST
+  |  order by: default.impala_tpcds_item.i_category ASC NULLS LAST, default.impala_tpcds_item.i_class ASC NULLS LAST, default.impala_tpcds_item.i_item_id ASC NULLS LAST, default.impala_tpcds_item.i_item_desc ASC NULLS LAST, divide(multiply(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 100), sum(sum(default.impala_tpcds_store_sales.ss_ext_sales_price))) ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=84B cardinality=0
   |  in pipelines: 09(GETNEXT), 07(OPEN)
@@ -197,7 +197,7 @@ Per-Host Resources: mem-estimate=28.07MB mem-reservation=28.00MB thread-reservat
   |  in pipelines: 07(GETNEXT)
   |
   08:ANALYTIC
-  |  functions: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  functions: sum(sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  partition by: default.impala_tpcds_item.i_class
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -205,7 +205,7 @@ Per-Host Resources: mem-estimate=28.07MB mem-reservation=28.00MB thread-reservat
   |  in pipelines: 07(GETNEXT)
   |
   07:SORT
-  |  order by: default.impala_tpcds_item.i_class ASC NULLS FIRST
+  |  order by: default.impala_tpcds_item.i_class ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=68B cardinality=0
   |  in pipelines: 07(GETNEXT), 13(OPEN)
@@ -220,7 +220,7 @@ Per-Host Resources: mem-estimate=128.07MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=14, HASH(default.impala_tpcds_item.i_class)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   13:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price)
   |  group by: default.impala_tpcds_item.i_item_id, default.impala_tpcds_item.i_item_desc, default.impala_tpcds_item.i_current_price, default.impala_tpcds_item.i_class, default.impala_tpcds_item.i_category
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=68B cardinality=0
@@ -272,7 +272,7 @@ Per-Host Resources: mem-estimate=131.96MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

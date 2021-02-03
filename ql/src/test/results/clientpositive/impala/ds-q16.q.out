@@ -191,7 +191,7 @@ STAGE PLANS:
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: count(cs1.cs_order_number), _impala_builtins.sum(cs1.cs_ext_ship_cost), _impala_builtins.sum(cs1.cs_net_profit)
+  |  output exprs: count(cs1.cs_order_number), sum(cs1.cs_ext_ship_cost), sum(cs1.cs_net_profit)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   15:TOP-N [LIMIT=100]
@@ -227,7 +227,7 @@ Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 14(GETNEXT), 24(OPEN)
   |
   24:AGGREGATE
-  |  output: _impala_builtins.sum:merge(cs1.cs_ext_ship_cost), _impala_builtins.sum:merge(cs1.cs_net_profit)
+  |  output: sum:merge(cs1.cs_ext_ship_cost), sum:merge(cs1.cs_net_profit)
   |  group by: cs1.cs_order_number
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=40B cardinality=0
@@ -252,7 +252,7 @@ Per-Host Resources: mem-estimate=137.78MB mem-reservation=43.69MB thread-reserva
   12:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: cs1.cs_order_number = cr1.cr_order_number
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: _impala_builtins.if(TupleIsNull(12), NULL, TRUE) IS NULL
+  |  other predicates: if(TupleIsNull(12), NULL, TRUE) IS NULL
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,4,6,12N row-size=88B cardinality=0
   |  in pipelines: 01(GETNEXT), 21(OPEN)
@@ -327,7 +327,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp('1999-04-01 00:00:00') AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(_impala_builtins.casttotimestamp('1999-04-01 00:00:00'), INTERVAL CAST(5184000000 AS BIGINT) MILLISECOND)
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= casttotimestamp('1999-04-01 00:00:00') AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(casttotimestamp('1999-04-01 00:00:00'), INTERVAL CAST(5184000000 AS BIGINT) MILLISECOND)
      stored statistics:
        table: rows=unavailable size=unavailable
        columns: unavailable

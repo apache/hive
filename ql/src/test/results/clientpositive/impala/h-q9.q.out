@@ -209,7 +209,7 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=36.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_nation.n_name, year(casttodate(default.impala_tpch_orders.o_orderdate)), _impala_builtins.sum(subtract(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)), multiply(default.impala_tpch_partsupp.ps_supplycost, default.impala_tpch_lineitem.l_quantity)))
+  |  output exprs: default.impala_tpch_nation.n_name, year(casttodate(default.impala_tpch_orders.o_orderdate)), sum(subtract(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)), multiply(default.impala_tpch_partsupp.ps_supplycost, default.impala_tpch_lineitem.l_quantity)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   20:MERGING-EXCHANGE [UNPARTITIONED]
@@ -229,7 +229,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   |  in pipelines: 12(GETNEXT), 19(OPEN)
   |
   19:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(subtract(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)), multiply(default.impala_tpch_partsupp.ps_supplycost, default.impala_tpch_lineitem.l_quantity)))
+  |  output: sum:merge(subtract(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)), multiply(default.impala_tpch_partsupp.ps_supplycost, default.impala_tpch_lineitem.l_quantity)))
   |  group by: default.impala_tpch_nation.n_name, year(casttodate(default.impala_tpch_orders.o_orderdate))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=32B cardinality=0

@@ -248,7 +248,7 @@ STAGE PLANS:
 F10:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: year(casttodate(default.impala_tpch_orders.o_orderdate)), divide(_impala_builtins.sum(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))))
+  |  output exprs: year(casttodate(default.impala_tpch_orders.o_orderdate)), divide(sum(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   27:MERGING-EXCHANGE [UNPARTITIONED]
@@ -273,7 +273,7 @@ Per-Host Resources: mem-estimate=134.04MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 26(GETNEXT)
   |
   26:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  output: sum:merge(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  group by: year(casttodate(default.impala_tpch_orders.o_orderdate))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16 row-size=36B cardinality=0

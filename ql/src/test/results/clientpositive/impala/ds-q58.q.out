@@ -378,11 +378,11 @@ STAGE PLANS:
 F25:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_item.i_item_id, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), multiply(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), divide(add(add(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)), 100), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price), multiply(divide(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price), divide(add(add(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)), 100), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), multiply(divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), divide(add(add(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)), 100), divide(add(add(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)
+  |  output exprs: default.impala_tpcds_item.i_item_id, sum(default.impala_tpcds_store_sales.ss_ext_sales_price), multiply(divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), divide(add(add(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)), 100), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price), multiply(divide(sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price), divide(add(add(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)), 100), sum(default.impala_tpcds_web_sales.ws_ext_sales_price), multiply(divide(sum(default.impala_tpcds_web_sales.ws_ext_sales_price), divide(add(add(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)), 100), divide(add(add(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), 3)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   72:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) ASC NULLS LAST
+     order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, sum(default.impala_tpcds_store_sales.ss_ext_sales_price) ASC NULLS LAST
      limit: 100
      mem-estimate=128.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=42 row-size=124B cardinality=0
@@ -393,7 +393,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F25, EXCHANGE=72, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   42:TOP-N [LIMIT=100]
-  |  order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) ASC NULLS LAST
+  |  order by: default.impala_tpcds_item.i_item_id ASC NULLS LAST, sum(default.impala_tpcds_store_sales.ss_ext_sales_price) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=42 row-size=124B cardinality=0
   |  in pipelines: 42(GETNEXT), 51(OPEN)
@@ -406,7 +406,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   41:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_item.i_item_id = default.impala_tpcds_item_1.i_item_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  other join predicates: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=13,26,40 row-size=84B cardinality=0
   |  in pipelines: 51(GETNEXT), 70(OPEN)
@@ -419,7 +419,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   27:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_item.i_item_id = default.impala_tpcds_item_0.i_item_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
+  |  other join predicates: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=13,26 row-size=56B cardinality=0
   |  in pipelines: 51(GETNEXT), 60(OPEN)
@@ -430,7 +430,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   |     in pipelines: 60(GETNEXT)
   |
   51:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_catalog_sales.cs_ext_sales_price)
   |  group by: default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=28B cardinality=0
@@ -543,8 +543,8 @@ Per-Host Resources: mem-estimate=10.05MB mem-reservation=0B thread-reservation=1
   |     in pipelines: 06(GETNEXT)
   |
   46:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
-  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
+  |  output: count:merge(*)
+  |  having: sq_count_check(count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=8B cardinality=1
   |  in pipelines: 46(GETNEXT), 10(OPEN)
@@ -624,7 +624,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=61, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   60:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price)
   |  group by: default.impala_tpcds_item_0.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=26 row-size=28B cardinality=0
@@ -687,7 +687,7 @@ Per-Host Resources: mem-estimate=133.91MB mem-reservation=39.81MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -739,8 +739,8 @@ Per-Host Resources: mem-estimate=10.05MB mem-reservation=0B thread-reservation=1
   |     in pipelines: 19(GETNEXT)
   |
   55:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
-  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
+  |  output: count:merge(*)
+  |  having: sq_count_check(count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=25 row-size=8B cardinality=1
   |  in pipelines: 55(GETNEXT), 23(OPEN)
@@ -820,7 +820,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=71, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   70:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_web_sales.ws_ext_sales_price)
   |  group by: default.impala_tpcds_item_1.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=40 row-size=28B cardinality=0
@@ -933,8 +933,8 @@ Per-Host Resources: mem-estimate=10.05MB mem-reservation=0B thread-reservation=1
   |     in pipelines: 33(GETNEXT)
   |
   65:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
-  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
+  |  output: count:merge(*)
+  |  having: sq_count_check(count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=39 row-size=8B cardinality=1
   |  in pipelines: 65(GETNEXT), 37(OPEN)

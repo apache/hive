@@ -284,11 +284,11 @@ STAGE PLANS:
 F23:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=112.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_brand, CAST(1999 AS INT), default.impala_tpcds_date_dim.d_moy, _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), _impala_builtins.sum(default.impala_tpcds_catalog_sales_0.cs_sales_price), _impala_builtins.sum(default.impala_tpcds_catalog_sales_1.cs_sales_price)
+  |  output exprs: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_brand, CAST(1999 AS INT), default.impala_tpcds_date_dim.d_moy, avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price)), sum(default.impala_tpcds_catalog_sales.cs_sales_price), sum(default.impala_tpcds_catalog_sales_0.cs_sales_price), sum(default.impala_tpcds_catalog_sales_1.cs_sales_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   63:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: subtract(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price))) ASC NULLS LAST, _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)) ASC NULLS LAST
+     order by: subtract(sum(default.impala_tpcds_catalog_sales.cs_sales_price), avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price))) ASC NULLS LAST, avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price)) ASC NULLS LAST
      limit: 100
      mem-estimate=112.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=53 row-size=108B cardinality=0
@@ -299,7 +299,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F23, EXCHANGE=63, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   41:TOP-N [LIMIT=100]
-  |  order by: subtract(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price))) ASC NULLS LAST, _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)) ASC NULLS LAST
+  |  order by: subtract(sum(default.impala_tpcds_catalog_sales.cs_sales_price), avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price))) ASC NULLS LAST, avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price)) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=53 row-size=108B cardinality=0
   |  in pipelines: 41(GETNEXT), 12(OPEN)
@@ -310,7 +310,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |  in pipelines: 12(GETNEXT)
   |
   40:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: _impala_builtins.rank() = subtract(_impala_builtins.rank(), 1), default.impala_tpcds_call_center.cc_name = default.impala_tpcds_call_center_1.cc_name, default.impala_tpcds_item.i_brand = default.impala_tpcds_item_1.i_brand, default.impala_tpcds_item.i_category = default.impala_tpcds_item_1.i_category
+  |  hash predicates: rank() = subtract(rank(), 1), default.impala_tpcds_call_center.cc_name = default.impala_tpcds_call_center_1.cc_name, default.impala_tpcds_item.i_brand = default.impala_tpcds_item_1.i_brand, default.impala_tpcds_item.i_category = default.impala_tpcds_item_1.i_category
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=19,35,51 row-size=204B cardinality=0
@@ -322,7 +322,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |     in pipelines: 37(GETNEXT)
   |
   27:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: _impala_builtins.rank() = add(_impala_builtins.rank(), 1), default.impala_tpcds_call_center.cc_name = default.impala_tpcds_call_center_0.cc_name, default.impala_tpcds_item.i_brand = default.impala_tpcds_item_0.i_brand, default.impala_tpcds_item.i_category = default.impala_tpcds_item_0.i_category
+  |  hash predicates: rank() = add(rank(), 1), default.impala_tpcds_call_center.cc_name = default.impala_tpcds_call_center_0.cc_name, default.impala_tpcds_item.i_brand = default.impala_tpcds_item_0.i_brand, default.impala_tpcds_item.i_category = default.impala_tpcds_item_0.i_category
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=19,35 row-size=144B cardinality=0
@@ -334,7 +334,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |     in pipelines: 24(GETNEXT)
   |
   14:SELECT
-  |  predicates: _impala_builtins.rank() IS NOT NULL, _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)) > CAST(0 AS DECIMAL(38,6)), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT), CASE WHEN _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)) > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)))), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price))) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
+  |  predicates: rank() IS NOT NULL, avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price)) > CAST(0 AS DECIMAL(38,6)), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT), CASE WHEN avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price)) > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(sum(default.impala_tpcds_catalog_sales.cs_sales_price), avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price)))), avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price))) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=19 row-size=84B cardinality=0
   |  in pipelines: 12(GETNEXT)
@@ -345,7 +345,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |  in pipelines: 12(GETNEXT)
   |
   13:ANALYTIC
-  |  functions: _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price))
+  |  functions: avg(sum(default.impala_tpcds_catalog_sales.cs_sales_price))
   |  partition by: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_brand, default.impala_tpcds_call_center.cc_name, default.impala_tpcds_date_dim.d_year
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -353,7 +353,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |  in pipelines: 12(GETNEXT)
   |
   12:SORT
-  |  order by: default.impala_tpcds_item.i_category ASC NULLS FIRST, default.impala_tpcds_item.i_brand ASC NULLS FIRST, default.impala_tpcds_call_center.cc_name ASC NULLS FIRST, default.impala_tpcds_date_dim.d_year ASC NULLS FIRST
+  |  order by: default.impala_tpcds_item.i_category ASC NULLS LAST, default.impala_tpcds_item.i_brand ASC NULLS LAST, default.impala_tpcds_call_center.cc_name ASC NULLS LAST, default.impala_tpcds_date_dim.d_year ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17 row-size=68B cardinality=0
   |  in pipelines: 12(GETNEXT), 10(OPEN)
@@ -368,7 +368,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=48, HASH(default.impala_tpcds_item.i_category,default.impala_tpcds_item.i_brand,default.impala_tpcds_call_center.cc_name,default.impala_tpcds_date_dim.d_year)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:ANALYTIC
-  |  functions: _impala_builtins.rank()
+  |  functions: rank()
   |  partition by: default.impala_tpcds_item.i_category, default.impala_tpcds_item.i_brand, default.impala_tpcds_call_center.cc_name
   |  order by: default.impala_tpcds_date_dim.d_year ASC, default.impala_tpcds_date_dim.d_moy ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
@@ -377,7 +377,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   |  in pipelines: 10(GETNEXT)
   |
   10:SORT
-  |  order by: default.impala_tpcds_item.i_category ASC NULLS FIRST, default.impala_tpcds_item.i_brand ASC NULLS FIRST, default.impala_tpcds_call_center.cc_name ASC NULLS FIRST, default.impala_tpcds_date_dim.d_year ASC NULLS LAST, default.impala_tpcds_date_dim.d_moy ASC NULLS LAST
+  |  order by: default.impala_tpcds_item.i_category ASC NULLS LAST, default.impala_tpcds_item.i_brand ASC NULLS LAST, default.impala_tpcds_call_center.cc_name ASC NULLS LAST, default.impala_tpcds_date_dim.d_year ASC NULLS LAST, default.impala_tpcds_date_dim.d_moy ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=60B cardinality=0
   |  in pipelines: 10(GETNEXT), 46(OPEN)
@@ -392,7 +392,7 @@ Per-Host Resources: mem-estimate=128.06MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=47, HASH(default.impala_tpcds_item.i_category,default.impala_tpcds_item.i_brand,default.impala_tpcds_call_center.cc_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   46:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
+  |  output: sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
   |  group by: default.impala_tpcds_call_center.cc_name, default.impala_tpcds_item.i_brand, default.impala_tpcds_item.i_category, default.impala_tpcds_date_dim.d_year, default.impala_tpcds_date_dim.d_moy
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=60B cardinality=0
@@ -511,7 +511,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=55, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   26:SELECT
-  |  predicates: _impala_builtins.rank() IS NOT NULL
+  |  predicates: rank() IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=35 row-size=60B cardinality=0
   |  in pipelines: 24(GETNEXT)
@@ -522,7 +522,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   |  in pipelines: 24(GETNEXT)
   |
   25:ANALYTIC
-  |  functions: _impala_builtins.rank()
+  |  functions: rank()
   |  partition by: default.impala_tpcds_item_0.i_category, default.impala_tpcds_item_0.i_brand, default.impala_tpcds_call_center_0.cc_name
   |  order by: default.impala_tpcds_date_dim_0.d_year ASC, default.impala_tpcds_date_dim_0.d_moy ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
@@ -531,7 +531,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   |  in pipelines: 24(GETNEXT)
   |
   24:SORT
-  |  order by: default.impala_tpcds_item_0.i_category ASC NULLS FIRST, default.impala_tpcds_item_0.i_brand ASC NULLS FIRST, default.impala_tpcds_call_center_0.cc_name ASC NULLS FIRST, default.impala_tpcds_date_dim_0.d_year ASC NULLS LAST, default.impala_tpcds_date_dim_0.d_moy ASC NULLS LAST
+  |  order by: default.impala_tpcds_item_0.i_category ASC NULLS LAST, default.impala_tpcds_item_0.i_brand ASC NULLS LAST, default.impala_tpcds_call_center_0.cc_name ASC NULLS LAST, default.impala_tpcds_date_dim_0.d_year ASC NULLS LAST, default.impala_tpcds_date_dim_0.d_moy ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=33 row-size=60B cardinality=0
   |  in pipelines: 24(GETNEXT), 53(OPEN)
@@ -546,7 +546,7 @@ Per-Host Resources: mem-estimate=128.06MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=54, HASH(default.impala_tpcds_item_0.i_category,default.impala_tpcds_item_0.i_brand,default.impala_tpcds_call_center_0.cc_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   53:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales_0.cs_sales_price)
+  |  output: sum:merge(default.impala_tpcds_catalog_sales_0.cs_sales_price)
   |  group by: default.impala_tpcds_call_center_0.cc_name, default.impala_tpcds_item_0.i_brand, default.impala_tpcds_item_0.i_category, default.impala_tpcds_date_dim_0.d_year, default.impala_tpcds_date_dim_0.d_moy
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=60B cardinality=0
@@ -665,7 +665,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=62, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   39:SELECT
-  |  predicates: _impala_builtins.rank() IS NOT NULL
+  |  predicates: rank() IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=51 row-size=60B cardinality=0
   |  in pipelines: 37(GETNEXT)
@@ -676,7 +676,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   |  in pipelines: 37(GETNEXT)
   |
   38:ANALYTIC
-  |  functions: _impala_builtins.rank()
+  |  functions: rank()
   |  partition by: default.impala_tpcds_item_1.i_category, default.impala_tpcds_item_1.i_brand, default.impala_tpcds_call_center_1.cc_name
   |  order by: default.impala_tpcds_date_dim_1.d_year ASC, default.impala_tpcds_date_dim_1.d_moy ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
@@ -685,7 +685,7 @@ Per-Host Resources: mem-estimate=16.06MB mem-reservation=16.00MB thread-reservat
   |  in pipelines: 37(GETNEXT)
   |
   37:SORT
-  |  order by: default.impala_tpcds_item_1.i_category ASC NULLS FIRST, default.impala_tpcds_item_1.i_brand ASC NULLS FIRST, default.impala_tpcds_call_center_1.cc_name ASC NULLS FIRST, default.impala_tpcds_date_dim_1.d_year ASC NULLS LAST, default.impala_tpcds_date_dim_1.d_moy ASC NULLS LAST
+  |  order by: default.impala_tpcds_item_1.i_category ASC NULLS LAST, default.impala_tpcds_item_1.i_brand ASC NULLS LAST, default.impala_tpcds_call_center_1.cc_name ASC NULLS LAST, default.impala_tpcds_date_dim_1.d_year ASC NULLS LAST, default.impala_tpcds_date_dim_1.d_moy ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=49 row-size=60B cardinality=0
   |  in pipelines: 37(GETNEXT), 60(OPEN)
@@ -700,7 +700,7 @@ Per-Host Resources: mem-estimate=128.06MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=61, HASH(default.impala_tpcds_item_1.i_category,default.impala_tpcds_item_1.i_brand,default.impala_tpcds_call_center_1.cc_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   60:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales_1.cs_sales_price)
+  |  output: sum:merge(default.impala_tpcds_catalog_sales_1.cs_sales_price)
   |  group by: default.impala_tpcds_call_center_1.cc_name, default.impala_tpcds_item_1.i_brand, default.impala_tpcds_item_1.i_category, default.impala_tpcds_date_dim_1.d_year, default.impala_tpcds_date_dim_1.d_moy
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=44 row-size=60B cardinality=0

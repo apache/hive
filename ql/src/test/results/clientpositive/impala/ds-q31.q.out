@@ -317,7 +317,7 @@ STAGE PLANS:
 F24:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=192.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer_address_1.ca_county, CAST(1999 AS INT), divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)), divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price)), divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  output exprs: default.impala_tpcds_customer_address_1.ca_county, CAST(1999 AS INT), divide(sum(default.impala_tpcds_web_sales.ws_ext_sales_price), sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)), divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price)), divide(sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), divide(sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   70:EXCHANGE [UNPARTITIONED]
@@ -332,7 +332,7 @@ Per-Host Resources: mem-estimate=135.94MB mem-reservation=41.75MB thread-reserva
   40:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_address_0.ca_county = default.impala_tpcds_customer_address_4.ca_county
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) > divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  other join predicates: divide(sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) > divide(sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=6,13,19,25,31,38 row-size=168B cardinality=0
   |  in pipelines: 44(GETNEXT), 68(OPEN)
@@ -357,7 +357,7 @@ Per-Host Resources: mem-estimate=135.94MB mem-reservation=41.75MB thread-reserva
   26:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_address_0.ca_county = default.impala_tpcds_customer_address_1.ca_county
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)) > divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price))
+  |  other join predicates: divide(sum(default.impala_tpcds_web_sales.ws_ext_sales_price), sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)) > divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=6,13,19,25 row-size=112B cardinality=0
   |  in pipelines: 44(GETNEXT), 53(OPEN)
@@ -380,9 +380,9 @@ Per-Host Resources: mem-estimate=135.94MB mem-reservation=41.75MB thread-reserva
   |     in pipelines: 48(GETNEXT)
   |
   44:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_web_sales.ws_ext_sales_price)
   |  group by: default.impala_tpcds_customer_address.ca_county
-  |  having: _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
+  |  having: sum(default.impala_tpcds_web_sales.ws_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=28B cardinality=0
   |  in pipelines: 44(GETNEXT), 00(OPEN)
@@ -474,9 +474,9 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=49, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   48:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales_0.ws_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_web_sales_0.ws_ext_sales_price)
   |  group by: default.impala_tpcds_customer_address_0.ca_county
-  |  having: _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
+  |  having: sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=28B cardinality=0
   |  in pipelines: 48(GETNEXT), 06(OPEN)
@@ -580,9 +580,9 @@ Per-Host Resources: mem-estimate=130.00MB mem-reservation=35.94MB thread-reserva
   |     in pipelines: 57(GETNEXT)
   |
   53:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price)
   |  group by: default.impala_tpcds_customer_address_1.ca_county
-  |  having: _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
+  |  having: sum(default.impala_tpcds_store_sales.ss_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=28B cardinality=0
   |  in pipelines: 53(GETNEXT), 13(OPEN)
@@ -633,7 +633,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_addr_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_addr_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -676,9 +676,9 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=58, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   57:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales_0.ss_ext_sales_price)
   |  group by: default.impala_tpcds_customer_address_2.ca_county
-  |  having: _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
+  |  having: sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price) > CAST(0 AS DECIMAL(38,2))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=25 row-size=28B cardinality=0
   |  in pipelines: 57(GETNEXT), 19(OPEN)
@@ -729,7 +729,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales_0.ss_addr_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_addr_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -772,7 +772,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=64, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   63:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales_1.ss_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales_1.ss_ext_sales_price)
   |  group by: default.impala_tpcds_customer_address_3.ca_county
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=31 row-size=28B cardinality=0
@@ -824,7 +824,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales_1.ss_addr_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_addr_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -867,7 +867,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=69, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   68:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales_1.ws_ext_sales_price)
+  |  output: sum:merge(default.impala_tpcds_web_sales_1.ws_ext_sales_price)
   |  group by: default.impala_tpcds_customer_address_4.ca_county
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=38 row-size=28B cardinality=0

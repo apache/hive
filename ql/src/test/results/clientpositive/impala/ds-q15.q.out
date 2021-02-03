@@ -130,7 +130,7 @@ STAGE PLANS:
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer_address.ca_zip, _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price)
+  |  output exprs: default.impala_tpcds_customer_address.ca_zip, sum(default.impala_tpcds_catalog_sales.cs_sales_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   14:MERGING-EXCHANGE [UNPARTITIONED]
@@ -151,7 +151,7 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 08(GETNEXT), 13(OPEN)
   |
   13:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
+  |  output: sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
   |  group by: default.impala_tpcds_customer_address.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=28B cardinality=0

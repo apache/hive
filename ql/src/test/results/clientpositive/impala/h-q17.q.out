@@ -112,11 +112,11 @@ STAGE PLANS:
 F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: divide(_impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), CAST(7 AS DECIMAL(1,0)))
+  |  output exprs: divide(sum(default.impala_tpch_lineitem.l_extendedprice), CAST(7 AS DECIMAL(1,0)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem.l_extendedprice)
+  |  output: sum:merge(default.impala_tpch_lineitem.l_extendedprice)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=16B cardinality=1
   |  in pipelines: 12(GETNEXT), 06(OPEN)
@@ -139,7 +139,7 @@ Per-Host Resources: mem-estimate=13.88MB mem-reservation=3.88MB thread-reservati
   05:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_part.p_partkey = default.impala_tpch_lineitem_0.l_partkey
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: default.impala_tpch_lineitem.l_quantity < multiply(CAST(0.2 AS DECIMAL(1,1)), casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_lineitem_0.l_quantity), casttodecimal(_impala_builtins.count(default.impala_tpch_lineitem_0.l_quantity)))))
+  |  other join predicates: default.impala_tpch_lineitem.l_quantity < multiply(CAST(0.2 AS DECIMAL(1,1)), casttodecimal(divide(sum(default.impala_tpch_lineitem_0.l_quantity), casttodecimal(count(default.impala_tpch_lineitem_0.l_quantity)))))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,6 row-size=88B cardinality=0
   |  in pipelines: 00(GETNEXT), 09(OPEN)
@@ -193,9 +193,9 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=10, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpch_lineitem_0.l_quantity), _impala_builtins.count:merge(default.impala_tpch_lineitem_0.l_quantity)
+  |  output: sum:merge(default.impala_tpch_lineitem_0.l_quantity), count:merge(default.impala_tpch_lineitem_0.l_quantity)
   |  group by: default.impala_tpch_lineitem_0.l_partkey
-  |  having: casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_lineitem_0.l_quantity), casttodecimal(_impala_builtins.count(default.impala_tpch_lineitem_0.l_quantity)))) IS NOT NULL
+  |  having: casttodecimal(divide(sum(default.impala_tpch_lineitem_0.l_quantity), casttodecimal(count(default.impala_tpch_lineitem_0.l_quantity)))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=32B cardinality=0
   |  in pipelines: 09(GETNEXT), 03(OPEN)

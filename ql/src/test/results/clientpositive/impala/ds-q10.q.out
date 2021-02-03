@@ -330,7 +330,7 @@ STAGE PLANS:
 F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_education_status, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_purchase_estimate, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_credit_rating, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_dep_count, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_dep_employed_count, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_dep_college_count, _impala_builtins.count(*)
+  |  output exprs: default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_education_status, count(*), default.impala_tpcds_customer_demographics.cd_purchase_estimate, count(*), default.impala_tpcds_customer_demographics.cd_credit_rating, count(*), default.impala_tpcds_customer_demographics.cd_dep_count, count(*), default.impala_tpcds_customer_demographics.cd_dep_employed_count, count(*), default.impala_tpcds_customer_demographics.cd_dep_college_count, count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   36:MERGING-EXCHANGE [UNPARTITIONED]
@@ -356,7 +356,7 @@ Per-Host Resources: mem-estimate=128.07MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 35(GETNEXT)
   |
   35:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  group by: default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_education_status, default.impala_tpcds_customer_demographics.cd_purchase_estimate, default.impala_tpcds_customer_demographics.cd_credit_rating, default.impala_tpcds_customer_demographics.cd_dep_count, default.impala_tpcds_customer_demographics.cd_dep_employed_count, default.impala_tpcds_customer_demographics.cd_dep_college_count
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=72B cardinality=0
@@ -381,7 +381,7 @@ Per-Host Resources: mem-estimate=137.84MB mem-reservation=43.69MB thread-reserva
   19:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: c.c_customer_sk = default.impala_tpcds_catalog_sales.cs_ship_customer_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: _impala_builtins.if(TupleIsNull(13), NULL, TRUE) IS NOT NULL OR _impala_builtins.if(TupleIsNull(18), NULL, TRUE) IS NOT NULL
+  |  other predicates: if(TupleIsNull(13), NULL, TRUE) IS NOT NULL OR if(TupleIsNull(18), NULL, TRUE) IS NOT NULL
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,4,13N,18N row-size=104B cardinality=0
   |  in pipelines: 01(GETNEXT), 32(OPEN)
@@ -502,7 +502,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      predicates: default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

@@ -182,7 +182,7 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: substring(default.impala_tpch_customer.c_phone, 1, 2), _impala_builtins.count(*), _impala_builtins.sum(default.impala_tpch_customer.c_acctbal)
+  |  output exprs: substring(default.impala_tpch_customer.c_phone, 1, 2), count(*), sum(default.impala_tpch_customer.c_acctbal)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:SORT
@@ -201,7 +201,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   06:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_customer.c_custkey = default.impala_tpch_orders.o_custkey
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: _impala_builtins.if(TupleIsNull(7), NULL, TRUE) IS NULL
+  |  other predicates: if(TupleIsNull(7), NULL, TRUE) IS NULL
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=4,0,7N row-size=60B cardinality=1
   |  in pipelines: 10(GETNEXT), 13(OPEN)
@@ -212,7 +212,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   |     in pipelines: 13(GETNEXT)
   |
   03:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: default.impala_tpch_customer.c_acctbal > casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_customer_0.c_acctbal), casttodecimal(_impala_builtins.count(default.impala_tpch_customer_0.c_acctbal))))
+  |  join predicates: default.impala_tpch_customer.c_acctbal > casttodecimal(divide(sum(default.impala_tpch_customer_0.c_acctbal), casttodecimal(count(default.impala_tpch_customer_0.c_acctbal))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=4,0 row-size=52B cardinality=1
   |  in pipelines: 10(GETNEXT), 00(OPEN)
@@ -223,8 +223,8 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   |     in pipelines: 00(GETNEXT)
   |
   10:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpch_customer_0.c_acctbal), _impala_builtins.count:merge(default.impala_tpch_customer_0.c_acctbal)
-  |  having: casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_customer_0.c_acctbal), casttodecimal(_impala_builtins.count(default.impala_tpch_customer_0.c_acctbal)))) IS NOT NULL
+  |  output: sum:merge(default.impala_tpch_customer_0.c_acctbal), count:merge(default.impala_tpch_customer_0.c_acctbal)
+  |  having: casttodecimal(divide(sum(default.impala_tpch_customer_0.c_acctbal), casttodecimal(count(default.impala_tpch_customer_0.c_acctbal)))) IS NOT NULL
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=24B cardinality=1
   |  in pipelines: 10(GETNEXT), 02(OPEN)

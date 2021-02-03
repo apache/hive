@@ -84,7 +84,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: tt_tinyint, tt_smallint, tt_int, tt_bigint, tt_float, tt_double, tt_double_precision, tt_decimal, tt_decimal_pre, tt_numeric, tt_numeric_pre, tt_timestamp, tt_string, tt_varchar, tt_char, tt_boolean
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -134,7 +134,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -184,7 +184,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -234,7 +234,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -284,7 +284,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -334,7 +334,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -405,7 +405,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=20.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.lag(default.type_test.tt_int, 1)
+  |  output exprs: lag(default.type_test.tt_int, 1)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   04:EXCHANGE [UNPARTITIONED]
@@ -418,7 +418,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=10.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:ANALYTIC
-  |  functions: _impala_builtins.lag(tt_int, 1)
+  |  functions: lag(tt_int, 1)
   |  partition by: default.type_test.tt_date
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
@@ -426,7 +426,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=10.00MB thread-reservat
   |  in pipelines: 01(GETNEXT)
   |
   01:SORT
-  |  order by: tt_date ASC NULLS FIRST
+  |  order by: tt_date ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=8B cardinality=0
   |  in pipelines: 01(GETNEXT), 00(OPEN)
@@ -444,7 +444,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: tt_int
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -531,7 +531,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -581,7 +581,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

@@ -26,7 +26,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_lineitem.l_orderkey, _impala_builtins.group_concat(casttostring(default.impala_tpch_lineitem.l_suppkey), ':')
+  |  output exprs: default.impala_tpch_lineitem.l_orderkey, group_concat(casttostring(default.impala_tpch_lineitem.l_suppkey), ':')
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   04:EXCHANGE [UNPARTITIONED]
@@ -40,7 +40,7 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=36.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.group_concat:merge(casttostring(default.impala_tpch_lineitem.l_suppkey), ':')
+  |  output: group_concat:merge(casttostring(default.impala_tpch_lineitem.l_suppkey), ':')
   |  group by: default.impala_tpch_lineitem.l_orderkey
   |  limit: 10
   |  mem-estimate=128.00MB mem-reservation=36.00MB spill-buffer=2.00MB thread-reservation=0

@@ -146,7 +146,7 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=48.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_item.i_item_id, divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_list_price), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_list_price)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_coupon_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_coupon_amt)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_sales_price))))
+  |  output exprs: default.impala_tpcds_item.i_item_id, divide(casttodouble(sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales.ss_list_price)))), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_coupon_amt), casttodecimal(count(default.impala_tpcds_store_sales.ss_coupon_amt)))), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_sales_price), casttodecimal(count(default.impala_tpcds_store_sales.ss_sales_price))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:MERGING-EXCHANGE [UNPARTITIONED]
@@ -172,7 +172,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 17(GETNEXT)
   |
   17:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.count:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |  output: sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum:merge(default.impala_tpcds_store_sales.ss_list_price), count:merge(default.impala_tpcds_store_sales.ss_list_price), sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt), count:merge(default.impala_tpcds_store_sales.ss_coupon_amt), sum:merge(default.impala_tpcds_store_sales.ss_sales_price), count:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |  group by: default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=100B cardinality=0
@@ -248,7 +248,7 @@ Per-Host Resources: mem-estimate=135.86MB mem-reservation=41.75MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_cdemo_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_promo_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_cdemo_sk, ss_promo_sk, ss_quantity, ss_list_price, ss_sales_price, ss_coupon_amt
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

@@ -229,7 +229,7 @@ STAGE PLANS:
 F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=48.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: n1.n_name, n2.n_name, year(casttodate(default.impala_tpch_lineitem.l_shipdate)), _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  output exprs: n1.n_name, n2.n_name, year(casttodate(default.impala_tpch_lineitem.l_shipdate)), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   21:MERGING-EXCHANGE [UNPARTITIONED]
@@ -255,7 +255,7 @@ Per-Host Resources: mem-estimate=140.05MB mem-reservation=46.00MB thread-reserva
   |  in pipelines: 20(GETNEXT)
   |
   20:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  output: sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  group by: year(casttodate(default.impala_tpch_lineitem.l_shipdate)), n1.n_name, n2.n_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=44B cardinality=0

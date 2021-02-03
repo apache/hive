@@ -316,7 +316,7 @@ STAGE PLANS:
 F17:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=22.07MB mem-reservation=12.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_store.s_store_name, _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))
+  |  output exprs: default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_store.s_store_name, sum(sum(default.impala_tpcds_store_sales.ss_sales_price))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   30:SORT
@@ -331,7 +331,7 @@ Per-Host Resources: mem-estimate=22.07MB mem-reservation=12.00MB thread-reservat
   |  in pipelines: 39(GETNEXT)
   |
   29:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) > multiply(CAST(0.05 AS DECIMAL(2,2)), divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
+  |  join predicates: sum(sum(default.impala_tpcds_store_sales.ss_sales_price)) > multiply(CAST(0.05 AS DECIMAL(2,2)), divide(sum(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(count(sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=26,13 row-size=76B cardinality=1
   |  in pipelines: 39(GETNEXT), 48(OPEN)
@@ -342,8 +342,8 @@ Per-Host Resources: mem-estimate=22.07MB mem-reservation=12.00MB thread-reservat
   |     in pipelines: 48(GETNEXT)
   |
   39:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), _impala_builtins.count:merge(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price))
-  |  having: casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price))) IS NOT NULL
+  |  output: sum:merge(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), count:merge(sum(default.impala_tpcds_store_sales_0.ss_sales_price))
+  |  having: casttodecimal(count(sum(default.impala_tpcds_store_sales_0.ss_sales_price))) IS NOT NULL
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=26 row-size=24B cardinality=1
   |  in pipelines: 39(GETNEXT), 28(OPEN)
@@ -358,13 +358,13 @@ Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F17, EXCHANGE=38, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   28:AGGREGATE
-  |  output: sum(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price))
+  |  output: sum(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), count(sum(default.impala_tpcds_store_sales_0.ss_sales_price))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=26 row-size=24B cardinality=1
   |  in pipelines: 28(GETNEXT), 37(OPEN)
   |
   37:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales_0.ss_sales_price)
   |  group by: default.impala_tpcds_item_0.i_current_price, default.impala_tpcds_item_0.i_size, default.impala_tpcds_item_0.i_color, default.impala_tpcds_item_0.i_units, default.impala_tpcds_item_0.i_manager_id, default.impala_tpcds_customer_address_0.ca_state, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_state, default.impala_tpcds_customer_0.c_first_name, default.impala_tpcds_customer_0.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=25 row-size=120B cardinality=0
@@ -440,7 +440,7 @@ Per-Host Resources: mem-estimate=135.96MB mem-reservation=41.75MB thread-reserva
      predicates: default.impala_tpcds_store_sales_0.ss_customer_sk IS NOT NULL, default.impala_tpcds_store_sales_0.ss_item_sk IS NOT NULL, default.impala_tpcds_store_sales_0.ss_store_sk IS NOT NULL, default.impala_tpcds_store_sales_0.ss_ticket_number IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -540,7 +540,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F17, EXCHANGE=49, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:SELECT
-  |  predicates: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) IS NOT NULL
+  |  predicates: sum(sum(default.impala_tpcds_store_sales.ss_sales_price)) IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=13 row-size=52B cardinality=0
   |  in pipelines: 48(GETNEXT)
@@ -551,7 +551,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 48(GETNEXT)
   |
   48:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))
+  |  output: sum:merge(sum(default.impala_tpcds_store_sales.ss_sales_price))
   |  group by: default.impala_tpcds_store.s_store_name, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=52B cardinality=0
@@ -567,14 +567,14 @@ Per-Host Resources: mem-estimate=256.11MB mem-reservation=68.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F16, EXCHANGE=47, HASH(default.impala_tpcds_store.s_store_name,default.impala_tpcds_customer.c_first_name,default.impala_tpcds_customer.c_last_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))
+  |  output: sum(sum(default.impala_tpcds_store_sales.ss_sales_price))
   |  group by: default.impala_tpcds_store.s_store_name, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=52B cardinality=0
   |  in pipelines: 46(GETNEXT)
   |
   46:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |  group by: default.impala_tpcds_item.i_current_price, default.impala_tpcds_item.i_size, default.impala_tpcds_item.i_units, default.impala_tpcds_item.i_manager_id, default.impala_tpcds_customer_address.ca_state, default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_state, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=108B cardinality=0
@@ -650,7 +650,7 @@ Per-Host Resources: mem-estimate=135.96MB mem-reservation=41.75MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_ticket_number IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

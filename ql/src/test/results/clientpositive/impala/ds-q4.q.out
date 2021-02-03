@@ -616,7 +616,7 @@ Per-Host Resources: mem-estimate=138.09MB mem-reservation=43.69MB thread-reserva
   47:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_0.c_customer_id = default.impala_tpcds_customer_4.c_customer_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: divide(_impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales_0.cs_ext_list_price, default.impala_tpcds_catalog_sales_0.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt), default.impala_tpcds_catalog_sales_0.cs_ext_sales_price), 2)), _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2))) > divide(_impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_web_sales_0.ws_ext_list_price, default.impala_tpcds_web_sales_0.ws_ext_wholesale_cost), default.impala_tpcds_web_sales_0.ws_ext_discount_amt), default.impala_tpcds_web_sales_0.ws_ext_sales_price), 2)), _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_web_sales.ws_ext_list_price, default.impala_tpcds_web_sales.ws_ext_wholesale_cost), default.impala_tpcds_web_sales.ws_ext_discount_amt), default.impala_tpcds_web_sales.ws_ext_sales_price), 2)))
+  |  other join predicates: divide(sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales_0.cs_ext_list_price, default.impala_tpcds_catalog_sales_0.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt), default.impala_tpcds_catalog_sales_0.cs_ext_sales_price), 2)), sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2))) > divide(sum(divide(add(subtract(subtract(default.impala_tpcds_web_sales_0.ws_ext_list_price, default.impala_tpcds_web_sales_0.ws_ext_wholesale_cost), default.impala_tpcds_web_sales_0.ws_ext_discount_amt), default.impala_tpcds_web_sales_0.ws_ext_sales_price), 2)), sum(divide(add(subtract(subtract(default.impala_tpcds_web_sales.ws_ext_list_price, default.impala_tpcds_web_sales.ws_ext_wholesale_cost), default.impala_tpcds_web_sales.ws_ext_discount_amt), default.impala_tpcds_web_sales.ws_ext_sales_price), 2)))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=5,12,20,27,35,42 row-size=384B cardinality=0
   |  in pipelines: 52(GETNEXT), 76(OPEN)
@@ -641,7 +641,7 @@ Per-Host Resources: mem-estimate=138.09MB mem-reservation=43.69MB thread-reserva
   31:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_0.c_customer_id = default.impala_tpcds_customer_2.c_customer_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: divide(_impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales_0.cs_ext_list_price, default.impala_tpcds_catalog_sales_0.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt), default.impala_tpcds_catalog_sales_0.cs_ext_sales_price), 2)), _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2))) > divide(_impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_store_sales.ss_ext_list_price, default.impala_tpcds_store_sales.ss_ext_wholesale_cost), default.impala_tpcds_store_sales.ss_ext_discount_amt), default.impala_tpcds_store_sales.ss_ext_sales_price), 2)), _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_store_sales_0.ss_ext_list_price, default.impala_tpcds_store_sales_0.ss_ext_wholesale_cost), default.impala_tpcds_store_sales_0.ss_ext_discount_amt), default.impala_tpcds_store_sales_0.ss_ext_sales_price), 2)))
+  |  other join predicates: divide(sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales_0.cs_ext_list_price, default.impala_tpcds_catalog_sales_0.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt), default.impala_tpcds_catalog_sales_0.cs_ext_sales_price), 2)), sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2))) > divide(sum(divide(add(subtract(subtract(default.impala_tpcds_store_sales.ss_ext_list_price, default.impala_tpcds_store_sales.ss_ext_wholesale_cost), default.impala_tpcds_store_sales.ss_ext_discount_amt), default.impala_tpcds_store_sales.ss_ext_sales_price), 2)), sum(divide(add(subtract(subtract(default.impala_tpcds_store_sales_0.ss_ext_list_price, default.impala_tpcds_store_sales_0.ss_ext_wholesale_cost), default.impala_tpcds_store_sales_0.ss_ext_discount_amt), default.impala_tpcds_store_sales_0.ss_ext_sales_price), 2)))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=5,12,20,27 row-size=256B cardinality=0
   |  in pipelines: 52(GETNEXT), 66(OPEN)
@@ -676,7 +676,7 @@ Per-Host Resources: mem-estimate=138.09MB mem-reservation=43.69MB thread-reserva
   |     in pipelines: 56(GETNEXT)
   |
   52:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(divide(add(subtract(subtract(default.impala_tpcds_store_sales.ss_ext_list_price, default.impala_tpcds_store_sales.ss_ext_wholesale_cost), default.impala_tpcds_store_sales.ss_ext_discount_amt), default.impala_tpcds_store_sales.ss_ext_sales_price), 2))
+  |  output: sum:merge(divide(add(subtract(subtract(default.impala_tpcds_store_sales.ss_ext_list_price, default.impala_tpcds_store_sales.ss_ext_wholesale_cost), default.impala_tpcds_store_sales.ss_ext_discount_amt), default.impala_tpcds_store_sales.ss_ext_sales_price), 2))
   |  group by: default.impala_tpcds_customer.c_customer_id, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_preferred_cust_flag, default.impala_tpcds_customer.c_birth_country, default.impala_tpcds_customer.c_login, default.impala_tpcds_customer.c_email_address
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=100B cardinality=0
@@ -743,7 +743,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      predicates: default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_ext_discount_amt, ss_ext_sales_price, ss_ext_wholesale_cost, ss_ext_list_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -771,7 +771,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F27, EXCHANGE=57, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:SELECT
-  |  predicates: _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_store_sales_0.ss_ext_list_price, default.impala_tpcds_store_sales_0.ss_ext_wholesale_cost), default.impala_tpcds_store_sales_0.ss_ext_discount_amt), default.impala_tpcds_store_sales_0.ss_ext_sales_price), 2)) > CAST(0 AS DECIMAL(38,6))
+  |  predicates: sum(divide(add(subtract(subtract(default.impala_tpcds_store_sales_0.ss_ext_list_price, default.impala_tpcds_store_sales_0.ss_ext_wholesale_cost), default.impala_tpcds_store_sales_0.ss_ext_discount_amt), default.impala_tpcds_store_sales_0.ss_ext_sales_price), 2)) > CAST(0 AS DECIMAL(38,6))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=12 row-size=28B cardinality=0
   |  in pipelines: 56(GETNEXT)
@@ -782,7 +782,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 56(GETNEXT)
   |
   56:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(divide(add(subtract(subtract(default.impala_tpcds_store_sales_0.ss_ext_list_price, default.impala_tpcds_store_sales_0.ss_ext_wholesale_cost), default.impala_tpcds_store_sales_0.ss_ext_discount_amt), default.impala_tpcds_store_sales_0.ss_ext_sales_price), 2))
+  |  output: sum:merge(divide(add(subtract(subtract(default.impala_tpcds_store_sales_0.ss_ext_list_price, default.impala_tpcds_store_sales_0.ss_ext_wholesale_cost), default.impala_tpcds_store_sales_0.ss_ext_discount_amt), default.impala_tpcds_store_sales_0.ss_ext_sales_price), 2))
   |  group by: default.impala_tpcds_customer_0.c_customer_id, default.impala_tpcds_customer_0.c_first_name, default.impala_tpcds_customer_0.c_last_name, default.impala_tpcds_customer_0.c_preferred_cust_flag, default.impala_tpcds_customer_0.c_birth_country, default.impala_tpcds_customer_0.c_login, default.impala_tpcds_customer_0.c_email_address
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=100B cardinality=0
@@ -849,7 +849,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      predicates: default.impala_tpcds_store_sales_0.ss_customer_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_ext_discount_amt, ss_ext_sales_price, ss_ext_wholesale_cost, ss_ext_list_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -877,7 +877,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F27, EXCHANGE=62, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   23:SELECT
-  |  predicates: _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2)) > CAST(0 AS DECIMAL(38,6))
+  |  predicates: sum(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2)) > CAST(0 AS DECIMAL(38,6))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=20 row-size=28B cardinality=0
   |  in pipelines: 61(GETNEXT)
@@ -888,7 +888,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 61(GETNEXT)
   |
   61:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2))
+  |  output: sum:merge(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales.cs_ext_list_price, default.impala_tpcds_catalog_sales.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales.cs_ext_discount_amt), default.impala_tpcds_catalog_sales.cs_ext_sales_price), 2))
   |  group by: default.impala_tpcds_customer_1.c_customer_id, default.impala_tpcds_customer_1.c_first_name, default.impala_tpcds_customer_1.c_last_name, default.impala_tpcds_customer_1.c_preferred_cust_flag, default.impala_tpcds_customer_1.c_birth_country, default.impala_tpcds_customer_1.c_login, default.impala_tpcds_customer_1.c_email_address
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=100B cardinality=0
@@ -981,7 +981,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F27, EXCHANGE=67, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   66:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales_0.cs_ext_list_price, default.impala_tpcds_catalog_sales_0.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt), default.impala_tpcds_catalog_sales_0.cs_ext_sales_price), 2))
+  |  output: sum:merge(divide(add(subtract(subtract(default.impala_tpcds_catalog_sales_0.cs_ext_list_price, default.impala_tpcds_catalog_sales_0.cs_ext_wholesale_cost), default.impala_tpcds_catalog_sales_0.cs_ext_discount_amt), default.impala_tpcds_catalog_sales_0.cs_ext_sales_price), 2))
   |  group by: default.impala_tpcds_customer_2.c_customer_id, default.impala_tpcds_customer_2.c_first_name, default.impala_tpcds_customer_2.c_last_name, default.impala_tpcds_customer_2.c_preferred_cust_flag, default.impala_tpcds_customer_2.c_birth_country, default.impala_tpcds_customer_2.c_login, default.impala_tpcds_customer_2.c_email_address
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=100B cardinality=0
@@ -1074,7 +1074,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F27, EXCHANGE=72, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   39:SELECT
-  |  predicates: _impala_builtins.sum(divide(add(subtract(subtract(default.impala_tpcds_web_sales.ws_ext_list_price, default.impala_tpcds_web_sales.ws_ext_wholesale_cost), default.impala_tpcds_web_sales.ws_ext_discount_amt), default.impala_tpcds_web_sales.ws_ext_sales_price), 2)) > CAST(0 AS DECIMAL(38,6))
+  |  predicates: sum(divide(add(subtract(subtract(default.impala_tpcds_web_sales.ws_ext_list_price, default.impala_tpcds_web_sales.ws_ext_wholesale_cost), default.impala_tpcds_web_sales.ws_ext_discount_amt), default.impala_tpcds_web_sales.ws_ext_sales_price), 2)) > CAST(0 AS DECIMAL(38,6))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=35 row-size=28B cardinality=0
   |  in pipelines: 71(GETNEXT)
@@ -1085,7 +1085,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 71(GETNEXT)
   |
   71:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(divide(add(subtract(subtract(default.impala_tpcds_web_sales.ws_ext_list_price, default.impala_tpcds_web_sales.ws_ext_wholesale_cost), default.impala_tpcds_web_sales.ws_ext_discount_amt), default.impala_tpcds_web_sales.ws_ext_sales_price), 2))
+  |  output: sum:merge(divide(add(subtract(subtract(default.impala_tpcds_web_sales.ws_ext_list_price, default.impala_tpcds_web_sales.ws_ext_wholesale_cost), default.impala_tpcds_web_sales.ws_ext_discount_amt), default.impala_tpcds_web_sales.ws_ext_sales_price), 2))
   |  group by: default.impala_tpcds_customer_3.c_customer_id, default.impala_tpcds_customer_3.c_first_name, default.impala_tpcds_customer_3.c_last_name, default.impala_tpcds_customer_3.c_preferred_cust_flag, default.impala_tpcds_customer_3.c_birth_country, default.impala_tpcds_customer_3.c_login, default.impala_tpcds_customer_3.c_email_address
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=34 row-size=100B cardinality=0
@@ -1178,7 +1178,7 @@ Per-Host Resources: mem-estimate=128.10MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F27, EXCHANGE=77, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   76:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(divide(add(subtract(subtract(default.impala_tpcds_web_sales_0.ws_ext_list_price, default.impala_tpcds_web_sales_0.ws_ext_wholesale_cost), default.impala_tpcds_web_sales_0.ws_ext_discount_amt), default.impala_tpcds_web_sales_0.ws_ext_sales_price), 2))
+  |  output: sum:merge(divide(add(subtract(subtract(default.impala_tpcds_web_sales_0.ws_ext_list_price, default.impala_tpcds_web_sales_0.ws_ext_wholesale_cost), default.impala_tpcds_web_sales_0.ws_ext_discount_amt), default.impala_tpcds_web_sales_0.ws_ext_sales_price), 2))
   |  group by: default.impala_tpcds_customer_4.c_customer_id, default.impala_tpcds_customer_4.c_first_name, default.impala_tpcds_customer_4.c_last_name, default.impala_tpcds_customer_4.c_preferred_cust_flag, default.impala_tpcds_customer_4.c_birth_country, default.impala_tpcds_customer_4.c_login, default.impala_tpcds_customer_4.c_email_address
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=42 row-size=100B cardinality=0

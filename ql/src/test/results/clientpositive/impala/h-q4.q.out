@@ -124,7 +124,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_orders.o_orderpriority, _impala_builtins.count(*)
+  |  output exprs: default.impala_tpch_orders.o_orderpriority, count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:MERGING-EXCHANGE [UNPARTITIONED]
@@ -144,7 +144,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   |  in pipelines: 04(GETNEXT), 07(OPEN)
   |
   07:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  group by: default.impala_tpch_orders.o_orderpriority
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=20B cardinality=0

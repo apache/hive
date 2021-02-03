@@ -335,11 +335,11 @@ STAGE PLANS:
 F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=136.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, round(divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(add(coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)))), 2), _impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_wholesale_cost), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), add(coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)), add(coalesce(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_wholesale_cost), 0), coalesce(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), 0)), add(coalesce(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price), 0), coalesce(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), 0))
+  |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, round(divide(casttodouble(sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(add(coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)))), 2), sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_wholesale_cost), sum(default.impala_tpcds_store_sales.ss_sales_price), add(coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)), add(coalesce(sum(default.impala_tpcds_web_sales.ws_wholesale_cost), 0), coalesce(sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), 0)), add(coalesce(sum(default.impala_tpcds_web_sales.ws_sales_price), 0), coalesce(sum(default.impala_tpcds_catalog_sales.cs_sales_price), 0))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   36:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST, _impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) DESC NULLS FIRST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_wholesale_cost) DESC NULLS FIRST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) DESC NULLS FIRST, add(coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)) ASC NULLS LAST, add(coalesce(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_wholesale_cost), 0), coalesce(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), 0)) ASC NULLS LAST, add(coalesce(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price), 0), coalesce(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), 0)) ASC NULLS LAST, round(divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(add(coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)))), 2) ASC NULLS LAST
+     order by: default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST, sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) DESC NULLS FIRST, sum(default.impala_tpcds_store_sales.ss_wholesale_cost) DESC NULLS FIRST, sum(default.impala_tpcds_store_sales.ss_sales_price) DESC NULLS FIRST, add(coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)) ASC NULLS LAST, add(coalesce(sum(default.impala_tpcds_web_sales.ws_wholesale_cost), 0), coalesce(sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), 0)) ASC NULLS LAST, add(coalesce(sum(default.impala_tpcds_web_sales.ws_sales_price), 0), coalesce(sum(default.impala_tpcds_catalog_sales.cs_sales_price), 0)) ASC NULLS LAST, round(divide(casttodouble(sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(add(coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)))), 2) ASC NULLS LAST
      limit: 100
      mem-estimate=136.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=21 row-size=132B cardinality=0
@@ -350,7 +350,7 @@ Per-Host Resources: mem-estimate=132.04MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=36, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:TOP-N [LIMIT=100]
-  |  order by: default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST, _impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) DESC NULLS FIRST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_wholesale_cost) DESC NULLS FIRST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) DESC NULLS FIRST, add(coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)) ASC NULLS LAST, add(coalesce(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_wholesale_cost), 0), coalesce(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), 0)) ASC NULLS LAST, add(coalesce(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price), 0), coalesce(_impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_sales_price), 0)) ASC NULLS LAST, round(divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(add(coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)))), 2) ASC NULLS LAST
+  |  order by: default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST, sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) DESC NULLS FIRST, sum(default.impala_tpcds_store_sales.ss_wholesale_cost) DESC NULLS FIRST, sum(default.impala_tpcds_store_sales.ss_sales_price) DESC NULLS FIRST, add(coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)) ASC NULLS LAST, add(coalesce(sum(default.impala_tpcds_web_sales.ws_wholesale_cost), 0), coalesce(sum(default.impala_tpcds_catalog_sales.cs_wholesale_cost), 0)) ASC NULLS LAST, add(coalesce(sum(default.impala_tpcds_web_sales.ws_sales_price), 0), coalesce(sum(default.impala_tpcds_catalog_sales.cs_sales_price), 0)) ASC NULLS LAST, round(divide(casttodouble(sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(add(coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), 0), coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), 0)))), 2) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=21 row-size=132B cardinality=0
   |  in pipelines: 21(GETNEXT), 25(OPEN)
@@ -363,7 +363,7 @@ Per-Host Resources: mem-estimate=132.04MB mem-reservation=37.88MB thread-reserva
   20:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales.ss_customer_sk = default.impala_tpcds_catalog_sales.cs_bill_customer_sk, default.impala_tpcds_store_sales.ss_item_sk = default.impala_tpcds_catalog_sales.cs_item_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), CAST(0 AS BIGINT)) > CAST(0 AS BIGINT) OR coalesce(_impala_builtins.sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), CAST(0 AS BIGINT)) > CAST(0 AS BIGINT)
+  |  other predicates: coalesce(sum(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), CAST(0 AS BIGINT)) > CAST(0 AS BIGINT) OR coalesce(sum(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), CAST(0 AS BIGINT)) > CAST(0 AS BIGINT)
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=5,12N,19N row-size=156B cardinality=0
   |  in pipelines: 25(GETNEXT), 34(OPEN)
@@ -386,7 +386,7 @@ Per-Host Resources: mem-estimate=132.04MB mem-reservation=37.88MB thread-reserva
   |     in pipelines: 29(GETNEXT)
   |
   25:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |  output: sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum:merge(default.impala_tpcds_store_sales.ss_wholesale_cost), sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |  group by: default.impala_tpcds_store_sales.ss_item_sk, default.impala_tpcds_store_sales.ss_customer_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=52B cardinality=0
@@ -438,7 +438,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      partitions=0/0 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_customer_sk, ss_ticket_number, ss_quantity, ss_wholesale_cost, ss_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -481,7 +481,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=30, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   29:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_sales_price)
+  |  output: sum:merge(casttobigint(default.impala_tpcds_web_sales.ws_quantity)), sum:merge(default.impala_tpcds_web_sales.ws_wholesale_cost), sum:merge(default.impala_tpcds_web_sales.ws_sales_price)
   |  group by: default.impala_tpcds_web_sales.ws_item_sk, default.impala_tpcds_web_sales.ws_bill_customer_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=52B cardinality=0
@@ -575,7 +575,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=35, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   34:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
+  |  output: sum:merge(casttobigint(default.impala_tpcds_catalog_sales.cs_quantity)), sum:merge(default.impala_tpcds_catalog_sales.cs_wholesale_cost), sum:merge(default.impala_tpcds_catalog_sales.cs_sales_price)
   |  group by: default.impala_tpcds_catalog_sales.cs_bill_customer_sk, default.impala_tpcds_catalog_sales.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=52B cardinality=0

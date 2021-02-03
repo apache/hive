@@ -191,11 +191,11 @@ STAGE PLANS:
 F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_partsupp.ps_partkey, _impala_builtins.sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty)))
+  |  output exprs: default.impala_tpch_partsupp.ps_partkey, sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   14:SORT
-  |  order by: _impala_builtins.sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) DESC NULLS FIRST
+  |  order by: sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) DESC NULLS FIRST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=24B cardinality=1
   |  in pipelines: 14(GETNEXT), 18(OPEN)
@@ -206,7 +206,7 @@ Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservati
   |  in pipelines: 18(GETNEXT)
   |
   13:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: _impala_builtins.sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) > multiply(_impala_builtins.sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))), CAST(0.0001 AS DECIMAL(4,4)))
+  |  join predicates: sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) > multiply(sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))), CAST(0.0001 AS DECIMAL(4,4)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=13,6 row-size=40B cardinality=1
   |  in pipelines: 18(GETNEXT), 22(OPEN)
@@ -217,8 +217,8 @@ Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservati
   |     in pipelines: 22(GETNEXT)
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty)))
-  |  having: _impala_builtins.sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))) IS NOT NULL
+  |  output: sum:merge(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty)))
+  |  having: sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))) IS NOT NULL
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=16B cardinality=1
   |  in pipelines: 18(GETNEXT), 12(OPEN)
@@ -309,9 +309,9 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=23, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty)))
+  |  output: sum:merge(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty)))
   |  group by: default.impala_tpch_partsupp.ps_partkey
-  |  having: _impala_builtins.sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) IS NOT NULL
+  |  having: sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=24B cardinality=0
   |  in pipelines: 22(GETNEXT), 01(OPEN)

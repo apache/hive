@@ -350,11 +350,11 @@ STAGE PLANS:
 F21:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50)), _impala_builtins.count(*), multiply(casttobigint(casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50))), 50)
+  |  output exprs: casttoint(divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50)), count(*), multiply(casttobigint(casttoint(divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50))), 50)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   35:TOP-N [LIMIT=100]
-  |  order by: casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50)) ASC NULLS LAST, _impala_builtins.count(*) ASC NULLS LAST
+  |  order by: casttoint(divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50)) ASC NULLS LAST, count(*) ASC NULLS LAST
   |  mem-estimate=20B mem-reservation=0B thread-reservation=0
   |  tuple-ids=36 row-size=20B cardinality=1
   |  in pipelines: 35(GETNEXT), 34(OPEN)
@@ -366,7 +366,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |
   34:AGGREGATE [FINALIZE]
   |  output: count(*)
-  |  group by: casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), CAST(50 AS DECIMAL(3,0))))
+  |  group by: casttoint(divide(sum(default.impala_tpcds_store_sales.ss_ext_sales_price), CAST(50 AS DECIMAL(3,0))))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=34 row-size=12B cardinality=1
   |  in pipelines: 34(GETNEXT), 33(OPEN)
@@ -400,8 +400,8 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 41(GETNEXT)
   |
   39:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
-  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
+  |  output: count:merge(*)
+  |  having: sq_count_check(count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=29 row-size=8B cardinality=1
   |  in pipelines: 39(GETNEXT), 28(OPEN)
@@ -542,8 +542,8 @@ Per-Host Resources: mem-estimate=15.95MB mem-reservation=5.81MB thread-reservati
   |     in pipelines: 01(GETNEXT)
   |
   46:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
-  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
+  |  output: count:merge(*)
+  |  having: sq_count_check(count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=8B cardinality=1
   |  in pipelines: 46(GETNEXT), 07(OPEN)
@@ -616,7 +616,7 @@ Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
      predicates: default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

@@ -148,11 +148,11 @@ STAGE PLANS:
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=44.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_lineitem.l_orderkey, _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))), default.impala_tpch_orders.o_orderdate, default.impala_tpch_orders.o_shippriority
+  |  output exprs: default.impala_tpch_lineitem.l_orderkey, sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))), default.impala_tpch_orders.o_orderdate, default.impala_tpch_orders.o_shippriority
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) DESC NULLS FIRST, default.impala_tpch_orders.o_orderdate ASC NULLS LAST, default.impala_tpch_lineitem.l_orderkey ASC NULLS LAST
+     order by: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) DESC NULLS FIRST, default.impala_tpch_orders.o_orderdate ASC NULLS LAST, default.impala_tpch_lineitem.l_orderkey ASC NULLS LAST
      limit: 10
      mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=40B cardinality=0
@@ -163,7 +163,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=12, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:TOP-N [LIMIT=10]
-  |  order by: _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) DESC NULLS FIRST, default.impala_tpch_orders.o_orderdate ASC NULLS LAST, default.impala_tpch_lineitem.l_orderkey ASC NULLS LAST
+  |  order by: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) DESC NULLS FIRST, default.impala_tpch_orders.o_orderdate ASC NULLS LAST, default.impala_tpch_lineitem.l_orderkey ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=8 row-size=40B cardinality=0
   |  in pipelines: 07(GETNEXT), 11(OPEN)
@@ -175,7 +175,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 11(GETNEXT)
   |
   11:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  output: sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  group by: default.impala_tpch_orders.o_orderdate, default.impala_tpch_orders.o_shippriority, default.impala_tpch_lineitem.l_orderkey
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=40B cardinality=0

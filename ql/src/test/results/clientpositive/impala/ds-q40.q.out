@@ -174,7 +174,7 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=60.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_warehouse.w_state, default.impala_tpcds_item.i_item_id, _impala_builtins.sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) < casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END), _impala_builtins.sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) >= casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END)
+  |  output exprs: default.impala_tpcds_warehouse.w_state, default.impala_tpcds_item.i_item_id, sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) < casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END), sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) >= casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   17:MERGING-EXCHANGE [UNPARTITIONED]
@@ -195,7 +195,7 @@ Per-Host Resources: mem-estimate=128.06MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 10(GETNEXT), 16(OPEN)
   |
   16:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) < casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END), _impala_builtins.sum:merge(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) >= casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END)
+  |  output: sum:merge(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) < casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END), sum:merge(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) >= casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, 0)) ELSE 0 END)
   |  group by: default.impala_tpcds_warehouse.w_state, default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=56B cardinality=0

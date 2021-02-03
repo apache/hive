@@ -103,7 +103,7 @@ STAGE PLANS:
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=44.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer_address.ca_zip, default.impala_tpcds_customer_address.ca_county, _impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price)
+  |  output exprs: default.impala_tpcds_customer_address.ca_zip, default.impala_tpcds_customer_address.ca_county, sum(default.impala_tpcds_web_sales.ws_sales_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   24:EXCHANGE [UNPARTITIONED]
@@ -116,7 +116,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=24, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   23:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_sales_price)
+  |  output: sum:merge(default.impala_tpcds_web_sales.ws_sales_price)
   |  group by: default.impala_tpcds_customer_address.ca_county, default.impala_tpcds_customer_address.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=40B cardinality=0
@@ -139,7 +139,7 @@ Per-Host Resources: mem-estimate=130.01MB mem-reservation=35.94MB thread-reserva
   |  in pipelines: 01(GETNEXT)
   |
   12:SELECT
-  |  predicates: _impala_builtins.count(*) != CAST(0 AS BIGINT) AND _impala_builtins.if(TupleIsNull(4), NULL, TRUE) IS NOT NULL OR substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')
+  |  predicates: count(*) != CAST(0 AS BIGINT) AND if(TupleIsNull(4), NULL, TRUE) IS NOT NULL OR substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=12 row-size=77B cardinality=0
   |  in pipelines: 01(GETNEXT)
@@ -258,7 +258,7 @@ Per-Host Resources: mem-estimate=10.04MB mem-reservation=0B thread-reservation=1
   |     in pipelines: 07(GETNEXT)
   |
   19:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=8B cardinality=1
   |  in pipelines: 19(GETNEXT), 09(OPEN)

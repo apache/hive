@@ -177,7 +177,7 @@ STAGE PLANS:
 F11:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=64.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_store.s_store_name, default.impala_tpcds_item.i_item_desc, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), default.impala_tpcds_item.i_current_price, default.impala_tpcds_item.i_wholesale_cost, default.impala_tpcds_item.i_brand
+  |  output exprs: default.impala_tpcds_store.s_store_name, default.impala_tpcds_item.i_item_desc, sum(default.impala_tpcds_store_sales.ss_sales_price), default.impala_tpcds_item.i_current_price, default.impala_tpcds_item.i_wholesale_cost, default.impala_tpcds_item.i_brand
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   29:MERGING-EXCHANGE [UNPARTITIONED]
@@ -229,7 +229,7 @@ Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reserva
   12:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store_sales_0.ss_store_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) <= multiply(CAST(0.1 AS DECIMAL(1,1)), divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
+  |  other join predicates: sum(default.impala_tpcds_store_sales.ss_sales_price) <= multiply(CAST(0.1 AS DECIMAL(1,1)), divide(sum(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(count(sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=4,9 row-size=56B cardinality=0
   |  in pipelines: 20(GETNEXT), 25(OPEN)
@@ -240,7 +240,7 @@ Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reserva
   |     in pipelines: 25(GETNEXT)
   |
   06:SELECT
-  |  predicates: _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) IS NOT NULL
+  |  predicates: sum(default.impala_tpcds_store_sales.ss_sales_price) IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=4 row-size=28B cardinality=0
   |  in pipelines: 20(GETNEXT)
@@ -252,7 +252,7 @@ Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reserva
   |  in pipelines: 20(GETNEXT)
   |
   20:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_sales_price)
   |  group by: default.impala_tpcds_store_sales.ss_item_sk, default.impala_tpcds_store_sales.ss_store_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=28B cardinality=0
@@ -292,7 +292,7 @@ Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_item_sk IS NOT NULL, default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_store_sk, ss_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -319,9 +319,9 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=26, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   25:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), _impala_builtins.count:merge(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price))
+  |  output: sum:merge(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), count:merge(sum(default.impala_tpcds_store_sales_0.ss_sales_price))
   |  group by: default.impala_tpcds_store_sales_0.ss_store_sk
-  |  having: casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price))) IS NOT NULL
+  |  having: casttodecimal(count(sum(default.impala_tpcds_store_sales_0.ss_sales_price))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=28B cardinality=0
   |  in pipelines: 25(GETNEXT), 23(OPEN)
@@ -336,14 +336,14 @@ Per-Host Resources: mem-estimate=256.03MB mem-reservation=68.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=24, HASH(default.impala_tpcds_store_sales_0.ss_store_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price))
+  |  output: sum(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), count(sum(default.impala_tpcds_store_sales_0.ss_sales_price))
   |  group by: default.impala_tpcds_store_sales_0.ss_store_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=28B cardinality=0
   |  in pipelines: 23(GETNEXT)
   |
   23:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_sales_price)
+  |  output: sum:merge(default.impala_tpcds_store_sales_0.ss_sales_price)
   |  group by: default.impala_tpcds_store_sales_0.ss_item_sk, default.impala_tpcds_store_sales_0.ss_store_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=28B cardinality=0
@@ -383,7 +383,7 @@ Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reserva
      predicates: default.impala_tpcds_store_sales_0.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_store_sk, ss_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

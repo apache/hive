@@ -361,7 +361,7 @@ Per-Host Resources: mem-estimate=133.98MB mem-reservation=39.81MB thread-reserva
   31:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_0.c_customer_id = default.impala_tpcds_customer_2.c_customer_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: divide(_impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_net_paid), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid)) > divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_paid), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_paid))
+  |  other join predicates: divide(sum(default.impala_tpcds_web_sales_0.ws_net_paid), sum(default.impala_tpcds_web_sales.ws_net_paid)) > divide(sum(default.impala_tpcds_store_sales.ss_net_paid), sum(default.impala_tpcds_store_sales_0.ss_net_paid))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=5,12,20,27 row-size=160B cardinality=0
   |  in pipelines: 36(GETNEXT), 50(OPEN)
@@ -396,7 +396,7 @@ Per-Host Resources: mem-estimate=133.98MB mem-reservation=39.81MB thread-reserva
   |     in pipelines: 40(GETNEXT)
   |
   36:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_net_paid)
+  |  output: sum:merge(default.impala_tpcds_store_sales.ss_net_paid)
   |  group by: default.impala_tpcds_customer.c_customer_id, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=52B cardinality=0
@@ -448,7 +448,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_net_paid
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -491,7 +491,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=41, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:SELECT
-  |  predicates: _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_paid) > CAST(0 AS DECIMAL(38,2))
+  |  predicates: sum(default.impala_tpcds_store_sales_0.ss_net_paid) > CAST(0 AS DECIMAL(38,2))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=12 row-size=28B cardinality=0
   |  in pipelines: 40(GETNEXT)
@@ -502,7 +502,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 40(GETNEXT)
   |
   40:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_net_paid)
+  |  output: sum:merge(default.impala_tpcds_store_sales_0.ss_net_paid)
   |  group by: default.impala_tpcds_customer_0.c_customer_id, default.impala_tpcds_customer_0.c_first_name, default.impala_tpcds_customer_0.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=52B cardinality=0
@@ -554,7 +554,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales_0.ss_customer_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_net_paid
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -597,7 +597,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=46, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   23:SELECT
-  |  predicates: _impala_builtins.sum(default.impala_tpcds_web_sales.ws_net_paid) > CAST(0 AS DECIMAL(38,2))
+  |  predicates: sum(default.impala_tpcds_web_sales.ws_net_paid) > CAST(0 AS DECIMAL(38,2))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=20 row-size=28B cardinality=0
   |  in pipelines: 45(GETNEXT)
@@ -608,7 +608,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 45(GETNEXT)
   |
   45:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_net_paid)
+  |  output: sum:merge(default.impala_tpcds_web_sales.ws_net_paid)
   |  group by: default.impala_tpcds_customer_1.c_customer_id, default.impala_tpcds_customer_1.c_first_name, default.impala_tpcds_customer_1.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=52B cardinality=0
@@ -701,7 +701,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=51, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   50:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales_0.ws_net_paid)
+  |  output: sum:merge(default.impala_tpcds_web_sales_0.ws_net_paid)
   |  group by: default.impala_tpcds_customer_2.c_customer_id, default.impala_tpcds_customer_2.c_first_name, default.impala_tpcds_customer_2.c_last_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=52B cardinality=0

@@ -649,7 +649,7 @@ STAGE PLANS:
 F21:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=76.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(32,33,34) WHEN 32 THEN channel WHEN 33 THEN channel WHEN 34 THEN NULL END, CASE valid_tid(32,33,34) WHEN 32 THEN id WHEN 33 THEN NULL WHEN 34 THEN NULL END, aggif(valid_tid(32,33,34) IN (32, 33, 34), CASE valid_tid(32,33,34) WHEN 32 THEN _impala_builtins.sum(sales) WHEN 33 THEN sum(sales) WHEN 34 THEN sum(sales) END), aggif(valid_tid(32,33,34) IN (32, 33, 34), CASE valid_tid(32,33,34) WHEN 32 THEN _impala_builtins.sum(returns) WHEN 33 THEN sum(returns) WHEN 34 THEN sum(returns) END), aggif(valid_tid(32,33,34) IN (32, 33, 34), CASE valid_tid(32,33,34) WHEN 32 THEN _impala_builtins.sum(profit) WHEN 33 THEN sum(profit) WHEN 34 THEN sum(profit) END)
+  |  output exprs: CASE valid_tid(32,33,34) WHEN 32 THEN channel WHEN 33 THEN channel WHEN 34 THEN NULL END, CASE valid_tid(32,33,34) WHEN 32 THEN id WHEN 33 THEN NULL WHEN 34 THEN NULL END, aggif(valid_tid(32,33,34) IN (32, 33, 34), CASE valid_tid(32,33,34) WHEN 32 THEN sum(sales) WHEN 33 THEN sum(sales) WHEN 34 THEN sum(sales) END), aggif(valid_tid(32,33,34) IN (32, 33, 34), CASE valid_tid(32,33,34) WHEN 32 THEN sum(returns) WHEN 33 THEN sum(returns) WHEN 34 THEN sum(returns) END), aggif(valid_tid(32,33,34) IN (32, 33, 34), CASE valid_tid(32,33,34) WHEN 32 THEN sum(profit) WHEN 33 THEN sum(profit) WHEN 34 THEN sum(profit) END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   45:MERGING-EXCHANGE [UNPARTITIONED]
@@ -670,7 +670,7 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |  in pipelines: 29(GETNEXT), 28(OPEN)
   |
   28:AGGREGATE [FINALIZE]
-  |  output: aggif(valid_tid(32,33,34) IN (CAST(32 AS INT), CAST(33 AS INT), CAST(34 AS INT)), CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN _impala_builtins.sum(sales) WHEN CAST(33 AS INT) THEN sum(sales) WHEN CAST(34 AS INT) THEN sum(sales) END), aggif(valid_tid(32,33,34) IN (CAST(32 AS INT), CAST(33 AS INT), CAST(34 AS INT)), CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN _impala_builtins.sum(returns) WHEN CAST(33 AS INT) THEN sum(returns) WHEN CAST(34 AS INT) THEN sum(returns) END), aggif(valid_tid(32,33,34) IN (CAST(32 AS INT), CAST(33 AS INT), CAST(34 AS INT)), CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN _impala_builtins.sum(profit) WHEN CAST(33 AS INT) THEN sum(profit) WHEN CAST(34 AS INT) THEN sum(profit) END)
+  |  output: aggif(valid_tid(32,33,34) IN (CAST(32 AS INT), CAST(33 AS INT), CAST(34 AS INT)), CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN sum(sales) WHEN CAST(33 AS INT) THEN sum(sales) WHEN CAST(34 AS INT) THEN sum(sales) END), aggif(valid_tid(32,33,34) IN (CAST(32 AS INT), CAST(33 AS INT), CAST(34 AS INT)), CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN sum(returns) WHEN CAST(33 AS INT) THEN sum(returns) WHEN CAST(34 AS INT) THEN sum(returns) END), aggif(valid_tid(32,33,34) IN (CAST(32 AS INT), CAST(33 AS INT), CAST(34 AS INT)), CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN sum(profit) WHEN CAST(33 AS INT) THEN sum(profit) WHEN CAST(34 AS INT) THEN sum(profit) END)
   |  group by: CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN channel WHEN CAST(33 AS INT) THEN channel WHEN CAST(34 AS INT) THEN NULL END, CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN id WHEN CAST(33 AS INT) THEN NULL WHEN CAST(34 AS INT) THEN NULL END, CASE valid_tid(32,33,34) WHEN CAST(32 AS INT) THEN CAST(32 AS INT) WHEN CAST(33 AS INT) THEN CAST(33 AS INT) WHEN CAST(34 AS INT) THEN CAST(34 AS INT) END
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=35 row-size=76B cardinality=0
@@ -678,7 +678,7 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   |
   44:AGGREGATE [FINALIZE]
   |  Class 0
-  |    output: _impala_builtins.sum:merge(sales), _impala_builtins.sum:merge(returns), _impala_builtins.sum:merge(profit)
+  |    output: sum:merge(sales), sum:merge(returns), sum:merge(profit)
   |    group by: channel, id
   |  Class 1
   |    output: sum:merge(sales), sum:merge(returns), sum:merge(profit)
@@ -719,7 +719,7 @@ Per-Host Resources: mem-estimate=394.08MB mem-reservation=104.00MB thread-reserv
   |  in pipelines: 33(GETNEXT), 37(GETNEXT), 42(GETNEXT)
   |
   |--42:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.sum:merge(sales_price), _impala_builtins.sum:merge(profit), _impala_builtins.sum:merge(return_amt), _impala_builtins.sum:merge(net_loss)
+  |  |  output: sum:merge(sales_price), sum:merge(profit), sum:merge(return_amt), sum:merge(net_loss)
   |  |  group by: default.impala_tpcds_web_site.web_site_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=31 row-size=76B cardinality=0
@@ -731,7 +731,7 @@ Per-Host Resources: mem-estimate=394.08MB mem-reservation=104.00MB thread-reserv
   |     in pipelines: 18(GETNEXT), 19(GETNEXT)
   |
   |--37:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.sum:merge(sales_price), _impala_builtins.sum:merge(profit), _impala_builtins.sum:merge(return_amt), _impala_builtins.sum:merge(net_loss)
+  |  |  output: sum:merge(sales_price), sum:merge(profit), sum:merge(return_amt), sum:merge(net_loss)
   |  |  group by: default.impala_tpcds_catalog_page.cp_catalog_page_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=19 row-size=76B cardinality=0
@@ -743,7 +743,7 @@ Per-Host Resources: mem-estimate=394.08MB mem-reservation=104.00MB thread-reserv
   |     in pipelines: 10(GETNEXT), 11(GETNEXT)
   |
   33:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(sales_price), _impala_builtins.sum:merge(profit), _impala_builtins.sum:merge(return_amt), _impala_builtins.sum:merge(net_loss)
+  |  output: sum:merge(sales_price), sum:merge(profit), sum:merge(return_amt), sum:merge(net_loss)
   |  group by: default.impala_tpcds_store.s_store_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=76B cardinality=0
@@ -811,7 +811,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      predicates: default.impala_tpcds_store_sales.ss_store_sk IS NOT NULL
      stored statistics:
        table: rows=unavailable size=unavailable
-       partitions: 0/0 rows=unavailable
+       partitions: 0/0 rows=0
        columns missing stats: ss_store_sk, ss_ext_sales_price, ss_net_profit
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

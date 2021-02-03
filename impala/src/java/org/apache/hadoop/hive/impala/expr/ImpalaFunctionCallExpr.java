@@ -77,6 +77,11 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
 
   @Override
   protected void analyzeImpl(Analyzer analyzer) throws AnalysisException {
+    // Functions have already gone through the analysis phase in Hive so the
+    // analyzeImpl method is overridden.  However, the FunctionName object
+    // still needs to be analyzed.  This allows Expr.toSql() to display the names
+    // correctly in the explain plan.
+    getFnName().analyze(analyzer);
   }
 
   /**
