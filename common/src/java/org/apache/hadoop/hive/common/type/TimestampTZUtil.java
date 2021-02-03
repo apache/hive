@@ -132,8 +132,8 @@ public class TimestampTZUtil {
 
   // Converts Timestamp to TimestampTZ.
   public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
-    return new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts.toEpochMilli()), ZoneOffset.UTC)
-        .withZoneSameLocal(defaultTimeZone));
+    return new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts.toEpochMilli(), ts.getNanos()),
+        ZoneOffset.UTC).withZoneSameLocal(defaultTimeZone));
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {
