@@ -6,4 +6,4 @@ POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
-FAILED: SemanticException Expression not in GROUP BY key:TOK_TABLE_OR_COL
+FAILED: SemanticException [Error 10025]: Line 4:7 Expression not in GROUP BY key 'a'

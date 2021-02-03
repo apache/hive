@@ -5737,11 +5737,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           .getChild(0).getText());
       ColumnInfo colInfo = input.get(null, tableOrCol);
       String errMsg;
-      if (colInfo == null && input.getIsExprResolver()){
-        errMsg = ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg() + ":" + expr;
-      } else {
-        errMsg = tcCtx.getError();
-      }
+      errMsg = !StringUtils.isEmpty(tcCtx.getError())
+          ? tcCtx.getError()
+          : ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg() + ":" + tableOrCol;
       throw new SemanticException(Optional.ofNullable(errMsg).orElse("Error in parsing "));
     }
     if (desc instanceof HiveRexExprList) {
