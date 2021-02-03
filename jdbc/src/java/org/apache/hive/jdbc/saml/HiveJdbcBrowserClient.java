@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -170,7 +171,8 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
     URI ssoUri = clientContext.getSsoUri();
     Preconditions.checkNotNull(ssoUri, "SSO Url is null");
     try {
-      if (Desktop.isDesktopSupported()) {
+      if (Desktop.isDesktopSupported() && Desktop.getDesktop()
+          .isSupported(Action.BROWSE)) {
         Desktop.getDesktop().browse(ssoUri);
       } else {
         LOG.debug(
