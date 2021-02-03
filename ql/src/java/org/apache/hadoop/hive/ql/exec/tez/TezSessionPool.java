@@ -462,7 +462,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
     public Boolean call() throws Exception {
       if (sessionState.isPresent()) {
-        SessionState.setCurrentSessionState(SessionState.get());
+        SessionState.setCurrentSessionState(sessionState.get());
       }
       startInitialSession(this.sessionObjFactory.create(null));
       return true;
