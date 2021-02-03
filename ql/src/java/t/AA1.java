@@ -24,11 +24,11 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 public class AA1 {
 
-  public String chk(ParseContext pctx, String name) {
+  public static String chk(ParseContext pctx, String name) {
     return chk(new org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph(pctx).findOperator(name));
   }
 
-  private String chk(Operator<?> findOperator) {
+  public static String chk(Operator<?> findOperator) {
     try {
       NoOperatorReuseCheckerHook.checkOperator(findOperator);
     } catch (Exception e) {

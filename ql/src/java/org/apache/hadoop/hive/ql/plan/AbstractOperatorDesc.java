@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +49,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    * reduce sink and group by op
    */
   protected Map<String, ExprNodeDesc> colExprMap;
+
+  Set<String> computedFields = new HashSet<String>();
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
@@ -219,5 +222,15 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   @Override
   public void setBucketingVersion(int bucketingVersion) {
     this.bucketingVersion = bucketingVersion;
+  }
+
+  @Override
+  public void addComputedField(String column) {
+    computedFields.add(column);
+  }
+
+  @Override
+  public Set<String> getComputedFields() {
+    return computedFields;
   }
 }

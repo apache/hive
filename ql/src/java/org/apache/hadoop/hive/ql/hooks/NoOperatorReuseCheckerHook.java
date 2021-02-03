@@ -88,6 +88,9 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
         if (c.getKey().startsWith("KEY.reducesinkkey")) {
           continue;
         }
+        if (ci == null && conf.getComputedFields().contains(c.getKey())) {
+          continue;
+        }
         if (ci == null) {
           throw new RuntimeException("schema not found for " + c + " in " + schema);
         }

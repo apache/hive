@@ -158,6 +158,7 @@ public final class ColumnPrunerProcFactory {
         List<FieldNode> neededCols = cppCtx.genColLists(gbOp);
         String groupingColumn = conf.getOutputColumnNames().get(groupingSetPosition);
         if (lookupColumn(neededCols, groupingColumn) == null) {
+          conf.addComputedField(groupingColumn);
           conf.getOutputColumnNames().remove(groupingSetPosition);
           if (gbOp.getSchema() != null) {
             gbOp.getSchema().getSignature().remove(groupingSetPosition);
