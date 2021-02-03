@@ -327,7 +327,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo,
             selRS.getSignature().get(0).getTabAlias(), true, true);
         selRS.getSignature().add(ci);
-        fsParent.getSchema().getSignature().add(ci);
+        rsOp.getSchema().getSignature().add(ci);
       }
       // Create SelectDesc
       SelectDesc selConf = new SelectDesc(descs, colNames);
@@ -594,6 +594,7 @@ public class SortedDynPartitionOptimizer extends Transform {
               FunctionRegistry.getFunctionInfo("bucket_number").getGenericUDF(), new ArrayList<>());
           keyCols.add(bucketNumColUDF);
           colExprMap.put(Utilities.ReduceField.KEY + "." +BUCKET_NUMBER_COL_NAME, bucketNumColUDF);
+
         } else {
           keyCols.add(allCols.get(idx).clone());
         }
@@ -667,6 +668,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       }
       ReduceSinkOperator op = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
           rsConf, new RowSchema(signature), parent);
+      rsConf.addComputedField(Utilities.ReduceField.KEY + "." + BUCKET_NUMBER_COL_NAME);
       op.setColumnExprMap(colExprMap);
       return op;
     }
