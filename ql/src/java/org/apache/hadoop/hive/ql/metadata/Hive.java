@@ -3881,6 +3881,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
           part.setParameters(partitionWithoutSD.getParameters());
           part.setPrivileges(partitionWithoutSD.getPrivileges());
           part.setSd(partitionSpec.getSharedSDPartitionSpec().getSd().deepCopy());
+          if (partitionWithoutSD.isSetId()) {
+            part.setId(partitionWithoutSD.getId());
+          }
           String partitionLocation = null;
           if(partitionWithoutSD.getRelativePath() == null
               || partitionWithoutSD.getRelativePath().isEmpty()) {

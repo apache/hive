@@ -2467,6 +2467,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       commited = commitTransaction();
+      // certain APIs like append_partition return back this partition object to the
+      // client. Since we added a partition here, its partition id should be set.
+      part.setId(mpart.getId());
       success = true;
     } finally {
       if (!commited) {

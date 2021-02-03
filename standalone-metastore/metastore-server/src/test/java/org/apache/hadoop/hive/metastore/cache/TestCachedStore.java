@@ -413,6 +413,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     localDb1 = cachedStore.getDatabase(DEFAULT_CATALOG_NAME, dbName1);
     // Read db via ObjectStore
     dbRead = objectStore.getDatabase(DEFAULT_CATALOG_NAME, dbName1);
+    // cachedStore doesn't expose the fields which are set by the backing db.
+    // we unset the id so that comparison ignores it.
+    dbRead.unsetId();
     Assert.assertEquals(localDb1, dbRead);
     allDatabases = cachedStore.getAllDatabases(DEFAULT_CATALOG_NAME);
     Assert.assertEquals(4, allDatabases.size());
@@ -457,6 +460,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     localDb1 = cachedStore.getDatabase(DEFAULT_CATALOG_NAME, dbName1);
     // Read db via ObjectStore
     dbRead = objectStore.getDatabase(DEFAULT_CATALOG_NAME, dbName1);
+    // cachedStore doesn't expose the fields which are set by the backing db.
+    // we unset the id so that comparison ignores it.
+    dbRead.unsetId();
     Assert.assertEquals(localDb1, dbRead);
     allDatabases = cachedStore.getAllDatabases(DEFAULT_CATALOG_NAME);
     Assert.assertEquals(3, allDatabases.size());
@@ -492,6 +498,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     db = cachedStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
     // Read db via ObjectStore
     Database dbRead = objectStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
+    // cachedStore doesn't expose the fields which are set by the backing db.
+    // we unset the id so that comparison ignores it.
+    dbRead.unsetId();
     Assert.assertEquals(db, dbRead);
     // Alter db via ObjectStore
     dbOwner = "user3";

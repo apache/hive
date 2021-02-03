@@ -1180,6 +1180,9 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.createCatalog(cat);
     // in case of event based cache update, cache will not be updated for catalog.
     if (!canUseEvents) {
+      // TODO HIVE-24732 in case of CachedStore we cache directly the object send by the
+      //  client. This is problematic since certain fields of the object are populated
+      // after it is persisted. The cache will not be able to serve those fields correctly.
       sharedCache.addCatalogToCache(cat);
     }
   }
@@ -1226,6 +1229,9 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.createDatabase(db);
     // in case of event based cache update, cache will be updated during commit.
     if (!canUseEvents) {
+      // TODO HIVE-24732 in case of CachedStore we cache directly the object send by the
+      // client. This is problematic since certain fields of the object are populated
+      // after it is persisted. The cache will not be able to serve those fields correctly.
       sharedCache.addDatabaseToCache(db);
     }
   }
@@ -1324,6 +1330,9 @@ public class CachedStore implements RawStore, Configurable {
       return;
     }
     validateTableType(tbl);
+    // TODO HIVE-24732 in case of CachedStore we cache directly the object send by the
+    //  client. This is problematic since certain fields of the object are populated
+    // after it is persisted. The cache will not be able to serve those fields correctly.
     sharedCache.addTableToCache(catName, dbName, tblName, tbl);
   }
 
