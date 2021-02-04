@@ -1,0 +1,56 @@
+PREHOOK: query: drop table if exists deserialize_errors
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists deserialize_errors
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table deserialize_errors(col1 string, col2 int) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.BadRecordsSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@deserialize_errors
+POSTHOOK: query: create table deserialize_errors(col1 string, col2 int) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.BadRecordsSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@deserialize_errors
+PREHOOK: query: insert into table deserialize_errors values ('foo', 1), ('bar', 2), ('hel', 3), ('wor', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@deserialize_errors
+POSTHOOK: query: insert into table deserialize_errors values ('foo', 1), ('bar', 2), ('hel', 3), ('wor', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@deserialize_errors
+POSTHOOK: Lineage: deserialize_errors.col1 SCRIPT []
+POSTHOOK: Lineage: deserialize_errors.col2 SCRIPT []
+PREHOOK: query: explain
+select * from deserialize_errors
+PREHOOK: type: QUERY
+PREHOOK: Input: default@deserialize_errors
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select * from deserialize_errors
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@deserialize_errors
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: deserialize_errors
+          Select Operator
+            expressions: col1 (type: string), col2 (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select * from deserialize_errors
+PREHOOK: type: QUERY
+PREHOOK: Input: default@deserialize_errors
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from deserialize_errors
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@deserialize_errors
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Failed with exception java.io.IOException:org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing writable, deserialization errors: 3, max allowed: 2

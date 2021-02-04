@@ -25,7 +25,8 @@ select col1, count(*)
 group by col1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@deserialize_errors
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Execution has failed. stack trace: java.lang.RuntimeException: Total number of deserialize errors now is 3, which exceeds 2
 #### A masked pattern was here ####
-[Fatal Error] total number of deserialize errors now is 3, which exceeds 2. Killing the job.
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.tez.TezTask. 
