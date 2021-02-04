@@ -127,7 +127,8 @@ public class TimestampTZUtil {
 
   // Converts Date to TimestampTZ.
   public static TimestampTZ convert(Date date, ZoneId defaultTimeZone) {
-    return parse(date.toString(), defaultTimeZone);
+    return new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(date.toEpochMilli()), ZoneOffset.UTC)
+        .withZoneSameLocal(defaultTimeZone));
   }
 
   // Converts Timestamp to TimestampTZ.
