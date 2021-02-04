@@ -106,9 +106,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: stats_only_external_tab1_ext
-                  Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 49000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 49000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       minReductionHashAggr: 0.99
