@@ -33,7 +33,6 @@ import org.apache.orc.CompressionCodec;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.SettableUncompressedStream;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.OrcProto;
 import org.slf4j.Logger;
@@ -64,8 +63,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
                                   SettableUncompressedStream data, SettableUncompressedStream nanos,
                                   boolean isFileCompressed, OrcProto.ColumnEncoding encoding,
                                   TreeReaderFactory.Context context,
-                                  List<ColumnVector> vectors) throws IOException {
-      super(columnId, present, data, nanos, encoding, context);
+                                  List<ColumnVector> vectors, boolean isInstant) throws IOException {
+      super(columnId, present, data, nanos, encoding, context, isInstant);
       this.isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._secondsStream = data;
@@ -148,6 +147,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private TreeReaderFactory.Context context;
+      private boolean isInstant;
       private List<ColumnVector> vectors;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
@@ -185,6 +185,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
+      public StreamReaderBuilder setIsInstant(boolean isInstant) {
+        this.isInstant = isInstant;
+        return this;
+      }
+
       public TimestampStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
             .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
@@ -200,7 +205,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         boolean isFileCompressed = compressionCodec != null;
         return new TimestampStreamReader(columnIndex, present, data, nanos,
-            isFileCompressed, columnEncoding, context, vectors);
+            isFileCompressed, columnEncoding, context, vectors, isInstant);
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -2585,6 +2590,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setColumnEncoding(columnEncoding)
             .setVectors(vectors)
             .setContext(context)
+            .setIsInstant(false)
             .build();
       case DATE:
         return DateStreamReader.builder()

@@ -418,7 +418,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -483,7 +483,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -548,7 +548,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -613,7 +613,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -678,7 +678,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -743,7 +743,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -808,7 +808,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -873,7 +873,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -938,7 +938,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1003,7 +1003,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1068,7 +1068,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1133,7 +1133,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1198,7 +1198,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1263,7 +1263,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1328,7 +1328,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1393,7 +1393,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1817,7 +1817,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Limit
@@ -1825,7 +1825,7 @@ STAGE PLANS:
                     Limit Vectorization:
                         className: VectorLimitOperator
                         native: true
-                    Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
@@ -2028,7 +2028,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Limit
@@ -2036,7 +2036,7 @@ STAGE PLANS:
                     Limit Vectorization:
                         className: VectorLimitOperator
                         native: true
-                    Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator

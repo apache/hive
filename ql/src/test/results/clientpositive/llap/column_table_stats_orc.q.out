@@ -220,7 +220,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	1                   
-	rawDataSize         	170                 
+	rawDataSize         	174                 
 	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
@@ -539,7 +539,7 @@ Table Parameters:
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	2                   
-	rawDataSize         	340                 
+	rawDataSize         	348                 
 	totalSize           	570                 
 #### A masked pattern was here ####
 	 	 
@@ -577,7 +577,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
-	rawDataSize         	170                 
+	rawDataSize         	174                 
 	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
@@ -615,7 +615,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
-	rawDataSize         	170                 
+	rawDataSize         	174                 
 	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
@@ -896,7 +896,7 @@ Table Parameters:
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	2                   
-	rawDataSize         	340                 
+	rawDataSize         	344                 
 	totalSize           	570                 
 #### A masked pattern was here ####
 	 	 
@@ -934,7 +934,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
-	rawDataSize         	170                 
+	rawDataSize         	174                 
 	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 

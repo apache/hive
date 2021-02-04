@@ -72,7 +72,7 @@ PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_517
+File Version: 0.12 with ORC_14
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -97,22 +97,22 @@ File Statistics:
   Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 433
+  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 436
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 73
     Stream: column 2 section ROW_INDEX start: 93 length 79
     Stream: column 3 section ROW_INDEX start: 172 length 85
     Stream: column 4 section ROW_INDEX start: 257 length 92
-    Stream: column 5 section ROW_INDEX start: 349 length 87
-    Stream: column 1 section DATA start: 436 length 30
-    Stream: column 2 section DATA start: 466 length 24
-    Stream: column 2 section LENGTH start: 490 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 498 length 23
-    Stream: column 3 section DATA start: 521 length 5114
-    Stream: column 4 section DATA start: 5635 length 480
-    Stream: column 4 section SECONDARY start: 6115 length 18
-    Stream: column 5 section DATA start: 6133 length 46
-    Stream: column 5 section SECONDARY start: 6179 length 18
+    Stream: column 5 section ROW_INDEX start: 349 length 90
+    Stream: column 1 section DATA start: 439 length 30
+    Stream: column 2 section DATA start: 469 length 24
+    Stream: column 2 section LENGTH start: 493 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 501 length 23
+    Stream: column 3 section DATA start: 524 length 5114
+    Stream: column 4 section DATA start: 5638 length 480
+    Stream: column 4 section SECONDARY start: 6118 length 18
+    Stream: column 5 section DATA start: 6136 length 46
+    Stream: column 5 section SECONDARY start: 6182 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -156,7 +156,7 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6674 bytes
+File length: 6685 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -164,7 +164,7 @@ ________________________________________________________________________________
 -- END ORC FILE DUMP --
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_517
+File Version: 0.12 with ORC_14
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -189,22 +189,22 @@ File Statistics:
   Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 433
+  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 436
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 73
     Stream: column 2 section ROW_INDEX start: 93 length 79
     Stream: column 3 section ROW_INDEX start: 172 length 85
     Stream: column 4 section ROW_INDEX start: 257 length 92
-    Stream: column 5 section ROW_INDEX start: 349 length 87
-    Stream: column 1 section DATA start: 436 length 30
-    Stream: column 2 section DATA start: 466 length 24
-    Stream: column 2 section LENGTH start: 490 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 498 length 23
-    Stream: column 3 section DATA start: 521 length 5114
-    Stream: column 4 section DATA start: 5635 length 480
-    Stream: column 4 section SECONDARY start: 6115 length 18
-    Stream: column 5 section DATA start: 6133 length 46
-    Stream: column 5 section SECONDARY start: 6179 length 18
+    Stream: column 5 section ROW_INDEX start: 349 length 90
+    Stream: column 1 section DATA start: 439 length 30
+    Stream: column 2 section DATA start: 469 length 24
+    Stream: column 2 section LENGTH start: 493 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 501 length 23
+    Stream: column 3 section DATA start: 524 length 5114
+    Stream: column 4 section DATA start: 5638 length 480
+    Stream: column 4 section SECONDARY start: 6118 length 18
+    Stream: column 5 section DATA start: 6136 length 46
+    Stream: column 5 section SECONDARY start: 6182 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -248,7 +248,7 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6674 bytes
+File length: 6685 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -277,7 +277,7 @@ PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_517
+File Version: 0.12 with ORC_14
 Rows: 100000
 Compression: ZLIB
 Compression size: 4096
@@ -309,22 +309,22 @@ File Statistics:
   Column 5: count: 100000 hasNull: false bytesOnDisk: 128 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 433
+  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 436
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 73
     Stream: column 2 section ROW_INDEX start: 93 length 79
     Stream: column 3 section ROW_INDEX start: 172 length 85
     Stream: column 4 section ROW_INDEX start: 257 length 92
-    Stream: column 5 section ROW_INDEX start: 349 length 87
-    Stream: column 1 section DATA start: 436 length 30
-    Stream: column 2 section DATA start: 466 length 24
-    Stream: column 2 section LENGTH start: 490 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 498 length 23
-    Stream: column 3 section DATA start: 521 length 5114
-    Stream: column 4 section DATA start: 5635 length 480
-    Stream: column 4 section SECONDARY start: 6115 length 18
-    Stream: column 5 section DATA start: 6133 length 46
-    Stream: column 5 section SECONDARY start: 6179 length 18
+    Stream: column 5 section ROW_INDEX start: 349 length 90
+    Stream: column 1 section DATA start: 439 length 30
+    Stream: column 2 section DATA start: 469 length 24
+    Stream: column 2 section LENGTH start: 493 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 501 length 23
+    Stream: column 3 section DATA start: 524 length 5114
+    Stream: column 4 section DATA start: 5638 length 480
+    Stream: column 4 section SECONDARY start: 6118 length 18
+    Stream: column 5 section DATA start: 6136 length 46
+    Stream: column 5 section SECONDARY start: 6182 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -367,22 +367,22 @@ Stripes:
       Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,354,22,0,156,32
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
-  Stripe: offset: 6296 data: 5761 rows: 50000 tail: 99 index: 433
-    Stream: column 0 section ROW_INDEX start: 6296 length 17
-    Stream: column 1 section ROW_INDEX start: 6313 length 73
-    Stream: column 2 section ROW_INDEX start: 6386 length 79
-    Stream: column 3 section ROW_INDEX start: 6465 length 85
-    Stream: column 4 section ROW_INDEX start: 6550 length 92
-    Stream: column 5 section ROW_INDEX start: 6642 length 87
-    Stream: column 1 section DATA start: 6729 length 30
-    Stream: column 2 section DATA start: 6759 length 24
-    Stream: column 2 section LENGTH start: 6783 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 6791 length 23
-    Stream: column 3 section DATA start: 6814 length 5114
-    Stream: column 4 section DATA start: 11928 length 480
-    Stream: column 4 section SECONDARY start: 12408 length 18
-    Stream: column 5 section DATA start: 12426 length 46
-    Stream: column 5 section SECONDARY start: 12472 length 18
+  Stripe: offset: 6299 data: 5761 rows: 50000 tail: 99 index: 436
+    Stream: column 0 section ROW_INDEX start: 6299 length 17
+    Stream: column 1 section ROW_INDEX start: 6316 length 73
+    Stream: column 2 section ROW_INDEX start: 6389 length 79
+    Stream: column 3 section ROW_INDEX start: 6468 length 85
+    Stream: column 4 section ROW_INDEX start: 6553 length 92
+    Stream: column 5 section ROW_INDEX start: 6645 length 90
+    Stream: column 1 section DATA start: 6735 length 30
+    Stream: column 2 section DATA start: 6765 length 24
+    Stream: column 2 section LENGTH start: 6789 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 6797 length 23
+    Stream: column 3 section DATA start: 6820 length 5114
+    Stream: column 4 section DATA start: 11934 length 480
+    Stream: column 4 section SECONDARY start: 12414 length 18
+    Stream: column 5 section DATA start: 12432 length 46
+    Stream: column 5 section SECONDARY start: 12478 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -426,7 +426,7 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 12980 bytes
+File length: 12994 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
