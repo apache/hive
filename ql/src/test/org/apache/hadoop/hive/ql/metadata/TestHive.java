@@ -773,7 +773,63 @@ public class TestHive {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to create parition for table: " + tableName, false);
       }
+
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-08");
+      part_spec.put("hr", "13");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-08");
+      part_spec.put("hr", "14");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-07");
+      part_spec.put("hr", "12");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
+      part_spec.clear();
+      part_spec.put("ds", "2008-04-07");
+      part_spec.put("hr", "13");
+      try {
+        hm.createPartition(tbl, part_spec);
+      } catch (HiveException e) {
+        System.err.println(StringUtils.stringifyException(e));
+        assertTrue("Unable to create parition for table: " + tableName, false);
+      }
       checkPartitionsConsistency(tbl);
+
+      Map<String, String> partialSpec = new HashMap<>();
+      partialSpec.put("ds", "2008-04-07");
+      assertEquals(2, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      partialSpec.put("ds", "2008-04-08");
+      assertEquals(3, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      partialSpec.put("hr", "13");
+      assertEquals(2, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      assertEquals(5, hm.getPartitions(tbl, partialSpec).size());
+
+      partialSpec = new HashMap<>();
+      partialSpec.put("hr", "14");
+      assertEquals(1, hm.getPartitions(tbl, partialSpec).size());
 
       hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
