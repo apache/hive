@@ -70,4 +70,4 @@ POSTHOOK: query: select mask_hash('01-28-2021')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-995bb88e7a32d9028c50d47cc4711e8bae0c94d5a746c0daa9fda1cc9dc41093
+7b375ec2327810383a3c6cfb871b5e433feda829cb882b8880a38f17039a34d71900de20b17884e703e411c483c47bec54fd9e8ef06adf1269202776e5b3c607
