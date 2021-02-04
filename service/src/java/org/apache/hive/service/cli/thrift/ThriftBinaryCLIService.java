@@ -19,10 +19,12 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -113,43 +115,59 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       // TCP Server
       server = new TThreadPoolServer(sargs);
       server.setServerEventHandler(new TServerEventHandler() {
+        final AtomicInteger messagesProcessedCounter = new AtomicInteger();
+
         @Override
         public ServerContext createContext(TProtocol input, TProtocol output) {
           Metrics metrics = MetricsFactory.getInstance();
           if (metrics != null) {
-            try {
-              metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
-              metrics.incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
-            } catch (Exception e) {
-              LOG.warn("Error Reporting JDO operation to Metrics system", e);
-            }
+            metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            metrics.incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
           }
           return new ThriftCLIServerContext();
         }
 
+        /**
+         * This is called by the Thrift server when the underlying client
+         * connection is cleaned up by the server because the connection has
+         * been closed.
+         */
         @Override
         public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
           Metrics metrics = MetricsFactory.getInstance();
           if (metrics != null) {
-            try {
-              metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
-            } catch (Exception e) {
-              LOG.warn("Error Reporting JDO operation to Metrics system", e);
-            }
+            metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
           }
+
           ThriftCLIServerContext context = (ThriftCLIServerContext) serverContext;
-          SessionHandle sessionHandle = context.getSessionHandle();
+
+          final SessionHandle sessionHandle = context.getSessionHandle();
           if (sessionHandle != null) {
-            LOG.info("Session disconnected without closing properly. ");
+            // Normally, the client should politely inform the server it is
+            // closing its session with Hive before closing its connection.
+            // However, if the client connection dies for any reason
+            // (load-balancer health check, load-balancer configuration,
+            // fire-wall kills long-running sessions, bad client, failed client,
+            // timed-out client, etc.) then the server will close the connection
+            // without having properly cleaned up the Hive session (resources,
+            // configuration, logging etc.) That needs to be cleaned up now.
+            LOG.warn(
+                "Client connection bound to {} unexpectedly closed: closing this Hive session to release its resources. "
+                    + "The connection processed {} total messages. If total messages processed is zero or one, most likely it is a "
+                    + "client that is opening then immediately closing the socket (i.e., TCP health check or port scanner), otherwise "
+                    + "inspect the client for time-out, fire-wall killing the connection, invalid load balancer configuration, etc.",
+                sessionHandle, messagesProcessedCounter);
             try {
               boolean close = cliService.getSessionManager().getSession(sessionHandle).getHiveConf()
                   .getBoolVar(ConfVars.HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT);
-              LOG.info((close ? "" : "Not ") + "Closing the session: " + sessionHandle);
               if (close) {
                 cliService.closeSession(sessionHandle);
+              } else {
+                LOG.warn("Session not closed because configuration {} is set to false",
+                    ConfVars.HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT.varname);
               }
             } catch (HiveSQLException e) {
-              LOG.warn("Failed to close session: " + e, e);
+              LOG.warn("Failed to close session", e);
             }
           }
         }
@@ -161,6 +179,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
         @Override
         public void processContext(ServerContext serverContext, TTransport input, TTransport output) {
           currentServerContext.set(serverContext);
+          messagesProcessedCounter.incrementAndGet();
         }
       });
       String msg = "Starting " + ThriftBinaryCLIService.class.getSimpleName() + " on port " + portNum + " with "
