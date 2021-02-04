@@ -98,7 +98,8 @@ public class TypeCheckProcFactory<T> {
   static final HashMap<Integer, String> SPECIAL_UNARY_OPERATOR_TEXT_MAP;
   static final HashMap<Integer, String> CONVERSION_FUNCTION_TEXT_MAP;
   static final HashSet<Integer> WINDOWING_TOKENS;
-  
+  private static final Object ALIAS_PLACEHOLDER = new Object();
+
   static {
     SPECIAL_UNARY_OPERATOR_TEXT_MAP = new HashMap<>();
     SPECIAL_UNARY_OPERATOR_TEXT_MAP.put(HiveParser.PLUS, "positive");
@@ -1645,7 +1646,6 @@ public class TypeCheckProcFactory<T> {
     return new ValueAliasProcessor();
   }
 
-  public static final Object ALIAS_PLACEHOLDER = new Object();
   public static class ValueAliasProcessor implements SemanticNodeProcessor {
 
     @Override
