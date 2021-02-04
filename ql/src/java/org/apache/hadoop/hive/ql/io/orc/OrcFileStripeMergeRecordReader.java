@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -97,7 +100,11 @@ public class OrcFileStripeMergeRecordReader implements
         valueWrapper.setStripeInformation(si);
         if (!iter.hasNext()) {
           valueWrapper.setLastStripeInFile(true);
-          valueWrapper.setUserMetadata(((ReaderImpl) reader).getOrcProtoUserMetadata());
+          Map<String, ByteBuffer> userMeta = new HashMap<>();
+          for(String key: reader.getMetadataKeys()) {
+            userMeta.put(key, reader.getMetadataValue(key));
+          }
+          valueWrapper.setUserMetadata(userMeta);
         }
         keyWrapper.setInputPath(path);
         keyWrapper.setCompression(reader.getCompressionKind());
