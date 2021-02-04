@@ -233,6 +233,43 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
     }
   }
 
+  /**
+   * Marks this buffer as eligible for proactive eviction. No need to check refCount here.
+   * @return buffer size
+   */
+  @Override
+  public long markForEviction() {
+    long oldValue, newValue;
+    do {
+      oldValue = state.get();
+      if (State.hasFlags(oldValue, State.FLAG_EVICTED | State.FLAG_MARKED)) {
+        // Either got evicted concurrently, or was marked by another event already (should be very rare),
+        // nothing to do now.
+        return 0;
+      }
+      newValue = State.setFlag(oldValue, State.FLAG_MARKED);
+    } while (!state.compareAndSet(oldValue, newValue));
+    return getMemoryUsage();
+  }
+
+  @Override
+  public void removeProactiveEvictionMark() {
+    long oldValue, newValue;
+    do {
+      oldValue = state.get();
+      if (!State.hasFlags(oldValue, State.FLAG_MARKED)) {
+        return;
+      }
+      newValue = State.switchFlag(oldValue, State.FLAG_MARKED);
+    } while (!state.compareAndSet(oldValue, newValue));
+  }
+
+  @VisibleForTesting
+  @Override
+  public boolean isMarkedForEviction() {
+    return State.hasFlags(state.get(), State.FLAG_MARKED);
+  }
+
   @Override
   public String toString() {
     long state = this.state.get();
@@ -339,13 +376,14 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
 
   private static final class State {
     public static final int
-        FLAG_MOVING =       0b00001, // Locked by someone to move or force-evict.
-        FLAG_EVICTED =      0b00010, // Evicted. This is cache-specific.
-        FLAG_REMOVED =      0b00100, // Removed from allocator structures. The final state.
-        FLAG_MEM_RELEASED = 0b01000, // The memory was released to memory manager.
-        FLAG_NEW_ALLOC =    0b10000; // New allocation before the first use; cannot force-evict.
-    private static final int FLAGS_WIDTH = 5,
-        REFCOUNT_WIDTH = 19, ARENA_WIDTH = 16, HEADER_WIDTH = 24;
+        FLAG_MOVING =       0b000001, // Locked by someone to move or force-evict.
+        FLAG_EVICTED =      0b000010, // Evicted. This is cache-specific.
+        FLAG_REMOVED =      0b000100, // Removed from allocator structures. The final state.
+        FLAG_MEM_RELEASED = 0b001000, // The memory was released to memory manager.
+        FLAG_NEW_ALLOC =    0b010000, // New allocation before the first use; cannot force-evict.
+        FLAG_MARKED =       0b100000; // Marked for eviction, but not evicted yet. Used for proactive eviction.
+    private static final int FLAGS_WIDTH = 6,
+        REFCOUNT_WIDTH = 18, ARENA_WIDTH = 16, HEADER_WIDTH = 24;
 
     public static final long MAX_REFCOUNT = (1 << REFCOUNT_WIDTH) - 1;
 

@@ -790,6 +790,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       if (null != client) {
         client.shutdown();
+        if ((transport == null) || !transport.isOpen()) {
+          final int newCount = connCount.decrementAndGet();
+          LOG.info("Closed a connection to metastore, current connections: {}",
+                  newCount);
+        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
@@ -2344,18 +2349,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws TException {
-    return getTableObjectsByName(getDefaultCatalog(conf), dbName, tableNames);
+    return getTables(getDefaultCatalog(conf), dbName, tableNames, null);
   }
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String dbName,
                                            List<String> tableNames) throws TException {
+    return getTables(catName, dbName, tableNames, null);
+  }
+
+  @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+      GetProjectionsSpec projectionsSpec) throws TException {
     GetTablesRequest req = new GetTablesRequest(dbName);
     req.setCatName(catName);
     req.setTblNames(tableNames);
     req.setCapabilities(version);
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    req.setProjectionSpec(projectionsSpec);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
@@ -4644,72 +4656,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_replication_metrics(replicationMetricsRequest);
   }
 
-  /**
-  * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
-  */
-   public static class GetTablesRequestBuilder {
-    private int requestedFields = 0x0;
-    final static GetTablesExtRequestFields defValue = GetTablesExtRequestFields.ALL;
-
-    public GetTablesRequestBuilder() {
-    }
-
-    public GetTablesRequestBuilder with(GetTablesExtRequestFields type) {
-      switch (type) {
-      case ALL :
-          this.requestedFields |= Integer.MAX_VALUE;
-          break;
-      case PROCESSOR_CAPABILITIES :
-          this.requestedFields |= 0x2;
-          break;
-      case ACCESS_TYPE :
-          this.requestedFields |= 0x1;
-          break;
-      default:
-          this.requestedFields |= Integer.MAX_VALUE;
-          break;
-      }
-      return this;
-    }
-
-    public int bitValue() {
-      return this.requestedFields;
-    }
-
-    public static int defaultValue() {
-      return new GetTablesRequestBuilder().with(defValue).bitValue();
-    }
+  @Override
+  public void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
+    client.create_stored_procedure(proc);
   }
 
-  /**
-   * Builder for building table capabilities to be includes in TBLPROPERTIES
-   * during createTable
-   */
-   public static class TableCapabilityBuilder {
-    private String capabilitiesString = null;
-    public static final String KEY_CAPABILITIES = "OBJCAPABILITIES";
+  @Override
+  public StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    return client.get_stored_procedure(request);
+  }
 
-    public TableCapabilityBuilder() {
-      capabilitiesString = "";
-    }
+  @Override
+  public void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    client.drop_stored_procedure(request);
+  }
 
-    public TableCapabilityBuilder add(String skill) {
-      if (skill != null) {
-        capabilitiesString += skill + ",";
-      }
-      return this;
-    }
-
-    public String build() {
-      return this.capabilitiesString.substring(0, capabilitiesString.length() - 1);
-    }
-
-    public String getDBValue() {
-      return KEY_CAPABILITIES + "=" + build();
-    }
-
-    public static String getKey() {
-      return KEY_CAPABILITIES;
-    }
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+    return client.get_all_stored_procedures(request);
   }
 }

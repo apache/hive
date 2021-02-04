@@ -22,12 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,6 +46,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.streaming.HiveStreamingConnection;
@@ -615,26 +612,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Delete directories does not match", expectedDeleteDeltas,
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
 
-    Set<String> expectedDeleteBucketFilesSet = new HashSet<>();
-    for (String expectedDeleteDelta : expectedDeleteDeltas) {
-      expectedDeleteBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDeleteDelta));
-    }
-    List<String> expectedDeleteBucketFiles = new ArrayList<>(expectedDeleteBucketFilesSet);
-    Collections.sort(expectedDeleteBucketFiles);
-
-    Set<String> expectedBucketFilesSet = new HashSet<>();
-    for (String expectedDelta : expectedDeltas) {
-      expectedBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDelta));
-    }
-    List<String> expectedBucketFiles = new ArrayList<>();
-    for (String expectedBucketFile : expectedBucketFilesSet) {
-      Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
-      Matcher m = p.matcher(expectedBucketFile);
-      if (m.matches()) {
-        expectedBucketFiles.add(m.group(1));
-      }
-    }
-    Collections.sort(expectedBucketFiles);
+    List<String> expectedBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeltas);
+    List<String> expectedDeleteBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeleteDeltas);
 
     CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
     // Clean up resources
@@ -712,26 +693,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         expectedDeleteDeltas,
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
 
-    Set<String> expectedDeleteBucketFilesSet = new HashSet<>();
-    for (String expectedDeleteDelta : expectedDeleteDeltas) {
-      expectedDeleteBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDeleteDelta));
-    }
-    List<String> expectedDeleteBucketFiles = new ArrayList<>(expectedDeleteBucketFilesSet);
-    Collections.sort(expectedDeleteBucketFiles);
-
-    Set<String> expectedBucketFilesSet = new HashSet<>();
-    for (String expectedDelta : expectedDeltas) {
-      expectedBucketFilesSet.addAll(CompactorTestUtil.getBucketFileNames(fs, table, null, expectedDelta));
-    }
-    List<String> expectedBucketFiles = new ArrayList<>();
-    for (String expectedBucketFile : expectedBucketFilesSet) {
-      Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
-      Matcher m = p.matcher(expectedBucketFile);
-      if (m.matches()) {
-        expectedBucketFiles.add(m.group(1));
-      }
-    }
-    Collections.sort(expectedBucketFiles);
+    List<String> expectedBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeltas);
+    List<String> expectedDeleteBucketFiles =
+        CompactorTestUtil.getBucketFileNamesWithoutAttemptId(fs, table, null, expectedDeleteDeltas);
 
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
@@ -756,7 +721,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
 
-    Assert.assertEquals("Bucket names are not matching after compaction", expectedDeleteBucketFiles,
+    Assert.assertEquals("Bucket names in delete delta are not matching after compaction", expectedDeleteBucketFiles,
         CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeleteDeltasAfterComp.get(0)));
     // Verify all contents
    // List<String> actualData = dataProvider.getAllData(tableName);
@@ -1810,7 +1775,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     QueryCompactor qc = new QueryCompactor() {
       @Override
       void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                         ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
+                         ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
       }
 
       @Override

@@ -105,6 +105,12 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
       return params;
     }
 
+    public void addPartParams(Map<String, String> partParams) {
+      if (params != null) {
+        params.putAll(partParams);
+      }
+    }
+
     @Explain(displayName = "params", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public String getPartParamsForExplain() {
       return params.toString();
@@ -227,7 +233,7 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
   @Override
   public String getFullTableName() {
-    return AcidUtils.getFullTableName(dbName,tableName);
+    return AcidUtils.getFullTableName(dbName, tableName);
   }
 
   @Override

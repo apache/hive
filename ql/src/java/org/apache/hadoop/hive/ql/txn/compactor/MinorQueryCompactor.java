@@ -25,9 +25,9 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +44,10 @@ final class MinorQueryCompactor extends QueryCompactor {
 
   @Override
   void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     LOG.info("Running query based minor compaction");
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
-    AcidUtils.Directory dir = AcidUtils
-        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false);
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
@@ -99,7 +97,7 @@ final class MinorQueryCompactor extends QueryCompactor {
    * @param tmpTableDeleteResultLocation result delete delta dir
    * @return list of create/alter queries, always non-null
    */
-  private List<String> getCreateQueries(Table table, String tempTableBase, AcidUtils.Directory dir,
+  private List<String> getCreateQueries(Table table, String tempTableBase, AcidDirectory dir,
       ValidWriteIdList writeIds, Path tmpTableResultLocation, Path tmpTableDeleteResultLocation) {
     List<String> queries = new ArrayList<>();
     // create delta temp table
@@ -168,7 +166,7 @@ final class MinorQueryCompactor extends QueryCompactor {
    *                      the delta directories
    * @return alter table statement
    */
-  private String buildAlterTableQuery(String tableName, AcidUtils.Directory dir,
+  private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList, boolean isDeleteDelta) {
     return new CompactionQueryBuilder(
         CompactionQueryBuilder.CompactionType.MINOR_CRUD,

@@ -58,6 +58,7 @@ public class ReplLoadWork implements Serializable {
   private String sourceDbName;
   private Long dumpExecutionId;
   private final transient ReplicationMetricCollector metricCollector;
+  final boolean replScopeModified;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -78,7 +79,8 @@ public class ReplLoadWork implements Serializable {
                       String sourceDbName, String dbNameToLoadIn, ReplScope currentReplScope,
                       LineageState lineageState, boolean isIncrementalDump, Long eventTo,
                       Long dumpExecutionId,
-                      ReplicationMetricCollector metricCollector) throws IOException, SemanticException {
+                      ReplicationMetricCollector metricCollector,
+                      boolean replScopeModified) throws IOException, SemanticException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
@@ -86,6 +88,7 @@ public class ReplLoadWork implements Serializable {
     this.sourceDbName = sourceDbName;
     this.dumpExecutionId = dumpExecutionId;
     this.metricCollector = metricCollector;
+    this.replScopeModified = replScopeModified;
 
 
     // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.

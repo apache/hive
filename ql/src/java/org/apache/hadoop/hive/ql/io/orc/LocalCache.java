@@ -104,7 +104,7 @@ class LocalCache implements OrcInputFormat.FooterCache {
       }
       if (tfd == null) continue;
       if (file.getLen() == tfd.fileLength && file.getModificationTime() == tfd.fileModTime) {
-        result[i] = ReaderImpl.extractFileTail(tfd.bb.duplicate(), tfd.fileLength, tfd.fileModTime);
+        result[i] = ReaderImpl.extractFileTail(tfd.bb.duplicate(), tfd.bb.limit(), tfd.fileModTime);
         continue;
       }
       // Invalidate

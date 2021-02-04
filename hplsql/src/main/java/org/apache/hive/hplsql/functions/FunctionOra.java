@@ -22,29 +22,24 @@ import java.io.IOException;
 import java.io.EOFException;
 
 import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.executor.QueryExecutor;
 
-public class FunctionOra extends Function {
-  public FunctionOra(Exec e) {
-    super(e);
+public class FunctionOra extends BuiltinFunctions {
+  public FunctionOra(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 
    * Register functions
    */
   @Override
-  public void register(Function f) {  
-    f.map.put("DBMS_OUTPUT.PUT_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      dbmsOutputPutLine(ctx); }});
-    f.map.put("UTL_FILE.FOPEN", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFileFopen(ctx); }});
-    f.map.put("UTL_FILE.GET_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFileGetLine(ctx); }});
-    f.map.put("UTL_FILE.PUT_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFilePutLine(ctx); }});
-    f.map.put("UTL_FILE.PUT", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFilePut(ctx); }});
-    f.map.put("UTL_FILE.FCLOSE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFileFclose(ctx); }});
+  public void register(BuiltinFunctions f) {
+    f.map.put("DBMS_OUTPUT.PUT_LINE", this::dbmsOutputPutLine);
+    f.map.put("UTL_FILE.FOPEN", this::utlFileFopen);
+    f.map.put("UTL_FILE.GET_LINE", this::utlFileGetLine);
+    f.map.put("UTL_FILE.PUT_LINE", this::utlFilePutLine);
+    f.map.put("UTL_FILE.PUT", this::utlFilePut);
+    f.map.put("UTL_FILE.FCLOSE", this::utlFileFclose);
   }
   
   /**
@@ -52,7 +47,7 @@ public class FunctionOra extends Function {
    */
   void dbmsOutputPutLine(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() > 0) {
-      System.out.println(evalPop(ctx.func_param(0).expr()));
+      console.printLine(evalPop(ctx.func_param(0).expr()).toString());
     }
   }
   

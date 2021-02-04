@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -49,10 +50,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -107,6 +114,24 @@ class CompactorTestUtil {
         .collect(Collectors.toList());
   }
 
+  static List<String> getBucketFileNamesWithoutAttemptId(FileSystem fs, Table table, String partitionName,
+      List<String> deltaDirs) throws IOException {
+    Set<String> bucketFiles = new HashSet<>();
+    for (String deltaDir : deltaDirs) {
+      bucketFiles.addAll(getBucketFileNames(fs, table, partitionName, deltaDir));
+    }
+    Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
+    List<String> bucketFilesWithoutAttemptId = new ArrayList<>();
+    for (String bucketFile : bucketFiles) {
+      Matcher m = p.matcher(bucketFile);
+      if (m.matches()) {
+        bucketFilesWithoutAttemptId.add(m.group(1));
+      }
+    }
+    Collections.sort(bucketFilesWithoutAttemptId);
+    return bucketFilesWithoutAttemptId;
+  }
+
   /**
    * Trigger a compaction run.
    * @param conf hive configuration
@@ -145,6 +170,9 @@ class CompactorTestUtil {
    * @throws Exception if cleaner cannot be started.
    */
   static void runCleaner(HiveConf hConf) throws Exception {
+    // Wait for the cooldown period so the Cleaner can see last committed txn as the highest committed watermark
+    Thread.sleep(MetastoreConf.getTimeVar(hConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
     HiveConf hiveConf = new HiveConf(hConf);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
@@ -283,7 +311,7 @@ class CompactorTestUtil {
     conf.setBoolean("orc.schema.evolution.case.sensitive", false);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     AcidInputFormat.RawReader<OrcStruct> reader =
-        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, String>());
+        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, Integer>());
     RecordIdentifier identifier = reader.createKey();
     OrcStruct value = reader.createValue();
     long currentTxn = min;

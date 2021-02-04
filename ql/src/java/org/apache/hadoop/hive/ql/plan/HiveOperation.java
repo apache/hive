@@ -120,6 +120,8 @@ public enum HiveOperation {
       new Privilege[]{Privilege.DROP}),
   ALTER_MATERIALIZED_VIEW_REWRITE("ALTER_MATERIALIZED_VIEW_REWRITE", HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE,
       new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTER_MATERIALIZED_VIEW_REBUILD("ALTER_MATERIALIZED_VIEW_REBUILD", HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD,
+          new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE, Privilege.DROP}),
   ALTERVIEW_PROPERTIES("ALTERVIEW_PROPERTIES",
       new int[] {HiveParser.TOK_ALTERVIEW_PROPERTIES, HiveParser.TOK_ALTERVIEW_DROPPROPERTIES}, null, null),
   LOCKTABLE("LOCKTABLE", HiveParser.TOK_LOCKTABLE, new Privilege[]{Privilege.LOCK}, null),

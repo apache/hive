@@ -156,16 +156,16 @@ public class DriverContext {
     return txnType;
   }
 
-  public void setOutdatedTxn(boolean outdated) {
-    this.outdatedTxn = outdated;
+  public void setTxnType(TxnType txnType) {
+    this.txnType = txnType;
   }
 
   public boolean isOutdatedTxn() {
     return outdatedTxn;
   }
 
-  public void setTxnType(TxnType txnType) {
-    this.txnType = txnType;
+  public void setOutdatedTxn(boolean outdated) {
+    this.outdatedTxn = outdated;
   }
 
   public StatsSource getStatsSource() {

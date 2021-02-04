@@ -395,7 +395,7 @@ public class Compiler {
         try {
           lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(driverContext.getConf()));
         } catch (Exception e) {
-          LOG.warn("Error getting schema: " + StringUtils.stringifyException(e));
+          LOG.warn("Error getting schema", e);
         }
         if (lst != null) {
           schema = new Schema(lst, null);
@@ -409,9 +409,7 @@ public class Compiler {
 
   private void authorize(BaseSemanticAnalyzer sem) throws HiveException, CommandProcessorException {
     // do the authorization check
-    if (!sem.skipAuthorization() &&
-        HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-
+    if (!sem.skipAuthorization()) {
       try {
         perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         // Authorization check for kill query will be in KillQueryImpl
@@ -436,7 +434,11 @@ public class Compiler {
           context, driverContext.getConf());
       if (explainOutput != null) {
         if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-          LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_TO_CONSOLE)) {
+            CONSOLE.printInfo("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          } else {
+            LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          }
         }
         if (driverContext.getConf().isWebUiQueryInfoCacheEnabled() &&
             driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {

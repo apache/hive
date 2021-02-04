@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,6 +104,7 @@ public class Context {
 
   private Configuration conf;
   protected int pathid = 10000;
+  private int moveTaskId = 0;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;
@@ -176,6 +176,14 @@ public class Context {
    * After enabling unparsing before analysis - a valid query unparse can be done.
    */
   private boolean enableUnparse;
+  /**
+   * true if this Context belongs to a statement which is analyzed by {@link org.apache.hadoop.hive.ql.parse.ScheduledQueryAnalyzer}.
+   * If the goal of the statement is to schedule an alter materialized view rebuild command we need the the fully qualified name
+   * if the materialized view only which is done by {@link org.apache.hadoop.hive.ql.parse.UnparseTranslator} and the query
+   * shouldn't be rewritten.
+   * See {@link org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer}.
+   */
+  private boolean scheduledQuery;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -314,7 +322,7 @@ public class Context {
     return insertBranchToNamePrefix.put(pos, prefix);
   }
 
-  public Context(Configuration conf) throws IOException {
+  public Context(Configuration conf) {
     this(conf, generateExecutionId());
   }
 
@@ -322,7 +330,7 @@ public class Context {
    * Create a Context with a given executionId.  ExecutionId, together with
    * user name and conf, will determine the temporary directory locations.
    */
-  private Context(Configuration conf, String executionId)  {
+  private Context(Configuration conf, String executionId) {
     this.conf = conf;
     this.executionId = executionId;
     this.subContexts = new HashSet<>();
@@ -336,6 +344,12 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+    // Sql text based materialized view auto rewriting compares the extended query text (contains fully qualified
+    // identifiers) to the stored Materialized view query definitions. We have to enable unparsing for generating
+    // the extended query text when auto rewriting is enabled.
+    enableUnparse =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL);
+    scheduledQuery = false;
   }
 
   protected Context(Context ctx) {
@@ -380,6 +394,8 @@ public class Context {
     this.viewsTokenRewriteStreams = new HashMap<>();
     this.subContexts = new HashSet<>();
     this.opContext = new CompilationOpContext();
+    this.enableUnparse = ctx.enableUnparse;
+    this.scheduledQuery = ctx.scheduledQuery;
   }
 
   public Map<String, Path> getFsScratchDirs() {
@@ -659,8 +675,7 @@ public class Context {
         fs.delete(p, true);
         fs.cancelDeleteOnExit(p);
       } catch (Exception e) {
-        LOG.warn("Error Removing result cache dir: "
-                     + StringUtils.stringifyException(e));
+        LOG.warn("Error Removing result cache dir:", e);
       }
     }
   }
@@ -673,26 +688,24 @@ public class Context {
     if(this.fsResultCacheDirs != null) {
       resultCacheDir = this.fsResultCacheDirs.toUri().getPath();
     }
-    for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
+    SessionState sessionState = SessionState.get();
+    for (Path p: fsScratchDirs.values()) {
       try {
-        Path p = entry.getValue();
         if (p.toUri().getPath().contains(stagingDir) && subDirOf(p, fsScratchDirs.values())  ) {
           LOG.debug("Skip deleting stagingDir: " + p);
           FileSystem fs = p.getFileSystem(conf);
           fs.cancelDeleteOnExit(p);
           continue; // staging dir is deleted when deleting the scratch dir
         }
-        if(resultCacheDir == null || !p.toUri().getPath().contains(resultCacheDir)) {
+        if (resultCacheDir == null || !p.toUri().getPath().contains(resultCacheDir)) {
           // delete only the paths which aren't result cache dir path
           // because that will be taken care by removeResultCacheDir
-        FileSystem fs = p.getFileSystem(conf);
-        LOG.debug("Deleting scratch dir: {}",  p);
-        fs.delete(p, true);
-        fs.cancelDeleteOnExit(p);
+          FileSystem fs = p.getFileSystem(conf);
+          LOG.info("Deleting scratch dir: {}", p);
+          sessionState.getCleanupService().deleteRecursive(p, fs);
         }
       } catch (Exception e) {
-        LOG.warn("Error Removing Scratch: "
-            + StringUtils.stringifyException(e));
+        LOG.warn("Error Removing Scratch", e);
       }
     }
     fsScratchDirs.clear();
@@ -721,8 +734,7 @@ public class Context {
             + materializedTable.getTableName() + ", status=" + status);
       } catch (IOException e) {
         // ignore
-        LOG.warn("Error removing " + location + " for materialized " + materializedTable.getTableName() +
-                ": " + StringUtils.stringifyException(e));
+        LOG.warn("Error removing " + location + " for materialized " + materializedTable.getTableName(), e);
       }
     }
     cteTables.clear();
@@ -732,6 +744,9 @@ public class Context {
     return Integer.toString(pathid++);
   }
 
+  private String nextMoveTaskId() {
+    return Integer.toString(moveTaskId++);
+  }
 
   private static final String MR_PREFIX = "-mr-";
   public static final String EXT_PREFIX = "-ext-";
@@ -816,6 +831,11 @@ public class Context {
     return new Path(getStagingDir(path, !isExplainSkipExecution()), EXT_PREFIX + nextPathId());
   }
 
+  public String getMoveTaskId() {
+    String moveTaskId = this.executionId + "_" + nextMoveTaskId();
+    return moveTaskId;
+  }
+
   /**
    * @return the resFile
    */
@@ -869,7 +889,7 @@ public class Context {
           LOG.debug("Deleting result dir: {}", resDir);
           fs.delete(resDir, true);
         } catch (IOException e) {
-          LOG.info("Context clear error: " + StringUtils.stringifyException(e));
+          LOG.info("Context clear error", e);
         }
       }
 
@@ -879,7 +899,7 @@ public class Context {
         LOG.debug("Deleting result file: {}",  resFile);
         fs.delete(resFile, false);
       } catch (IOException e) {
-        LOG.info("Context clear error: " + StringUtils.stringifyException(e));
+        LOG.info("Context clear error", e);
       }
     }
     if(deleteResultDir) {
@@ -927,13 +947,10 @@ public class Context {
       } else {
         return getNextStream();
       }
-    } catch (FileNotFoundException e) {
-      LOG.info("getStream error: " + StringUtils.stringifyException(e));
-      return null;
     } catch (IOException e) {
-      LOG.info("getStream error: " + StringUtils.stringifyException(e));
-      return null;
+      LOG.info("getStream error", e);
     }
+    return null;
   }
 
   private DataInput getNextStream() {
@@ -942,14 +959,9 @@ public class Context {
           && (resDirPaths[resDirFilesNum] != null)) {
         return resFs.open(resDirPaths[resDirFilesNum++]);
       }
-    } catch (FileNotFoundException e) {
-      LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
-      return null;
     } catch (IOException e) {
-      LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
-      return null;
+      LOG.info("getNextStream error", e);
     }
-
     return null;
   }
 
@@ -978,7 +990,8 @@ public class Context {
    *          the stream being used
    */
   public void setTokenRewriteStream(TokenRewriteStream tokenRewriteStream) {
-    assert (this.tokenRewriteStream == null || this.getExplainAnalyze() == AnalyzeState.RUNNING);
+    assert (this.tokenRewriteStream == null || this.getExplainAnalyze() == AnalyzeState.RUNNING ||
+        skipTableMasking);
     this.tokenRewriteStream = tokenRewriteStream;
   }
 
@@ -1278,4 +1291,11 @@ public class Context {
     this.enableUnparse = enableUnparse;
   }
 
+  public boolean isScheduledQuery() {
+    return scheduledQuery;
+  }
+
+  public void setScheduledQuery(boolean scheduledQuery) {
+    this.scheduledQuery = scheduledQuery;
+  }
 }

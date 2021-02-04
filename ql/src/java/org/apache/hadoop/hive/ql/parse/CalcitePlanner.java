@@ -151,13 +151,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -345,13 +345,25 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.copyMaterializationToNewCluster;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
+
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
+  /**
+   * {@link org.antlr.runtime.TokenRewriteStream} offers the opportunity of multiple rewrites of the same
+   * input text (in our case the sql query text). These rewrites are called programs and identified by a string.
+   * EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM is for identifying the program which replaces all identifiers in the
+   * query with fully qualified identifiers.
+   */
+  private static final String EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM = "EXPANDED_QUERY_PROGRAM";
   private final AtomicInteger noColsMissingStats = new AtomicInteger(0);
   private SemanticException semanticException;
   private boolean runCBO = true;
   private boolean disableSemJoinReordering = true;
+  private final CBOFallbackStrategy fallbackStrategy;
 
   private EnumSet<ExtendedCBOProfile> profilesCBO;
 
@@ -427,6 +439,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       runCBO = false;
       disableSemJoinReordering = false;
     }
+    fallbackStrategy = CBOFallbackStrategy.valueOf(conf.getVar(ConfVars.HIVE_CBO_FALLBACK_STRATEGY));
   }
 
   public void resetCalciteConfiguration() {
@@ -667,27 +680,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // Determine if we should re-throw the exception OR if we try to mark plan as reAnayzeAST to retry
           // planning as non-CBO.
-          if (e instanceof CalciteSubquerySemanticException || e instanceof CalciteViewSemanticException
-              || e instanceof CalciteSubqueryRuntimeException) {
-            // Non-CBO path for CalciteSubquerySemanticException fails with completely different error
-            // and masks the original failure.
-            // Non-CBO path for CalciteViewSemanticException would fail in a similar way as CBO path.
-            throw new SemanticException(e);
-          }
-
-          boolean isHiveTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
-          // At this point we retry with CBO off:
-          // 1) If this is not test mode (common case)
-          // 2) If we are in test mode and we are missing stats
-          // 3) if we are in test mode and a CalciteSemanticException is generated
-          reAnalyzeAST = (!isHiveTest || isMissingStats ||  e instanceof CalciteSemanticException);
-          if (!reAnalyzeAST) {
+          if (fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
               // These types of exceptions do not need wrapped
               throw e;
             }
             // Wrap all other errors (Should only hit in tests)
             throw new SemanticException(e);
+          } else {
+            reAnalyzeAST = true;
           }
         } finally {
           runCBO = false;
@@ -1871,6 +1872,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
+      if (isMaterializedViewRewritingByTextEnabled()) {
+        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calciteGenPlan, optCluster);
+        if (rewrittenPlan != null) {
+          return rewrittenPlan;
+        }
+      }
+
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
       calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
@@ -1921,7 +1929,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // due to data freshness)
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
-               getQB().hasTableDefined()) {
+               getQB().hasTableDefined() &&
+              !forViewCreation) {
         calcitePreCboPlan = applyMaterializedViewRewriting(planner,
             calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
       }
@@ -2180,7 +2189,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
-          RelOptMaterialization materialization = db.getMaterializedViewForRebuild(
+          HiveRelOptMaterialization materialization = db.getMaterializedViewForRebuild(
               mvRebuildDbName, mvRebuildName, tablesUsedQuery, getTxnMgr());
           if (materialization != null) {
             materializations.add(materialization);
@@ -2191,20 +2200,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // as this is not a rebuild, and we apply the user parameters
           // (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
           if (useMaterializedViewsRegistry) {
-            materializations = db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery, getTxnMgr());
+            materializations.addAll(db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery, getTxnMgr()));
           } else {
-            materializations = db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr());
+            materializations.addAll(db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr()));
           }
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
-        materializations = materializations.stream().map(materialization -> {
-          final RelNode viewScan = materialization.tableRel;
-          final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-              optCluster, viewScan);
-          return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-              materialization.qualifiedTableName);
-        }).collect(Collectors.toList());
+        materializations = materializations.stream().
+                map(materialization -> copyMaterializationToNewCluster(optCluster, materialization)).
+                collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
       }
@@ -2346,6 +2351,47 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return basePlan;
+    }
+
+    private boolean isMaterializedViewRewritingByTextEnabled() {
+      return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
+              mvRebuildMode == MaterializationRebuildMode.NONE &&
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
+              getQB().getIsQuery() &&
+              getQB().hasTableDefined();
+    }
+
+    private RelNode applyMaterializedViewRewritingByText(RelNode calciteGenPlan, RelOptCluster optCluster) {
+      unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+      String expandedQueryText = ctx.getTokenRewriteStream()
+              .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
+      try {
+        List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
+                expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
+        for (HiveRelOptMaterialization relOptMaterialization : relOptMaterializationList) {
+          try {
+            Table hiveTableMD = extractTable(relOptMaterialization);
+            if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
+              if (db.validateMaterializedViewsFromRegistry(
+                      singletonList(hiveTableMD),
+                      singletonList(hiveTableMD.getFullyQualifiedName()),
+                      getTxnMgr())) {
+                return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
+              }
+            } else {
+              LOG.debug("User does not have privilege to use materialized view {}",
+                      relOptMaterialization.qualifiedTableName);
+            }
+          } catch (HiveException e) {
+            LOG.warn("Skipping materialized view due to validation failure: " +
+                    relOptMaterialization.qualifiedTableName, e);
+          }
+        }
+      } catch (HiveException e) {
+        LOG.warn(String.format("Exception while looking up materialized views for query '%s'", expandedQueryText), e);
+      }
+
+      return null;
     }
 
     /**
@@ -5294,15 +5340,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RowResolver rr = this.relToHiveRR.get(srcRel);
         RowResolver newRR = new RowResolver();
         String alias = qb.getParseInfo().getAlias();
-        for (ColumnInfo colInfo : rr.getColumnInfos()) {
+        List<String> targetColNames = processTableColumnNames(qb.getParseInfo().getColAliases(), alias);
+        if (targetColNames.size() > rr.getColumnInfos().size()) {
+          throw new SemanticException(ErrorMsg.WITH_COL_LIST_NUM_OVERFLOW, alias,
+                  Integer.toString(rr.getColumnInfos().size()), Integer.toString(targetColNames.size()));
+        }
+
+        for (int i = 0; i < rr.getColumnInfos().size(); ++i) {
+          ColumnInfo colInfo = rr.getColumnInfos().get(i);
           String name = colInfo.getInternalName();
           String[] tmp = rr.reverseLookup(name);
-          if ("".equals(tmp[0]) || tmp[1] == null) {
+          ColumnInfo newCi = new ColumnInfo(colInfo);
+          newCi.setTabAlias(alias);
+          if (i < targetColNames.size()) {
+            tmp[1] = targetColNames.get(i);
+            newCi.setAlias(tmp[1]);
+          } else if ("".equals(tmp[0]) || tmp[1] == null) {
             // ast expression is not a valid column name for table
             tmp[1] = colInfo.getInternalName();
           }
-          ColumnInfo newCi = new ColumnInfo(colInfo);
-          newCi.setTabAlias(alias);
           newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);
         }
         relToHiveRR.put(srcRel, newRR);

@@ -26,9 +26,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -67,15 +64,9 @@ public class ShowLocksAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    HiveTxnManager txnManager = null;
-    try {
-      txnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    } catch (LockException e) {
-      throw new SemanticException(e.getMessage());
-    }
-
-    ShowLocksDesc desc = new ShowLocksDesc(ctx.getResFile(), tableName, partitionSpec, isExtended,
-        txnManager.useNewShowLocksFormat());
+    assert txnManager != null : "Transaction manager should be set before calling analyze";
+    ShowLocksDesc desc =
+        new ShowLocksDesc(ctx.getResFile(), tableName, partitionSpec, isExtended, txnManager.useNewShowLocksFormat());
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 

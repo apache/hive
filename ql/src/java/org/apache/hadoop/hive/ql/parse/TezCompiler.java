@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
+import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SemiJoinReductionMerge;
@@ -125,7 +126,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -239,8 +239,9 @@ public class TezCompiler extends TaskCompiler {
     semijoinRemovalBasedTransformations(procCtx, inputs, outputs);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if(procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
+      new ParallelEdgeFixer().transform(procCtx.parseContext);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
 
@@ -1934,12 +1935,10 @@ public class TezCompiler extends TaskCompiler {
           if (filterStats != null) {
             ImmutableSet.Builder<String> colNames = ImmutableSet.builder();
             for (ExprNodeDesc tsExpr : targetColumns) {
-              // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
-              if (tsExpr instanceof ExprNodeFieldDesc) {
-                LOG.debug("Unwrapped column expression from ExprNodeFieldDesc");
-                tsExpr = ((ExprNodeFieldDesc) tsExpr).getDesc();
+              Set<ExprNodeColumnDesc> allReferencedColumns = ExprNodeDescUtils.findAllColumnDescs(tsExpr);
+              for (ExprNodeColumnDesc col : allReferencedColumns) {
+                colNames.add(col.getColumn());
               }
-              colNames.add(ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn());
             }
             // We check whether there was already another SJ over this TS that was selected
             // in previous iteration

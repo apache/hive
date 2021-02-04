@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -47,10 +46,11 @@ public class ReplDumpWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
-  final ReplScope oldReplScope;
+  ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   Long eventTo;
   Long eventFrom;
+  private boolean isBootstrap;
   private static String testInjectDumpDir = null;
   private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
@@ -87,14 +87,17 @@ public class ReplDumpWork implements Serializable {
     testDeletePreviousDumpMetaPath = failDeleteDumpMeta;
   }
 
-  public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
+  public ReplDumpWork(ReplScope replScope,
                       String astRepresentationForErrorMsg,
                       String resultTempPath) {
     this.replScope = replScope;
-    this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
     this.resultTempPath = resultTempPath;
+  }
+
+  void setOldReplScope(ReplScope replScope) {
+    oldReplScope = replScope;
   }
 
   int maxEventLimit() throws Exception {
@@ -132,6 +135,10 @@ public class ReplDumpWork implements Serializable {
       LoggerFactory.getLogger(this.getClass())
           .debug("eventTo not specified, using current event id : {}", eventTo);
     }
+  }
+
+  void setBootstrap(boolean bootstrap) {
+    isBootstrap = bootstrap;
   }
 
   public void setExternalTblCopyPathIterator(Iterator<String> externalTblCopyPathIterator) {
@@ -204,10 +211,12 @@ public class ReplDumpWork implements Serializable {
       replSpec.setInReplicationScope(true);
       EximUtil.DataCopyPath managedTableCopyPath = new EximUtil.DataCopyPath(replSpec);
       managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
-      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+      //If its incremental, in checkpointing case, dump dir may exist. We will delete the event dir.
+      //In case of bootstrap checkpointing we will not delete the entire dir and just do a sync
+      Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite,
-              getCurrentDumpPath().toString(), getMetricCollector());
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite, !isBootstrap,
+        getCurrentDumpPath().toString(), getMetricCollector());
       tasks.add(copyTask);
       tracker.addTask(copyTask);
       LOG.debug("added task for {}", managedTableCopyPath);
@@ -220,9 +229,9 @@ public class ReplDumpWork implements Serializable {
     if (functionCopyPathIterator != null) {
       while (functionCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
         EximUtil.DataCopyPath binaryCopyPath = functionCopyPathIterator.next();
-        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+        Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
                 binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf,
-                getCurrentDumpPath().toString(), getMetricCollector()
+          getCurrentDumpPath().toString(), getMetricCollector()
         );
         tasks.add(copyTask);
         tracker.addTask(copyTask);

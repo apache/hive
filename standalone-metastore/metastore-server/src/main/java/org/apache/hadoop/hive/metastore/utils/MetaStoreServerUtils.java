@@ -1111,6 +1111,7 @@ public class MetaStoreServerUtils {
     }
     if (!partitionsOutsideTableDir.isEmpty()) {
       PartitionSpec partListSpec = new PartitionSpec();
+      partListSpec.setCatName(table.getCatName());
       partListSpec.setDbName(table.getDbName());
       partListSpec.setTableName(table.getTableName());
       partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
@@ -1141,6 +1142,7 @@ public class MetaStoreServerUtils {
     ret.setSharedSDPartitionSpec(sharedSDPartSpec);
     ret.setDbName(table.getDbName());
     ret.setTableName(table.getTableName());
+    ret.setCatName(table.getCatName());
 
     return ret;
   }
@@ -1447,7 +1449,7 @@ public class MetaStoreServerUtils {
       // key value pairs - thrift cannot handle null return values, hence
       // getPartition() throws NoSuchObjectException to indicate null partition
     } catch (Exception e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to get partition", e);
       throw new MetastoreException(e);
     }
 

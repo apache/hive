@@ -528,6 +528,10 @@ public class TezJobMonitor {
     return (tezCounter == null) ? 0 : tezCounter.getValue();
   }
 
+  public HiveConf getHiveConf() {
+    return hiveConf;
+  }
+
   public String getDiagnostics() {
     return diagnostics.toString();
   }

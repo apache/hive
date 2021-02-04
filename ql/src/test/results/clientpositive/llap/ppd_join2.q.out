@@ -36,17 +36,17 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
+                  filterExpr: (((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) or ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
+                    predicate: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -59,14 +59,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: (((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) or ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311'))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -80,8 +72,16 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1726,17 +1726,17 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
+                  filterExpr: (((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) or ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
+                    predicate: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1749,14 +1749,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: (((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) or ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311'))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1770,8 +1762,16 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '400') and (key <> '14') and (key <> '305') and (key <> '302') and (key <> '311')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

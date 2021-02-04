@@ -1,4 +1,4 @@
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -90,7 +90,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc

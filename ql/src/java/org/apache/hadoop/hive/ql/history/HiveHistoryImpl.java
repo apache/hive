@@ -229,7 +229,7 @@ public class HiveHistoryImpl implements HiveHistory{
       }
 
     } catch (Exception e) {
-      LOG.warn(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.warn("Failed to set task counters", e);
     }
     if (sb1.length() > 0) {
       taskInfoMap.get(id).hm.put(Keys.ROWS_INSERTED.name(), sb1.toString());

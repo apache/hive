@@ -130,7 +130,6 @@ public class QOutProcessor {
       "at sun",
       "at java",
       "at junit",
-      "Caused by:",
       "LOCK_QUERYID:",
       "LOCK_TIME:",
       "grantTime",
@@ -142,7 +141,8 @@ public class QOutProcessor {
       "hive-staging",
       "at com.sun.proxy",
       "at com.jolbox",
-      "at com.zaxxer"
+      "at com.zaxxer",
+      "at com.google"
   };
 
   // Using String.contains instead of pattern, as it is much faster
@@ -336,6 +336,12 @@ public class QOutProcessor {
 
     ppm.add(new PatternReplacementPair(Pattern.compile("rowcount = [0-9]+(\\.[0-9]+(E[0-9]+)?)?, cumulative cost = \\{.*\\}, id = [0-9]*"),
         "rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###"));
+
+    // When a vertex is killed due to failure of upstream vertex, logs are in arbitrary order.
+    // We do not want the test to fail because of this.
+    ppm.add(new PatternReplacementPair(
+        Pattern.compile("Vertex killed, vertexName=(.*?),.*\\[\\1\\] killed\\/failed due to:OTHER_VERTEX_FAILURE\\]"),
+        "[Masked Vertex killed due to OTHER_VERTEX_FAILURE]"));
 
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }

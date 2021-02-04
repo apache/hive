@@ -425,7 +425,9 @@ class MetaStoreDirectSql {
       db.setOwnerType(
           (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
       db.setCatalogName(MetastoreDirectSqlUtils.extractSqlString(dbline[6]));
-      db.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(dbline[7]));
+      if (dbline[7] != null) {
+        db.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(dbline[7]));
+      }
       db.setManagedLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[8]));
       db.setParameters(MetaStoreServerUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
@@ -984,8 +986,10 @@ class MetaStoreDirectSql {
         part.setLastAccessTime(MetastoreDirectSqlUtils.extractSqlInt(fields[5]));
       }
       Long writeId = MetastoreDirectSqlUtils.extractSqlLong(fields[14]);
-      if (writeId != null) {
+      if (writeId != null && writeId>0) {
         part.setWriteId(writeId);
+      } else {
+        part.setWriteId(-1L);
       }
       partitions.put(partitionId, part);
 

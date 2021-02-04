@@ -45,7 +45,10 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
+import org.apache.hadoop.hive.ql.cleanup.EventualCleanupService;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -101,6 +104,7 @@ public class SessionManager extends CompositeService {
   private final HiveServer2 hiveServer2;
   private String sessionImplWithUGIclassName;
   private String sessionImplclassName;
+  private CleanupService cleanupService;
 
   public SessionManager(HiveServer2 hiveServer2, boolean allowSessions) {
     super(SessionManager.class.getSimpleName());
@@ -135,6 +139,15 @@ public class SessionManager extends CompositeService {
     userIpAddressLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS);
     LOG.info("Connections limit are user: {} ipaddress: {} user-ipaddress: {}", userLimit, ipAddressLimit,
       userIpAddressLimit);
+
+    int cleanupThreadCount = hiveConf.getIntVar(ConfVars.HIVE_ASYNC_CLEANUP_SERVICE_THREAD_COUNT);
+    int cleanupQueueSize = hiveConf.getIntVar(ConfVars.HIVE_ASYNC_CLEANUP_SERVICE_QUEUE_SIZE);
+    if (cleanupThreadCount > 0) {
+      cleanupService = new EventualCleanupService(cleanupThreadCount, cleanupQueueSize);
+    } else {
+      cleanupService = SyncCleanupService.INSTANCE;
+    }
+    cleanupService.start();
     super.init(hiveConf);
   }
 
@@ -279,6 +292,10 @@ public class SessionManager extends CompositeService {
     }
   }
 
+  public CleanupService getCleanupService() {
+    return cleanupService;
+  }
+
   private final Object timeoutCheckerLock = new Object();
 
   private void startTimeoutChecker() {
@@ -343,6 +360,7 @@ public class SessionManager extends CompositeService {
     shutdownTimeoutChecker();
     if (backgroundOperationPool != null) {
       backgroundOperationPool.shutdown();
+      cleanupService.shutdown();
       long timeout = hiveConf.getTimeVar(
           ConfVars.HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT, TimeUnit.SECONDS);
       try {

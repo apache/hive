@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.process.show.transactions;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.DataOutputStream;
@@ -47,7 +47,7 @@ public class ShowTransactionsOperation extends DDLOperation<ShowTransactionsDesc
     GetOpenTxnsInfoResponse rsp = context.getDb().showTransactions();
 
     // Write the results into the file
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       if (!sessionState.isHiveServerQuery()) {
         writeHeader(os);
       }

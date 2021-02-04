@@ -169,7 +169,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
 
-    String hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
+    hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
     if (hiveHost == null) {
       hiveHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
     }

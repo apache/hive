@@ -106,9 +106,14 @@ public class SQLOperation extends ExecuteStatementOperation {
   private final Optional<MetricsScope> submittedQryScp;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
-      boolean runInBackground, long queryTimeout) {
+                      boolean runInBackground, long queryTimeout) {
+    this(parentSession, statement, confOverlay, runInBackground, queryTimeout, false);
+  }
+
+  public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
+      boolean runInBackground, long queryTimeout, boolean embedded) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
-    super(parentSession, statement, confOverlay, runInBackground);
+    super(parentSession, statement, confOverlay, runInBackground, embedded);
     this.runAsync = runInBackground;
     this.resultSchema = Optional.empty();
 
@@ -215,7 +220,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private void runQuery() throws HiveSQLException {
     try {
-      OperationState opState = getStatus().getState();
+      OperationState opState = getState();
       // Operation may have been cancelled by another thread
       if (opState.isTerminal()) {
         log.info("Not running the query. Operation is already in terminal state: " + opState
@@ -232,8 +237,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if (getStatus().getState().isTerminal()) {
-        log.warn("Ignore exception in terminal state: {}", getStatus().getState(), e);
+      if (getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: {}", getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -315,7 +320,9 @@ public class SQLOperation extends ExecuteStatementOperation {
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
-          LogUtils.registerLoggingContext(queryState.getConf());
+          if (!embedded) {
+            LogUtils.registerLoggingContext(queryState.getConf());
+          }
           ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
 
           try {
@@ -328,7 +335,9 @@ public class SQLOperation extends ExecuteStatementOperation {
             setOperationException(e);
             log.error("Error running hive query", e);
           } finally {
-            LogUtils.unregisterLoggingContext();
+            if (!embedded) {
+              LogUtils.unregisterLoggingContext();
+            }
 
             // If new hive object is created  by the child thread, then we need to close it as it might
             // have created a hms connection. Call Hive.closeCurrent() that closes the HMS connection, causes
@@ -386,8 +395,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         String queryId = queryState.getQueryId();
         if (success) {
           log.info("The running operation has been successfully interrupted: {}", queryId);
-        } else {
-          log.info("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
+        } else if (log.isDebugEnabled()) {
+          log.debug("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
         }
       }
     }
@@ -428,8 +437,10 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   public void close() throws HiveSQLException {
-    cleanup(OperationState.CLOSED);
-    cleanupOperationLog(0);
+    if (!embedded) {
+      cleanup(OperationState.CLOSED);
+      cleanupOperationLog(0);
+    }
   }
 
   @Override
@@ -557,7 +568,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types);
         }
 
-        SerDeUtils.initializeSerDe(serde, queryState.getConf(), props, null);
+        serde.initialize(queryState.getConf(), props, null);
       } catch (Exception ex) {
         throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
       }

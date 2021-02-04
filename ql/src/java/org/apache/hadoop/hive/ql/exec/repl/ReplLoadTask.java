@@ -371,7 +371,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
     LoadPartitions loadPartitions =
         new LoadPartitions(loadContext, iterator.replLogger(), tableContext, loadTaskTracker,
-        event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated(), work.getMetricCollector());
+        event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated(), work.getMetricCollector(),
+          event.lastPartSpecReplicated(), event.lastStageReplicated());
         /*
              the tableTracker here should be a new instance and not an existing one as this can
              only happen when we break in between loading partitions.
@@ -591,7 +592,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private int executeIncrementalLoad() throws Exception {
     // If replication policy is changed between previous and current repl load, then drop the tables
     // that are excluded in the new replication policy.
-    dropTablesExcludedInReplScope(work.currentReplScope);
+    if (work.replScopeModified) {
+      dropTablesExcludedInReplScope(work.currentReplScope);
+    }
     IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
     // If incremental events are already applied, then check and perform if need to bootstrap any tables.
     if (!builder.hasMoreWork() && work.isLastReplIDUpdated()) {

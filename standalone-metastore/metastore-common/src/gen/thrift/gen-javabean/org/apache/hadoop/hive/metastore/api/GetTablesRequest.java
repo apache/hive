@@ -17,6 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField PROJECTION_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("projectionSpec", org.apache.thrift.protocol.TType.STRUCT, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetTablesRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetTablesRequestTupleSchemeFactory();
@@ -27,6 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> processorCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String processorIdentifier; // optional
+  private @org.apache.thrift.annotation.Nullable GetProjectionsSpec projectionSpec; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +37,8 @@ package org.apache.hadoop.hive.metastore.api;
     CAPABILITIES((short)3, "capabilities"),
     CAT_NAME((short)4, "catName"),
     PROCESSOR_CAPABILITIES((short)5, "processorCapabilities"),
-    PROCESSOR_IDENTIFIER((short)6, "processorIdentifier");
+    PROCESSOR_IDENTIFIER((short)6, "processorIdentifier"),
+    PROJECTION_SPEC((short)7, "projectionSpec");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -63,6 +66,8 @@ package org.apache.hadoop.hive.metastore.api;
           return PROCESSOR_CAPABILITIES;
         case 6: // PROCESSOR_IDENTIFIER
           return PROCESSOR_IDENTIFIER;
+        case 7: // PROJECTION_SPEC
+          return PROJECTION_SPEC;
         default:
           return null;
       }
@@ -104,7 +109,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TBL_NAMES,_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER};
+  private static final _Fields optionals[] = {_Fields.TBL_NAMES,_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.PROJECTION_SPEC};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -122,6 +127,8 @@ package org.apache.hadoop.hive.metastore.api;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PROCESSOR_IDENTIFIER, new org.apache.thrift.meta_data.FieldMetaData("processorIdentifier", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PROJECTION_SPEC, new org.apache.thrift.meta_data.FieldMetaData("projectionSpec", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetProjectionsSpec.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetTablesRequest.class, metaDataMap);
   }
@@ -160,6 +167,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetProcessorIdentifier()) {
       this.processorIdentifier = other.processorIdentifier;
     }
+    if (other.isSetProjectionSpec()) {
+      this.projectionSpec = new GetProjectionsSpec(other.projectionSpec);
+    }
   }
 
   public GetTablesRequest deepCopy() {
@@ -174,6 +184,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.catName = null;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
+    this.projectionSpec = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -352,6 +363,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public GetProjectionsSpec getProjectionSpec() {
+    return this.projectionSpec;
+  }
+
+  public void setProjectionSpec(@org.apache.thrift.annotation.Nullable GetProjectionsSpec projectionSpec) {
+    this.projectionSpec = projectionSpec;
+  }
+
+  public void unsetProjectionSpec() {
+    this.projectionSpec = null;
+  }
+
+  /** Returns true if field projectionSpec is set (has been assigned a value) and false otherwise */
+  public boolean isSetProjectionSpec() {
+    return this.projectionSpec != null;
+  }
+
+  public void setProjectionSpecIsSet(boolean value) {
+    if (!value) {
+      this.projectionSpec = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -402,6 +437,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case PROJECTION_SPEC:
+      if (value == null) {
+        unsetProjectionSpec();
+      } else {
+        setProjectionSpec((GetProjectionsSpec)value);
+      }
+      break;
+
     }
   }
 
@@ -426,6 +469,9 @@ package org.apache.hadoop.hive.metastore.api;
     case PROCESSOR_IDENTIFIER:
       return getProcessorIdentifier();
 
+    case PROJECTION_SPEC:
+      return getProjectionSpec();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -449,6 +495,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetProcessorCapabilities();
     case PROCESSOR_IDENTIFIER:
       return isSetProcessorIdentifier();
+    case PROJECTION_SPEC:
+      return isSetProjectionSpec();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -522,6 +570,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_projectionSpec = true && this.isSetProjectionSpec();
+    boolean that_present_projectionSpec = true && that.isSetProjectionSpec();
+    if (this_present_projectionSpec || that_present_projectionSpec) {
+      if (!(this_present_projectionSpec && that_present_projectionSpec))
+        return false;
+      if (!this.projectionSpec.equals(that.projectionSpec))
+        return false;
+    }
+
     return true;
   }
 
@@ -552,6 +609,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetProcessorIdentifier()) ? 131071 : 524287);
     if (isSetProcessorIdentifier())
       hashCode = hashCode * 8191 + processorIdentifier.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetProjectionSpec()) ? 131071 : 524287);
+    if (isSetProjectionSpec())
+      hashCode = hashCode * 8191 + projectionSpec.hashCode();
 
     return hashCode;
   }
@@ -620,6 +681,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetProcessorIdentifier()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processorIdentifier, other.processorIdentifier);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetProjectionSpec()).compareTo(other.isSetProjectionSpec());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProjectionSpec()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.projectionSpec, other.projectionSpec);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -702,6 +773,16 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetProjectionSpec()) {
+      if (!first) sb.append(", ");
+      sb.append("projectionSpec:");
+      if (this.projectionSpec == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.projectionSpec);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -715,6 +796,9 @@ package org.apache.hadoop.hive.metastore.api;
     // check for sub-struct validity
     if (capabilities != null) {
       capabilities.validate();
+    }
+    if (projectionSpec != null) {
+      projectionSpec.validate();
     }
   }
 
@@ -763,13 +847,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // TBL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1000 = iprot.readListBegin();
-                struct.tblNames = new java.util.ArrayList<java.lang.String>(_list1000.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1001;
-                for (int _i1002 = 0; _i1002 < _list1000.size; ++_i1002)
+                org.apache.thrift.protocol.TList _list1008 = iprot.readListBegin();
+                struct.tblNames = new java.util.ArrayList<java.lang.String>(_list1008.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1009;
+                for (int _i1010 = 0; _i1010 < _list1008.size; ++_i1010)
                 {
-                  _elem1001 = iprot.readString();
-                  struct.tblNames.add(_elem1001);
+                  _elem1009 = iprot.readString();
+                  struct.tblNames.add(_elem1009);
                 }
                 iprot.readListEnd();
               }
@@ -798,13 +882,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 5: // PROCESSOR_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1003 = iprot.readListBegin();
-                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1003.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1004;
-                for (int _i1005 = 0; _i1005 < _list1003.size; ++_i1005)
+                org.apache.thrift.protocol.TList _list1011 = iprot.readListBegin();
+                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1011.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1012;
+                for (int _i1013 = 0; _i1013 < _list1011.size; ++_i1013)
                 {
-                  _elem1004 = iprot.readString();
-                  struct.processorCapabilities.add(_elem1004);
+                  _elem1012 = iprot.readString();
+                  struct.processorCapabilities.add(_elem1012);
                 }
                 iprot.readListEnd();
               }
@@ -817,6 +901,15 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.processorIdentifier = iprot.readString();
               struct.setProcessorIdentifierIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // PROJECTION_SPEC
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.projectionSpec = new GetProjectionsSpec();
+              struct.projectionSpec.read(iprot);
+              struct.setProjectionSpecIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -844,9 +937,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(TBL_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tblNames.size()));
-            for (java.lang.String _iter1006 : struct.tblNames)
+            for (java.lang.String _iter1014 : struct.tblNames)
             {
-              oprot.writeString(_iter1006);
+              oprot.writeString(_iter1014);
             }
             oprot.writeListEnd();
           }
@@ -872,9 +965,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PROCESSOR_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.processorCapabilities.size()));
-            for (java.lang.String _iter1007 : struct.processorCapabilities)
+            for (java.lang.String _iter1015 : struct.processorCapabilities)
             {
-              oprot.writeString(_iter1007);
+              oprot.writeString(_iter1015);
             }
             oprot.writeListEnd();
           }
@@ -885,6 +978,13 @@ package org.apache.hadoop.hive.metastore.api;
         if (struct.isSetProcessorIdentifier()) {
           oprot.writeFieldBegin(PROCESSOR_IDENTIFIER_FIELD_DESC);
           oprot.writeString(struct.processorIdentifier);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.projectionSpec != null) {
+        if (struct.isSetProjectionSpec()) {
+          oprot.writeFieldBegin(PROJECTION_SPEC_FIELD_DESC);
+          struct.projectionSpec.write(oprot);
           oprot.writeFieldEnd();
         }
       }
@@ -922,13 +1022,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorIdentifier()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetProjectionSpec()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetTblNames()) {
         {
           oprot.writeI32(struct.tblNames.size());
-          for (java.lang.String _iter1008 : struct.tblNames)
+          for (java.lang.String _iter1016 : struct.tblNames)
           {
-            oprot.writeString(_iter1008);
+            oprot.writeString(_iter1016);
           }
         }
       }
@@ -941,14 +1044,17 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorCapabilities()) {
         {
           oprot.writeI32(struct.processorCapabilities.size());
-          for (java.lang.String _iter1009 : struct.processorCapabilities)
+          for (java.lang.String _iter1017 : struct.processorCapabilities)
           {
-            oprot.writeString(_iter1009);
+            oprot.writeString(_iter1017);
           }
         }
       }
       if (struct.isSetProcessorIdentifier()) {
         oprot.writeString(struct.processorIdentifier);
+      }
+      if (struct.isSetProjectionSpec()) {
+        struct.projectionSpec.write(oprot);
       }
     }
 
@@ -957,16 +1063,16 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1010 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.tblNames = new java.util.ArrayList<java.lang.String>(_list1010.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1011;
-          for (int _i1012 = 0; _i1012 < _list1010.size; ++_i1012)
+          org.apache.thrift.protocol.TList _list1018 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.tblNames = new java.util.ArrayList<java.lang.String>(_list1018.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1019;
+          for (int _i1020 = 0; _i1020 < _list1018.size; ++_i1020)
           {
-            _elem1011 = iprot.readString();
-            struct.tblNames.add(_elem1011);
+            _elem1019 = iprot.readString();
+            struct.tblNames.add(_elem1019);
           }
         }
         struct.setTblNamesIsSet(true);
@@ -982,13 +1088,13 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list1013 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1013.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1014;
-          for (int _i1015 = 0; _i1015 < _list1013.size; ++_i1015)
+          org.apache.thrift.protocol.TList _list1021 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1021.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1022;
+          for (int _i1023 = 0; _i1023 < _list1021.size; ++_i1023)
           {
-            _elem1014 = iprot.readString();
-            struct.processorCapabilities.add(_elem1014);
+            _elem1022 = iprot.readString();
+            struct.processorCapabilities.add(_elem1022);
           }
         }
         struct.setProcessorCapabilitiesIsSet(true);
@@ -996,6 +1102,11 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(4)) {
         struct.processorIdentifier = iprot.readString();
         struct.setProcessorIdentifierIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.projectionSpec = new GetProjectionsSpec();
+        struct.projectionSpec.read(iprot);
+        struct.setProjectionSpecIsSet(true);
       }
     }
   }

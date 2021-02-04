@@ -20,19 +20,22 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.MurmurHashIntColIntCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.MurmurHashStringColIntCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.MurmurHashStringColStringCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hive.common.util.Murmur3;
 
 /**
  * GenericUDF Class for computing murmurhash values.
  */
 @Description(name = "hash", value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments")
+@VectorizedExpressions({ MurmurHashStringColIntCol.class, MurmurHashStringColStringCol.class,
+    MurmurHashIntColIntCol.class })
 public class GenericUDFMurmurHash extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
 
@@ -48,7 +51,7 @@ public class GenericUDFMurmurHash extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object[] fieldValues = new Object[arguments.length];
-    for(int i = 0; i < arguments.length; i++) {
+    for (int i = 0; i < arguments.length; i++) {
       fieldValues[i] = arguments[i].get();
     }
     int r = ObjectInspectorUtils.getBucketHashCode(fieldValues, argumentOIs);

@@ -76,7 +76,8 @@ public class TestSQL11ReservedKeyWordsNegative {
           { "RLIKE" }, { "ROLLUP" }, { "ROW" }, { "ROWS" }, { "SET" }, { "SMALLINT" }, { "TABLE" },
           { "TIME" }, { "TIMESTAMP" }, { "TO" }, { "TRIGGER" }, { "TRUE" }, { "TRUNCATE" },
           { "UNION" }, { "UNIQUE" }, { "UPDATE" }, { "USER" }, { "USING" },
-          { "VALUES" }, { "WITH" }, { "SOME" }, { "ANY" }, { "ALL" }, {"PREPARE"} });
+          { "VALUES" }, { "WITH" }, { "SOME" }, { "ANY" }, { "ALL" }, {"PREPARE"},
+          {"LEADING"}, {"TRAILING"} });
     }
 
     private String keyword;

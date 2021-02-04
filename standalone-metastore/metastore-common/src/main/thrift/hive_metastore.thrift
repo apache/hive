@@ -901,7 +901,9 @@ struct GetPartitionsByNamesRequest {
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
   7: optional string engine,
-  8: optional string validWriteIdList
+  8: optional string validWriteIdList,
+  9: optional bool getFileMetadata,
+  10: optional i64 id=-1  // table id
 }
 
 struct GetPartitionsByNamesResult {
@@ -1430,6 +1432,42 @@ struct ClientCapabilities {
   1: required list<ClientCapability> values
 }
 
+/*
+ * Generic request API, providing different kinds of filtering and controlling output.
+ *
+ * The API entry point is get_partitions_with_specs() and getTables, which is based on a single
+ * request/response object model.
+ *
+ * The request defines any filtering that should be done for partitions as well as the list of fields that should be
+ * returned (this is called ProjectionSpec). Projection is simply a list of dot separated strings which represent
+ * the fields which that be returned. Projection may also include whitelist or blacklist of parameters to include in
+ * the partition. When both blacklist and whitelist are present, the blacklist supersedes the
+ * whitelist in case of conflicts.
+ *
+ * Filter spec is the generalization of various types of partition and table filtering. Partitions and tables can be
+ * filtered by names, by values or by partition expressions.
+ */
+
+struct GetProjectionsSpec {
+   // fieldList is a list of dot separated strings which represent the fields which must be returned.
+   // Any other field which is not in the fieldList may be unset in the returned partitions (it
+   //   is up to the implementation to decide whether it chooses to include or exclude such fields).
+   // E.g. setting the field list to sd.location, serdeInfo.name, sd.cols.name, sd.cols.type will
+   // return partitions which will have location field set in the storage descriptor. Also the serdeInfo
+   // in the returned storage descriptor will only have name field set. This applies to multi-valued
+   // fields as well like sd.cols, so in the example above only name and type fields will be set for sd.cols.
+   // If the fieldList is empty or not present, all the fields will be set
+   1: list<string> fieldList;
+   // SQL-92 compliant regex pattern for param keys to be included
+   // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
+   // Currently this is unsupported when fetching tables.
+   2: string includeParamKeyPattern;
+   // SQL-92 compliant regex pattern for param keys to be excluded
+   // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
+   // Current this is unsupported  when fetching tables.
+   3: string excludeParamKeyPattern;
+}
+
 struct GetTableRequest {
   1: required string dbName,
   2: required string tblName,
@@ -1454,7 +1492,8 @@ struct GetTablesRequest {
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
   5: optional list<string> processorCapabilities,
-  6: optional string processorIdentifier
+  6: optional string processorIdentifier,
+  7: optional GetProjectionsSpec projectionSpec
 }
 
 struct GetTablesResult {
@@ -1922,41 +1961,6 @@ struct AlterTableRequest {
 struct AlterTableResponse {
 }
 
-/*
- * Generic Partition request API, providing different kinds of filtering and controlling output.
- *
- * The API entry point is get_partitions_with_specs(), which is based on a single
- * request/response object model.
- *
- * The request (GetPartitionsRequest) defines any filtering that should be done for partitions
- * as well as the list of fields that should be returned (this is called ProjectionSpec).
- * Projection is simply a list of dot separated strings which represent the fields which should
- * be returned. Projection may also include whitelist or blacklist of parameters to include in
- * the partition. When both blacklist and whitelist are present, the blacklist supersedes the
- * whitelist in case of conflicts.
- *
- * Partition filter spec is the generalization of various types of partition filtering.
- * Partitions can be filtered by names, by values or by partition expressions.
- */
-
-struct GetPartitionsProjectionSpec {
-   // fieldList is a list of dot separated strings which represent the fields which must be returned.
-   // Any other field which is not in the fieldList may be unset in the returned partitions (it
-   //   is up to the implementation to decide whether it chooses to include or exclude such fields).
-   // E.g. setting the field list to sd.location, serdeInfo.name, sd.cols.name, sd.cols.type will
-   // return partitions which will have location field set in the storage descriptor. Also the serdeInfo
-   // in the returned storage descriptor will only have name field set. This applies to multi-valued
-   // fields as well like sd.cols, so in the example above only name and type fields will be set for sd.cols.
-   // If the fieldList is empty or not present, all the fields will be set
-   1: list<string> fieldList;
-   // SQL-92 compliant regex pattern for param keys to be included
-   // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
-   2: string includeParamKeyPattern;
-   // SQL-92 compliant regex pattern for param keys to be excluded
-   // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
-   3: string excludeParamKeyPattern;
-}
-
 enum PartitionFilterMode {
    BY_NAMES,                 // filter by names
    BY_VALUES,                // filter by values
@@ -1979,8 +1983,8 @@ struct GetPartitionsRequest {
    4: optional bool withAuth,
    5: optional string user,
    6: optional list<string> groupNames,
-   7: GetPartitionsProjectionSpec projectionSpec
-   8: GetPartitionsFilterSpec filterSpec, // TODO not yet implemented. Must be present but ignored
+   7: GetProjectionsSpec projectionSpec
+   8: GetPartitionsFilterSpec filterSpec,
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier,
    11: optional string validWriteIdList
@@ -2088,6 +2092,25 @@ struct GetReplicationMetricsRequest {
 
 struct GetOpenTxnsRequest {
   1: optional list<TxnType> excludeTxnTypes;
+}
+
+struct StoredProcedureRequest {
+  1: required string catName,
+  2: required string dbName,
+  3: required string procName
+}
+
+struct ListStoredProcedureRequest {
+  1: required string catName
+  2: optional string dbName
+}
+
+struct StoredProcedure {
+  1: string           name,
+  2: string           dbName,
+  3: string           catName,
+  4: string           ownerName,
+  5: string           source
 }
 
 // Exceptions.
@@ -2832,6 +2855,11 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
   ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
   GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
+
+  void create_stored_procedure(1: StoredProcedure proc) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

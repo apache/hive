@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -192,8 +192,8 @@ public class WarehouseInstance implements Closeable {
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
 
-    TxnDbUtil.cleanDb(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
 
     // change the value for the next instance.
     ++uniqueIdentifier;
@@ -268,22 +268,11 @@ public class WarehouseInstance implements Closeable {
     return dump(dbName, Collections.emptyList());
   }
 
-  Tuple dump(String dbName, List<String> withClauseOptions)
+  Tuple dump(String dumpExpression, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
-        "REPL DUMP " + dbName;
+        "REPL DUMP " + dumpExpression;
     if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
-      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
-    }
-    return dumpWithCommand(dumpCommand);
-  }
-
-  Tuple dump(String replPolicy, String oldReplPolicy, List<String> withClauseOptions)
-          throws Throwable {
-    String dumpCommand =
-            "REPL DUMP " + replPolicy
-                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy);
-    if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return dumpWithCommand(dumpCommand);
