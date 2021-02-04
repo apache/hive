@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
@@ -148,6 +150,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected ThreadLocal<ServerContext> currentServerContext;
 
   static class ThriftCLIServerContext implements ServerContext {
+
+    private final AtomicInteger messagesProcessedCounter = new AtomicInteger();
     private SessionHandle sessionHandle = null;
 
     public void setSessionHandle(SessionHandle sessionHandle) {
@@ -156,6 +160,14 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     public SessionHandle getSessionHandle() {
       return sessionHandle;
+    }
+
+    public int getMessagesProcessedCount() {
+      return this.messagesProcessedCounter.get();
+    }
+
+    public void incMessagesProcessedCount() {
+      this.messagesProcessedCounter.incrementAndGet();
     }
   }
 

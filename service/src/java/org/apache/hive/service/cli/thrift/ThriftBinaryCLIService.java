@@ -115,7 +115,6 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       // TCP Server
       server = new TThreadPoolServer(sargs);
       server.setServerEventHandler(new TServerEventHandler() {
-        final AtomicInteger messagesProcessedCounter = new AtomicInteger();
 
         @Override
         public ServerContext createContext(TProtocol input, TProtocol output) {
@@ -156,7 +155,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
                     + "The connection processed {} total messages. If total messages processed is zero or one, most likely it is a "
                     + "client that is opening then immediately closing the socket (i.e., TCP health check or port scanner), otherwise "
                     + "inspect the client for time-out, fire-wall killing the connection, invalid load balancer configuration, etc.",
-                sessionHandle, messagesProcessedCounter);
+                sessionHandle, context.getMessagesProcessedCount());
             try {
               boolean close = cliService.getSessionManager().getSession(sessionHandle).getHiveConf()
                   .getBoolVar(ConfVars.HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT);
@@ -178,8 +177,9 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
 
         @Override
         public void processContext(ServerContext serverContext, TTransport input, TTransport output) {
-          currentServerContext.set(serverContext);
-          messagesProcessedCounter.incrementAndGet();
+          ThriftCLIServerContext context = (ThriftCLIServerContext) serverContext;
+          currentServerContext.set(context);
+          context.incMessagesProcessedCount();
         }
       });
       String msg = "Starting " + ThriftBinaryCLIService.class.getSimpleName() + " on port " + portNum + " with "
