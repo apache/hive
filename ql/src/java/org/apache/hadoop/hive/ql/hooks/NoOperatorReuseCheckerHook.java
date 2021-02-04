@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -97,18 +98,20 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
       }
       //      if (false)
       {
-        for (ColumnInfo sig : schema.getSignature()) {
-          String iName = sig.getInternalName();
-          ExprNodeDesc e = exprMap.get(iName);
-          if (isSemiJoinRS(op)) {
-            continue;
-          }
-          if (op.getConf() instanceof GroupByDesc) {
-            continue;
-          }
+        if (!(op instanceof ScriptOperator)) {
+          for (ColumnInfo sig : schema.getSignature()) {
+            String iName = sig.getInternalName();
+            ExprNodeDesc e = exprMap.get(iName);
+            if (isSemiJoinRS(op)) {
+              continue;
+            }
+            if (op.getConf() instanceof GroupByDesc) {
+              continue;
+            }
 
-          if (e == null) {
-            throw new RuntimeException("expr not found for " + iName + " in " + exprMap);
+            if (e == null) {
+              throw new RuntimeException("expr not found for " + iName + " in " + exprMap);
+            }
           }
         }
       }
