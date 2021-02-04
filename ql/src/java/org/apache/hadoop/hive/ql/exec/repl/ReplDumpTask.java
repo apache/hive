@@ -633,9 +633,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dmd.setReplScope(work.replScope);
       dmd.write(true);
     }
-    int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
-    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
-         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
+    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST);
+         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL)) {
       // Examine all the tables if required.
       if (shouldExamineTablesToDump() || (tableList != null)) {
         // If required wait more for any transactions open at the time of starting the ACID bootstrap.
@@ -888,8 +887,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
     int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
-    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
-         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
+    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST);
+         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL)) {
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
         LOG.debug("Dumping db: " + dbName);
         // TODO : Currently we don't support separate table list for each database.
@@ -1036,9 +1035,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     hiveDb.alterDatabase(dbName, db);
   }
 
-  private FileList createTableFileList(Path dumpRoot, String fileName, int cacheSize) {
+  private FileList createTableFileList(Path dumpRoot, String fileName) {
     Path backingFile = new Path(dumpRoot, fileName);
-    return new FileList(backingFile, cacheSize, conf);
+    return new FileList(backingFile, conf);
   }
 
 
