@@ -1686,7 +1686,7 @@ WHERE
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND array_contains(split_map_privs(P.`TBL_COL_PRIV`),"SELECT") AND P.`AUTHORIZER`=current_authorizer();
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer();
 
 CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
@@ -1709,18 +1709,7 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
- (SELECT
-        Q.`GRANTOR`,
-        Q.`GRANT_OPTION`,
-        Q.`PRINCIPAL_NAME`,
-        Q.`PRINCIPAL_TYPE`,
-        Q.`AUTHORIZER`,
-        Q.`COLUMN_NAME`,
-        `TBL_COL_PRIV_TMP`.`TBL_COL_PRIV`,
-        Q.`TBL_ID`
-       FROM `sys`.`TBL_COL_PRIVS` AS Q
-       LATERAL VIEW explode(split_map_privs(Q.`TBL_COL_PRIV`)) `TBL_COL_PRIV_TMP` AS `TBL_COL_PRIV`) P
-                          JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
                           JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
                           JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
                           LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
@@ -1844,9 +1833,9 @@ SELECT 'Upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0';
 
 USE SYS;
 
-CREATE OR REPLACE VIEW `CDH_VERSION` AS SELECT 1 AS `VER_ID`, '3.1.3000.7.2.2.0-Update1' AS `SCHEMA_VERSION`,
-  'Hive release version 3.1.3000 for CDH 7.2.2.0-Update1' AS `VERSION_COMMENT`;
+CREATE OR REPLACE VIEW `CDH_VERSION` AS SELECT 1 AS `VER_ID`, '3.1.3000.7.2.1.0-Update1' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.3000 for CDH 7.2.1.0-Update1' AS `VERSION_COMMENT`;
 
-SELECT 'Finished initializing schema to 3.1.3000.7.2.2.0-Update1';
+SELECT 'Finished initializing schema to 3.1.3000.7.2.1.0-Update1';
 
 

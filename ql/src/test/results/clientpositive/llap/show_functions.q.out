@@ -259,7 +259,6 @@ sort_array_by
 soundex
 space
 split
-split_map_privs
 sq_count_check
 sqrt
 stack
@@ -682,7 +681,6 @@ sort_array_by
 soundex
 space
 split
-split_map_privs
 sq_count_check
 sqrt
 stack
