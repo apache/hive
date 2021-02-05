@@ -509,7 +509,7 @@ public class DagUtils {
       break;
 
     case SIMPLE_EDGE:
-      setupAutoReducerParallelism(edgeProp, w, vConf);
+      setupAutoReducerParallelism(edgeProp, w);
       // fall through
 
     default:
@@ -553,7 +553,7 @@ public class DagUtils {
       break;
 
     case SIMPLE_EDGE: {
-      setupAutoReducerParallelism(edgeProp, w, vConf);
+      setupAutoReducerParallelism(edgeProp, w);
       break;
     }
     case CUSTOM_SIMPLE_EDGE: {
@@ -1654,7 +1654,7 @@ public class DagUtils {
     return instance;
   }
 
-  private void setupAutoReducerParallelism(TezEdgeProperty edgeProp, Vertex v, Configuration conf)
+  private void setupAutoReducerParallelism(TezEdgeProperty edgeProp, Vertex v)
     throws IOException {
     if (edgeProp.isAutoReduce()) {
       Configuration pluginConf = new Configuration(false);
@@ -1669,14 +1669,10 @@ public class DagUtils {
           edgeProp.getInputSizePerReducer());
       pluginConf.setFloat(
           ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
-          conf.getFloat(
-              ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
-              ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION_DEFAULT));
+          edgeProp.getSlowStartMinSrcFraction());
       pluginConf.setFloat(
           ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
-          conf.getFloat(
-              ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
-              ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION_DEFAULT));
+          edgeProp.getSlowStartMaxSrcFraction());
       UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
       desc.setUserPayload(payload);
       v.setVertexManagerPlugin(desc);

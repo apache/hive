@@ -84,6 +84,12 @@ public class ReduceWork extends BaseWork {
   // boolean that says whether to slow start or not
   private boolean isSlowStart = true;
 
+  // the first task can be scheduled after this fraction of source tasks complete
+  private float slowStartMinSrcFraction;
+
+  // all tasks can be scheduled after this fraction of source tasks complete
+  private float slowStartMaxSrcFraction;
+
   // for auto reduce parallelism - minimum reducers requested
   private int minReduceTasks;
 
@@ -219,6 +225,22 @@ public class ReduceWork extends BaseWork {
 
   public void setSlowStart(boolean isSlowStart) {
     this.isSlowStart = isSlowStart;
+  }
+
+  public void setSlowStartMinSrcFraction(float slowStartMinSrcFraction) {
+    this.slowStartMinSrcFraction = slowStartMinSrcFraction;
+  }
+
+  public float getSlowStartMinSrcFraction() {
+    return slowStartMinSrcFraction;
+  }
+
+  public void setSlowStartMaxSrcFraction(float slowStartMaxSrcFraction) {
+    this.slowStartMaxSrcFraction = slowStartMaxSrcFraction;
+  }
+
+  public float getSlowStartMaxSrcFraction() {
+    return slowStartMaxSrcFraction;
   }
 
   // ReducerTraits.UNIFORM

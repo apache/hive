@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +82,12 @@ public class GenTezUtils {
     boolean isAutoReduceParallelism =
         context.conf.getBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM);
 
+    float slowStartMaxSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION_DEFAULT);
+    float slowStartMinSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION_DEFAULT);
     float maxPartitionFactor =
         context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR);
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
@@ -101,6 +108,8 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
+    reduceWork.setSlowStartMinSrcFraction(slowStartMinSrcFraction);
+    reduceWork.setSlowStartMaxSrcFraction(slowStartMaxSrcFraction);
     reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
@@ -140,6 +149,7 @@ public class GenTezUtils {
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
           new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
+              reduceWork.getSlowStartMinSrcFraction(), reduceWork.getSlowStartMaxSrcFraction(),
               reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
     } else {
       edgeProp = new TezEdgeProperty(edgeType);

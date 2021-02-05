@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 
 public class TezEdgeProperty {
 
@@ -38,6 +39,8 @@ public class TezEdgeProperty {
 
   private boolean isAutoReduce;
   private boolean isSlowStart = true;
+  private float slowStartMinSrcFraction = ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION_DEFAULT;
+  private float slowStartMaxSrcFraction = ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION_DEFAULT;
   private int minReducer;
   private int maxReducer;
   private long inputSizePerReducer;
@@ -51,10 +54,13 @@ public class TezEdgeProperty {
   }
 
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType, boolean isAutoReduce,
-      boolean isSlowStart, int minReducer, int maxReducer, long bytesPerReducer) {
+      boolean isSlowStart, float slowStartMinSrcFraction, float slowStartMaxSrcFraction,
+      int minReducer, int maxReducer, long bytesPerReducer) {
     this(hiveConf, edgeType, -1);
     setAutoReduce(hiveConf, isAutoReduce, minReducer, maxReducer, bytesPerReducer);
     this.isSlowStart = isSlowStart;
+    this.slowStartMinSrcFraction = slowStartMinSrcFraction;
+    this.slowStartMaxSrcFraction = slowStartMaxSrcFraction;
   }
 
   public void setAutoReduce(HiveConf hiveConf, boolean isAutoReduce, int minReducer,
@@ -100,6 +106,14 @@ public class TezEdgeProperty {
 
   public boolean isSlowStart() {
     return isSlowStart;
+  }
+
+  public float getSlowStartMinSrcFraction() {
+    return slowStartMinSrcFraction;
+  }
+
+  public float getSlowStartMaxSrcFraction() {
+    return slowStartMaxSrcFraction;
   }
 
   public void setSlowStart(boolean slowStart) {

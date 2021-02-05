@@ -462,6 +462,7 @@ public class GenTezWork implements SemanticNodeProcessor {
           if (rWork.isAutoReduceParallelism()) {
             edgeProp =
                 new TezEdgeProperty(context.conf, edgeType, true, rWork.isSlowStart(),
+                    rWork.getSlowStartMinSrcFraction(), rWork.getSlowStartMaxSrcFraction(),
                     rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer);
           } else {
             edgeProp = new TezEdgeProperty(edgeType);
