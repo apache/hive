@@ -396,6 +396,11 @@
 </property>
 
 <property>
+  <name>hive.metastore.client.capabilities</name>
+  <value>HIVEFULLACIDREAD,HIVEMANAGEDINSERTREAD</value>
+</property>
+
+<property>
   <name>impala.sentry_config</name>
   <value></value>
 </property>

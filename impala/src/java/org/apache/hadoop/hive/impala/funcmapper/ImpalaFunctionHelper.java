@@ -377,7 +377,11 @@ public class ImpalaFunctionHelper implements FunctionHelper {
    */
   @Override
   public boolean isConsistentWithinQuery(FunctionInfo fi) {
-    throw new RuntimeException("not implemented");
+    // TODO: This is taken from Impala FunctionCallExpr class.
+    //       We should consolidate both methods.
+    return !fi.getDisplayName().equals("rand") &&
+        !fi.getDisplayName().equals("random") &&
+        !fi.getDisplayName().equals("uuid");
   }
 
   /**

@@ -152,7 +152,10 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     try {
       SqlOperator opToUse = op;
       if (opToUse == null) {
-        opToUse = SqlFunctionConverter.getCalciteFn(func, argTypes, returnDataType, false, false);
+        boolean deterministic =
+            helper.isConsistentWithinQuery(new ImpalaFunctionInfo(candidate.getFunc()));
+        opToUse = SqlFunctionConverter.getCalciteFn(
+            func, argTypes, returnDataType, deterministic, false);
       }
       return rexBuilder.makeCall(returnDataType, opToUse, inputs);
     } catch (CalciteSemanticException e) {
