@@ -3467,7 +3467,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * If partVals is empty or all the values are empty strings, it means we are returning
+   * If partVals all the values are empty strings, it means we are returning
    * all the partitions and hence we can attempt to use a directSQL equivalent API which
    * is considerably faster.
    * @param partVals The partitions values used to filter out the partitions.
