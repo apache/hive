@@ -67,26 +67,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@transform1_t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-FAILED: Hive Internal Error: org.apache.hadoop.hive.ql.metadata.HiveException(Error while invoking PostHook. hooks: java.lang.RuntimeException: expr not found for _col0 in {}
-#### A masked pattern was here ####
-)
-org.apache.hadoop.hive.ql.metadata.HiveException: Error while invoking PostHook. hooks: java.lang.RuntimeException: expr not found for _col0 in {}
-#### A masked pattern was here ####
-
-#### A masked pattern was here ####
-Caused by: java.lang.RuntimeException: expr not found for _col0 in {}
-#### A masked pattern was here ####
-
-PREHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
-PREHOOK: type: QUERY
-PREHOOK: Input: cat
-PREHOOK: Input: default@transform1_t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: cat
-POSTHOOK: Input: default@transform1_t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: create table transform1_t2(col array<int>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
