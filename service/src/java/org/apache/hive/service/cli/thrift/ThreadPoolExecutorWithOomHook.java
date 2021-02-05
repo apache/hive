@@ -17,6 +17,7 @@
  */
 package org.apache.hive.service.cli.thrift;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.BlockingQueue;
@@ -53,9 +54,18 @@ final class ThreadPoolExecutorWithOomHook extends ThreadPoolExecutor {
         t = t2;
       }
     }
-    if (t instanceof OutOfMemoryError) {
+    if (isOutOfMemoryError(t)) {
       LOG.error("Stopping HiveServer2 due to OOM", t);
       oomHook.run();
     }
   }
+
+  @VisibleForTesting
+  boolean isOutOfMemoryError(Throwable t) {
+    if (t == null || t instanceof OutOfMemoryError) {
+      return t instanceof OutOfMemoryError;
+    }
+    return isOutOfMemoryError(t.getCause());
+  }
+
 }

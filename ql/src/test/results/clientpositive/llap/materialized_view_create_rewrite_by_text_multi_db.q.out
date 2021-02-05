@@ -1,0 +1,173 @@
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: create table cmv_basetable_n7 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@cmv_basetable_n7
+POSTHOOK: query: create table cmv_basetable_n7 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@cmv_basetable_n7
+PREHOOK: query: insert into cmv_basetable_n7 values
+ (1, 'alfred', 10.30, 2),
+ (2, 'bob', 3.14, 3),
+ (2, 'bonnie', 172342.2, 3),
+ (3, 'calvin', 978.76, 3),
+ (3, 'charlie', 9.8, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: db1@cmv_basetable_n7
+POSTHOOK: query: insert into cmv_basetable_n7 values
+ (1, 'alfred', 10.30, 2),
+ (2, 'bob', 3.14, 3),
+ (2, 'bonnie', 172342.2, 3),
+ (3, 'calvin', 978.76, 3),
+ (3, 'charlie', 9.8, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: db1@cmv_basetable_n7
+POSTHOOK: Lineage: cmv_basetable_n7.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n7.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n7.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n7.d SCRIPT []
+PREHOOK: query: create database db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+POSTHOOK: query: create database db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+PREHOOK: query: use db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: use db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: create materialized view cmv_mat_view_n7
+as select a, b, c from db1.cmv_basetable_n7 where a = 2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: db1@cmv_basetable_n7
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@cmv_mat_view_n7
+POSTHOOK: query: create materialized view cmv_mat_view_n7
+as select a, b, c from db1.cmv_basetable_n7 where a = 2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: db1@cmv_basetable_n7
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@cmv_mat_view_n7
+PREHOOK: query: select * from cmv_mat_view_n7
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@cmv_mat_view_n7
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cmv_mat_view_n7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@cmv_mat_view_n7
+#### A masked pattern was here ####
+2	bob	3.14
+2	bonnie	172342.20
+PREHOOK: query: show tblproperties cmv_mat_view_n7
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties cmv_mat_view_n7
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true"}}
+bucketing_version	2
+numFiles	1
+numFilesErasureCoded	0
+numRows	2
+rawDataSize	408
+totalSize	468
+#### A masked pattern was here ####
+PREHOOK: query: create materialized view if not exists cmv_mat_view2_n2
+as select a, c from db1.cmv_basetable_n7 where a = 3
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: db1@cmv_basetable_n7
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@cmv_mat_view2_n2
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2_n2
+as select a, c from db1.cmv_basetable_n7 where a = 3
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: db1@cmv_basetable_n7
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@cmv_mat_view2_n2
+PREHOOK: query: select * from cmv_mat_view2_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cmv_mat_view2_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
+3	978.76
+3	9.80
+PREHOOK: query: show tblproperties cmv_mat_view2_n2
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties cmv_mat_view2_n2
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","c":"true"}}
+bucketing_version	2
+numFiles	1
+numFilesErasureCoded	0
+numRows	2
+rawDataSize	232
+totalSize	334
+#### A masked pattern was here ####
+PREHOOK: query: create database db3
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db3
+POSTHOOK: query: create database db3
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db3
+PREHOOK: query: use db3
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db3
+POSTHOOK: query: use db3
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db3
+PREHOOK: query: explain
+select a, c from db1.cmv_basetable_n7 where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@cmv_basetable_n7
+PREHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select a, c from db1.cmv_basetable_n7 where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@cmv_basetable_n7
+POSTHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: db2.cmv_mat_view2_n2
+          Select Operator
+            expressions: a (type: int), c (type: decimal(10,2))
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select a, c from db1.cmv_basetable_n7 where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@cmv_basetable_n7
+PREHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select a, c from db1.cmv_basetable_n7 where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@cmv_basetable_n7
+POSTHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
+3	978.76
+3	9.80

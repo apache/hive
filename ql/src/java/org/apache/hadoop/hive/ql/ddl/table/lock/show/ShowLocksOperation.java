@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.lock.show;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -74,7 +74,7 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
     }
 
     // write the results in the file
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       List<HiveLock> locks = getLocksForOldFormat(lockMgr);
       writeLocksInOldFormat(os, locks);
     } catch (IOException e) {
@@ -143,7 +143,7 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
     ShowLocksResponse response = getLocksForNewFormat(lockMgr);
 
     // write the results in the file
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       dumpLockInfo(os, response);
     } catch (IOException e) {
       LOG.warn("show function: ", e);

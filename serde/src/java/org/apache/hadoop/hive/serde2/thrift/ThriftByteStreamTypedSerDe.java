@@ -49,10 +49,9 @@ public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
   }
 
   @Override
-  public void initialize(Configuration job, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    throw new SerDeException(
-        "ThriftByteStreamTypedSerDe is still semi-abstract");
+    throw new SerDeException("ThriftByteStreamTypedSerDe is still semi-abstract");
   }
 
   public ThriftByteStreamTypedSerDe(Type objectType,

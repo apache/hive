@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.function.desc;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -47,7 +47,7 @@ public class DescFunctionOperation extends DDLOperation<DescFunctionDesc> {
 
   @Override
   public int execute() throws HiveException {
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(desc.getResFile(), context)) {
+    try (DataOutputStream outStream = ShowUtils.getOutputStream(desc.getResFile(), context)) {
       String funcName = desc.getName();
       FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
       Class<?> funcClass = functionInfo == null ? null : functionInfo.getFunctionClass();

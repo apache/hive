@@ -38,6 +38,23 @@ k=3;
 
   int parameterIdx = 0;
   public int getParameterIdx() { return ++parameterIdx;}
+
+  private int columnAliasCounter = 1;
+  private void incAliasCounter() {
+    ++columnAliasCounter;
+  }
+
+  private String generateColumnAlias() {
+    return generateColumnAlias(columnAliasCounter);
+  }
+
+  private String generateColumnAlias(int index) {
+    return "col" + index;
+  }
+
+  private void resetAliasCounter() {
+    columnAliasCounter = 1;
+  }
 }
 
 @rulecatch {
@@ -151,11 +168,30 @@ expressionsNotInParenthesis[boolean isStruct, boolean forceStruct]
     -> {$more.tree}
     ;
 
-expressionPart[CommonTree t, boolean isStruct]
+expressionPart[CommonTree firstExprTree, boolean isStruct]
     :
     (COMMA expression)+
-    -> {isStruct}? ^(TOK_FUNCTION Identifier["struct"] {$t} expression+)
-    -> {$t} expression+
+    -> {isStruct}? ^(TOK_FUNCTION Identifier["struct"] {$firstExprTree} expression+)
+    -> {$firstExprTree} expression+
+    ;
+
+// Parses comma separated list of expressions with optionally specified aliases.
+// <expression> [<alias>] [, <expression> [<alias>]]
+firstExpressionsWithAlias
+@after { resetAliasCounter(); }
+    :
+    first=expression colAlias=identifier? (COMMA expressionWithAlias)* { incAliasCounter(); }
+    -> {colAlias != null}? ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS identifier?) expressionWithAlias*)
+    -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias(1)) }) expressionWithAlias*)
+    ;
+
+// Parses expressions which may have alias.
+// If alias is not specified generate one.
+expressionWithAlias
+    :
+    expression alias=identifier? { incAliasCounter(); }
+    -> { alias != null }? expression ^(TOK_ALIAS identifier?)
+    -> expression ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias()) })
     ;
 
 expressions
@@ -216,11 +252,22 @@ sortByClause
     )
     ;
 
+// TRIM([LEADING|TRAILING|BOTH] trim_characters FROM str)
+trimFunction
+    :
+    KW_TRIM LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
+    -> {$leading != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "ltrim")} $str $trim_characters?)
+    -> {$trailing != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "rtrim")} $str $trim_characters?)
+    -> ^(TOK_FUNCTION {adaptor.create(Identifier, "trim")} $str $trim_characters?)
+    ;
+
 // fun(par1, par2, par3)
 function
 @init { gParent.pushMsg("function specification", state); }
 @after { gParent.popMsg(state); }
     :
+    (trimFunction) => (trimFunction)
+    |
     functionName
     LPAREN
       (
@@ -896,6 +943,7 @@ nonReserved
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
     | KW_UNKNOWN
     | KW_WITHIN
+    | KW_TRIM
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

@@ -107,6 +107,9 @@ public interface FunctionHelper {
    */
   boolean isEqualFunction(FunctionInfo fi);
 
+
+  boolean isNSCompareFunction(FunctionInfo fi);
+
   /**
    * Returns whether the expression, for a single query, returns the same result given
    * the same arguments/children. This includes deterministic functions as well as runtime

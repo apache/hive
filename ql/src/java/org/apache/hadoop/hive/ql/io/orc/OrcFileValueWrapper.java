@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.List;
+import java.nio.ByteBuffer;
+import java.util.Map;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.orc.OrcProto;
@@ -35,14 +36,14 @@ public class OrcFileValueWrapper implements WritableComparable<OrcFileValueWrapp
 
   protected StripeInformation stripeInformation;
   protected OrcProto.StripeStatistics stripeStatistics;
-  protected List<OrcProto.UserMetadataItem> userMetadata;
+  protected Map<String, ByteBuffer> userMetadata;
   protected boolean lastStripeInFile;
 
-  public List<OrcProto.UserMetadataItem> getUserMetadata() {
+  public Map<String, ByteBuffer> getUserMetadata() {
     return userMetadata;
   }
 
-  public void setUserMetadata(List<OrcProto.UserMetadataItem> userMetadata) {
+  public void setUserMetadata(Map<String, ByteBuffer> userMetadata) {
     this.userMetadata = userMetadata;
   }
 

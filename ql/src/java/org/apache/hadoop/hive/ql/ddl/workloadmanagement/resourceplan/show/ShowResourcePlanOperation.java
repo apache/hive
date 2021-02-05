@@ -24,7 +24,8 @@ import java.io.IOException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
+import org.apache.hadoop.hive.ql.ddl.workloadmanagement.resourceplan.show.formatter.ShowResourcePlanFormatter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -38,12 +39,13 @@ public class ShowResourcePlanOperation extends DDLOperation<ShowResourcePlanDesc
   @Override
   public int execute() throws HiveException, IOException {
     // TODO: Enhance showResourcePlan to display all the pools, triggers and mappings.
-    try (DataOutputStream out = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream out = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       String resourcePlanName = desc.getResourcePlanName();
+      ShowResourcePlanFormatter formatter = ShowResourcePlanFormatter.getFormatter(context.getConf());
       if (resourcePlanName != null) {
-        context.getFormatter().showFullResourcePlan(out, context.getDb().getResourcePlan(resourcePlanName));
+        formatter.showFullResourcePlan(out, context.getDb().getResourcePlan(resourcePlanName));
       } else {
-        context.getFormatter().showResourcePlans(out, context.getDb().getAllResourcePlans());
+        formatter.showResourcePlans(out, context.getDb().getAllResourcePlans());
       }
     }
 

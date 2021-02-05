@@ -196,7 +196,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -214,18 +214,18 @@ STAGE PLANS:
                   outputColumnNames: si, i, b, f, ds, t
                   Statistics: Num rows: 11 Data size: 1221 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                     keys: ds (type: string), t (type: tinyint)
-                    minReductionHashAggr: 0.5454545
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                    Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: tinyint)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                      Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -243,21 +243,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_orc
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -335,7 +335,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 10
@@ -356,18 +356,18 @@ STAGE PLANS:
                     outputColumnNames: si, i, b, f, ds, t
                     Statistics: Num rows: 10 Data size: 1110 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                       keys: ds (type: string), t (type: tinyint)
-                      minReductionHashAggr: 0.5
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                      Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 7470 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: tinyint)
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                        Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 10 Data size: 7470 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -385,21 +385,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_limit_orc
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 10 Data size: 7470 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 11490 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 11490 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -477,20 +477,20 @@ STAGE PLANS:
                         outputColumnNames: si, i, b, f, t
                         Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                           keys: t (type: tinyint)
-                          minReductionHashAggr: 0.5454545
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                          Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: tinyint)
                             null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: tinyint)
-                            Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: smallint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary), _col14 (type: float), _col15 (type: float), _col16 (type: bigint), _col17 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -508,21 +508,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_orc
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col14) (type: double), UDFToDouble(_col15) (type: double), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -599,20 +599,20 @@ STAGE PLANS:
                         outputColumnNames: si, i, b, f, t
                         Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                           keys: t (type: tinyint)
-                          minReductionHashAggr: 0.5454545
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                          Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: tinyint)
                             null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: tinyint)
-                            Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: smallint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary), _col14 (type: float), _col15 (type: float), _col16 (type: bigint), _col17 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -630,21 +630,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_sort_orc
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col14) (type: double), UDFToDouble(_col15) (type: double), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -788,7 +788,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -806,18 +806,18 @@ STAGE PLANS:
                   outputColumnNames: si, i, b, f, ds, t
                   Statistics: Num rows: 11 Data size: 1221 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                     keys: ds (type: string), t (type: tinyint)
-                    minReductionHashAggr: 0.5454545
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                    Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: tinyint)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                      Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -835,21 +835,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_orc
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -927,7 +927,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 10
@@ -948,18 +948,18 @@ STAGE PLANS:
                     outputColumnNames: si, i, b, f, ds, t
                     Statistics: Num rows: 10 Data size: 1110 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                       keys: ds (type: string), t (type: tinyint)
-                      minReductionHashAggr: 0.5
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                      Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 7470 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: tinyint)
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                        Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 10 Data size: 7470 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -977,21 +977,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_limit_orc
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 10 Data size: 7470 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 11490 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 11490 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1069,20 +1069,20 @@ STAGE PLANS:
                         outputColumnNames: si, i, b, f, t
                         Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                           keys: t (type: tinyint)
-                          minReductionHashAggr: 0.5454545
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                          Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: tinyint)
                             null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: tinyint)
-                            Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: smallint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary), _col14 (type: float), _col15 (type: float), _col16 (type: bigint), _col17 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1100,21 +1100,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_orc
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col14) (type: double), UDFToDouble(_col15) (type: double), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1191,20 +1191,20 @@ STAGE PLANS:
                         outputColumnNames: si, i, b, f, t
                         Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                           keys: t (type: tinyint)
-                          minReductionHashAggr: 0.5454545
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                          Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: tinyint)
                             null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: tinyint)
-                            Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: smallint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary), _col14 (type: float), _col15 (type: float), _col16 (type: bigint), _col17 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1222,21 +1222,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_sort_orc
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col14) (type: double), UDFToDouble(_col15) (type: double), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1765,7 +1765,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -1784,35 +1784,35 @@ STAGE PLANS:
                   outputColumnNames: si, i, b, f, ds, t
                   Statistics: Num rows: 11 Data size: 1221 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                     keys: ds (type: string), t (type: tinyint)
-                    minReductionHashAggr: 0.5454545
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                    Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: tinyint)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                      Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1887,7 +1887,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -1905,18 +1905,18 @@ STAGE PLANS:
                   outputColumnNames: si, i, b, f, ds, t
                   Statistics: Num rows: 11 Data size: 1221 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                     keys: ds (type: string), t (type: tinyint)
-                    minReductionHashAggr: 0.5454545
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                    Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: tinyint)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                      Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1934,21 +1934,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 5 Data size: 3735 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5745 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2025,7 +2025,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float)
@@ -2053,7 +2053,7 @@ STAGE PLANS:
                         outputColumnNames: si, i, b, f, ds, t
                         Statistics: Num rows: 1 Data size: 111 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                           keys: ds (type: string), t (type: tinyint)
                           minReductionHashAggr: 0.4
                           mode: hash
@@ -2082,10 +2082,10 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
@@ -2162,30 +2162,30 @@ STAGE PLANS:
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                      Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float)
                         null sort order: zzzzz
                         sort order: +++++
                         Map-reduce partition columns: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float)
-                        Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: tinyint), KEY._col1 (type: smallint), KEY._col2 (type: int), KEY._col3 (type: bigint), KEY._col4 (type: float)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2194,37 +2194,37 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), 'foo' (type: string), _col4 (type: tinyint)
                     outputColumnNames: si, i, b, f, ds, t
-                    Statistics: Num rows: 5 Data size: 555 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 1221 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                       keys: ds (type: string), t (type: tinyint)
-                      minReductionHashAggr: 0.6
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                      Statistics: Num rows: 2 Data size: 1494 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: tinyint)
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                        Statistics: Num rows: 2 Data size: 1494 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 2 Data size: 1494 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 2 Data size: 2298 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 2298 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2290,44 +2290,44 @@ STAGE PLANS:
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                      Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float)
                         null sort order: azzzz
                         sort order: +++++
                         Map-reduce partition columns: _col0 (type: tinyint)
-                        Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: tinyint), KEY._col1 (type: smallint), KEY._col2 (type: int), KEY._col3 (type: bigint), KEY._col4 (type: float)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), 'foo' (type: string), _col4 (type: tinyint)
                     outputColumnNames: si, i, b, f, ds, t
-                    Statistics: Num rows: 5 Data size: 555 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 1221 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                      aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                       keys: ds (type: string), t (type: tinyint)
-                      minReductionHashAggr: 0.6
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                      Statistics: Num rows: 2 Data size: 1494 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: tinyint)
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
-                        Statistics: Num rows: 2 Data size: 1494 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: smallint), _col3 (type: smallint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: bigint), _col14 (type: binary), _col15 (type: float), _col16 (type: float), _col17 (type: bigint), _col18 (type: binary)
                   Select Operator
                     expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
@@ -2335,28 +2335,28 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Dp Sort State: PARTITION_SORTED
-                      Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.over1k_part2_orc
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 2 Data size: 1494 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 8217 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col2) (type: bigint), UDFToLong(_col3) (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'LONG' (type: string), _col11 (type: bigint), _col12 (type: bigint), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col15) (type: double), UDFToDouble(_col16) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), _col0 (type: string), _col1 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
-                  Statistics: Num rows: 2 Data size: 2298 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 2298 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 12639 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2736,7 +2736,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), KEY.reducesinkkey0 (type: float), VALUE._col3 (type: tinyint)
@@ -2755,35 +2755,35 @@ STAGE PLANS:
                   outputColumnNames: si, i, b, f, t
                   Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                    aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                     keys: t (type: tinyint)
-                    minReductionHashAggr: 0.5454545
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                    Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: tinyint)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: tinyint)
-                      Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: smallint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary), _col14 (type: float), _col15 (type: float), _col16 (type: bigint), _col17 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col14) (type: double), UDFToDouble(_col15) (type: double), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2860,20 +2860,20 @@ STAGE PLANS:
                         outputColumnNames: si, i, b, f, t
                         Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector(si, 'hll'), min(i), max(i), count(i), compute_bit_vector(i, 'hll'), min(b), max(b), count(b), compute_bit_vector(b, 'hll'), min(f), max(f), count(f), compute_bit_vector(f, 'hll')
+                          aggregations: min(si), max(si), count(1), count(si), compute_bit_vector_hll(si), min(i), max(i), count(i), compute_bit_vector_hll(i), min(b), max(b), count(b), compute_bit_vector_hll(b), min(f), max(f), count(f), compute_bit_vector_hll(f)
                           keys: t (type: tinyint)
-                          minReductionHashAggr: 0.5454545
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                          Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: tinyint)
                             null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col0 (type: tinyint)
-                            Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: smallint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary), _col14 (type: float), _col15 (type: float), _col16 (type: bigint), _col17 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -2891,21 +2891,21 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part_buck_sort2_orc
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
-                Statistics: Num rows: 5 Data size: 3300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 11 Data size: 7260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col14) (type: double), UDFToDouble(_col15) (type: double), (_col3 - _col16) (type: bigint), COALESCE(ndv_compute_bit_vector(_col17),0) (type: bigint), _col17 (type: binary), _col0 (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 5310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11 Data size: 11682 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3463,7 +3463,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 10
@@ -3484,18 +3484,18 @@ STAGE PLANS:
                     outputColumnNames: i, si, s
                     Statistics: Num rows: 10 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(i), max(i), count(1), count(i), compute_bit_vector(i, 'hll'), min(si), max(si), count(si), compute_bit_vector(si, 'hll')
+                      aggregations: min(i), max(i), count(1), count(i), compute_bit_vector_hll(i), min(si), max(si), count(si), compute_bit_vector_hll(si)
                       keys: s (type: string)
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                      Statistics: Num rows: 5 Data size: 2016 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 5 Data size: 2016 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 10 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: smallint), _col7 (type: smallint), _col8 (type: bigint), _col9 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -3514,21 +3514,21 @@ STAGE PLANS:
                       name: default.addcolumns_vectorization_true_disallowincompatible_true_fileformat_orc_tinyint
                   Write Type: INSERT
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 5 Data size: 2016 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 10 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), _col0 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                  Statistics: Num rows: 5 Data size: 3016 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 6032 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 3016 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 6032 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

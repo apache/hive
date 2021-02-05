@@ -666,7 +666,7 @@ STAGE PLANS:
         Map 16 
             Map Operator Tree:
                 TableScan
-                  alias: ws2
+                  alias: ws1
                   filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:

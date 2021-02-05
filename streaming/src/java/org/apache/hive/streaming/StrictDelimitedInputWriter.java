@@ -25,7 +25,6 @@ import java.util.Scanner;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.BytesWritable;
@@ -108,7 +107,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
       tableProps.setProperty(serdeConstants.COLLECTION_DELIM, String.valueOf(collectionDelimiter));
       tableProps.setProperty(serdeConstants.MAPKEY_DELIM, String.valueOf(mapKeyDelimiter));
       LazySimpleSerDe serde = new LazySimpleSerDe();
-      SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
+      serde.initialize(conf, tableProps, null);
       this.serde = serde;
       return serde;
     } catch (SerDeException e) {

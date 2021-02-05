@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.Before;
 
 import java.sql.SQLException;
@@ -32,7 +32,7 @@ public class TestCleanerWithoutMinHistoryLevel extends TestCleaner {
   @Before
   public void dropMinHistoryLevel() throws Exception {
     try {
-      TxnDbUtil.executeUpdate(conf, "DROP TABLE MIN_HISTORY_LEVEL");
+      TestTxnDbUtil.executeUpdate(conf, "DROP TABLE MIN_HISTORY_LEVEL");
     } catch (Exception e) {
       if (e instanceof SQLException) {
         SQLException ex = (SQLException) e;

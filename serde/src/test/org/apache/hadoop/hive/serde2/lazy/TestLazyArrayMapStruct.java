@@ -715,7 +715,7 @@ public class TestLazyArrayMapStruct {
     Configuration conf = new Configuration();
     tableProp.setProperty("columns", "narray");
     tableProp.setProperty("columns.types", schema.toString());
-    SerDeUtils.initializeSerDe(serDe, conf, tableProp, null);
+    serDe.initialize(conf, tableProp, null);
     LazySerDeParameters serdeParams = new LazySerDeParameters(conf, tableProp, LazySimpleSerDe.class.getName());
     
     //create the serialized string for type

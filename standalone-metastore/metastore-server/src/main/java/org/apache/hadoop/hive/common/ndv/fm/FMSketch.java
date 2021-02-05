@@ -359,6 +359,11 @@ public class FMSketch implements NumDistinctValueEstimator {
   }
 
   @Override
+  public void addToEstimator(byte[] value, int offset, int length) {
+    throw new UnsupportedOperationException("cannot add byte values to fmsketch");
+  }
+
+  @Override
   public boolean canMerge(NumDistinctValueEstimator o) {
     return o instanceof FMSketch && this.numBitVectors == ((FMSketch) o).numBitVectors;
   }

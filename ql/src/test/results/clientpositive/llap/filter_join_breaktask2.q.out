@@ -230,7 +230,8 @@ POSTHOOK: Input: default@t4_n8
 POSTHOOK: Input: default@t4_n8@ds=2010-04-17
 #### A masked pattern was here ####
 4	1	1	8	4	5	1	0	9	U	2	2	0	2	1	1	J	C	A	U	2	s	2	NULL	NULL	NULL	NULL	NULL	NULL	1	j	S	6	NULL	1	2	J	g	1	e	2	1	2	U	P	p	3	0	0	0	1	1	1	0	0	0	6	2	j	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	NULL	j	2	2	1	2	2	1	1	1	1	1	1	1	1	32	NULL	2010-04-17
-WARNING: Comparing a bigint and a string may result in a loss of precision.
+WARNING: Comparing string and bigint may result in loss of information.
+WARNING: Comparing string and bigint may result in loss of information.
 PREHOOK: query: SELECT a.c1 as a_c1, b.c1 b_c1, d.c0 as d_c0
 FROM T1_n85 a JOIN T2_n53 b 
        ON (a.c1 = b.c1 AND a.ds='2010-04-17' AND b.ds='2010-04-17')

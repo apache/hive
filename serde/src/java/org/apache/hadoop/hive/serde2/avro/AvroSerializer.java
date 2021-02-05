@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +184,7 @@ class AvroSerializer {
     List<? extends StructField> allStructFieldRefs = ssoi.getAllStructFieldRefs();
     List<Object> structFieldsDataAsList = ssoi.getStructFieldsDataAsList(o);
     GenericData.Record record = new GenericData.Record(schema);
-    ArrayList<TypeInfo> allStructFieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+    List<TypeInfo> allStructFieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
 
     for(int i  = 0; i < size; i++) {
       Field field = schema.getFields().get(i);

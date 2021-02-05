@@ -57,18 +57,18 @@ public class Oracle extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:oracle:thin:@//localhost:1521/xe";
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:oracle:thin:@//localhost:1521/xe";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("DATABASE IS READY TO USE!");
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout.contains("DATABASE IS READY TO USE!");
   }
 
   @Override
