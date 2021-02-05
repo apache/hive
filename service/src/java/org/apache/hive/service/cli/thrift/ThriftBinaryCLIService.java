@@ -20,6 +20,7 @@ package org.apache.hive.service.cli.thrift;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +47,6 @@ import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
 
@@ -136,35 +136,45 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
             metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
           }
 
-          ThriftCLIServerContext context = (ThriftCLIServerContext) serverContext;
+          final ThriftCLIServerContext context = (ThriftCLIServerContext) serverContext;
+          final Optional<SessionHandle> sessionHandle = context.getSessionHandle();
 
-          final SessionHandle sessionHandle = context.getSessionHandle();
-          if (sessionHandle != null) {
+          if (sessionHandle.isPresent()) {
             // Normally, the client should politely inform the server it is
-            // closing its session with Hive before closing its connection.
-            // However, if the client connection dies for any reason
-            // (load-balancer health check, load-balancer configuration,
-            // fire-wall kills long-running sessions, bad client, failed client,
-            // timed-out client, etc.) then the server will close the connection
-            // without having properly cleaned up the Hive session (resources,
-            // configuration, logging etc.) That needs to be cleaned up now.
+            // closing its session with Hive before closing its network
+            // connection. However, if the client connection dies for any reason
+            // (load-balancer round-robin configuration, firewall kills
+            // long-running sessions, bad client, failed client, timed-out
+            // client, etc.) then the server will close the connection without
+            // having properly cleaned up the Hive session (resources,
+            // configuration, logging etc.). That needs to be cleaned up now.
             LOG.warn(
                 "Client connection bound to {} unexpectedly closed: closing this Hive session to release its resources. "
-                    + "The connection processed {} total messages. If total messages processed is zero or one, most likely it is a "
-                    + "client that is opening then immediately closing the socket (i.e., TCP health check or port scanner), otherwise "
-                    + "inspect the client for time-out, fire-wall killing the connection, invalid load balancer configuration, etc.",
-                sessionHandle, context.getMessagesProcessedCount());
+                    + "The connection processed {} total messages during its lifetime of {}ms. Inspect the client connection "
+                    + "for time-out, firewall killing the connection, invalid load balancer configuration, etc.",
+                sessionHandle, context.getMessagesProcessedCount(), context.getDuration().toMillis());
             try {
-              boolean close = cliService.getSessionManager().getSession(sessionHandle).getHiveConf()
+              final boolean close = cliService.getSessionManager().getSession(sessionHandle.get()).getHiveConf()
                   .getBoolVar(ConfVars.HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT);
               if (close) {
-                cliService.closeSession(sessionHandle);
+                cliService.closeSession(sessionHandle.get());
               } else {
-                LOG.warn("Session not closed because configuration {} is set to false",
+                LOG.warn("Session not actually closed because configuration {} is set to false",
                     ConfVars.HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT.varname);
               }
             } catch (HiveSQLException e) {
               LOG.warn("Failed to close session", e);
+            }
+          } else {
+            // There is no session handle because the client gracefully closed
+            // the session *or* because the client had some issue and never was
+            // able to create one in the first place
+            if (context.getSessionHandles().isEmpty()) {
+              LOG.info("A client connection was closed before creating a Hive session. "
+                  + "Most likely it is a client that is connecting to this server then "
+                  + "immediately closing the socket (i.e., TCP health check or port scanner)");
+            } else {
+              LOG.info("Closing server connection which served (parital history) : {}", context.getSessionHandles());
             }
           }
         }
