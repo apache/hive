@@ -8,10 +8,20 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
 POSTHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
@@ -19,22 +29,59 @@ POSTHOOK: Output: default@cmv_basetable
 POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_foreign_keys FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
 PREHOOK: query: create materialized view cmv_mat_view as
 select a, b, c from cmv_basetable
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_mat_view
+HMS CALL get_foreign_keys FOR cmv_mat_view
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
 POSTHOOK: query: create materialized view cmv_mat_view as
 select a, b, c from cmv_basetable
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
+HMS CALL get_table_req FOR cmv_basetable
 POSTHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
@@ -42,4 +89,5 @@ POSTHOOK: Output: default@cmv_basetable
 POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
+HMS CALL get_table_req FOR cmv_mat_view
 FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Cannot rebuild materialized view in strict mode with different engine. Materialized view engine: mr

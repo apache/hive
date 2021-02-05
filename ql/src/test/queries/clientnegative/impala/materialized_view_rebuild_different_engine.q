@@ -2,6 +2,7 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
+set hive.execution.engine=mr;
 
 create table cmv_basetable (a int, b varchar(256), c decimal(10,2))
 stored as orc TBLPROPERTIES ('transactional'='true');
