@@ -18,11 +18,29 @@
 
 package t;
 
+import java.util.Collection;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.hooks.NoOperatorReuseCheckerHook;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 public class AA1 {
+
+  public static String chk(ParseContext pctx) {
+    try {
+      Collection<Operator> a = pctx.getAllOps();
+      for (Operator operator : a) {
+        String ret = chk(operator);
+        if (ret != null) {
+          return operator + " : " + ret;
+        }
+      }
+
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    return null;
+  }
 
   public static String chk(ParseContext pctx, String name) {
     try {

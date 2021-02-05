@@ -19,18 +19,22 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 
 import com.google.common.collect.Lists;
 
+import avro.shaded.com.google.common.collect.Sets;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -49,6 +53,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
 /**
@@ -80,6 +85,11 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     OperatorDesc conf = op.getConf();
     Map<String, ExprNodeDesc> exprMap = conf.getColumnExprMap();
     RowSchema schema = op.getSchema();
+
+    chceckSchema(schema);
+    if (op instanceof SelectOperator) {
+      checkSelectOperator((SelectOperator) op);
+    }
     if (schema != null && exprMap != null) {
       for (Entry<String, ExprNodeDesc> c : exprMap.entrySet()) {
         if (c.getValue() instanceof ExprNodeConstantDesc) {
@@ -96,26 +106,55 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
           throw new RuntimeException("schema not found for " + c + " in " + schema);
         }
       }
-      //      if (false)
-      {
-        if (!(op instanceof ScriptOperator)) {
-          for (ColumnInfo sig : schema.getSignature()) {
-            String iName = sig.getInternalName();
-            ExprNodeDesc e = exprMap.get(iName);
-            if (isSemiJoinRS(op)) {
-              continue;
-            }
-            if (op.getConf() instanceof GroupByDesc) {
-              continue;
-            }
+      for (ColumnInfo sig : schema.getSignature()) {
+        if (op instanceof ScriptOperator) {
+          continue;
+        }
+        String iName = sig.getInternalName();
+        ExprNodeDesc e = exprMap.get(iName);
+        if (isSemiJoinRS(op)) {
+          continue;
+        }
+        if (op.getConf() instanceof GroupByDesc) {
+          continue;
+        }
 
-            if (e == null) {
-              throw new RuntimeException("expr not found for " + iName + " in " + exprMap);
-            }
-          }
+        if (e == null) {
+          throw new RuntimeException("expr not found for " + iName + " in " + exprMap);
         }
       }
     }
+
+  }
+
+  private static void chceckSchema(RowSchema schema) {
+    if (schema != null) {
+    List<String> cn = schema.getColumnNames();
+    Set<String> cn2 = new HashSet<>(cn);
+    if (cn.size() != cn2.size()) {
+      throw new RuntimeException("ambigous columns in the schema!");
+    }
+    }
+  }
+
+  private static void checkSelectOperator(SelectOperator op) {
+    SelectDesc conf = op.getConf();
+    List<String> outputColNames = conf.getOutputColumnNames();
+    RowSchema schema = op.getSchema();
+    if (outputColNames == null || outputColNames.size() == 0) {
+      throw new RuntimeException("very interesting operator: " + op);
+    }
+    if (schema == null) {
+      throw new RuntimeException("I expect a schema for all SelectOp" + op);
+    }
+
+    Set<String> cn = new HashSet<>(schema.getColumnNames());
+    Set<String> ocn = new HashSet<>(conf.getOutputColumnNames());
+    Set<String> diff = Sets.symmetricDifference(cn, ocn);
+    if (!diff.isEmpty()) {
+      throw new RuntimeException("SelOp output/schema mismatch ");
+    }
+
   }
 
   private static boolean isSemiJoinRS(Operator op) {

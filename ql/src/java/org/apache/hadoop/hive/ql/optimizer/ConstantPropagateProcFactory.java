@@ -1225,10 +1225,13 @@ public final class ConstantPropagateProcFactory {
             }
           }
           colList.set(i, newCol);
-          if (newCol instanceof ExprNodeConstantDesc && op.getSchema() != null) {
+          if (op.getSchema() != null) {
             ColumnInfo colInfo = op.getSchema().getSignature().get(i);
-            if (!VirtualColumn.isVirtualColumnBasedOnAlias(colInfo)) {
-              constants.put(colInfo, newCol);
+            colInfo.setInternalName(columnNames.get(i));
+            if (newCol instanceof ExprNodeConstantDesc ) {
+              if (!VirtualColumn.isVirtualColumnBasedOnAlias(colInfo)) {
+                constants.put(colInfo, newCol);
+              }
             }
           }
           if (columnExprMap != null) {
