@@ -26,7 +26,7 @@ STAGE PLANS:
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.count(*)
+  |  output exprs: count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:AGGREGATE [FINALIZE]
@@ -77,11 +77,11 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.count(*)
+  |  output exprs: count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=8B cardinality=1
   |  in pipelines: 03(GETNEXT), 01(OPEN)
@@ -142,11 +142,11 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.count(*)
+  |  output exprs: count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(*)
+  |  output: count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=8B cardinality=1
   |  in pipelines: 03(GETNEXT), 01(OPEN)
