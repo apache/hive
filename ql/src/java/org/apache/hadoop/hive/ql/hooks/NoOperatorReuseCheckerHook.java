@@ -28,7 +28,7 @@ import java.util.Stack;
 
 import com.google.common.collect.Lists;
 
-import avro.shaded.com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
