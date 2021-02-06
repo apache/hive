@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,13 +37,15 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -92,7 +95,7 @@ public abstract class TxnCommandsBaseForTests {
 
     // set up metastore client cache
     if (hiveConf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(hiveConf);
     }
   }
   void initHiveConf() {
@@ -121,9 +124,9 @@ public abstract class TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
-    TxnDbUtil.setConfValues(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
     txnHandler = TxnUtils.getTxnStore(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -158,7 +161,7 @@ public abstract class TxnCommandsBaseForTests {
         d = null;
       }
     } finally {
-      TxnDbUtil.cleanDb(hiveConf);
+      TestTxnDbUtil.cleanDb(hiveConf);
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }
@@ -206,12 +209,13 @@ public abstract class TxnCommandsBaseForTests {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
   public static void runCleaner(HiveConf hiveConf) throws Exception {
+    // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
+    Thread.sleep(MetastoreConf.getTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
   }
   public static void runInitiator(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
   }
-  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);

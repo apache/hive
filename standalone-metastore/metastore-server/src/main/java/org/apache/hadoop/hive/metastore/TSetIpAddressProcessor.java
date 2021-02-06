@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.thrift.TException;
@@ -42,10 +41,10 @@ public class TSetIpAddressProcessor<I extends Iface> extends ThriftHiveMetastore
   }
 
   @Override
-  public boolean process(final TProtocol in, final TProtocol out) throws TException {
-    setIpAddress(in);
+  public void process(final TProtocol in, final TProtocol out) throws TException {
+   setIpAddress(in);
 
-    return super.process(in, out);
+   super.process(in, out);
   }
 
   protected void setIpAddress(final TProtocol in) {

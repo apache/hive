@@ -22,6 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Multimap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -130,6 +131,14 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException("Invalid column " + validate);
     }
 
+    // Validate bucketedColumns in new table
+    List<String> bucketColumns = MetaStoreServerUtils.validateBucketColumns(newt.getSd());
+    if (CollectionUtils.isNotEmpty(bucketColumns)) {
+      String errMsg = "Bucket columns - " + bucketColumns.toString() + " doesn't match with any table columns";
+      LOG.error(errMsg);
+      throw new InvalidOperationException(errMsg);
+    }
+
     Path srcPath = null;
     FileSystem srcFs;
     Path destPath = null;
@@ -179,7 +188,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // On a replica this alter table will be executed only if old and new both the databases are
       // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = HiveMetaStore.HMSHandler.isDbReplicationTarget(olddb);
+      isReplicated = HMSHandler.isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
@@ -238,7 +247,7 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          String oldtRelativePath = wh.getDatabasePath(olddb).toUri()
+          String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
               .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
                   && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
@@ -247,8 +256,8 @@ public class HiveAlterHandler implements AlterHandler {
 
             // get new location
             Database db = msdb.getDatabase(catName, newDbName);
-            assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
-            Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
+            assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+            Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
             destPath = new Path(databasePath, newTblName);
             destFs = wh.getFs(destPath);
 
@@ -354,7 +363,7 @@ public class HiveAlterHandler implements AlterHandler {
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
-          assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
+          assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }

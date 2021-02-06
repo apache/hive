@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 
 /**
  * Defines an interface for re-execution logics.
@@ -48,7 +47,7 @@ public interface IReExecutionPlugin {
   /**
    * The query have failed, does this plugin advises to re-execute it again?
    */
-  boolean shouldReExecute(int executionNum, CommandProcessorException ex);
+  boolean shouldReExecute(int executionNum);
 
   /**
    * The plugin should prepare for the re-compilaton of the query.

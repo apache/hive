@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -116,10 +116,10 @@ public class TestAcidOnTez {
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    TxnDbUtil.setConfValues(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
     hiveConf.setInt(MRJobConfig.MAP_MEMORY_MB, 1024);
     hiveConf.setInt(MRJobConfig.REDUCE_MEMORY_MB, 1024);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -169,7 +169,7 @@ public class TestAcidOnTez {
         d.destroy();
         d = null;
       }
-      TxnDbUtil.cleanDb(hiveConf);
+      TestTxnDbUtil.cleanDb(hiveConf);
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
@@ -498,7 +498,7 @@ public class TestAcidOnTez {
       {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":1}\t3\t4", "/delta_0000001_0000001_0001/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":2}\t1\t2", "/delta_0000001_0000001_0001/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870914,\"rowid\":0}\t9\t10", "/delta_0000001_0000001_0002/bucket_00000"},
-      {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t70\t80", "/delta_0000002_0000002_0000/bucket_00000"}
+      {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t70\t80", "/delta_0000002_0000002_0000/bucket_00000_0"}
     };
     Assert.assertEquals("Unexpected row count after update", expected2.length, rs.size());
     //verify data and layout

@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -305,10 +304,10 @@ public class JoinUtil {
     if (desc == null) {
       return null;
     }
-    AbstractSerDe sd = (AbstractSerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
+    AbstractSerDe sd = (AbstractSerDe) ReflectionUtil.newInstance(desc.getSerDeClass(),
         null);
     try {
-      SerDeUtils.initializeSerDe(sd, null, desc.getProperties(), null);
+      sd.initialize(null, desc.getProperties(), null);
     } catch (SerDeException e) {
       LOG.warn("Error getting spill table", e);
       return null;

@@ -20,6 +20,9 @@ CREATE TABLE over1k_n8(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
+-- TODO: Remove this line after fixing HIVE-24351
+set hive.vectorized.execution.enabled=false;
+
 LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n8;
 
 CREATE TABLE over1korc_n1(t tinyint,

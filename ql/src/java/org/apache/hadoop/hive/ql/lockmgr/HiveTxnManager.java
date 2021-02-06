@@ -345,4 +345,12 @@ public interface HiveTxnManager {
    */
   LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
       throws LockException;
+
+ long getLatestTxnIdInConflict() throws LockException;
+
+ /**
+  * Return the queryId this txnManager is handling
+  * @return
+  */
+ String getQueryid();
 }

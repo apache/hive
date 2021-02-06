@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -69,8 +69,9 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
     }
 
     // write the results in the file
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      context.getFormatter().showTablePartitions(outStream, parts);
+    try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      ShowPartitionsFormatter formatter = ShowPartitionsFormatter.getFormatter(context.getConf());
+      formatter.showTablePartitions(outStream, parts);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show partitions for table " + desc.getTabName());
     }

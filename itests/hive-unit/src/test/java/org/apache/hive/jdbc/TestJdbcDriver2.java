@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
@@ -192,8 +192,8 @@ public class TestJdbcDriver2 {
   public static void setUpBeforeClass() throws Exception {
     conf = new HiveConf(TestJdbcDriver2.class);
     HiveConf initConf = new HiveConf(conf);
-    TxnDbUtil.setConfValues(initConf);
-    TxnDbUtil.prepDb(initConf);
+    TestTxnDbUtil.setConfValues(initConf);
+    TestTxnDbUtil.prepDb(initConf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -1117,8 +1117,8 @@ public class TestJdbcDriver2 {
     // codes and messages. This should be fixed.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask",
-        "08S01", 1);
+        "FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask",
+        "08S01", 40000);
   }
 
   private void doTestErrorCase(String sql, String expectedMessage,
@@ -3106,20 +3106,6 @@ public class TestJdbcDriver2 {
       fail("Unable to create table using executeAsync");
     }
     stmt.execute("drop table " + tblName);
-    stmt.close();
-  }
-
-  @Test
-  public void testReplErrorScenarios() throws Exception {
-    HiveStatement stmt = (HiveStatement) con.createStatement();
-
-    try {
-      // source of replication not set
-      stmt.execute("repl dump default");
-    } catch(SQLException e){
-      assertTrue(e.getErrorCode() == ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getErrorCode());
-    }
-
     stmt.close();
   }
 

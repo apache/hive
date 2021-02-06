@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,31 +98,34 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
       String entityGuid = checkHiveEntityGuid(atlasRequestBuilder, atlasReplInfo.getSrcCluster(),
               atlasReplInfo.getSrcDB());
-      long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
       long numBytesWritten = dumpAtlasMetaData(atlasRequestBuilder, atlasReplInfo);
       LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
+      long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
       replLogger.endLog(0L);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
+    } catch (RuntimeException e) {
+      LOG.error("RuntimeException while dumping atlas metadata", e);
+      setException(e);
+      try{
+        ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
+      throw e;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          //Create non recoverable marker at top level
-          Path nonRecoverableMarker = new Path(work.getStagingDir().getParent(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (SemanticException ex) {
-        LOG.error("Failed to collect Metrics ", ex);
+      try{
+        return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      } catch (Exception ex) {
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
       }
-      return errorCode;
     }
   }
 
@@ -134,7 +138,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     String srcCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, conf, errorFormat);
     String tgtCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, conf, errorFormat);
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo(endpoint, work.getSrcDB(), tgtDB, srcCluster,
-            tgtCluster, work.getStagingDir(), conf);
+            tgtCluster, work.getStagingDir(), work.getTableListPath(), conf);
     atlasReplInfo.setSrcFsUri(conf.get(ReplUtils.DEFAULT_FS_CONFIG));
     long lastTimeStamp = work.isBootstrap() ? 0L : lastStoredTimeStamp();
     atlasReplInfo.setTimeStamp(lastTimeStamp);
@@ -191,12 +195,15 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     InputStream inputStream = null;
     long numBytesWritten = 0L;
     try {
-      AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo,
-              atlasReplInfo.getSrcCluster());
+      AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);
       inputStream = atlasRestClient.exportData(exportRequest);
-      FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
-      Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
-      numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream, conf);
+      if (inputStream == null) {
+        LOG.info("There is no Atlas metadata to be exported");
+      } else {
+        FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
+        Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
+        numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream, conf);
+      }
     } catch (SemanticException ex) {
       throw ex;
     } catch (Exception ex) {

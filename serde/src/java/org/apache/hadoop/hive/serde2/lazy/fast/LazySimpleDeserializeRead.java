@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.serde2.lazy.fast;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.type.Date;
@@ -32,7 +34,6 @@ import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -200,6 +201,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private final int[] escapeCounts;
   private final byte[] nullSequenceBytes;
   private final boolean isExtendedBooleanLiteral;
+  private final boolean isDecodeBinaryAsBase64;
 
   private final int fieldCount;
   private final Field[] fields;
@@ -343,11 +345,14 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     }
     nullSequenceBytes = lazyParams.getNullSequence().getBytes();
     isExtendedBooleanLiteral = lazyParams.isExtendedBooleanLiteral();
+    isDecodeBinaryAsBase64 = lazyParams.isDecodeBinaryAsBase64();
     if (lazyParams.isLastColumnTakesRest()) {
       throw new RuntimeException("serialization.last.column.takes.rest not supported");
     }
 
-    timestampParser = new TimestampParser();
+    List<String> timestampFormats = lazyParams.getTimestampFormats();
+    timestampParser = (timestampFormats == null) ?
+        new TimestampParser() : new TimestampParser(timestampFormats);
 
     internalBufferLen = -1;
   }
@@ -778,14 +783,13 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           return true;
         case BINARY:
           {
-            byte[] recv = new byte[fieldLength];
-            System.arraycopy(bytes, fieldStart, recv, 0, fieldLength);
-            byte[] decoded = LazyBinary.decodeIfNeeded(recv);
-            // use the original bytes in case decoding should fail
-            decoded = decoded.length > 0 ? decoded : recv;
-            currentBytes = decoded;
+            ByteBuffer bb = ByteBuffer.wrap(bytes, fieldStart, fieldLength);
+            // Base64 or raw value: Throws IllegalArgumentException on invalid decode
+            final ByteBuffer b64bb = isDecodeBinaryAsBase64 ? Base64.getDecoder().decode(bb) : bb;
+            currentBytes = new byte[b64bb.remaining()];
+            b64bb.get(currentBytes);
             currentBytesStart = 0;
-            currentBytesLength = decoded.length;
+            currentBytesLength = currentBytes.length;
           }
           return true;
         case DATE:

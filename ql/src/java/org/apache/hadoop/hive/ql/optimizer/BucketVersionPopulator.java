@@ -181,7 +181,7 @@ public class BucketVersionPopulator extends Transform {
           if (numBuckets > 1) {
             ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
           } else {
-            LOG.info("not considering bucketingVersion for: %s because it has %d<2 buckets ", tso, numBuckets);
+            LOG.info("not considering bucketingVersion for: {} because it has {}<2 buckets ", tso, numBuckets);
           }
         }
         if (operator instanceof FileSinkOperator) {

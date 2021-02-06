@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-23910
 --! qt:dataset:src
 
 -- SORT_QUERY_RESULTS

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl;
 
+import org.apache.hadoop.hive.ql.parse.repl.load.message.AddCheckConstraintHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.AddDefaultConstraintHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddNotNullConstraintHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddForeignKeyHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddPrimaryKeyHandler;
@@ -154,6 +156,18 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new AddNotNullConstraintHandler();
+    }
+  },
+  EVENT_ADD_DEFAULTCONSTRAINT("EVENT_ADD_DEFAULTCONSTRAINT") {
+    @Override
+    public MessageHandler handler() {
+      return new AddDefaultConstraintHandler();
+    }
+  },
+  EVENT_ADD_CHECKCONSTRAINT("EVENT_ADD_CHECKCONSTRAINT") {
+    @Override
+    public MessageHandler handler() {
+      return new AddCheckConstraintHandler();
     }
   },
   EVENT_DROP_CONSTRAINT("EVENT_DROP_CONSTRAINT") {

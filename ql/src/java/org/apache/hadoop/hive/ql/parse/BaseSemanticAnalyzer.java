@@ -188,6 +188,20 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public boolean skipAuthorization() {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      return true;
+    }
+    SessionState ss = SessionState.get();
+    if (ss != null && ss.isHiveServerQuery()) {
+      String authUser = SessionState.getUserFromAuthenticator();
+      Set<String> servUsers = new HashSet<>(ss.getConf().getStringCollection(
+          HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname));
+      if (servUsers.contains(authUser)) {
+        console.logInfo("Skip authorization as the current user: " + authUser +
+            " is configured in " + HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname);
+        return true;
+      }
+    }
     return false;
   }
 
@@ -955,9 +969,18 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("empty struct not allowed.");
     }
     StringBuilder buffer = new StringBuilder(typeStr);
+    Set<String> attributeIdentifiers = new HashSet<>(children);
     for (int i = 0; i < children; i++) {
       ASTNode child = (ASTNode) typeNode.getChild(i);
-      buffer.append(unescapeIdentifier(child.getChild(0).getText())).append(":");
+
+      String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (attributeIdentifiers.contains(attributeIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_ATTRIBUTE, attributeIdentifier);
+      } else {
+        attributeIdentifiers.add(attributeIdentifier);
+      }
+
+      buffer.append(attributeIdentifier).append(":");
       buffer.append(getTypeStringFromAST((ASTNode) child.getChild(1)));
       if (i < children - 1) {
         buffer.append(",");
@@ -1824,6 +1847,20 @@ public abstract class BaseSemanticAnalyzer {
   protected void executeUnparseTranlations() {
     UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+
+  /**
+   * Called when we start analysis of a query.
+   */
+  public void startAnalysis() {
+    // Nothing to do
+  }
+
+  /**
+   * Called when we end analysis of a query.
+   */
+  public void endAnalysis() {
+    // Nothing to do
   }
 
 }

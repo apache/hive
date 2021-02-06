@@ -1,0 +1,16 @@
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$3], sort2=[$1], dir0=[ASC], dir1=[DESC], dir2=[ASC], fetch=[100])
+  HiveProject(d_year=[$2], i_brand_id=[$0], i_brand=[$1], $f3=[$3])
+    HiveAggregate(group=[{4, 5, 7}], agg#0=[sum($1)])
+      HiveJoin(condition=[=($6, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(ss_item_sk=[$1], ss_ext_sales_price=[$14], ss_sold_date_sk=[$22])
+            HiveFilter(condition=[IS NOT NULL($22)])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_brand=[$8])
+            HiveFilter(condition=[=($13, 436)])
+              HiveTableScan(table=[[default, item]], table:alias=[item])
+        HiveProject(d_date_sk=[$0], d_year=[$6])
+          HiveFilter(condition=[=($8, 12)])
+            HiveTableScan(table=[[default, date_dim]], table:alias=[dt])
+

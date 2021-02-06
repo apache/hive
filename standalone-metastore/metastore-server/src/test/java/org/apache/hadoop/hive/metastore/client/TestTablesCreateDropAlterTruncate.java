@@ -348,7 +348,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     client.createTable(table);
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
-    Assert.assertEquals("Storage descriptor location", metaStore.getExternalWarehouseRoot()
+    Assert.assertEquals("Storage descriptor location", metaStore.getWarehouseRoot()
         + "/" + table.getDbName() + ".db/" + table.getTableName(),
         createdTable.getSd().getLocation());
   }
@@ -802,7 +802,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Table alteredTable = client.getTable(newTable.getDbName(), newTable.getTableName());
     Assert.assertTrue("New table directory should exist",
         metaStore.isPathExists(new Path(alteredTable.getSd().getLocation())));
-    Assert.assertEquals("New directory should be set", new Path(metaStore.getExternalWarehouseRoot()
+    Assert.assertEquals("New directory should be set", new Path(metaStore.getWarehouseRoot()
         + "/" + alteredTable.getDbName() + ".db/" + alteredTable.getTableName()),
         new Path(alteredTable.getSd().getLocation()));
     Path dataFile = new Path(alteredTable.getSd().getLocation() + "/dataFile");

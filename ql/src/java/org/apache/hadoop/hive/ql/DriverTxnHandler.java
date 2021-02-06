@@ -39,12 +39,9 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -59,7 +56,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -94,7 +90,7 @@ class DriverTxnHandler {
   private Context context;
   private Runnable txnRollbackRunner;
 
-  DriverTxnHandler(Driver driver, DriverContext driverContext, DriverState driverState) {
+  DriverTxnHandler(DriverContext driverContext, DriverState driverState) {
     this.driverContext = driverContext;
     this.driverState = driverState;
   }
@@ -249,12 +245,25 @@ class DriverTxnHandler {
     }
   }
 
-  private void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
+  void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
     if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
       List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
       //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
       //so this makes (file name -> data) mapping stable
       acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
+
+      // If the direct insert is on, sort the FSOs by moveTaskId as well because the dir is the same for all except the union use cases.
+      boolean isDirectInsertOn = false;
+      for (FileSinkDesc acidSink : acidSinks) {
+        if (acidSink.isDirectInsert()) {
+          isDirectInsertOn = true;
+          break;
+        }
+      }
+      if (isDirectInsertOn) {
+        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getMoveTaskId().compareTo(fsd2.getMoveTaskId()));
+      }
+
       for (FileSinkDesc acidSink : acidSinks) {
         TableDesc tableInfo = acidSink.getTableInfo();
         TableName tableName = HiveTableName.of(tableInfo.getTableName());
@@ -318,7 +327,7 @@ class DriverTxnHandler {
    *  Write the current set of valid write ids for the operated acid tables into the configuration so
    *  that it can be read by the input format.
    */
-  private ValidTxnWriteIdList recordValidWriteIds() throws LockException {
+  ValidTxnWriteIdList recordValidWriteIds() throws LockException {
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (Strings.isNullOrEmpty(txnString)) {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
@@ -380,32 +389,12 @@ class DriverTxnHandler {
     }
   }
 
-  void validateTxnListState() throws CommandProcessorException {
-    try {
-      if (!isValidTxnListState()) {
-        LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
-        // Snapshot was outdated when locks were acquired, hence regenerate context,
-        // txn list and retry (see ReExecutionRetryLockPlugin)
-        try {
-          endTransactionAndCleanup(false);
-        } catch (LockException e) {
-          DriverUtils.handleHiveException(driverContext, e, 12, null);
-        }
-        HiveException e = new HiveException(
-            "Operation could not be executed, " + Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
-        DriverUtils.handleHiveException(driverContext, e, 14, null);
-      }
-    } catch (LockException e) {
-      DriverUtils.handleHiveException(driverContext, e, 13, null);
-    }
-  }
-  
   /**
    * Checks whether txn list has been invalidated while planning the query.
    * This would happen if query requires exclusive/semi-shared lock, and there has been a committed transaction
    * on the table over which the lock is required.
    */
-  private boolean isValidTxnListState() throws LockException {
+  boolean isValidTxnListState() throws LockException {
     // 1) Get valid txn list.
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (txnString == null) {
@@ -426,23 +415,15 @@ class DriverTxnHandler {
       return true; // Nothing to check
     }
 
-    GetOpenTxnsResponse openTxns = driverContext.getTxnManager().getOpenTxns();
-    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(openTxns, 0);
-    long txnId = driverContext.getTxnManager().getCurrentTxnId();
-
-    String currentTxnString;
-    if (validTxnList.isTxnRangeValid(txnId + 1, openTxns.getTxn_high_water_mark()) != ValidTxnList.RangeResponse.NONE) {
-      // If here, there was another txn opened & committed between current SNAPSHOT generation and locking.
-      validTxnList.removeException(txnId);
-      currentTxnString = validTxnList.toString();
-    } else {
-      currentTxnString = TxnCommonUtils.createValidReadTxnList(openTxns, txnId).toString();
+    // 4) Check if there is conflict
+    long txnId = driverContext.getTxnManager().getLatestTxnIdInConflict();
+    if (txnId <= 0) {
+      return true;
     }
-
-    if (currentTxnString.equals(txnString)) {
-      return true; // Still valid, nothing more to do
+    if (txnId > driverContext.getTxnManager().getCurrentTxnId()) {
+      driverContext.setOutdatedTxn(true);
     }
-    return checkWriteIds(currentTxnString, nonSharedLockedTables, txnWriteIdListString);
+    return false;
   }
 
   private Set<String> getNonSharedLockedTables() {
@@ -472,47 +453,6 @@ class DriverTxnHandler {
       }
     }
     return nonSharedLockedTables;
-  }
-
-  private boolean checkWriteIds(String currentTxnString, Set<String> nonSharedLockedTables, String txnWriteIdListString)
-      throws LockException {
-    ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListString);
-    Map<String, Table> writtenTables = getTables(false, true);
-
-    ValidTxnWriteIdList currentTxnWriteIds = driverContext.getTxnManager().getValidWriteIds(
-        getTransactionalTables(writtenTables), currentTxnString);
-
-    for (Map.Entry<String, Table> tableInfo : writtenTables.entrySet()) {
-      String fullQNameForLock = TableName.getDbTable(tableInfo.getValue().getDbName(),
-          MetaStoreUtils.encodeTableName(tableInfo.getValue().getTableName()));
-      if (nonSharedLockedTables.contains(fullQNameForLock)) {
-        // Check if table is transactional
-        if (AcidUtils.isTransactionalTable(tableInfo.getValue())) {
-          ValidWriteIdList writeIdList = txnWriteIdList.getTableValidWriteIdList(tableInfo.getKey());
-          ValidWriteIdList currentWriteIdList = currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getKey());
-          // Check if there was a conflicting write between current SNAPSHOT generation and locking.
-          if (currentWriteIdList.isWriteIdRangeValid(writeIdList.getHighWatermark() + 1,
-              currentWriteIdList.getHighWatermark()) != ValidWriteIdList.RangeResponse.NONE) {
-            return false;
-          }
-          // Check that write id is still valid
-          if (!TxnIdUtils.checkEquivalentWriteIds(writeIdList, currentWriteIdList)) {
-            // Write id has changed, it is not valid anymore, we need to recompile
-            return false;
-          }
-        }
-        nonSharedLockedTables.remove(fullQNameForLock);
-      }
-    }
-
-    if (!nonSharedLockedTables.isEmpty()) {
-      throw new LockException("Wrong state: non-shared locks contain information for tables that have not" +
-          " been visited when trying to validate the locks from query tables.\n" +
-          "Tables: " + writtenTables.keySet() + "\n" +
-          "Remaining locks after check: " + nonSharedLockedTables);
-    }
-
-    return true; // It passes the test, it is valid
   }
 
   private Map<String, Table> getTables(boolean inputNeeded, boolean outputNeeded) {
@@ -587,11 +527,15 @@ class DriverTxnHandler {
     release(!hiveLocks.isEmpty());
   }
 
-  void destroy() {
+  void destroy(String queryIdFromDriver) {
+    // We need cleanup transactions, even if we did not acquired locks yet
+    // However TxnManager is bound to session, so wee need to check if it is already handling a new query
     boolean isTxnOpen =
         driverContext != null &&
         driverContext.getTxnManager() != null &&
-        driverContext.getTxnManager().isTxnOpen();
+        driverContext.getTxnManager().isTxnOpen() &&
+        org.apache.commons.lang3.StringUtils.equals(queryIdFromDriver, driverContext.getTxnManager().getQueryid());
+
     release(!hiveLocks.isEmpty() || isTxnOpen);
   }
 

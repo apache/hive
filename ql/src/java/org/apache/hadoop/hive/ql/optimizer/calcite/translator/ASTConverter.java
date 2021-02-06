@@ -154,11 +154,7 @@ public class ASTConverter {
           b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
           break;
         case ROLLUP:
-          b = ASTBuilder.construct(HiveParser.TOK_ROLLUP_GROUPBY, "TOK_ROLLUP_GROUPBY");
-          break;
         case CUBE:
-          b = ASTBuilder.construct(HiveParser.TOK_CUBE_GROUPBY, "TOK_CUBE_GROUPBY");
-          break;
         case OTHER:
           b = ASTBuilder.construct(HiveParser.TOK_GROUPING_SETS, "TOK_GROUPING_SETS");
           groupingSetsExpression = true;
@@ -191,9 +187,7 @@ public class ASTConverter {
           ASTBuilder expression = ASTBuilder.construct(
                   HiveParser.TOK_GROUPING_SETS_EXPRESSION, "TOK_GROUPING_SETS_EXPRESSION");
           for (int i : groupSet) {
-            RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
-                .createSqlType(SqlTypeName.ANY));
-            expression.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+            addRefToBuilder(expression, i);
           }
           b.add(expression);
         }
@@ -792,8 +786,10 @@ public class ASTConverter {
         break;
       case CAST:
         assert(call.getOperands().size() == 1);
-        if(call.getType().isStruct()) {
-          // cast for struct types can be ignored safely because explicit casting on struct
+        if (call.getType().isStruct() ||
+            SqlTypeName.MAP.equals(call.getType().getSqlTypeName()) ||
+            SqlTypeName.ARRAY.equals(call.getType().getSqlTypeName())) {
+          // cast for complex types can be ignored safely because explicit casting on such
           // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
           return call.getOperands().get(0).accept(this);
         }

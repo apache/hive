@@ -19,8 +19,6 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
@@ -28,6 +26,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +38,7 @@ import java.util.List;
  */
 
 public class LoadPartitionDoneEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(LoadPartitionDoneEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LoadPartitionDoneEvent.class);
 
   private String COMMAND_STR = "alter table load partition";
 

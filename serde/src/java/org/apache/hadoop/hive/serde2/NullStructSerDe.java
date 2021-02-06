@@ -69,12 +69,8 @@ public class NullStructSerDe extends AbstractSerDe {
   }
 
   @Override
-  public SerDeStats getSerDeStats() {
-    return null;
-  }
-
-  @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
   }
 
   @Override

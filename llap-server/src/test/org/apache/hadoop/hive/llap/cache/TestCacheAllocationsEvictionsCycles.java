@@ -313,6 +313,12 @@ public class TestCacheAllocationsEvictionsCycles {
       evictionListener.notifyEvicted(buffer);
     }
 
+    @Override
+    public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
+      evicted.add(buffer);
+      evictionListener.notifyEvicted(buffer);
+    }
+
     public List<LlapCacheableBuffer> getEvicted() {
       return evicted;
     }
@@ -320,5 +326,6 @@ public class TestCacheAllocationsEvictionsCycles {
     public void clear() {
       evicted.clear();
     }
+
   }
 }

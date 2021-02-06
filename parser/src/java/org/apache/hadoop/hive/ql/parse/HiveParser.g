@@ -78,6 +78,7 @@ TOK_SERDE;
 TOK_SERDENAME;
 TOK_SERDEPROPS;
 TOK_EXPLIST;
+TOK_ALIAS;
 TOK_ALIASLIST;
 TOK_GROUPBY;
 TOK_ROLLUP_GROUPBY;
@@ -663,6 +664,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_AST", "AST");
     xlateMap.put("KW_TRANSACTIONAL", "TRANSACTIONAL");
     xlateMap.put("KW_MANAGED", "MANAGED");
+    xlateMap.put("KW_LEADING", "LEADING");
+    xlateMap.put("KW_TRAILING", "TRAILING");
+    xlateMap.put("KW_BOTH", "BOTH");
+
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1244,8 +1249,8 @@ showStatement
     -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? $filter? $isExtended?)
     | KW_SHOW KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_MATERIALIZED KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWMATERIALIZEDVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
-    | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
-    -> ^(TOK_SHOWCOLUMNS tableName (TOK_FROM $db_name)? showStmtIdentifier?)
+    | KW_SHOW KW_SORTED? KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
+    -> ^(TOK_SHOWCOLUMNS tableName (TOK_FROM $db_name)? showStmtIdentifier? KW_SORTED?)
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? whereClause? orderByClause? limitClause? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec? whereClause? orderByClause? limitClause?)
     | KW_SHOW KW_CREATE (
@@ -2427,8 +2432,8 @@ withClause
 
 cteStatement
    :
-   identifier KW_AS LPAREN queryStatementExpression RPAREN
-   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+   identifier (LPAREN colAliases=columnNameList RPAREN)? KW_AS LPAREN queryStatementExpression RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier $colAliases?)
 ;
 
 fromStatement
@@ -2468,13 +2473,8 @@ regularBody
    :
    i=insertClause
    (
-   s=selectStatement
-     {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
-     |
-     valuesClause
-      -> ^(TOK_QUERY
-            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause))))
-          )
+   s=selectStatement {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);}
+   -> {$s.tree}
    )
    |
    selectStatement
@@ -2492,6 +2492,8 @@ atomSelectStatement
                      $s $w? $g? $h? $win?))
    |
    LPAREN! selectStatement RPAREN!
+   |
+   valuesSource
    ;
 
 selectStatement

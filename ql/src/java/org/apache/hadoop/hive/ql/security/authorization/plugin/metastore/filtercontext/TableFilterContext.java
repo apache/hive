@@ -20,8 +20,6 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
@@ -29,13 +27,15 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(DatabaseFilterContext.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DatabaseFilterContext.class);
 
   List<Table> tables = null;
   List<String> tableNames = null;
@@ -69,8 +69,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
         HivePrivilegeObjectType type = HivePrivilegeObjectType.TABLE_OR_VIEW;
         HivePrivObjectActionType objectActionType = HivePrivilegeObject.HivePrivObjectActionType.OTHER;
         HivePrivilegeObject hivePrivilegeObject =
-            new HivePrivilegeObject(type, table.getDbName(), table.getTableName(), null, null, objectActionType, null,
-                null);
+            new HivePrivilegeObject(type, table.getDbName(), table.getTableName(), null, null, objectActionType, null, null, table.getOwner(), table.getOwnerType());
         ret.add(hivePrivilegeObject);
       }
     } else {

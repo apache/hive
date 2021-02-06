@@ -23,10 +23,21 @@ import org.apache.atlas.model.impexp.AtlasImportRequest;
 import org.apache.atlas.model.impexp.AttributeTransform;
 import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.atlas.type.AtlasType;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +51,10 @@ public class AtlasRequestBuilder {
   private static final Logger LOG = LoggerFactory.getLogger(AtlasRequestBuilder.class);
   public static final String ATTRIBUTE_QUALIFIED_NAME = "qualifiedName";
   static final String ATLAS_TYPE_HIVE_DB = "hive_db";
+  public static final String ATLAS_TYPE_HIVE_TABLE = "hive_table";
   static final String ATLAS_TYPE_HIVE_SD = "hive_storagedesc";
   static final String QUALIFIED_NAME_FORMAT = "%s@%s";
+  static final String QUALIFIED_NAME_HIVE_TABLE_FORMAT = "%s.%s";
 
   private static final String ATTRIBUTE_NAME_CLUSTER_NAME = ".clusterName";
   private static final String ATTRIBUTE_NAME_NAME = ".name";
@@ -57,16 +70,25 @@ public class AtlasRequestBuilder {
   private static final String TRANSFORM_ENTITY_SCOPE = "__entity";
   private static final String REPLICATED_TAG_NAME = "%s_replicated";
 
-  public AtlasExportRequest createExportRequest(AtlasReplInfo atlasReplInfo, String srcAtlasServer) {
-    List<AtlasObjectId> itemsToExport = getItemsToExport(atlasReplInfo, srcAtlasServer);
+  public AtlasExportRequest createExportRequest(AtlasReplInfo atlasReplInfo)
+          throws SemanticException {
+    List<AtlasObjectId> itemsToExport = getItemsToExport(atlasReplInfo);
     Map<String, Object> options = getOptions(atlasReplInfo);
     return createRequest(itemsToExport, options);
   }
 
-  private List<AtlasObjectId> getItemsToExport(AtlasReplInfo atlasReplInfo, String srcAtlasServerName) {
+  private List<AtlasObjectId> getItemsToExport(AtlasReplInfo atlasReplInfo) throws SemanticException {
     List<AtlasObjectId> atlasObjectIds = new ArrayList<>();
-    final String qualifiedName = getQualifiedName(srcAtlasServerName, atlasReplInfo.getSrcDB());
-    atlasObjectIds.add(new AtlasObjectId(ATLAS_TYPE_HIVE_DB, ATTRIBUTE_QUALIFIED_NAME, qualifiedName));
+    if (atlasReplInfo.isTableLevelRepl()) {
+      final List<String> tableQualifiedNames = getQualifiedNames(atlasReplInfo.getSrcCluster(), atlasReplInfo.getSrcDB(),
+              atlasReplInfo.getTableListFile(), atlasReplInfo.getConf());
+      for (String tableQualifiedName : tableQualifiedNames) {
+        atlasObjectIds.add(new AtlasObjectId(ATLAS_TYPE_HIVE_TABLE, ATTRIBUTE_QUALIFIED_NAME, tableQualifiedName));
+      }
+    } else {
+      final String qualifiedName = getQualifiedName(atlasReplInfo.getSrcCluster(), atlasReplInfo.getSrcDB());
+      atlasObjectIds.add(new AtlasObjectId(ATLAS_TYPE_HIVE_DB, ATTRIBUTE_QUALIFIED_NAME, qualifiedName));
+    }
     return atlasObjectIds;
   }
 
@@ -103,6 +125,55 @@ public class AtlasRequestBuilder {
     String qualifiedName = String.format(QUALIFIED_NAME_FORMAT, srcDb.toLowerCase(), clusterName);
     LOG.debug("Atlas getQualifiedName: {}", qualifiedName);
     return qualifiedName;
+  }
+
+  private String getQualifiedName(String clusterName, String srcDB, String tableName) {
+    String qualifiedTableName = String.format(QUALIFIED_NAME_HIVE_TABLE_FORMAT, srcDB, tableName);
+    return getQualifiedName(clusterName,  qualifiedTableName);
+  }
+
+  private List<String> getQualifiedNames(String clusterName, String srcDb, Path listOfTablesFile, HiveConf conf)
+          throws SemanticException {
+    List<String> qualifiedNames = new ArrayList<>();
+    List<String> tableNames = getFileAsList(listOfTablesFile, conf);
+    if (CollectionUtils.isEmpty(tableNames)) {
+      LOG.info("Empty file encountered: {}", listOfTablesFile);
+      return qualifiedNames;
+    }
+    for (String tableName : tableNames) {
+      qualifiedNames.add(getQualifiedName(clusterName, srcDb, tableName));
+    }
+    return qualifiedNames;
+  }
+
+  public List<String> getFileAsList(Path listOfTablesFile, HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
+        List<String> list = new ArrayList<>();
+        InputStream is = null;
+        try {
+          FileSystem fs = getFileSystem(listOfTablesFile, conf);
+          FileStatus fileStatus = fs.getFileStatus(listOfTablesFile);
+          if (fileStatus == null) {
+            throw new SemanticException("Table list file not found: " + listOfTablesFile);
+          }
+          is = fs.open(listOfTablesFile);
+          list.addAll(IOUtils.readLines(is, Charset.defaultCharset()));
+          return list;
+        } finally {
+          org.apache.hadoop.io.IOUtils.closeStream(is);
+        }
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public FileSystem getFileSystem(Path listOfTablesFile, HiveConf conf) throws IOException {
+    return FileSystem.get(listOfTablesFile.toUri(), conf);
   }
 
   public AtlasImportRequest createImportRequest(String sourceDataSet, String targetDataSet,

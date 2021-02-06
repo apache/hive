@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -67,6 +68,9 @@ public class FunctionSerializer implements JsonWriter.Serializer {
           String encodedSrcUri = ReplChangeManager.getInstance(hiveConf)
                   .encodeFileUri(qualifiedUri.toString(), checkSum, null);
           if (copyAtLoad) {
+            if (hiveConf.getBoolVar(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE)) {
+              encodedSrcUri = Utils.replaceNameserviceInEncodedURI(encodedSrcUri, hiveConf);
+            }
             resourceUris.add(new ResourceUri(uri.getResourceType(), encodedSrcUri));
           } else {
             Path newBinaryPath = new Path(functionDataRoot, qualifiedUri.getName());

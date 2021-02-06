@@ -1,0 +1,292 @@
+PREHOOK: query: create database if not exists mydb_e10
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:mydb_e10
+POSTHOOK: query: create database if not exists mydb_e10
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:mydb_e10
+PREHOOK: query: use mydb_e10
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:mydb_e10
+POSTHOOK: query: use mydb_e10
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:mydb_e10
+PREHOOK: query: create table if not exists f_tab_e10(
+      c1 int,
+      c2 timestamp,
+      c3 decimal(10,2)
+)
+partitioned by (c3_date string)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb_e10
+PREHOOK: Output: mydb_e10@f_tab_e10
+POSTHOOK: query: create table if not exists f_tab_e10(
+      c1 int,
+      c2 timestamp,
+      c3 decimal(10,2)
+)
+partitioned by (c3_date string)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb_e10
+POSTHOOK: Output: mydb_e10@f_tab_e10
+PREHOOK: query: create table if not exists d1_tab_e10(
+      c1 int,
+      c2 char(16) not null,
+      c3 char(10),
+      c4 varchar(60),
+      c5 char(15),
+      c6 char(10),
+      c7 varchar(60),
+      c8 varchar(30),
+      c9 char(2),
+      c10 char(10),
+      c11 varchar(20),
+      c12 decimal(5,2),
+      c13 char(20),
+      primary key (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb_e10
+PREHOOK: Output: mydb_e10@d1_tab_e10
+POSTHOOK: query: create table if not exists d1_tab_e10(
+      c1 int,
+      c2 char(16) not null,
+      c3 char(10),
+      c4 varchar(60),
+      c5 char(15),
+      c6 char(10),
+      c7 varchar(60),
+      c8 varchar(30),
+      c9 char(2),
+      c10 char(10),
+      c11 varchar(20),
+      c12 decimal(5,2),
+      c13 char(20),
+      primary key (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb_e10
+POSTHOOK: Output: mydb_e10@d1_tab_e10
+PREHOOK: query: create table if not exists d2_tab_e10(
+      c1 int,
+      c2 char(16),
+      c3 int,
+      c4 char(10),
+      c5 char(20),
+      c6 char(30),
+      c7 char(13),
+      c8 char(50),
+      c9 date,
+      primary key (c1) disable novalidate rely,
+      foreign key  (c3) references d1_tab_e10 (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb_e10
+PREHOOK: Output: mydb_e10@d2_tab_e10
+POSTHOOK: query: create table if not exists d2_tab_e10(
+      c1 int,
+      c2 char(16),
+      c3 int,
+      c4 char(10),
+      c5 char(20),
+      c6 char(30),
+      c7 char(13),
+      c8 char(50),
+      c9 date,
+      primary key (c1) disable novalidate rely,
+      foreign key  (c3) references d1_tab_e10 (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb_e10
+POSTHOOK: Output: mydb_e10@d2_tab_e10
+PREHOOK: query: create table if not exists d3_tab_e10(
+      c1 int,
+      c2 char(16),
+      c3 date,
+      c4 varchar(200),
+      c5 char(2),
+      c6 int,
+      c7 int,
+      c8 char(50),
+      primary key (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb_e10
+PREHOOK: Output: mydb_e10@d3_tab_e10
+POSTHOOK: query: create table if not exists d3_tab_e10(
+      c1 int,
+      c2 char(16),
+      c3 date,
+      c4 varchar(200),
+      c5 char(2),
+      c6 int,
+      c7 int,
+      c8 char(50),
+      primary key (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb_e10
+POSTHOOK: Output: mydb_e10@d3_tab_e10
+PREHOOK: query: create table if not exists d4_tab_e10(
+      c1 char(2),
+      c2 decimal(7,2)
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb_e10
+PREHOOK: Output: mydb_e10@d4_tab_e10
+POSTHOOK: query: create table if not exists d4_tab_e10(
+      c1 char(2),
+      c2 decimal(7,2)
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb_e10
+POSTHOOK: Output: mydb_e10@d4_tab_e10
+PREHOOK: query: create table if not exists f2_tab_e10(
+      c1 int,
+      c2 int,
+      c3 char(2),
+      c4 date,
+      c5 date,
+      foreign key  (c1) references d3_tab_e10 (c1) disable novalidate rely,
+      foreign key  (c2) references d2_tab_e10 (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb_e10
+PREHOOK: Output: mydb_e10@f2_tab_e10
+POSTHOOK: query: create table if not exists f2_tab_e10(
+      c1 int,
+      c2 int,
+      c3 char(2),
+      c4 date,
+      c5 date,
+      foreign key  (c1) references d3_tab_e10 (c1) disable novalidate rely,
+      foreign key  (c2) references d2_tab_e10 (c1) disable novalidate rely
+)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb_e10
+POSTHOOK: Output: mydb_e10@f2_tab_e10
+Warning: Shuffle Join MERGEJOIN[93][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo
+select c.c1, c.c5, c.c6, ca.c3, ca.c4, ca.c5, ca.c6,
+ca.c7, ca.c8, ca.c9, ca.c10, ca.c11, cm.c1, cm.c4, cm.c5, r.c2
+from
+f2_tab_e10 cm, d2_tab_e10 c, d1_tab_e10 ca, f_tab_e10 mr, d3_tab_e10 m, d4_tab_e10 r
+where
+c.c1 = cm.c2
+and c.c3 = ca.c1
+and cm.c1 = m.c1
+and m.c5 = r.c1
+and m.c6 = 1
+and (cm.c5 is null or cm.c5 > date_format(cast('2020-10-30' as date),'yyyy-MM-01'))
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb_e10@d1_tab_e10
+PREHOOK: Input: mydb_e10@d2_tab_e10
+PREHOOK: Input: mydb_e10@d3_tab_e10
+PREHOOK: Input: mydb_e10@d4_tab_e10
+PREHOOK: Input: mydb_e10@f2_tab_e10
+PREHOOK: Input: mydb_e10@f_tab_e10
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select c.c1, c.c5, c.c6, ca.c3, ca.c4, ca.c5, ca.c6,
+ca.c7, ca.c8, ca.c9, ca.c10, ca.c11, cm.c1, cm.c4, cm.c5, r.c2
+from
+f2_tab_e10 cm, d2_tab_e10 c, d1_tab_e10 ca, f_tab_e10 mr, d3_tab_e10 m, d4_tab_e10 r
+where
+c.c1 = cm.c2
+and c.c3 = ca.c1
+and cm.c1 = m.c1
+and m.c5 = r.c1
+and m.c6 = 1
+and (cm.c5 is null or cm.c5 > date_format(cast('2020-10-30' as date),'yyyy-MM-01'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb_e10@d1_tab_e10
+POSTHOOK: Input: mydb_e10@d2_tab_e10
+POSTHOOK: Input: mydb_e10@d3_tab_e10
+POSTHOOK: Input: mydb_e10@d4_tab_e10
+POSTHOOK: Input: mydb_e10@f2_tab_e10
+POSTHOOK: Input: mydb_e10@f_tab_e10
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c1=[$11], c5=[$13], c6=[$14], c3=[$1], c4=[$2], c51=[$3], c61=[$4], c7=[$5], c8=[$6], c9=[$7], c10=[$8], c11=[$9], c12=[$19], c41=[$21], c52=[$22], c2=[$18])
+  HiveJoin(condition=[=($11, $20)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($12, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(c1=[$0], c3=[$2], c4=[$3], c5=[$4], c6=[$5], c7=[$6], c8=[$7], c9=[$8], c10=[$9], c11=[$10])
+          HiveTableScan(table=[[mydb_e10, d1_tab_e10]], table:alias=[ca])
+        HiveProject(DUMMY=[0])
+          HiveTableScan(table=[[mydb_e10, f_tab_e10]], table:alias=[mr])
+      HiveProject(c1=[$0], c3=[$2], c5=[$4], c6=[$5])
+        HiveFilter(condition=[IS NOT NULL($2)])
+          HiveTableScan(table=[[mydb_e10, d2_tab_e10]], table:alias=[c])
+    HiveProject(c1=[$0], c5=[$1], c10=[$2], c2=[$3], c11=[$4], c20=[$5], c4=[$6], c50=[$7])
+      HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(c1=[$0], c5=[$4])
+            HiveFilter(condition=[AND(=($5, 1), IS NOT NULL($4))])
+              HiveTableScan(table=[[mydb_e10, d3_tab_e10]], table:alias=[m])
+          HiveProject(c1=[$0], c2=[$1])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[mydb_e10, d4_tab_e10]], table:alias=[r])
+        HiveProject(c1=[$0], c2=[$1], c4=[$3], c5=[$4])
+          HiveFilter(condition=[AND(OR(IS NULL($4), >($4, 2020-10-01)), IS NOT NULL($1), IS NOT NULL($0))])
+            HiveTableScan(table=[[mydb_e10, f2_tab_e10]], table:alias=[cm])
+
+PREHOOK: query: drop table f_tab_e10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb_e10@f_tab_e10
+PREHOOK: Output: mydb_e10@f_tab_e10
+POSTHOOK: query: drop table f_tab_e10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb_e10@f_tab_e10
+POSTHOOK: Output: mydb_e10@f_tab_e10
+PREHOOK: query: drop table f2_tab_e10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb_e10@f2_tab_e10
+PREHOOK: Output: mydb_e10@f2_tab_e10
+POSTHOOK: query: drop table f2_tab_e10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb_e10@f2_tab_e10
+POSTHOOK: Output: mydb_e10@f2_tab_e10
+PREHOOK: query: drop table d2_tab_e10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb_e10@d2_tab_e10
+PREHOOK: Output: mydb_e10@d2_tab_e10
+POSTHOOK: query: drop table d2_tab_e10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb_e10@d2_tab_e10
+POSTHOOK: Output: mydb_e10@d2_tab_e10
+PREHOOK: query: drop table d4_tab_e10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb_e10@d4_tab_e10
+PREHOOK: Output: mydb_e10@d4_tab_e10
+POSTHOOK: query: drop table d4_tab_e10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb_e10@d4_tab_e10
+POSTHOOK: Output: mydb_e10@d4_tab_e10
+PREHOOK: query: drop table d3_tab_e10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb_e10@d3_tab_e10
+PREHOOK: Output: mydb_e10@d3_tab_e10
+POSTHOOK: query: drop table d3_tab_e10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb_e10@d3_tab_e10
+POSTHOOK: Output: mydb_e10@d3_tab_e10
+PREHOOK: query: drop table d1_tab_e10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb_e10@d1_tab_e10
+PREHOOK: Output: mydb_e10@d1_tab_e10
+POSTHOOK: query: drop table d1_tab_e10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb_e10@d1_tab_e10
+POSTHOOK: Output: mydb_e10@d1_tab_e10

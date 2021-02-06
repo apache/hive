@@ -324,6 +324,18 @@ public class AvroSerdeUtils {
     }
   }
 
+  public static int getIntFromSchema(Schema schema, String name) {
+    Object obj = schema.getObjectProp(name);
+    if (obj instanceof String) {
+      return Integer.parseInt((String) obj);
+    } else if (obj instanceof Integer) {
+      return (int) obj;
+    } else {
+      throw new IllegalArgumentException("Expect integer or string value from property " + name
+        + " but found type " + obj.getClass().getName());
+    }
+  }
+
   /**
    * Called on specific alter table events, removes schema url and schema literal from given tblproperties
    * After the change, HMS solely will be responsible for handling the schema

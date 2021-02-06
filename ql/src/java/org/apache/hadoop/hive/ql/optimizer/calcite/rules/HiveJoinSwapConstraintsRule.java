@@ -78,9 +78,9 @@ public class HiveJoinSwapConstraintsRule extends RelOptRule {
     // - If the bottom one is not a non-filtering column appending join,
     // we cannot trigger the optimization.
     RewritablePKFKJoinInfo topInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-        topJoin, true, call.getMetadataQuery());
+        topJoin, topJoin.getLeft(), topJoin.getRight(), call.getMetadataQuery());
     RewritablePKFKJoinInfo bottomInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-        bottomJoin, true, call.getMetadataQuery());
+        bottomJoin, bottomJoin.getLeft(), bottomJoin.getRight(), call.getMetadataQuery());
     if (topInfo.rewritable || !bottomInfo.rewritable) {
       // Nothing to do
       return;

@@ -46,7 +46,7 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
    * @param pf Pool factory to create object pools.
    * @return The reader.
    */
-  EncodedReader encodedReader(Object fileKey, DataCache dataCache, DataReader dataReader,
+  EncodedReader encodedReader(Object fileKey, DataCache dataCache, LlapDataReader dataReader,
       PoolFactory pf, IoTrace trace, boolean useCodecPool, CacheTag tag, boolean isReadCacheOnly) throws IOException;
 
   /** The factory that can create (or return) the pools used by encoded reader. */

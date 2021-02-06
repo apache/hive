@@ -737,6 +737,29 @@ public interface IMetaStoreClient {
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
    * @param catName catalog name
+   * @param dbName The database the tables are located in.
+   * @param tableNames The names of the tables to fetch.
+   * @param projectionsSpec The subset of columns that need to be fetched as part of the table object.
+   * @return A list of objects representing the tables.
+   *          Only the tables that can be retrieved from the database are returned.  For example,
+   *          if none of the requested tables could be retrieved, an empty list is returned.
+   *          There is no guarantee of ordering of the returned tables.
+   * @throws InvalidOperationException
+   *          The input to this operation is invalid (e.g., the list of tables names is null)
+   * @throws UnknownDBException
+   *          The requested database could not be fetched.
+   * @throws TException
+   *          A thrift communication error occurred
+   * @throws MetaException
+   *          Any other errors
+   */
+  List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
+          throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
+  /**
+   * Get tables as objects (rather than just fetching their names).  This is more expensive and
+   * should only be used if you actually need all the information about the tables.
+   * @param catName catalog name
    * @param dbName
    *          The database the tables are located in.
    * @param tableNames
@@ -3119,7 +3142,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void replCommitTxn(CommitTxnRequest rqst)
+  void commitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
@@ -3401,7 +3424,9 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
-    /**
+  long getLatestTxnIdInConflict(long txnId) throws TException;
+
+  /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -3630,6 +3655,17 @@ public interface IMetaStoreClient {
 
   List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException,
       NoSuchObjectException, TException;
+
+  /**
+   * Get all constraints of given table
+   * @param request Request info
+   * @return all constraints of this table
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException, TException;
 
   void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
@@ -4087,4 +4123,12 @@ public interface IMetaStoreClient {
 
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
+
+  void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException;
+
+  StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
 }

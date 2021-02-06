@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -129,7 +132,7 @@ public class TestStatsReplicationScenarios {
   public void setup() throws Throwable {
     // set up metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
@@ -342,7 +345,13 @@ public class TestStatsReplicationScenarios {
         failIncrementalLoad();
       }
     }
-
+    
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
+    if(nonRecoverablePath != null){
+      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    }
+    
     // Load, possibly a retry
     replica.load(replicatedDbName, primaryDbName);
 
@@ -665,7 +674,7 @@ public class TestStatsReplicationScenarios {
     lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
             metadataOnly, false);
   }
-
+  
   @Test
   public void testNonParallelBootstrapLoad() throws Throwable {
     LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());

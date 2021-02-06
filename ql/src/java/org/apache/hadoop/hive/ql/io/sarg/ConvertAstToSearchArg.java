@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io.sarg;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -59,11 +61,16 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public class ConvertAstToSearchArg {
   private static final Logger LOG = LoggerFactory.getLogger(ConvertAstToSearchArg.class);
+
+  private static final int KRYO_OUTPUT_BUFFER_SIZE = 4 * 1024;
+  private static final int KRYO_OUTPUT_BUFFER_MAX_SIZE = 10 * 1024 * 1024;
+
   private final SearchArgument.Builder builder;
   private final Configuration conf;
 
@@ -217,9 +224,8 @@ public class ConvertAstToSearchArg {
         }
         return ts;
       case DATE:
-        return new Date(
-            DateWritable.daysToMillis(
-                org.apache.hadoop.hive.common.type.Date.valueOf(lit.toString()).toEpochDay()));
+        // TODO [ORC-661]: use ChronoLocalDate and day of epoch instead of java's sql Date
+        return Date.valueOf(LocalDate.parse(lit.toString()));
       case DECIMAL:
         return new HiveDecimalWritable(lit.toString());
       case BOOLEAN:
@@ -471,7 +477,14 @@ public class ConvertAstToSearchArg {
     } else if (op == GenericUDFIn.class) {
       createLeaf(PredicateLeaf.Operator.IN, expr, 0);
     } else if (op == GenericUDFBetween.class) {
-      createLeaf(PredicateLeaf.Operator.BETWEEN, expr, 1);
+      // Start with NOT operator when the first child of GenericUDFBetween operator is set to TRUE
+      if (Boolean.TRUE.equals(((ExprNodeConstantDesc) expression.getChildren().get(0)).getValue())) {
+        builder.startNot();
+        createLeaf(PredicateLeaf.Operator.BETWEEN, expr, 1);
+        builder.end();
+      } else {
+        createLeaf(PredicateLeaf.Operator.BETWEEN, expr, 1);
+      }
     } else if (op == GenericUDFOPNull.class) {
       createLeaf(PredicateLeaf.Operator.IS_NULL, expr, 0);
     } else if (op == GenericUDFOPNotNull.class) {
@@ -540,7 +553,7 @@ public class ConvertAstToSearchArg {
   }
 
   private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
-    protected Kryo initialValue() { return new Kryo(); }
+    protected Kryo initialValue() { return SerializationUtilities.createNewKryo(); }
   };
 
   public static SearchArgument create(String kryo) {
@@ -563,6 +576,15 @@ public class ConvertAstToSearchArg {
 
   public static boolean canCreateFromConf(Configuration conf) {
     return conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) != null || conf.get(SARG_PUSHDOWN) != null;
+  }
+
+  public static String sargToKryo(SearchArgument sarg) {
+    Output out = new Output(KRYO_OUTPUT_BUFFER_SIZE, KRYO_OUTPUT_BUFFER_MAX_SIZE);
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    kryo.writeObject(out, sarg);
+    out.close();
+    SerializationUtilities.releaseKryo(kryo);
+    return Base64.encodeBase64String(out.toBytes());
   }
 
 }

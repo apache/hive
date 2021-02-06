@@ -48,7 +48,7 @@ import java.util.HashMap;
  */
 
 public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(AlterTableEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AlterTableEvent.class);
 
   private String COMMAND_STR = "alter table";
 
@@ -122,7 +122,9 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
       try {
         hiveStorageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
-        Method methodIsImplemented = hiveStorageHandler.getClass().getMethod("getURIForAuth", Map.class);
+        
+        
+        methodIsImplemented = hiveStorageHandler.getClass().getMethod("getURIForAuth", Map.class);
         if(methodIsImplemented != null && hiveStorageHandler instanceof DefaultStorageHandler) {
           DefaultStorageHandler defaultHandler = (DefaultStorageHandler) ReflectionUtils.newInstance(
                   conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());

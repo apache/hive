@@ -25,10 +25,13 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -325,7 +328,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected Object interpretConstantAsPrimitive(PrimitiveTypeInfo targetType, Object constantValue,
-      PrimitiveTypeInfo sourceType) {
+      PrimitiveTypeInfo sourceType, boolean isEqual) {
     // Extract string value if necessary
     Object constantToInterpret = constantValue;
     if (constantValue instanceof NlsString) {
@@ -352,6 +355,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           return decimal != null ? decimal.bigDecimalValue() : null;
         }
       } catch (NumberFormatException | ArithmeticException nfe) {
+        if (!isEqual && (constantToInterpret instanceof Number ||
+            NumberUtils.isNumber(constantToInterpret.toString()))) {
+          // The target is a number, if constantToInterpret can be interpreted as a number,
+          // return the constantToInterpret directly, GenericUDFBaseCompare will do
+          // type conversion for us.
+          return constantToInterpret;
+        }
         LOG.trace("Failed to narrow type of constant", nfe);
         return null;
       }
@@ -906,6 +916,11 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     return functionHelper.isEqualFunction(fi);
   }
 
+  @Override
+  protected boolean isNSCompareFunction(FunctionInfo fi) {
+    return functionHelper.isNSCompareFunction(fi);
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -988,6 +1003,18 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     return functionHelper.getFunctionInfo(funcName);
   }
 
+  @Override
+  protected RexNode replaceFieldNamesInStruct(RexNode expr, List<String> newFieldNames) {
+    if (newFieldNames.isEmpty()) {
+      return expr;
+    }
+
+    RexCall structCall = (RexCall) expr;
+    List<RelDataType> newTypes = structCall.operands.stream().map(RexNode::getType).collect(Collectors.toList());
+    RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, newFieldNames);
+    return rexBuilder.makeCall(newType, structCall.op, structCall.operands);
+  }
+
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
     throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
         "Invalid operator:" + comparisonOp.toString()));
@@ -1053,5 +1080,4 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   public static NlsString makeHiveUnicodeString(String text) {
     return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
-
 }

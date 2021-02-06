@@ -87,6 +87,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   public int getCurrentStmtId() {
     return  0;
   }
+
+  @Override
+  public long getLatestTxnIdInConflict() throws LockException {
+    return 0;
+  }
+
   @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
     return 0L;
@@ -429,5 +435,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
     }
     return locks;
+  }
+
+  @Override
+  public String getQueryid() {
+    return null;
   }
 }

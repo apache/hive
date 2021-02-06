@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.apache.hadoop.hive.ql.ErrorMsg.CLIENT_POLLING_OPSTATUS_INTERRUPTED;
+
 /**
  * The object used for executing a static SQL statement and returning the
  * results it produces.
@@ -307,6 +309,7 @@ public class HiveStatement implements java.sql.Statement {
     execReq.setConfOverlay(sessConf);
     execReq.setQueryTimeout(queryTimeout);
     try {
+      LOG.debug("Submitting statement [{}]: {}", sessHandle, sql);
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
       List<String> infoMessages = execResp.getStatus().getInfoMessages();
@@ -316,6 +319,7 @@ public class HiveStatement implements java.sql.Statement {
         }
       }
       stmtHandle = Optional.of(execResp.getOperationHandle());
+      LOG.debug("Running with statement handle: {}", stmtHandle.get());
     } catch (SQLException eS) {
       isLogBeingGenerated = false;
       throw eS;
@@ -357,14 +361,21 @@ public class HiveStatement implements java.sql.Statement {
       inPlaceUpdateStream.get().getEventNotifier().progressBarCompleted();
     }
 
+    LOG.debug("Waiting on operation to complete: Polling operation status");
+
     // Poll on the operation status, till the operation is complete
     do {
       try {
+        if (Thread.currentThread().isInterrupted()) {
+          throw new SQLException(CLIENT_POLLING_OPSTATUS_INTERRUPTED.getMsg(),
+              CLIENT_POLLING_OPSTATUS_INTERRUPTED.getSQLState());
+        }
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
+        LOG.debug("Status response: {}", statusResp);
         if (!isOperationComplete && inPlaceUpdateStream.isPresent()) {
           inPlaceUpdateStream.get().update(statusResp.getProgressUpdateResponse());
         }

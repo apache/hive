@@ -958,7 +958,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -4.303895780321011	1163.8972588605056	1163.8972588605056	1164.0241556397098	34.11593848717203	34.11593848717203	34.11593848717203	34.11779822379677
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
@@ -1137,7 +1137,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),
@@ -30383,7 +30383,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: cstring1 (type: string)
-                      minReductionHashAggr: 0.3333333
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: COMPLETE

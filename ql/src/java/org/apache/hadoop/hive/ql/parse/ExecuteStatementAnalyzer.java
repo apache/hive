@@ -18,20 +18,18 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.optimizer.Transform;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprDynamicParamDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -43,21 +41,20 @@ import org.apache.parquet.Preconditions;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Analyzer for Execute statement.
  * This analyzer
- *  retrieves cached {@link BaseSemanticAnalyzer},
+ *  retrieves cached {@link SemanticAnalyzer},
  *  makes copy of all tasks by serializing/deserializing it,
- *  bind dynamic parameters inside cached {@link BaseSemanticAnalyzer} using values provided
+ *  bind dynamic parameters inside cached {@link SemanticAnalyzer} using values provided
  */
 @DDLType(types = HiveParser.TOK_EXECUTE)
-public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
+public class ExecuteStatementAnalyzer extends SemanticAnalyzer{
 
   public ExecuteStatementAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -102,30 +99,9 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
         new ByteArrayInputStream(baos.toByteArray()), objClass);
   }
 
-  /**
-   * Given a {@link BaseSemanticAnalyzer} (cached) this method make copies of all tasks
-   * (including {@link FetchTask}) and update the existing {@link ExecuteStatementAnalyzer}
-   */
-  private void createTaskCopy(final BaseSemanticAnalyzer cachedPlan) {
-    PlanCopy planCopy = new PlanCopy(cachedPlan.getFetchTask(), cachedPlan.getAllRootTasks());
-    planCopy = makeCopy(planCopy, planCopy.getClass());
-    this.setFetchTask(planCopy.getFetchTask());
-    this.rootTasks = planCopy.getTasks();
+  private void createOperatorCopy(final SemanticAnalyzer cachedPlan) {
+    this.topOps = makeCopy(cachedPlan.topOpsCopy, cachedPlan.topOpsCopy.getClass());
   }
-
-  private String getParamLiteralValue(Map<Integer, ASTNode> paramMap, int paramIndex) {
-    Preconditions.checkArgument(paramMap.containsKey(paramIndex), "Index not found.");
-    ASTNode node = paramMap.get(paramIndex);
-
-    if (node.getType() == HiveParser.StringLiteral) {
-      // remove quotes
-      return BaseSemanticAnalyzer.unescapeSQLString(node.getText());
-
-    } else {
-      return node.getText();
-    }
-  }
-
 
   /**
    * This method creates a constant expression to replace the given dynamic expression.
@@ -145,22 +121,6 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
     Preconditions.checkArgument(node instanceof ExprNodeConstantDesc,
         "Invalid expression created");
     return (ExprNodeConstantDesc)node;
-  }
-
-  /**
-   * Given a list of expressions this method traverse the expression tree and replaces
-   * all {@link ExprDynamicParamDesc} nodes with constant expression.
-   * @param exprList
-   * @param paramMap
-   */
-  private List<ExprNodeDesc> replaceDynamicParamsInExprList(List<ExprNodeDesc> exprList,
-      Map<Integer, ASTNode> paramMap) throws SemanticException{
-    List<ExprNodeDesc> updatedExprList = new ArrayList<>();
-    for (ExprNodeDesc expr:exprList) {
-      expr = replaceDynamicParamsWithConstant(expr, expr.getTypeInfo(), paramMap);
-      updatedExprList.add(expr);
-    }
-    return updatedExprList;
   }
 
   /**
@@ -202,49 +162,28 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
     return expr;
   }
 
-  /**
-   * Given map of index and ASTNode this traverse all operators within all tasks
-   * including Fetch Task and all root tasks to find and replace all dynamic expressions
-   */
-  private void bindDynamicParams(Map<Integer, ASTNode> parameterMap) throws SemanticException{
-    Preconditions.checkArgument(!parameterMap.isEmpty(), "Parameter map is empty");
-
-    Set<Operator<?>> operators = new HashSet<>();
-    if (this.getFetchTask() != null) {
-      operators.addAll(OperatorUtils.getAllFetchOperators(this.getFetchTask()));
-    }
-    List<Task<?>> allTasks = this.getRootTasks();
-    List<TezTask> rootTasks = Utilities.getTezTasks(this.getRootTasks());
-    for(Task task:allTasks) {
-      List<BaseWork> baseWorks = new ArrayList<>();
-      if (task instanceof ExplainTask) {
-        ExplainTask explainTask = (ExplainTask) task;
-        for (Task explainRootTask : explainTask.getWork().getRootTasks()) {
-          if (explainRootTask instanceof TezTask) {
-            TezTask explainTezTask = (TezTask) explainRootTask;
-            baseWorks.addAll(explainTezTask.getWork().getAllWork());
-          }
-        }
-      } else if (task instanceof TezTask) {
-        baseWorks = ((TezTask) task).getWork().getAllWork();
-      }
-      for (BaseWork baseWork : baseWorks) {
-        operators.addAll(baseWork.getAllOperators());
-      }
-    }
-
-    for (Operator<?> op : operators) {
-      switch(op.getType()) {
+  private void bindOperatorsWithDynamicParams(Map<Integer, ASTNode> parameterMap)
+      throws SemanticException {
+    // Push the node in the stack
+    Collection<Operator> allOps = this.getParseContext().getAllOps();
+    for (Operator op:allOps) {
+      switch (op.getType()) {
       case FILTER:
-        FilterOperator filterOp = (FilterOperator)op;
+        FilterOperator filterOp = (FilterOperator) op;
         ExprNodeDesc predicate = filterOp.getConf().getPredicate();
         filterOp.getConf().setPredicate(
-            replaceDynamicParamsWithConstant(predicate, TypeInfoFactory.booleanTypeInfo, parameterMap));
+            replaceDynamicParamsWithConstant(predicate, TypeInfoFactory.booleanTypeInfo,
+                parameterMap));
         break;
+
       }
     }
   }
 
+  /**
+   * Given map of index and ASTNode this traverse all operators within all tasks
+   * including Fetch Task and all root tasks to find and replace all dynamic expressions
+   */
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
 
@@ -253,20 +192,22 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
     String queryName = getQueryName(root);
     if (ss.getPreparePlans().containsKey(queryName)) {
       // retrieve cached plan from session state
-      BaseSemanticAnalyzer cachedPlan = ss.getPreparePlans().get(queryName);
+      SemanticAnalyzer cachedPlan = ss.getPreparePlans().get(queryName);
 
       // make copy of the plan
-      createTaskCopy(cachedPlan);
+      createOperatorCopy(cachedPlan);
 
       // bind dynamic params
       Map<Integer, ASTNode> parameterMap = findParams(root);
-      bindDynamicParams(parameterMap);
+      bindOperatorsWithDynamicParams(parameterMap);
 
       // reset prepare flag
       this.prepareQuery = false;
 
       // reset config
+      String queryId = this.conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
       this.conf.syncFromConf(cachedPlan.getQueryState().getConf());
+      this.conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
 
       // set rest of the params
       this.inputs = cachedPlan.getInputs();
@@ -286,6 +227,22 @@ public class ExecuteStatementAnalyzer extends BaseSemanticAnalyzer {
       this.acidFileSinks.addAll(cachedPlan.getAcidFileSinks());
       this.initCtx(cachedPlan.getCtx());
       this.ctx.setCboInfo(cachedPlan.getCboInfo());
+      this.setLoadFileWork(cachedPlan.getLoadFileWork());
+      this.setLoadTableWork(cachedPlan.getLoadTableWork());
+
+      this.setQB(cachedPlan.getQB());
+
+      ParseContext pctxt = this.getParseContext();
+      // partition pruner
+      Transform ppr = new PartitionPruner();
+      ppr.transform(pctxt);
+
+      if (!ctx.getExplainLogical()) {
+        TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pctxt);
+        compiler.init(queryState, console, db);
+        compiler.compile(pctxt, rootTasks, inputs, outputs);
+        fetchTask = pctxt.getFetchTask();
+      }
     } else {
       throw new SemanticException("No existing plan found for the execute statement. "
           + "Please make sure to add one using prepare");

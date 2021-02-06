@@ -22,6 +22,7 @@
  */
 package org.apache.hive.beeline;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -162,11 +163,12 @@ abstract class Rows implements Iterator {
         if (o == null) {
           value = nullStr;
         } else if (o instanceof Number) {
-          value = numberFormat != null ? numberFormat.format(o) : o.toString();
+          value = numberFormat != null ? numberFormat.format(o) :
+              o instanceof BigDecimal ? ((BigDecimal)o).toPlainString() : o.toString();
         } else if (o instanceof byte[]) {
           value = convertBinaryArrayToString ? new String((byte[])o, StandardCharsets.UTF_8) : Base64.getEncoder().withoutPadding().encodeToString((byte[])o);
         } else {
-          value = o.toString();
+          value = rs.getString(i + 1);
         }
 
         if (beeLine.getOpts().getEscapeCRLF()) {

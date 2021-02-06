@@ -445,6 +445,22 @@ public interface RawStore extends Configurable {
       throws MetaException, UnknownDBException;
 
   /**
+   * @param catName catalog name
+   * @param dbname
+   *        The name of the database from which to retrieve the tables
+   * @param tableNames
+   *        The names of the tables to retrieve.
+   * @param projectionSpec
+   *        Projection Specification containing the columns that need to be returned.
+   * @return A list of the tables retrievable from the database
+   *          whose names are in the list tableNames.
+   *         If there are duplicate names, only one instance of the table will be returned
+   * @throws MetaException failure in querying the RDBMS.
+   */
+  List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
+                                    GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException;
+
+  /**
    * Get all tables in a database.
    * @param catName catalog name.
    * @param dbName database name.
@@ -596,7 +612,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException when table isn't found
    */
   List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException;
   /**
    * Get partitions using an already parsed expression.
@@ -1312,7 +1328,7 @@ public interface RawStore extends Configurable {
   List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException;
 
-  /**
+    /**
    * Get the next notification event.
    * @param rqst Request containing information on the last processed notification.
    * @return list of notifications, sorted by eventId
@@ -1329,7 +1345,8 @@ public interface RawStore extends Configurable {
 
   /**
    * Remove older notification events.
-   * @param olderThan Remove any events older than a given number of seconds
+   *
+   * @param olderThan Remove any events older or equal to a given number of seconds
    */
   void cleanNotificationEvents(int olderThan);
 
@@ -1486,22 +1503,25 @@ public interface RawStore extends Configurable {
                                                    String tbl_name) throws MetaException;
 
   /**
+   * Get all constraints of the table
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return all constraints for this table
+   * @throws MetaException error accessing the RDBMS
+   */
+  SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException;
+
+  /**
    * Create a table with constraints
    * @param tbl table definition
-   * @param primaryKeys primary key definition, or null
-   * @param foreignKeys foreign key definition, or null
-   * @param uniqueConstraints unique constraints definition, or null
-   * @param notNullConstraints not null constraints definition, or null
-   * @param defaultConstraints default values definition, or null
+   * @param constraints wrapper of all table constraints
    * @return list of constraint names
    * @throws InvalidObjectException one of the provided objects is malformed.
    * @throws MetaException error accessing the RDBMS
    */
-  List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
-    List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints,
-    List<SQLDefaultConstraint> defaultConstraints,
-    List<SQLCheckConstraint> checkConstraints) throws InvalidObjectException, MetaException;
+  SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints) throws InvalidObjectException, MetaException;
 
   /**
    * Drop a constraint, any constraint.  I have no idea why add and get each have separate
@@ -1538,7 +1558,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException The SQLPrimaryKeys list is malformed
    * @throws MetaException error accessing the RDMBS
    */
-  List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
+  List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   /**
    * Add a foreign key to a table.
@@ -1547,7 +1567,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+  List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
 
   /**
    * Add unique constraints to a table.
@@ -1556,7 +1576,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+  List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
 
   /**
    * Add not null constraints to a table.
@@ -1565,7 +1585,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
+  List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
 
   /**
    * Add default values to a table definition.
@@ -1574,7 +1594,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<String> addDefaultConstraints(List<SQLDefaultConstraint> dv)
+  List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dv)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -1584,7 +1604,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed
    * @throws MetaException error accessing the RDBMS
    */
-  List<String> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
+  List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
 
   /**
    * Gets the unique id of the backing datastore for the metadata.
@@ -1864,4 +1884,12 @@ public interface RawStore extends Configurable {
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
 
   void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
+
+  void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
+
+  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException;
+
+  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
 }

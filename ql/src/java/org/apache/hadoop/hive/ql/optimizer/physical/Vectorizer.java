@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -218,9 +219,9 @@ import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -488,6 +489,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFElt.class);
     supportedGenericUDFs.add(GenericUDFInitCap.class);
     supportedGenericUDFs.add(GenericUDFInBloomFilter.class);
+    supportedGenericUDFs.add(GenericUDFMurmurHash.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
@@ -522,6 +524,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedAggregationUdfs.add("stddev_pop");
     supportedAggregationUdfs.add("stddev_samp");
     supportedAggregationUdfs.add("bloom_filter");
+    supportedAggregationUdfs.add("compute_bit_vector_hll");
   }
 
   private class VectorTaskColumnInfo {
@@ -1459,7 +1462,8 @@ public class Vectorizer implements PhysicalPlanResolver {
           deserializerClassName.equals(LazySimpleSerDe.class.getName());
       boolean isSequenceFormat =
           inputFileFormatClassName.equals(SequenceFileInputFormat.class.getName()) &&
-          deserializerClassName.equals(LazyBinarySerDe.class.getName());
+                  (deserializerClassName.equals(LazyBinarySerDe.class.getName()) ||
+                          deserializerClassName.equals(LazyBinarySerDe2.class.getName()));
       boolean isVectorDeserializeEligable = isTextFormat || isSequenceFormat;
 
       if (useVectorDeserialize) {
@@ -2335,10 +2339,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         TableDesc valueTableDesc = reduceWork.getTagToValueDesc().get(reduceWork.getTag());
 
         Properties keyTableProperties = keyTableDesc.getProperties();
-        Deserializer keyDeserializer =
+        AbstractSerDe keyDeserializer =
             ReflectionUtils.newInstance(
-                keyTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(keyDeserializer, null, keyTableProperties, null);
+                keyTableDesc.getSerDeClass(), null);
+        keyDeserializer.initialize(null, keyTableProperties, null);
         ObjectInspector keyObjectInspector = keyDeserializer.getObjectInspector();
         if (keyObjectInspector == null) {
           setNodeIssue("Key object inspector null");
@@ -2360,10 +2364,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         columnSortOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
         columnNullOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
 
-        Deserializer valueDeserializer =
+        AbstractSerDe valueDeserializer =
             ReflectionUtils.newInstance(
-                valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueDeserializer, null, valueTableDesc.getProperties(), null);
+                valueTableDesc.getSerDeClass(), null);
+        valueDeserializer.initialize(null, valueTableDesc.getProperties(), null);
         ObjectInspector valueObjectInspector = valueDeserializer.getObjectInspector();
         if (valueObjectInspector != null) {
           if (!(valueObjectInspector instanceof StructObjectInspector)) {
@@ -3117,9 +3121,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
 
-      ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo
-          .getAllStructFieldTypeInfos();
-      ArrayList<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+      List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
       final int fieldCount = fieldTypeInfos.size();
       for (int f = 0; f < fieldCount; f++) {
         TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);
@@ -3382,6 +3385,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         case INT:
           hashTableKeyType = HashTableKeyType.INT;
           break;
+        case DATE:
+          hashTableKeyType = HashTableKeyType.DATE;
+          break;
         case LONG:
           hashTableKeyType = HashTableKeyType.LONG;
           break;
@@ -3434,6 +3440,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     case BYTE:
     case SHORT:
     case INT:
+    case DATE:
     case LONG:
       switch (vectorMapJoinVariation) {
       case INNER:
@@ -3989,11 +3996,13 @@ public class Vectorizer implements PhysicalPlanResolver {
           case BYTE:
           case SHORT:
           case INT:
+          case DATE:
           case LONG:
             reduceSinkKeyType = VectorReduceSinkDesc.ReduceSinkKeyType.LONG;
             break;
           default:
-            // Other integer types not supported yet.
+            // For any remaining Long CV types use default multi-key
+            LOG.warn("Unsupported Long-CV key type {} defaulted to multi-key ReduceSink", primitiveCategory);
             break;
           }
         }
@@ -4079,12 +4088,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     boolean hasDistinctColumns = (desc.getDistinctColumnIndices().size() > 0);
 
     TableDesc keyTableDesc = desc.getKeySerializeInfo();
-    Class<? extends Deserializer> keySerializerClass = keyTableDesc.getDeserializerClass();
+    Class<? extends Deserializer> keySerializerClass = keyTableDesc.getSerDeClass();
     boolean isKeyBinarySortable = (keySerializerClass == org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.class);
 
     TableDesc valueTableDesc = desc.getValueSerializeInfo();
-    Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getDeserializerClass();
-    boolean isValueLazyBinary = (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class);
+    Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getSerDeClass();
+    boolean isValueLazyBinary =
+            (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class) ||
+            (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2.class);
 
     // We are doing work here we'd normally do in VectorGroupByCommonOperator's constructor.
     // So if we later decide not to specialize, we'll just waste any scratch columns allocated...
@@ -4820,15 +4831,15 @@ public class Vectorizer implements PhysicalPlanResolver {
     return parent;
   }
 
-  private static void fillInPTFEvaluators(
-      List<WindowFunctionDef> windowsFunctions,
-      String[] evaluatorFunctionNames,
+  private static void fillInPTFEvaluators(List<WindowFunctionDef> windowsFunctions,
+      String[] evaluatorFunctionNames, boolean[] evaluatorsAreDistinct,
       WindowFrameDef[] evaluatorWindowFrameDefs,
       List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) throws HiveException {
     final int functionCount = windowsFunctions.size();
     for (int i = 0; i < functionCount; i++) {
       WindowFunctionDef winFunc = windowsFunctions.get(i);
       evaluatorFunctionNames[i] = winFunc.getName();
+      evaluatorsAreDistinct[i] = winFunc.isDistinct();
       evaluatorWindowFrameDefs[i] = winFunc.getWindowFrame();
 
       List<PTFExpressionDef> args = winFunc.getArgs();
@@ -4931,12 +4942,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     String[] evaluatorFunctionNames = new String[functionCount];
+    boolean[] evaluatorsAreDistinct = new boolean[functionCount];
     WindowFrameDef[] evaluatorWindowFrameDefs = new WindowFrameDef[functionCount];
     List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = (List<ExprNodeDesc>[]) new List<?>[functionCount];
 
     fillInPTFEvaluators(
         windowsFunctions,
         evaluatorFunctionNames,
+        evaluatorsAreDistinct,
         evaluatorWindowFrameDefs,
         evaluatorInputExprNodeDescLists);
 
@@ -4950,6 +4963,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorPTFDesc.setPartitionExprNodeDescs(partitionExprNodeDescs);
 
     vectorPTFDesc.setEvaluatorFunctionNames(evaluatorFunctionNames);
+    vectorPTFDesc.setEvaluatorsAreDistinct(evaluatorsAreDistinct);
     vectorPTFDesc.setEvaluatorWindowFrameDefs(evaluatorWindowFrameDefs);
     vectorPTFDesc.setEvaluatorInputExprNodeDescLists(evaluatorInputExprNodeDescLists);
 

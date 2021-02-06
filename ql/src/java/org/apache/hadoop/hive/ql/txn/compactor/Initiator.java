@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -46,7 +45,9 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -202,8 +203,10 @@ public class Initiator extends MetaStoreCompactorThread {
         requestCompaction(ci, runAs, type);
       }
     } catch (Throwable ex) {
-      LOG.error("Caught exception while trying to determine if we should compact {}. " +
-          "Marking failed to avoid repeated failures, {}", ci, ex);
+      String errorMessage = "Caught exception while trying to determine if we should compact " + ci + ". Marking "
+          + "failed to avoid repeated failures, " + ex;
+      LOG.error(errorMessage);
+      ci.errorMessage = errorMessage;
       txnHandler.markFailed(ci);
     }
   }
@@ -219,7 +222,8 @@ public class Initiator extends MetaStoreCompactorThread {
         txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
   }
 
-  private String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
+  @VisibleForTesting
+  protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
       throws IOException, InterruptedException {
     //Figure out who we should run the file operations as
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
@@ -312,39 +316,25 @@ public class Initiator extends MetaStoreCompactorThread {
 
   private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
-      throws IOException, InterruptedException {
+      throws IOException {
 
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
-    Path base = dir.getBaseDirectory();
+    AcidDirectory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
     long baseSize = 0;
-    FileStatus stat = null;
-    if (base != null) {
-      stat = fs.getFileStatus(base);
-      if (!stat.isDirectory()) {
-        LOG.error("Was assuming base " + base.toString() + " is directory, but it's a file!");
-        return null;
+    if (dir.getBase() != null) {
+      baseSize = sumDirSize(fs, dir.getBase());
+    } else {
+      for (HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
+        baseSize += origStat.getFileStatus().getLen();
       }
-      baseSize = sumDirSize(fs, base);
-    }
-
-    List<HdfsFileStatusWithId> originals = dir.getOriginalFiles();
-    for (HdfsFileStatusWithId origStat : originals) {
-      baseSize += origStat.getFileStatus().getLen();
     }
 
     long deltaSize = 0;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     for (AcidUtils.ParsedDelta delta : deltas) {
-      stat = fs.getFileStatus(delta.getPath());
-      if (!stat.isDirectory()) {
-        LOG.error("Was assuming delta " + delta.getPath().toString() + " is a directory, " +
-            "but it's a file!");
-        return null;
-      }
-      deltaSize += sumDirSize(fs, delta.getPath());
+      deltaSize += sumDirSize(fs, delta);
     }
 
     if (baseSize == 0 && deltaSize > 0) {
@@ -406,12 +396,11 @@ public class Initiator extends MetaStoreCompactorThread {
     return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
-  private long sumDirSize(FileSystem fs, Path dir) throws IOException {
-    long size = 0;
-    FileStatus[] buckets = fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
-    for (int i = 0; i < buckets.length; i++) {
-      size += buckets[i].getLen();
-    }
+  private long sumDirSize(FileSystem fs, ParsedDirectory dir) throws IOException {
+    long size = dir.getFiles(fs, Ref.from(false)).stream()
+        .map(HdfsFileStatusWithId::getFileStatus)
+        .mapToLong(FileStatus::getLen)
+        .sum();
     return size;
   }
 
@@ -438,11 +427,10 @@ public class Initiator extends MetaStoreCompactorThread {
     return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 
-  // Check to see if this is a table level request on a partitioned table.  If so,
-  // then it's a dynamic partitioning case and we shouldn't check the table itself.
-  private static boolean checkDynPartitioning(Table t, CompactionInfo ci){
+  // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
+  private static boolean isDynPartIngest(Table t, CompactionInfo ci){
     if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
-            ci.partName  == null) {
+            ci.partName  == null && !ci.hasOldAbort) {
       LOG.info("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
               " partitioning");
       return  true;
@@ -481,7 +469,7 @@ public class Initiator extends MetaStoreCompactorThread {
             "=true so we will not compact it.");
         return false;
       }
-      if (checkDynPartitioning(t, ci)) {
+      if (isDynPartIngest(t, ci)) {
         return false;
       }
 

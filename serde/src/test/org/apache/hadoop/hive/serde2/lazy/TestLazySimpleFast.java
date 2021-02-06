@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.SerdeRandomRowSource;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
@@ -275,7 +274,7 @@ public class TestLazySimpleFast {
     LazySimpleSerDe serDe = new LazySimpleSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createProperties(fieldNames, fieldTypes);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     return serDe;
   }
 

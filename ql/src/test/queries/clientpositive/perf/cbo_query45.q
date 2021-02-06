@@ -1,4 +1,3 @@
---! qt:disabled:TODO: Enable when we move to Calcite 1.18
 set hive.mapred.mode=nonstrict;
 -- start query 1 in stream 0 using template query45.tpl and seed 2031708268
 explain cbo

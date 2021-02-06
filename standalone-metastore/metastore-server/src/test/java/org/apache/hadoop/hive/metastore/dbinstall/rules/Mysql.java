@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * JUnit TestRule for MySql.
  */
@@ -53,18 +56,20 @@ public class Mysql extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/" + HIVE_DB;
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:mysql://" + hostAddress + ":3306/" + HIVE_DB;
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/?allowPublicKeyRetrieval=true";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:mysql://" + hostAddress + ":3306/?allowPublicKeyRetrieval=true";
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("MySQL init process done. Ready for start up.");
+  public boolean isContainerReady(ProcessResults pr) {
+    Pattern pat = Pattern.compile("ready for connections");
+    Matcher m = pat.matcher(pr.stderr);
+    return m.find() && m.find();
   }
 
   @Override

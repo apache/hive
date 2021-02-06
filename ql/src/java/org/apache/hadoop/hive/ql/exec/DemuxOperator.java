@@ -32,8 +32,7 @@ import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -142,15 +141,13 @@ public class DemuxOperator extends Operator<DemuxDesc>
         cntrs[newTag] = 0;
         nextCntrs[newTag] = 0;
         TableDesc keyTableDesc = conf.getKeysSerializeInfos().get(newTag);
-        Deserializer inputKeyDeserializer = ReflectionUtil.newInstance(keyTableDesc
-            .getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
+        AbstractSerDe inputKeyDeserializer = ReflectionUtil.newInstance(keyTableDesc.getSerDeClass(), null);
+        inputKeyDeserializer.initialize(null, keyTableDesc.getProperties(), null);
 
         TableDesc valueTableDesc = conf.getValuesSerializeInfos().get(newTag);
-        Deserializer inputValueDeserializer = ReflectionUtil.newInstance(valueTableDesc
-            .getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputValueDeserializer, null, valueTableDesc.getProperties(),
-                                   null);
+        AbstractSerDe inputValueDeserializer = ReflectionUtil.newInstance(valueTableDesc
+            .getSerDeClass(), null);
+        inputValueDeserializer.initialize(null, valueTableDesc.getProperties(), null);
 
         List<ObjectInspector> oi = new ArrayList<ObjectInspector>();
         oi.add(inputKeyDeserializer.getObjectInspector());

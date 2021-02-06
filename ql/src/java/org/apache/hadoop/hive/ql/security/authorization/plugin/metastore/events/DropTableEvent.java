@@ -49,7 +49,7 @@ import java.util.HashMap;
  */
 
 public class DropTableEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(DropTableEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DropTableEvent.class);
 
   private String COMMAND_STR = "Drop table";
 
