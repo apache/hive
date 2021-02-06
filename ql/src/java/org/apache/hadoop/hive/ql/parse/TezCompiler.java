@@ -1910,7 +1910,7 @@ public class TezCompiler extends TaskCompiler {
         List<ExprNodeDesc> targetColumns = rti.getTargetColumns();
         // In semijoin branches the SEL operator has the following forms:
         // SEL[c1] - single column semijoin reduction
-        // SEL[c1, c2,..., ck, hash(c1, c2,...,ck)] - multi column semijoin reduction
+        // SEL[c1, c2,..., ck, hash(hash(hash(c1, c2),...),ck)] - multi column semijoin reduction
         // The source columns in the above cases are c1, c2,...,ck.
         // We need to exclude the hash(...) expression, if it is present.
         List<ExprNodeDesc> sourceColumns = sel.getConf().getColList().subList(0, targetColumns.size());
