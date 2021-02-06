@@ -25,7 +25,7 @@ select col1, count(*)
 group by col1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@deserialize_errors
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 Execution has failed. stack trace: java.lang.RuntimeException: Total number of deserialize errors now is 3, which exceeds 2
 #### A masked pattern was here ####
 
