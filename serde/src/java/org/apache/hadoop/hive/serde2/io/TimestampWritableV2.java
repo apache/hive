@@ -374,16 +374,6 @@ public class TimestampWritableV2 implements WritableComparable<TimestampWritable
       return timestamp.toString();
     }
 
-    String timestampString = timestamp.toString();
-    if (timestampString.length() > 19) {
-      if (timestampString.length() == 21) {
-        if (timestampString.substring(19).compareTo(".0") == 0) {
-          return timestamp.format(DATE_TIME_FORMAT);
-        }
-      }
-      return timestamp.format(DATE_TIME_FORMAT) + timestampString.substring(19);
-    }
-
     return timestamp.format(DATE_TIME_FORMAT);
   }
 
