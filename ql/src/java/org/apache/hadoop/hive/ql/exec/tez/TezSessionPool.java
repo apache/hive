@@ -18,15 +18,16 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -63,7 +64,6 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     SessionType create(SessionType oldSession);
   }
 
-  private final HiveConf initConf;
   private int initialSize = 0; // For testing only.
   private final SessionObjectFactory<SessionType> sessionObjFactory;
 
@@ -84,6 +84,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
   private final String amRegistryName;
   private final TezAmRegistryImpl amRegistry;
+  private final ListeningExecutorService executorService;
 
   private final ConcurrentHashMap<String, SessionType> bySessionId =
       new ConcurrentHashMap<>();
@@ -93,11 +94,18 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
   TezSessionPool(HiveConf initConf, int numSessionsTotal, boolean useAmRegistryIfPresent,
       SessionObjectFactory<SessionType> sessionFactory) {
-    this.initConf = initConf;
+    Objects.requireNonNull(initConf);
+
     this.initialSize = numSessionsTotal;
     this.amRegistry = useAmRegistryIfPresent ? TezAmRegistryImpl.create(initConf, true) : null;
     this.amRegistryName = amRegistry == null ? null : amRegistry.getRegistryName();
     this.sessionObjFactory = sessionFactory;
+
+    final int threadCount =
+        Math.min(initialSize, HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
+    this.executorService = MoreExecutors
+        .listeningDecorator(new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("tez-session-init-%d").build()));
   }
 
   void start() throws Exception {
@@ -112,11 +120,8 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     this.parentSessionState = SessionState.get();
     if (initialSize == 0) return; // May be resized later.
 
-    final int threadCount =
-        Math.min(initialSize, HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
-
     // Create and wait (get) for sessions to build
-    createSessions(initialSize, threadCount).get();
+    createSessions(initialSize).get();
   }
 
   SessionType getSession() throws Exception {
@@ -381,10 +386,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     if (toStart <= 0) return createDummyFuture();
     LOG.info("Resizing the pool; adding {} sessions", toStart);
 
-    final int threadCount =
-        Math.min(toStart, HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
-
-    return createSessions(toStart, threadCount);
+    return createSessions(toStart);
   }
 
   /**
@@ -392,37 +394,24 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
    * a maximum of {@code maxParallel} threads.
    *
    * @param sessionCount The number of sessions to launch
-   * @param maxParallel The maximum number of sessions to open in parallel
-   *          (thread count)
    * @return A single {@code future} which carries all of the outputs from each
    *         session launch
    * @throws IllegalArgumentException if {@code sessionCount} or
    *           {@code maxParallel} is less than or equal to zero
    */
-  private ListenableFuture<List<Boolean>> createSessions(final int sessionCount, final int maxParallel) {
+  private ListenableFuture<List<Boolean>> createSessions(final int sessionCount) {
     Preconditions.checkArgument(sessionCount > 0);
-    Preconditions.checkArgument(maxParallel > 0);
-
-    ListeningExecutorService execService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(maxParallel,
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("tez-session-init-%d").build()));
 
     Collection<Callable<Boolean>> tasks =
-        Stream.generate(() -> (new CreateSessionCallable(Optional.ofNullable(parentSessionState), sessionObjFactory)))
+        Stream.generate(() -> (new CreateSessionCallable(Optional.ofNullable(parentSessionState), sessionObjFactory, deltaRemaining)))
             .limit(sessionCount).collect(Collectors.toList());
 
-    try {
-      @SuppressWarnings("unchecked") // guaranteed by invokeAll contract
-      List<ListenableFuture<Boolean>> futures = (List) execService.invokeAll(tasks);
-      return Futures.allAsList(futures);
-    } catch (InterruptedException e) {
-      LOG.info("Interrupted while creating sessions", e);
-      Thread.currentThread().interrupt();
-      return Futures.allAsList(Collections.emptyList());
-    } finally {
-      // Initiates an orderly shutdown in which previously submitted tasks are
-      // executed but no new tasks will be accepted.
-      execService.shutdown();
+    List<ListenableFuture<Boolean>> futures = new ArrayList<>(tasks.size());
+    for (Callable<Boolean> task : tasks) {
+      futures.add(executorService.submit(task));
     }
+
+    return Futures.allAsList(futures);
   }
 
   private ListenableFuture<Boolean> resizeDownInternal(int delta, List<SessionType> toClose) {
@@ -465,19 +454,27 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
   private final class CreateSessionCallable implements Callable<Boolean> {
     private final Optional<SessionState> sessionState;
     private final SessionObjectFactory<SessionType> sessionObjFactory;
+    private final AtomicInteger backlog;
 
     private CreateSessionCallable(Optional<SessionState> sessionState,
-        SessionObjectFactory<SessionType> sessionObjFactory) {
+        SessionObjectFactory<SessionType> sessionObjFactory, AtomicInteger backlog) {
       this.sessionState = Objects.requireNonNull(sessionState);
       this.sessionObjFactory = Objects.requireNonNull(sessionObjFactory);
+      this.backlog = Objects.requireNonNull(backlog);
     }
 
     public Boolean call() throws Exception {
       if (sessionState.isPresent()) {
         SessionState.setCurrentSessionState(sessionState.get());
       }
-      startInitialSession(this.sessionObjFactory.create(null));
-      return true;
+      while (true) {
+        // This task may have been sitting the queue for awhile, check if this
+        // new session is even still needed
+        int oldVal = backlog.get();
+        if (oldVal <= 0) return true;
+        if (!backlog.compareAndSet(oldVal, oldVal - 1)) continue;
+        startInitialSession(this.sessionObjFactory.create(null));
+      }
     }
   }
 
