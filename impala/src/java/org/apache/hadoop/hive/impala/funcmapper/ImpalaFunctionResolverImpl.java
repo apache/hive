@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConvert
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.impala.operator.InIterateOperator;
+import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 
 import java.nio.charset.Charset;
@@ -334,12 +335,11 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
   private RelDataType getCastedDataType(RelDataTypeFactory dtFactory,
       RelDataType postCastRelType, RelDataType preCastRelDataType) {
     SqlTypeName postCastSqlTypeName = postCastRelType.getSqlTypeName();
-    // In the case where we are casting to Decimal, we need to provide a precision
-    // and scale.  The Calcite method provides the DecimalRelDataType with the
-    // appropriate precision and scale with the provided datatype that will be casted.
+
     if (postCastSqlTypeName == SqlTypeName.DECIMAL) {
-      return Calcite2302.decimalOf(dtFactory, preCastRelDataType);
+      return ImpalaTypeConverter.createDecimalType(dtFactory, preCastRelDataType);
     }
+
     RelDataType rdt;
     if (SqlTypeName.CHAR_TYPES.contains(postCastSqlTypeName)) {
       rdt = dtFactory.createSqlType(postCastSqlTypeName, postCastRelType.getPrecision());

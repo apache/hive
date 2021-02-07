@@ -429,11 +429,9 @@ public class ImpalaFunctionSignature {
     // Handle cases where the return type must be different than the from and to type
     // i.e. integer->decimal(1,0)
     static RelDataType adjustCastType(RelDataType fromType, RelDataType toType, RelDataTypeFactory typeFactory) {
-      if (toType.getSqlTypeName() != SqlTypeName.DECIMAL) {
-        return toType;
-      }
-      RelDataType castType = Calcite2302.decimalOf(typeFactory, fromType);
-      return castType.getPrecision() > toType.getPrecision() ? castType : toType;
+      return (toType.getSqlTypeName() == SqlTypeName.DECIMAL)
+          ? ImpalaTypeConverter.createDecimalType(typeFactory, fromType)
+          : toType;
     }
 
   public static boolean canCastUp(RelDataType castFrom, RelDataType castTo) {

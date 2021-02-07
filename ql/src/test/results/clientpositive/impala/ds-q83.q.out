@@ -154,7 +154,7 @@ POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_web_returns
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  ImpalaProjectRel(item_id=[$0], sr_item_qty=[$4], sr_dev=[*(/(CAST(/($5, CAST(+(+($4, $1), $7)):DOUBLE)):DECIMAL(30, 15) NOT NULL, 3:DECIMAL(1, 0)), 100:DECIMAL(3, 0))], cr_item_qty=[$1], cr_dev=[*(/(CAST(/($2, CAST(+(+($4, $1), $7)):DOUBLE)):DECIMAL(30, 15) NOT NULL, 3:DECIMAL(1, 0)), 100:DECIMAL(3, 0))], wr_item_qty=[$7], wr_dev=[*(/(CAST(/($8, CAST(+(+($4, $1), $7)):DOUBLE)):DECIMAL(30, 15) NOT NULL, 3:DECIMAL(1, 0)), 100:DECIMAL(3, 0))], average=[/(CAST(+(+($4, $1), $7)):DECIMAL(38, 0) NOT NULL, 3:DECIMAL(1, 0))])
+  ImpalaProjectRel(item_id=[$0], sr_item_qty=[$4], sr_dev=[*(/(CAST(/($5, CAST(+(+($4, $1), $7)):DOUBLE)):DECIMAL(38, 17) NOT NULL, 3:DECIMAL(1, 0)), 100:DECIMAL(3, 0))], cr_item_qty=[$1], cr_dev=[*(/(CAST(/($2, CAST(+(+($4, $1), $7)):DOUBLE)):DECIMAL(38, 17) NOT NULL, 3:DECIMAL(1, 0)), 100:DECIMAL(3, 0))], wr_item_qty=[$7], wr_dev=[*(/(CAST(/($8, CAST(+(+($4, $1), $7)):DOUBLE)):DECIMAL(38, 17) NOT NULL, 3:DECIMAL(1, 0)), 100:DECIMAL(3, 0))], average=[/(CAST(+(+($4, $1), $7)):DECIMAL(19, 0) NOT NULL, 3:DECIMAL(1, 0))])
     ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
       ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
         ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], CAST=[CAST($1):DOUBLE])

@@ -73,7 +73,7 @@ POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_warehouse
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], condition=[BETWEEN(false, CAST(CASE(>($2, 0), /(CAST($3):DOUBLE, CAST($2):DOUBLE), null:DOUBLE)):DECIMAL(30, 15) NOT NULL, /(2:DECIMAL(1, 0), 3:DECIMAL(1, 0)), /(3:DECIMAL(1, 0), 2:DECIMAL(1, 0)))])
+  ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], condition=[BETWEEN(false, CAST(CASE(>($2, 0), /(CAST($3):DOUBLE, CAST($2):DOUBLE), null:DOUBLE)):DECIMAL(38, 17) NOT NULL, /(2:DECIMAL(1, 0), 3:DECIMAL(1, 0)), /(3:DECIMAL(1, 0), 2:DECIMAL(1, 0)))])
     ImpalaProjectPassthroughRel($f0=[$5], $f1=[$7], $f2=[CAST(CASE($9, $3, 0)):BIGINT], $f3=[CAST(CASE($10, $3, 0)):BIGINT])
       ImpalaJoinRel(condition=[=($0, $8)], joinType=[inner])
         ImpalaJoinRel(condition=[=($6, $1)], joinType=[inner])

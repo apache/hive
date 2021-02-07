@@ -48,7 +48,7 @@ POSTHOOK: Input: default@impala_tpcds_store_sales
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)], agg#4=[sum($6)], agg#5=[sum($7)], agg#6=[sum($8)])
-    ImpalaProjectPassthroughRel($f0=[$5], $f1=[$4], $f2=[CASE($7, $1, null:DECIMAL(10, 0))], $f3=[CASE($8, $1, null:DECIMAL(10, 0))], $f4=[CASE($9, $1, null:DECIMAL(10, 0))], $f5=[CASE($10, $1, null:DECIMAL(10, 0))], $f6=[CASE($11, $1, null:DECIMAL(10, 0))], $f7=[CASE($12, $1, null:DECIMAL(10, 0))], $f8=[CASE($13, $1, null:DECIMAL(10, 0))])
+    ImpalaProjectPassthroughRel($f0=[$5], $f1=[$4], $f2=[CASE($7, $1, null:DECIMAL(1, 0))], $f3=[CASE($8, $1, null:DECIMAL(1, 0))], $f4=[CASE($9, $1, null:DECIMAL(1, 0))], $f5=[CASE($10, $1, null:DECIMAL(1, 0))], $f6=[CASE($11, $1, null:DECIMAL(1, 0))], $f7=[CASE($12, $1, null:DECIMAL(1, 0))], $f8=[CASE($13, $1, null:DECIMAL(1, 0))])
       ImpalaJoinRel(condition=[=($6, $2)], joinType=[inner])
         ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
           ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])

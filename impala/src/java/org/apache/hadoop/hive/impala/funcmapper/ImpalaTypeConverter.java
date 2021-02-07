@@ -95,10 +95,10 @@ public class ImpalaTypeConverter {
     return Lists.transform(relDataTypes, ImpalaTypeConverter::getNormalizedImpalaType);
   }
 
-  /** 
+  /**
    * Return the default impala type given a reldatatype that potentially has precision.
    */
-  public static Type getNormalizedImpalaType(RelDataType relDataType) {
+  public static ScalarType getNormalizedImpalaType(RelDataType relDataType) {
     SqlTypeName sqlTypeName = relDataType.getSqlTypeName();
     if (SqlTypeName.INTERVAL_TYPES.contains(sqlTypeName)) {
       return Type.BIGINT;
@@ -285,6 +285,18 @@ public class ImpalaTypeConverter {
       default:
         throw new RuntimeException("Unknown type " + argType);
     }
+  }
+
+  /**
+   * For a given datatype (e.g. int, float), convert the datatype into its equivalent
+   * decimal type using Impala's precision/scale definition.
+   */
+  static RelDataType createDecimalType(RelDataTypeFactory factory, RelDataType preCastDataType) {
+    ScalarType impalaType = getNormalizedImpalaType(preCastDataType);
+    ScalarType decimalType = impalaType.getMinResolutionDecimal();
+    int precision = (decimalType != Type.NULL) ? decimalType.decimalPrecision() : 1;
+    int scale = (decimalType != Type.NULL) ? decimalType.decimalScale() : 0;
+    return factory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
   }
 
   /**
