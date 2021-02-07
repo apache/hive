@@ -241,7 +241,7 @@ public class ImpalaSessionManager {
   }
 
   public void closeSession(EngineSession impalaSession) throws HiveException {
-    if (impalaSession == null) {
+    if (impalaSession == null || !impalaSession.isOpen()) {
       return;
     }
 
