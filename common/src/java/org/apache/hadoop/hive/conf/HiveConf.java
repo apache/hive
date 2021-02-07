@@ -4049,6 +4049,11 @@ public class HiveConf extends Configuration {
      HIVE_ALLOW_UDF_LOAD_ON_DEMAND("hive.allow.udf.load.on.demand", false,
          "Whether enable loading UDFs from metastore on demand; this is mostly relevant for\n" +
          "HS2 and was the default behavior before Hive 1.2. Off by default."),
+    HIVE_SERVER2_DISABLE_UDFSYSTEMEXIT("hive.server2.disable.udfsystemexit", true,
+        "If the System.exit() is executed in the user's UDF and using default SecurityManager, \n" +
+            "it will cause the HS2 service process to exit, that's so bad.\n" +
+            "It is safer to use DisableExitSecurityManager which can intercepting System.exit()." +
+            "Default is true and it will use DisableExitSecurityManager."),
 
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "15m",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
