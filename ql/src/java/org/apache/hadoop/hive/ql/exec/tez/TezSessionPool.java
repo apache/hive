@@ -64,7 +64,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     SessionType create(SessionType oldSession);
   }
 
-  private int initialSize = 0; // For testing only.
+  private final int initialSize; // For testing only.
   private final SessionObjectFactory<SessionType> sessionObjFactory;
 
   private final ReentrantLock poolLock = new ReentrantLock(true);
@@ -80,7 +80,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
    * re-added to the pool.
    * Repeated calls to resize adjust the delta to ensure correctness between different resizes.
    */
-  private final AtomicInteger deltaRemaining = new AtomicInteger();
+  private final AtomicInteger deltaRemaining;
 
   private final String amRegistryName;
   private final TezAmRegistryImpl amRegistry;
@@ -101,8 +101,9 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     this.amRegistryName = amRegistry == null ? null : amRegistry.getRegistryName();
     this.sessionObjFactory = sessionFactory;
 
-    final int threadCount =
-        Math.min(initialSize, HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
+    this.deltaRemaining = new AtomicInteger(initialSize);
+
+    final int threadCount = HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS);
     this.executorService = MoreExecutors
         .listeningDecorator(new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("tez-session-init-%d").build()));
