@@ -86,13 +86,12 @@ public class MaxDeserErrorsPolicy extends DeserErrorPolicy.Policy {
     @Override
   public void onDeserError(Exception e) throws HiveException {
     if (!daemon.isStarted() && shouldReport()) {
-      // Start the daemon lazily only when deserialization errors happens
+      // Start the daemon lazily only when a deserialization error happens
       daemon.goes();
     }
 
     if (deserializer_errors.incrementAndGet() > maxDeserErrors && !shouldReport()) {
-      // reaches the limit in one map and unable to report the counter,
-      // throw the exception instead
+      // Reach the limit in one map and unable to report the counter, throw the exception instead
       throw new HiveException("Hive Runtime Error while processing writable"
           + ", deserialization errors: " + deserializer_errors.get()
           + ", max allowed: " + maxDeserErrors, e);

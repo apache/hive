@@ -53,18 +53,18 @@ public class DeserErrorPolicy {
 
     /**
      * Calls when the deserialization error occurs
-     * @param e the reason why fails to deserialize the value
+     * @param e the reason why fails to deserialize
      * @throws HiveException
      */
     public abstract void onDeserError(Exception e) throws HiveException;
 
     /**
-     * @return the total count of deserialization errors
+     * @return the total count of the deserialization errors
      */
     public abstract long getErrorCount();
 
     /**
-     * Calls when operator closing himself
+     * Calls when the operator closing himself
      * @param abort
      */
     public void close(boolean abort) {
