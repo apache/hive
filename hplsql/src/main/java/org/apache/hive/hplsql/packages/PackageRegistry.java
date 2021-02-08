@@ -22,7 +22,7 @@ import java.util.Optional;
 
 public interface PackageRegistry {
   Optional<String> getPackage(String name);
-  void createPackage(String name, String header);
-  void createPackageBody(String name, String body);
+  void createPackageHeader(String name, String header, boolean replace);
+  void createPackageBody(String name, String body, boolean replace);
   void dropPackage(String name);
 }

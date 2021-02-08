@@ -1280,7 +1280,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("find_package\n");
   }
 
-  void add_package(const Package& request) {
+  void add_package(const AddPackageRequest& request) {
     // Your implementation goes here
     printf("add_package\n");
   }

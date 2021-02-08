@@ -2113,6 +2113,15 @@ struct StoredProcedure {
   5: string           source
 }
 
+struct AddPackageRequest {
+  1: string catName,
+  2: string dbName,
+  3: string packageName
+  4: string ownerName,
+  5: string header,
+  6: string body
+}
+
 struct GetPackageRequest {
   1: required string catName,
   2: required string dbName,
@@ -2888,7 +2897,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 
   Package find_package(1: GetPackageRequest request) throws (1:MetaException o1)
-  void add_package(1: Package request) throws (1:MetaException o1)
+  void add_package(1: AddPackageRequest request) throws (1:MetaException o1)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
 }

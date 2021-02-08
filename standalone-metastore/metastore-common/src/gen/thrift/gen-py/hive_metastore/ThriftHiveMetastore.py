@@ -58138,7 +58138,7 @@ class add_package_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.request = Package()
+                    self.request = AddPackageRequest()
                     self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -58175,7 +58175,7 @@ class add_package_args(object):
 all_structs.append(add_package_args)
 add_package_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'request', [Package, None], None, ),  # 1
+    (1, TType.STRUCT, 'request', [AddPackageRequest, None], None, ),  # 1
 )
 
 

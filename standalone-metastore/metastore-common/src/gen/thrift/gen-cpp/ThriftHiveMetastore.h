@@ -275,7 +275,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void drop_stored_procedure(const StoredProcedureRequest& request) = 0;
   virtual void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) = 0;
   virtual void find_package(Package& _return, const GetPackageRequest& request) = 0;
-  virtual void add_package(const Package& request) = 0;
+  virtual void add_package(const AddPackageRequest& request) = 0;
   virtual void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request) = 0;
   virtual void drop_package(const DropPackageRequest& request) = 0;
 };
@@ -1092,7 +1092,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void find_package(Package& /* _return */, const GetPackageRequest& /* request */) {
     return;
   }
-  void add_package(const Package& /* request */) {
+  void add_package(const AddPackageRequest& /* request */) {
     return;
   }
   void get_all_packages(std::vector<std::string> & /* _return */, const ListPackageRequest& /* request */) {
@@ -31576,11 +31576,11 @@ class ThriftHiveMetastore_add_package_args {
   }
 
   virtual ~ThriftHiveMetastore_add_package_args() noexcept;
-  Package request;
+  AddPackageRequest request;
 
   _ThriftHiveMetastore_add_package_args__isset __isset;
 
-  void __set_request(const Package& val);
+  void __set_request(const AddPackageRequest& val);
 
   bool operator == (const ThriftHiveMetastore_add_package_args & rhs) const
   {
@@ -31605,7 +31605,7 @@ class ThriftHiveMetastore_add_package_pargs {
 
 
   virtual ~ThriftHiveMetastore_add_package_pargs() noexcept;
-  const Package* request;
+  const AddPackageRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -32649,8 +32649,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void find_package(Package& _return, const GetPackageRequest& request);
   void send_find_package(const GetPackageRequest& request);
   void recv_find_package(Package& _return);
-  void add_package(const Package& request);
-  void send_add_package(const Package& request);
+  void add_package(const AddPackageRequest& request);
+  void send_add_package(const AddPackageRequest& request);
   void recv_add_package();
   void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request);
   void send_get_all_packages(const ListPackageRequest& request);
@@ -35640,7 +35640,7 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void add_package(const Package& request) {
+  void add_package(const AddPackageRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -36440,8 +36440,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void find_package(Package& _return, const GetPackageRequest& request);
   int32_t send_find_package(const GetPackageRequest& request);
   void recv_find_package(Package& _return, const int32_t seqid);
-  void add_package(const Package& request);
-  int32_t send_add_package(const Package& request);
+  void add_package(const AddPackageRequest& request);
+  int32_t send_add_package(const AddPackageRequest& request);
   void recv_add_package(const int32_t seqid);
   void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request);
   int32_t send_get_all_packages(const ListPackageRequest& request);

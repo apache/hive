@@ -1848,10 +1848,10 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function find_package(\metastore\GetPackageRequest $request);
     /**
-     * @param \metastore\Package $request
+     * @param \metastore\AddPackageRequest $request
      * @throws \metastore\MetaException
      */
-    public function add_package(\metastore\Package $request);
+    public function add_package(\metastore\AddPackageRequest $request);
     /**
      * @param \metastore\ListPackageRequest $request
      * @return string[]

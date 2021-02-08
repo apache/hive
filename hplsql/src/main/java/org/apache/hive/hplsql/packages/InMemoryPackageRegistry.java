@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class InMemoryPackageRegistry implements PackageRegistry {
   private Map<String, Source> registry = new HashMap<>();
 
@@ -34,12 +36,17 @@ public class InMemoryPackageRegistry implements PackageRegistry {
   }
 
   @Override
-  public void createPackage(String name, String header) {
+  public void createPackageHeader(String name, String header, boolean replace) {
+    if (registry.containsKey(name) && !replace)
+      throw new RuntimeException("Package " + name + " already exits");
     registry.put(name, new Source(header, ""));
   }
 
   @Override
-  public void createPackageBody(String name, String body) {
+  public void createPackageBody(String name, String body, boolean replace) {
+    Source existing = registry.get(name);
+    if (existing != null && StringUtils.isNotEmpty(existing.body) && !replace)
+      throw new RuntimeException("Package body " + name + " already exits");
     registry.getOrDefault(name, new Source("", "")).body = body;
   }
 

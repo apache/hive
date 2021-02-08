@@ -25,12 +25,12 @@ class ThriftHiveMetastore_add_package_args
             'var' => 'request',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\Package',
+            'class' => '\metastore\AddPackageRequest',
         ),
     );
 
     /**
-     * @var \metastore\Package
+     * @var \metastore\AddPackageRequest
      */
     public $request = null;
 
@@ -64,7 +64,7 @@ class ThriftHiveMetastore_add_package_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->request = new \metastore\Package();
+                        $this->request = new \metastore\AddPackageRequest();
                         $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);

@@ -4205,7 +4205,7 @@ public interface IMetaStoreClient {
 
   List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
 
-  void addPackage(Package request) throws NoSuchObjectException, MetaException, TException;
+  void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException;
 
   Package findPackage(GetPackageRequest request) throws TException;
 

@@ -3148,7 +3148,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addPackage(Package request) throws MetaException, NoSuchObjectException {
+  public void addPackage(AddPackageRequest request) throws MetaException, NoSuchObjectException {
     rawStore.addPackage(request);
   }
 

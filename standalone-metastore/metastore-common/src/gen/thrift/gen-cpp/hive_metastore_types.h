@@ -954,6 +954,8 @@ class ListStoredProcedureRequest;
 
 class StoredProcedure;
 
+class AddPackageRequest;
+
 class GetPackageRequest;
 
 class DropPackageRequest;
@@ -16895,6 +16897,78 @@ class StoredProcedure : public virtual ::apache::thrift::TBase {
 void swap(StoredProcedure &a, StoredProcedure &b);
 
 std::ostream& operator<<(std::ostream& out, const StoredProcedure& obj);
+
+typedef struct _AddPackageRequest__isset {
+  _AddPackageRequest__isset() : catName(false), dbName(false), packageName(false), ownerName(false), header(false), body(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool packageName :1;
+  bool ownerName :1;
+  bool header :1;
+  bool body :1;
+} _AddPackageRequest__isset;
+
+class AddPackageRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  AddPackageRequest(const AddPackageRequest&);
+  AddPackageRequest& operator=(const AddPackageRequest&);
+  AddPackageRequest() : catName(), dbName(), packageName(), ownerName(), header(), body() {
+  }
+
+  virtual ~AddPackageRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+  std::string ownerName;
+  std::string header;
+  std::string body;
+
+  _AddPackageRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_header(const std::string& val);
+
+  void __set_body(const std::string& val);
+
+  bool operator == (const AddPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(header == rhs.header))
+      return false;
+    if (!(body == rhs.body))
+      return false;
+    return true;
+  }
+  bool operator != (const AddPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddPackageRequest &a, AddPackageRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const AddPackageRequest& obj);
 
 
 class GetPackageRequest : public virtual ::apache::thrift::TBase {

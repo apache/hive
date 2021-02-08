@@ -20,7 +20,9 @@ package org.apache.hive.hplsql.packages;
 
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.Package;
@@ -49,8 +51,11 @@ public class HmsPackageRegistry implements PackageRegistry {
   }
 
   @Override
-  public void createPackage(String name, String header) {
+  public void createPackageHeader(String name, String header, boolean replace) {
     try {
+      Package existing = msc.findPackage(request(name));
+      if (existing != null && !replace)
+        throw new RuntimeException("Package " + name + " already exists");
       msc.addPackage(makePackage(name, header, ""));
     } catch (TException e) {
       throw new RuntimeException(e.getCause());
@@ -58,14 +63,15 @@ public class HmsPackageRegistry implements PackageRegistry {
   }
 
   @Override
-  public void createPackageBody(String name, String body) {
+  public void createPackageBody(String name, String body, boolean replace) {
     try {
       Package existing = msc.findPackage(request(name));
+      if (existing != null && StringUtils.isNotEmpty(existing.getBody()) && !replace)
+        throw new RuntimeException("Package body " + name + " already exists");
       if (existing == null) {
         msc.addPackage(makePackage(name, "", body));
       } else {
-        existing.setBody(body);
-        msc.addPackage(existing);
+        msc.addPackage(makePackage(name, existing.getHeader(), body));
       }
     } catch (TException e) {
       throw new RuntimeException(e.getCause());
@@ -85,8 +91,8 @@ public class HmsPackageRegistry implements PackageRegistry {
     return new GetPackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name.toUpperCase());
   }
 
-  private Package makePackage(String name, String header, String body) {
-    return new Package(
+  private AddPackageRequest makePackage(String name, String header, String body) {
+    return new AddPackageRequest(
             hplSqlSession.currentCatalog(),
             hplSqlSession.currentDatabase(),
             name.toUpperCase(),

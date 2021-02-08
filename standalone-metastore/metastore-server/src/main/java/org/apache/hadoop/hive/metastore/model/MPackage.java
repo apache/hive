@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 
 public class MPackage {
   private String name;
@@ -32,7 +33,7 @@ public class MPackage {
 
   public MPackage() {}
 
-  public static MPackage populate(MPackage result, MDatabase mDatabase, Package pkg) throws MetaException {
+  public static MPackage populate(MPackage result, MDatabase mDatabase, AddPackageRequest pkg) throws MetaException {
     result.setName(pkg.getPackageName());
     result.setOwner(pkg.getOwnerName());
     result.setHeader(pkg.getHeader());

@@ -16256,13 +16256,13 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("find_package failed: unknown result");
     }
 
-    public function add_package(\metastore\Package $request)
+    public function add_package(\metastore\AddPackageRequest $request)
     {
         $this->send_add_package($request);
         $this->recv_add_package();
     }
 
-    public function send_add_package(\metastore\Package $request)
+    public function send_add_package(\metastore\AddPackageRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_add_package_args();
         $args->request = $request;

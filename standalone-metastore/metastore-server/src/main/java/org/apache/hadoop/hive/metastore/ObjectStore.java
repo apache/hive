@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -10655,7 +10656,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addPackage(Package request) throws NoSuchObjectException, MetaException {
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException {
     boolean committed = false;
     MPackage mPkg;
     Query query = null;

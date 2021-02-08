@@ -4730,7 +4730,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void addPackage(Package request) throws NoSuchObjectException, MetaException, TException {
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException {
     client.add_package(request);
   }
 

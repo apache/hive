@@ -10282,7 +10282,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  public void add_package(Package request) throws MetaException, NoSuchObjectException {
+  public void add_package(AddPackageRequest request) throws MetaException, NoSuchObjectException {
     startFunction("add_package");
     Exception ex = null;
     try {

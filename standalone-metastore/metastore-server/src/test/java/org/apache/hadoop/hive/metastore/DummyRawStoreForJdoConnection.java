@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
@@ -1382,7 +1383,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void addPackage(Package request) {
+  public void addPackage(AddPackageRequest request) {
     throw new RuntimeException("unimplemented");
   }
 

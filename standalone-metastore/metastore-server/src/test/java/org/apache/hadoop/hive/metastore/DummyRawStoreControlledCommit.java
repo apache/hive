@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
@@ -1397,7 +1398,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void addPackage(Package request) throws NoSuchObjectException, MetaException {
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException {
     objectStore.addPackage(request);
   }
 

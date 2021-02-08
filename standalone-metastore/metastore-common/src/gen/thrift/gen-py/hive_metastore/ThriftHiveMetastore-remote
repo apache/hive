@@ -276,7 +276,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void drop_stored_procedure(StoredProcedureRequest request)')
     print('   get_all_stored_procedures(ListStoredProcedureRequest request)')
     print('  Package find_package(GetPackageRequest request)')
-    print('  void add_package(Package request)')
+    print('  void add_package(AddPackageRequest request)')
     print('   get_all_packages(ListPackageRequest request)')
     print('  void drop_package(DropPackageRequest request)')
     print('  string getName()')

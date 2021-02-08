@@ -1458,7 +1458,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     } else {
       trace(ctx, "CREATE PACKAGE");
       exec.packages.remove(name);
-      exec.packageRegistry.createPackage(name, getFormattedText(ctx));
+      exec.packageRegistry.createPackageHeader(name, getFormattedText(ctx), ctx.T_REPLACE() != null);
     }
     return 0; 
   }
@@ -1481,7 +1481,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     } else {
       trace(ctx, "CREATE PACKAGE BODY");
       exec.packages.remove(name);
-      exec.packageRegistry.createPackageBody(name,  getFormattedText(ctx));
+      exec.packageRegistry.createPackageBody(name,  getFormattedText(ctx), ctx.T_REPLACE() != null);
     }
     return 0;
   }

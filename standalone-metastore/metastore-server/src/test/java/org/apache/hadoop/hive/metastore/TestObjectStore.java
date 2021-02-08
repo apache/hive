@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -1305,10 +1306,15 @@ public class TestObjectStore {
             .setDescription("description")
             .setLocation("locationurl")
             .build(conf));
-    Package pkg = new Package("hive", DB1, "pkg1", "user1", "src", "src");
+    AddPackageRequest pkg = new AddPackageRequest("hive", DB1, "pkg1", "user1", "src", "src");
     objectStore.addPackage(pkg);
     Package found = objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1"));
-    Assert.assertEquals(pkg, found);
+    Assert.assertEquals(pkg.getBody(), found.getBody());
+    Assert.assertEquals(pkg.getHeader(), found.getHeader());
+    Assert.assertEquals(pkg.getCatName(), found.getCatName());
+    Assert.assertEquals(pkg.getDbName(), found.getDbName());
+    Assert.assertEquals(pkg.getOwnerName(), found.getOwnerName());
+    Assert.assertEquals(pkg.getPackageName(), found.getPackageName());
   }
 
   @Test
@@ -1318,7 +1324,7 @@ public class TestObjectStore {
             .setDescription("description")
             .setLocation("locationurl")
             .build(conf));
-    Package pkg = new Package("hive", DB1, "pkg1", "user1", "header", "body");
+    AddPackageRequest pkg = new AddPackageRequest("hive", DB1, "pkg1", "user1", "header", "body");
     objectStore.addPackage(pkg);
     Assert.assertNotNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
     objectStore.dropPackage(new DropPackageRequest("hive", DB1, "pkg1"));
@@ -1337,8 +1343,8 @@ public class TestObjectStore {
             .setDescription("description")
             .setLocation("locationurl")
             .build(conf));
-    Package pkg1 = new Package("hive", DB1, "pkg1", "user1", "header1", "body1");
-    Package pkg2 = new Package("hive", DB2, "pkg2", "user1", "header2", "body2");
+    AddPackageRequest pkg1 = new AddPackageRequest("hive", DB1, "pkg1", "user1", "header1", "body1");
+    AddPackageRequest pkg2 = new AddPackageRequest("hive", DB2, "pkg2", "user1", "header2", "body2");
     objectStore.addPackage(pkg1);
     objectStore.addPackage(pkg2);
     List<String> result = objectStore.listPackages(new ListPackageRequest("hive"));

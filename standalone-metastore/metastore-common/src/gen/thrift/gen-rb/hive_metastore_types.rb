@@ -778,6 +778,8 @@ class ListStoredProcedureRequest; end
 
 class StoredProcedure; end
 
+class AddPackageRequest; end
+
 class GetPackageRequest; end
 
 class DropPackageRequest; end
@@ -7131,6 +7133,32 @@ class StoredProcedure
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
     SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AddPackageRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PACKAGENAME = 3
+  OWNERNAME = 4
+  HEADER = 5
+  BODY = 6
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PACKAGENAME => {:type => ::Thrift::Types::STRING, :name => 'packageName'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    HEADER => {:type => ::Thrift::Types::STRING, :name => 'header'},
+    BODY => {:type => ::Thrift::Types::STRING, :name => 'body'}
   }
 
   def struct_fields; FIELDS; end
