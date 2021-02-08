@@ -136,6 +136,12 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
             new GenericUDFOPEqualOrGreaterThan(), children);
     hive.getPartitionsByExpr(t, node, hive.getConf(), partitions);
   }
+
+  @Test
+  public void testGetPartitionsByNames1() throws HiveException {
+    hive.getPartitionsByNames()
+  }
+
 }
 
 

@@ -3284,6 +3284,7 @@ class GetPartitionsByNamesRequest
   VALIDWRITEIDLIST = 8
   GETFILEMETADATA = 9
   ID = 10
+  CATNAME = 11
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
@@ -3295,7 +3296,8 @@ class GetPartitionsByNamesRequest
     ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     GETFILEMETADATA => {:type => ::Thrift::Types::BOOL, :name => 'getFileMetadata', :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end

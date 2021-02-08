@@ -2212,6 +2212,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
     gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    gpbnr.setId(getTable(prependCatalogToDbName(catName, db_name, conf),tbl_name).getId());
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
@@ -2221,6 +2222,29 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       gpbnr.setProcessorIdentifier(processorIdentifier);
     List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+  }
+
+  @Override
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
+          throws NoSuchObjectException, MetaException, TException {
+    checkDbAndTableFilters(req.getCatName(), req.getDb_name(), req.getTbl_name());
+    req.setDb_name(prependCatalogToDbName(req.getCatName(), req.getDb_name(), conf));
+    if (req.getValidWriteIdList() == null) {
+      req.setValidWriteIdList(getValidWriteIdList(prependCatalogToDbName(req.getCatName(), req.getDb_name(),
+              conf), req.getTbl_name()));
+    }
+    if (req.getId() <= 0) {
+      req.setId(getTable(prependCatalogToDbName(req.getCatName(), req.getDb_name(), conf), req.getTbl_name()).getId());
+    }
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    List<Partition> parts = getPartitionsByNamesInternal(req).getPartitions();
+    GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
+    res.setPartitions(deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(
+            isClientFilterEnabled, filterHook, parts)));
+    return res;
   }
 
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)

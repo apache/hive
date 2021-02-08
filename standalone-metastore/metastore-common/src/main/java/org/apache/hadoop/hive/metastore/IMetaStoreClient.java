@@ -1558,6 +1558,17 @@ public interface IMetaStoreClient {
             List<String> part_names, boolean getColStats, String engine)
             throws NoSuchObjectException, MetaException, TException;
 
+    /**
+     * Get partitions by a list of partition names.
+     * @param req GetPartitionsByNamesRequest 
+     * @return GetPartitionsByNamesResult
+     * @throws NoSuchObjectException No such partitions
+     * @throws MetaException error accessing the RDBMS.
+     * @throws TException thrift transport error
+     */
+    GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
+            throws NoSuchObjectException, MetaException, TException;
+
   /**
    * List partitions along with privilege information for a user or groups
    * @param dbName database name

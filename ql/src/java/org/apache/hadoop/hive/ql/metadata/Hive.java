@@ -102,6 +102,7 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -3195,6 +3196,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<String> partitionNames) throws HiveException {
     try {
       return getMSC().getPartitionsByNames(dbName, tableName, partitionNames);
+    } catch (Exception e) {
+      LOG.error("Failed getPartitionsByNames", e);
+      throw new HiveException(e);
+    }
+  }
+
+    public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(GetPartitionsByNamesRequest req)
+        throws HiveException {
+    try {
+      return (getMSC().getPartitionsByNames(req)).getPartitions();
     } catch (Exception e) {
       LOG.error("Failed getPartitionsByNames", e);
       throw new HiveException(e);

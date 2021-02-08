@@ -3422,6 +3422,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
+    throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
                                                     List<String> partialPvals, int maxParts,
                                                     String userName, List<String> groupNames) throws
