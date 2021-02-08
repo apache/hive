@@ -231,7 +231,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
     FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
     if (isEncodeEnabled) {
-      int encodeThreads = numThreads * 2;
+      int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
+      int encodeThreads = numThreads * encodePoolMultiplier;
       encodeExecutor = new StatsRecordingThreadPool(encodeThreads, encodeThreads, 0L, TimeUnit.MILLISECONDS,
           new LinkedBlockingQueue<Runnable>(),
           new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true).build());

@@ -1029,10 +1029,10 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
           .addCounter(PolicyInformation.BPWrapperCount,    usageStats[BPWRAPCNT])
           .addCounter(PolicyInformation.BPWrapperDistinct, usageStats[BPWRAPDISTINCT])
           .addCounter(PolicyInformation.BPWrapperData,     usageStats[BPWRAPDATA])
-          .addCounter(PolicyInformation.TotalData,     usageStats[DATAONHEAP]
+          .addCounter(PolicyInformation.TotalData,         usageStats[DATAONHEAP]
                                                          + usageStats[DATAONLIST]
                                                          + usageStats[BPWRAPDATA])
-          .addCounter(PolicyInformation.TotalMeta,     usageStats[METAONHEAP]
+          .addCounter(PolicyInformation.TotalMeta,         usageStats[METAONHEAP]
                                                          + usageStats[METAONLIST]
                                                          + usageStats[BPWRAPMETA]);
     }
