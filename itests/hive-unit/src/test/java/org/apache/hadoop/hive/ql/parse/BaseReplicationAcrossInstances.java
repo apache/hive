@@ -57,6 +57,7 @@ public class BaseReplicationAcrossInstances {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hive.repl.cmrootdir", "/tmp/");
+    conf.set("dfs.namenode.acls.enabled", "true");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     Map<String, String> localOverrides = new HashMap<String, String>() {{

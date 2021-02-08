@@ -21,6 +21,10 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclEntryScope;
+import org.apache.hadoop.fs.permission.AclEntryType;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,11 +48,9 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.TestReplicationScenarios;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
 import org.junit.Assert;
@@ -338,6 +340,73 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("select i From a")
             .verifyResults(Collections.emptyList());
     assertTablePartitionLocation(primaryDbName + ".a", replicatedDbName + ".a");
+  }
+
+  @Test
+  public void testExternalTableLocationACLPreserved() throws Throwable {
+
+    // Create data file with data for external table.
+    Path externalTableLocation = new Path(
+        "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    Path externalFileLoc = new Path(externalTableLocation, "file1.txt");
+    try (FSDataOutputStream outputStream = fs.create(externalFileLoc)) {
+      outputStream.write("1,2\n".getBytes());
+      outputStream.write("13,21\n".getBytes());
+    }
+
+    // Set some ACL's on the table directory and the data file.
+    List<AclEntry> aclEntries = new ArrayList<>();
+    AclEntry aeUser =
+        new AclEntry.Builder().setName("user").setScope(AclEntryScope.ACCESS)
+            .setType(AclEntryType.USER).setPermission(FsAction.ALL).build();
+    AclEntry aeGroup =
+        new AclEntry.Builder().setName("group").setScope(AclEntryScope.ACCESS)
+            .setType(AclEntryType.GROUP).setPermission(FsAction.ALL).build();
+    AclEntry aeOther = new AclEntry.Builder().setScope(AclEntryScope.ACCESS)
+        .setType(AclEntryType.OTHER).setPermission(FsAction.ALL).build();
+
+    aclEntries.add(aeUser);
+    aclEntries.add(aeGroup);
+    aclEntries.add(aeOther);
+
+    fs.modifyAclEntries(externalTableLocation, aclEntries);
+    fs.modifyAclEntries(externalFileLoc, aclEntries);
+
+    // Run bootstrap with distcp options to preserve ACL.
+    List<String> withClause = Arrays
+        .asList("'distcp.options.update'=''", "'distcp.options.puga'=''",
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
+                + "'='true'");
+
+    primary.run("use " + primaryDbName).run(
+        "create external table a (i int, j int) "
+            + "row format delimited fields terminated by ',' " + "location '"
+            + externalTableLocation.toUri() + "'")
+        .dump(primaryDbName, withClause);
+
+    // Verify load is success and has the appropriate data.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName).run("select i From a")
+        .verifyResults(new String[] {"1", "13"}).run("select j from a")
+        .verifyResults(new String[] {"2", "21"});
+
+    // Verify the ACL's of the destination table directory and data file are
+    // same as that of source.
+    Hive hiveForReplica = Hive.get(replica.hiveConf);
+    org.apache.hadoop.hive.ql.metadata.Table replicaTable =
+        hiveForReplica.getTable(replicatedDbName + ".a");
+    Path dataLocation = replicaTable.getDataLocation();
+
+    assertEquals("ACL entries are not same for the data file.",
+        fs.getAclStatus(externalFileLoc).getEntries().size(),
+        fs.getAclStatus(new Path(dataLocation, "file1.txt")).getEntries()
+            .size());
+    assertEquals("ACL entries are not same for the table directory.",
+        fs.getAclStatus(externalTableLocation).getEntries().size(),
+        fs.getAclStatus(dataLocation).getEntries().size());
   }
 
   /**
