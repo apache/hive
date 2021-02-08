@@ -32,6 +32,8 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
+import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
@@ -105,6 +107,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
+  private final FixedSizedObjectPool<IoTrace> tracePool;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
@@ -113,6 +116,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
+  private LowLevelCachePolicy realCachePolicy;
+  private PathCache pathCache;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
@@ -154,8 +159,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy
-          realCachePolicy =
+      realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
         HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
@@ -209,6 +213,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         debugDumpComponents.add(metadataCache);
       }
       debugDumpComponents.add(allocator);
+      pathCache = new MemoryLimitedPathCache(conf);
     } else {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
@@ -229,7 +234,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
-    FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
+    tracePool = IoTrace.createTracePool(conf);
     if (isEncodeEnabled) {
       int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
       int encodeThreads = numThreads * encodePoolMultiplier;
@@ -242,7 +247,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     LOG.info("LLAP IO initialized");

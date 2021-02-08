@@ -460,6 +460,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_AM_USE_FQDN.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_OUTPUT_FORMAT_ARROW.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_PATH_CACHE_SIZE.varname);
   }
 
   /**
@@ -4643,6 +4644,8 @@ public class HiveConf extends Configuration {
          "will be cached. If set to 'none', only the base files and insert deltas will be channeled through LLAP, " +
          "while delete deltas will be accessed directly from their configured FS without caching them. " +
          "This feature only works with ColumnizedDeleteEventRegistry, SortMergedDeleteEventRegistry is not supported."),
+    LLAP_IO_PATH_CACHE_SIZE("hive.llap.io.path.cache.size", "10Mb", new SizeValidator(),
+        "The amount of the maximum memory allowed to store the file paths."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
