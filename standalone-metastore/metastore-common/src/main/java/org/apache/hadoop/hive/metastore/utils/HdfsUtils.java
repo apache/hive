@@ -193,15 +193,7 @@ public class HdfsUtils {
 
   private static List<String> constructDistCpParams(List<Path> srcPaths, Path dst,
                                                     Configuration conf) {
-    List<String> params = new ArrayList<>();
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
-      String distCpOption = entry.getKey();
-      String distCpVal = entry.getValue();
-      params.add("-" + distCpOption);
-      if ((distCpVal != null) && (!distCpVal.isEmpty())){
-        params.add(distCpVal);
-      }
-    }
+    List<String> params = constructDistCpOptions(conf);
     if (params.size() == 0){
       // if no entries were added via conf, we initiate our defaults
       params.add("-update");
@@ -213,6 +205,21 @@ public class HdfsUtils {
     params.add(dst.toString());
     return params;
   }
+
+  public static List<String> constructDistCpOptions(Configuration conf) {
+    List<String> options = new ArrayList<>();
+    for (Map.Entry<String, String> entry : conf
+        .getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()) {
+      String distCpOption = entry.getKey();
+      String distCpVal = entry.getValue();
+      options.add("-" + distCpOption);
+      if ((distCpVal != null) && (!distCpVal.isEmpty())) {
+        options.add(distCpVal);
+      }
+    }
+    return options;
+  }
+
 
   public static Path getFileIdPath(
       FileSystem fileSystem, Path path, long fileId) {
