@@ -60,7 +60,7 @@ public class PlanModifierForReturnPath {
       newRoot = HiveProject.create(optimizedOptiqPlan, projectList, fieldNames);
     } else {
       HiveProject project = (HiveProject) optimizedOptiqPlan;
-      newRoot = HiveProject.create(project.getInput(0), project.getChildExps(), fieldNames);
+      newRoot = HiveProject.create(project.getInput(0), project.getProjects(), fieldNames);
     }
     return newRoot;
   }

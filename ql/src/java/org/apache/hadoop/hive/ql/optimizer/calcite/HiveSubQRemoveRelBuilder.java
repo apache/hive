@@ -24,10 +24,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelCollations;
-import org.apache.calcite.rel.RelFieldCollation;
-import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.*;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
@@ -37,6 +34,7 @@ import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Values;
+import org.apache.calcite.rel.hint.RelHint;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -80,17 +78,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.math.BigDecimal;
-import java.util.AbstractList;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Builder for relational expressions.
@@ -721,7 +709,22 @@ public class HiveSubQRemoveRelBuilder {
     if (relOptTable == null) {
       throw Static.RESOURCE.tableNotFound(Joiner.on(".").join(names)).ex();
     }
-    final RelNode scan = scanFactory.createScan(cluster, relOptTable);
+    final RelNode scan = scanFactory.createScan(new RelOptTable.ToRelContext() {
+      @Override
+      public RelOptCluster getCluster() {
+        return cluster;
+      }
+
+      @Override
+      public List<RelHint> getTableHints() {
+        return Collections.emptyList();
+      }
+
+      @Override
+      public RelRoot expandView(RelDataType rowType, String queryString, List<String> schemaPath, List<String> viewPath) {
+        return null;
+      }
+    }, relOptTable);
     push(scan);
     return this;
   }
@@ -848,7 +851,7 @@ public class HiveSubQRemoveRelBuilder {
       }
     }
     final RelNode project =
-        projectFactory.createProject(build(), ImmutableList.copyOf(exprList),
+        projectFactory.createProject(build(), Collections.emptyList(), ImmutableList.copyOf(exprList),
             names);
     push(project);
     return this;
@@ -966,7 +969,7 @@ public class HiveSubQRemoveRelBuilder {
       assert groupSet.contains(set);
     }
     RelNode aggregate = aggregateFactory.createAggregate(r,
-        groupKey_.indicator, groupSet, groupSets, aggregateCalls);
+        Collections.emptyList(), groupSet, groupSets, aggregateCalls);
     push(aggregate);
     return this;
   }
@@ -1147,7 +1150,7 @@ public class HiveSubQRemoveRelBuilder {
                 requiredColumns, joinType);
       }
     } else {
-      join = joinFactory.createJoin(left.rel, right.rel, condition,
+      join = joinFactory.createJoin(left.rel, right.rel, Collections.emptyList(), condition,
           variablesSet, joinType, false);
     }
     final List<Pair<String, RelDataType>> pairs = new ArrayList<>();
@@ -1185,7 +1188,7 @@ public class HiveSubQRemoveRelBuilder {
     return join(joinType, conditions);
   }
 
-  /** Creates a {@link org.apache.calcite.rel.core.SemiJoin}. */
+  /** Creates a {@link org.apache.calcite.rel.core.Join}. */
   public HiveSubQRemoveRelBuilder semiJoin(Iterable<? extends RexNode> conditions) {
     final Frame right = stack.pop();
     final Frame left = stack.pop();
@@ -1195,7 +1198,7 @@ public class HiveSubQRemoveRelBuilder {
     return this;
   }
 
-  /** Creates a {@link org.apache.calcite.rel.core.SemiJoin}. */
+  /** Creates a {@link org.apache.calcite.rel.core.Join}. */
   public HiveSubQRemoveRelBuilder semiJoin(RexNode... conditions) {
     return semiJoin(ImmutableList.copyOf(conditions));
   }
@@ -1555,7 +1558,7 @@ public class HiveSubQRemoveRelBuilder {
 
   /** Information necessary to create a call to an aggregate function.
    *
-   * @see RelBuilder#aggregateCall */
+   * @see RelBuilder#aggregateCall(SqlAggFunction, RexNode...) */
   public interface AggCall {
   }
 

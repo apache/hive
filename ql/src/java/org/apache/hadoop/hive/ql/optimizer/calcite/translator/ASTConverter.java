@@ -214,7 +214,7 @@ public class ASTConverter {
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
 
     if (select instanceof Project) {
-      List<RexNode> childExps = ((Project) select).getChildExps();
+      List<RexNode> childExps = ((Project) select).getProjects();
       if (childExps.isEmpty()) {
         RexLiteral r = select.getCluster().getRexBuilder().makeExactLiteral(new BigDecimal(1));
         ASTNode selectExpr = ASTBuilder.selectExpr(ASTBuilder.literal(r), "1");

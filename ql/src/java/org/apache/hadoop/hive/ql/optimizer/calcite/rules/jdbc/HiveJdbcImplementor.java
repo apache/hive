@@ -57,7 +57,7 @@ public class HiveJdbcImplementor extends JdbcImplementor {
     final Builder builder =
         x.builder(e, Clause.SELECT);
     final List<SqlNode> selectList = new ArrayList<>();
-    for (RexNode ref : e.getChildExps()) {
+    for (RexNode ref : e.getProjects()) {
       SqlNode sqlExpr = builder.context.toSql(null, ref);
       addSelect(selectList, sqlExpr, e.getRowType());
     }

@@ -17,13 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
@@ -267,9 +262,9 @@ public class HiveCalciteUtil {
     // added project if need to produce new keys than the original input
     // fields
     if (newKeyCount > 0) {
-      leftRel = factory.createProject(leftRel, newLeftFields,
+      leftRel = factory.createProject(leftRel, Collections.emptyList(), newLeftFields,
           SqlValidatorUtil.uniquify(newLeftFieldNames));
-      rightRel = factory.createProject(rightRel, newRightFields,
+      rightRel = factory.createProject(rightRel, Collections.emptyList(), newRightFields,
           SqlValidatorUtil.uniquify(newRightFieldNames));
     }
 
@@ -928,7 +923,8 @@ public class HiveCalciteUtil {
       String inputTabAlias) {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
     List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
-    List<RexNode> exprs = inputRel.getChildExps();
+    List<RexNode> exprs = new ArrayList<>();
+    inputRel.accept(new ChildExpsRexShuttle(exprs));
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());

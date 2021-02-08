@@ -2135,7 +2135,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
           HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
           HiveProjectFilterPullUpConstantsRule.INSTANCE, HiveProjectMergeRule.INSTANCE,
-          ProjectRemoveRule.INSTANCE, HiveSortMergeRule.INSTANCE);
+          ProjectRemoveRule.Config.DEFAULT.toRule(), HiveSortMergeRule.INSTANCE);
 
       // 9. Get rid of sq_count_check if group by key is constant
       if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
@@ -2474,7 +2474,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 1. Run other optimizations that do not need stats
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-          ProjectRemoveRule.INSTANCE, HiveUnionMergeRule.INSTANCE,
+          ProjectRemoveRule.Config.DEFAULT.toRule(), HiveUnionMergeRule.INSTANCE,
           HiveAggregateProjectMergeRule.INSTANCE, HiveProjectMergeRule.INSTANCE_NO_FORCE,
           HiveJoinCommuteRule.INSTANCE);
 
@@ -2528,8 +2528,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveDruidRules.FILTER_PROJECT_TRANSPOSE,
           HiveDruidRules.HAVING_FILTER_RULE,
           HiveDruidRules.SORT_PROJECT_TRANSPOSE,
-          HiveDruidRules.SORT,
-          HiveDruidRules.PROJECT_SORT_TRANSPOSE);
+          HiveDruidRules.SORT);
 
       // 8. Apply JDBC transformation rules
       if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
@@ -2566,7 +2565,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
             new HiveFieldTrimmerRule(false));
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            ProjectRemoveRule.INSTANCE, new ProjectMergeRule(false, HiveRelFactories.HIVE_BUILDER));
+            ProjectRemoveRule.Config.DEFAULT.toRule(), new ProjectMergeRule(false, HiveRelFactories.HIVE_BUILDER));
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
             HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
             HiveProjectFilterPullUpConstantsRule.INSTANCE);
@@ -3001,7 +3000,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             topFields.add(leftRel.getCluster().getRexBuilder().makeInputRef(field.getType(), i));
             topFieldNames.add(field.getName());
           }
-          topRel = HiveRelFactories.HIVE_PROJECT_FACTORY.createProject(topRel, topFields, topFieldNames);
+          topRel = HiveRelFactories.HIVE_PROJECT_FACTORY.createProject(topRel, Collections.emptyList(), topFields, topFieldNames);
         }
 
         topRR = new RowResolver();

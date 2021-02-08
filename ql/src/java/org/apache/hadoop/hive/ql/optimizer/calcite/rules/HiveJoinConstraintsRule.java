@@ -36,6 +36,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.ChildExpsRexShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
@@ -79,7 +80,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Project project = call.rel(0);
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
-    List<RexNode> topProjExprs = project.getChildExps();
+    List<RexNode> topProjExprs = project.getProjects();
     Join join = call.rel(1);
     final JoinRelType joinType = join.getJoinType();
     final RelNode leftInput = join.getLeft();
@@ -334,11 +335,13 @@ public class HiveJoinConstraintsRule extends RelOptRule {
       }
     } else { // Mode.TRANSFORM
       // Trigger transformation
+      List<RexNode> exps = new ArrayList<>();
+      project.accept(new ChildExpsRexShuttle(exps));
       call.transformTo(call.builder()
           .push(leftInput).push(rightInput)
           .join(JoinRelType.INNER, join.getCondition())
           .convert(call.rel(1).getRowType(), false) // Preserve nullability
-          .project(project.getChildExps())
+          .project(exps)
           .build());
     }
   }
