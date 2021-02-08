@@ -13219,7 +13219,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
-    retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
+    if (isCTAS) {
+      retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
+    }
     return retValue;
   }
 
