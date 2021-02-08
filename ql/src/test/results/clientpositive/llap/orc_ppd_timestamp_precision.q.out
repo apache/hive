@@ -1,0 +1,157 @@
+PREHOOK: query: create table tsstat (ts timestamp) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tsstat
+POSTHOOK: query: create table tsstat (ts timestamp) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tsstat
+PREHOOK: query: insert into tsstat values ("1970-01-01 00:00:00.00005")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tsstat
+POSTHOOK: query: insert into tsstat values ("1970-01-01 00:00:00.00005")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tsstat
+POSTHOOK: Lineage: tsstat.ts SCRIPT []
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.00005"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050000"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+1970-01-01 00:00:00.00005
+PREHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tsstat
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tsstat where ts = "1970-01-01 00:00:00.000050001"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tsstat
+#### A masked pattern was here ####
