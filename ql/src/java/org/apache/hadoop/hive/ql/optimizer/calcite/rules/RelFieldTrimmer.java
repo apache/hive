@@ -372,7 +372,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
         ord.e.accept(inputFinder);
       }
     }
-    ImmutableBitSet inputFieldsUsed = inputFinder.inputBitSet.build();
+    ImmutableBitSet inputFieldsUsed = inputFinder.build();
 
     // Create input with trimmed columns.
     TrimResult trimResult =
@@ -466,7 +466,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
         new RelOptUtil.InputFinder(inputExtraFields);
     inputFinder.inputBitSet.addAll(fieldsUsed);
     conditionExpr.accept(inputFinder);
-    final ImmutableBitSet inputFieldsUsed = inputFinder.inputBitSet.build();
+    final ImmutableBitSet inputFieldsUsed = inputFinder.build();
 
     // Create input with trimmed columns.
     TrimResult trimResult =
@@ -576,7 +576,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
         new RelOptUtil.InputFinder(combinedInputExtraFields);
     inputFinder.inputBitSet.addAll(fieldsUsed);
     conditionExpr.accept(inputFinder);
-    final ImmutableBitSet fieldsUsedPlus = inputFinder.inputBitSet.build();
+    final ImmutableBitSet fieldsUsedPlus = inputFinder.build();
 
     // If no system fields are used, we can remove them.
     int systemFieldUsedCount = 0;
