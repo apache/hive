@@ -144,7 +144,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     RowSchema schema = op.getSchema();
     if (!hasChild(op, LateralViewJoinOperator.class)) {
     if (outputColNames == null || outputColNames.size() == 0) {
-      throw new RuntimeException("very interesting operator: " + op);
+        //      throw new RuntimeException("very interesting operator: " + op);
     }
     }
     if (schema == null) {
