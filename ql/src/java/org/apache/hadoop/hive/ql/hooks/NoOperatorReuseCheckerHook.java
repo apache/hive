@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -141,8 +142,10 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     SelectDesc conf = op.getConf();
     List<String> outputColNames = conf.getOutputColumnNames();
     RowSchema schema = op.getSchema();
+    if (!hasChild(op, LateralViewJoinOperator.class)) {
     if (outputColNames == null || outputColNames.size() == 0) {
       throw new RuntimeException("very interesting operator: " + op);
+    }
     }
     if (schema == null) {
       throw new RuntimeException("I expect a schema for all SelectOp" + op);
@@ -155,6 +158,15 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
       throw new RuntimeException("SelOp output/schema mismatch ");
     }
 
+  }
+
+  private static boolean hasChild(SelectOperator op, Class<? extends Operator<?>> class1) {
+    for (Operator<? extends OperatorDesc> c : op.getChildOperators()) {
+      if (class1.isInstance(c)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean isSemiJoinRS(Operator op) {
