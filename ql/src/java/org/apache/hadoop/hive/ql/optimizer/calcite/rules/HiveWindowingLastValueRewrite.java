@@ -62,7 +62,7 @@ public class HiveWindowingLastValueRewrite extends RelOptRule {
     LastValueRewriteRexShuttle lastValueRewrite = new LastValueRewriteRexShuttle(
         project.getCluster().getRexBuilder());
     boolean modified = false;
-    for (RexNode expr : project.getChildExps()) {
+    for (RexNode expr : project.getProjects()) {
       RexNode newExpr = lastValueRewrite.apply(expr);
       newExprs.add(newExpr);
       modified |= (newExpr != expr);

@@ -44,6 +44,7 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.ChildExpsRexShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -210,7 +211,7 @@ public class PlanModifierForASTConv {
 
     // Assumption: top portion of tree could only be
     // (limit)?(OB)?(Project)....
-    List<RexNode> rootChildExps = originalProjRel.getChildExps();
+    List<RexNode> rootChildExps = originalProjRel.getProjects();
     if (resultSchema.size() != rootChildExps.size()) {
       // Safeguard against potential issues in CBO RowResolver construction. Disable CBO for now.
       LOG.error(PlanModifierUtil.generateInvalidSchemaMessage(originalProjRel, resultSchema, 0));
@@ -226,7 +227,7 @@ public class PlanModifierForASTConv {
     }
 
     HiveProject replacementProjectRel = HiveProject.create(originalProjRel.getInput(),
-        originalProjRel.getChildExps(), newSelAliases);
+        originalProjRel.getProjects(), newSelAliases);
 
     if (rootRel == originalProjRel) {
       return replacementProjectRel;
@@ -329,7 +330,7 @@ public class PlanModifierForASTConv {
     }
 
     if (parent instanceof Project) {
-      for (RexNode child : parent.getChildExps()) {
+      for (RexNode child : ((Project) parent).getProjects()) {
         if (child instanceof RexOver || child instanceof RexWinAggCall) {
           // Hive can't handle select rank() over(order by sum(c1)/sum(c2)) from t1 group by c3
           // but can handle    select rank() over (order by c4) from
@@ -401,7 +402,8 @@ public class PlanModifierForASTConv {
 
   private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
     // If this function is called, the parent should only include constant
-    List<RexNode> exps = parent.getChildExps();
+    List<RexNode> exps = new ArrayList<>();
+    parent.accept(new ChildExpsRexShuttle(exps));
     for (RexNode rexNode : exps) {
       if (!rexNode.accept(new HiveCalciteUtil.ConstantFinder())) {
         throw new RuntimeException("We expect " + parent.toString()

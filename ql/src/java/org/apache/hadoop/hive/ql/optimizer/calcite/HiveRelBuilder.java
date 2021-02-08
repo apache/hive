@@ -158,7 +158,6 @@ public class HiveRelBuilder extends RelBuilder {
     return null;
   }
 
-  @Override
   protected boolean shouldMergeProject() {
     /* CALCITE-2470 added ability to merge Project-s together.
      * The problem with it is that it may merge 2 windowing expressions.

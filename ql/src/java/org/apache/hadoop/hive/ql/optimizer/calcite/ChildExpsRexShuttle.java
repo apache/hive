@@ -1,0 +1,113 @@
+package org.apache.hadoop.hive.ql.optimizer.calcite;
+
+import org.apache.calcite.rex.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class ChildExpsRexShuttle extends RexShuttle {
+    private final List<RexNode> exps;
+
+    public ChildExpsRexShuttle(List<RexNode> exps) {
+        this.exps = exps;
+    }
+
+    @Override
+    public RexNode visitOver(RexOver over) {
+        exps.add(over);
+        return super.visitOver(over);
+    }
+
+    @Override
+    public RexWindow visitWindow(RexWindow window) {
+        exps.addAll(window.partitionKeys);
+        return super.visitWindow(window);
+    }
+
+    @Override
+    public RexNode visitSubQuery(RexSubQuery subQuery) {
+        exps.add(subQuery);
+        return super.visitSubQuery(subQuery);
+    }
+
+    @Override
+    public RexNode visitTableInputRef(RexTableInputRef ref) {
+        exps.add(ref);
+        return super.visitTableInputRef(ref);
+    }
+
+    @Override
+    public RexNode visitPatternFieldRef(RexPatternFieldRef fieldRef) {
+        exps.add(fieldRef);
+        return super.visitPatternFieldRef(fieldRef);
+    }
+
+    @Override
+    public RexNode visitCall(RexCall call) {
+        exps.add(call);
+        return super.visitCall(call);
+    }
+
+    @Override
+    protected RexNode[] visitArray(RexNode[] exprs, boolean[] update) {
+        exps.addAll(Arrays.asList(exprs));
+        return exprs;
+    }
+
+    @Override
+    protected List<RexNode> visitList(List<? extends RexNode> exprs, boolean[] update) {
+        exps.addAll(exprs);
+        return new ArrayList<>(exprs);
+    }
+
+    @Override
+    protected List<RexFieldCollation> visitFieldCollations(List<RexFieldCollation> collations, boolean[] update) {
+        for (RexFieldCollation rfc: collations) {
+            exps.add(rfc.getKey());
+        }
+        return collations;
+    }
+
+    @Override
+    public RexNode visitCorrelVariable(RexCorrelVariable variable) {
+        exps.add(variable);
+        return super.visitCorrelVariable(variable);
+    }
+
+    @Override
+    public RexNode visitFieldAccess(RexFieldAccess fieldAccess) {
+        exps.add(fieldAccess);
+        return super.visitFieldAccess(fieldAccess);
+    }
+
+    @Override
+    public RexNode visitInputRef(RexInputRef inputRef) {
+        exps.add(inputRef);
+        return super.visitInputRef(inputRef);
+    }
+
+    @Override
+    public RexNode visitLocalRef(RexLocalRef localRef) {
+        exps.add(localRef);
+        return super.visitLocalRef(localRef);
+    }
+
+    @Override
+    public RexNode visitLiteral(RexLiteral literal) {
+        exps.add(literal);
+        return super.visitLiteral(literal);
+    }
+
+    @Override
+    public RexNode visitDynamicParam(RexDynamicParam dynamicParam) {
+        exps.add(dynamicParam);
+        return super.visitDynamicParam(dynamicParam);
+    }
+
+    @Override
+    public RexNode visitRangeRef(RexRangeRef rangeRef) {
+        exps.add(rangeRef);
+        return super.visitRangeRef(rangeRef);
+    }
+}

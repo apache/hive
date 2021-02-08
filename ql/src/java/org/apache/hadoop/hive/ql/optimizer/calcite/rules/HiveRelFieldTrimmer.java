@@ -65,6 +65,7 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.ChildExpsRexShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -555,7 +556,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<RexNode> newProjects = new ArrayList<>();
 
-    final List<RexNode> inputExprs = input.getChildExps();
+    final List<RexNode> inputExprs = new ArrayList<>();
+    input.accept(new ChildExpsRexShuttle(inputExprs));
     if (inputExprs == null || inputExprs.isEmpty()) {
       return aggregate;
     }
@@ -788,7 +790,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final List<Integer> iRefSet = Lists.newArrayList();
     if (key instanceof Project) {
       final Project project = (Project) key;
-      for (RexNode rx : project.getChildExps()) {
+      for (RexNode rx : project.getProjects()) {
         iRefSet.addAll(HiveCalciteUtil.getInputRefs(rx));
       }
     } else {

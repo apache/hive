@@ -200,9 +200,4 @@ public class HiveProject extends Project implements HiveRelNode {
     }
     return shuttle.visit(this);
   }
-
-  public boolean containsOver() {
-    return RexOver.containsOver(this.getChildExps(), null);
-  }
-
 }

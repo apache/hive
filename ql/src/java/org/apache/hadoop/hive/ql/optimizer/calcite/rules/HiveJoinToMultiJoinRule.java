@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -109,8 +110,8 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     multiJoin = mergeJoin(newJoin, right, left);
     if (multiJoin != null) {
       if (topProject != null) {
-        multiJoin = projectFactory.createProject(multiJoin,
-                topProject.getChildExps(),
+        multiJoin = projectFactory.createProject(multiJoin, Collections.emptyList(),
+                topProject.getProjects(),
                 topProject.getRowType().getFieldNames());
       }
       call.transformTo(multiJoin);
