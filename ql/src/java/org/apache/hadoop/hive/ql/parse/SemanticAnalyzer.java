@@ -9297,7 +9297,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Walk over the input row resolver and copy in the output
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
 
     List<ColumnInfo> columns = inputRR.getColumnInfos();
     int[] index = new int[columns.size()];
@@ -9321,7 +9320,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ColumnInfo newColInfo = new ColumnInfo(colInfo);
         String internalColName = Utilities.ReduceField.KEY + ".reducesinkkey" + kindex;
         newColInfo.setInternalName(internalColName);
-        colExprMap.put(internalColName, expr);
         newColInfo.setTabAlias(nm[0]);
         outputRR.put(nm[0], nm[1], newColInfo);
         if (nm2 != null) {
@@ -9339,7 +9337,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String internalColName = Utilities.ReduceField.VALUE + "." + outputColName;
       newColInfo.setInternalName(internalColName);
       newColInfo.setTabAlias(nm[0]);
-      colExprMap.put(internalColName, expr);
 
       outputRR.put(nm[0], nm[1], newColInfo);
       if (nm2 != null) {
@@ -9366,34 +9363,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Map<String, String> translatorMap = new HashMap<String, String>();
 
-    Map<String, ExprNodeDesc> colExprMap2 = new HashMap<String, ExprNodeDesc>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
 
-    if (true) {
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
       String oldName = keyColNames.get(i);
       String newName = Utilities.ReduceField.KEY + "." + oldName;
-        colExprMap2.put(newName, reduceKeys.get(i));
+      colExprMap.put(newName, reduceKeys.get(i));
       translatorMap.put(oldName, newName);
     }
     List<String> valColNames = rsDesc.getOutputValueColumnNames();
     for (int i = 0 ; i < valColNames.size(); i++) {
       String oldName = valColNames.get(i);
       String newName = Utilities.ReduceField.VALUE + "." + oldName;
-        colExprMap2.put(newName, reduceValues.get(i));
+      colExprMap.put(newName, reduceValues.get(i));
       translatorMap.put(oldName, newName);
     }
 
-    if (getClass().desiredAssertionStatus()) {
-      if (!Collections.disjoint(keyColNames, valColNames)) {
-        throw new RuntimeException("Expected to have disjunct keys/vals");
-      }
-    }
-    }
     RowSchema defaultRs = new RowSchema(outputRR.getColumnInfos());
 
     List<ColumnInfo> newColumnInfos = new ArrayList<ColumnInfo>();
-    if (true) {
     for (ColumnInfo ci : outputRR.getColumnInfos()) {
       if (translatorMap.containsKey(ci.getInternalName())) {
         ci = new ColumnInfo(ci);
@@ -9401,15 +9390,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       newColumnInfos.add(ci);
     }
-    } else {
-      newColumnInfos = outputRR.getColumnInfos();
-    }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
         OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(newColumnInfos), parent), outputRR);
 
     rsOp.setValueIndex(index);
-    rsOp.setColumnExprMap(colExprMap2);
+    rsOp.setColumnExprMap(colExprMap);
     rsOp.setInputAliases(srcs);
     return rsOp;
   }
