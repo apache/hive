@@ -77,7 +77,7 @@ public class PosModLongToLong extends MathFuncLongToLong {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", divisor " + divisor;
+    return "col " + inputColumnNum + ", divisor " + divisor;
   }
 
   @Override

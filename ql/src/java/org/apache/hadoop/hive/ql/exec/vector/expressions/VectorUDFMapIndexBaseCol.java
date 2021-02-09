@@ -33,7 +33,6 @@ public abstract class VectorUDFMapIndexBaseCol extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int mapColumnNum;
   private int indexColumnNum;
   private ColumnVector indexColumnVector;
 
@@ -42,8 +41,7 @@ public abstract class VectorUDFMapIndexBaseCol extends VectorExpression {
   }
 
   public VectorUDFMapIndexBaseCol(int mapColumnNum, int indexColumnNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.mapColumnNum = mapColumnNum;
+    super(mapColumnNum, outputColumnNum);
     this.indexColumnNum = indexColumnNum;
   }
 
@@ -61,7 +59,7 @@ public abstract class VectorUDFMapIndexBaseCol extends VectorExpression {
     }
 
     ColumnVector outV = batch.cols[outputColumnNum];
-    MapColumnVector mapV = (MapColumnVector) batch.cols[mapColumnNum];
+    MapColumnVector mapV = (MapColumnVector) batch.cols[inputColumnNum];
     // indexColumnVector includes the keys of Map
     indexColumnVector = batch.cols[indexColumnNum];
     ColumnVector valuesV = mapV.values;
@@ -441,7 +439,7 @@ public abstract class VectorUDFMapIndexBaseCol extends VectorExpression {
   }
 
   public int getMapColumnNum() {
-    return mapColumnNum;
+    return inputColumnNum;
   }
 
   public int getIndexColumnNum() {

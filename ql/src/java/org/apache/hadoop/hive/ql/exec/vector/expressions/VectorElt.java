@@ -39,7 +39,7 @@ public class VectorElt extends VectorExpression {
   private final int[] inputColumns;
 
   public VectorElt(int [] inputColumns, int outputColumnNum) {
-    super(outputColumnNum);
+    super(-1, outputColumnNum);
     this.inputColumns = inputColumns;
   }
 

@@ -41,7 +41,7 @@ public class VectorCoalesce extends VectorExpression {
   private transient int[] unassignedBatchIndices;
 
   public VectorCoalesce(int [] inputColumns, int outputColumnNum) {
-    super(outputColumnNum);
+    super(-1, outputColumnNum);
     this.inputColumns = inputColumns;
     Preconditions.checkArgument(this.inputColumns.length > 0);
   }

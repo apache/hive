@@ -113,6 +113,6 @@ public class IfExprNullCondExpr extends IfExprCondExprBase {
   @Override
   public String vectorExpressionParameters() {
     // Second input parameter but 3rd column.
-    return getColumnParamString(0, arg1Column) + ", null, " + getColumnParamString(2, arg3Column);
+    return getColumnParamString(0, inputColumnNum) + ", null, " + getColumnParamString(2, arg3Column);
   }
 }

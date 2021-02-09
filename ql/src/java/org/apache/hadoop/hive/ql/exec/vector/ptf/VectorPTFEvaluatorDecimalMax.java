@@ -136,7 +136,7 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public HiveDecimalWritable getDecimalGroupResult() {
+  public Object getGroupResult() {
     return max;
   }
 

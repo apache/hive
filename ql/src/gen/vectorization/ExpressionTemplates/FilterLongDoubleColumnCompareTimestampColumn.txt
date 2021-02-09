@@ -37,12 +37,10 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
   private final int colNum2;
 
   public <ClassName>(int colNum1, int colNum2) {
-    super();
-    this.colNum1 = colNum1;
+    super(colNum1, -1);
     this.colNum2 = colNum2;
   }
 
@@ -50,7 +48,6 @@ public class <ClassName> extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum1 = -1;
     colNum2 = -1;
   }
 
@@ -67,7 +64,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[colNum1];
+    <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[inputColumnNum];
     TimestampColumnVector inputColVector2 = (TimestampColumnVector) batch.cols[colNum2];
     int[] sel = batch.selected;
     boolean[] nullPos1 = inputColVector1.isNull;
@@ -77,7 +74,7 @@ public class <ClassName> extends VectorExpression {
 
     // filter rows with NULL on left input
     int newSize;
-    newSize = NullUtil.filterNulls(batch.cols[colNum1], batch.selectedInUse, sel, n);
+    newSize = NullUtil.filterNulls(batch.cols[inputColumnNum], batch.selectedInUse, sel, n);
     if (newSize < n) {
       n = batch.size = newSize;
       batch.selectedInUse = true;
@@ -166,7 +163,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

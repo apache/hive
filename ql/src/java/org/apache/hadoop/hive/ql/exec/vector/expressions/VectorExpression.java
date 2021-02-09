@@ -98,10 +98,16 @@ public abstract class VectorExpression implements Serializable {
   /**
    * Output column number and type information of the vector expression.
    */
-  protected final int outputColumnNum;
+  public int outputColumnNum;
 
   protected TypeInfo outputTypeInfo;
   protected DataTypePhysicalVariation outputDataTypePhysicalVariation;
+
+  /**
+   * Input column number of the vector expression.
+   * Vector expressions that have 1 (or more) input column(s) should reuse this field.
+   */
+  public int inputColumnNum;
 
   /*
    * Use this constructor when there is NO output column.
@@ -114,29 +120,25 @@ public abstract class VectorExpression implements Serializable {
     inputDataTypePhysicalVariations = null;
 
     // No output type information.
+    inputColumnNum = -1;
     outputColumnNum = -1;
     outputTypeInfo = null;
     outputDataTypePhysicalVariation = null;
   }
 
-  /*
-   * Use this constructor when there is an output column.
-   */
-  public VectorExpression(int outputColumnNum) {
-
+  public VectorExpression(int inputColumnNum, int outputColumnNum) {
     // By default, no children or inputs.
     childExpressions = null;
     inputTypeInfos = null;
     inputDataTypePhysicalVariations = null;
 
+    this.inputColumnNum = inputColumnNum;
     this.outputColumnNum = outputColumnNum;
 
     // Set later with setOutput* methods.
     outputTypeInfo = null;
     outputDataTypePhysicalVariation = null;
   }
-
-  //------------------------------------------------------------------------------------------------
 
   /**
    * Initialize the child expressions.

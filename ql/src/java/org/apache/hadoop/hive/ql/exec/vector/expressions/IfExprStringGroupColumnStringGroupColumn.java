@@ -34,14 +34,12 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int arg1Column;
   private final int arg2Column;
   private final int arg3Column;
 
   public IfExprStringGroupColumnStringGroupColumn(int arg1Column, int arg2Column, int arg3Column,
       int outputColumnNum) {
-    super(outputColumnNum);
-    this.arg1Column = arg1Column;
+    super(arg1Column, outputColumnNum);
     this.arg2Column = arg2Column;
     this.arg3Column = arg3Column;
   }
@@ -50,7 +48,6 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    arg1Column = -1;
     arg2Column = -1;
     arg3Column = -1;
   }
@@ -62,7 +59,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum];
     BytesColumnVector arg2ColVector = (BytesColumnVector) batch.cols[arg2Column];
     BytesColumnVector arg3ColVector = (BytesColumnVector) batch.cols[arg3Column];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
@@ -184,7 +181,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, arg2Column) +
          ", " + getColumnParamString(2, arg2Column);
   }
 

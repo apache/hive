@@ -32,7 +32,6 @@ public class DateColSubtractDateColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
   private final int colNum2;
 
   private transient final Timestamp scratchTimestamp1 = new Timestamp(0);
@@ -40,8 +39,7 @@ public class DateColSubtractDateColumn extends VectorExpression {
   private transient final DateTimeMath dtm = new DateTimeMath();
 
   public DateColSubtractDateColumn(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
+    super(colNum1, outputColumnNum);
     this.colNum2 = colNum2;
   }
 
@@ -49,7 +47,6 @@ public class DateColSubtractDateColumn extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum1 = -1;
     colNum2 = -1;
   }
 
@@ -61,7 +58,7 @@ public class DateColSubtractDateColumn extends VectorExpression {
     }
 
     // Input #1 is type date (epochDays).
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum];
 
     // Input #2 is type date (epochDays).
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
@@ -158,7 +155,7 @@ public class DateColSubtractDateColumn extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

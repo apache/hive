@@ -26,17 +26,16 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Evaluate AND of two boolean columns and store result in the output boolean column.
+ * The first input column field is reused from VectorExpression.
  */
 public class ColAndCol extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
   private final int colNum2;
 
   public ColAndCol(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
+    super(colNum1, outputColumnNum);
     this.colNum2 = colNum2;
   }
 
@@ -44,7 +43,6 @@ public class ColAndCol extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum1 = -1;
     colNum2 = -1;
   }
 
@@ -55,7 +53,7 @@ public class ColAndCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum];
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
     doEvaluate(batch, inputColVector1, inputColVector2);
   }
@@ -306,7 +304,7 @@ public class ColAndCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

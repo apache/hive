@@ -120,7 +120,7 @@ public class IfExprColumnCondExpr extends IfExprCondExprBase {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, arg2Column) +
         getColumnParamString(2, arg3Column);
   }
 }

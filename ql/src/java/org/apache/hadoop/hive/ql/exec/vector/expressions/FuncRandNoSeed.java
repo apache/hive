@@ -35,7 +35,7 @@ public class FuncRandNoSeed extends VectorExpression {
   private final Random random;
 
   public FuncRandNoSeed(int outputColumnNum) {
-    super(outputColumnNum);
+    super(-1, outputColumnNum);
     random = new Random();
   }
 

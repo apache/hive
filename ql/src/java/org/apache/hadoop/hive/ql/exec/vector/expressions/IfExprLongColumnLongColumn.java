@@ -31,14 +31,12 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected final int arg1Column;
   protected final int arg2Column;
   protected final int arg3Column;
 
   public IfExprLongColumnLongColumn(int arg1Column, int arg2Column, int arg3Column,
       int outputColumnNum) {
-    super(outputColumnNum);
-    this.arg1Column = arg1Column;
+    super(arg1Column, outputColumnNum);
     this.arg2Column = arg2Column;
     this.arg3Column = arg3Column;
   }
@@ -47,7 +45,6 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    arg1Column = -1;
     arg2Column = -1;
     arg3Column = -1;
   }
@@ -59,7 +56,7 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum];
     boolean[] arg1IsNull = arg1ColVector.isNull;
     LongColumnVector arg2ColVector = (LongColumnVector) batch.cols[arg2Column];
     LongColumnVector arg3ColVector = (LongColumnVector) batch.cols[arg3Column];
@@ -144,7 +141,7 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, arg2Column) +
         ", " + getColumnParamString(1, arg3Column);
   }
 

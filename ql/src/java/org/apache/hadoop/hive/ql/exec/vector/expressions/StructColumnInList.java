@@ -151,7 +151,7 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
 
     // Tell our super class FilterStringColumnInList it will be evaluating our scratch
     // BytesColumnVector.
-    inputCol = scratchBytesColumn;
+    this.inputColumnNum = scratchBytesColumn;
     this.scratchBytesColumn = scratchBytesColumn;
   }
 

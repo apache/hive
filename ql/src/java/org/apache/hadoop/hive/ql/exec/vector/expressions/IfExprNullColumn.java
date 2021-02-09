@@ -27,12 +27,10 @@ public class IfExprNullColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int arg1Column;
   private final int arg2Column;
 
   public IfExprNullColumn(int arg1Column, int arg2Column, int outputColumnNum) {
-	super(outputColumnNum);
-    this.arg1Column = arg1Column;
+	  super(arg1Column, outputColumnNum);
     this.arg2Column = arg2Column;
   }
 
@@ -40,7 +38,6 @@ public class IfExprNullColumn extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    arg1Column = -1;
     arg2Column = -1;
   }
 
@@ -51,7 +48,7 @@ public class IfExprNullColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    final LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
+    final LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum];
     final ColumnVector arg2ColVector = batch.cols[arg2Column];
     final ColumnVector outputColVector = batch.cols[outputColumnNum];
 
@@ -195,7 +192,7 @@ public class IfExprNullColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", null, col "+ arg2Column;
+    return getColumnParamString(0, inputColumnNum) + ", null, col "+ arg2Column;
   }
 
   @Override
