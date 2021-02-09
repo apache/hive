@@ -133,7 +133,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       HdfsPartitionPruner pruner = doImpalaPruning ? new HdfsPartitionPruner(tupleDesc) : null;
       org.apache.impala.common.Pair<List<? extends FeFsPartition>, List<Expr>> impalaPair =
           doImpalaPruning
-          ? (new HdfsPartitionPruner(tupleDesc)).prunePartitions(analyzer, partitionConjuncts, true)
+          ? (new HdfsPartitionPruner(tupleDesc)).prunePartitions(analyzer, partitionConjuncts, true, getTmpTableRef(queryContext, table, impalaTable, analyzer))
           : null;
       List<Expr> prunedExprs = doImpalaPruning ? impalaPair.second : new ArrayList<>();
       List<ImpalaBasicPartition> prunedPartitions = doImpalaPruning
