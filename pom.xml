@@ -154,7 +154,7 @@
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3-1</libthrift.version>
     <log4j.version>1.2.17-cloudera1</log4j.version>
-    <log4j2.version>2.10.0</log4j2.version>
+    <log4j2.version>2.13.3</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <orc.version>1.5.1.7.2.11.0-SNAPSHOT</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
@@ -403,7 +403,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-1.2-api</artifactId>
+        <artifactId>log4j-api</artifactId>
         <version>${log4j2.version}</version>
       </dependency>
       <dependency>
