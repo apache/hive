@@ -30,7 +30,6 @@ import com.google.common.collect.Lists;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -70,7 +69,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
 
-      Operator op = (Operator) nd;
+      Operator<?> op = (Operator<?>) nd;
       checkOperator(op);
       String opKey = op.getOperatorId();
       Operator<?> found = opMap.get(opKey);
@@ -82,7 +81,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     }
   }
 
-  public static void checkOperator(Operator op) {
+  public static void checkOperator(Operator<?> op) {
     OperatorDesc conf = op.getConf();
     Map<String, ExprNodeDesc> exprMap = conf.getColumnExprMap();
     RowSchema schema = op.getSchema();
@@ -140,13 +139,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
 
   private static void checkSelectOperator(SelectOperator op) {
     SelectDesc conf = op.getConf();
-    List<String> outputColNames = conf.getOutputColumnNames();
     RowSchema schema = op.getSchema();
-    if (!hasChild(op, LateralViewJoinOperator.class)) {
-    if (outputColNames == null || outputColNames.size() == 0) {
-        //      throw new RuntimeException("very interesting operator: " + op);
-    }
-    }
     if (schema == null) {
       throw new RuntimeException("I expect a schema for all SelectOp" + op);
     }
@@ -160,16 +153,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
 
   }
 
-  private static boolean hasChild(SelectOperator op, Class<? extends Operator<?>> class1) {
-    for (Operator<? extends OperatorDesc> c : op.getChildOperators()) {
-      if (class1.isInstance(c)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private static boolean isSemiJoinRS(Operator op) {
+  private static boolean isSemiJoinRS(Operator<?> op) {
     if (op instanceof ReduceSinkOperator) {
       List<Operator<?>> children = op.getChildOperators();
       for (Operator<?> c : children) {
