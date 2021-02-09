@@ -57,9 +57,13 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
 /**
+ * Checks some operator quality rules.
+ *
  * Checks whenever operator ids are not reused.
+ * Checks some level of expression/schema consistency
+ * Some sanity checks on SelectOperators
  */
-public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
+public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
 
   static class UniqueOpIdChecker implements SemanticNodeProcessor {
 
