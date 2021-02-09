@@ -139,6 +139,8 @@ public class TezTask extends Task<TezWork> {
     Context ctx = null;
     Ref<TezSessionState> sessionRef = Ref.from(null);
 
+    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
       ctx = context;
@@ -147,7 +149,6 @@ public class TezTask extends Task<TezWork> {
         cleanContext = true;
         // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
         // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
-        String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
         WmContext wmContext = new WmContext(System.currentTimeMillis(), queryId);
         ctx.setWmContext(wmContext);
       }
@@ -238,7 +239,8 @@ public class TezTask extends Task<TezWork> {
           throw new HiveException("Operation cancelled");
         }
 
-        LOG.info("HS2 Host [{}], Dag ID:[{}], DAG Session ID: [{}]", getHostNameIP(),
+        // Log all the info required to find the various logs for this query
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", getHostNameIP(), queryId,
             this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
 
         // finally monitor will print progress until the job is done
