@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -258,6 +260,9 @@ public class TestJdbcDriver2 {
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.close();
     con.close();
+    Path cmRootPath = new Path("cmroot");
+    Path cmQualPath = FileUtils.makeQualified(cmRootPath, conf);
+    cmQualPath.getFileSystem(conf).delete(cmQualPath, true);
   }
 
   @Test
@@ -3284,5 +3289,53 @@ public class TestJdbcDriver2 {
     assertFalse(stmt.isClosed());
     res.close();
     assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testReplDBLocationDelete() throws Exception {
+    // Create a database and dump.
+    String primaryDb =
+        testName.getMethodName() + "_" + System.currentTimeMillis();
+    String primaryTblName = primaryDb + ".t1";
+    Path replDir = new Path(conf.get("test.data.files"));
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    replDir = new Path(replDir, primaryDb + "_repl");
+    Path cmRootPath = new Path("cmroot");
+    Path cmQualPath = FileUtils.makeQualified(cmRootPath, conf);
+    FileSystem fs1 = cmQualPath.getFileSystem(conf);
+    FileSystem fs = FileSystem.get(replDir.toUri(), conf);
+    try {
+
+      fs.mkdirs(replDir);
+      stmt.execute("set hive.repl.cm.enabled = true");
+      stmt.execute("set hive.repl.cmrootdir = cmroot");
+      stmt.execute("create database " + primaryDb
+          + " with dbproperties('repl.source.for'='1,2,3')");
+      stmt.execute("create table " + primaryTblName + " (id int)");
+      stmt.execute("insert into " + primaryTblName + " values (1), (2)");
+      stmt.close();
+
+      stmt = (HiveStatement) con.createStatement();
+      advanceDumpDir();
+      ResultSet replDumpRslt = stmt.executeQuery(
+          "repl dump " + primaryDb + " with ('hive.repl.rootdir' = '" + replDir
+              + "')");
+      assertTrue(replDumpRslt.next());
+
+      // drop the dumped database.
+      stmt.execute("drop database if exists " + primaryDb + " cascade");
+      stmt.execute("set hive.repl.cm.enabled = false");
+      stmt.close();
+
+      // Check whether the data is moved to cmroot.
+
+      FileStatus[] ls1 = fs1.listStatus(cmQualPath);
+      assertTrue(ls1.length > 0);
+    } finally {
+      fs.delete(replDir, true);
+      fs.delete(cmQualPath, true);
+    }
   }
 }
