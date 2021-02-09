@@ -903,8 +903,7 @@ struct GetPartitionsByNamesRequest {
   7: optional string engine,
   8: optional string validWriteIdList,
   9: optional bool getFileMetadata,
-  10: optional i64 id=-1,  // table id
-  11: optional string catName
+  10: optional i64 id=-1  // table id
 }
 
 struct GetPartitionsByNamesResult {

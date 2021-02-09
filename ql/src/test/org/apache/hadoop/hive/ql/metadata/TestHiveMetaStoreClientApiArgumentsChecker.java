@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TestHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -120,6 +121,14 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
   @Test
   public void testGetPartitionNames2() throws HiveException {
     hive.getPartitionNames(t, null, null, (short) -1);
+  }
+
+  @Test
+  public void testGetPartitionsByNames1() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(req);
   }
 
   @Test

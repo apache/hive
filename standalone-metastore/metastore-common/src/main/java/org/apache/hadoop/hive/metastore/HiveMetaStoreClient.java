@@ -2227,14 +2227,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
           throws NoSuchObjectException, MetaException, TException {
-    checkDbAndTableFilters(req.getCatName(), req.getDb_name(), req.getTbl_name());
-    req.setDb_name(prependCatalogToDbName(req.getCatName(), req.getDb_name(), conf));
+    checkDbAndTableFilters(getDefaultCatalog(conf), req.getDb_name(), req.getTbl_name());
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(prependCatalogToDbName(req.getCatName(), req.getDb_name(),
-              conf), req.getTbl_name()));
+      req.setValidWriteIdList(getValidWriteIdList(req.getDb_name(), req.getTbl_name()));
     }
     if (req.getId() <= 0) {
-      req.setId(getTable(prependCatalogToDbName(req.getCatName(), req.getDb_name(), conf), req.getTbl_name()).getId());
+      req.setId(getTable(req.getDb_name(), req.getTbl_name()).getId());
     }
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
@@ -2249,6 +2247,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
       throws TException {
+    if (gpbnr.getValidWriteIdList() == null) {
+      gpbnr.setValidWriteIdList(getValidWriteIdList(gpbnr.getDb_name(), gpbnr.getTbl_name()));
+    }
+    if (gpbnr.getId() <= 0) {
+      gpbnr.setId(getTable(gpbnr.getDb_name(), gpbnr.getTbl_name()).getId());
+    }
     return client.get_partitions_by_names_req(gpbnr);
   }
 

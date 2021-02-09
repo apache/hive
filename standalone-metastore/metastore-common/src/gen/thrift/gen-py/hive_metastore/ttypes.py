@@ -10734,12 +10734,11 @@ class GetPartitionsByNamesRequest(object):
      - validWriteIdList
      - getFileMetadata
      - id
-     - catName
 
     """
 
 
-    def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None, validWriteIdList=None, getFileMetadata=None, id=-1, catName=None,):
+    def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None, validWriteIdList=None, getFileMetadata=None, id=-1,):
         self.db_name = db_name
         self.tbl_name = tbl_name
         self.names = names
@@ -10750,7 +10749,6 @@ class GetPartitionsByNamesRequest(object):
         self.validWriteIdList = validWriteIdList
         self.getFileMetadata = getFileMetadata
         self.id = id
-        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -10821,11 +10819,6 @@ class GetPartitionsByNamesRequest(object):
                     self.id = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 11:
-                if ftype == TType.STRING:
-                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -10881,10 +10874,6 @@ class GetPartitionsByNamesRequest(object):
         if self.id is not None:
             oprot.writeFieldBegin('id', TType.I64, 10)
             oprot.writeI64(self.id)
-            oprot.writeFieldEnd()
-        if self.catName is not None:
-            oprot.writeFieldBegin('catName', TType.STRING, 11)
-            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27714,7 +27703,6 @@ GetPartitionsByNamesRequest.thrift_spec = (
     (8, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 8
     (9, TType.BOOL, 'getFileMetadata', None, None, ),  # 9
     (10, TType.I64, 'id', None, -1, ),  # 10
-    (11, TType.STRING, 'catName', 'UTF8', None, ),  # 11
 )
 all_structs.append(GetPartitionsByNamesResult)
 GetPartitionsByNamesResult.thrift_spec = (
