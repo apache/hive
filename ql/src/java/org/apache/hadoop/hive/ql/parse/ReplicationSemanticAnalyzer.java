@@ -319,10 +319,17 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (loadPath == null) {
+        LOG.warn("loadPath is null.");
         return;
       }
 
       DumpMetaData dmd = new DumpMetaData(loadPath, conf);
+
+      if (!loadPath.getFileSystem(conf).exists(dmd.getDumpFilePath())) {
+        LOG.warn("_dumpmetadata file doesn't exist.");
+        return;
+      }
+
       if (!dmd.isVersionCompatible()) {
         String exceptionMessage = String.format("Dump format version: %d. Versions older than %d are not supported",
             dmd.getDumpFormatVersion(), Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT);
