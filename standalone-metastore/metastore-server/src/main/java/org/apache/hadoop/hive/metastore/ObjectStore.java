@@ -3498,6 +3498,10 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
 
       MTable mtbl = getMTable(catName, db_name, tbl_name);
+      if (mtbl == null) {
+        throw new NoSuchObjectException(
+            TableName.getQualified(catName, db_name, tbl_name) + " table not found");
+      }
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
