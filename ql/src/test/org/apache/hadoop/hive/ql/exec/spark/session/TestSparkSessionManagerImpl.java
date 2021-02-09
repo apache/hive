@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,6 +40,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@Ignore("Ignoring Hive on Spark tests")
 public class TestSparkSessionManagerImpl {
   private static final Logger LOG = LoggerFactory.getLogger(TestSparkSessionManagerImpl.class);
 
