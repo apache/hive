@@ -40,8 +40,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.CacheEntryList;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetCacheContentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetCacheContentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -367,6 +370,13 @@ public class LlapProtocolServerImpl extends AbstractService
       responseProtoBuilder.setEvictedBytes(-1L);
     }
     return responseProtoBuilder.build();
+  }
+
+  @Override
+  public GetCacheContentResponseProto getCacheContent(RpcController controller,
+      GetCacheContentRequestProto request) {
+    CacheEntryList entries = LlapProxy.getIo().fetchCachedMetadata();
+    return GetCacheContentResponseProto.newBuilder().setResult(entries).build();
   }
 
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {

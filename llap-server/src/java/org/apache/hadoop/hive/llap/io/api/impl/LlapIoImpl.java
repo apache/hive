@@ -18,24 +18,36 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
+import com.google.protobuf.ByteString;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
 import org.apache.hadoop.hive.llap.cache.PathCache;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
+import org.apache.hadoop.hive.llap.io.encoded.LlapOrcCacheLoader;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -116,6 +128,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
   private PathCache pathCache;
+  private final FixedSizedObjectPool<IoTrace> tracePool;
+  private LowLevelCachePolicy realCachePolicy;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
@@ -157,8 +171,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy
-          realCachePolicy =
+      realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
         HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
@@ -233,7 +246,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
-    FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
+    tracePool = IoTrace.createTracePool(conf);
     if (isEncodeEnabled) {
       int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
       int encodeThreads = numThreads * encodePoolMultiplier;
@@ -437,5 +450,21 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     } catch (HiveException e) {
       throw new IOException(e);
     }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.CacheEntryList fetchCachedMetadata() {
+    GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+    LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+        pathCache, tracePool, realCachePolicy);
+    return serializer.fetchMetadata();
+  }
+
+  @Override
+  public void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata) {
+    GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+    LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+        pathCache, tracePool, realCachePolicy);
+    serializer.loadData(metadata);
   }
 }
