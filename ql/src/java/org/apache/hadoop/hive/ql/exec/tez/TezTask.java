@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -236,6 +238,9 @@ public class TezTask extends Task<TezWork> {
           throw new HiveException("Operation cancelled");
         }
 
+        LOG.info("HS2 Host [{}], Dag ID:[{}], DAG Session ID: [{}]", getHostNameIP(),
+            this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
+
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
         rc = monitor.monitorExecution();
@@ -253,7 +258,7 @@ public class TezTask extends Task<TezWork> {
           counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
-          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
+          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
           counters = null;
         }
       } finally {
@@ -351,6 +356,17 @@ public class TezTask extends Task<TezWork> {
     return ss.getUserName();
   }
 
+  private static String getHostNameIP() {
+    try {
+      InetAddress ip = InetAddress.getLocalHost();
+      String hostname = ip.getHostName();
+      return String.format("%s (%s)", hostname, ip.getHostAddress());
+    } catch (UnknownHostException e) {
+      LOG.debug("Unable to determine hostname", e);
+      return "unknown (unknown)";
+    }
+  }
+
   private void closeDagClientOnCancellation(DAGClient dagClient) {
     try {
       dagClient.tryKillDAG();
@@ -416,7 +432,7 @@ public class TezTask extends Task<TezWork> {
     // the name of the dag is what is displayed in the AM/Job UI
     String dagName = utils.createDagName(conf, queryPlan);
 
-    LOG.info("Dag name: " + dagName);
+    LOG.info("Dag name: {}", dagName);
     DAG dag = DAG.create(dagName);
 
     // set some info for the query
@@ -427,9 +443,8 @@ public class TezTask extends Task<TezWork> {
     String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
     dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("DagInfo: " + dagInfo);
-    }
+    LOG.debug("DagInfo: {}", dagInfo);
+
     dag.setDAGInfo(dagInfo);
 
     dag.setCredentials(conf.getCredentials());
@@ -545,11 +560,9 @@ public class TezTask extends Task<TezWork> {
     String modifyStr = Utilities.getAclStringWithHiveModification(conf,
             TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}",
-          queryId, viewStr, modifyStr);
-    }
-    // set permissions for current user on DAG
+    LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}", queryId, viewStr, modifyStr);
+
+      // set permissions for current user on DAG
     DAGAccessControls ac = new DAGAccessControls(viewStr, modifyStr);
     dag.setAccessControls(ac);
   }
@@ -749,13 +762,11 @@ public class TezTask extends Task<TezWork> {
     }
 
     public String getDagIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getDagIdentifierString();
     }
 
     public String getSessionIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getSessionIdentifierString();
     }
 
 
