@@ -93,13 +93,13 @@ public class Cleaner extends MetaStoreCompactorThread {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
-        // Make sure nothing escapes this run method and kills the metastore at large,
-        // so wrap it in a big catch Throwable statement.
         boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
         long retentionTime = 0;
         if (delayedCleanupEnabled) {
           retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
         }
+        // Make sure nothing escapes this run method and kills the metastore at large,
+        // so wrap it in a big catch Throwable statement.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
           startedAt = System.currentTimeMillis();
