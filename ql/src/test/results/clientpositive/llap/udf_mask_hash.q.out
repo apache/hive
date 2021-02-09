@@ -33,9 +33,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: '8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90' (type: string)
             outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select mask_hash('TestString-123'),
@@ -61,7 +63,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90	8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90	30a88603135d3a6f7a66b4f9193da1ab4423aed45fb8fe736c2f2a08977f2bdd                                                                                                                                                                                               	NULL	NULL	NULL	NULL	NULL
-
 PREHOOK: query: select mask_hash('01-28-2021')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
