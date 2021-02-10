@@ -61,6 +61,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
+@org.junit.Ignore("HIVE-24766")
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
   private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 5 minutes
 
