@@ -11485,13 +11485,14 @@ void swap(GetTableResult &a, GetTableResult &b);
 std::ostream& operator<<(std::ostream& out, const GetTableResult& obj);
 
 typedef struct _GetTablesRequest__isset {
-  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false), projectionSpec(false) {}
+  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false), projectionSpec(false), tablesPattern(false) {}
   bool tblNames :1;
   bool capabilities :1;
   bool catName :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
   bool projectionSpec :1;
+  bool tablesPattern :1;
 } _GetTablesRequest__isset;
 
 class GetTablesRequest : public virtual ::apache::thrift::TBase {
@@ -11499,7 +11500,7 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
 
   GetTablesRequest(const GetTablesRequest&);
   GetTablesRequest& operator=(const GetTablesRequest&);
-  GetTablesRequest() : dbName(), catName(), processorIdentifier() {
+  GetTablesRequest() : dbName(), catName(), processorIdentifier(), tablesPattern() {
   }
 
   virtual ~GetTablesRequest() noexcept;
@@ -11510,6 +11511,7 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
   GetProjectionsSpec projectionSpec;
+  std::string tablesPattern;
 
   _GetTablesRequest__isset __isset;
 
@@ -11526,6 +11528,8 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
   void __set_processorIdentifier(const std::string& val);
 
   void __set_projectionSpec(const GetProjectionsSpec& val);
+
+  void __set_tablesPattern(const std::string& val);
 
   bool operator == (const GetTablesRequest & rhs) const
   {
@@ -11554,6 +11558,10 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
     if (__isset.projectionSpec != rhs.__isset.projectionSpec)
       return false;
     else if (__isset.projectionSpec && !(projectionSpec == rhs.projectionSpec))
+      return false;
+    if (__isset.tablesPattern != rhs.__isset.tablesPattern)
+      return false;
+    else if (__isset.tablesPattern && !(tablesPattern == rhs.tablesPattern))
       return false;
     return true;
   }
