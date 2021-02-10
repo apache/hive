@@ -122,6 +122,7 @@ public class FSStatsAggregator implements StatsAggregator {
   public String aggregateStats(String partID, String statType) {
     long counter = 0;
     Utilities.FILE_OP_LOGGER.debug("Part ID: {}, {}", partID, statType);
+    boolean statsPresent = false;
     for (Map<String,Map<String,String>> statsMap : statsList) {
       Map<String,String> partStat = statsMap.get(partID);
       if (null == partStat) { // not all partitions are scanned in all mappers, so this could be null.
@@ -131,11 +132,12 @@ public class FSStatsAggregator implements StatsAggregator {
       if (null == statVal) { // partition was found, but was empty.
         continue;
       }
+      statsPresent = true;
       counter += Long.parseLong(statVal);
     }
     Utilities.FILE_OP_LOGGER.info("Read stats for {}, {}, {}: ", partID, statType, counter);
 
-    return String.valueOf(counter);
+    return (statsPresent ? String.valueOf(counter) : null);
   }
 
   @Override
