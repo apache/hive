@@ -55,34 +55,48 @@ import java.util.TreeSet;
 public class HiveDruidRules {
 
   public static final DruidFilterRule FILTER = (DruidFilterRule) DruidFilterRule.Config.EMPTY
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
   public static final DruidProjectRule PROJECT = (DruidProjectRule) DruidProjectRule.Config.EMPTY
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
   public static final DruidAggregateRule AGGREGATE = (DruidAggregateRule) DruidAggregateRule.Config.EMPTY
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
   public static final DruidAggregateProjectRule AGGREGATE_PROJECT =
-          (DruidAggregateProjectRule) DruidAggregateProjectRule.Config.EMPTY.
-                  withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
+    (DruidAggregateProjectRule) DruidAggregateProjectRule.Config.EMPTY
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
   public static final DruidSortRule SORT = (DruidSortRule) DruidSortRule.Config.EMPTY
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final SortProjectTransposeRule SORT_PROJECT_TRANSPOSE = DruidRules.SORT_PROJECT_TRANSPOSE;
+  public static final SortProjectTransposeRule SORT_PROJECT_TRANSPOSE =
+    (SortProjectTransposeRule) DruidRules.SORT_PROJECT_TRANSPOSE
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final ProjectFilterTransposeRule PROJECT_FILTER_TRANSPOSE = DruidRules.PROJECT_FILTER_TRANSPOSE;
+  public static final ProjectFilterTransposeRule PROJECT_FILTER_TRANSPOSE =
+    (ProjectFilterTransposeRule) DruidRules.PROJECT_FILTER_TRANSPOSE
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final FilterProjectTransposeRule FILTER_PROJECT_TRANSPOSE = DruidRules.FILTER_PROJECT_TRANSPOSE;
+  public static final FilterProjectTransposeRule FILTER_PROJECT_TRANSPOSE =
+    (FilterProjectTransposeRule) DruidRules.FILTER_PROJECT_TRANSPOSE
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final AggregateFilterTransposeRule AGGREGATE_FILTER_TRANSPOSE = DruidRules.AGGREGATE_FILTER_TRANSPOSE;
+  public static final AggregateFilterTransposeRule AGGREGATE_FILTER_TRANSPOSE =
+    (AggregateFilterTransposeRule) DruidRules.AGGREGATE_FILTER_TRANSPOSE
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final FilterAggregateTransposeRule FILTER_AGGREGATE_TRANSPOSE = DruidRules.FILTER_AGGREGATE_TRANSPOSE;
+  public static final FilterAggregateTransposeRule FILTER_AGGREGATE_TRANSPOSE =
+    (FilterAggregateTransposeRule) DruidRules.FILTER_AGGREGATE_TRANSPOSE
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT = DruidRules.POST_AGGREGATION_PROJECT;
+  public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT =
+    (DruidPostAggregationProjectRule) DruidRules.POST_AGGREGATION_PROJECT
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidHavingFilterRule HAVING_FILTER_RULE = DruidRules.DRUID_HAVING_FILTER_RULE;
+  public static final DruidHavingFilterRule HAVING_FILTER_RULE =
+    (DruidHavingFilterRule) DruidRules.DRUID_HAVING_FILTER_RULE
+      .config.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
   public static final AggregateExpandDistinctAggregatesDruidRule EXPAND_SINGLE_DISTINCT_AGGREGATES_DRUID_RULE =
       new AggregateExpandDistinctAggregatesDruidRule(HiveRelFactories.HIVE_BUILDER);

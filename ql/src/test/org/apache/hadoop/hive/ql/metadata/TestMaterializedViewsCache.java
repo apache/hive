@@ -18,13 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.calcite.plan.Convention;
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
-import org.apache.calcite.plan.RelOptQuery;
-import org.apache.calcite.plan.RelOptTable;
-import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.plan.*;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
@@ -34,7 +28,6 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.metadata.Metadata;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
@@ -313,12 +306,6 @@ class TestMaterializedViewsCache {
       return dummyTable;
     }
 
-
-    @Override
-    public List<RexNode> getChildExps() {
-      return null;
-    }
-
     @Override
     public Convention getConvention() {
       return null;
@@ -330,17 +317,7 @@ class TestMaterializedViewsCache {
     }
 
     @Override
-    public boolean isDistinct() {
-      return false;
-    }
-
-    @Override
     public RelNode getInput(int i) {
-      return null;
-    }
-
-    @Override
-    public RelOptQuery getQuery() {
       return null;
     }
 
@@ -351,6 +328,11 @@ class TestMaterializedViewsCache {
 
     @Override
     public String getDigest() {
+      return null;
+    }
+
+    @Override
+    public RelDigest getRelDigest() {
       return null;
     }
 
@@ -390,16 +372,6 @@ class TestMaterializedViewsCache {
     }
 
     @Override
-    public double getRows() {
-      return 0;
-    }
-
-    @Override
-    public Set<String> getVariablesStopped() {
-      return null;
-    }
-
-    @Override
     public Set<CorrelationId> getVariablesSet() {
       return null;
     }
@@ -425,11 +397,6 @@ class TestMaterializedViewsCache {
     }
 
     @Override
-    public RelOptCost computeSelfCost(RelOptPlanner relOptPlanner) {
-      return null;
-    }
-
-    @Override
     public <M extends Metadata> M metadata(Class<M> aClass, RelMetadataQuery relMetadataQuery) {
       return null;
     }
@@ -445,8 +412,17 @@ class TestMaterializedViewsCache {
     }
 
     @Override
-    public String recomputeDigest() {
-      return null;
+    public void recomputeDigest() {
+    }
+
+    @Override
+    public boolean deepEquals(Object obj) {
+      return false;
+    }
+
+    @Override
+    public int deepHashCode() {
+      return 0;
     }
 
     @Override
@@ -465,16 +441,6 @@ class TestMaterializedViewsCache {
     }
 
     @Override
-    public boolean isValid(boolean b) {
-      return false;
-    }
-
-    @Override
-    public List<RelCollation> getCollationList() {
-      return null;
-    }
-
-    @Override
     public RelNode copy(RelTraitSet relTraitSet, List<RelNode> list) {
       return null;
     }
@@ -482,11 +448,6 @@ class TestMaterializedViewsCache {
     @Override
     public void register(RelOptPlanner relOptPlanner) {
 
-    }
-
-    @Override
-    public boolean isKey(ImmutableBitSet immutableBitSet) {
-      return false;
     }
 
     @Override

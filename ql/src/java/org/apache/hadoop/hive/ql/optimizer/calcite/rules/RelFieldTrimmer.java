@@ -463,8 +463,8 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     final Set<RelDataTypeField> inputExtraFields =
         new LinkedHashSet<>(extraFields);
     RelOptUtil.InputFinder inputFinder =
-        new RelOptUtil.InputFinder(inputExtraFields);
-    inputFinder.inputBitSet.addAll(fieldsUsed);
+        new RelOptUtil.InputFinder(inputExtraFields, fieldsUsed);
+//    inputFinder.inputBitSet.addAll(fieldsUsed);
     conditionExpr.accept(inputFinder);
     final ImmutableBitSet inputFieldsUsed = inputFinder.build();
 
@@ -573,8 +573,8 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     final Set<RelDataTypeField> combinedInputExtraFields =
         new LinkedHashSet<>(extraFields);
     RelOptUtil.InputFinder inputFinder =
-        new RelOptUtil.InputFinder(combinedInputExtraFields);
-    inputFinder.inputBitSet.addAll(fieldsUsed);
+        new RelOptUtil.InputFinder(combinedInputExtraFields, fieldsUsed);
+//    inputFinder.inputBitSet.addAll(fieldsUsed);
     conditionExpr.accept(inputFinder);
     final ImmutableBitSet fieldsUsedPlus = inputFinder.build();
 
