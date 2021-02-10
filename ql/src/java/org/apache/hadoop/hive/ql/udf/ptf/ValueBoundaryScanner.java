@@ -1195,7 +1195,7 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
         (PrimitiveObjectInspector) expressionDef.getOI());
     String s2 = PrimitiveObjectInspectorUtils.getString(v2,
         (PrimitiveObjectInspector) expressionDef.getOI());
-    return s1 != null && s2 != null && s1.compareTo(s2) > 0;
+    return s1 != null && s2 != null && s1.compareTo(s2) > amt;
   }
 
   @Override
@@ -1216,7 +1216,7 @@ class StringPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundarySc
 
   @Override
   public boolean isDistanceGreaterPrimitive(String s1, String s2, int amt) {
-    return s1 != null && s2 != null && s1.compareTo(s2) > 0;
+    return s1 != null && s2 != null && s1.compareTo(s2) > amt;
   }
 
   @Override
