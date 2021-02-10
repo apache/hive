@@ -44,6 +44,7 @@ import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 
@@ -59,14 +60,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQRemoveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_CONVERT_ANTI_JOIN;
 
 /**
  * NOTE: this rule is replicated from Calcite's SubqueryRemoveRule
@@ -94,8 +92,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
   @Override public void onMatch(RelOptRuleCall call) {
     final RelNode relNode = call.rel(0);
-    final HiveSubQRemoveRelBuilder builder =
-        new HiveSubQRemoveRelBuilder(null, call.rel(0).getCluster(), null);
+    final RelBuilder builder = call.builder();
 
     // if subquery is in FILTER
     if (relNode instanceof Filter) {
@@ -168,7 +165,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
   }
 
   private RexNode rewriteScalar(RelMetadataQuery mq, RexSubQuery e, Set<CorrelationId> variablesSet,
-      HiveSubQRemoveRelBuilder builder, int offset, int inputCount, boolean isCorrScalarAgg) {
+      RelBuilder builder, int offset, int inputCount, boolean isCorrScalarAgg) {
     // if scalar query has aggregate and no windowing and no gby avoid adding sq_count_check
     // since it is guaranteed to produce at most one row
     Double maxRowCount = mq.getMaxRowCount(e.rel);
@@ -231,7 +228,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
   }
 
   private RexNode rewriteSomeAll(RexSubQuery e, Set<CorrelationId> variablesSet,
-      HiveSubQRemoveRelBuilder builder) {
+      RelBuilder builder) {
     final SqlQuantifyOperator op = (SqlQuantifyOperator) e.op;
 
     // SOME_EQ & SOME_NE should have been rewritten into IN/ NOT IN
@@ -320,7 +317,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
   }
 
   private RexNode rewriteInExists(RexSubQuery e, Set<CorrelationId> variablesSet,
-      RelOptUtil.Logic logic, HiveSubQRemoveRelBuilder builder, int offset,
+      RelOptUtil.Logic logic, RelBuilder builder, int offset,
       boolean isCorrScalarAgg) {
     // Most general case, where the left and right keys might have nulls, and
     // caller requires 3-valued logic return.
@@ -503,10 +500,10 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     }
     switch (logic) {
     case TRUE:
-      builder.join(JoinRelType.INNER, builder.and(conditions), variablesSet, JoinRelType.SEMI);
+      builder.join(JoinRelType.SEMI, builder.and(conditions), variablesSet);
       return builder.literal(true);
     case FALSE:
-      builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet, JoinRelType.ANTI);
+      builder.join(JoinRelType.ANTI, builder.and(conditions), variablesSet);
       return builder.literal(false);
     }
     builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);
@@ -558,7 +555,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
   }
 
   protected RexNode apply(RelMetadataQuery mq, RexSubQuery e, Set<CorrelationId> variablesSet,
-      RelOptUtil.Logic logic, HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
+      RelOptUtil.Logic logic, RelBuilder builder, int inputCount, int offset,
       boolean isCorrScalarAgg) {
     switch (e.getKind()) {
     case SCALAR_QUERY:
@@ -577,7 +574,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
    * Returns a reference to a particular field, by offset, across several
    * inputs on a {@link RelBuilder}'s stack.
    */
-  private RexInputRef field(HiveSubQRemoveRelBuilder builder, int inputCount, int offset) {
+  private RexInputRef field(RelBuilder builder, int inputCount, int offset) {
     for (int inputOrdinal = 0; ;) {
       final RelNode r = builder.peek(inputCount, inputOrdinal);
       if (offset < r.getRowType().getFieldCount()) {
@@ -592,7 +589,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
    * Returns a list of expressions that project the first {@code fieldCount}
    * fields of the top input on a {@link RelBuilder}'s stack.
    */
-  private static List<RexNode> fields(HiveSubQRemoveRelBuilder builder, int fieldCount) {
+  private static List<RexNode> fields(RelBuilder builder, int fieldCount) {
     final List<RexNode> projects = new ArrayList<>();
     for (int i = 0; i < fieldCount; i++) {
       projects.add(builder.field(i));
