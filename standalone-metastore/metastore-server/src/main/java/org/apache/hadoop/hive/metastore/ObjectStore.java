@@ -3466,6 +3466,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  /**
+   * If partVals all the values are empty strings, it means we are returning
+   * all the partitions and hence we can attempt to use a directSQL equivalent API which
+   * is considerably faster.
+   * @param partVals The partitions values used to filter out the partitions.
+   * @return true if partVals is empty or if all the values in partVals is empty strings.
+   * other wise false. If user or groups is valid then returns false since the directSQL
+   * doesn't support partition privileges.
+   */
+  private boolean canTryDirectSQL(List<String> partVals) {
+    if (partVals.isEmpty()) {
+      return false;
+    }
+    for (String val : partVals) {
+      if (val != null && !val.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
@@ -3475,15 +3496,28 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       openTransaction();
+
+      MTable mtbl = getMTable(catName, db_name, tbl_name);
+      if (mtbl == null) {
+        throw new NoSuchObjectException(
+            TableName.getQualified(catName, db_name, tbl_name) + " table not found");
+      }
+      boolean getauth = null != userName && null != groupNames &&
+          "TRUE".equalsIgnoreCase(
+              mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
+      if (!getauth && canTryDirectSQL(part_vals)) {
+        LOG.info(
+            "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
+            db_name, tbl_name, Joiner.on(',').join(part_vals));
+        return getPartitions(catName, db_name, tbl_name, -1);
+      }
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
           part_vals, max_parts, null);
-      MTable mtbl = getMTable(catName, db_name, tbl_name);
       for (Object o : parts) {
         Partition part = convertToPart((MPartition) o, false);
         //set auth privileges
-        if (null != userName && null != groupNames &&
-            "TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        if (getauth) {
           String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
               .getPartitionKeys()), part.getValues());
           PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
