@@ -155,7 +155,7 @@ public class HiveRelFactories {
      */
     @Override
     public RelNode createJoin(RelNode left, RelNode right, List<RelHint> hints, RexNode condition,
-                              Set<CorrelationId> variablesStoppedd, JoinRelType joinType, boolean semiJoinDone) {
+      Set<CorrelationId> variablesStoppedd, JoinRelType joinType, boolean semiJoinDone) {
       if (joinType == JoinRelType.SEMI) {
         final RelOptCluster cluster = left.getCluster();
         return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);

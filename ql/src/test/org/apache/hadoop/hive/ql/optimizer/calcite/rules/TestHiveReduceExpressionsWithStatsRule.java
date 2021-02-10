@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
@@ -33,11 +35,13 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.ChildExpsRexShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -114,8 +118,10 @@ public class TestHiveReduceExpressionsWithStatsRule {
     statObj.setRange(100, 200);
     planner.setRoot(basePlan);
     RelNode optimizedRelNode = planner.findBestExp();
-    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
-    RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
+    List<RexNode> exps = new ArrayList<>();
+    optimizedRelNode.accept(new ChildExpsRexShuttle(exps));
+    assertEquals("missing literal", SqlKind.LITERAL, exps.get(0).getKind());
+    RexLiteral val = (RexLiteral) exps.get(0);
     assertEquals(true, val.getValue());
 
   }
@@ -139,8 +145,10 @@ public class TestHiveReduceExpressionsWithStatsRule {
     System.out.println(RelOptUtil.toString(basePlan));
     RelNode optimizedRelNode = planner.findBestExp();
     System.out.println(RelOptUtil.toString(optimizedRelNode));
-    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
-    RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
+    List<RexNode> exps = new ArrayList<>();
+    optimizedRelNode.accept(new ChildExpsRexShuttle(exps));
+    assertEquals("missing literal", SqlKind.LITERAL, exps.get(0).getKind());
+    RexLiteral val = (RexLiteral) exps.get(0);
     assertEquals(false, val.getValue());
 
   }
@@ -164,7 +172,9 @@ public class TestHiveReduceExpressionsWithStatsRule {
     System.out.println(RelOptUtil.toString(basePlan));
     RelNode optimizedRelNode = planner.findBestExp();
     System.out.println(RelOptUtil.toString(optimizedRelNode));
-    assertNotEquals("should not be a literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
+    List<RexNode> exps = new ArrayList<>();
+    optimizedRelNode.accept(new ChildExpsRexShuttle(exps));
+    assertNotEquals("should not be a literal", SqlKind.LITERAL, exps.get(0).getKind());
   }
 
   @Test
@@ -186,8 +196,10 @@ public class TestHiveReduceExpressionsWithStatsRule {
     System.out.println(RelOptUtil.toString(basePlan));
     RelNode optimizedRelNode = planner.findBestExp();
     System.out.println(RelOptUtil.toString(optimizedRelNode));
-    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
-    RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
+    List<RexNode> exps = new ArrayList<>();
+    optimizedRelNode.accept(new ChildExpsRexShuttle(exps));
+    assertEquals("missing literal", SqlKind.LITERAL, exps.get(0).getKind());
+    RexLiteral val = (RexLiteral) exps.get(0);
     assertEquals(true, val.getValue());
 
   }
@@ -211,8 +223,10 @@ public class TestHiveReduceExpressionsWithStatsRule {
     System.out.println(RelOptUtil.toString(basePlan));
     RelNode optimizedRelNode = planner.findBestExp();
     System.out.println(RelOptUtil.toString(optimizedRelNode));
-    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
-    RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
+    List<RexNode> exps = new ArrayList<>();
+    optimizedRelNode.accept(new ChildExpsRexShuttle(exps));
+    assertEquals("missing literal", SqlKind.LITERAL, exps.get(0).getKind());
+    RexLiteral val = (RexLiteral) exps.get(0);
     assertEquals(true, val.getValue());
 
   }

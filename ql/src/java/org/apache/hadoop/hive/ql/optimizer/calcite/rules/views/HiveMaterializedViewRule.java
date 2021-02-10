@@ -79,16 +79,36 @@ public class HiveMaterializedViewRule {
       .build();
 
   public static final MaterializedViewProjectFilterRule INSTANCE_PROJECT_FILTER =
-      MaterializedViewProjectFilterRule.Config.DEFAULT.toRule();
+    (MaterializedViewProjectFilterRule) MaterializedViewProjectFilterRule.Config.DEFAULT
+      .withGenerateUnionRewriting(true)
+      .withFastBailOut(false)
+      .withUnionRewritingPullProgram(PROGRAM)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .toRule();
 
   public static final MaterializedViewOnlyFilterRule INSTANCE_FILTER =
-      MaterializedViewOnlyFilterRule.Config.DEFAULT.toRule();
+    (MaterializedViewOnlyFilterRule) MaterializedViewOnlyFilterRule.Config.DEFAULT
+      .withGenerateUnionRewriting(true)
+      .withFastBailOut(false)
+      .withUnionRewritingPullProgram(PROGRAM)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .toRule();
 
   public static final MaterializedViewProjectJoinRule INSTANCE_PROJECT_JOIN =
-      MaterializedViewProjectJoinRule.Config.DEFAULT.toRule();
+    (MaterializedViewProjectJoinRule) MaterializedViewProjectJoinRule.Config.DEFAULT
+      .withGenerateUnionRewriting(true)
+      .withFastBailOut(false)
+      .withUnionRewritingPullProgram(PROGRAM)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .toRule();
 
   public static final MaterializedViewOnlyJoinRule INSTANCE_JOIN =
-      MaterializedViewOnlyJoinRule.Config.DEFAULT.toRule();
+    (MaterializedViewOnlyJoinRule) MaterializedViewOnlyJoinRule.Config.DEFAULT
+      .withGenerateUnionRewriting(true)
+      .withFastBailOut(false)
+      .withUnionRewritingPullProgram(PROGRAM)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .toRule();
 
   public static final HiveMaterializedViewProjectAggregateRule INSTANCE_PROJECT_AGGREGATE =
       new HiveMaterializedViewProjectAggregateRule(HiveRelFactories.HIVE_BUILDER,

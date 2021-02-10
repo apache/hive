@@ -20,8 +20,10 @@ import java.util.List;
 
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rex.RexCall;
@@ -88,7 +90,10 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
    */
   protected HiveReduceExpressionsRule(Class<? extends RelNode> clazz,
       RelBuilderFactory relBuilderFactory, String desc) {
-    super(clazz, relBuilderFactory, desc);
+    super((Config) Config.EMPTY
+      .withOperandSupplier(b -> b.operand(clazz).anyInputs())
+      .withDescription(desc)
+      .withRelBuilderFactory(relBuilderFactory));
   }
 
   /**
@@ -100,7 +105,15 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
 
     public FilterReduceExpressionsRule(Class<? extends Filter> filterClass,
         RelBuilderFactory relBuilderFactory) {
-      super(filterClass, relBuilderFactory, "ReduceExpressionsRule(Filter)");
+      super(
+        (Config) Config.EMPTY
+        .as(FilterReduceExpressionsRule.Config.class)
+        .withMatchNullability(true)
+        .withOperandFor(filterClass)
+        .withDescription("ReduceExpressionsRule(Filter)")
+        .as(FilterReduceExpressionsRule.Config.class)
+        .withRelBuilderFactory(relBuilderFactory)
+      );
     }
 
     @Override public void onMatch(RelOptRuleCall call) {
@@ -163,7 +176,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
       }
 
       // New plan is absolutely better than old plan.
-      call.getPlanner().setImportance(filter, 0.0);
+      call.getPlanner().prune(filter);
     }
 
     /**

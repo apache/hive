@@ -16,37 +16,37 @@ public class ChildExpsRexShuttle extends RexShuttle {
     @Override
     public RexNode visitOver(RexOver over) {
         exps.add(over);
-        return super.visitOver(over);
+        return over;
     }
 
     @Override
     public RexWindow visitWindow(RexWindow window) {
         exps.addAll(window.partitionKeys);
-        return super.visitWindow(window);
+        return window;
     }
 
     @Override
     public RexNode visitSubQuery(RexSubQuery subQuery) {
         exps.add(subQuery);
-        return super.visitSubQuery(subQuery);
+        return subQuery;
     }
 
     @Override
     public RexNode visitTableInputRef(RexTableInputRef ref) {
         exps.add(ref);
-        return super.visitTableInputRef(ref);
+        return ref;
     }
 
     @Override
     public RexNode visitPatternFieldRef(RexPatternFieldRef fieldRef) {
         exps.add(fieldRef);
-        return super.visitPatternFieldRef(fieldRef);
+        return fieldRef;
     }
 
     @Override
     public RexNode visitCall(RexCall call) {
         exps.add(call);
-        return super.visitCall(call);
+        return call;
     }
 
     @Override
@@ -72,42 +72,42 @@ public class ChildExpsRexShuttle extends RexShuttle {
     @Override
     public RexNode visitCorrelVariable(RexCorrelVariable variable) {
         exps.add(variable);
-        return super.visitCorrelVariable(variable);
+        return variable;
     }
 
     @Override
     public RexNode visitFieldAccess(RexFieldAccess fieldAccess) {
         exps.add(fieldAccess);
-        return super.visitFieldAccess(fieldAccess);
+        return fieldAccess;
     }
 
     @Override
     public RexNode visitInputRef(RexInputRef inputRef) {
         exps.add(inputRef);
-        return super.visitInputRef(inputRef);
+        return inputRef;
     }
 
     @Override
     public RexNode visitLocalRef(RexLocalRef localRef) {
         exps.add(localRef);
-        return super.visitLocalRef(localRef);
+        return localRef;
     }
 
     @Override
     public RexNode visitLiteral(RexLiteral literal) {
         exps.add(literal);
-        return super.visitLiteral(literal);
+        return literal;
     }
 
     @Override
     public RexNode visitDynamicParam(RexDynamicParam dynamicParam) {
         exps.add(dynamicParam);
-        return super.visitDynamicParam(dynamicParam);
+        return dynamicParam;
     }
 
     @Override
     public RexNode visitRangeRef(RexRangeRef rangeRef) {
         exps.add(rangeRef);
-        return super.visitRangeRef(rangeRef);
+        return rangeRef;
     }
 }

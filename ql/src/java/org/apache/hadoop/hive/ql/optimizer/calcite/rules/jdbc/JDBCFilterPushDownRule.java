@@ -24,6 +24,7 @@ import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilterRule;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.convert.ConverterRule;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -67,7 +68,7 @@ public class JDBCFilterPushDownRule extends RelOptRule {
     final HiveJdbcConverter converter = call.rel(1);
 
     Filter newHiveFilter = filter.copy(filter.getTraitSet(), converter.getInput(), filter.getCondition());
-    JdbcFilter newJdbcFilter = (JdbcFilter) new JdbcFilterRule(converter.getJdbcConvention()).convert(newHiveFilter);
+    JdbcFilter newJdbcFilter = (JdbcFilter) JdbcFilterRule.create(converter.getJdbcConvention()).convert(newHiveFilter);
     if (newJdbcFilter != null) {
       RelNode converterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcFilter));
 

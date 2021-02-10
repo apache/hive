@@ -20,10 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.BitSet;
 import java.util.List;
 
-import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptRuleOperand;
-import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.*;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
@@ -52,7 +49,18 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
    */
   protected HiveFilterJoinRule(RelOptRuleOperand operand, String id, boolean smart,
       RelBuilderFactory relBuilderFactory) {
-    super(operand, id, smart, relBuilderFactory, TRUE_PREDICATE);
+
+    super(
+      (Config) RelRule.Config.EMPTY
+      .withOperandSupplier(b0 ->
+        b0.operand(Filter.class).oneInput(b1 ->
+          b1.operand(Join.class).anyInputs()))
+      .as(FilterIntoJoinRule.Config.class)
+      .withSmart(smart)
+      .withPredicate((join, joinType, exp) -> true)
+      .as(FilterIntoJoinRule.Config.class)
+      .withRelBuilderFactory(relBuilderFactory)
+    );
   }
 
   /**
