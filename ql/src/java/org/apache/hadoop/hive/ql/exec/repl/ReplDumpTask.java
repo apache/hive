@@ -313,6 +313,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void deleteAllPreviousDumpMeta(Path currentDumpPath) {
     try {
       Path dumpRoot = getDumpRoot(currentDumpPath);
+      if(dumpRoot == null) {
+        return;
+      }
       FileSystem fs = dumpRoot.getFileSystem(conf);
       if (fs.exists(dumpRoot)) {
         FileStatus[] statuses = fs.listStatus(dumpRoot,
