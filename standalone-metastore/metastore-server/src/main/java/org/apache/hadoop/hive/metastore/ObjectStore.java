@@ -2061,7 +2061,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-      GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+      GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException {
     List<Table> tables = new ArrayList<>();
     boolean committed = false;
     Query query = null;
@@ -2072,15 +2072,25 @@ public class ObjectStore implements RawStore, Configurable {
       db = normalizeIdentifier(db);
       catName = normalizeIdentifier(catName);
 
-      List<String> lowered_tbl_names = new ArrayList<>(tbl_names.size());
-      for (String t : tbl_names) {
-        lowered_tbl_names.add(normalizeIdentifier(t));
+      List<String> lowered_tbl_names = new ArrayList<>();
+      if(tbl_names != null) {
+        lowered_tbl_names = new ArrayList<>(tbl_names.size());
+        for (String t : tbl_names) {
+          lowered_tbl_names.add(normalizeIdentifier(t));
+        }
       }
 
-      query = pm.newQuery(MTable.class);
-      query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
-      query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
-
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
+      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
+      if(tbl_names != null){
+        appendSimpleCondition(filterBuilder, "tableName", lowered_tbl_names.toArray(new String[0]), parameterVals);
+      }
+      if(tablePattern != null){
+        appendPatternCondition(filterBuilder, "tableName", tablePattern, parameterVals);
+      }
+      query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
       List<String> projectionFields = null;
 
       // If a projection specification has been set, validate it and translate it to JDO columns.
@@ -2096,11 +2106,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (projectionFields == null) {
-        mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
+        mtables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
       } else {
         if (projectionFields.size() > 1) {
           // Execute the query to fetch the partial results.
-          List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Declare the tables array to return the list of tables
           mtables = new ArrayList<>(results.size());
           // Iterate through each row of the result and create the MTable object.
@@ -2115,7 +2125,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         } else if (projectionFields.size() == 1) {
           // Execute the query to fetch the partial results.
-          List<Object> results = (List<Object>) query.execute(db, catName, lowered_tbl_names);
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Iterate through each row of the result and create the MTable object.
           mtables = new ArrayList<>(results.size());
           for (Object row : results) {
@@ -2162,7 +2172,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names)
           throws MetaException, UnknownDBException {
-    return getTableObjectsByName(catName, db, tbl_names, null);
+    return getTableObjectsByName(catName, db, tbl_names, null, null);
   }
 
   /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */

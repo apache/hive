@@ -398,7 +398,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
-          GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+          GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException {
 
     return Collections.emptyList();
   }

@@ -3778,20 +3778,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null, null);
+    return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null, null, null);
   }
 
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
-        req.getTblNames(), req.getCapabilities(), req.getProjectionSpec()));
+        req.getTblNames(), req.getCapabilities(), req.getProjectionSpec(), req.getTablesPattern()));
   }
 
   private List<Table> getTableObjectsInternal(String catName, String dbName,
                                               List<String> tableNames,
                                               ClientCapabilities capabilities,
-                                              GetProjectionsSpec projectionsSpec)
+                                              GetProjectionsSpec projectionsSpec, String tablePattern)
       throws MetaException, InvalidOperationException, UnknownDBException {
     if (isInTest) {
       assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
@@ -3815,31 +3815,35 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (dbName == null || dbName.isEmpty()) {
         throw new UnknownDBException("DB name is null or empty");
       }
-      if (tableNames == null) {
-        throw new InvalidOperationException(dbName + " cannot find null tables");
-      }
-
-      // The list of table names could contain duplicates. RawStore.getTableObjectsByName()
-      // only guarantees returning no duplicate table objects in one batch. If we need
-      // to break into multiple batches, remove duplicates first.
-      List<String> distinctTableNames = tableNames;
-      if (distinctTableNames.size() > tableBatchSize) {
-        List<String> lowercaseTableNames = new ArrayList<>();
-        for (String tableName : tableNames) {
-          lowercaseTableNames.add(org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier(tableName));
-        }
-        distinctTableNames = new ArrayList<>(new HashSet<>(lowercaseTableNames));
-      }
-
       RawStore ms = getMS();
-      int startIndex = 0;
-      // Retrieve the tables from the metastore in batches. Some databases like
-      // Oracle cannot have over 1000 expressions in a in-list
-      while (startIndex < distinctTableNames.size()) {
-        int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
-        tables.addAll(ms.getTableObjectsByName(catName, dbName, distinctTableNames.subList(
-            startIndex, endIndex), projectionsSpec));
-        startIndex = endIndex;
+      if(tablePattern != null){
+        tables = ms.getTableObjectsByName(catName, dbName, tableNames, projectionsSpec, tablePattern);
+      }else {
+        if (tableNames == null) {
+          throw new InvalidOperationException(dbName + " cannot find null tables");
+        }
+
+        // The list of table names could contain duplicates. RawStore.getTableObjectsByName()
+        // only guarantees returning no duplicate table objects in one batch. If we need
+        // to break into multiple batches, remove duplicates first.
+        List<String> distinctTableNames = tableNames;
+        if (distinctTableNames.size() > tableBatchSize) {
+          List<String> lowercaseTableNames = new ArrayList<>();
+          for (String tableName : tableNames) {
+            lowercaseTableNames.add(org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier(tableName));
+          }
+          distinctTableNames = new ArrayList<>(new HashSet<>(lowercaseTableNames));
+        }
+
+        int startIndex = 0;
+        // Retrieve the tables from the metastore in batches. Some databases like
+        // Oracle cannot have over 1000 expressions in a in-list
+        while (startIndex < distinctTableNames.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
+          tables.addAll(ms.getTableObjectsByName(catName, dbName, distinctTableNames.subList(
+                  startIndex, endIndex), projectionsSpec, tablePattern));
+          startIndex = endIndex;
+        }
       }
       for (Table t : tables) {
         if (t.getParameters() != null && MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
@@ -3848,7 +3852,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
 
-      FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
+      tables = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
     } catch (MetaException | InvalidOperationException | UnknownDBException e) {
       ex = e;
       throw e;

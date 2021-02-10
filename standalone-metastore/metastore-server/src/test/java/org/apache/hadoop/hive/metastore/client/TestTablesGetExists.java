@@ -284,8 +284,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Assert.assertEquals("No such functions size", 0, tables.size());
 
     // No such database
-    tables = client.getTables("no_such_database", OTHER_DATABASE);
-    Assert.assertEquals("No such table size", 0, tables.size());
+    try {
+      tables = client.getTables("no_such_database", OTHER_DATABASE);
+    }catch (MetaException exception) {
+      // Ignoring Expected exception
+    }
   }
 
   @Test
@@ -739,9 +742,9 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Assert.assertFalse("Table not exists", client.tableExists(catName, dbName, "non_existing_table"));
   }
 
-  @Test
+  @Test(expected = UnknownDBException.class)
   public void getTablesBogusCatalog() throws TException {
-    Assert.assertEquals(0, client.getTables("nosuch", DEFAULT_DATABASE_NAME, "*_to_find_*").size());
+    client.getTables("nosuch", DEFAULT_DATABASE_NAME, "*_to_find_*");
   }
 
   @Test
