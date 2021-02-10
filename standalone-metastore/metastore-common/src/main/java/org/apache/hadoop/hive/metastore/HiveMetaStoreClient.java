@@ -2556,8 +2556,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern)
       throws TException {
-    List<String> tables = client.get_tables(prependCatalogToDbName(catName, dbName, conf), tablePattern);
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
+    List<String> tables = new ArrayList<>();
+    GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
+    projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
+    GetTablesRequest req = new GetTablesRequest(dbName);
+    req.setCatName(catName);
+    req.setCapabilities(version);
+    req.setTblNames(null);
+    if(tablePattern == null){
+      tablePattern = ".*";
+    }
+    req.setTablesPattern(tablePattern);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    req.setProjectionSpec(projectionsSpec);
+    List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
+    tableObjects = deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
+    for (Table tbl : tableObjects) {
+      tables.add(tbl.getTableName());
+    }
+    return tables;
   }
 
   @Override

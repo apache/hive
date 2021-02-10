@@ -416,8 +416,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String dbName, List<String> tableNames,
-          GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
-    return objectStore.getTableObjectsByName(catName, dbName, tableNames, projectionSpec);
+          GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException {
+    return objectStore.getTableObjectsByName(catName, dbName, tableNames, projectionSpec, tablePattern);
   }
 
   @Override

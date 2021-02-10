@@ -18216,11 +18216,12 @@ class GetTablesRequest(object):
      - processorCapabilities
      - processorIdentifier
      - projectionSpec
+     - tablesPattern
 
     """
 
 
-    def __init__(self, dbName=None, tblNames=None, capabilities=None, catName=None, processorCapabilities=None, processorIdentifier=None, projectionSpec=None,):
+    def __init__(self, dbName=None, tblNames=None, capabilities=None, catName=None, processorCapabilities=None, processorIdentifier=None, projectionSpec=None, tablesPattern=None,):
         self.dbName = dbName
         self.tblNames = tblNames
         self.capabilities = capabilities
@@ -18228,6 +18229,7 @@ class GetTablesRequest(object):
         self.processorCapabilities = processorCapabilities
         self.processorIdentifier = processorIdentifier
         self.projectionSpec = projectionSpec
+        self.tablesPattern = tablesPattern
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -18285,6 +18287,11 @@ class GetTablesRequest(object):
                     self.projectionSpec.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.tablesPattern = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -18328,6 +18335,10 @@ class GetTablesRequest(object):
         if self.projectionSpec is not None:
             oprot.writeFieldBegin('projectionSpec', TType.STRUCT, 7)
             self.projectionSpec.write(oprot)
+            oprot.writeFieldEnd()
+        if self.tablesPattern is not None:
+            oprot.writeFieldBegin('tablesPattern', TType.STRING, 8)
+            oprot.writeString(self.tablesPattern.encode('utf-8') if sys.version_info[0] == 2 else self.tablesPattern)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -29493,6 +29504,7 @@ GetTablesRequest.thrift_spec = (
     (5, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 5
     (6, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 6
     (7, TType.STRUCT, 'projectionSpec', [GetProjectionsSpec, None], None, ),  # 7
+    (8, TType.STRING, 'tablesPattern', 'UTF8', None, ),  # 8
 )
 all_structs.append(GetTablesResult)
 GetTablesResult.thrift_spec = (

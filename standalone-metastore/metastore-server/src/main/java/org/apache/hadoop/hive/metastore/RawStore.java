@@ -579,7 +579,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException failure in querying the RDBMS.
    */
   List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
-                                    GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException;
+                                    GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException;
 
   /**
    * Get all tables in a database.

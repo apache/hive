@@ -1561,8 +1561,8 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-          GetProjectionsSpec projectionsSpec) throws MetaException, UnknownDBException {
-    return getTableObjectsByName(catName, db, tbl_names, null);
+          GetProjectionsSpec projectionsSpec, String tablePattern) throws MetaException, UnknownDBException {
+    return rawStore.getTableObjectsByName(catName, db, tbl_names, projectionsSpec, tablePattern);
   }
 
   @Override public List<String> getAllTables(String catName, String dbName) throws MetaException {
