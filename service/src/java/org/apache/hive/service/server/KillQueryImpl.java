@@ -116,9 +116,14 @@ public class KillQueryImpl implements KillQuery {
 
   private static boolean isAdmin() {
     boolean isAdmin = false;
-    if (SessionState.get().getAuthorizerV2() != null) {
+    SessionState ss = SessionState.get();
+    if(!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      // If authorization is disabled, everyone should have kill query access
+      return true;
+    }
+    if (ss.getAuthorizerV2() != null) {
       try {
-        SessionState.get().getAuthorizerV2()
+        ss.getAuthorizerV2()
             .checkPrivileges(HiveOperationType.KILL_QUERY, new ArrayList<>(),
                 new ArrayList<>(), new HiveAuthzContext.Builder().build());
         isAdmin = true;
