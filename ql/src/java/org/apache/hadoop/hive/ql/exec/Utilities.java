@@ -4537,8 +4537,6 @@ public final class Utilities {
           while (AcidUtils.isChildOfDelta(parentDirPath, specPath)) {
             // Some cases there are other directory layers between the delta and the datafiles
             // (export-import mm table, insert with union all to mm table, skewed tables).
-            // But it does not matter for the AcidState, we just need the deltas and the data files
-            // So build the snapshot with the files inside the delta directory
             parentDirPath = parentDirPath.getParent();
           }
           directInsertDirectories.add(parentDirPath);
