@@ -398,7 +398,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean shouldLoadProceed (Path hiveDumpPath) throws IOException {
-    if (hiveDumpPath != null) { // Is null check necessary?
+    if (hiveDumpPath != null) {
       return hiveDumpPath.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplAck.DUMP_ACKNOWLEDGEMENT.toString()))
           && !hiveDumpPath.getFileSystem(conf).exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
     }
