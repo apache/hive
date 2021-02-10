@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -251,7 +252,7 @@ public class PlanModifierForASTConv {
     List<RexNode> projectList = HiveCalciteUtil.getProjsFromBelowAsInputRef(rel);
 
     HiveProject select = HiveProject.create(rel.getCluster(), rel, projectList,
-        rel.getRowType(), rel.getCollationList());
+        rel.getRowType(), Collections.emptyList());
 
     return select;
   }

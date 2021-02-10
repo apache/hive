@@ -34,6 +34,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
@@ -137,13 +138,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   @Override public RelWriter explainTerms(RelWriter pw) {
-    if (this.useQBIdInDigest) {
-      // TODO: Only the qualified name should be left here
-      return super.explainTerms(pw)
-          .item("qbid:alias", concatQbIDAlias);
-    } else {
-      return super.explainTerms(pw).item("table:alias", tblAlias);
-    }
+    return super.explainTerms(pw)
+      .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
+      .itemIf("htColumns", this.neededColIndxsFrmReloptHT,
+        this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("insideView", this.isInsideView(),
+        this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(),
+        this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("table:alias", tblAlias,!this.useQBIdInDigest);
   }
 
   @Override
