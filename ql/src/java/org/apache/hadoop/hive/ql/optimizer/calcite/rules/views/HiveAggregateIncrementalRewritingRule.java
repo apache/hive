@@ -121,7 +121,7 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
     }
     // 3) Add the expressions that correspond to the aggregation
     // functions
-    RexNode caseFilterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, filterConjs);
+    RexNode caseFilterCond = makeFilterCond(rexBuilder, filterConjs);
     for (int i = 0, leftPos = groupCount, rightPos = totalCount + groupCount;
          leftPos < totalCount; i++, leftPos++, rightPos++) {
       // case when mv2.deptno IS NULL AND mv2.deptname IS NULL then s else source.s + mv2.s end
@@ -159,8 +159,8 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
       projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
           ImmutableList.of(caseFilterCond, rightRef, elseReturn)));
     }
-    RexNode joinCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, joinConjs);
-    RexNode filterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, filterConjs);
+    RexNode joinCond = makeFilterCond(rexBuilder, joinConjs);
+    RexNode filterCond = makeFilterCond(rexBuilder, filterConjs);
     // 3) Build plan
     RelNode newNode = call.builder()
         .push(union.getInput(1))
@@ -172,4 +172,10 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
     call.transformTo(newNode);
   }
 
+  private RexNode makeFilterCond(RexBuilder rexBuilder, List<RexNode> filterConjs) {
+    if (filterConjs.size() == 1) {
+      return filterConjs.get(0);
+    }
+    return rexBuilder.makeCall(SqlStdOperatorTable.AND, filterConjs);
+  }
 }
