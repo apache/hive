@@ -2212,7 +2212,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
     gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
-    gpbnr.setId(getTable(prependCatalogToDbName(catName, db_name, conf),tbl_name).getId());
+    gpbnr.setId(getTable(db_name,tbl_name).getId());
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
@@ -2228,12 +2228,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
           throws NoSuchObjectException, MetaException, TException {
     checkDbAndTableFilters(getDefaultCatalog(conf), req.getDb_name(), req.getTbl_name());
-    if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(req.getDb_name(), req.getTbl_name()));
-    }
-    if (req.getId() <= 0) {
-      req.setId(getTable(req.getDb_name(), req.getTbl_name()).getId());
-    }
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
