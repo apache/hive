@@ -1649,8 +1649,6 @@ POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
