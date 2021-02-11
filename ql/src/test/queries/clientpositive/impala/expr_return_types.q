@@ -42,7 +42,7 @@ explain select tt_int in (1,2,3,4) from type_test;
 explain select cast('01/01/1984' as date) + interval 1 days;
 
 -- generates ImpalaAnalyticExpr (ends up with a exchange in front, so does not exercise result file code)
-explain select lag(tt_int,1) over(partition by tt_date) as yest from type_test;
+explain select max(tt_int) over(partition by tt_date) as yest from type_test;
 
 -- generates ImpalaBoolLiteral
 explain select 1 is null;

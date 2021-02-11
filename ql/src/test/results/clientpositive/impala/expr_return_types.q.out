@@ -387,11 +387,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 
 HMS CALL get_table_req FOR type_test
 HMS CALL get_foreign_keys FOR type_test
-PREHOOK: query: explain select lag(tt_int,1) over(partition by tt_date) as yest from type_test
+PREHOOK: query: explain select max(tt_int) over(partition by tt_date) as yest from type_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@type_test
 PREHOOK: Output: streaming
-POSTHOOK: query: explain select lag(tt_int,1) over(partition by tt_date) as yest from type_test
+POSTHOOK: query: explain select max(tt_int) over(partition by tt_date) as yest from type_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@type_test
 STAGE DEPENDENCIES:
@@ -405,7 +405,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=20.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: lag(default.type_test.tt_int, 1)
+  |  output exprs: max(default.type_test.tt_int)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   04:EXCHANGE [UNPARTITIONED]
@@ -418,7 +418,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=10.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:ANALYTIC
-  |  functions: lag(tt_int, 1)
+  |  functions: max(tt_int)
   |  partition by: default.type_test.tt_date
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
