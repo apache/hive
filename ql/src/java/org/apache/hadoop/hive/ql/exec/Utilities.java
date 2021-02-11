@@ -2861,35 +2861,17 @@ public final class Utilities {
    * Construct a list of full partition spec from Dynamic Partition Context and the directory names
    * corresponding to these dynamic partitions.
    */
-  public static Map<Path, PartitionDetails> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx, long writeId,
-      int stmtId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite,
-      AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
+  public static Map<Path, PartitionDetails> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
+      Set<String> dynamicPartitionSpecs) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
       List<Path> allPartition = new ArrayList<>();
-      if (isMmTable || isDirectInsert) {
-        int stmtIdToUse = -1;
-        if (isDirectInsert) {
-          stmtIdToUse = stmtId;
-        }
-        Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(fs, loadPath, numDPCols, null, writeId, stmtIdToUse,
-            conf, isInsertOverwrite, acidOperation);
-        for (Path p : leafStatus) {
-          Path dpPath = p.getParent();
-          String partitionSpec = dpPath.toString().substring(loadPath.toString().length() + 1);
-          if (!allPartition.contains(dpPath)) {
-            if (isInsertOverwrite) {
-              if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.contains(partitionSpec)) {
-                allPartition.add(dpPath);
-              }
-            }
-            else {
-              allPartition.add(dpPath);
-            }
-          }
+      if (dynamicPartitionSpecs != null) {
+        for (String partSpec : dynamicPartitionSpecs) {
+          allPartition.add(new Path(loadPath, partSpec));
         }
       } else {
         List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
@@ -4431,7 +4413,7 @@ public final class Utilities {
     // a manifest file will still be written, otherwise the missing manifest file
     // would result a clean-up on table level which could delete the data written by
     // the other FileSinkOperators. (For further details please see HIVE-23114.)
-    boolean writeDynamicPartitionsToManifest = isInsertOverwrite && hasDynamicPartitions;
+    boolean writeDynamicPartitionsToManifest = hasDynamicPartitions;
     if (commitPaths.isEmpty() && !writeDynamicPartitionsToManifest) {
       return;
     }
@@ -4516,20 +4498,25 @@ public final class Utilities {
 
     Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, writeId);
     List<Path> manifests = new ArrayList<>();
-    if (fs.exists(manifestDir)) {
+    try {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
       manifests = selectManifestFiles(manifestFiles);
-    } else {
+    } catch (FileNotFoundException ex) {
       Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
+      if (!fs.exists(specPath)) {
+        // Empty insert to new partition
+        fs.mkdirs(specPath);
+      }
     }
 
     Set<String> dynamicPartitionSpecs = new HashSet<>();
     Set<Path> committed = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    Set<Path> directInsertDirectories = new HashSet<>();
     for (Path mfp : manifests) {
       Utilities.FILE_OP_LOGGER.info("Looking at manifest file: {}", mfp);
       try (FSDataInputStream mdis = fs.open(mfp)) {
-        if (isInsertOverwrite && dpLevels > 0) {
+        if (dpLevels > 0) {
           int partitionCount = mdis.readInt();
           for (int i = 0; i < partitionCount; ++i) {
             String nextPart = mdis.readUTF();
@@ -4546,29 +4533,14 @@ public final class Utilities {
           if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
+          Path parentDirPath = path.getParent();
+          while (AcidUtils.isChildOfDelta(parentDirPath, specPath)) {
+            // Some cases there are other directory layers between the delta and the datafiles
+            // (export-import mm table, insert with union all to mm table, skewed tables).
+            parentDirPath = parentDirPath.getParent();
+          }
+          directInsertDirectories.add(parentDirPath);
         }
-      }
-    }
-
-    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    AcidUtils.IdPathFilter filter =
-        new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
-    if (!fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
-      FileUtils.mkdir(fs, specPath, hconf);
-    }
-
-    Path[] files = null;
-    if (!isInsertOverwrite || dpLevels == 0 || !dynamicPartitionSpecs.isEmpty()) {
-      files = getDirectInsertDirectoryCandidates(
-          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite, acidOperation);
-    }
-
-    ArrayList<Path> directInsertDirectories = new ArrayList<>();
-    if (files != null) {
-      for (Path path : files) {
-        Utilities.FILE_OP_LOGGER.info("Looking at path: {}", path);
-        directInsertDirectories.add(path);
       }
     }
 
@@ -4609,10 +4581,9 @@ public final class Utilities {
     if (!isDirectInsert) {
       // Create fake file statuses to avoid querying the file system. removeTempOrDuplicateFiles
       // doesn't need to check anything except path and directory status for MM directories.
-      FileStatus[] finalResults = new FileStatus[directInsertDirectories.size()];
-      for (int i = 0; i < directInsertDirectories.size(); ++i) {
-        finalResults[i] = new PathOnlyFileStatus(directInsertDirectories.get(i));
-      }
+      FileStatus[] finalResults = directInsertDirectories.stream()
+          .map(PathOnlyFileStatus::new)
+          .toArray(FileStatus[]::new);
       List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
           unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
             isMmTable, null, isInsertOverwrite);
@@ -4686,7 +4657,7 @@ public final class Utilities {
   }
 
   private static void cleanDirectInsertDirectoriesConcurrently(
-          List<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
+          Set<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
           throws IOException, HiveException {
 
     ExecutorService executor = createCleanTaskExecutor(hconf, directInsertDirectories.size());
@@ -4701,7 +4672,7 @@ public final class Utilities {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Clean-Direct-Insert-Dirs-Thread-%d").build());
   }
 
-  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, List<Path> directInsertDirectories,
+  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, Set<Path> directInsertDirectories,
                                                                     Set<Path> committed, FileSystem fs, String unionSuffix, int lbLevels) {
     List<Future<Void>> cleanTaskFutures = new ArrayList<>(directInsertDirectories.size());
     for (Path directory : directInsertDirectories) {
