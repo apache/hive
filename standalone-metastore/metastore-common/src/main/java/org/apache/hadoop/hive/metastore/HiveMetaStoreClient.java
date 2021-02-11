@@ -2241,12 +2241,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
       throws TException {
-    if (gpbnr.getValidWriteIdList() == null) {
-      gpbnr.setValidWriteIdList(getValidWriteIdList(gpbnr.getDb_name(), gpbnr.getTbl_name()));
-    }
-    if (gpbnr.getId() <= 0) {
-      gpbnr.setId(getTable(gpbnr.getDb_name(), gpbnr.getTbl_name()).getId());
-    }
     return client.get_partitions_by_names_req(gpbnr);
   }
 
