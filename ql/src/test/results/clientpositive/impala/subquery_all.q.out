@@ -61,8 +61,8 @@ POSTHOOK: Input: default@impala_flights
 CBO PLAN:
 ImpalaSortRel(sort0=[$2], dir0=[DESC], fetch=[50])
   ImpalaProjectRel($f1=[$4], $f3=[$5], $f4=[$6])
-    ImpalaJoinRel(condition=[AND(OR(IS NOT TRUE(<=($6, $0)), $1), OR($2, $1, <=($6, $0)), OR(>($6, $0), $1, <=($6, $0), $3))], joinType=[inner])
-      ImpalaProjectPassthroughRel(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
+    ImpalaJoinRel(condition=[OR($1, AND(>($6, $0), $2, IS NOT TRUE(OR(<=($6, $0), $3))))], joinType=[inner])
+      ImpalaProjectPassthroughRel(m=[$0], ==[=($1, 0)], <>=[<>($1, 0)], >=[>($1, $2)])
         ImpalaAggregateRel(group=[{}], m=[MAX($0)], c=[COUNT()], d=[COUNT($0)])
           ImpalaProjectPassthroughRel(_o__c0=[CAST(/(CAST($1):DOUBLE, CAST($2):DOUBLE)):BIGINT])
             ImpalaAggregateRel(group=[{15}], agg#0=[sum($14)], agg#1=[count($14)])

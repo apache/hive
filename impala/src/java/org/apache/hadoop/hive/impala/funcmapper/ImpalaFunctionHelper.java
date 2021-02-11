@@ -24,6 +24,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -185,6 +186,30 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public RexNode makeCall(RexBuilder builder, SqlOperator operator, List<RexNode> operandList)
+      throws SemanticException {
+    // Some operators need special handling to extract their name,
+    // since the correspondence Impala-Calcite is not exactly 1:1.
+    // For instance, CASE statement in Calcite corresponds with
+    // Impala's WHEN expression.
+    final String functionName;
+    switch (operator.getKind()) {
+    case CASE:
+      functionName = "WHEN";
+      break;
+    default:
+      functionName = operator.getName();
+    }
+    FunctionInfo functionInfo = getFunctionInfo(functionName);
+    RelDataType returnType = getReturnType(functionInfo, operandList);
+    List<RexNode> newInputs = convertInputs(functionInfo, operandList, returnType);
+    return getExpression(functionName, functionInfo, newInputs, returnType);
   }
 
   /**

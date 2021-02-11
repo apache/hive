@@ -19,10 +19,11 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
@@ -83,6 +84,13 @@ public interface FunctionHelper {
    */
   RexNode getExpression(String functionText, FunctionInfo functionInfo,
       List<RexNode> inputs, RelDataType returnType)
+      throws SemanticException;
+
+  /**
+   * Given a builder, a SQL operator, and the inputs to a function, it will
+   * return an expression node containing the function call.
+   */
+  RexNode makeCall(RexBuilder builder, SqlOperator operator, List<RexNode> operandList)
       throws SemanticException;
 
   /**

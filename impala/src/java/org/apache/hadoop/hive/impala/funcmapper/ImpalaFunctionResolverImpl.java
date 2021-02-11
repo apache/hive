@@ -441,7 +441,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
         // if the return type is not passed in, it is derived from the function name.
         if (retType == null) {
           String adjustedFunc = func.toUpperCase().equals("INT") ? "INTEGER" : func.toUpperCase();
-	  // Use the Impala normalized type.
+          // Use the Impala normalized type.
           Type impalaType = Type.parseColumnType(adjustedFunc);
           Preconditions.checkState(inputs.size() == 1);
           // When casting a timestamp, it is possible to get a null value

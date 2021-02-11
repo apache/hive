@@ -17,22 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import javax.annotation.Nonnull;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.Context;
-import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.server.CalciteServerStatement;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.tools.FrameworkConfig;
-import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
@@ -40,6 +39,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFun
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 
 
 /**
@@ -53,41 +54,17 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
  */
 public class HiveRelBuilder extends RelBuilder {
 
+  private final FunctionHelper functionHelper;
+
   private HiveRelBuilder(Context context, RelOptCluster cluster, RelOptSchema relOptSchema) {
     super(context, cluster, relOptSchema);
-  }
-
-  /** Creates a RelBuilder. */
-  public static RelBuilder create(FrameworkConfig config) {
-    final RelOptCluster[] clusters = {null};
-    final RelOptSchema[] relOptSchemas = {null};
-    Frameworks.withPrepare(
-        new Frameworks.PrepareAction<Void>(config) {
-          @Override
-          public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
-              SchemaPlus rootSchema, CalciteServerStatement statement) {
-            clusters[0] = cluster;
-            relOptSchemas[0] = relOptSchema;
-            return null;
-          }
-        });
-    return new HiveRelBuilder(config.getContext(), clusters[0], relOptSchemas[0]);
+    this.functionHelper = cluster.getPlanner().getContext().unwrap(FunctionHelper.class);
   }
 
   /** Creates a {@link RelBuilderFactory}, a partially-created RelBuilder.
    * Just add a {@link RelOptCluster} and a {@link RelOptSchema} */
   public static RelBuilderFactory proto(final Context context) {
-    return new RelBuilderFactory() {
-      @Override
-      public RelBuilder create(RelOptCluster cluster, RelOptSchema schema) {
-        return new HiveRelBuilder(context, cluster, schema);
-      }
-    };
-  }
-
-  /** Creates a {@link RelBuilderFactory} that uses a given set of factories. */
-  public static RelBuilderFactory proto(Object... factories) {
-    return proto(Contexts.of(factories));
+    return (cluster, schema) -> new HiveRelBuilder(context, cluster, schema);
   }
 
   @Override
@@ -158,6 +135,36 @@ public class HiveRelBuilder extends RelBuilder {
      * The problem with it is that it may merge 2 windowing expressions.
      */
     return false;
+  }
+
+  @Override
+  @Nonnull
+  public RexNode call(SqlOperator operator, RexNode... operands) {
+    return this.call(operator, ImmutableList.copyOf(operands));
+  }
+
+  @Override
+  @Nonnull
+  public RexNode call(SqlOperator operator, Iterable<? extends RexNode> operands) {
+    return this.call(operator, ImmutableList.copyOf(operands));
+  }
+
+  @Nonnull
+  private RexNode call(SqlOperator operator, List<RexNode> operandList) {
+    switch (operator.getKind()) {
+    case AS:
+    case DESCENDING:
+    case NULLS_FIRST:
+    case NULLS_LAST:
+      // These operators should not go through the engine-specific helper.
+      return super.call(operator, operandList);
+    default:
+      try {
+        return functionHelper.makeCall(this.cluster.getRexBuilder(), operator, operandList);
+      } catch (SemanticException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
 }

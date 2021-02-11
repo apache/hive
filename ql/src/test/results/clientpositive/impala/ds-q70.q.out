@@ -90,7 +90,7 @@ ImpalaProjectPassthroughRel(total_sum=[$0], s_state=[$1], s_county=[$2], lochier
       ImpalaProjectRel($f2=[$2], $f0=[$0], $f1=[$1], GROUPING__ID=[$3], $func_0=[+(GROUPING($3, 1:BIGINT), GROUPING($3, 0:BIGINT))], $func_1=[CASE(=(GROUPING($3, 0:BIGINT), 0), $0, null:VARCHAR(2147483647))])
         ImpalaAggregateRel(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
           ImpalaProjectPassthroughRel($f0=[$7], $f1=[$6], $f2=[$1])
-            ImpalaJoinRel(condition=[=($7, $8)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($7, $8)], joinType=[semi])
               ImpalaJoinRel(condition=[=($5, $0)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($3, $2)], joinType=[inner])
                   ImpalaProjectPassthroughRel(ss_store_sk=[$6], ss_net_profit=[$21], ss_sold_date_sk=[$22])
@@ -305,11 +305,10 @@ Per-Host Resources: mem-estimate=271.88MB mem-reservation=75.81MB thread-reserva
   |  tuple-ids=18N,19N,20N row-size=120B cardinality=0
   |  in pipelines: 02(GETNEXT)
   |
-  17:HASH JOIN [INNER JOIN, BROADCAST]
+  17:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store.s_state = default.impala_tpcds_store_0.s_state
-  |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,1,3,17 row-size=68B cardinality=0
+  |  tuple-ids=0,1,3 row-size=48B cardinality=0
   |  in pipelines: 02(GETNEXT), 14(OPEN)
   |
   |--29:EXCHANGE [BROADCAST]

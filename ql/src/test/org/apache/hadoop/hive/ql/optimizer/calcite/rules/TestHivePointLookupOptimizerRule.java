@@ -32,9 +32,11 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,13 +67,15 @@ public class TestHivePointLookupOptimizerRule {
 
   @Before
   public void before() {
+    JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl();
+    RexBuilder rexBuilder = new RexBuilder(typeFactory);
+
     HepProgramBuilder programBuilder = new HepProgramBuilder();
     programBuilder.addRuleInstance(new HivePointLookupOptimizerRule.FilterCondition(2, true));
 
-    planner = new HepPlanner(programBuilder.build());
+    planner = new HepPlanner(programBuilder.build(),
+        new HivePlannerContext(null, null, null, null, null, new HiveFunctionHelper(rexBuilder), null));
 
-    JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl();
-    RexBuilder rexBuilder = new RexBuilder(typeFactory);
     final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
     RelDataType rowTypeMock = typeFactory.createStructType(MyRecord.class);
     Mockito.doReturn(rowTypeMock).when(tableMock).getRowType();

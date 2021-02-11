@@ -42,7 +42,6 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -74,7 +73,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -381,6 +379,15 @@ public class HiveFunctionHelper implements FunctionHelper {
     }
 
     return expr;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public RexNode makeCall(RexBuilder builder, SqlOperator operator, List<RexNode> operandList) {
+    RelDataType type = builder.deriveReturnType(operator, operandList);
+    return builder.makeCall(type, operator, operandList);
   }
 
   private void checkForStatefulFunctions(List<RexNode> exprs)

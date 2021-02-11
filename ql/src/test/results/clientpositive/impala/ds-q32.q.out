@@ -74,7 +74,7 @@ ImpalaSortRel(fetch=[100])
           ImpalaProjectPassthroughRel(i_item_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(=($13, 66), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel(d_date_sk=[$0])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 2002-03-29 00:00:00:TIMESTAMP(9), +(CAST(CAST(2002-03-29:DATE):DATE):TIMESTAMP(9), 7776000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(_UTF-16LE'2002-03-29':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'2002-03-29':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 7776000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
       ImpalaProjectPassthroughRel(cs_item_sk=[$0], *=[*(1.3:DECIMAL(2, 1), CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
         ImpalaAggregateRel(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)], condition=[IS NOT NULL(CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
           ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
@@ -256,7 +256,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= casttotimestamp('2002-03-29 00:00:00') AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(casttotimestamp(DATE '2002-03-29'), INTERVAL CAST(7776000000 AS BIGINT) MILLISECOND)
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= casttotimestamp('2002-03-29') AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(casttotimestamp(casttodate('2002-03-29')), INTERVAL CAST(7776000000 AS BIGINT) MILLISECOND)
      stored statistics:
        table: rows=unavailable size=unavailable
        columns: unavailable

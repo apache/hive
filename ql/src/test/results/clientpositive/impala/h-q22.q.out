@@ -201,7 +201,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   06:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_customer.c_custkey = default.impala_tpch_orders.o_custkey
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: if(TupleIsNull(7), NULL, TRUE) IS NULL
+  |  other predicates: isnottrue(if(TupleIsNull(7), NULL, TRUE) IS NOT NULL)
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=4,0,7N row-size=60B cardinality=1
   |  in pipelines: 10(GETNEXT), 13(OPEN)

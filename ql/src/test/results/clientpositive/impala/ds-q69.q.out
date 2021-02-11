@@ -334,7 +334,7 @@ Per-Host Resources: mem-estimate=137.82MB mem-reservation=43.69MB thread-reserva
   19:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: c.c_customer_sk = default.impala_tpcds_catalog_sales.cs_ship_customer_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: if(TupleIsNull(18), NULL, TRUE) IS NULL
+  |  other predicates: isnottrue(if(TupleIsNull(18), NULL, TRUE) IS NOT NULL)
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,4,13N,18N row-size=92B cardinality=0
   |  in pipelines: 01(GETNEXT), 32(OPEN)
@@ -347,7 +347,7 @@ Per-Host Resources: mem-estimate=137.82MB mem-reservation=43.69MB thread-reserva
   14:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: c.c_customer_sk = default.impala_tpcds_web_sales.ws_bill_customer_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: if(TupleIsNull(13), NULL, TRUE) IS NULL
+  |  other predicates: isnottrue(if(TupleIsNull(13), NULL, TRUE) IS NOT NULL)
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,4,13N row-size=88B cardinality=0
   |  in pipelines: 01(GETNEXT), 28(OPEN)

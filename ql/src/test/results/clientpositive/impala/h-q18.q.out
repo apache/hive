@@ -85,20 +85,21 @@ POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_orders
 CBO PLAN:
 ImpalaSortRel(sort0=[$4], sort1=[$3], sort2=[$2], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-  ImpalaProjectRel(c_name=[$4], c_custkey=[$3], o_orderkey=[$0], o_orderdate=[$2], o_totalprice=[$1], $f5=[$5])
-    ImpalaAggregateRel(group=[{0, 2, 3, 5, 6}], agg#0=[sum($8)])
-      ImpalaJoinRel(condition=[=($0, $7)], joinType=[inner])
-        ImpalaJoinRel(condition=[=($5, $1)], joinType=[inner])
-          ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
-            ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
-              ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-            ImpalaProjectPassthroughRel(l_orderkey=[$0])
-              ImpalaAggregateRel(group=[{0}], agg#0=[sum($4)], condition=[>($1, 300)])
-                ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[IS NOT NULL($0)])
-          ImpalaProjectPassthroughRel(c_custkey=[$0], c_name=[$1])
-            ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[IS NOT NULL($0)])
-        ImpalaProjectPassthroughRel(l_orderkey=[$0], l_quantity=[$4])
-          ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[IS NOT NULL($0)])
+  ImpalaProjectRel(c_name=[$1], c_custkey=[$0], o_orderkey=[$2], o_orderdate=[$4], o_totalprice=[$3], $f5=[$5])
+    ImpalaAggregateRel(group=[{0, 1, 2, 4, 5}], agg#0=[sum($7)])
+      ImpalaJoinRel(condition=[=($2, $8)], joinType=[semi])
+        ImpalaProjectPassthroughRel(c_custkey=[$4], c_name=[$5], o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$2], o_orderdate=[$3], l_orderkey=[$6], l_quantity=[$7])
+          ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
+            ImpalaJoinRel(condition=[=($4, $1)], joinType=[inner])
+              ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
+                ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+              ImpalaProjectPassthroughRel(c_custkey=[$0], c_name=[$1])
+                ImpalaHdfsScanRel(table=[[default, impala_tpch_customer]], condition=[IS NOT NULL($0)])
+            ImpalaProjectPassthroughRel(l_orderkey=[$0], l_quantity=[$4])
+              ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[IS NOT NULL($0)])
+        ImpalaProjectPassthroughRel(l_orderkey=[$0])
+          ImpalaAggregateRel(group=[{0}], agg#0=[sum($4)], condition=[>($1, 300)])
+            ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[IS NOT NULL($0)])
 
 HMS CALL get_table_req FOR impala_tpch_customer
 HMS CALL get_table_req FOR impala_tpch_orders
@@ -196,7 +197,7 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=68.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_custkey, default.impala_tpch_orders.o_orderkey, default.impala_tpch_orders.o_orderdate, default.impala_tpch_orders.o_totalprice, sum(default.impala_tpch_lineitem_0.l_quantity)
+  |  output exprs: default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_custkey, default.impala_tpch_orders.o_orderkey, default.impala_tpch_orders.o_orderdate, default.impala_tpch_orders.o_totalprice, sum(default.impala_tpch_lineitem.l_quantity)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:MERGING-EXCHANGE [UNPARTITIONED]
@@ -217,68 +218,68 @@ Per-Host Resources: mem-estimate=128.07MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 10(GETNEXT), 17(OPEN)
   |
   00:UNION
+  |  pass-through-operands: all
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=10 row-size=64B cardinality=0
   |  in pipelines: 17(GETNEXT)
   |
   17:AGGREGATE [FINALIZE]
-  |  output: sum:merge(default.impala_tpch_lineitem_0.l_quantity)
-  |  group by: default.impala_tpch_orders.o_orderkey, default.impala_tpch_orders.o_totalprice, default.impala_tpch_orders.o_orderdate, default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name
+  |  output: sum:merge(default.impala_tpch_lineitem.l_quantity)
+  |  group by: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_orders.o_orderkey, default.impala_tpch_orders.o_totalprice, default.impala_tpch_orders.o_orderdate
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=64B cardinality=0
   |  in pipelines: 17(GETNEXT), 01(OPEN)
   |
-  16:EXCHANGE [HASH(default.impala_tpch_orders.o_orderkey,default.impala_tpch_orders.o_totalprice,default.impala_tpch_orders.o_orderdate,default.impala_tpch_customer.c_custkey,default.impala_tpch_customer.c_name)]
+  16:EXCHANGE [HASH(default.impala_tpch_customer.c_custkey,default.impala_tpch_customer.c_name,default.impala_tpch_orders.o_orderkey,default.impala_tpch_orders.o_totalprice,default.impala_tpch_orders.o_orderdate)]
      mem-estimate=68.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=9 row-size=64B cardinality=0
      in pipelines: 01(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, HASH(default.impala_tpch_orders.o_orderkey,default.impala_tpch_orders.o_totalprice,default.impala_tpch_orders.o_orderdate,default.impala_tpch_customer.c_custkey,default.impala_tpch_customer.c_name)]
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, HASH(default.impala_tpch_customer.c_custkey,default.impala_tpch_customer.c_name,default.impala_tpch_orders.o_orderkey,default.impala_tpch_orders.o_totalprice,default.impala_tpch_orders.o_orderdate)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpch_lineitem_0.l_quantity)
-  |  group by: default.impala_tpch_orders.o_orderkey, default.impala_tpch_orders.o_totalprice, default.impala_tpch_orders.o_orderdate, default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name
+  |  output: sum(default.impala_tpch_lineitem.l_quantity)
+  |  group by: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_orders.o_orderkey, default.impala_tpch_orders.o_totalprice, default.impala_tpch_orders.o_orderdate
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=64B cardinality=0
   |  in pipelines: 01(GETNEXT)
   |
-  08:HASH JOIN [INNER JOIN, BROADCAST]
+  08:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_orders.o_orderkey = default.impala_tpch_lineitem_0.l_orderkey
-  |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,4,5,7 row-size=96B cardinality=0
-  |  in pipelines: 01(GETNEXT), 07(OPEN)
+  |  tuple-ids=0,2,4 row-size=72B cardinality=0
+  |  in pipelines: 01(GETNEXT), 14(OPEN)
   |
   |--15:EXCHANGE [BROADCAST]
-  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=7 row-size=16B cardinality=0
-  |     in pipelines: 07(GETNEXT)
+  |     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=8 row-size=24B cardinality=0
+  |     in pipelines: 14(GETNEXT)
   |
-  06:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpch_orders.o_custkey = default.impala_tpch_customer.c_custkey
-  |  fk/pk conjuncts: assumed fk/pk
-  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,4,5 row-size=80B cardinality=0
-  |  in pipelines: 01(GETNEXT), 05(OPEN)
-  |
-  |--14:EXCHANGE [BROADCAST]
-  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=5 row-size=20B cardinality=0
-  |     in pipelines: 05(GETNEXT)
-  |
-  04:HASH JOIN [INNER JOIN, BROADCAST]
+  05:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_orders.o_orderkey = default.impala_tpch_lineitem.l_orderkey
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,4 row-size=60B cardinality=0
-  |  in pipelines: 01(GETNEXT), 12(OPEN)
+  |  tuple-ids=0,2,4 row-size=72B cardinality=0
+  |  in pipelines: 01(GETNEXT), 04(OPEN)
   |
-  |--13:EXCHANGE [BROADCAST]
-  |     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=4 row-size=24B cardinality=0
-  |     in pipelines: 12(GETNEXT)
+  |--12:EXCHANGE [BROADCAST]
+  |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=4 row-size=16B cardinality=0
+  |     in pipelines: 04(GETNEXT)
+  |
+  03:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.impala_tpch_orders.o_custkey = default.impala_tpch_customer.c_custkey
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=56B cardinality=0
+  |  in pipelines: 01(GETNEXT), 02(OPEN)
+  |
+  |--11:EXCHANGE [BROADCAST]
+  |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=20B cardinality=0
+  |     in pipelines: 02(GETNEXT)
   |
   01:SCAN HDFS [default.impala_tpch_orders, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
@@ -292,51 +293,11 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
      tuple-ids=0 row-size=36B cardinality=0
      in pipelines: 01(GETNEXT)
 
-F02:PLAN FRAGMENT [HASH(default.impala_tpch_lineitem.l_orderkey)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=13, BROADCAST]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  12:AGGREGATE [FINALIZE]
-  |  output: sum:merge(default.impala_tpch_lineitem.l_quantity)
-  |  group by: default.impala_tpch_lineitem.l_orderkey
-  |  having: sum(default.impala_tpch_lineitem.l_quantity) > CAST(300 AS DECIMAL(38,2))
-  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=4 row-size=24B cardinality=0
-  |  in pipelines: 12(GETNEXT), 02(OPEN)
-  |
-  11:EXCHANGE [HASH(default.impala_tpch_lineitem.l_orderkey)]
-     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=4 row-size=24B cardinality=0
-     in pipelines: 02(GETNEXT)
-
 F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=11, HASH(default.impala_tpch_lineitem.l_orderkey)]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  03:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpch_lineitem.l_quantity)
-  |  group by: default.impala_tpch_lineitem.l_orderkey
-  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=4 row-size=24B cardinality=0
-  |  in pipelines: 02(GETNEXT)
-  |
-  02:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
-     HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpch_lineitem.l_orderkey IS NOT NULL
-     stored statistics:
-       table: rows=unavailable size=unavailable
-       columns: unavailable
-     extrapolated-rows=disabled max-scan-range-rows=0
-     file formats: [PARQUET]
-     mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=2 row-size=16B cardinality=0
-     in pipelines: 02(GETNEXT)
-
-F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=14, BROADCAST]
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=11, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  05:SCAN HDFS [default.impala_tpch_customer, RANDOM]
+  02:SCAN HDFS [default.impala_tpch_customer, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_customer.c_custkey IS NOT NULL
      stored statistics:
@@ -345,14 +306,54 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      extrapolated-rows=disabled max-scan-range-rows=0
      file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=5 row-size=20B cardinality=0
-     in pipelines: 05(GETNEXT)
+     tuple-ids=2 row-size=20B cardinality=0
+     in pipelines: 02(GETNEXT)
 
-F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=12, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  04:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.impala_tpch_lineitem.l_orderkey IS NOT NULL
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=16B cardinality=0
+     in pipelines: 04(GETNEXT)
+
+F04:PLAN FRAGMENT [HASH(default.impala_tpch_lineitem_0.l_orderkey)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=15, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  07:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+  14:AGGREGATE [FINALIZE]
+  |  output: sum:merge(default.impala_tpch_lineitem_0.l_quantity)
+  |  group by: default.impala_tpch_lineitem_0.l_orderkey
+  |  having: sum(default.impala_tpch_lineitem_0.l_quantity) > CAST(300 AS DECIMAL(38,2))
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=24B cardinality=0
+  |  in pipelines: 14(GETNEXT), 06(OPEN)
+  |
+  13:EXCHANGE [HASH(default.impala_tpch_lineitem_0.l_orderkey)]
+     mem-estimate=28.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=8 row-size=24B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=13, HASH(default.impala_tpch_lineitem_0.l_orderkey)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  07:AGGREGATE [STREAMING]
+  |  output: sum(default.impala_tpch_lineitem_0.l_quantity)
+  |  group by: default.impala_tpch_lineitem_0.l_orderkey
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=8 row-size=24B cardinality=0
+  |  in pipelines: 06(GETNEXT)
+  |
+  06:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_lineitem_0.l_orderkey IS NOT NULL
      stored statistics:
@@ -361,8 +362,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      extrapolated-rows=disabled max-scan-range-rows=0
      file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=7 row-size=16B cardinality=0
-     in pipelines: 07(GETNEXT)
+     tuple-ids=6 row-size=16B cardinality=0
+     in pipelines: 06(GETNEXT)
 
 
   Stage: Stage-0
