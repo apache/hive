@@ -4675,6 +4675,10 @@ public class HiveConf extends Configuration {
         "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER("hive.llap.io.encode.threadpool.multiplier", 2,
+        "Used to determine the size of IO encode threadpool by multiplying hive.llap.io.threadpool.size" +
+        "with this value. During text table reads a thread from the 'regular' IO thread pool may place a number of" +
+        "encode tasks to the threads in the encode pool."),
     LLAP_USE_KERBEROS("hive.llap.kerberos.enabled", true,
         "If LLAP is configured for Kerberos authentication. This could be useful when cluster\n" +
         "is kerberized, but LLAP is not."),
