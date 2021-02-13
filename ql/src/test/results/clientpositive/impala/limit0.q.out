@@ -1,0 +1,16 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+PREHOOK: query: EXPLAIN CBO PHYSICAL
+SELECT COUNT(*)
+ FROM impala_tpch_lineitem limit 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: streaming
+POSTHOOK: query: EXPLAIN CBO PHYSICAL
+SELECT COUNT(*)
+ FROM impala_tpch_lineitem limit 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+CBO PLAN:
+ImpalaEmptySetRel
+

@@ -27,7 +27,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -39,13 +38,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
 import org.apache.hadoop.hive.impala.plan.ImpalaPlannerContext;
 import org.apache.hadoop.hive.impala.funcmapper.ImpalaConjuncts;
-import org.apache.hadoop.hive.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.impala.rex.ImpalaRexVisitor;
 import org.apache.hadoop.hive.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.SlotRef;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.common.ImpalaException;
@@ -151,7 +148,9 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
       rowType = constRowType_;
     }
 
-    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer(), rowType);
+    TupleDescriptorCreator tupleDescCreator =
+        new TupleDescriptorCreator(nodeType.toString(), rowType);
+    TupleDescriptor tupleDesc = tupleDescCreator.create(ctx.getRootAnalyzer());
     // The outputexprs are the SlotRef exprs passed to the parent node.
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
 
@@ -217,19 +216,6 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     }
 
     return retNode;
-  }
-
-  private TupleDescriptor createTupleDescriptor(Analyzer analyzer, RelDataType rowType) throws HiveException {
-    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor(nodeType.toString());
-    tupleDesc.setIsMaterialized(true);
-
-    for (RelDataTypeField relDataTypeField : rowType.getFieldList()) {
-      SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
-      slotDesc.setType(ImpalaTypeConverter.createImpalaType(relDataTypeField.getType()));
-      slotDesc.setLabel(relDataTypeField.getName());
-      slotDesc.setIsMaterialized(true);
-    }
-    return tupleDesc;
   }
 
   @Override

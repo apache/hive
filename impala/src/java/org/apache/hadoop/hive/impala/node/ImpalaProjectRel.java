@@ -24,7 +24,6 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -33,11 +32,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import org.apache.hadoop.hive.impala.plan.ImpalaPlannerContext;
 import org.apache.hadoop.hive.impala.funcmapper.ImpalaConjuncts;
-import org.apache.hadoop.hive.impala.funcmapper.ImpalaTypeConverter;
 
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
@@ -77,7 +74,9 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     Preconditions.checkArgument(getInputs().size() == 1);
     Preconditions.checkArgument(getInput(0) instanceof ImpalaPlanRel);
     List<Expr> projectExprs = createProjectExprs(ctx).values().asList();
-    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer(), projectExprs);
+    TupleDescriptorCreator tupleDescCreator =
+        new TupleDescriptorCreator("single input union", projectExprs, project.getRowType());
+    TupleDescriptor tupleDesc = tupleDescCreator.create(ctx.getRootAnalyzer());
     // The outputexprs are the SlotRef exprs passed to the parent node.
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
     // The project exprs are the Calcite RexNode exprs that are passed into the
@@ -95,21 +94,6 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     }
 
     return planNode;
-  }
-
-  private TupleDescriptor createTupleDescriptor(Analyzer analyzer, List<Expr> exprs) throws HiveException {
-    TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("single input union");
-    tupleDesc.setIsMaterialized(true);
-
-    for (int i = 0; i < project.getRowType().getFieldList().size(); i++) {
-      RelDataTypeField relDataTypeField = project.getRowType().getFieldList().get(i);
-      SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
-      slotDesc.setType(ImpalaTypeConverter.createImpalaType(relDataTypeField.getType()));
-      slotDesc.setLabel(exprs.get(i).toSql());
-      slotDesc.setIsMaterialized(true);
-    }
-    tupleDesc.computeMemLayout();
-    return tupleDesc;
   }
 
   @Override

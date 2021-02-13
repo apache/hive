@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctio
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.impala.node.ImpalaAggregateRel;
+import org.apache.hadoop.hive.impala.node.ImpalaEmptySetRel;
 import org.apache.hadoop.hive.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.impala.node.ImpalaJoinRel;
 import org.apache.hadoop.hive.impala.node.ImpalaProjectPassthroughRel;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.impala.node.ImpalaSortRel;
 import org.apache.hadoop.hive.impala.node.ImpalaTableFunctionScanRel;
 import org.apache.hadoop.hive.impala.node.ImpalaUnionRel;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -276,6 +279,14 @@ public class HiveImpalaRules {
       final HiveSortLimit sort = call.rel(0);
       final RelNode inputNode = call.rel(1);
 
+      long limit = sort.getFetchExpr() != null ?
+          ((BigDecimal) RexLiteral.value(sort.getFetchExpr())).longValue() : -1L;
+
+      if (limit == 0) {
+        call.transformTo(new ImpalaEmptySetRel(sort));
+        return;
+      }
+
       List<RelNode> inputNodes = sort.getInputs();
       if (inputNode instanceof HiveProject) {
         ImpalaProjectRel newProject = new ImpalaProjectRel((HiveProject) inputNode);
@@ -299,6 +310,14 @@ public class HiveImpalaRules {
       final HiveFilter filter = call.rel(0);
       final HiveSortLimit sort = call.rel(1);
       final RelNode inputNode = call.rel(2);
+
+      long limit = sort.getFetchExpr() != null ?
+          ((BigDecimal) RexLiteral.value(sort.getFetchExpr())).longValue() : -1L;
+
+      if (limit == 0) {
+        call.transformTo(new ImpalaEmptySetRel(sort));
+        return;
+      }
 
       List<RelNode> inputNodes = sort.getInputs();
       if (inputNode instanceof HiveProject) {
