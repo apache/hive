@@ -31,7 +31,7 @@ import java.util.concurrent.ThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -83,7 +83,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(conf);
     // Create the 'hive' catalog
-    HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
     // Create 2 database objects
     db1 = createDatabaseObject("cs_db1", "user1");
     objectStore.createDatabase(db1);

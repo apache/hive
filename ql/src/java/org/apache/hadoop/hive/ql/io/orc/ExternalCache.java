@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
-import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
@@ -311,9 +310,7 @@ public class ExternalCache implements FooterCache {
     FileStatus fs = file.getFileStatus();
     ByteBuffer copy = bb.duplicate();
     try {
-      OrcTail orcTail = ReaderImpl.extractFileTail(copy, fs.getLen(), fs.getModificationTime());
-      // trigger lazy read of metadata to make sure serialized data is not corrupted and readable
-      orcTail.getStripeStatistics(false, false);
+      OrcTail orcTail = ReaderImpl.extractFileTail(copy, copy.limit(), fs.getModificationTime());
       return orcTail;
     } catch (Exception ex) {
       byte[] data = new byte[bb.remaining()];

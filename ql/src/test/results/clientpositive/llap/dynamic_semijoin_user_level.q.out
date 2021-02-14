@@ -293,9 +293,9 @@ Stage-0
               <-Map 4 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_7]
                   PartitionCols:_col0
-                  Select Operator [SEL_5] (rows=20 width=360)
+                  Select Operator [SEL_5] (rows=20 width=364)
                     Output:["_col0"]
-                    TableScan [TS_3] (rows=20 width=360)
+                    TableScan [TS_3] (rows=20 width=364)
                       default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:COMPLETE
 
 PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)

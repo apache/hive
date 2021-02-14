@@ -901,7 +901,9 @@ struct GetPartitionsByNamesRequest {
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
   7: optional string engine,
-  8: optional string validWriteIdList
+  8: optional string validWriteIdList,
+  9: optional bool getFileMetadata,
+  10: optional i64 id=-1  // table id
 }
 
 struct GetPartitionsByNamesResult {

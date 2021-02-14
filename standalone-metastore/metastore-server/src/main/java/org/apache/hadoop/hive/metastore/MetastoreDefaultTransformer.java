@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
@@ -583,29 +584,34 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       throw new MetaException("Database " + dbName + " for table " + table.getTableName() + " could not be found");
     }
 
-      if (TableType.MANAGED_TABLE.name().equals(tableType)) {
+    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.debug("Table is a MANAGED_TABLE");
       txnal = params.get(TABLE_IS_TRANSACTIONAL);
       txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
+      boolean ctas = Boolean.valueOf(params.getOrDefault(TABLE_IS_CTAS, "false"));
       isInsertAcid = (txn_properties != null && txn_properties.equalsIgnoreCase("insert_only"));
       if ((txnal == null || txnal.equalsIgnoreCase("FALSE")) && !isInsertAcid) { // non-ACID MANAGED TABLE
-        LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
-        newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-        params.remove(TABLE_IS_TRANSACTIONAL);
-        params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
-        params.put("EXTERNAL", "TRUE");
-        params.put(EXTERNAL_TABLE_PURGE, "TRUE");
-        params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
-        newTable.setParameters(params);
-        LOG.info("Modified table params are:" + params.toString());
+        if (ctas) {
+          LOG.info("Not Converting CTAS table " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
+        } else {
+          LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
+          newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
+          params.remove(TABLE_IS_TRANSACTIONAL);
+          params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
+          params.put("EXTERNAL", "TRUE");
+          params.put(EXTERNAL_TABLE_PURGE, "TRUE");
+          params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
+          newTable.setParameters(params);
+          LOG.info("Modified table params are:" + params.toString());
 
-        if (!table.isSetSd() || table.getSd().getLocation() == null) {
-          try {
-            Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
-            newTable.getSd().setLocation(newPath.toString());
-            LOG.info("Modified location from null to " + newPath);
-          } catch (Exception e) {
-            LOG.warn("Exception determining external table location:" + e.getMessage());
+          if (!table.isSetSd() || table.getSd().getLocation() == null) {
+            try {
+              Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
+              newTable.getSd().setLocation(newPath.toString());
+              LOG.info("Modified location from null to " + newPath);
+            } catch (Exception e) {
+              LOG.warn("Exception determining external table location:" + e.getMessage());
+            }
           }
         }
       } else { // ACID table

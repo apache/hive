@@ -27,6 +27,7 @@ import org.apache.logging.log4j.core.util.ReflectionUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -37,6 +38,7 @@ import java.util.UUID;
 /**
  * Test if the small table cache is evicted, when a new query is executed.
  */
+@Ignore("HIVE-22944: Kryo 5 upgrade conflicts with Spark, which is not supported anymore")
 public class TestSmallTableCacheEviction {
 
   private String smallTableName1;

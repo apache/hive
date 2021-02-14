@@ -172,13 +172,13 @@ Stage-0
     Stage-1
       Reducer 5 vectorized, llap
       File Output Operator [FS_89]
-        Group By Operator [GBY_88] (rows=1 width=8)
+        Group By Operator [GBY_88] (rows=2 width=8)
           Output:["_col0"],keys:KEY._col0
         <-Union 4 [SIMPLE_EDGE]
           <-Reducer 3 [CONTAINS] vectorized, llap
             Reduce Output Operator [RS_87]
               PartitionCols:_col0
-              Group By Operator [GBY_86] (rows=1 width=8)
+              Group By Operator [GBY_86] (rows=2 width=8)
                 Output:["_col0"],keys:_col0
                 Group By Operator [GBY_85] (rows=1 width=8)
                   Output:["_col0"],aggregations:["count(VALUE._col0)"]
@@ -187,7 +187,7 @@ Stage-0
                     Group By Operator [GBY_10] (rows=1 width=8)
                       Output:["_col0"],aggregations:["count()"]
                       Merge Join Operator [MERGEJOIN_51] (rows=1728398 width=8)
-                        Conds:RS_71._col0=RS_77._col0(Inner)
+                        Conds:RS_71._col0=RS_79._col0(Inner)
                       <-Map 1 [SIMPLE_EDGE] vectorized, llap
                         SHUFFLE [RS_71]
                           PartitionCols:_col0
@@ -198,18 +198,18 @@ Stage-0
                               TableScan [TS_0] (rows=123457 width=14)
                                 default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
                       <-Map 8 [SIMPLE_EDGE] vectorized, llap
-                        SHUFFLE [RS_77]
+                        SHUFFLE [RS_79]
                           PartitionCols:_col0
-                          Select Operator [SEL_75] (rows=28 width=4)
+                          Select Operator [SEL_76] (rows=28 width=4)
                             Output:["_col0"]
-                            Filter Operator [FIL_73] (rows=28 width=8)
+                            Filter Operator [FIL_74] (rows=28 width=8)
                               predicate:((d_year = 2000) and d_date_sk is not null)
-                              TableScan [TS_3] (rows=56 width=8)
+                              TableScan [TS_17] (rows=56 width=8)
                                 default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
           <-Reducer 7 [CONTAINS] vectorized, llap
             Reduce Output Operator [RS_93]
               PartitionCols:_col0
-              Group By Operator [GBY_92] (rows=1 width=8)
+              Group By Operator [GBY_92] (rows=2 width=8)
                 Output:["_col0"],keys:_col0
                 Select Operator [SEL_91] (rows=2 width=8)
                   Output:["_col0"]
@@ -223,7 +223,7 @@ Stage-0
                         Select Operator [SEL_23] (rows=1728398 width=8)
                           Output:["_col0"]
                           Merge Join Operator [MERGEJOIN_52] (rows=1728398 width=8)
-                            Conds:RS_72._col1=RS_79._col0(Inner),Output:["_col0","_col2"]
+                            Conds:RS_72._col1=RS_77._col0(Inner),Output:["_col0","_col2"]
                           <-Map 1 [SIMPLE_EDGE] vectorized, llap
                             SHUFFLE [RS_72]
                               PartitionCols:_col1
@@ -231,13 +231,13 @@ Stage-0
                                 Output:["_col0","_col1"]
                                  Please refer to the previous Filter Operator [FIL_68]
                           <-Map 8 [SIMPLE_EDGE] vectorized, llap
-                            SHUFFLE [RS_79]
+                            SHUFFLE [RS_77]
                               PartitionCols:_col0
-                              Select Operator [SEL_76] (rows=28 width=4)
+                              Select Operator [SEL_75] (rows=28 width=4)
                                 Output:["_col0"]
-                                Filter Operator [FIL_74] (rows=28 width=8)
+                                Filter Operator [FIL_73] (rows=28 width=8)
                                   predicate:((d_year = 2001) and d_date_sk is not null)
-                                   Please refer to the previous TableScan [TS_3]
+                                   Please refer to the previous TableScan [TS_17]
 
 PREHOOK: query: select   count(*) cnt
  from

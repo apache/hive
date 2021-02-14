@@ -514,7 +514,7 @@ public class ReplChangeManager {
           }
         }
       } catch (IOException e) {
-        LOG.error("Exception when clearing cmroot:" + StringUtils.stringifyException(e));
+        LOG.error("Exception when clearing cmroot", e);
       }
     }
   }
@@ -610,7 +610,7 @@ public class ReplChangeManager {
     try {
       retriable.run();
     } catch (Exception e) {
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new IOException("Failed to createCmRoot", e);
     }
   }
 

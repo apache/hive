@@ -36,7 +36,7 @@ import org.junit.experimental.categories.Category;
 
 /**
  * Test long running request timeout functionality in MetaStore Server
- * HiveMetaStore.HMSHandler.create_database() is used to simulate a long running method.
+ * HMSHandler.create_database() is used to simulate a long running method.
  */
 @Category(MetastoreCheckinTest.class)
 public class TestHiveMetaStoreTimeout {
@@ -46,7 +46,7 @@ public class TestHiveMetaStoreTimeout {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    HiveMetaStore.TEST_TIMEOUT_ENABLED = true;
+    HMSHandler.testTimeoutEnabled = true;
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
         MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
@@ -59,7 +59,7 @@ public class TestHiveMetaStoreTimeout {
 
   @AfterClass
   public static void tearDown() throws Exception {
-    HiveMetaStore.TEST_TIMEOUT_ENABLED = false;
+    HMSHandler.testTimeoutEnabled = false;
     try {
       client.close();
     } catch (Throwable e) {
@@ -71,7 +71,7 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testNoTimeout() throws Exception {
-    HiveMetaStore.TEST_TIMEOUT_VALUE = 250;
+    HMSHandler.testTimeoutValue = 250;
 
     String dbName = "db";
     client.dropDatabase(dbName, true, true);
@@ -85,7 +85,7 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testTimeout() throws Exception {
-    HiveMetaStore.TEST_TIMEOUT_VALUE = 2 * 1000;
+    HMSHandler.testTimeoutValue = 2 * 1000;
 
     String dbName = "db";
     client.dropDatabase(dbName, true, true);
@@ -102,12 +102,12 @@ public class TestHiveMetaStoreTimeout {
     }
 
     // restore
-    HiveMetaStore.TEST_TIMEOUT_VALUE = 1;
+    HMSHandler.testTimeoutValue = 1;
   }
 
   @Test
   public void testResetTimeout() throws Exception {
-    HiveMetaStore.TEST_TIMEOUT_VALUE = 250;
+    HMSHandler.testTimeoutValue = 250;
     String dbName = "db";
 
     // no timeout before reset
@@ -123,7 +123,7 @@ public class TestHiveMetaStoreTimeout {
     client.dropDatabase(dbName, true, true);
 
     // reset
-    HiveMetaStore.TEST_TIMEOUT_VALUE = 2000;
+    HMSHandler.testTimeoutValue = 2000;
     client.setMetaConf(ConfVars.CLIENT_SOCKET_TIMEOUT.getVarname(), "1s");
 
     // timeout after reset

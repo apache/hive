@@ -608,8 +608,6 @@ public enum ErrorMsg {
   SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
   SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true),
   REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication."),
-  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(40004,
-                                               "Source of replication (repl.source.for) is not set in the database properties."),
   REPL_INVALID_DB_OR_TABLE_PATTERN(40005,
                                      "Invalid pattern for the DB or table name in the replication policy. "
                                      + "It should be a valid regex enclosed within single or double quotes."),

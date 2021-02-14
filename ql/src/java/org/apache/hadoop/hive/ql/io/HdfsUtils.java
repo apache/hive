@@ -117,6 +117,12 @@ public class HdfsUtils {
     }
     return result;
   }
+  public static List<Path> listPath(final FileSystem fs, final Path path, final PathFilter filter,
+      final boolean recursive) throws IOException {
+    return listLocatedFileStatus(fs, path, filter, recursive).stream()
+        .map(FileStatus::getPath)
+        .collect(Collectors.toList());
+  }
 
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use

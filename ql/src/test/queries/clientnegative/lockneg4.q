@@ -1,4 +1,5 @@
 --! qt:dataset:srcpart
+set hive.support.concurrency=true;
 drop table tstsrcpart;
 create table tstsrcpart like srcpart;
 

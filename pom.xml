@@ -171,7 +171,9 @@
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
-    <kryo.version>4.0.2</kryo.version>
+    <kryo.version>5.0.3</kryo.version>
+    <kryo4.version>4.0.2</kryo4.version> <!-- old kryo, for spark-client, might be removed in HIVE-23885 -->
+    <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
@@ -180,7 +182,7 @@
     <mariadb.version>2.5.0</mariadb.version>
     <postgres.version>42.2.14</postgres.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.12</orc.version>
+    <orc.version>1.6.7</orc.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -194,7 +196,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>2.7.3-SNAPSHOT</storage-api.version>
     <tez.version>0.10.0</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.4.5</spark.version>
@@ -249,8 +251,13 @@
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
       <dependency>
         <groupId>com.esotericsoftware</groupId>
-        <artifactId>kryo-shaded</artifactId>
+        <artifactId>kryo</artifactId>
         <version>${kryo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>reflectasm</artifactId>
+        <version>${reflectasm.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -1039,6 +1046,10 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo-shaded</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1357,6 +1368,13 @@
                   <reason>Do not use commons-lang</reason>
                   <bannedImports>
                     <bannedImport>org.apache.commons.lang.**</bannedImport>
+                  </bannedImports>
+                  <includeTestCode>true</includeTestCode>
+                </restrictImports>
+                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                  <reason>Do not use commons-logging; use slf4j</reason>
+                  <bannedImports>
+                    <bannedImport>org.apache.commons.logging.**</bannedImport>
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
                 </restrictImports>

@@ -102,9 +102,17 @@ public class Msck {
     // the only reason we are using new conf here is to override EXPRESSION_PROXY_CLASS
     Configuration metastoreConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
     metastoreConf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
-        metastoreConf.get(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
-            MsckPartitionExpressionProxy.class.getCanonicalName()));
+            getProxyClass(metastoreConf));
     return metastoreConf;
+  }
+
+  public static String getProxyClass(Configuration metastoreConf) {
+    return metastoreConf.get(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
+            MsckPartitionExpressionProxy.class.getCanonicalName());
+  }
+
+  public void updateExpressionProxy(String proxyClass) throws TException {
+      msc.setMetaConf(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(), proxyClass);
   }
 
   /**

@@ -158,7 +158,6 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -364,6 +363,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private SemanticException semanticException;
   private boolean runCBO = true;
   private boolean disableSemJoinReordering = true;
+  private final CBOFallbackStrategy fallbackStrategy;
 
   private EnumSet<ExtendedCBOProfile> profilesCBO;
 
@@ -439,6 +439,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       runCBO = false;
       disableSemJoinReordering = false;
     }
+    fallbackStrategy = CBOFallbackStrategy.valueOf(conf.getVar(ConfVars.HIVE_CBO_FALLBACK_STRATEGY));
   }
 
   public void resetCalciteConfiguration() {
@@ -679,27 +680,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // Determine if we should re-throw the exception OR if we try to mark plan as reAnayzeAST to retry
           // planning as non-CBO.
-          if (e instanceof CalciteSubquerySemanticException || e instanceof CalciteViewSemanticException
-              || e instanceof CalciteSubqueryRuntimeException) {
-            // Non-CBO path for CalciteSubquerySemanticException fails with completely different error
-            // and masks the original failure.
-            // Non-CBO path for CalciteViewSemanticException would fail in a similar way as CBO path.
-            throw new SemanticException(e);
-          }
-
-          boolean isHiveTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
-          // At this point we retry with CBO off:
-          // 1) If this is not test mode (common case)
-          // 2) If we are in test mode and we are missing stats
-          // 3) if we are in test mode and a CalciteSemanticException is generated
-          reAnalyzeAST = (!isHiveTest || isMissingStats ||  e instanceof CalciteSemanticException);
-          if (!reAnalyzeAST) {
+          if (fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
               // These types of exceptions do not need wrapped
               throw e;
             }
             // Wrap all other errors (Should only hit in tests)
             throw new SemanticException(e);
+          } else {
+            reAnalyzeAST = true;
           }
         } finally {
           runCBO = false;

@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclStatus;
+import org.apache.hadoop.fs.permission.AclUtil;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -39,6 +42,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
+
+import static org.apache.hadoop.hive.metastore.utils.HdfsUtils.constructDistCpOptions;
 
 /**
  * DirCopyTask, mainly to be used to copy External table data.
@@ -70,7 +76,38 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
             destPath, sourcePath, status.getOwner(), status.getGroup(), status.getPermission());
     destPath.getFileSystem(conf).setOwner(destPath, status.getOwner(), status.getGroup());
     destPath.getFileSystem(conf).setPermission(destPath, status.getPermission());
+    setAclsToTarget(status, sourcePath, destPath);
     return createdDir;
+  }
+
+  private void setAclsToTarget(FileStatus sourceStatus, Path sourcePath,
+      Path destPath) throws IOException {
+    // Check if distCp options contains preserve ACL.
+    if (isPreserveAcl()) {
+      AclStatus sourceAcls =
+          sourcePath.getFileSystem(conf).getAclStatus(sourcePath);
+      if (sourceAcls != null && sourceAcls.getEntries().size() > 0) {
+        destPath.getFileSystem(conf).removeAcl(destPath);
+        List<AclEntry> effectiveAclEntries = AclUtil
+            .getAclFromPermAndEntries(sourceStatus.getPermission(),
+                sourceAcls.getEntries());
+        destPath.getFileSystem(conf).setAcl(destPath, effectiveAclEntries);
+      }
+    }
+  }
+
+  private boolean isPreserveAcl() {
+    List<String> distCpOptions = constructDistCpOptions(conf);
+    for (String option : distCpOptions) {
+      if (option.startsWith("-p")) {
+        if (option.contains("a")) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+    return false;
   }
 
   private boolean setTargetPathOwner(Path targetPath, Path sourcePath, UserGroupInformation proxyUser)

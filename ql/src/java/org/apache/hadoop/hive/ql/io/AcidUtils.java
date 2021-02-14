@@ -1470,16 +1470,15 @@ public class AcidUtils {
     return dirToSnapshots;
   }
 
-  private static boolean isChildOfDelta(Path childDir, Path rootPath) {
+  public static boolean isChildOfDelta(Path childDir, Path rootPath) {
     if (childDir.toUri().toString().length() <= rootPath.toUri().toString().length()) {
       return false;
     }
     // We do not want to look outside the original directory
     String fullName = childDir.toUri().toString().substring(rootPath.toUri().toString().length() + 1);
     String dirName = childDir.getName();
-    return (fullName.startsWith(BASE_PREFIX) && !dirName.startsWith(BASE_PREFIX)) ||
-        (fullName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELTA_PREFIX)) ||
-        (fullName.startsWith(DELETE_DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX));
+    return !dirName.startsWith(BASE_PREFIX) && !dirName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX)
+          && (fullName.contains(BASE_PREFIX) || fullName.contains(DELTA_PREFIX) || fullName.contains(DELETE_DELTA_PREFIX));
   }
 
   /**
@@ -2671,6 +2670,28 @@ public class AcidUtils {
     }
   }
 
+  /**
+   * Full recursive PathFilter version of IdPathFilter (filtering files for a given writeId and stmtId).
+   * This can be used by recursive filelisting, when we want to match the delta / base pattern on the bucketFiles.
+   */
+  public static class IdFullPathFiler extends IdPathFilter {
+    private final Path basePath;
+
+    public IdFullPathFiler(long writeId, int stmtId, Path basePath) {
+      super(writeId, stmtId);
+      this.basePath = basePath;
+    }
+    @Override
+    public boolean accept(Path path) {
+      do {
+        if (super.accept(path)) {
+          return true;
+        }
+        path = path.getParent();
+      } while (path != null && !path.equals(basePath));
+      return false;
+    }
+  }
 
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();

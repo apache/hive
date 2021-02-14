@@ -28,85 +28,78 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-8 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-8
-  Stage-9 depends on stages: Stage-2
-  Stage-3
-  Stage-5
-  Stage-6 depends on stages: Stage-5
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: masking_test_n_mv
-            Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                table:
-                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.masking_test_view_n_mv
-              Select Operator
-                expressions: _col0 (type: int)
-                outputColumnNames: col1
-                Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
-                  minReductionHashAggr: 0.99
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
-      Execution mode: vectorized
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: masking_test_n_mv
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.masking_test_view_n_mv
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: col1
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-7
-    Conditional Operator
+  Stage: Stage-2
+    Dependency Collection
 
   Stage: Stage-4
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-8
     Create Materialized View
       columns: key int
       expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
@@ -114,7 +107,7 @@ STAGE PLANS:
       original text: select key from masking_test_n_mv
       rewrite enabled: true
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats Work
       Basic Stats Work:
       Column Stats Desc:
@@ -122,26 +115,12 @@ STAGE PLANS:
           Column Types: int
           Table: default.masking_test_view_n_mv
 
-  Stage: Stage-9
+  Stage: Stage-5
     Materialized View Update
       name: default.masking_test_view_n_mv
       retrieve and include: true
 
-  Stage: Stage-3
-    Merge File Operator
-      Map Operator Tree:
-          ORC File Merge Operator
-      merge level: stripe
-      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-
-  Stage: Stage-5
-    Merge File Operator
-      Map Operator Tree:
-          ORC File Merge Operator
-      merge level: stripe
-      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-
-  Stage: Stage-6
+  Stage: Stage-0
     Move Operator
       files:
           hdfs directory: true

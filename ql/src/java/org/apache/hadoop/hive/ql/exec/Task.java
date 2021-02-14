@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapreduce.MRJobConfig;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,7 +188,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       // The conf object in HMS client is always different from the one used here.
       return Hive.get(conf);
     } catch (HiveException e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.error("Failed to get Hive", e);
       throw new RuntimeException(e);
     }
   }

@@ -190,7 +190,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
       String mesg = rj != null ? ("Ended Job = " + rj.getJobID()) : "Job Submission failed";
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang3.StringUtils
-      LOG.error(mesg, org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error(mesg, e);
       setException(e);
 
       success = false;
