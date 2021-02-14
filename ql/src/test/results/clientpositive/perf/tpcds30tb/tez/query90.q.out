@@ -125,10 +125,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
-                  filterExpr: (t_hour BETWEEN 6 AND 7 or t_hour BETWEEN 14 AND 15) (type: boolean)
+                  filterExpr: (t_hour BETWEEN 14 AND 15 or t_hour BETWEEN 6 AND 7) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 1036800 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: t_hour BETWEEN 6 AND 7 (type: boolean)
+                    predicate: t_hour BETWEEN 14 AND 15 (type: boolean)
                     Statistics: Num rows: 7200 Data size: 86400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t_time_sk (type: bigint)
@@ -141,7 +141,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 7200 Data size: 57600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: t_hour BETWEEN 14 AND 15 (type: boolean)
+                    predicate: t_hour BETWEEN 6 AND 7 (type: boolean)
                     Statistics: Num rows: 7200 Data size: 86400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t_time_sk (type: bigint)

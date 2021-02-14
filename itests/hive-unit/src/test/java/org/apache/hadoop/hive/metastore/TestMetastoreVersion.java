@@ -55,7 +55,7 @@ public class TestMetastoreVersion {
   @Before
   public void setUp() throws Exception {
 
-    Field defDb = HiveMetaStore.HMSHandler.class.getDeclaredField("currentUrl");
+    Field defDb = HMSHandler.class.getDeclaredField("currentUrl");
     defDb.setAccessible(true);
     defDb.set(null, null);
     // reset defaults
@@ -229,7 +229,7 @@ public class TestMetastoreVersion {
 
   // Load the version stored in the metastore db
   public String getMetaStoreVersion() throws HiveMetaException, MetaException {
-    RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(hiveConf);
+    RawStore ms = HMSHandler.getMSForConf(hiveConf);
     try {
       return ms.getMetaStoreSchemaVersion();
     } catch (MetaException e) {
@@ -240,7 +240,7 @@ public class TestMetastoreVersion {
   // Store the given version and comment in the metastore
   public void setMetaStoreVersion(String newVersion, String comment)
       throws HiveMetaException, MetaException {
-    RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(hiveConf);
+    RawStore ms = HMSHandler.getMSForConf(hiveConf);
     try {
       ms.setMetaStoreSchemaVersion(newVersion, comment);
     } catch (MetaException e) {

@@ -78,6 +78,7 @@ TOK_SERDE;
 TOK_SERDENAME;
 TOK_SERDEPROPS;
 TOK_EXPLIST;
+TOK_ALIAS;
 TOK_ALIASLIST;
 TOK_GROUPBY;
 TOK_ROLLUP_GROUPBY;
@@ -2431,8 +2432,8 @@ withClause
 
 cteStatement
    :
-   identifier KW_AS LPAREN queryStatementExpression RPAREN
-   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+   identifier (LPAREN colAliases=columnNameList RPAREN)? KW_AS LPAREN queryStatementExpression RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier $colAliases?)
 ;
 
 fromStatement

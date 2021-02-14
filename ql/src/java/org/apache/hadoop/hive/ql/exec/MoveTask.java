@@ -41,7 +41,9 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -59,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
@@ -66,6 +69,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,6 +79,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 
 /**
  * MoveTask implementation.
@@ -307,10 +312,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         + work.getLoadMultiFilesWork());
     }
 
-    try {
-      if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
-        return 0;
-      }
+    if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
+      return 0;
+    }
+
+    try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
       Hive db = getHive();
 
       // Do any hive related operations like moving tables and files
@@ -543,15 +549,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
       IOException, InvalidOperationException {
     DataContainer dc;
-
-    Set<String> dynamiPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(),
-          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
-    List<LinkedHashMap<String, String>> dps =
-        Utilities.getFullDPSpecs(conf, dpCtx, work.getLoadTableWork().getWriteId(), tbd.isMmTable(),
-            tbd.isDirectInsert(), tbd.isInsertOverwrite(), work.getLoadTableWork().getWriteType(), dynamiPartitionSpecs);
-
-    console.printInfo(System.getProperty("line.separator"));
-    long startTime = System.currentTimeMillis();
     // In case of direct insert, we need to get the statementId in order to make a merge statement work properly.
     // In case of a merge statement there will be multiple FSOs and multiple MoveTasks. One for the INSERT, one for
     // the UPDATE and one for the DELETE part of the statement. If the direct insert is turned off, these are identified
@@ -565,7 +562,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
     }
-    
+    Set<String> dynamicPartitionSpecs = null;
+    if (tbd.isMmTable() || tbd.isDirectInsert()) {
+      dynamicPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId(),
+          work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+    }
+    Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs);
+
+    console.printInfo(System.getProperty("line.separator"));
+    long startTime = System.currentTimeMillis();
     // load the list of DP partitions and return the list of partition specs
     // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
     // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -574,12 +579,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // The reason we don't do inside HIVE-1361 is the latter is large and we
     // want to isolate any potential issue it may introduce.
     Map<Map<String, String>, Partition> dp =
-      db.loadDynamicPartitions(
-        tbd.getSourcePath(),
-        tbd.getTable().getTableName(),
-        tbd.getPartitionSpec(),
-        tbd.getLoadFileType(),
-        dpCtx.getNumDPCols(),
+      db.loadDynamicPartitions(tbd,
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
@@ -587,13 +587,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         statementId,
         resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
-        tbd.isInsertOverwrite(),
-        tbd.isDirectInsert(),
-        dynamiPartitionSpecs
+        dps
         );
 
     // publish DP columns to its subscribers
-    if (dps != null && dps.size() > 0) {
+    if (dp != null && dp.size() > 0) {
       pushFeed(FeedType.DYNAMIC_PARTITIONS, dp.values());
     }
 
@@ -774,9 +772,100 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
+  class LocalTableLock  implements Closeable{
+
+    private Optional<HiveLockObject> lock;
+    private HiveLock lockObj;
+
+    public LocalTableLock(HiveLockObject lock) throws LockException {
+      this.lock = Optional.of(lock);
+      LOG.debug("LocalTableLock; locking: " + lock);
+      HiveLockManager lockMgr = context.getHiveTxnManager().getLockManager();
+      lockObj = lockMgr.lock(lock, HiveLockMode.SEMI_SHARED, true);
+      LOG.debug("LocalTableLock; locked: " + lock);
+    }
+
+    public LocalTableLock() {
+      lock = Optional.empty();
+    }
+
+    @Override
+    public void close() throws IOException {
+      if(!lock.isPresent()) {
+        return;
+      }
+      LOG.debug("LocalTableLock; unlocking: " + lock);
+      HiveLockManager lockMgr;
+      try {
+        lockMgr = context.getHiveTxnManager().getLockManager();
+        lockMgr.unlock(lockObj);
+      } catch (LockException e1) {
+        throw new IOException(e1);
+      }
+      LOG.debug("LocalTableLock; unlocked: " + lock);
+    }
+
+  }
+
+  static enum LockFileMoveMode {
+    NONE, DP, ALL;
+
+    public static LockFileMoveMode fromConf(HiveConf conf) {
+      if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+        return NONE;
+      }
+      String lockFileMoveMode = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_FILE_MOVE_MODE).toUpperCase();
+      return valueOf(lockFileMoveMode);
+    }
+  }
+
+  private LocalTableLock acquireLockForFileMove(LoadTableDesc loadTableWork) throws HiveException {
+    LockFileMoveMode mode = LockFileMoveMode.fromConf(conf);
+
+    if (mode == LockFileMoveMode.NONE) {
+      return new LocalTableLock();
+    }
+    if (mode == LockFileMoveMode.DP && loadTableWork.getDPCtx() == null) {
+      return new LocalTableLock();
+    }
+
+    WriteEntity output = context.getLoadTableOutputMap().get(loadTableWork);
+    List<HiveLockObj> lockObjects = context.getOutputLockObjects().get(output);
+    if (lockObjects == null) {
+      return new LocalTableLock();
+    }
+    TableDesc table = loadTableWork.getTable();
+    if (table == null) {
+      return new LocalTableLock();
+    }
+
+    Hive db = getHive();
+    Table baseTable = db.getTable(loadTableWork.getTable().getTableName());
+
+    HiveLockObject.HiveLockObjectData lockData =
+        new HiveLockObject.HiveLockObjectData(queryPlan.getQueryId(),
+                               String.valueOf(System.currentTimeMillis()),
+                               "IMPLICIT",
+                               queryPlan.getQueryStr(),
+                               conf);
+
+    HiveLockObject lock = new HiveLockObject(baseTable, lockData);
+
+    for (HiveLockObj hiveLockObj : lockObjects) {
+      if (Arrays.equals(hiveLockObj.getObj().getPaths(), lock.getPaths())) {
+        HiveLockMode l = hiveLockObj.getMode();
+        if (l == HiveLockMode.EXCLUSIVE || l == HiveLockMode.SEMI_SHARED) {
+          // no need to lock ; already owns a more powerful one
+          return new LocalTableLock();
+        }
+      }
+    }
+
+    return new LocalTableLock(lock);
+  }
+
   private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {
-    return (tbd.getLbCtx() == null) ? false : tbd.getLbCtx()
-        .isSkewedStoredAsDir();
+    return tbd.getLbCtx() != null && tbd.getLbCtx().isSkewedStoredAsDir();
   }
 
   /**

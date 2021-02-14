@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -1460,7 +1461,11 @@ public class StatsRulesProcFactory {
                 " have stats. ndvProduct changed to: " + ndvProduct);
           }
         }
-
+        final long maxColumnNDV = colStats.stream()
+                .filter(Objects::nonNull)
+                .mapToLong(ColStatistics::getCountDistint)
+                .max()
+                .orElse(-1);
         if (interReduction) {
 
           if (hashAgg) {
@@ -1476,6 +1481,7 @@ public class StatsRulesProcFactory {
             } else {
               // Case 3: column stats, hash aggregation, NO grouping sets
               cardinality = Math.min(parentNumRows/2, StatsUtils.safeMult(ndvProduct, parallelism));
+              cardinality = Math.max(cardinality, maxColumnNDV);
               long orgParentNumRows = StatsUtils.safeMult(getParentNumRows(gop, gop.getConf().getKeys(), conf),
                                                           parallelism);
               cardinality = Math.min(cardinality, orgParentNumRows);
@@ -1521,6 +1527,7 @@ public class StatsRulesProcFactory {
           } else {
             // Case 9: column stats, NO grouping sets
             cardinality = Math.min(parentNumRows, ndvProduct);
+            cardinality = Math.max(cardinality, maxColumnNDV);
             // to get to the source number of rows we should be using original group by
             GroupByOperator gOpStats = mGop;
             if(gOpStats == null) {

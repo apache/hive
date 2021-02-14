@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -110,7 +111,10 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -280,8 +284,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Path atlasDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_ATLAS_BASE_DIR);
     Path prevAtlasDumpDir = prevHiveDumpDir == null ? null
                             : new Path(prevHiveDumpDir.getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    Path tableListLoc = null;
+    if (!work.replScope.includeAllTables()) {
+      Path tableListDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+      tableListLoc = new Path(tableListDir, work.dbNameOrPattern.toLowerCase());
+    }
     AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir,
-        work.getMetricCollector());
+           tableListLoc, work.getMetricCollector());
     Task<?> atlasDumpTask = TaskFactory.get(atlasDumpWork, conf);
     childTasks = new ArrayList<>();
     childTasks.add(atlasDumpTask);
@@ -430,7 +439,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    */
   private boolean shouldDumpExternalTableLocation() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-            && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) &&
+            && (!conf.getBoolVar(REPL_DUMP_METADATA_ONLY) &&
             !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE));
   }
 
@@ -798,7 +807,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) {
     ReplicationSpec rspec =
         getNewReplicationSpec(eventId.toString(), eventId.toString(), conf.getBoolean(
-            HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, false));
+            REPL_DUMP_METADATA_ONLY.varname, false));
     rspec.setReplSpecType(ReplicationSpec.Type.INCREMENTAL_DUMP);
     return rspec;
   }
@@ -873,6 +882,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           throw new HiveException("Replication dump not allowed for replicated database" +
                   " with first incremental dump pending : " + dbName);
         }
+
+        if (db != null && !HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
+          if (!ReplChangeManager.isSourceOfReplication(db)) {
+            // Check if the schedule name is available else set the query value
+            // as default.
+            String value = conf.get(SCHEDULED_QUERY_SCHEDULENAME,
+                "default_" + getQueryState().getQueryString());
+            updateReplSourceFor(hiveDb, dbName, db, value);
+          } else {
+            // If a schedule name is available and that isn't part of the
+            // existing conf, append the schedule name to the conf.
+            String scheduleQuery = conf.get(SCHEDULED_QUERY_SCHEDULENAME);
+            if (!StringUtils.isEmpty(scheduleQuery)) {
+              if (!getReplPolicyIdString(db).contains(scheduleQuery)) {
+                updateReplSourceFor(hiveDb, dbName, db,
+                    getReplPolicyIdString(db) + ", " + scheduleQuery);
+              }
+            }
+          }
+        }
+
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
         int estimatedNumFunctions = hiveDb.getFunctions(dbName, "*").size();
         replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
@@ -959,6 +989,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dmd.setReplScope(work.replScope);
       dmd.write(true);
     }
+  }
+
+  private void updateReplSourceFor(Hive hiveDb, String dbName, Database db,
+      String value) throws HiveException {
+    Map<String, String> params = db.getParameters();
+    if (params != null) {
+      params.put("repl.source.for", value);
+      db.setParameters(params);
+    } else {
+      db.setParameters(Collections.singletonMap("repl.source.for", value));
+    }
+    hiveDb.alterDatabase(dbName, db);
   }
 
   private FileList createTableFileList(Path dumpRoot, String fileName, int cacheSize) {

@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -96,6 +98,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private RexBuilder rexBuilder;
 
+  private final List<String> columnAliases;
+
   /**
    * Constructor.
    *
@@ -145,6 +149,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this.outerRR = null;
     this.subqueryToRelNode = null;
     this.rexBuilder = rexBuilder;
+    this.columnAliases = new ArrayList<>();
   }
 
   /**
@@ -294,5 +299,13 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   public RexBuilder getRexBuilder() {
     return rexBuilder;
+  }
+
+  public void addColumnAlias(String alias) {
+    columnAliases.add(alias);
+  }
+
+  public List<String> getColumnAliases() {
+    return columnAliases;
   }
 }

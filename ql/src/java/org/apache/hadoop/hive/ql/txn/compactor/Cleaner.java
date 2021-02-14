@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
-import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -93,32 +93,37 @@ public class Cleaner extends MetaStoreCompactorThread {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
+        boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
+        long retentionTime = 0;
+        if (delayedCleanupEnabled) {
+          retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
+        }
         // Make sure nothing escapes this run method and kills the metastore at large,
         // so wrap it in a big catch Throwable statement.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
           startedAt = System.currentTimeMillis();
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-          long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
-          final long cleanerWaterMark = minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
-          boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
-          long retentionTime = 0;
-          if (delayedCleanupEnabled) {
-            retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
+
+          List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
+          if (!readyToClean.isEmpty()) {
+            long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
+            final long cleanerWaterMark = minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
+
+            LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
+            List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
+            // For checking which compaction can be cleaned we can use the minOpenTxnId
+            // However findReadyToClean will return all records that were compacted with old version of HMS
+            // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
+            // to the clean method, to avoid cleaning up deltas needed for running queries
+            // when min_history_level is finally dropped, than every HMS will commit compaction the new way
+            // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
+            for (CompactionInfo compactionInfo : readyToClean) {
+              cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
+                      clean(compactionInfo, cleanerWaterMark)), cleanerExecutor));
+            }
+            CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
           }
-          LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
-          List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
-          // For checking which compaction can be cleaned we can use the minOpenTxnId
-          // However findReadyToClean will return all records that were compacted with old version of HMS
-          // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
-          // to the clean method, to avoid cleaning up deltas needed for running queries
-          // when min_history_level is finally dropped, than every HMS will commit compaction the new way
-          // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
-          for (CompactionInfo compactionInfo : txnHandler.findReadyToClean(minOpenTxnId, retentionTime)) {
-            cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                  clean(compactionInfo, cleanerWaterMark)), cleanerExecutor));
-          }
-          CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
         } catch (Throwable t) {
           LOG.error("Caught an exception in the main loop of compactor cleaner, " +
                   StringUtils.stringifyException(t));

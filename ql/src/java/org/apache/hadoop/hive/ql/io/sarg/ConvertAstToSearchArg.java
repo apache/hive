@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io.sarg;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -222,9 +224,8 @@ public class ConvertAstToSearchArg {
         }
         return ts;
       case DATE:
-        return new Date(
-            DateWritable.daysToMillis(
-                org.apache.hadoop.hive.common.type.Date.valueOf(lit.toString()).toEpochDay()));
+        // TODO [ORC-661]: use ChronoLocalDate and day of epoch instead of java's sql Date
+        return Date.valueOf(LocalDate.parse(lit.toString()));
       case DECIMAL:
         return new HiveDecimalWritable(lit.toString());
       case BOOLEAN:
@@ -552,7 +553,7 @@ public class ConvertAstToSearchArg {
   }
 
   private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
-    protected Kryo initialValue() { return new Kryo(); }
+    protected Kryo initialValue() { return SerializationUtilities.createNewKryo(); }
   };
 
   public static SearchArgument create(String kryo) {
@@ -579,8 +580,10 @@ public class ConvertAstToSearchArg {
 
   public static String sargToKryo(SearchArgument sarg) {
     Output out = new Output(KRYO_OUTPUT_BUFFER_SIZE, KRYO_OUTPUT_BUFFER_MAX_SIZE);
-    kryo.get().writeObject(out, sarg);
+    Kryo kryo = SerializationUtilities.borrowKryo();
+    kryo.writeObject(out, sarg);
     out.close();
+    SerializationUtilities.releaseKryo(kryo);
     return Base64.encodeBase64String(out.toBytes());
   }
 
