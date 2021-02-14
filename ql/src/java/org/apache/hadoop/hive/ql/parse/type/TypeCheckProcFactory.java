@@ -839,14 +839,19 @@ public class TypeCheckProcFactory<T> {
 
       if (funcText.equalsIgnoreCase("and") || funcText.equalsIgnoreCase("or")
           || funcText.equalsIgnoreCase("not") || funcText.equalsIgnoreCase("!")) {
+        // If the current function is a conjunction, the returning types of the children should be booleans.
+        // Iterate on the children, if the result of a child expression is not a boolean, try to implicitly
+        // convert the result of such a child to a boolean value.
         for (int i = 0; i < children.size(); i++) {
           T child = children.get(i);
           TypeInfo typeInfo = exprFactory.getTypeInfo(child);
           if (!TypeInfoFactory.booleanTypeInfo.accept(typeInfo)) {
             if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+              // For primitive types like string/double/timestamp, try to cast the result of
+              // the child expression to a boolean.
               children.set(i, createConversionCast(child, TypeInfoFactory.booleanTypeInfo));
             } else {
-              // for Map/List/Struct, create isnotnull function on the expr
+              // For complex types like map/list/struct, create a isnotnull function on the child expression.
               child = exprFactory.createFuncCallExpr(TypeInfoFactory.booleanTypeInfo,
                   exprFactory.getFunctionInfo("isnotnull"),"isnotnull", Arrays.asList(child));
               children.set(i, child);

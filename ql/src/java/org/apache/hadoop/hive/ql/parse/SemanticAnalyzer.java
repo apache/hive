@@ -3571,10 +3571,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (!filterCond.getTypeInfo().accept(TypeInfoFactory.booleanTypeInfo)) {
+      // If the returning type of the filter condition is not boolean, try to implicitly
+      // convert the result of the condition to a boolean value.
       if (filterCond.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        // For primitive types like string/double/timestamp, try to cast the result of
+        // the child expression to a boolean.
         filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .createConversionCast(filterCond, TypeInfoFactory.booleanTypeInfo);
       } else {
+        // For complex types like map/list/struct, create a isnotnull function on the child expression.
         filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .getFuncExprNodeDesc("isnotnull", filterCond);
       }
