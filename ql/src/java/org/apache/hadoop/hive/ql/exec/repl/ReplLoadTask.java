@@ -217,6 +217,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (!iterator.hasNext() && constraintIterator.hasNext()) {
       loadingConstraint = true;
     }
+    boolean dbEventFound = false;
     while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext()))
         && loadTaskTracker.canAddMoreTasks()) {
       BootstrapEvent next;
@@ -244,6 +245,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           scope.database = true;
         }
         dbTracker.debugLog("database");
+        dbEventFound = true;
         break;
       case Table:
       /*
@@ -312,6 +314,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       if (!loadingConstraint && !iterator.currentDbHasNext()) {
         createEndReplLogTask(loadContext, scope, iterator.replLogger());
+      }
+
+      if (dbEventFound && conf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)) {
+        // Force the database creation before the other event like table/parttion etc, so that data copy path creation
+        // can be achieved.
+        break;
       }
     }
     boolean addAnotherLoadTask = iterator.hasNext()

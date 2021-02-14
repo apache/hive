@@ -485,6 +485,7 @@ public class TestReplicationScenarios {
       metricCollector = new BootstrapLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
         confTemp);
     }
+    confTemp.setBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET, false);
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
         0L, metricCollector, false);

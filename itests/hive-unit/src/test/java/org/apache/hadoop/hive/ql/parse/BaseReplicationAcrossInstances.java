@@ -67,6 +67,7 @@ public class BaseReplicationAcrossInstances {
     localOverrides.putAll(overrides);
     setFullyQualifiedReplicaExternalTableBase(miniDFSCluster.getFileSystem());
     localOverrides.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    localOverrides.put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
     primary = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
     localOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
