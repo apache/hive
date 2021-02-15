@@ -53,6 +53,7 @@ public class DumpMetaData {
   private final HiveConf hiveConf;
   private Long dumpExecutionId;
   private boolean replScopeModified = false;
+  private int dumpFormatVersion;
 
   public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -124,14 +125,16 @@ public class DumpMetaData {
       br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
       String line;
       if ((line = br.readLine()) != null) {
-        String[] lineContents = line.split("\t", 7);
+        String[] lineContents = line.split("\t", 8);
         setDump(lineContents[0].equals(Utilities.nullStringOutput) ? null : DumpType.valueOf(lineContents[0]),
           lineContents[1].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[1]),
-          lineContents[2].equals(Utilities.nullStringOutput) ? null :  Long.valueOf(lineContents[2]),
+          lineContents[2].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[2]),
           lineContents[3].equals(Utilities.nullStringOutput) ? null : new Path(lineContents[3]),
           lineContents[4].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[4]),
           Boolean.valueOf(lineContents[6]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
+        setDumpFormatVersion((lineContents.length < 8
+            || lineContents[7].equals(Utilities.nullStringOutput)) ? -1 : Integer.parseInt(lineContents[7]));
       } else {
         throw new IOException(
             "Unable to read valid values from dumpFile:" + dumpFile.toUri().toString());
@@ -235,11 +238,25 @@ public class DumpMetaData {
             cmRoot != null ? cmRoot.toString() : null,
             dumpExecutionId != null ? dumpExecutionId.toString() : null,
             payload,
-            String.valueOf(replScopeModified))
+            String.valueOf(replScopeModified),
+            String.valueOf(dumpFormatVersion))
     );
     if (replScope != null) {
       listValues.add(prepareReplScopeValues());
     }
     Utils.writeOutput(listValues, dumpFile, hiveConf, replace);
+  }
+
+  public int getDumpFormatVersion() {
+    return this.dumpFormatVersion;
+  }
+
+  public void setDumpFormatVersion(int dumpFormatVersion) {
+    this.dumpFormatVersion = dumpFormatVersion;
+  }
+
+  public boolean isVersionCompatible() throws SemanticException {
+    initializeIfNot();
+    return this.dumpFormatVersion >= Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT;
   }
 }

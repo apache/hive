@@ -255,6 +255,7 @@ public final class Utilities {
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
+  public static final int MIN_VERSION_FOR_NEW_DUMP_FORMAT = 2;
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
