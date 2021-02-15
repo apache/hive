@@ -4517,12 +4517,11 @@ public final class Utilities {
     Set<Path> directInsertDirectories = new HashSet<>();
     for (Path mfp : manifests) {
       Utilities.FILE_OP_LOGGER.info("Looking at manifest file: {}", mfp);
-      String nextPart = null;
       try (FSDataInputStream mdis = fs.open(mfp)) {
         if (dpLevels > 0) {
           int partitionCount = mdis.readInt();
           for (int i = 0; i < partitionCount; ++i) {
-            nextPart = mdis.readUTF();
+            String nextPart = mdis.readUTF();
             Utilities.FILE_OP_LOGGER.debug("Looking at dynamic partition {}", nextPart);
             if (!dynamicPartitionSpecs.containsKey(nextPart)) {
               dynamicPartitionSpecs.put(nextPart, new ArrayList<>());
