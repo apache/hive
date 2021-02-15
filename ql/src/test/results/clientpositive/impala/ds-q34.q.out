@@ -230,6 +230,7 @@ Per-Host Resources: mem-estimate=13.96MB mem-reservation=13.94MB thread-reservat
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=52B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -317,6 +318,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
        partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_hdemo_sk, ss_store_sk, ss_ticket_number
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=24B cardinality=0
      in pipelines: 03(GETNEXT)
@@ -332,6 +334,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=3 row-size=12B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -348,6 +351,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_store.s_county IN ('Salem County', 'Terrell County', 'Arthur County', 'Oglethorpe County', 'Lunenburg County', 'Perry County', 'Halifax County', 'Sumner County')
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=5 row-size=16B cardinality=0
      in pipelines: 06(GETNEXT)
@@ -364,6 +368,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_household_demographics.hd_vehicle_count > CAST(0 AS INT), default.impala_tpcds_household_demographics.hd_buy_potential IN ('>10000', 'Unknown')
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=7 row-size=24B cardinality=0
      in pipelines: 08(GETNEXT)

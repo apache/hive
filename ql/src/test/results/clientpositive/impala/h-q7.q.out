@@ -321,6 +321,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=44B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -336,6 +337,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=10B cardinality=0
      in pipelines: 02(GETNEXT)
@@ -352,6 +354,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: n1.n_name IN ('FRANCE', 'GERMANY')
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=14B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -391,6 +394,7 @@ Per-Host Resources: mem-estimate=3.91MB mem-reservation=3.88MB thread-reservatio
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=10B cardinality=0
      in pipelines: 06(GETNEXT)
@@ -406,6 +410,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=16B cardinality=0
      in pipelines: 07(GETNEXT)
@@ -422,6 +427,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: n2.n_name IN ('GERMANY', 'FRANCE')
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=10 row-size=14B cardinality=0
      in pipelines: 09(GETNEXT)

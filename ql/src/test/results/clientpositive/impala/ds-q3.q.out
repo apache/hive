@@ -199,6 +199,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
        partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=16B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -215,6 +216,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: dt.d_moy = CAST(11 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=12B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -231,6 +233,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item.i_manufact_id = CAST(816 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=3 row-size=28B cardinality=0
      in pipelines: 03(GETNEXT)

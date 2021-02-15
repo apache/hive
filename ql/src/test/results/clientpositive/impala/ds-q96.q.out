@@ -195,6 +195,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=12B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -211,6 +212,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_household_demographics.hd_dep_count = CAST(6 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=8B cardinality=0
      in pipelines: 02(GETNEXT)
@@ -227,6 +229,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_time_dim.t_hour = CAST(16 AS INT), default.impala_tpcds_time_dim.t_minute >= CAST(30 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=3 row-size=12B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -243,6 +246,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_store.s_store_name = 'ese'
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=5 row-size=16B cardinality=0
      in pipelines: 06(GETNEXT)

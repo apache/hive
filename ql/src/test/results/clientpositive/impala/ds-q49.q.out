@@ -829,6 +829,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: ws.ws_net_paid > CAST(0 AS DECIMAL(7,2)), ws.ws_net_profit > CAST(1 AS DECIMAL(7,2)), ws.ws_quantity > CAST(0 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=32B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -845,6 +846,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=12B cardinality=0
      in pipelines: 05(GETNEXT)
@@ -861,6 +863,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: wr.wr_return_amt > CAST(10000 AS DECIMAL(7,2))
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=24B cardinality=0
      in pipelines: 07(GETNEXT)
@@ -935,6 +938,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: cs.cs_net_paid > CAST(0 AS DECIMAL(7,2)), cs.cs_net_profit > CAST(1 AS DECIMAL(7,2)), cs.cs_quantity > CAST(0 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=21 row-size=32B cardinality=0
      in pipelines: 17(GETNEXT)
@@ -951,6 +955,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=23 row-size=12B cardinality=0
      in pipelines: 18(GETNEXT)
@@ -967,6 +972,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: cr.cr_return_amount > CAST(10000 AS DECIMAL(7,2))
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=25 row-size=24B cardinality=0
      in pipelines: 20(GETNEXT)
@@ -1042,6 +1048,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
        partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_ticket_number, ss_quantity, ss_net_paid, ss_net_profit
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=41 row-size=32B cardinality=0
      in pipelines: 31(GETNEXT)
@@ -1058,6 +1065,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_1.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=42 row-size=12B cardinality=0
      in pipelines: 32(GETNEXT)
@@ -1074,6 +1082,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: sr.sr_return_amt > CAST(10000 AS DECIMAL(7,2))
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=44 row-size=24B cardinality=0
      in pipelines: 34(GETNEXT)

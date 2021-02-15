@@ -450,6 +450,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_3.d_moy = CAST(2 AS INT), default.impala_tpcds_date_dim_3.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=26 row-size=12B cardinality=0
      in pipelines: 26(GETNEXT)
@@ -487,6 +488,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_4.d_moy = CAST(2 AS INT), default.impala_tpcds_date_dim_4.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=30 row-size=12B cardinality=0
      in pipelines: 29(GETNEXT)
@@ -592,6 +594,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_0.d_moy = CAST(2 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=12B cardinality=0
      in pipelines: 05(GETNEXT)
@@ -619,6 +622,7 @@ Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_ext_sales_price
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=12B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -656,6 +660,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(2 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=12B cardinality=0
      in pipelines: 02(GETNEXT)
@@ -671,6 +676,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=8B cardinality=0
      in pipelines: 09(GETNEXT)
@@ -749,6 +755,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
   |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
+  |     file formats: [PARQUET]
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
   |     tuple-ids=13 row-size=16B cardinality=0
   |     in pipelines: 13(GETNEXT)
@@ -760,6 +767,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=11 row-size=16B cardinality=0
      in pipelines: 12(GETNEXT)
@@ -776,6 +784,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item.i_category = 'Books', default.impala_tpcds_item.i_class = 'business'
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=15 row-size=32B cardinality=0
      in pipelines: 14(GETNEXT)
@@ -792,6 +801,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_2.d_moy = CAST(2 AS INT), default.impala_tpcds_date_dim_2.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=17 row-size=12B cardinality=0
      in pipelines: 16(GETNEXT)
@@ -807,6 +817,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=19 row-size=8B cardinality=0
      in pipelines: 18(GETNEXT)
@@ -834,6 +845,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=22 row-size=28B cardinality=0
      in pipelines: 22(GETNEXT)
@@ -849,6 +861,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=24 row-size=24B cardinality=0
      in pipelines: 23(GETNEXT)

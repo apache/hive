@@ -274,6 +274,7 @@ Per-Host Resources: mem-estimate=3.96MB mem-reservation=3.88MB thread-reservatio
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=32B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -289,6 +290,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=16B cardinality=0
      in pipelines: 02(GETNEXT)
@@ -377,6 +379,7 @@ Per-Host Resources: mem-estimate=135.82MB mem-reservation=41.75MB thread-reserva
        partitions: 0/0 rows=0
        columns missing stats: ss_customer_sk, ss_hdemo_sk, ss_addr_sk, ss_store_sk, ss_ticket_number, ss_coupon_amt, ss_net_profit
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=36B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -393,6 +396,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_dow IN (CAST(6 AS INT), CAST(0 AS INT))
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=5 row-size=12B cardinality=0
      in pipelines: 05(GETNEXT)
@@ -409,6 +413,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_store.s_city IN ('Five Forks', 'Oakland', 'Fairview', 'Winchester', 'Farmington')
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=7 row-size=16B cardinality=0
      in pipelines: 07(GETNEXT)
@@ -424,6 +429,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=9 row-size=12B cardinality=0
      in pipelines: 09(GETNEXT)
@@ -439,6 +445,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=11 row-size=16B cardinality=0
      in pipelines: 11(GETNEXT)

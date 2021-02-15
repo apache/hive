@@ -335,6 +335,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
   |       partitions: 0/0 rows=0
   |       columns missing stats: ss_sold_time_sk, ss_item_sk, ss_ext_sales_price
   |     extrapolated-rows=disabled max-scan-range-rows=0
+  |     file formats: []
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
   |     tuple-ids=9 row-size=20B cardinality=0
   |     in pipelines: 08(GETNEXT)
@@ -358,6 +359,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
   |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
+  |     file formats: [PARQUET]
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
   |     tuple-ids=5 row-size=20B cardinality=0
   |     in pipelines: 05(GETNEXT)
@@ -381,6 +383,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=20B cardinality=0
      in pipelines: 02(GETNEXT)
@@ -397,6 +400,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=3 row-size=12B cardinality=0
      in pipelines: 03(GETNEXT)
@@ -413,6 +417,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=7 row-size=12B cardinality=0
      in pipelines: 06(GETNEXT)
@@ -429,6 +434,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_1.d_year = CAST(2000 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=10 row-size=12B cardinality=0
      in pipelines: 09(GETNEXT)
@@ -445,6 +451,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item.i_manager_id = CAST(1 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=12 row-size=28B cardinality=0
      in pipelines: 11(GETNEXT)
@@ -461,6 +468,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_time_dim.t_meal_time IN ('breakfast', 'dinner')
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=14 row-size=24B cardinality=0
      in pipelines: 13(GETNEXT)

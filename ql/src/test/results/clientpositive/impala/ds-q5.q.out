@@ -801,6 +801,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
+  |     file formats: [PARQUET]
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
   |     tuple-ids=3 row-size=16B cardinality=0
   |     in pipelines: 03(GETNEXT)
@@ -814,6 +815,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
        partitions: 0/0 rows=0
        columns missing stats: ss_store_sk, ss_ext_sales_price, ss_net_profit
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=2 row-size=16B cardinality=0
      in pipelines: 02(GETNEXT)
@@ -829,6 +831,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=5 row-size=16B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -844,6 +847,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=7 row-size=16B cardinality=0
      in pipelines: 06(GETNEXT)
@@ -895,6 +899,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
+  |     file formats: [PARQUET]
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
   |     tuple-ids=13 row-size=16B cardinality=0
   |     in pipelines: 11(GETNEXT)
@@ -906,6 +911,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=11 row-size=16B cardinality=0
      in pipelines: 10(GETNEXT)
@@ -921,6 +927,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=15 row-size=16B cardinality=0
      in pipelines: 12(GETNEXT)
@@ -936,6 +943,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=17 row-size=16B cardinality=0
      in pipelines: 14(GETNEXT)
@@ -999,6 +1007,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
   |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
+  |     file formats: [PARQUET]
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
   |     tuple-ids=23 row-size=28B cardinality=0
   |     in pipelines: 19(GETNEXT)
@@ -1010,6 +1019,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=21 row-size=16B cardinality=0
      in pipelines: 18(GETNEXT)
@@ -1025,6 +1035,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=25 row-size=20B cardinality=0
      in pipelines: 20(GETNEXT)
@@ -1040,6 +1051,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=27 row-size=16B cardinality=0
      in pipelines: 22(GETNEXT)
@@ -1055,6 +1067,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=29 row-size=16B cardinality=0
      in pipelines: 24(GETNEXT)

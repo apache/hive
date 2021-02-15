@@ -378,6 +378,7 @@ Per-Host Resources: mem-estimate=133.99MB mem-reservation=39.81MB thread-reserva
        partitions: 0/0 rows=0
        columns missing stats: ss_item_sk, ss_customer_sk, ss_store_sk, ss_ticket_number
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=28B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -393,6 +394,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=4B cardinality=0
      in pipelines: 01(GETNEXT)
@@ -420,6 +422,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=3 row-size=24B cardinality=0
      in pipelines: 03(GETNEXT)
@@ -436,6 +439,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: d2.d_moy = CAST(9 AS INT), d2.d_year = CAST(1998 AS INT)
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=5 row-size=12B cardinality=0
      in pipelines: 04(GETNEXT)
@@ -451,6 +455,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=7 row-size=116B cardinality=0
      in pipelines: 07(GETNEXT)
