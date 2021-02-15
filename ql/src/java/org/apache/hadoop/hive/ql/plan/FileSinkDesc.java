@@ -96,6 +96,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
   private long tableWriteId = 0;  // table write id for this operation
   private int statementId = -1;
+  private int maxStmtId = -1;
 
   private transient Table table;
   private Path destPath;
@@ -597,6 +598,15 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public int getStatementId() {
     return statementId;
   }
+
+  public void setMaxStmtId(int maxStmtId) {
+    this.maxStmtId = maxStmtId;
+  }
+
+  public int getMaxStmtId() {
+    return maxStmtId;
+  }
+
   public Path getDestPath() {
     return destPath;
   }

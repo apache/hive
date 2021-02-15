@@ -264,6 +264,7 @@ class DriverTxnHandler {
         acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getMoveTaskId().compareTo(fsd2.getMoveTaskId()));
       }
 
+      int maxStmtId = -1;
       for (FileSinkDesc acidSink : acidSinks) {
         TableDesc tableInfo = acidSink.getTableInfo();
         TableName tableName = HiveTableName.of(tableInfo.getTableName());
@@ -277,12 +278,16 @@ class DriverTxnHandler {
          * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
          */
         acidSink.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
+        maxStmtId = Math.max(acidSink.getStatementId(), maxStmtId);
         String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
         if (acidSink.getInsertOverwrite() && acidSink.getDirName().toString().contains(unionAllSubdir) &&
             acidSink.isFullAcidTable()) {
           throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
               " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
         }
+      }
+      for (FileSinkDesc each : acidSinks) {
+        each.setMaxStmtId(maxStmtId);
       }
     }
   }
