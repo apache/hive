@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -46,6 +47,9 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook;
+import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
+import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -59,8 +63,11 @@ import org.apache.orc.RecordReader;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.RecordReaderImpl;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
@@ -70,10 +77,19 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
+  private static final String COMPACTION_QUEUE = "tez_queue";
+
+  @Rule
+  public TemporaryFolder folder = new TemporaryFolder();
+
   @Test
   public void testMajorCompactionNotPartitionedWithoutBuckets() throws Exception {
     boolean originalEnableVersionFile = conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
+
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, COMPACTION_QUEUE);
+    String tmpFolder = folder.newFolder().getAbsolutePath();
+    conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";
     String tblName = "testMajorCompaction";
@@ -111,8 +127,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
 
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
     // Run major compaction and cleaner
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
     // Should contain only one base directory now
@@ -134,6 +153,14 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs, true,
         new String[] { AcidUtils.BASE_PREFIX});
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
+
+    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+    reader.readEvent();
+    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+
+    Assert.assertNotNull(event);
+    Assert.assertEquals(HiveProtoLoggingHook.ExecutionMode.TEZ.name(), event.getExecutionMode());
+    Assert.assertEquals(event.getQueue(), "tez_queue");
   }
 
   /**
