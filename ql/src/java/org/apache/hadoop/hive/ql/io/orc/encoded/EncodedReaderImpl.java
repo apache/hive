@@ -1085,6 +1085,60 @@ class EncodedReaderImpl implements EncodedReader {
     return lastUncompressed;
   }
 
+  @Override
+  public void readDataRanges(DiskRangeList ranges) throws IOException {
+    boolean hasFileId = this.fileKey != null;
+    long baseOffset = 0L;
+
+    // 2. Now, read all of the ranges from cache or disk.
+    IdentityHashMap<ByteBuffer, Boolean> toRelease = new IdentityHashMap<>();
+    MutateHelper toRead = getDataFromCacheAndDisk(ranges, 0, hasFileId, toRelease);
+
+    // 3. For uncompressed case, we need some special processing before read.
+    //preReadUncompressedStream(stripeOffset, iter, sctx.offset, sctx.offset + sctx.length, sctx.kind);
+    preReadUncompressedStreams(baseOffset, toRead, toRelease);
+
+    // 4. Decompress the data.
+    try {
+      ColumnStreamData csd = POOLS.csdPool.take();
+      csd.incRef();
+      DiskRangeList drl = toRead.next;
+      while (drl != null) {
+          drl = readEncodedStream(baseOffset, drl, drl.getOffset(), drl.getEnd(), csd, drl.getOffset(), drl.getEnd(),
+                  toRelease);
+          for (MemoryBuffer buf : csd.getCacheBuffers()) {
+              cacheWrapper.releaseBuffer(buf);
+            }
+          drl = drl.next;
+        }
+      csd.decRef();
+      POOLS.csdPool.offer(csd);
+    } finally {
+      if (toRead != null) {
+          releaseInitialRefcounts(toRead.next);
+        }
+      if (toRelease != null) {
+          releaseBuffers(toRelease.keySet(), true);
+          toRelease.clear();
+        }
+    }
+  }
+
+  private void preReadUncompressedStreams(long baseOffset, MutateHelper toRead,
+      IdentityHashMap<ByteBuffer, Boolean> toRelease) throws IOException {
+    if (isCompressed)
+      return;
+    DiskRangeList iter = toRead.next;
+    while (iter != null) {
+      DiskRangeList newIter = preReadUncompressedStream(baseOffset, iter, iter.getOffset(), iter.getOffset() + iter.getLength(), Kind.DATA);
+      iter = newIter != null ? newIter.next : null;
+    }
+    if (toRelease != null) {
+      releaseBuffers(toRelease.keySet(), true);
+      toRelease.clear();
+    }
+  }
+
   /** Subset of readEncodedStream specific to compressed streams, separate to avoid long methods. */
   private CacheChunk prepareRangesForCompressedRead(long cOffset, long endCOffset,
       long streamOffset, long unlockUntilCOffset, DiskRangeList current,

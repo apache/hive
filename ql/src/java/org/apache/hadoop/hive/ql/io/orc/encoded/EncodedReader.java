@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.orc.OrcProto;
@@ -71,4 +72,7 @@ public interface EncodedReader {
           throws IOException;
 
   void setStopped(AtomicBoolean isStopped);
+
+  void readDataRanges(DiskRangeList ranges) throws IOException;
+
 }
