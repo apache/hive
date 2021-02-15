@@ -26,6 +26,7 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -121,7 +122,7 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
     }
     // 3) Add the expressions that correspond to the aggregation
     // functions
-    RexNode caseFilterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, filterConjs);
+    RexNode caseFilterCond = RexUtil.composeConjunction(rexBuilder, filterConjs);
     for (int i = 0, leftPos = groupCount, rightPos = totalCount + groupCount;
          leftPos < totalCount; i++, leftPos++, rightPos++) {
       // case when mv2.deptno IS NULL AND mv2.deptname IS NULL then s else source.s + mv2.s end
@@ -159,8 +160,8 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
       projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
           ImmutableList.of(caseFilterCond, rightRef, elseReturn)));
     }
-    RexNode joinCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, joinConjs);
-    RexNode filterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, filterConjs);
+    RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
+    RexNode filterCond = RexUtil.composeConjunction(rexBuilder, filterConjs);
     // 3) Build plan
     RelNode newNode = call.builder()
         .push(union.getInput(1))
@@ -171,5 +172,4 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
         .build();
     call.transformTo(newNode);
   }
-
 }
