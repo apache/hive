@@ -485,6 +485,9 @@ public class TestReplicationScenarios {
       metricCollector = new BootstrapLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
         confTemp);
     }
+    /* When 'hive.repl.retain.custom.db.locations.on.target' is enabled, the first iteration of repl load would
+       run only database creation task, and only in next iteration of Repl Load Task execution, remaining tasks will be
+       executed. Hence disabling this to perform the test on task optimization.  */
     confTemp.setBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET, false);
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),

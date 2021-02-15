@@ -245,7 +245,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           scope.database = true;
         }
         dbTracker.debugLog("database");
-        dbEventFound = true;
+        if (scope.database) {
+          dbEventFound = true;
+        }
         break;
       case Table:
       /*

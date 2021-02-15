@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -558,7 +559,9 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("tp1")
             .run("select id from tp1")
             .verifyResults(new String[]{"10", "20"});
-    verifyCustomDBLocations(dbWhManagedLoc, dbWhExternalLoc, true);
+    List<String> listOfTables = new ArrayList<>();
+    listOfTables.addAll(Arrays.asList("t1", "t2", "tp1"));
+    verifyCustomDBLocations(srcDb, listOfTables, dbWhManagedLoc, dbWhExternalLoc, true);
     primary.run("use " + srcDb)
             .run("insert into table t1 values (1000)")
             .run("insert into table t2 values (2000)")
@@ -616,6 +619,8 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("tp1")
             .run("select id from tp2")
             .verifyResults(new String[]{"100", "200"});
+    listOfTables.addAll(Arrays.asList("t3", "t4", "tp2"));
+    verifyCustomDBLocations(srcDb, listOfTables, dbWhManagedLoc, dbWhExternalLoc, true);
   }
 
   @Test
@@ -646,7 +651,9 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("t2")
             .run("select id from t2")
             .verifyResult("1000");
-    verifyDefaultDBLocations(dbWhManagedLoc, dbWhExternalLoc);
+    List<String> listOfTables = new ArrayList<>();
+    listOfTables.addAll(Arrays.asList("t1", "t2"));
+    verifyCustomDBLocations(srcDb, listOfTables, dbWhManagedLoc, dbWhExternalLoc, false);
     primary.run("use " + srcDb)
             .run("insert into table t1 values (1000)")
             .run("insert into table t2 values (2000)")
@@ -687,12 +694,14 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("t4")
             .run("select id from t4")
             .verifyResults(new String[]{"4000"});
+    listOfTables.addAll(Arrays.asList("t3", "t4"));
+    verifyCustomDBLocations(srcDb, listOfTables, dbWhManagedLoc, dbWhExternalLoc, false);
   }
 
-  private void verifyCustomDBLocations(String managedCustLocOnSrc, String externalCustLocOnSrc, boolean replaceCustPath)
-          throws Exception {
+  private void verifyCustomDBLocations(String srcDb, List<String> listOfTables, String managedCustLocOnSrc,
+                                       String externalCustLocOnSrc, boolean replaceCustPath) throws Exception {
+    Database replDatabase  = replica.getDatabase(replicatedDbName);
     if (replaceCustPath ) {
-      Database replDatabase  = replica.getDatabase(replicatedDbName);
       String managedCustLocOnTgt = new Path(replDatabase.getManagedLocationUri()).toUri().getPath();
       Assert.assertEquals(managedCustLocOnSrc,  managedCustLocOnTgt);
       Assert.assertNotEquals(managedCustLocOnTgt,  replica.warehouseRoot.toUri().getPath());
@@ -700,16 +709,33 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
       Assert.assertEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
       Assert.assertNotEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
               replicatedDbName.toLowerCase()  + ".db").toUri().getPath());
+    } else {
+      Assert.assertNotEquals(managedCustLocOnSrc,  null);
+      Assert.assertEquals(replDatabase.getManagedLocationUri(),  null);
+      String externalCustLocOnTgt = new Path(replDatabase.getLocationUri()).toUri().getPath();
+      Assert.assertNotEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
+      Assert.assertEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
+              replicatedDbName.toLowerCase()  + ".db").toUri().getPath());
     }
+    verifyTableLocations(srcDb, replDatabase, listOfTables, replaceCustPath);
   }
 
-  private void verifyDefaultDBLocations(String managedCustLocOnSrc, String externalCustLocOnSrc) throws Exception {
-    Database replDatabase  = replica.getDatabase(replicatedDbName);
-    Assert.assertNotEquals(managedCustLocOnSrc,  null);
-    String externalCustLocOnTgt = new Path(replDatabase.getLocationUri()).toUri().getPath();
-    Assert.assertNotEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
-    Assert.assertEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
-            replicatedDbName.toLowerCase()  + ".db").toUri().getPath());
+  private void verifyTableLocations(String srcDb, Database replDb, List<String> tables, boolean customLocOntgt)
+          throws Exception {
+    String tgtExtBase = replica.getConf().get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    for (String tname: tables) {
+      Table table = replica.getTable(replicatedDbName, tname);
+      if ("EXTERNAL_TABLE".equals(table.getTableType())) {
+        String pathOnSrc = new Path(primary.getTable(srcDb, tname).getSd().getLocation()).toUri().getPath();
+        Assert.assertEquals(new Path(table.getSd().getLocation()), new Path(tgtExtBase, pathOnSrc.substring(1)));
+      } else {
+        //Managed Table case
+        Path tblPathOnTgt  = customLocOntgt
+                ? new Path(replDb.getManagedLocationUri(), tname)
+                : new Path(replica.warehouseRoot, replicatedDbName.toLowerCase()  + ".db" + "/" + tname );
+        Assert.assertEquals(new Path(table.getSd().getLocation()), tblPathOnTgt);
+      }
+    }
   }
 
   private void verifyTableDataExists(WarehouseInstance warehouse, Path dbDataPath, String tableName,
