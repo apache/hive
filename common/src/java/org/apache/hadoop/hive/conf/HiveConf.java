@@ -4648,6 +4648,12 @@ public class HiveConf extends Configuration {
     LLAP_LRFU_BP_WRAPPER_SIZE("hive.llap.io.lrfu.bp.wrapper.size", 64, "thread local queue "
         + "used to amortize the lock contention, the idea hear is to try locking as soon we reach max size / 2 "
         + "and block when max queue size reached"),
+    LLAP_CACHE_REPL_STRATEGY_CLASS("hive.llap.cache.repl.strategy.class", "", "Strategy class for managing the "
+        + "llap cache replication. It's executed when the daemon starts and stops, and gives a chance to save and/or "
+        + "load the contens of the llap cache. If left empty the feature is disabled. The class should implement\n" +
+        "org.apache.hadoop.hive.llap.LlapCacheReplication interface"),
+    LLAP_CACHE_REPL_SAVE_DIR("hive.llap.cache.repl.save.dir", "/tmp/hive", "Directory to save the llap cache content\n"
+        + "info on shutdown, if BasicLlapCacheReplication is used as the hive.llap.cache.repl.strategy.class."),
     LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", true,
         "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
         "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +
