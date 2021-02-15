@@ -160,7 +160,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     Assert.assertNotNull(event);
     Assert.assertEquals(HiveProtoLoggingHook.ExecutionMode.TEZ.name(), event.getExecutionMode());
-    Assert.assertEquals(event.getQueue(), "tez_queue");
+    Assert.assertEquals(event.getQueue(), COMPACTION_QUEUE);
   }
 
   /**
