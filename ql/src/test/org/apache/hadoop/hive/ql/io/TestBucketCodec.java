@@ -77,13 +77,13 @@ public class TestBucketCodec {
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetBucketCodecVersion1EncodeNegativeBucketId() {
-    BucketCodec.getCodec(1).encode(new AcidOutputFormat.Options(null).bucket(-1).statementId(16).maxStmtId(BucketCodec.MAX_STATEMENT_ID));
+    BucketCodec.getCodec(1).encode(new AcidOutputFormat.Options(null).bucket(-1).statementId(16));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetBucketCodecVersion1EncodeMaxBucketId() {
     BucketCodec.getCodec(1)
-        .encode(new AcidOutputFormat.Options(null).bucket(BucketCodec.MAX_BUCKET_ID + 1).statementId(16).maxStmtId(BucketCodec.MAX_STATEMENT_ID));
+        .encode(new AcidOutputFormat.Options(null).bucket(BucketCodec.MAX_BUCKET_ID + 1).statementId(16));
   }
 
   @Test(expected = IllegalArgumentException.class)

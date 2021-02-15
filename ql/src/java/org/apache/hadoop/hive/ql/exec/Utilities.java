@@ -4509,6 +4509,7 @@ public final class Utilities {
         fs.mkdirs(specPath);
       }
     }
+
     Set<String> dynamicPartitionSpecs = new HashSet<>();
     Set<Path> committed = Collections.newSetFromMap(new ConcurrentHashMap<>());
     Set<Path> directInsertDirectories = new HashSet<>();

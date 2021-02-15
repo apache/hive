@@ -2130,6 +2130,8 @@ public class HiveConf extends Configuration {
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
         "format", false),
+    HIVE_EXTEND_BUCKET_ID_RANGE("hive.extend.bucketid.range", true,
+            "Dynamically allocate some bits from statement id when bucket id overflows. This allows having more than 4096 buckets."),
     HIVETESTMODEACIDKEYIDXSKIP("hive.test.acid.key.index.skip", false, "For testing only. OrcRecordUpdater will skip "
         + "generation of the hive.acid.key.index", false),
 

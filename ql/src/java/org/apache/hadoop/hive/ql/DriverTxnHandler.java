@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,8 +285,10 @@ class DriverTxnHandler {
               " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
         }
       }
-      for (FileSinkDesc each : acidSinks) {
-        each.setMaxStmtId(maxStmtId);
+      if (HiveConf.getBoolVar(driverContext.getConf(), ConfVars.HIVE_EXTEND_BUCKET_ID_RANGE)) {
+        for (FileSinkDesc each : acidSinks) {
+          each.setMaxStmtId(maxStmtId);
+        }
       }
     }
   }
