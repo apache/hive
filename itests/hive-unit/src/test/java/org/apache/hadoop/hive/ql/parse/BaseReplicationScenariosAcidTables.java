@@ -224,6 +224,25 @@ public class BaseReplicationScenariosAcidTables {
     }
   }
 
+  void verifyBootLoadNotification(String replicatedDbName, String lastReplId, String dumpLocation, boolean includeAcid)
+          throws Throwable {
+    List<String> tableNames = new LinkedList<>(nonAcidTableNames);
+    if (includeAcid) {
+      tableNames.addAll(acidTableNames);
+    }
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(tableNames)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(lastReplId)
+            .verifyReplTargetProperty(replicatedDbName)
+            .verifyNotificationID(dumpLocation);
+    verifyNonAcidTableLoad(replicatedDbName);
+    if (includeAcid) {
+      verifyAcidTableLoad(replicatedDbName);
+    }
+  }
+
   void prepareIncAcidData(String dbName) throws Throwable {
     primary.run("use " + dbName)
             .run("create table t6 stored as orc tblproperties (\"transactional\"=\"true\")" +
@@ -319,6 +338,21 @@ public class BaseReplicationScenariosAcidTables {
             .run("repl status " + dbName)
             .verifyResult(lastReplId)
             .verifyReplTargetProperty(replicatedDbName);
+    verifyIncNonAcidLoad(dbName);
+    verifyIncAcidLoad(dbName);
+  }
+
+  void verifyIncLoadNotification(String dbName, String lastReplId, String dumpLocation)
+          throws Throwable {
+    List<String> tableNames = new LinkedList<>(nonAcidTableNames);
+    tableNames.addAll(acidTableNames);
+    replica.run("use " + dbName)
+            .run("show tables")
+            .verifyResults(tableNames)
+            .run("repl status " + dbName)
+            .verifyResult(lastReplId)
+            .verifyReplTargetProperty(replicatedDbName)
+            .verifyNotificationID(dumpLocation);
     verifyIncNonAcidLoad(dbName);
     verifyIncAcidLoad(dbName);
   }

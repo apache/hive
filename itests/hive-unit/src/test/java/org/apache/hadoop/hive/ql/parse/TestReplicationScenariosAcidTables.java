@@ -53,17 +53,12 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -87,6 +82,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       Class clazz) throws Exception {
 
     conf = new HiveConf(clazz);
+    conf.set(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(),"false");
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
@@ -160,6 +156,24 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
+
+  @Test
+  public void testAcidNotification() throws Throwable{
+    // Bootstrap
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, primaryDbName);
+    verifyBootLoadNotification(replicatedDbName, bootstrapDump.lastReplicationId, bootstrapDump.dumpLocation, true);
+
+    // First incremental, after bootstrap
+    prepareIncNonAcidData(primaryDbName);
+    prepareIncAcidData(primaryDbName);
+    LOG.info(testName.getMethodName() + ": first incremental dump and load.");
+    WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+    verifyIncLoadNotification(replicatedDbName, incDump.lastReplicationId, incDump.dumpLocation);
+  }
+
 
   @Test
   /**

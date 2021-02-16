@@ -427,9 +427,10 @@ public class ReplUtils {
   }
 
   public static Path getEncodedDumpRootPath(HiveConf conf, String dbname) throws UnsupportedEncodingException {
-    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
-      Base64.getEncoder().encodeToString(dbname
-        .getBytes(StandardCharsets.UTF_8.name())));
+    Path ret = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+            Base64.getEncoder().encodeToString(dbname
+                    .getBytes(StandardCharsets.UTF_8.name())));
+    return ret;
   }
 
   public static Path getLatestDumpPath(Path dumpRoot, HiveConf conf) throws IOException {

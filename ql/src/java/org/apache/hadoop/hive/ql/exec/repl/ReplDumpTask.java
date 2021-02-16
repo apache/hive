@@ -153,7 +153,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       SecurityUtils.reloginExpiringKeytabUser();
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
-      } else {
+      }
+      else {
+        //dumpRoot creates TEST_PATH + /hrepl/ + dbName (Encoded format);
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
         if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(dumpRoot, conf), conf)) {
           LOG.error("Previous dump failed with non recoverable error. Needs manual intervention. ");
@@ -168,7 +170,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
+        //Should dump checks for whether pVHDP is null or contains _finished load file
+          //currentDumpPath = dumpRoot/1/
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
+          //hiveDumpRoot = currentDumpPath/hive
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           work.setCurrentDumpPath(currentDumpPath);
           work.setMetricCollector(initMetricCollection(isBootstrap, hiveDumpRoot));
@@ -177,6 +182,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             LOG.info("Added task to dump atlas metadata.");
           }
           if (shouldDumpAuthorizationMetadata()) {
+            //By Default false
             initiateAuthorizationDumpTask();
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
@@ -197,7 +203,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.info("Previous Dump is not yet loaded");
         }
       }
-    } catch (RuntimeException e) {
+    }
+    catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
       setException(e);
       try{
@@ -207,7 +214,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         LOG.error("Failed to collect replication metrics: ", ex);
       }
       throw e;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try{
@@ -397,6 +405,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return true;
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
+      //Verifies that _finished_load is present in the staging area. If yes,
+      //Available for next dump
       return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
     }
   }
@@ -545,7 +555,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // factory per event to decode. For now, however, since all messages have the
     // same factory, restricting by message format is effectively a guard against
     // older leftover data that would cause us problems.
-    work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId);
+    work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId);  //used to specify eventTo variable in work
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
         new ReplEventFilter(work.replScope),
         new CatalogFilter(MetaStoreUtils.getDefaultCatalog(conf)),
@@ -763,7 +773,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private boolean needBootstrapAcidTablesDuringIncrementalDump() {
-    // If acid table dump is not enabled, then no neeed to check further.
+    // If acid table dump is not enabled, then no need to check further.
     if (!ReplUtils.includeAcidTableInDump(conf)) {
       return false;
     }
@@ -853,6 +863,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
     String validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
     Path metadataPath = new Path(dumpRoot, EximUtil.METADATA_PATH_NAME);
+    //metadataPath = TEST_PATH/hrepl/db_name/1/hive/metadata
     if (shouldResumePreviousDump(dmd)) {
       //clear the metadata. We need to rewrite the metadata as the write id list will be changed
       //We can't reuse the previous write id as it might be invalid due to compaction
@@ -870,6 +881,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if ((db != null) && (ReplUtils.isFirstIncPending(db.getParameters()))) {
           // For replicated (target) database, until after first successful incremental load, the database will not be
           // in a consistent state. Avoid allowing replicating this database to a new target.
+          //This might be case if target db already contain db_name before load.
           throw new HiveException("Replication dump not allowed for replicated database" +
                   " with first incremental dump pending : " + dbName);
         }
@@ -978,6 +990,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private boolean shouldResumePreviousDump(Path lastDumpPath, boolean isBootStrap) throws IOException {
     if (validDump(lastDumpPath)) {
+      //If lastDumpPath is successful dump don't resume
       return false;
     }
     Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
@@ -986,9 +999,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return false;
     }
     if (isBootStrap) {
+      //Always return false for this case.
       return shouldResumePreviousDump(dumpMetaData);
     }
     // In case of incremental we should resume if _events_dump file is present and is valid
+    //_events_dump file contains last dump event id
     Path lastEventFile = new Path(hiveDumpPath, ReplAck.EVENTS_DUMP.toString());
     long resumeFrom = 0;
     try {

@@ -1321,7 +1321,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.EVENT_DB_NOTIFICATION_API_AUTH
      */
     @Deprecated
-    METASTORE_EVENT_DB_NOTIFICATION_API_AUTH("hive.metastore.event.db.notification.api.auth", true,
+    METASTORE_EVENT_DB_NOTIFICATION_API_AUTH("hive.metastore.event.db.notification.api.auth", false,
         "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
         "If set to true, then only the superusers in proxy settings have the permission"),
 

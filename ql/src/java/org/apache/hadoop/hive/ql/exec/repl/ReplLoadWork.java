@@ -216,4 +216,5 @@ public class ReplLoadWork implements Serializable {
   public void setExternalTableDataCopyItr(Iterator<String> externalTableDataCopyItr) {
     this.externalTableDataCopyItr = externalTableDataCopyItr;
   }
+
 }

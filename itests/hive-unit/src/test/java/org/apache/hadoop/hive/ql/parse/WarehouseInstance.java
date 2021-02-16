@@ -62,8 +62,7 @@ import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -387,6 +386,23 @@ public class WarehouseInstance implements Closeable {
             .join(lowerCaseData, ","), filteredResults.containsAll(lowerCaseData));
     return this;
   }
+
+  WarehouseInstance verifyNotificationID(String dumpLocation) throws Exception {
+    FileSystem fs = new Path(dumpLocation).getFileSystem(hiveConf);
+    long currentNotificationID = getCurrentNotificationEventId().getEventId();
+    Path notifyFilePath = new Path(dumpLocation + "/hive/", "_notification_id");
+    assertTrue(fs.exists(notifyFilePath));
+    InputStream inputStream = fs.open(notifyFilePath);
+
+    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+      assertTrue(currentNotificationID > Long.parseLong(line));
+    }
+    if(reader!= null) reader.close();
+    return this;
+  }
+
+
 
   WarehouseInstance verifyFailure(String[] data) throws IOException {
     List<String> results = getOutput();
