@@ -3,6 +3,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.stats.column.autogather=false;
+set hive.strict.checks.type.safety=false;
 
 -- SORT_QUERY_RESULTS
 

@@ -1,4 +1,5 @@
 --! qt:dataset:src
+SET hive.strict.checks.type.safety=false;
 DROP TABLE hbase_table;
 CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` timestamp)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

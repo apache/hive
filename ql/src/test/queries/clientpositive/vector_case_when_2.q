@@ -3,6 +3,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled=true;
+set hive.strict.checks.type.safety=false;
 
 create table timestamps_txt (tsval timestamp) STORED AS TEXTFILE;
 

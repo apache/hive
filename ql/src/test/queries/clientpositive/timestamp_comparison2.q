@@ -1,5 +1,7 @@
 --! qt:dataset:alltypesorc
 -- Test timestamp-to-numeric comparison
+set hive.strict.checks.type.safety=false;
+
 select count(*) 
 FROM   alltypesorc
 WHERE  

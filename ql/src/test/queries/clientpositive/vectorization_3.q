@@ -2,6 +2,7 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
+set hive.strict.checks.type.safety=false;
 
 -- SORT_QUERY_RESULTS
 

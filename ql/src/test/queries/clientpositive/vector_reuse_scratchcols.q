@@ -1,5 +1,6 @@
 --! qt:dataset:alltypesorc
 set hive.vectorized.execution.enabled=true;
+set hive.strict.checks.type.safety=false;
 
 
 EXPLAIN VECTORIZATION DETAIL

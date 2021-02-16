@@ -4,6 +4,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled = false;
+set hive.strict.checks.type.safety=false;
 
 -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 -- Turning on vectorization has been temporarily moved after filling the test table

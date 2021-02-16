@@ -1,4 +1,5 @@
 set hive.fetch.task.conversion=more;
+set hive.strict.checks.type.safety=false;
 
 drop table tstz1_n1;
 

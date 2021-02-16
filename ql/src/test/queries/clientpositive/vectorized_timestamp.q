@@ -1,6 +1,7 @@
 set hive.fetch.task.conversion=none;
 set hive.explain.user=false;
 set hive.vectorized.execution.reduce.enabled=true;
+set hive.strict.checks.type.safety=false;
 
 DROP TABLE IF EXISTS test_n2;
 CREATE TABLE test_n2(ts TIMESTAMP) STORED AS ORC;

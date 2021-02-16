@@ -1,5 +1,6 @@
 --! qt:dataset:src
 set hive.optimize.constant.propagation=true;
+set hive.strict.checks.type.safety=false;
 
 CREATE TABLE dest1_n26(d date, t timestamp);
 

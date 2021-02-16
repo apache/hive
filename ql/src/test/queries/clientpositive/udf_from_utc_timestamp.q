@@ -1,5 +1,6 @@
 DESCRIBE FUNCTION from_utc_timestamp;
 DESC FUNCTION EXTENDED from_utc_timestamp;
+set hive.strict.checks.type.safety=false;
 
 explain select from_utc_timestamp('2012-02-11 10:30:00', 'PST');
 
