@@ -4175,6 +4175,9 @@ public class HiveConf extends Configuration {
         "If hive (in tez mode only) cannot find a usable hive jar in \"hive.jar.directory\", \n" +
         "it will upload the hive jar to \"hive.user.install.directory/user.name\"\n" +
         "and use it to run queries."),
+    HIVE_MASKING_ALGO("hive.masking.algo","sha256", "This property is used to indicate whether " +
+            "FIPS mode is enabled or not. Value should be sha512 to indicate that FIPS mode is enabled." +
+            "Else the value should be sha256. Using this value column masking is being done"),
 
     // Vectorization enabled
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", true,
