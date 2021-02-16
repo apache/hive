@@ -87,6 +87,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns missing stats: tt_tinyint, tt_smallint, tt_int, tt_bigint, tt_float, tt_double, tt_double_precision, tt_decimal, tt_decimal_pre, tt_numeric, tt_numeric_pre, tt_timestamp, tt_string, tt_varchar, tt_char, tt_boolean
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=117B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -137,6 +138,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -187,6 +189,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -237,6 +240,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=8B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -287,6 +291,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -337,6 +342,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -447,6 +453,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns missing stats: tt_int
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=8B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -534,6 +541,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
@@ -584,6 +592,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
        partitions: 0/0 rows=0
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: []
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
