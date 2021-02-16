@@ -77,7 +77,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
-  private static final String COMPACTION_QUEUE = "tez_queue";
+  private static final String COMPACTION_QUEUE = "my_compaction_test_queue";
 
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
