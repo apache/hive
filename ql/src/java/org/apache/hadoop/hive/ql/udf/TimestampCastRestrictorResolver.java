@@ -45,7 +45,7 @@ public class TimestampCastRestrictorResolver implements UDFMethodResolver {
   public TimestampCastRestrictorResolver(UDFMethodResolver parentResolver) {
     this.parentResolver = parentResolver;
     SessionState ss = SessionState.get();
-    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
+    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY)) {
       strictTsConversion = true;
     }
   }
@@ -60,7 +60,7 @@ public class TimestampCastRestrictorResolver implements UDFMethodResolver {
         PrimitiveGrouping group = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(category);
         if (group == PrimitiveGrouping.DATE_GROUP) {
           throw new UDFArgumentException(
-              "Casting DATE/TIMESTAMP types to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION
+              "Casting DATE/TIMESTAMP types to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY
                   + ")");
         }
       }

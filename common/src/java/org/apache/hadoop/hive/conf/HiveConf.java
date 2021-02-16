@@ -1773,15 +1773,15 @@ public class HiveConf extends Configuration {
         "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings/(var)chars.\n" +
         "  Comparing bigints and doubles.\n" +
-        "  Comparing decimals and strings/(var)chars."),
+        "  Comparing decimals and strings/(var)chars.\n" +
+        "  Casting dates/timestamps to numeric.\n" +
+        "  Casting numeric to timestamps."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +
         "  Cartesian product (cross join)."),
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
-    HIVE_STRICT_TIMESTAMP_CONVERSION("hive.strict.timestamp.conversion", true,
-        "Restricts unsafe numeric to timestamp conversions"),
     HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
         "Set the owner of files loaded using load data in managed tables."),
 

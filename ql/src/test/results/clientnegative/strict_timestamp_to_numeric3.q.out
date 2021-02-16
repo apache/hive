@@ -6,4 +6,4 @@ POSTHOOK: query: create table t(a struct<t:timestamp>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
-FAILED: SemanticException Line 0:-1 Wrong arguments 't': Casting DATE/TIMESTAMP types to NUMERIC is prohibited (hive.strict.timestamp.conversion)
+FAILED: SemanticException Line 0:-1 Wrong arguments 't': Casting DATE/TIMESTAMP types to NUMERIC is prohibited (hive.strict.checks.type.safety)

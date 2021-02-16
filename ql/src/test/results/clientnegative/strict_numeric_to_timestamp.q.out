@@ -1,1 +1,1 @@
-FAILED: SemanticException Line 0:-1 Wrong arguments '123': Casting NUMERIC types to TIMESTAMP is prohibited (hive.strict.timestamp.conversion)
+FAILED: SemanticException Line 0:-1 Wrong arguments '123': Casting NUMERIC types to TIMESTAMP is prohibited (hive.strict.checks.type.safety)

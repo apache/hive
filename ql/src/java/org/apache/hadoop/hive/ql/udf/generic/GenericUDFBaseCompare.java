@@ -166,10 +166,10 @@ public abstract class GenericUDFBaseCompare extends GenericUDFBaseBinary {
       return;
     }
     SessionState ss = SessionState.get();
-    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
+    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY)) {
       if (primitiveGroupOf(compareOI) == PrimitiveGrouping.NUMERIC_GROUP) {
         throw new UDFArgumentException(
-            "Casting DATE/TIMESTAMP to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
+            "Casting DATE/TIMESTAMP to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY + ")");
       }
     }
   }
