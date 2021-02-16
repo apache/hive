@@ -148,6 +148,7 @@ public class Utils {
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
     // Create external purge table by default
     static final String CREATE_TABLE_AS_EXTERNAL = "hiveCreateAsExternalLegacy";
+    public static final String SOCKET_TIMEOUT = "socketTimeout";
 
     // We support ways to specify application name modeled after some existing DBs, since
     // there's no standard approach.
