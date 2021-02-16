@@ -93,7 +93,8 @@ if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
 fi
 
 if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
-  SERVICE="beeline -c $BEELINE_URL_LEGACY"
+  SERVICE="beeline"
+  SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-c" "${BEELINE_URL_LEGACY}")
 fi
 
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then

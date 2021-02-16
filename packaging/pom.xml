@@ -53,6 +53,10 @@
                   <descriptors>
                     <descriptor>src/main/assembly/bin.xml</descriptor>
                     <descriptor>src/main/assembly/src.xml</descriptor>
+                  </descriptors>
+                  <finalName>apache-hive-beeline-${project.version}</finalName>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <descriptors>
                     <descriptor>src/main/assembly/beeline.xml</descriptor>
                   </descriptors>
                   <tarLongFileMode>posix</tarLongFileMode>

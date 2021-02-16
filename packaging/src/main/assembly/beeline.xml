@@ -28,7 +28,7 @@
         <format>tar.gz</format>
     </formats>
 
-    <baseDirectory>apache-hive-${project.version}-beeline</baseDirectory>
+    <baseDirectory>apache-hive-beeline-${project.version}</baseDirectory>
 
     <dependencySets>
         <dependencySet>
@@ -62,6 +62,7 @@
 
     <fileSets>
         <fileSet>
+            <fileMode>755</fileMode>
             <directory>${project.parent.basedir}</directory>
             <includes>
                 <include>bin/beeline</include>
