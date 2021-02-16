@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableVoidObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
 
 /**
@@ -54,7 +55,7 @@ public class GenericUDFOPAnd extends GenericUDF {
     }
     boi = new BooleanObjectInspector[arguments.length];
     for (int i = 0; i < arguments.length; i++) {
-      if (!(arguments[i] instanceof BooleanObjectInspector)) {
+      if (arguments[i] instanceof WritableVoidObjectInspector) {
         boi[i] = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
       } else {
         boi[i] = (BooleanObjectInspector) arguments[i];

@@ -1,0 +1,46 @@
+PREHOOK: query: SELECT
+  id,
+  flg
+FROM
+  (SELECT 1 as id, 1 as flg) z
+WHERE
+  id >= 0
+  AND flg = TRUE
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  id,
+  flg
+FROM
+  (SELECT 1 as id, 1 as flg) z
+WHERE
+  id >= 0
+  AND flg = TRUE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	1
+PREHOOK: query: SELECT
+  id,
+  flg
+FROM
+  (SELECT 1 as id, 1 as flg) z
+WHERE
+  id >= 0
+  OR flg = TRUE
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  id,
+  flg
+FROM
+  (SELECT 1 as id, 1 as flg) z
+WHERE
+  id >= 0
+  OR flg = TRUE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	1
