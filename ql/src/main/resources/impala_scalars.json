@@ -7832,7 +7832,7 @@
         "argTypes": [
             "INT"
         ],
-        "symbolName": "_ZN6impala18TimestampFunctions8FromUnixIN10impala_udf6IntValEEENS2_9StringValEPNS2_15FunctionContextERKT_",
+        "symbolName": "_ZN6impala18TimestampFunctions15UtcToUnixMicrosEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
         "hdfsUriLoc": ""
     },
     {
@@ -7842,7 +7842,7 @@
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala18TimestampFunctions20UnixAndFromUnixCloseEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
         "hasVarArgs": "false",
-        "prepareFnSymbol": "_ZN6impala18TimestampFunctions22UnixAndFromUnixPrepareEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
+        "prepareFnSymbol": "_ZN6impala18TimestampFunctions15FromUnixPrepareEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
         "retType": "STRING",
         "isPersistent": "true",
         "binaryType": "BUILTIN",
@@ -7875,7 +7875,7 @@
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala18TimestampFunctions20UnixAndFromUnixCloseEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
         "hasVarArgs": "false",
-        "prepareFnSymbol": "_ZN6impala18TimestampFunctions22UnixAndFromUnixPrepareEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
+        "prepareFnSymbol": "_ZN6impala18TimestampFunctions15FromUnixPrepareEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
         "retType": "STRING",
         "isPersistent": "true",
         "binaryType": "BUILTIN",
@@ -8036,7 +8036,7 @@
         "isAgg": "false",
         "closeFnSymbol": "_ZN6impala18TimestampFunctions20UnixAndFromUnixCloseEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
         "hasVarArgs": "false",
-        "prepareFnSymbol": "_ZN6impala18TimestampFunctions22UnixAndFromUnixPrepareEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
+        "prepareFnSymbol": "_ZN6impala18TimestampFunctions13ToUnixPrepareEPN10impala_udf15FunctionContextENS2_18FunctionStateScopeE",
         "retType": "TIMESTAMP",
         "isPersistent": "true",
         "binaryType": "BUILTIN",
