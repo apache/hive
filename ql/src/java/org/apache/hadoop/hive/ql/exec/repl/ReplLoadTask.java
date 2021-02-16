@@ -23,11 +23,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -70,7 +67,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -499,15 +495,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if ((work.isIncrementalLoad() && !work.incrementalLoadTasksBuilder().hasMoreWork() && !work.hasBootstrapLoadTasks())
         || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
-//      try{
-//        createNotificationFile();
-//      } catch (SemanticException e) {
-//        e.printStackTrace();
-//      } catch (MetaException e) {
-//        e.printStackTrace();
-//      } catch (org.apache.thrift.TException e){
-//        e.printStackTrace();
-//      }
       NotWork notifWork = new NotWork(new Path(work.dumpDirectory, "_notification_id"), work.getMetricCollector());
       Task<NotWork> createNotWorkTask = TaskFactory.get(notifWork, conf);
       if(childTasks.isEmpty()){

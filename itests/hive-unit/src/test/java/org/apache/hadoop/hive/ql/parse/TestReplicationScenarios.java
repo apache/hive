@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.annotations.VisibleForTesting;
-//import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,7 +26,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
@@ -161,12 +160,10 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-    hconf.set(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(),"false");
 
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
-    //hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, false);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
@@ -374,170 +371,6 @@ public class TestReplicationScenarios {
     verifyRun("SELECT * from " + replicatedDbName + ".unptned_empty", empty, driverMirror);
   }
 
-  //Created By HMangla
-
-  @Test
-  public void testNotification() throws IOException, SemanticException, TException {
-    String name = testName.getMethodName();
-    String dbName = createDB(name, driver);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
-    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
-    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
-    String[] empty = new String[]{};
-
-    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
-
-    createTestDataFile(unptn_locn, unptn_data);
-    createTestDataFile(ptn_locn_1, ptn_data_1);
-    createTestDataFile(ptn_locn_2, ptn_data_2);
-
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
-    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
-    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
-
-    String replicatedDbName = dbName + "_dupe";
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
-
-    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
-    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
-
-    Path notifyFilePath = new Path(dumpPath, "_notification_id");
-    assertTrue(fs.exists(notifyFilePath));
-
-    long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
-    InputStream inputStream = fs.open(notifyFilePath);
-
-    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-      assertTrue(currentNotificationID > Long.parseLong(line));
-    }
-    if(reader!= null) reader.close();
-
-  }
-
-  @Test
-  public void DataCopyCMTest() throws IOException, SemanticException{
-    String name = testName.getMethodName();
-    String dbName = createDB(name, driver);
-    String replDbName = dbName + "_dupe";
-
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
-    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
-    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
-    String[] empty = new String[]{};
-
-    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
-
-    createTestDataFile(unptn_locn, unptn_data);
-    createTestDataFile(ptn_locn_1, ptn_data_1);
-    createTestDataFile(ptn_locn_2, ptn_data_2);
-
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
-    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
-    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
-
-    Tuple IncDump = replDumpDb(dbName);
-
-    run("DROP TABLE "  + dbName + ".unptned", driver);
-
-    System.out.println("Check the directory structure.");
-
-    loadAndVerify(replDbName, dbName, IncDump.lastReplId);  //Error occurred here if CM is disabled.
-
-  }
-
-  @Test
-  public void custTest() throws IOException, SemanticException{
-    String name = testName.getMethodName();
-    String dbName = createDB(name, driver);
-    String replDbName = dbName + "_dupe";
-
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
-    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
-    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
-    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
-    String[] empty = new String[]{};
-
-    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
-
-    createTestDataFile(unptn_locn, unptn_data);
-    createTestDataFile(ptn_locn_1, ptn_data_1);
-    createTestDataFile(ptn_locn_2, ptn_data_2);
-
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
-    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
-    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
-
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
-
-    run("INSERT INTO "  + dbName + ".unptned VALUES ('new_VALUE') ", driver);
-
-    // Perform REPL-DUMP/LOAD
-    Tuple IncDump = replDumpDb(dbName);
-
-    run("DROP TABLE "  + dbName + ".unptned", driver);
-
-    //assertion to be inserted that source location does not have this table
-    //verifyIfTableNotExist(dbName + "", "unptned", metaStoreClient);
-    String query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '" + dbName + "' AND table_name = 'unptned'";
-    verifyRun(query,new String[]{}, driverMirror);
-
-
-
-    loadAndVerify(replDbName, dbName, IncDump.lastReplId);
-
-    String[] modified_data = new String[unptn_data.length + 1];     //String[] unptn_data = {'11','12'}
-    modified_data[0] = "new_VALUE";
-    for(int i=1;i<=unptn_data.length;i++)  modified_data[i] = unptn_data[i-1];
-
-
-    verifyRun("SELECT * from " + replDbName + ".unptned", modified_data, driverMirror);
-    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
-    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
-    verifyRun("SELECT a from " + replDbName + ".ptned_empty", empty, driverMirror);
-    verifyRun("SELECT * from " + replDbName + ".unptned_empty", empty, driverMirror);
-
-  }
-
-
-  //Creation by HMangla ends here........
 
   @Test
   public void testBootstrapFailedDump() throws IOException {
@@ -4077,7 +3910,6 @@ public class TestReplicationScenarios {
   public void testAuthForNotificationAPIs() throws Exception {
     // Setup
     long firstEventId = metaStoreClient.getCurrentNotificationEventId().getEventId();
-
     String dbName = "testAuthForNotificationAPIs";
     createDB(dbName, driver);
     NotificationEventResponse rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);

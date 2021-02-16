@@ -94,8 +94,7 @@ public class EventUtils {
           rqst.setToEventId(toEventId);
         }
         rqst.setLimit(limit);
-        long ret = hiveDb.getMSC().getNotificationEventsCount(rqst).getEventsCount();
-        return ret;
+        return hiveDb.getMSC().getNotificationEventsCount(rqst).getEventsCount();
       } catch (TException e) {
         throw new IOException(e);
       }

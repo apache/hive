@@ -5199,8 +5199,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       try {
         metaStoreClient = createMetaStoreClient(allowEmbedded);
-      }
-      catch (RuntimeException ex) {
+      } catch (RuntimeException ex) {
         Throwable t = ex.getCause();
         while (t != null) {
           if (t instanceof JDODataStoreException && t.getMessage() != null

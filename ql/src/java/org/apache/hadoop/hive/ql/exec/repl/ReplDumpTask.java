@@ -153,8 +153,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       SecurityUtils.reloginExpiringKeytabUser();
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
-      }
-      else {
+      } else {
         //dumpRoot creates TEST_PATH + /hrepl/ + dbName (Encoded format);
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
         if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(dumpRoot, conf), conf)) {
@@ -203,8 +202,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.info("Previous Dump is not yet loaded");
         }
       }
-    }
-    catch (RuntimeException e) {
+    } catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
       setException(e);
       try{
@@ -214,8 +212,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         LOG.error("Failed to collect replication metrics: ", ex);
       }
       throw e;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try{
