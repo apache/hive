@@ -105,7 +105,6 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
     // expressions for project operator
     List<RexNode> projExprs = new ArrayList<>();
     List<RexNode> joinConjs = new ArrayList<>();
-    List<RexNode> filterConjs = new ArrayList<>();
     int groupCount = agg.getGroupCount();
     int totalCount = agg.getGroupCount() + agg.getAggCallList().size();
     for (int leftPos = 0, rightPos = totalCount;
@@ -117,17 +116,17 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
       projExprs.add(rightRef);
       joinConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
           ImmutableList.of(leftRef, rightRef)));
-      filterConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
-          ImmutableList.of(leftRef)));
     }
     // 3) Add the expressions that correspond to the aggregation
     // functions
-    RexNode caseFilterCond = RexUtil.composeConjunction(rexBuilder, filterConjs);
+    List<RexNode> filterConjs = new ArrayList<>();
     for (int i = 0, leftPos = groupCount, rightPos = totalCount + groupCount;
          leftPos < totalCount; i++, leftPos++, rightPos++) {
       // case when mv2.deptno IS NULL AND mv2.deptname IS NULL then s else source.s + mv2.s end
       RexNode leftRef = rexBuilder.makeInputRef(
           joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
+      filterConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
+              ImmutableList.of(leftRef)));
       RexNode rightRef = rexBuilder.makeInputRef(
           joinRightInput.getRowType().getFieldList().get(leftPos).getType(), rightPos);
       // Generate SQLOperator for merging the aggregations
@@ -158,7 +157,8 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
             + " recognized: " + aggCall);
       }
       projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-          ImmutableList.of(caseFilterCond, rightRef, elseReturn)));
+          ImmutableList.of(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
+                  ImmutableList.of(leftRef)), rightRef, elseReturn)));
     }
     RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
     RexNode filterCond = RexUtil.composeConjunction(rexBuilder, filterConjs);

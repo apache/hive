@@ -1118,6 +1118,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   private void fixUpASTAggregateIncrementalRebuild(ASTNode newAST) throws SemanticException {
+    // Replace equality operators with null safe equality operators in join condition
+    ASTNode joinNode = new ASTSearcher().simpleBreadthFirstSearch(
+            newAST, HiveParser.TOK_QUERY, HiveParser.TOK_FROM, HiveParser.TOK_RIGHTOUTERJOIN);
+    ASTNode joinConditionNode = (ASTNode) joinNode.getChild(2);
+    if (joinConditionNode.getType() == HiveParser.EQUAL) {
+      joinConditionNode.parent.setChild(joinConditionNode.childIndex, createNullSafeNode(joinConditionNode));
+    } else if (joinConditionNode.getType() == HiveParser.KW_AND) {
+      for (int i = 0; i < joinConditionNode.getChildCount(); ++i) {
+        ASTNode eqNode = (ASTNode) joinConditionNode.getChild(i);
+        joinConditionNode.setChild(i, createNullSafeNode(eqNode));
+      }
+    }
     // Replace INSERT OVERWRITE by MERGE equivalent rewriting.
     // Here we need to do this complex AST rewriting that generates the same plan
     // that a MERGE clause would generate because CBO does not support MERGE yet.
@@ -1184,6 +1196,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ParseDriver.adaptor.addChild(dotNodeInputROJ, columnTokNodeInputROJ);
     ParseDriver.adaptor.addChild(dotNodeInputROJ, rowIdNodeInputROJ);
     ParseDriver.adaptor.addChild(columnTokNodeInputROJ, tableNameNodeInputROJ);
+
+    // Remove the where clause from MV scan since we need all the rows from the view.
+    ASTNode whereNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
+            subqueryNodeInputROJ, HiveParser.TOK_SUBQUERY, HiveParser.TOK_QUERY, HiveParser.TOK_INSERT, HiveParser.TOK_WHERE);
+    ASTNode whereParentNode = (ASTNode) whereNodeInputROJ.parent;
+    whereParentNode.deleteChild(whereNodeInputROJ.childIndex);
+
     // 4) Transform first INSERT branch into an UPDATE
     // 4.1) Adding ROW__ID field
     ASTNode selectNodeInUpdate = (ASTNode) updateNode.getChild(1);
@@ -1249,24 +1268,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     if (whereClauseInUpdate.getChild(0).getType() != HiveParser.KW_OR) {
       throw new SemanticException("OR clause expected below TOK_WHERE in incremental rewriting");
     }
-    // We bypass the OR clause and select the first disjunct
-    int indexUpdate;
-    int indexInsert;
-    if (whereClauseInUpdate.getChild(0).getChild(0).getType() == HiveParser.EQUAL ||
-        (whereClauseInUpdate.getChild(0).getChild(0).getType() == HiveParser.KW_AND &&
-            whereClauseInUpdate.getChild(0).getChild(0).getChild(0).getType() == HiveParser.EQUAL)) {
-      indexUpdate = 0;
-      indexInsert = 1;
-    } else if (whereClauseInUpdate.getChild(0).getChild(1).getType() == HiveParser.EQUAL ||
-        (whereClauseInUpdate.getChild(0).getChild(1).getType() == HiveParser.KW_AND &&
-            whereClauseInUpdate.getChild(0).getChild(1).getChild(0).getType() == HiveParser.EQUAL)) {
-      indexUpdate = 1;
-      indexInsert = 0;
-    } else {
-      throw new SemanticException("Unexpected condition in incremental rewriting");
-    }
-    ASTNode newCondInUpdate = (ASTNode) whereClauseInUpdate.getChild(0).getChild(indexUpdate);
-    ParseDriver.adaptor.setChild(whereClauseInUpdate, 0, newCondInUpdate);
+    ASTNode funcNodeInUpdateWhere =
+            createFunctionCall("isnotnull", (ASTNode) ParseDriver.adaptor.dupTree(dotNodeInUpdate));
+    ParseDriver.adaptor.setChild(whereClauseInUpdate, 0, funcNodeInUpdateWhere);
     // 4.3) Finally, we add SORT clause, this is needed for the UPDATE.
     //       TOK_SORTBY
     //         TOK_TABSORTCOLNAMEASC
@@ -1302,13 +1306,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
       throw new SemanticException("OR clause expected below TOK_WHERE in incremental rewriting");
     }
     // We bypass the OR clause and select the second disjunct
-    ASTNode newCondInInsert = (ASTNode) whereClauseInInsert.getChild(0).getChild(indexInsert);
-    ParseDriver.adaptor.setChild(whereClauseInInsert, 0, newCondInInsert);
+    ASTNode funcNodeInInsertWhere =
+            createFunctionCall("isnull", (ASTNode) ParseDriver.adaptor.dupTree(dotNodeInUpdate));
+    ParseDriver.adaptor.setChild(whereClauseInInsert, 0, funcNodeInInsertWhere);
     // 6) Now we set some tree properties related to multi-insert
     // operation with INSERT/UPDATE
     ctx.setOperation(Context.Operation.MERGE);
     ctx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
+  }
+
+  private ASTNode createNullSafeNode(ASTNode joinExprNode) {
+    ASTNode nullSafeEqNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL_NS, "<=>");
+    for (int j = 0; j < joinExprNode.getChildCount(); ++j) {
+      nullSafeEqNode.addChild(joinExprNode.getChild(j));
+    }
+    return nullSafeEqNode;
+  }
+
+  private ASTNode createFunctionCall(String functionName, ASTNode paramNode) {
+    ASTNode funcNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+    ASTNode funcNameNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, functionName);
+    funcNode.addChild(funcNameNode);
+    funcNode.addChild(paramNode);
+    return funcNode;
   }
 
   private void fixUpASTNoAggregateIncrementalRebuild(ASTNode newAST) throws SemanticException {
