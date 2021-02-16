@@ -113,6 +113,7 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
@@ -156,6 +157,7 @@ public class HiveConnection implements java.sql.Connection {
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
   private Subject loggedInSubject;
+  private int maxRetries = 1;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -308,7 +310,6 @@ public class HiveConnection implements java.sql.Connection {
       openSession();
       executeInitSql();
     } else {
-      int maxRetries = 1;
       long retryInterval = 1000L;
       try {
         String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
@@ -582,21 +583,8 @@ public class HiveConnection implements java.sql.Connection {
       httpClientBuilder = HttpClientBuilder.create();
     }
     // In case the server's idletimeout is set to a lower value, it might close it's side of
-    // connection. However we retry one more time on NoHttpResponseException
-    httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler() {
-      @Override
-      public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-        if (executionCount > 1) {
-          LOG.info("Retry attempts to connect to server exceeded.");
-          return false;
-        }
-        if (exception instanceof org.apache.http.NoHttpResponseException) {
-          LOG.info("Could not connect to the server. Retrying one more time.");
-          return true;
-        }
-        return false;
-      }
-    });
+    // connection. The client will retry upto maxRetries for all retryable exceptions.
+    httpClientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler(maxRetries, false));
 
     // Add the request interceptor to the client builder
     httpClientBuilder.addInterceptorFirst(requestInterceptor);
