@@ -243,11 +243,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         if (dbTracker.hasTasks()) {
           scope.rootTasks.addAll(dbTracker.tasks());
           scope.database = true;
-        }
-        dbTracker.debugLog("database");
-        if (scope.database) {
           dbEventFound = true;
         }
+        dbTracker.debugLog("database");
         break;
       case Table:
       /*
@@ -321,6 +319,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (dbEventFound && conf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)) {
         // Force the database creation before the other event like table/parttion etc, so that data copy path creation
         // can be achieved.
+        LOG.info("Database event found, will be processed exclusively");
         break;
       }
     }
