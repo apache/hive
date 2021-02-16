@@ -469,6 +469,12 @@ public class Initiator extends MetaStoreCompactorThread {
             "=true so we will not compact it.");
         return false;
       }
+      if (AcidUtils.isInsertOnlyTable(t.getParameters()) && !HiveConf
+          .getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
+        LOG.info("Table " + tableName(t) + " is insert only and " + HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM.varname
+            + "=false so we will not compact it.");
+        return false;
+      }
       if (isDynPartIngest(t, ci)) {
         return false;
       }
