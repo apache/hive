@@ -103,6 +103,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -3195,17 +3196,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(String dbName, String tableName,
       List<String> partitionNames) throws HiveException {
     try {
-      return getMSC().getPartitionsByNames(dbName, tableName, partitionNames);
+      GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+      req.setDb_name(dbName);
+      req.setTbl_name(tableName);
+      req.setNames(partitionNames);
+      return getPartitionsByNames(req, null);
     } catch (Exception e) {
       LOG.error("Failed getPartitionsByNames", e);
       throw new HiveException(e);
     }
   }
 
-    public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(GetPartitionsByNamesRequest req)
+    public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(GetPartitionsByNamesRequest req,
+      Table table)
         throws HiveException {
     try {
-      Table table = getTable(req.getDb_name(), req.getTbl_name());
+      if( table == null ) {
+        table = getTable(req.getDb_name(), req.getTbl_name());
+      }
       if (AcidUtils.isTransactionalTable(table)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(req.getDb_name(), req.getTbl_name());
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
@@ -3803,9 +3811,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     try {
       for (int i = 0; i < nBatches; ++i) {
-        List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats, Constants.HIVE_ENGINE);
+        GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+        req.setDb_name(tbl.getDbName());
+        req.setTbl_name(tbl.getTableName());
+        req.setNames(partNames.subList(i*batchSize, (i+1)*batchSize));
+        req.setGet_col_stats(getColStats);
+        req.setEngine(Constants.HIVE_ENGINE);
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
+
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3814,9 +3827,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (nParts > nBatches * batchSize) {
-        List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);
+        GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+        req.setDb_name(tbl.getDbName());
+        req.setTbl_name(tbl.getTableName());
+        req.setNames(partNames.subList(nBatches*batchSize, nParts));
+        req.setGet_col_stats(getColStats);
+        req.setEngine(Constants.HIVE_ENGINE);
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
+
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));

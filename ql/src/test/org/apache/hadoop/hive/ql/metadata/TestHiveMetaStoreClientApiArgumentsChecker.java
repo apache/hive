@@ -43,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +129,31 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
     GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
     req.setDb_name(DB_NAME);
     req.setTbl_name(TABLE_NAME);
-    hive.getPartitionsByNames(req);
+    hive.getPartitionsByNames(req, null);
+  }
+
+  @Test
+  public void testGetPartitionsByNames2() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(DB_NAME,TABLE_NAME,null);
+  }
+
+  @Test
+  public void testGetPartitionsByNames3() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(t, Arrays.asList("test"));
+  }
+
+  @Test
+  public void testGetPartitionsByNames4() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(t, new ArrayList<>(), true);
   }
 
   @Test

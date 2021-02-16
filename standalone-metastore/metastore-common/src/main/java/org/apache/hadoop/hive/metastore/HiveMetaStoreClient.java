@@ -2212,7 +2212,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
     gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
-    gpbnr.setId(getTable(db_name,tbl_name).getId());
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
