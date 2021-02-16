@@ -128,14 +128,15 @@ public class FSStatsAggregator implements StatsAggregator {
       if (null == partStat) { // not all partitions are scanned in all mappers, so this could be null.
         continue;
       }
+      statsPresent = true;
       String statVal = partStat.get(statType);
       if (null == statVal) { // partition was found, but was empty.
         continue;
       }
-      statsPresent = true;
       counter += Long.parseLong(statVal);
     }
-    Utilities.FILE_OP_LOGGER.info("Read stats for {}, {}, {}: ", partID, statType, counter);
+    Utilities.FILE_OP_LOGGER.info("Read stats for {}, {}, {}, {}: ",
+        partID, statType, statsPresent, counter);
 
     return (statsPresent ? String.valueOf(counter) : null);
   }
