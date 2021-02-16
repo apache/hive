@@ -1045,6 +1045,30 @@ public class TestWorker extends CompactorTest {
     verifyTxn1IsAborted(0, t, CompactionType.MAJOR);
     verifyTxn1IsAborted(1, t, CompactionType.MINOR);
   }
+  @Test
+  public void insertOnlyDisabled() throws Exception {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+    Table t = newTable("default", "iod", false, parameters);
+
+    addDeltaFile(t, null, 1L, 2L, 2);
+    addDeltaFile(t, null, 3L, 4L, 2);
+
+    burnThroughTransactions("default", "iod", 5);
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM, false);
+    CompactionRequest rqst = new CompactionRequest("default", "iod", CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("failed", compacts.get(0).getState());
+
+  }
 
   private void verifyTxn1IsAborted(int compactionNum, Table t, CompactionType type)
       throws Exception {

@@ -533,10 +533,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
         task (currently we're using Tez split grouping).
         */
-        if (AcidUtils.isInsertOnlyTable(t.getParameters()) && !HiveConf
-            .getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
-          throw new HiveException("Insert only compaction is disabled. Set hive.compactor.compact.insert.only to true to enable it.");
-        }
         QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
         if (queryCompactor != null) {
           LOG.info("Will compact id: " + ci.id + " with query-based compactor class: "
