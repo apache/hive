@@ -135,10 +135,10 @@ public class FSStatsAggregator implements StatsAggregator {
       }
       counter += Long.parseLong(statVal);
     }
-    Utilities.FILE_OP_LOGGER.info("Read stats for {}, {}, {}, {}: ",
-        partID, statType, statsPresent, counter);
+    Utilities.FILE_OP_LOGGER.info("Read stats for {}, {}, {}, {}, {}: ",
+        partID, statType, statsPresent, counter, statsList.isEmpty());
 
-    return (statsPresent ? String.valueOf(counter) : null);
+    return ((statsPresent || statsList.isEmpty()) ? String.valueOf(counter) : null);
   }
 
   @Override
