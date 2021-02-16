@@ -2206,6 +2206,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
@@ -3089,8 +3090,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<RexNode> leftJoinKeys = new ArrayList<RexNode>();
         List<RexNode> rightJoinKeys = new ArrayList<RexNode>();
 
-        RexNode nonEquiConds = RelOptUtil.splitJoinCondition(sysFieldList, leftRel, rightRel,
-            calciteJoinCond, leftJoinKeys, rightJoinKeys, null, null);
+        RexNode nonEquiConds = HiveRelOptUtil.splitHiveJoinCondition(sysFieldList, ImmutableList.of(leftRel, rightRel),
+            calciteJoinCond, ImmutableList.of(leftJoinKeys, rightJoinKeys), null, null);
 
         RelNode[] inputRels = new RelNode[] { leftRel, rightRel };
         final List<Integer> leftKeys = new ArrayList<Integer>();
