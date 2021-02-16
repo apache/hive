@@ -12970,7 +12970,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!ctx.getExplainLogical()) {
       TaskCompiler compiler = EngineCompileHelper.getInstance(conf).getCompiler(conf);
       compiler.init(queryState, console, db);
-      compiler.compile(pCtx, rootTasks, inputs, outputs);
+      compiler.compile(pCtx, (List<Task<?>>)rootTasks, inputs, outputs);
       fetchTask = pCtx.getFetchTask();
     }
     //find all Acid FileSinkOperatorS

@@ -1748,7 +1748,7 @@ public abstract class BaseSemanticAnalyzer {
     return tab;
   }
 
-  public List<Task<?>> getAllRootTasks() {
+  public List<Task<? extends Serializable>> getAllRootTasks() {
     return rootTasks;
   }
 
