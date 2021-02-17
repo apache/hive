@@ -177,7 +177,6 @@ public class HCatCli {
     // Now that the properties are in, we can instantiate SessionState.
     SessionState.start(ss);
 
-
     // all done parsing, let's run stuff!
     if (execString != null) {
       // remove the leading and trailing quotes. hcatalog can miss on some cases.
