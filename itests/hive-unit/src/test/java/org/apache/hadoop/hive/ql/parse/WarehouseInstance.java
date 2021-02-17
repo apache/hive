@@ -406,8 +406,6 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
-
-
   WarehouseInstance verifyFailure(String[] data) throws IOException {
     List<String> results = getOutput();
     logger.info("Expecting {}", StringUtils.join(data, ","));

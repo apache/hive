@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.io.FileUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -95,10 +94,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.Base64;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -324,7 +330,6 @@ public class TestReplicationScenarios {
    * and verifies that a REPL DUMP followed by a REPL LOAD is able to load it
    * appropriately. This tests bootstrap behaviour primarily.
    */
-
   @Test
   public void testBasic() throws IOException, SemanticException {
     String name = testName.getMethodName();
@@ -370,7 +375,6 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replicatedDbName + ".ptned_empty", empty, driverMirror);
     verifyRun("SELECT * from " + replicatedDbName + ".unptned_empty", empty, driverMirror);
   }
-
 
   @Test
   public void testBootstrapFailedDump() throws IOException {

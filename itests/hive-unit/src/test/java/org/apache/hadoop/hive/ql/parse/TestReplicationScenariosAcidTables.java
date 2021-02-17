@@ -53,7 +53,13 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -171,7 +177,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName);
     verifyIncLoadNotification(replicatedDbName, incDump.lastReplicationId, incDump.dumpLocation);
   }
-
 
   @Test
   /**

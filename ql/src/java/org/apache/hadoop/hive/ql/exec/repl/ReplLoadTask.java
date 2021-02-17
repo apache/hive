@@ -501,9 +501,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       } else{
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(Collections.singletonList(createNotWorkTask)));
       }
-
-
-
       AckWork replLoadAckWork = new AckWork(
               new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()), work.getMetricCollector());
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);

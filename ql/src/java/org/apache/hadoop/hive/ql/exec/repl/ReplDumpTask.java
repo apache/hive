@@ -154,7 +154,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
-        //dumpRoot creates TEST_PATH + /hrepl/ + dbName (Encoded format);
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
         if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(dumpRoot, conf), conf)) {
           LOG.error("Previous dump failed with non recoverable error. Needs manual intervention. ");

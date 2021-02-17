@@ -237,7 +237,6 @@ public class BaseReplicationScenariosAcidTables {
             .verifyResult(lastReplId)
             .verifyReplTargetProperty(replicatedDbName)
             .verifyNotificationID(dumpLocation);
-    verifyNonAcidTableLoad(replicatedDbName);
     if (includeAcid) {
       verifyAcidTableLoad(replicatedDbName);
     }
@@ -353,7 +352,6 @@ public class BaseReplicationScenariosAcidTables {
             .verifyResult(lastReplId)
             .verifyReplTargetProperty(replicatedDbName)
             .verifyNotificationID(dumpLocation);
-    verifyIncNonAcidLoad(dbName);
     verifyIncAcidLoad(dbName);
   }
 
