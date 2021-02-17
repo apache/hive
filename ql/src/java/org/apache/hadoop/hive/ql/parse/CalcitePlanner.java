@@ -1366,7 +1366,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             newAST, HiveParser.TOK_QUERY, HiveParser.TOK_FROM, HiveParser.TOK_RIGHTOUTERJOIN);
     ASTNode selectNodeRightInput = new ASTSearcher().simpleBreadthFirstSearch(
             (ASTNode) rojNode.getChild(1), HiveParser.TOK_QUERY, HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
-    ASTNode dotRowDeletedNode = getRowDeletedNode("t1");
+    ASTNode tabRefNodeRightInput = new ASTSearcher().simpleBreadthFirstSearch(
+            (ASTNode) rojNode.getChild(1), HiveParser.TOK_QUERY, HiveParser.TOK_FROM, HiveParser.TOK_TABREF);
+    String alias = tabRefNodeRightInput.getChild(tabRefNodeRightInput.getChildCount() - 1).getText();
+    ASTNode dotRowDeletedNode = getRowDeletedNode(alias);
     ASTNode selectExprRowDeletedNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
     selectExprRowDeletedNode.addChild(dotRowDeletedNode);
     selectNodeRightInput.addChild(selectExprRowDeletedNode);
@@ -1393,7 +1396,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     // 4.3) Add filter condition to delete
     ASTNode whereNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_WHERE, "TOK_WHERE");
-    whereNodeInDeleteFilter.addChild(getRowDeletedNode("$hdt$_1"));
+    String subQueryName = rojNode.getChild(1).getChild(1).getText();
+    whereNodeInDeleteFilter.addChild(getRowDeletedNode(subQueryName));
     deleteNode.addChild(whereNodeInDeleteFilter);
     // 4.4) Finally, we add SORT clause, this is needed for the DELETE.
     //       TOK_SORTBY
