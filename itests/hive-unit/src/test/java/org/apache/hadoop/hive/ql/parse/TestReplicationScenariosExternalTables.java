@@ -1387,8 +1387,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
     List<String> withClause = Arrays.asList(
-        "'distcp.options.update'='','hive.repl.external.warehouse.single"
-            + ".task'='true'");
+        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy.task'='true'");
 
     // Create a table within the warehouse location, one outside and one with
     // a partition outside the default location.
@@ -1469,6 +1468,97 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     assertExternalFileInfo(
         Arrays.asList(primaryDbName.toLowerCase(), "a", "c", "newout"),
+        tuple.dumpLocation, true);
+  }
+
+  @Test
+  public void testDatabaseLevelCopyDisabled() throws Throwable {
+    Path externalTableLocation =
+        new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    Path externalTablePartitionLocation =
+        new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "part/");
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    List<String> withClause = Arrays.asList(
+        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy"
+            + ".task'='false'");
+
+    // Create a table within the warehouse location, one outside and one with
+    // a partition outside the default location.
+    WarehouseInstance.Tuple tuple =
+        primary.run("use " + primaryDbName)
+            .run("create external table a (i int, j int) "
+                + "row format delimited fields terminated by ',' "
+                + "location '" + externalTableLocation.toUri() + "'")
+            .run("insert into a values(1,2)")
+            .run("create external table b (id int)")
+            .run("insert into b values(5)")
+            .run("create external table c (place string) partitioned by (country "
+                + "string)")
+            .run("insert into table c partition(country='india') values "
+                + "('bangalore')")
+            .run("ALTER TABLE c ADD PARTITION (country='france') LOCATION '"
+                + externalTablePartitionLocation.toString() + "'")
+            .run("insert into c partition(country='france') values('paris')")
+            .dump(primaryDbName, withClause);
+
+    // Do a load and verify all the data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select i from a where j=2")
+        .verifyResult("1")
+        .run("select id from b")
+        .verifyResult("5")
+        .run("select place from c where country='india'")
+        .verifyResult("bangalore")
+        .run("select place from c where country='france'")
+        .verifyResult("paris");
+
+    assertExternalFileInfo(Arrays.asList("a", "b", "c"), tuple.dumpLocation,
+        primaryDbName, false);
+
+    // Add more data to tables and do a incremental run and create another
+    // tables one inside and other outside default location.
+
+    externalTableLocation = new Path(
+        "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "newout/");
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+    tuple =
+        primary.run("use " + primaryDbName)
+            .run("insert into a values(3,4)")
+            .run("insert into b values(6)")
+            .run("insert into table c partition(country='india') values "
+                + "('delhi')")
+            .run("insert into c partition(country='france') values('lyon')")
+            .run("create external table newin (id int)")
+            .run("insert into newin values(1)")
+            .run("create external table newout(id int) row format delimited "
+                + "fields terminated by ',' location '" + externalTableLocation
+                .toUri() + "'")
+            .run("insert into newout values(2)")
+            .dump(primaryDbName, withClause);
+
+    // Do an incremental load and check if all the old and new data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select i from a where j=4")
+        .verifyResult("3")
+        .run("select id from b")
+        .verifyResults(new String[]{"5", "6"})
+        .run("select place from c where country='india'")
+        .verifyResults(new String[]{"bangalore", "delhi"})
+        .run("select place from c where country='france'")
+        .verifyResults(new String[]{"paris", "lyon"})
+        .run("select id from newin")
+        .verifyResult("1")
+        .run("select id from newout")
+        .verifyResult("2");
+
+    assertExternalFileInfo(Arrays
+            .asList("a", "b", "c", "newin", "newout"),
         tuple.dumpLocation, true);
   }
 
