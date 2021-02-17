@@ -601,12 +601,12 @@ public class HiveConnection implements java.sql.Connection {
     // In case of deployments like above, the LoadBalancer (LB) can be configured with Idle Timeout after which the LB
     // will send TCP RST to Client (Beeline) and Backend (Reverse Proxy). If user is connected to beeline, idle for
     // sometime and resubmits a query after the idle timeout there is a broken pipe between beeline and LB. When Beeline
-    // tries to submit the query two things may happen, it either hangs or timeout (if socketTimeout is defined in the
-    // jdbc param). The hang is because of the default infinite socket timeout for which there is no auto-recovery. But
-    // if the socketTimeout was specified, beeline will received SocketTimeoutException (Read Timeout) or NoHttpResponseException
-    // both of which can be retries if maxRetries is specified by the user (jdbc param). Broken pipe is also retriable
-    // and it belongs to SocketException. The following retry handler handles the above cases as well as retries
-    // idempotent requests and the unsent requests.
+    // tries to submit the query one of two things happen, it either hangs or times out (if socketTimeout is defined in
+    // the jdbc param). The hang is because of the default infinite socket timeout for which there is no auto-recovery
+    // (user have to manually interrupt the query). If the socketTimeout jdbc param was specified, beeline will receive
+    // SocketTimeoutException (Read Timeout) or NoHttpResponseException both of which can be retried if maxRetries is
+    // also specified by the user (jdbc param).
+    // The following retry handler handles the above cases in addition to retries for idempotent and unsent requests.
     httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler() {
       // This handler is mostly a copy of DefaultHttpRequestRetryHandler except it also retries some exceptions
       // which could be thrown in certain cases where idle timeout from intermediate proxy triggers a connection reset.
@@ -615,8 +615,8 @@ public class HiveConnection implements java.sql.Connection {
               UnknownHostException.class,
               ConnectException.class,
               SSLException.class);
-      // socket connections could be because of timeout, broken pipe or server not responding in which it is better
-      // to reopen the connection and retry if user specified maxRetries
+      // socket exceptions could happen because of timeout, broken pipe or server not responding in which case it is
+      // better to reopen the connection and retry if user specified maxRetries
       private final List<Class<? extends IOException>> retriableClasses = Arrays.asList(
               SocketTimeoutException.class,
               SocketException.class,
