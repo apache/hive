@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -118,8 +119,15 @@ public class KillQueryImpl implements KillQuery {
     boolean isAdmin = false;
     SessionState ss = SessionState.get();
     if(!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-      // If authorization is disabled, everyone should have kill query access
-      return true;
+      // If authorization is disabled, hs2 process owner should have kill privileges
+      try {
+        String currentUser = ss.getUserName();
+        String loginUser = UserGroupInformation.getCurrentUser().getShortUserName();
+        return (currentUser != null) && currentUser.equals(loginUser);
+      } catch (IOException e) {
+        LOG.warn("Unable to check for admin privileges", e);
+        return false;
+      }
     }
     if (ss.getAuthorizerV2() != null) {
       try {
