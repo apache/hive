@@ -16,7 +16,27 @@ select a,b,c from t1 where a > 1;
 delete from t1 where a = 4;
 delete from t1 where a = 3;
 
-insert into t1(a,b, c) values (5, 'five', 5.5);
+insert into t1(a,b, c) values (2, 'two', 2.2), (2, 'two', 2.2), (5, 'five', 5.5);
+
+select t1.*, mat1.ROW__ID, mat1.*
+from mat1
+right outer join t1 on (t1.a = mat1.a and t1.b = mat1.b and t1.c = mat1.c)
+where t1.ROW__ID.writeid > 3
+  and t1.a > 1;
+
+--explain ast
+--select /*+ FETCH_DELETED_ROWS(t1)*/ t1.*, t1.ROW__IS__DELETED from t1
+--where t1.ROW__IS__DELETED;
+--
+--explain ast
+--select /*+ FETCH_DELETED_ROWS(t1)*/ t1.*, t1.ROW__IS__DELETED from t1
+--where not t1.ROW__IS__DELETED;
+
+select /*+ FETCH_DELETED_ROWS(t1)*/ t1.*, t1.ROW__IS__DELETED, mat1.ROW__ID, mat1.*
+from mat1
+right outer join t1 on (t1.a = mat1.a and t1.b = mat1.b and t1.c = mat1.c)
+where t1.ROW__ID.writeid > 3
+  and t1.a > 1;
 
 explain cbo
 alter materialized view mat1 rebuild;

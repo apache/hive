@@ -67,17 +67,61 @@ POSTHOOK: query: delete from t1 where a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-PREHOOK: query: insert into t1(a,b, c) values (5, 'five', 5.5)
+PREHOOK: query: insert into t1(a,b, c) values (2, 'two', 2.2), (2, 'two', 2.2), (5, 'five', 5.5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
-POSTHOOK: query: insert into t1(a,b, c) values (5, 'five', 5.5)
+POSTHOOK: query: insert into t1(a,b, c) values (2, 'two', 2.2), (2, 'two', 2.2), (5, 'five', 5.5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
 POSTHOOK: Lineage: t1.c SCRIPT []
+PREHOOK: query: select t1.*, mat1.ROW__ID, mat1.*
+from mat1
+right outer join t1 on (t1.a = mat1.a and t1.b = mat1.b and t1.c = mat1.c)
+where t1.ROW__ID.writeid > 3
+  and t1.a > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.*, mat1.ROW__ID, mat1.*
+from mat1
+right outer join t1 on (t1.a = mat1.a and t1.b = mat1.b and t1.c = mat1.c)
+where t1.ROW__ID.writeid > 3
+  and t1.a > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+2	two	2.2	{"writeid":1,"bucketid":536870912,"rowid":0}	2	two	2.2
+2	two	2.2	{"writeid":1,"bucketid":536870912,"rowid":0}	2	two	2.2
+5	five	5.5	NULL	NULL	NULL	NULL
+PREHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.*, t1.ROW__IS__DELETED, mat1.ROW__ID, mat1.*
+from mat1
+right outer join t1 on (t1.a = mat1.a and t1.b = mat1.b and t1.c = mat1.c)
+where t1.ROW__ID.writeid > 3
+  and t1.a > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.*, t1.ROW__IS__DELETED, mat1.ROW__ID, mat1.*
+from mat1
+right outer join t1 on (t1.a = mat1.a and t1.b = mat1.b and t1.c = mat1.c)
+where t1.ROW__ID.writeid > 3
+  and t1.a > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+2	two	2.2	false	{"writeid":1,"bucketid":536870912,"rowid":0}	2	two	2.2
+2	two	2.2	false	{"writeid":1,"bucketid":536870912,"rowid":0}	2	two	2.2
+3	three	3.3	true	{"writeid":1,"bucketid":536870912,"rowid":1}	3	three	3.3
+4	four	4.4	true	{"writeid":1,"bucketid":536870912,"rowid":2}	4	four	4.4
+5	five	5.5	false	NULL	NULL	NULL	NULL
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
@@ -162,20 +206,21 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: ((a > 1) and (ROW__ID.writeid > 3L)) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((a > 1) and (ROW__ID.writeid > 3L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: a (type: int), b (type: varchar(128)), c (type: float)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: a (type: int), b (type: varchar(128)), c (type: float), ROW__IS__DELETED (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
-                        Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col3 (type: boolean)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -187,11 +232,11 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
                   1 _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
-                outputColumnNames: _col3, _col4, _col5, _col6
-                Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 2 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: _col3 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: _col7 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 177 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
@@ -203,8 +248,8 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: _col3 is null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: (not _col7) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 177 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col4 (type: int), _col5 (type: varchar(128)), _col6 (type: float)
                     outputColumnNames: _col0, _col1, _col2
@@ -349,5 +394,7 @@ POSTHOOK: query: select * from mat1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 #### A masked pattern was here ####
+2	two	2.2
+2	two	2.2
 2	two	2.2
 5	five	5.5

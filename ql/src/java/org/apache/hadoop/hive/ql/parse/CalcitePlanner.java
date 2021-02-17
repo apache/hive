@@ -133,6 +133,7 @@ import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -1320,7 +1321,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ASTNode insertNode = (ASTNode) ParseDriver.adaptor.dupTree(deleteNode);
     insertNode.setParent(deleteParent);
     deleteParent.addChild(insertNode);
-    // 3) Create ROW_ID column in select clause from left input for the RIGHT OUTER JOIN.
+    // 3.1) Create ROW_ID column in select clause from left input for the RIGHT OUTER JOIN.
     // This is needed for the UPDATE clause. Hence, we find the following node:
     // TOK_QUERY
     //   TOK_FROM
@@ -1360,6 +1361,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ParseDriver.adaptor.addChild(dotNodeInputROJ, columnTokNodeInputROJ);
     ParseDriver.adaptor.addChild(dotNodeInputROJ, rowIdNodeInputROJ);
     ParseDriver.adaptor.addChild(columnTokNodeInputROJ, tableNameNodeInputROJ);
+    // 3.2) Create ROW__IS__DELETED column in select clause from right input for the RIGHT OUTER JOIN.
+    ASTNode rojNode = new ASTSearcher().simpleBreadthFirstSearch(
+            newAST, HiveParser.TOK_QUERY, HiveParser.TOK_FROM, HiveParser.TOK_RIGHTOUTERJOIN);
+    ASTNode selectNodeRightInput = new ASTSearcher().simpleBreadthFirstSearch(
+            (ASTNode) rojNode.getChild(1), HiveParser.TOK_QUERY, HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
+    ASTNode dotRowDeletedNode = getRowDeletedNode("t1");
+    ASTNode selectExprRowDeletedNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    selectExprRowDeletedNode.addChild(dotRowDeletedNode);
+    selectNodeRightInput.addChild(selectExprRowDeletedNode);
     // 4) Transform first INSERT branch into a DELETE
     ASTNode selectNodeInDelete = (ASTNode) deleteNode.getChild(1);
     if (selectNodeInDelete.getType() != HiveParser.TOK_SELECT) {
@@ -1382,13 +1392,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     selectNodeInDelete.insertChild(0, ParseDriver.adaptor.dupTree(selectExprNodeInDelete));
 
     // 4.3) Add filter condition to delete
-    ASTNode dotNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.dupTree(dotNodeInDelete);
-    ASTNode isNullNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "isnotnull");
-    ASTNode funcNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
-    funcNodeInDeleteFilter.addChild(isNullNodeInDeleteFilter);
-    funcNodeInDeleteFilter.addChild(dotNodeInDeleteFilter);
     ASTNode whereNodeInDeleteFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_WHERE, "TOK_WHERE");
-    whereNodeInDeleteFilter.addChild(funcNodeInDeleteFilter);
+    whereNodeInDeleteFilter.addChild(getRowDeletedNode("$hdt$_1"));
     deleteNode.addChild(whereNodeInDeleteFilter);
     // 4.4) Finally, we add SORT clause, this is needed for the DELETE.
     //       TOK_SORTBY
@@ -1411,16 +1416,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ParseDriver.adaptor.addChild(nullsOrderExprNode, dotNodeInSort);
     // 5) Add filter condition to insert
     ASTNode whereNodeInInsertFilter = (ASTNode) ParseDriver.adaptor.dupTree(whereNodeInDeleteFilter);
-    ASTNode funcNodeInInsertFilter = (ASTNode) whereNodeInInsertFilter.getChild(0);
-    ASTNode isNotNullNodeInInsertFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "isnull");
-    funcNodeInInsertFilter.deleteChild(0);
-    funcNodeInInsertFilter.insertChild(0, isNotNullNodeInInsertFilter);
+    ASTNode dotRowDeletedNodeInInsertFilter = (ASTNode) whereNodeInInsertFilter.getChild(0);
+    ASTNode notNodeInInsertFilter = (ASTNode) ParseDriver.adaptor.create(HiveParser.KW_NOT, "not");
+    notNodeInInsertFilter.addChild(dotRowDeletedNodeInInsertFilter);
+    whereNodeInInsertFilter.setChild(0, notNodeInInsertFilter);
     insertNode.addChild(whereNodeInInsertFilter);
     // 6) Now we set some tree properties related to multi-insert
     // operation with INSERT/UPDATE
     ctx.setOperation(Context.Operation.MERGE);
     ctx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
+  }
+
+  private ASTNode getRowDeletedNode(String tableName) {
+    ASTNode dotRowDeletedNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.DOT, ".");
+    ASTNode columnTokRowDeleteNode = (ASTNode) ParseDriver.adaptor.create(
+            HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+    ASTNode rowDeletedNode = (ASTNode) ParseDriver.adaptor.create(
+            HiveParser.Identifier, VirtualColumn.ROWISDELETED.getName());
+    ASTNode tableNameNodeLeftInput = (ASTNode) ParseDriver.adaptor.create(
+            HiveParser.Identifier, tableName);
+    ParseDriver.adaptor.addChild(dotRowDeletedNode, columnTokRowDeleteNode);
+    ParseDriver.adaptor.addChild(dotRowDeletedNode, rowDeletedNode);
+    ParseDriver.adaptor.addChild(columnTokRowDeleteNode, tableNameNodeLeftInput);
+    return dotRowDeletedNode;
   }
 
   private void fixUpASTNoAggregateIncrementalRebuild(ASTNode newAST) throws SemanticException {
