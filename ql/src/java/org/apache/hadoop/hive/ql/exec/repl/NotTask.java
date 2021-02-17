@@ -39,8 +39,6 @@ public class NotTask extends Task<NotWork> implements Serializable {
     @Override
     public int execute() {
         try {
-            conf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
-                    "org.apache.hive.hcatalog.listener.DbNotificationListener"); // turn on db notification listener on metastore
             HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
             long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
             Path notificationPath = work.getNotificationFilePath();

@@ -341,7 +341,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     // Populate the driver context with the scratch dir info from the repl context, so that the
     // temp dirs will be cleaned up later
     context.getFsScratchDirs().putAll(loadContext.pathInfo.getFsScratchDirs());
-
     if (!HiveConf.getBoolVar(conf, REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
       createReplLoadCompleteAckTask();
     }
@@ -665,7 +664,4 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     createReplLoadCompleteAckTask();
     return 0;
   }
-
 }
-
-
