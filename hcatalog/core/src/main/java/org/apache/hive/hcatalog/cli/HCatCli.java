@@ -178,12 +178,12 @@ public class HCatCli {
     SessionState.start(ss);
 
     // remove the leading and trailing quotes. hcatalog can miss on some cases.
-    if (execString.length() > 1 && execString.startsWith("\"") && execString.endsWith("\"")) {
-      execString = execString.substring(1, execString.length() - 1);
-    }
 
     // all done parsing, let's run stuff!
     if (execString != null) {
+      if (execString.length() > 1 && execString.startsWith("\"") && execString.endsWith("\"")) {
+        execString = execString.substring(1, execString.length() - 1);
+      }
       sysExit(ss, processLine(execString));
     }
 
