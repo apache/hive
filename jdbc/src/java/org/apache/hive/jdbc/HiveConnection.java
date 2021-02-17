@@ -673,10 +673,14 @@ public class HiveConnection implements java.sql.Connection {
         return false;
       }
 
+      // requests that handles "Expect continue" handshakes. If server received the header and is waiting for body
+      // then those requests can be retried. Most basic http method methods except DELETE are idempotent as long as they
+      // are not aborted.
       protected boolean handleAsIdempotent(final HttpRequest request) {
         return !(request instanceof HttpEntityEnclosingRequest);
       }
 
+      // checks if the request got aborted
       protected boolean requestIsAborted(final HttpRequest request) {
         HttpRequest req = request;
         if (request instanceof RequestWrapper) { // does not forward request to original
