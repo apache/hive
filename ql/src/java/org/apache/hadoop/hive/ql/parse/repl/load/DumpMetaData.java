@@ -130,7 +130,8 @@ public class DumpMetaData {
           lineContents[2].equals(Utilities.nullStringOutput) ? null :  Long.valueOf(lineContents[2]),
           lineContents[3].equals(Utilities.nullStringOutput) ? null : new Path(lineContents[3]),
           lineContents[4].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[4]),
-          Boolean.valueOf(lineContents[6]));
+          (lineContents.length < 8 || lineContents[6].equals(Utilities.nullStringOutput)) ?
+                        Boolean.valueOf(false) : Boolean.valueOf(lineContents[6]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
       } else {
         throw new IOException(
