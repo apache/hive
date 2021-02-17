@@ -203,7 +203,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
         writeId);
 
     for (Partition outPartition : context.getDb().getPartitionsByNames(desc.getDbName(), desc.getTableName(),
-        partitionNames)){
+        partitionNames, table)){
       outPartitions.add(new org.apache.hadoop.hive.ql.metadata.Partition(table, outPartition));
     }
 

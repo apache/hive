@@ -3194,13 +3194,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(String dbName, String tableName,
-      List<String> partitionNames) throws HiveException {
+      List<String> partitionNames, Table t) throws HiveException {
     try {
       GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
       req.setDb_name(dbName);
       req.setTbl_name(tableName);
       req.setNames(partitionNames);
-      return getPartitionsByNames(req, null);
+      return getPartitionsByNames(req, t);
     } catch (Exception e) {
       LOG.error("Failed getPartitionsByNames", e);
       throw new HiveException(e);
@@ -3211,10 +3211,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Table table)
         throws HiveException {
     try {
-      if( table == null ) {
-        table = getTable(req.getDb_name(), req.getTbl_name());
-      }
-      if (AcidUtils.isTransactionalTable(table)) {
+      if (table !=null && AcidUtils.isTransactionalTable(table)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(req.getDb_name(), req.getTbl_name());
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
         req.setId(table.getTTable().getId());
