@@ -463,7 +463,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
         Pair<List<Partition>, List<String>> p = getPartitionsByNamesCache(
-            cache, rqst, watermark); 
+            cache, rqst, watermark);
         List<String> partitionsMissing = p.getRight();
         List<Partition> partitions = p.getLeft();
         // 2) If they were all present in the cache, return
