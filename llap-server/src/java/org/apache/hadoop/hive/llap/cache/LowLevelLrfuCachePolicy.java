@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import static java.util.Comparator.nullsLast;
+import static java.util.Comparator.comparing;
+
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
@@ -850,7 +852,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
 
     long t = timer.get();
     Arrays.sort(copy,
-        Comparator.comparing(b -> b.lastUpdate == t ? b.priority : expirePriority(t, b.lastUpdate, b.priority)));
+        nullsLast(comparing(b -> b.lastUpdate == t ? b.priority : expirePriority(t, b.lastUpdate, b.priority))));
     for (int i = copy.length - 1; i >= 0; i--) {
       if (copy[i] != null && !(copy[i] instanceof MetadataCache.LlapMetadataBuffer)) {
         long memoryUsage = copy[i].getMemoryUsage();

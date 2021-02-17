@@ -390,6 +390,38 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   @Test
+  public void testHotBuffersOnHalfFullHeap() {
+    int heapSize = 39;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
   public void testHotBuffersCutoff() {
     int heapSize = 3;
     int buffers = 20;
