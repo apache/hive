@@ -97,7 +97,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     super(conf);
     this.maxQueueSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE);
     this.lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
-    this.cutoff = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_CUTOFF_PERCENTAGE);
+    this.cutoff = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE);
 
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
     if (lambda == 0) {

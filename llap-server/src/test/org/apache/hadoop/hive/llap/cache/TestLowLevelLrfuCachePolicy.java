@@ -334,7 +334,7 @@ public class TestLowLevelLrfuCachePolicy {
     int buffers = 20;
     Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
-    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_CUTOFF_PERCENTAGE.varname, 0.1f);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.1f);
 
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
 
@@ -363,7 +363,7 @@ public class TestLowLevelLrfuCachePolicy {
     int buffers = 20;
     Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
-    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_CUTOFF_PERCENTAGE.varname, 0.2f);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
 
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
 
@@ -395,7 +395,7 @@ public class TestLowLevelLrfuCachePolicy {
     int buffers = 20;
     Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
-    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_CUTOFF_PERCENTAGE.varname, 0.2f);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
 
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
 
