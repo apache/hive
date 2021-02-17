@@ -52,7 +52,17 @@ public class MemoryLimitedPathCache implements PathCache {
 
     @Override
     public int weigh(Object key, String value) {
-      // String memory footprint
+      /*
+       String memory footprint approximation. The actual value depends on the implementation so the following
+       approximation was used.
+
+       8 object header used by the VM
+       8 64-bit reference to char array (value)
+       8 + string.length() * 2 character array itself (object header + 16-bit chars)
+       4 cached hash code
+
+       (The final value should be multiple of 8 but for the sake of simplicity that's omitted for now.)
+      */
       return 2 * value.length() + 28;
     }
   }

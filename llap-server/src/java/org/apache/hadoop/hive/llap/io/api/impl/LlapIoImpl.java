@@ -107,7 +107,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
-  private final FixedSizedObjectPool<IoTrace> tracePool;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
@@ -116,7 +115,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
-  private LowLevelCachePolicy realCachePolicy;
   private PathCache pathCache;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
@@ -159,7 +157,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      realCachePolicy =
+      LowLevelCachePolicy
+          realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
         HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
@@ -234,7 +233,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
-    tracePool = IoTrace.createTracePool(conf);
+    FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
     if (isEncodeEnabled) {
       int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
       int encodeThreads = numThreads * encodePoolMultiplier;
