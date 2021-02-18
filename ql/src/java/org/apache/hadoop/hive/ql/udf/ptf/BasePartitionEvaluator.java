@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage.AbstractGenericUDAFAverageEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AbstractAggregationBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -42,6 +43,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is mostly used for RANGE windowing type to do some optimization. ROWS
@@ -49,18 +52,20 @@ import org.apache.hadoop.io.Writable;
  *
  */
 public class BasePartitionEvaluator {
+  protected static final Logger LOG = LoggerFactory.getLogger(BasePartitionEvaluator.class);
   protected final GenericUDAFEvaluator wrappedEvaluator;
   protected final WindowFrameDef winFrame;
   protected final PTFPartition partition;
   protected final List<PTFExpressionDef> parameters;
   protected final ObjectInspector outputOI;
   protected final boolean nullsLast;
+  protected final boolean isCountEvaluator;
 
   /**
    * Internal class to represent a window range in a partition by searching the
    * relative position (ROWS) or relative value (RANGE) of the current row
    */
-  protected static class Range
+  protected class Range
   {
     int start;
     int end;
@@ -75,7 +80,11 @@ public class BasePartitionEvaluator {
 
     public PTFPartitionIterator<Object> iterator()
     {
-      return p.range(start, end);
+      /**
+       * When there are no parameters specified, partition iterator can be made faster;
+       * In such cases, it need not materialize the ROW from RowContainer. This saves lots of IO.
+       */
+      return p.range(start, end, (parameters == null || parameters.isEmpty()));
     }
 
     public int getDiff(Range prevRange) {
@@ -190,6 +199,9 @@ public class BasePartitionEvaluator {
     this.parameters = parameters;
     this.outputOI = outputOI;
     this.nullsLast = nullsLast;
+    this.isCountEvaluator = wrappedEvaluator instanceof GenericUDAFCount.GenericUDAFCountEvaluator;
+    LOG.info("isCountEvaluator: {}, parameters count: {}", isCountEvaluator,
+        (parameters != null) ? parameters.size() : 0);
   }
 
   /**
@@ -227,9 +239,14 @@ public class BasePartitionEvaluator {
     PTFOperator.connectLeadLagFunctionsToPartition(leadLagInfo, pItr);
 
     AggregationBuffer aggBuffer = wrappedEvaluator.getNewAggregationBuffer();
+    if (isCountEvaluator && parameters == null) {
+      // count(*) specific optimisation, where record count would be equal to itr count
+      // No need to iterate through entire iterator and read rowContainer again
+      return ObjectInspectorUtils.copyToStandardObject(new LongWritable(pItr.count()), outputOI);
+    }
+
     Object[] argValues = new Object[parameters == null ? 0 : parameters.size()];
-    while(pItr.hasNext())
-    {
+    while(pItr.hasNext()) {
       Object row = pItr.next();
       int i = 0;
       if ( parameters != null ) {
@@ -245,7 +262,7 @@ public class BasePartitionEvaluator {
     return ObjectInspectorUtils.copyToStandardObject(wrappedEvaluator.evaluate(aggBuffer), outputOI);
   }
 
-  protected static Range getRange(WindowFrameDef winFrame, int currRow, PTFPartition p,
+  protected Range getRange(WindowFrameDef winFrame, int currRow, PTFPartition p,
       boolean nullsLast) throws HiveException {
     BoundaryDef startB = winFrame.getStart();
     BoundaryDef endB = winFrame.getEnd();

@@ -125,6 +125,10 @@ public class PTFPartition {
     return new PItr(start, end);
   }
 
+  public PTFPartitionIterator<Object> range(int start, int end, boolean optimisedIteration) {
+    return (optimisedIteration) ? new OptimisedPItr(start, end) : range(start, end);
+  }
+
   public void close() {
     try {
       elems.close();
@@ -215,7 +219,31 @@ public class PTFPartition {
     public void reset() {
       idx = start;
     }
+
+    @Override
+    public long count() {
+      return (end - start);
+    }
   };
+
+  /**
+   * This can be used for functions with no parameters.
+   * next() function in this impl does not fetch anything from rowContainer, thus saving IO.
+   * It just increments the pointer to maintain iterator contract.
+   */
+  class OptimisedPItr extends PItr {
+
+    OptimisedPItr(int start, int end) {
+      super(start, end);
+    }
+
+    @Override
+    public Object next() {
+      checkForComodification();
+      idx++;
+      return null;
+    }
+  }
 
   /*
    * provide an Iterator on the rows in a Partition.
@@ -239,6 +267,8 @@ public class PTFPartition {
     PTFPartition getPartition();
 
     void reset() throws HiveException;
+
+    long count();
   }
 
   public static PTFPartition create(Configuration cfg,
