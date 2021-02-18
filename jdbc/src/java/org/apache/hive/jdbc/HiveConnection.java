@@ -294,7 +294,6 @@ public class HiveConnection implements java.sql.Connection {
   @VisibleForTesting
   protected HiveConnection(String uri, Properties info,
       IJdbcBrowserClientFactory browserClientFactory) throws SQLException {
-    setupLoginTimeout();
     try {
       connParams = Utils.parseURL(uri, info);
     } catch (ZooKeeperHiveClientException e) {
