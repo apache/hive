@@ -285,9 +285,6 @@ public class ReplChangeManager {
       // Ignore if a file with same content already exist in cmroot
       // We might want to setXAttr for the new location in the future
       if (success) {
-        // set the file owner to hive (or the id metastore run as)
-        fs.setOwner(cmPath, msUser, msGroup);
-
         // tag the original file name so we know where the file comes from
         // Note we currently only track the last known trace as
         // xattr has limited capacity. We shall revisit and store all original
