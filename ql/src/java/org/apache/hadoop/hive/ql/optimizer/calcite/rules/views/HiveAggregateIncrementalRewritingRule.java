@@ -193,11 +193,11 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
       }
       // According to SQL standard (and Hive) Aggregate functions eliminates null values however operators used in
       // elseReturn expressions returns null if one of their operands is null
-      // hence we need a null check of both operands
+      // hence we need a null check of both operands.
+      // Note: If both are null, we will fall into branch    WHEN leftNull THEN rightRef
       RexNode leftNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, leftRef);
       RexNode rightNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, rightRef);
       projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-              rexBuilder.makeCall(SqlStdOperatorTable.AND, leftNull, rightNull), rexBuilder.makeNullLiteral(leftRef.getType()),
               leftNull, rightRef,
               rightNull, leftRef,
               elseReturn));
