@@ -43,11 +43,17 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -57,9 +63,11 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.RequestWrapper;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.Args;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.THttpClient;
@@ -69,6 +77,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 import javax.security.auth.Subject;
 import javax.security.sasl.Sasl;
@@ -76,12 +85,17 @@ import javax.security.sasl.SaslException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InterruptedIOException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.KeyStore;
@@ -105,6 +119,7 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -144,6 +159,7 @@ public class HiveConnection implements java.sql.Connection {
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
   private Subject loggedInSubject;
+  private int maxRetries = 1;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -161,7 +177,7 @@ public class HiveConnection implements java.sql.Connection {
     }
     return ZooKeeperHiveClientHelper.getDirectParamsList(params);
   }
-  
+
   public static List<String> getAllUrlStrings(String zookeeperBasedHS2Url) throws Exception {
     List<String> jdbcUrls = new ArrayList<>();
     List<JdbcConnectionParams> allConnectionParams = getAllUrls(zookeeperBasedHS2Url);
@@ -175,7 +191,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private static String makeDirectJDBCUrlFromConnectionParams(JdbcConnectionParams cp) {
-    // Direct JDBC Url format: 
+    // Direct JDBC Url format:
     // jdbc:hive2://<host1>:<port1>/dbName;sess_var_list?hive_conf_list#hive_var_list
     StringBuilder url = new StringBuilder("");
     if (cp != null) {
@@ -561,21 +577,99 @@ public class HiveConnection implements java.sql.Connection {
     } else {
       httpClientBuilder = HttpClientBuilder.create();
     }
-    // In case the server's idletimeout is set to a lower value, it might close it's side of
-    // connection. However we retry one more time on NoHttpResponseException
+
+    // Beeline <------> LB <------> Reverse Proxy <-----> Hiveserver2
+    // In case of deployments like above, the LoadBalancer (LB) can be configured with Idle Timeout after which the LB
+    // will send TCP RST to Client (Beeline) and Backend (Reverse Proxy). If user is connected to beeline, idle for
+    // sometime and resubmits a query after the idle timeout there is a broken pipe between beeline and LB. When Beeline
+    // tries to submit the query one of two things happen, it either hangs or times out (if socketTimeout is defined in
+    // the jdbc param). The hang is because of the default infinite socket timeout for which there is no auto-recovery
+    // (user have to manually interrupt the query). If the socketTimeout jdbc param was specified, beeline will receive
+    // SocketTimeoutException (Read Timeout) or NoHttpResponseException both of which can be retried if maxRetries is
+    // also specified by the user (jdbc param).
+    // The following retry handler handles the above cases in addition to retries for idempotent and unsent requests.
     httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler() {
+      // This handler is mostly a copy of DefaultHttpRequestRetryHandler except it also retries some exceptions
+      // which could be thrown in certain cases where idle timeout from intermediate proxy triggers a connection reset.
+      private final List<Class<? extends IOException>> nonRetriableClasses = Arrays.asList(
+              InterruptedIOException.class,
+              UnknownHostException.class,
+              ConnectException.class,
+              SSLException.class);
+      // socket exceptions could happen because of timeout, broken pipe or server not responding in which case it is
+      // better to reopen the connection and retry if user specified maxRetries
+      private final List<Class<? extends IOException>> retriableClasses = Arrays.asList(
+              SocketTimeoutException.class,
+              SocketException.class,
+              NoHttpResponseException.class
+      );
+
       @Override
       public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-        if (executionCount > 1) {
-          LOG.info("Retry attempts to connect to server exceeded.");
+        Args.notNull(exception, "Exception parameter");
+        Args.notNull(context, "HTTP context");
+        if (executionCount > maxRetries) {
+          // Do not retry if over max retry count
+          LOG.error("Max retries (" + maxRetries + ") exhausted.", exception);
           return false;
         }
-        if (exception instanceof org.apache.http.NoHttpResponseException) {
-          LOG.info("Could not connect to the server. Retrying one more time.");
+        if (this.retriableClasses.contains(exception.getClass())) {
+          LOG.info("Retrying " + exception.getClass() + " as it is in retriable classes list.");
           return true;
         }
+        if (this.nonRetriableClasses.contains(exception.getClass())) {
+          LOG.info("Not retrying as the class (" + exception.getClass() + ") is non-retriable class.");
+          return false;
+        } else {
+          for (final Class<? extends IOException> rejectException : this.nonRetriableClasses) {
+            if (rejectException.isInstance(exception)) {
+              LOG.info("Not retrying as the class (" + exception.getClass() + ") is an instance of is non-retriable class.");;
+              return false;
+            }
+          }
+        }
+        final HttpClientContext clientContext = HttpClientContext.adapt(context);
+        final HttpRequest request = clientContext.getRequest();
+
+        if(requestIsAborted(request)){
+          LOG.info("Not retrying as request is aborted.");
+          return false;
+        }
+
+        if (handleAsIdempotent(request)) {
+          LOG.info("Retrying idempotent request. Attempt " + executionCount + " of " + maxRetries);
+          // Retry if the request is considered idempotent
+          return true;
+        }
+
+        if (!clientContext.isRequestSent()) {
+          LOG.info("Retrying unsent request. Attempt " + executionCount + " of " + maxRetries);
+          // Retry if the request has not been sent fully or
+          // if it's OK to retry methods that have been sent
+          return true;
+        }
+
+        LOG.info("Not retrying as the request is not idempotent or is already sent.");
+        // otherwise do not retry
         return false;
       }
+
+      // requests that handles "Expect continue" handshakes. If server received the header and is waiting for body
+      // then those requests can be retried. Most basic http method methods except DELETE are idempotent as long as they
+      // are not aborted.
+      protected boolean handleAsIdempotent(final HttpRequest request) {
+        return !(request instanceof HttpEntityEnclosingRequest);
+      }
+
+      // checks if the request got aborted
+      protected boolean requestIsAborted(final HttpRequest request) {
+        HttpRequest req = request;
+        if (request instanceof RequestWrapper) { // does not forward request to original
+          req = ((RequestWrapper) request).getOriginal();
+        }
+        return (req instanceof HttpUriRequest && ((HttpUriRequest)req).isAborted());
+      }
+
     });
 
     // Add the request interceptor to the client builder
@@ -583,6 +677,13 @@ public class HiveConnection implements java.sql.Connection {
 
     // Add an interceptor to add in an XSRF header
     httpClientBuilder.addInterceptorLast(new XsrfHttpRequestInterceptor());
+
+    // set the specified timeout (socketTimeout jdbc param) for http connection as well
+    RequestConfig config = RequestConfig.custom()
+            .setConnectTimeout(loginTimeout * 1000)
+            .setConnectionRequestTimeout(loginTimeout * 1000)
+            .setSocketTimeout(loginTimeout * 1000).build();
+    httpClientBuilder.setDefaultRequestConfig(config);
 
     // Configure http client for SSL
     if (useSsl) {
