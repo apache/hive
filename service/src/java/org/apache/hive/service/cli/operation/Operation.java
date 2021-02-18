@@ -324,8 +324,10 @@ public abstract class Operation {
             + "Perhaps the operation has already terminated.");
       } else {
         if (operationLogCleanupDelayMs > 0) {
+          log.info("Closing operation log {} with delay {}ms", operationLog, operationLogCleanupDelayMs);
           scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
             TimeUnit.MILLISECONDS);
+          scheduledExecutorService.shutdown();
         } else {
           log.info("Closing operation log {} without delay", operationLog);
           operationLog.close();
