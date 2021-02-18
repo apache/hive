@@ -270,7 +270,6 @@ public class HiveConnection implements java.sql.Connection {
   @VisibleForTesting
   protected HiveConnection(String uri, Properties info,
       IJdbcBrowserClientFactory browserClientFactory) throws SQLException {
-    setupLoginTimeout();
     try {
       connParams = Utils.parseURL(uri, info);
     } catch (ZooKeeperHiveClientException e) {
@@ -283,6 +282,7 @@ public class HiveConnection implements java.sql.Connection {
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
     sessConfMap = connParams.getSessionVars();
+    setupLoginTimeout();
     if (isKerberosAuthMode()) {
       host = Utils.getCanonicalHostName(connParams.getHost());
     } else if (isBrowserAuthMode() && !isHttpTransportMode()) {
@@ -1098,11 +1098,19 @@ public class HiveConnection implements java.sql.Connection {
     return varValue;
   }
 
-  // copy loginTimeout from driver manager. Thrift timeout needs to be in millis
+  // use socketTimeout from jdbc connection url. Thrift timeout needs to be in millis
   private void setupLoginTimeout() {
-    long timeOut = TimeUnit.SECONDS.toMillis(DriverManager.getLoginTimeout());
+    String socketTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.SOCKET_TIMEOUT, "0");
+    long timeOut = 0;
+    try {
+      timeOut = Long.parseLong(socketTimeoutStr);
+    } catch (NumberFormatException e) {
+      LOG.info("Failed to parse socketTimeout of value " + socketTimeoutStr);
+    }
     if (timeOut > Integer.MAX_VALUE) {
       loginTimeout = Integer.MAX_VALUE;
+    } else if (timeOut < 0) {
+      loginTimeout = 0;
     } else {
       loginTimeout = (int) timeOut;
     }
