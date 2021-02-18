@@ -61,7 +61,7 @@ public class LowLevelDataReader implements AutoCloseable {
 
 
   public LowLevelDataReader(Path path, Object fileKey, Configuration daemonConf, DataCache cache,
-      FileMetadataCache metadataCache, CacheTag cacheTag, FixedSizedObjectPool<IoTrace> tracePool) throws IOException {
+      FileMetadataCache metadataCache, CacheTag cacheTag, FixedSizedObjectPool<IoTrace> tracePool) {
     this.path = path;
     this.fileKey = fileKey;
     this.daemonConf = daemonConf;
@@ -69,10 +69,9 @@ public class LowLevelDataReader implements AutoCloseable {
     this.metadataCache = metadataCache;
     this.cacheTag = cacheTag;
     this.tracePool = tracePool;
-    init();
   }
 
-  private void init() throws IOException {
+  public void init() throws IOException {
     this.fsSupplier = getFsSupplier(path, daemonConf);
     Object fileKey = HdfsUtils.getFileId(fsSupplier.get(), path,
           HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),

@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1107,9 +1106,10 @@ class EncodedReaderImpl implements EncodedReader {
           drl = readEncodedStream(baseOffset, drl, drl.getOffset(), drl.getEnd(), csd, drl.getOffset(), drl.getEnd(),
                   toRelease);
           for (MemoryBuffer buf : csd.getCacheBuffers()) {
-              cacheWrapper.releaseBuffer(buf);
-            }
-          drl = drl.next;
+            cacheWrapper.releaseBuffer(buf);
+          }
+          if (drl != null)
+            drl = drl.next;
         }
       csd.decRef();
       POOLS.csdPool.offer(csd);
