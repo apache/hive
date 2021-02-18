@@ -17,11 +17,14 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
  */
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
@@ -40,18 +43,43 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
     return relNode.accept(this);
   }
 
-//  @Override
-//  public RelNode visit(HiveFilter filter) {
-//    RelNode input = visitChild(filter, 0, filter.getInput());
-//    return relBuilder
-//            .push(input)
-//            .filter(filter.getCondition())
-//            .build();
-//  }
+  @Override
+  public RelNode visit(TableScan scan) {
+    RelDataType tableRowType = scan.getTable().getRowType();
+    RelDataTypeField column = tableRowType.getField(
+            VirtualColumn.ROWISDELETED.getName(), false, false);
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
+
+    List<RexNode> projects;
+    List<String> projectNames;
+    if (column == null) {
+      RexNode propagatedColumn = rexBuilder.makeLiteral(false);
+      projects = new ArrayList<>(tableRowType.getFieldCount() + 1);
+      projectNames = new ArrayList<>(tableRowType.getFieldCount() + 1);
+      populateProjects(rexBuilder, tableRowType, projects, projectNames);
+      projects.add(propagatedColumn);
+      projectNames.add("rowIsDeleted");
+    } else {
+      projects = new ArrayList<>(tableRowType.getFieldCount());
+      projectNames = new ArrayList<>(tableRowType.getFieldCount());
+      populateProjects(rexBuilder, tableRowType, projects, projectNames);
+      // Propagated column is already in the TS move it to the end
+      RexNode propagatedColumn = projects.remove(column.getIndex());
+      projects.add(propagatedColumn);
+      String propagatedColumnName = projectNames.remove(column.getIndex());
+      projectNames.add(propagatedColumnName);
+    }
+
+    return relBuilder
+            .push(scan)
+            .project(projects, projectNames)
+            .build();
+  }
 
   @Override
   public RelNode visit(HiveProject project) {
-    RelNode projectInput = visitChild(project, 0, project.getInput());
+    RelNode newProject = visitChild(project, 0, project.getInput());
+    RelNode projectInput = newProject.getInput(0);
     int rowIsNullIndex = projectInput.getRowType().getFieldCount() - 1;
     List<RexNode> newProjects = new ArrayList<>(project.getRowType().getFieldCount() + 1);
     newProjects.addAll(project.getProjects());
@@ -79,19 +107,28 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
     RexNode leftRowIsNull = rexBuilder.makeInputRef(
             leftInput.getRowType().getFieldList().get(leftRowIsNullIndex).getType(), leftRowIsNullIndex);
     RexNode rightRowIsNull = rexBuilder.makeInputRef(
-            rightInput.getRowType().getFieldList().get(leftRowIsNullIndex).getType(),
+            rightInput.getRowType().getFieldList().get(rightRowIsNullIndex).getType(),
             leftInput.getRowType().getFieldCount() + rightRowIsNullIndex);
 
     List<RexNode> projects = new ArrayList<>(join.getRowType().getFieldCount() + 1);
-    for (int i = 0; i < join.getRowType().getFieldCount(); ++i) {
-      projects.add(rexBuilder.makeInputRef(join.getRowType().getFieldList().get(i).getType(), i));
-    }
+    List<String> projectNames = new ArrayList<>(join.getRowType().getFieldCount() + 1);
+    populateProjects(rexBuilder, join.getRowType(), projects, projectNames);
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.AND, leftRowIsNull, rightRowIsNull));
+    projectNames.add("rowIsDeleted");
 
     return relBuilder
             .push(leftInput)
             .push(rightInput)
-            .project(projects)
+            .join(join.getJoinType(), join.getJoinFilter())
+            .project(projects, projectNames)
             .build();
+  }
+
+  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, List<RexNode> projects, List<String> projectNames) {
+    for (int i = 0; i < inputRowType.getFieldCount(); ++i) {
+      RelDataTypeField relDataTypeField = inputRowType.getFieldList().get(i);
+      projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), i));
+      projectNames.add(relDataTypeField.getName());
+    }
   }
 }

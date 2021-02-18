@@ -2451,7 +2451,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveJoinIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
-              basePlan = new HiveDeletedRowPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null)).propagate(basePlan);
+              basePlan = new HiveDeletedRowPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
+                      .propagate(basePlan);
             }
             basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
           }
