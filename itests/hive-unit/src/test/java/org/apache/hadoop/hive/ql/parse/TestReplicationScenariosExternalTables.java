@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -1376,7 +1377,16 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
   }
 
   @Test
-  public void testDatabaseLevelCopy() throws Throwable {
+  public void testDatabaseLevelCopyLazy() throws Throwable {
+    testDatabaseLevelCopy(true);
+  }
+
+  @Test
+  public void testDatabaseLevelCopyAtSource() throws Throwable {
+    testDatabaseLevelCopy(false);
+  }
+
+  public void testDatabaseLevelCopy(boolean isAtTarget) throws Throwable {
     Path externalTableLocation =
         new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
@@ -1387,7 +1397,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
     List<String> withClause = Arrays.asList(
-        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy.task'='true'");
+        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy"
+            + ".task'='true'",
+        "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
+            + "'='" + isAtTarget + "'");
 
     // Create a table within the warehouse location, one outside and one with
     // a partition outside the default location.
