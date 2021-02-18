@@ -470,7 +470,6 @@ public class TestReplicationScenarios {
   private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
                                    Tuple tuple) throws Throwable {
     HiveConf confTemp = new HiveConf();
-    confTemp.set("hive.repl.enable.move.optimization", "true");
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ReplicationMetricCollector metricCollector;
     if (isIncrementalDump) {
@@ -3972,8 +3971,7 @@ public class TestReplicationScenarios {
 
     String replDbName = dbName + "_replica";
     Tuple dump = replDumpDb(dbName);
-    run("REPL LOAD " + dbName + " INTO " + replDbName +
-            " with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
     verifyRun("REPL STATUS " + replDbName, dump.lastReplId, driverMirror);
 
     run(" use " + replDbName, driverMirror);
@@ -4006,8 +4004,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT * from " + dbName + ".unptned_late ORDER BY a", unptn_data, driver);
 
     Tuple incrementalDump = replDumpDb(dbName);
-    run("REPL LOAD " + dbName + " INTO " + replDbName +
-            " with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
     verifyRun("REPL STATUS " + replDbName, incrementalDump.lastReplId, driverMirror);
 
     verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
@@ -4023,8 +4020,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".unptned", data_after_ovwrite, driver);
 
     incrementalDump = replDumpDb(dbName);
-    run("REPL LOAD " + dbName + " INTO " + replDbName +
-            " with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
     verifyRun("REPL STATUS " + replDbName, incrementalDump.lastReplId, driverMirror);
 
     verifyRun("SELECT a from " + replDbName + ".unptned_late ORDER BY a", unptn_data_after_ins, driverMirror);

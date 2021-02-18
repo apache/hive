@@ -175,6 +175,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isBootstrap = (previousValidHiveDumpPath == null);
+        work.setBootstrap(isBootstrap);
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
@@ -535,6 +536,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // waiting for the concurrent transactions to finish, we start dumping the incremental events
     // and wait only for the remaining time if any.
     if (needBootstrapAcidTablesDuringIncrementalDump()) {
+      work.setBootstrap(true);
       bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
       assert (bootDumpBeginReplId >= 0);
       LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {}",

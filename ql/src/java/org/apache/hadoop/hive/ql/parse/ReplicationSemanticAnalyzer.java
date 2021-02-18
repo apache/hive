@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -48,17 +47,13 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Base64;
 import java.util.List;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
@@ -265,29 +260,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private boolean ifEnableMoveOptimization(Path filePath, org.apache.hadoop.conf.Configuration conf) throws Exception {
-    if (filePath == null) {
-      throw new HiveException("filePath cannot be null");
-    }
-
-    URI uri = filePath.toUri();
-    String scheme = uri.getScheme();
-    scheme = StringUtils.isBlank(scheme) ? FileSystem.get(uri, conf).getScheme() : scheme;
-    if (StringUtils.isBlank(scheme)) {
-      throw new HiveException("Cannot get valid scheme for " + filePath);
-    }
-
-    LOG.info("scheme is " + scheme);
-
-    String[] schmeList = conf.get(REPL_MOVE_OPTIMIZED_FILE_SCHEMES.varname).toLowerCase().split(",");
-    for (String schemeIter : schmeList) {
-      if (schemeIter.trim().equalsIgnoreCase(scheme.trim())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   // REPL LOAD
   private void initReplLoad(ASTNode ast) throws HiveException {
     sourceDbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
@@ -364,19 +336,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       assert(sourceDbNameOrPattern != null);
       Path loadPath = getCurrentLoadPath();
-
-      // Ths config is set to make sure that in case of s3 replication, move is skipped.
-      try {
-        Warehouse wh = new Warehouse(conf);
-        Path filePath = wh.getWhRoot();
-        if (ifEnableMoveOptimization(filePath, conf)) {
-          conf.setBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION, true);
-          LOG.info(" Set move optimization to true for warehouse " + filePath.toString());
-        }
-      } catch (Exception e) {
-        throw new SemanticException(e.getMessage(), e);
-      }
-
       // Now, the dumped path can be one of three things:
       // a) It can be a db dump, in which case we expect a set of dirs, each with a
       // db name, and with a _metadata file in each, and table dirs inside that.
