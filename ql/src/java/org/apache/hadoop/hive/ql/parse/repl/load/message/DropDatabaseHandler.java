@@ -37,8 +37,9 @@ public class DropDatabaseHandler extends AbstractMessageHandler {
         deserializer.getDropDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     DropDatabaseDesc desc = new DropDatabaseDesc(actualDbName, true, context.eventOnlyReplicationSpec());
-    Task<? extends Serializable> dropDBTask =
-        TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), context.hiveConf);
+    Task<? extends Serializable> dropDBTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc,
+                                              true, context.getDumpDirectory(), context.getMetricCollector()),
+                                              context.hiveConf);
     context.log.info(
         "Added drop database task : {}:{}", dropDBTask.getId(), desc.getDatabaseName());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);

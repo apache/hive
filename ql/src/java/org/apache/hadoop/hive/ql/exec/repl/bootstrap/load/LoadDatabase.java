@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -50,12 +52,22 @@ public class LoadDatabase {
 
   private final DatabaseEvent event;
   private final String dbNameToLoadIn;
+  transient ReplicationMetricCollector metricCollector;
 
   public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn, TaskTracker loadTaskTracker) {
     this.context = context;
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(loadTaskTracker);
+  }
+
+  public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn,
+                      TaskTracker loadTaskTracker, ReplicationMetricCollector metricCollector) {
+    this.context = context;
+    this.event = event;
+    this.dbNameToLoadIn = dbNameToLoadIn;
+    this.tracker = new TaskTracker(loadTaskTracker);
+    this.metricCollector = metricCollector;
   }
 
   public TaskTracker tasks() throws Exception {
@@ -123,19 +135,21 @@ public class LoadDatabase {
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
     // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
-    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), createDbDesc);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), createDbDesc, true,
+            (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector);
     return TaskFactory.get(work, context.hiveConf);
   }
 
   private Task<? extends Serializable> alterDbTask(Database dbObj) {
     return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory),
-            context.hiveConf);
+            context.hiveConf, context.dumpDirectory, this.metricCollector);
   }
 
   private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
     AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(dbObj.getName(),
         new PrincipalDesc(dbObj.getOwnerName(), dbObj.getOwnerType()), null);
-    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
+            (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector);
     return TaskFactory.get(work, context.hiveConf);
   }
 
@@ -165,9 +179,11 @@ public class LoadDatabase {
   }
 
   private static Task<? extends Serializable> alterDbTask(String dbName, Map<String, String> props,
-                                                          HiveConf hiveConf) {
+                                     HiveConf hiveConf, String dumpDirectory,
+                                     ReplicationMetricCollector metricCollector) {
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, props, null);
-    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
+            (new Path(dumpDirectory)).getParent().toString(), metricCollector);
     return TaskFactory.get(work, hiveConf);
   }
 
@@ -178,10 +194,16 @@ public class LoadDatabase {
       super(context, event, dbNameToLoadIn, loadTaskTracker);
     }
 
+    public AlterDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn,
+                         TaskTracker loadTaskTracker, ReplicationMetricCollector metricCollector) {
+      super(context, event, dbNameToLoadIn, loadTaskTracker, metricCollector);
+    }
+
     @Override
     public TaskTracker tasks() throws SemanticException {
       Database dbObj = readDbMetadata();
-      tracker.addTask(alterDbTask(dbObj.getName(), dbObj.getParameters(), context.hiveConf));
+      tracker.addTask(alterDbTask(dbObj.getName(), dbObj.getParameters(), context.hiveConf,
+              context.dumpDirectory, this.metricCollector ));
       return tracker;
     }
   }

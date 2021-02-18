@@ -37,13 +37,20 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetProperti
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -194,6 +201,17 @@ public class ReplUtils {
     return TaskFactory.get(replLogWork, conf);
   }
 
+  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
+                                            ReplicationMetricCollector metricCollector,
+                                            String dumpRoot)
+          throws SemanticException {
+    TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
+            tableDesc.getTableName(), tableType, dumpRoot);
+    return TaskFactory.get(replLogWork, conf);
+  }
+
+
   public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
                                                String dumpRoot, HiveConf conf) throws SemanticException {
     HashMap<String, String> mapProp = new HashMap<>();
@@ -203,6 +221,19 @@ public class ReplUtils {
     AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
         mapProp, false, false, null);
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
+  }
+
+  public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
+                                               String dumpRoot, ReplicationMetricCollector metricCollector,
+                                               HiveConf conf) throws SemanticException {
+    HashMap<String, String> mapProp = new HashMap<>();
+    mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
+
+    final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
+    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
+            mapProp, false, false, null);
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc,
+            true, (new Path(dumpRoot)).getParent().toString(), metricCollector), conf);
   }
 
   public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
@@ -258,6 +289,24 @@ public class ReplUtils {
     return taskList;
 
   }
+
+  public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
+                                                         HiveConf conf,
+                                                         UpdatedMetaDataTracker updatedMetadata,
+                                                         org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                         long writeId,
+                                                         String nonRecoverableMarkPath,
+                                                         ReplicationMetricCollector metricCollector)
+          throws IOException, TException {
+    List<Task<?>> taskList = new ArrayList<>();
+    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, nonRecoverableMarkPath, metricCollector, true);
+    work.setWriteId(writeId);
+    Task<?> task = TaskFactory.get(work, conf);
+    taskList.add(task);
+    return taskList;
+
+  }
+
   // Path filters to filter only events (directories) excluding "_bootstrap"
   public static PathFilter getEventsDirectoryFilter(final FileSystem fs) {
     return p -> {
@@ -280,6 +329,52 @@ public class ReplUtils {
         throw new RuntimeException(e);
       }
     };
+  }
+
+  public static int handleException(boolean isReplication, Throwable e, String nonRecoverablePath,
+                                    ReplicationMetricCollector metricCollector, String stageName, HiveConf conf){
+    int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    if(isReplication){
+      try {
+        if (nonRecoverablePath != null) {
+          final int recoverableLimit = ErrorMsg.GENERIC_ERROR.getErrorCode();
+          String metricStage = getMetricStageName(stageName, metricCollector);
+          if(errorCode > recoverableLimit){
+            Path nonRecoverableMarker = new Path(new Path(nonRecoverablePath), ReplAck.NON_RECOVERABLE_MARKER.toString());
+            Utils.writeStackTrace(e, nonRecoverableMarker, conf);
+            metricCollector.reportStageEnd(metricStage, Status.FAILED_ADMIN, nonRecoverableMarker.toString());
+          }
+          else {
+            metricCollector.reportStageEnd(metricStage, Status.FAILED);
+          }
+        }
+      } catch (Exception ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
+    }
+    return errorCode;
+  }
+
+  private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
+    if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
+            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD"){
+      return stageName;
+    }
+    if(isDumpMetricCollector(metricCollector)){
+        return "REPL_DUMP";
+    } else {
+      return "REPL_LOAD";
+    }
+  }
+
+  private static boolean isDumpMetricCollector(ReplicationMetricCollector metricCollector) {
+    return metricCollector instanceof BootstrapDumpMetricCollector || 
+            metricCollector instanceof IncrementalDumpMetricCollector;
+  }
+
+  private static boolean isLoadMetricCollector(ReplicationMetricCollector metricCollector) {
+    return metricCollector instanceof BootstrapLoadMetricCollector ||
+            metricCollector instanceof IncrementalLoadMetricCollector;
   }
 
   public static boolean isFirstIncPending(Map<String, String> parameters) {

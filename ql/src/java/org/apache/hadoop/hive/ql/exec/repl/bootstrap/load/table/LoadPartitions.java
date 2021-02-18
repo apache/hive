@@ -129,7 +129,8 @@ public class LoadPartitions {
         if (!forNewTable().hasReplicationState()) {
           // Add ReplStateLogTask only if no pending table load tasks left for next cycle
           Task<? extends Serializable> replLogTask
-                  = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector);
+                  = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector,
+                  (new Path(context.dumpDirectory)).getParent().toString());
           tracker.addDependentTask(replLogTask);
         }
         return tracker;
@@ -143,7 +144,8 @@ public class LoadPartitions {
           if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
             // Add ReplStateLogTask only if no pending table load tasks left for next cycle
             Task<? extends Serializable> replLogTask
-                    = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector);
+                    = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector,
+                    (new Path(context.dumpDirectory)).getParent().toString());
             tracker.addDependentTask(replLogTask);
           }
           return tracker;
@@ -248,7 +250,8 @@ public class LoadPartitions {
   private Task<?> tasksForAddPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
           throws MetaException, HiveException {
     Task<?> addPartTask = TaskFactory.get(
-      new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
+      new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc,
+              true, (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector),
       context.hiveConf
     );
     //checkpointing task already added as part of add batch of partition in case for metadata only and external tables
@@ -272,6 +275,7 @@ public class LoadPartitions {
       tableDesc,
       (HashMap<String, String>)partSpec.getPartSpec(),
       context.dumpDirectory,
+      this.metricCollector,
       context.hiveConf
     );
 
@@ -290,7 +294,8 @@ public class LoadPartitions {
       event.replicationSpec(),
       new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
       stagingDir,
-      context.hiveConf, copyAtLoad, false
+      context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
+      this.metricCollector
     );
 
     Task<?> movePartitionTask = null;
@@ -328,7 +333,9 @@ public class LoadPartitions {
    */
   private Task<?> movePartitionTask(Table table, AlterTableAddPartitionDesc.PartitionDesc partSpec, Path tmpPath,
                                     LoadFileType loadFileType) {
-    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
+    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
+                                    (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector,
+                                     true);
     if (AcidUtils.isTransactionalTable(table)) {
       LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
         Collections.singletonList(tmpPath),
@@ -386,7 +393,8 @@ public class LoadPartitions {
       AlterTableDropPartitionDesc dropPtnDesc = new AlterTableDropPartitionDesc(HiveTableName.of(table),
           partSpecsExpr, true, event.replicationSpec());
       dropPtnTask = TaskFactory.get(
-              new DDLWork(new HashSet<>(), new HashSet<>(), dropPtnDesc), context.hiveConf
+              new DDLWork(new HashSet<>(), new HashSet<>(), dropPtnDesc, true,
+                      (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector), context.hiveConf
       );
     }
     return dropPtnTask;

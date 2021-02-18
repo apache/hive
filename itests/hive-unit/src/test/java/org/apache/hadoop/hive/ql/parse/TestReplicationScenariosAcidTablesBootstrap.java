@@ -26,8 +26,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -37,12 +39,11 @@ import org.junit.BeforeClass;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
 import java.util.Map;
-
 /**
  * TestReplicationScenariosAcidTables - test bootstrap of ACID tables during an incremental.
  */
@@ -137,6 +138,11 @@ public class TestReplicationScenariosAcidTablesBootstrap
       callerVerifier.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetAlterTableModifier();
+    }
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
+    if(nonRecoverablePath != null){
+      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     }
     //Load again should succeed as checkpointing is in place
     replica.load(replicatedDbName, primaryDbName);

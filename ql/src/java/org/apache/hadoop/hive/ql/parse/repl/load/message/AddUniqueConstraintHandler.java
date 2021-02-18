@@ -67,7 +67,8 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
     AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(tName,
         context.eventOnlyReplicationSpec(), constraints);
     Task<DDLWork> addConstraintsTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
+            new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc,
+                    true, context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);

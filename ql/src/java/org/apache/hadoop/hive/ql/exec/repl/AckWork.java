@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -33,12 +34,22 @@ import java.io.Serializable;
 public class AckWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path ackFilePath;
+  private transient ReplicationMetricCollector metricCollector;
 
   public Path getAckFilePath() {
     return ackFilePath;
   }
 
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
   public AckWork(Path ackFilePath) {
     this.ackFilePath = ackFilePath;
+  }
+  
+  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector) {
+    this.ackFilePath = ackFilePath;
+    this.metricCollector = metricCollector;
   }
 }

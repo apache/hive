@@ -183,7 +183,7 @@ public class ReplDumpWork implements Serializable {
     }
     List<Task<?>> tasks = new ArrayList<>();
     while (externalTblCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
-      DirCopyWork dirCopyWork = new DirCopyWork();
+      DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, currentDumpPath.toString());
       dirCopyWork.loadFromString(externalTblCopyPathIterator.next());
       Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
       tasks.add(task);
@@ -206,7 +206,8 @@ public class ReplDumpWork implements Serializable {
       managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite);
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite,
+              getCurrentDumpPath().toString(), getMetricCollector());
       tasks.add(copyTask);
       tracker.addTask(copyTask);
       LOG.debug("added task for {}", managedTableCopyPath);
@@ -220,7 +221,8 @@ public class ReplDumpWork implements Serializable {
       while (functionCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
         EximUtil.DataCopyPath binaryCopyPath = functionCopyPathIterator.next();
         Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-                binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf
+                binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf,
+                getCurrentDumpPath().toString(), getMetricCollector()
         );
         tasks.add(copyTask);
         tracker.addTask(copyTask);

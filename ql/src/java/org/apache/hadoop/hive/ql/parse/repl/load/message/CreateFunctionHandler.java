@@ -63,10 +63,10 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       FunctionDescBuilder builder = new FunctionDescBuilder(context);
       CreateFunctionDesc descToLoad = builder.build();
       this.functionName = builder.metadata.function.getFunctionName();
-
       context.log.debug("Loading function desc : {}", descToLoad.toString());
       Task<DDLWork> createTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, descToLoad), context.hiveConf);
+          new DDLWork(readEntitySet, writeEntitySet, descToLoad,
+                      true, context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
       context.log.debug("Added create function task : {}:{},{}", createTask.getId(),
           descToLoad.getName(), descToLoad.getClassName());
       // This null check is specifically done as the same class is used to handle both incremental and
@@ -204,9 +204,11 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     private Task<?> getCopyTask(String sourceUri, Path dest) {
       boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
       if (copyAtLoad ) {
-        return ReplCopyTask.getLoadCopyTask(metadata.getReplicationSpec(), new Path(sourceUri), dest, context.hiveConf);
+        return ReplCopyTask.getLoadCopyTask(metadata.getReplicationSpec(), new Path(sourceUri), dest, context.hiveConf,
+                context.getDumpDirectory(), context.getMetricCollector());
       } else {
-        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, false), context.hiveConf);
+        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, false,
+                context.getDumpDirectory(), context.getMetricCollector(), true), context.hiveConf);
       }
     }
   }

@@ -332,8 +332,9 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     } catch (Exception e) {
       setException(e);
       LOG.info("Failed to persist stats in metastore", e);
+      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
+                                       getName(), conf);
     }
-    return 1;
   }
 
   @Override

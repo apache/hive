@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.ddl;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -39,6 +40,19 @@ public final class DDLWork implements Serializable {
   private Set<ReadEntity> inputs;
   /** List of WriteEntities that are passed to the hooks. */
   private Set<WriteEntity> outputs;
+  private boolean isReplication;
+  private String dumpDirectory;
+  private transient ReplicationMetricCollector metricCollector;
+
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc, boolean isReplication,
+                 String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this.inputs = inputs;
+    this.outputs = outputs;
+    this.ddlDesc = ddlDesc;
+    this.isReplication = isReplication;
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
+  }
 
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc) {
     this.inputs = inputs;
@@ -52,6 +66,18 @@ public final class DDLWork implements Serializable {
 
   public Set<WriteEntity> getOutputs() {
     return outputs;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public String getDumpDirectory() {
+    return dumpDirectory;
+  }
+
+  public boolean isReplication() {
+    return isReplication;
   }
 
   public boolean getNeedLock() {

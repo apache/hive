@@ -72,6 +72,7 @@ public class IncrementalLoadTasksBuilder {
   private final ReplLogger replLogger;
   private static long numIteration;
   private final Long eventTo;
+  private String dumpDirectory;
   private final ReplicationMetricCollector metricCollector;
 
   public IncrementalLoadTasksBuilder(String dbName, String loadPath,
@@ -79,6 +80,7 @@ public class IncrementalLoadTasksBuilder {
                                      Long eventTo,
                                      ReplicationMetricCollector metricCollector) throws SemanticException {
     this.dbName = dbName;
+    dumpDirectory = (new Path(loadPath).getParent()).toString();
     this.iterator = iterator;
     inputs = new HashSet<>();
     outputs = new HashSet<>();
@@ -136,13 +138,14 @@ public class IncrementalLoadTasksBuilder {
       // entire chain
 
       MessageHandler.Context mhContext = new MessageHandler.Context(dbName, location,
-              taskChainTail, eventDmd, conf, hive, context, this.log);
+              taskChainTail, eventDmd, conf, hive, context, this.log,
+              dumpDirectory, metricCollector);
       List<Task<?>> evTasks = analyzeEventLoad(mhContext);
 
       if ((evTasks != null) && (!evTasks.isEmpty())) {
         ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, metricCollector,
                 dir.getPath().getName(),
-                eventDmd.getDumpType().toString());
+                eventDmd.getDumpType().toString(), dumpDirectory);
         Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
         AddDependencyToLeaves function = new AddDependencyToLeaves(barrierTask);
         DAGTraversal.traverse(evTasks, function);
@@ -156,13 +159,14 @@ public class IncrementalLoadTasksBuilder {
 
     if (!hasMoreWork()) {
       ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName);
-      Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
+      Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc,
+              true, dumpDirectory, this.metricCollector), conf);
       taskChainTail.addDependentTask(updateIncPendTask);
       taskChainTail = updateIncPendTask;
 
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
-      ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps, metricCollector);
+      ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps, dumpDirectory, metricCollector);
       Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
       taskChainTail.addDependentTask(barrierTask);
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
@@ -231,7 +235,8 @@ public class IncrementalLoadTasksBuilder {
     AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(tName, partSpec,
         new ReplicationSpec(replState, replState), false, mapProp, false, false, null);
 
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
+    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc,
+                                                                    true, dumpDirectory, metricCollector), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -249,7 +254,9 @@ public class IncrementalLoadTasksBuilder {
 
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
         new ReplicationSpec(replState, replState));
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc), conf);
+    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc,
+                                                                    true, dumpDirectory,
+                                                                    metricCollector), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {

@@ -76,8 +76,12 @@ public abstract class ReplicationMetricCollector {
       LOG.debug("Stage ended {}, {}, {}", stageName, status, lastReplId );
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
+      if(stage == null){
+        stage = new Stage(stageName, status, -1L);
+      }
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
+      progress.addStage(stage);
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);
@@ -94,9 +98,13 @@ public abstract class ReplicationMetricCollector {
       LOG.debug("Stage Ended {}, {}", stageName, status );
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
+      if(stage == null){
+        stage = new Stage(stageName, status, -1L);
+      }
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
       stage.setErrorLogPath(errorLogPath);
+      progress.addStage(stage);
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
       if (Status.FAILED == status || Status.FAILED_ADMIN == status) {
@@ -110,8 +118,12 @@ public abstract class ReplicationMetricCollector {
       LOG.debug("Stage Ended {}, {}", stageName, status );
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
+      if(stage == null){
+        stage = new Stage(stageName, status, -1L);
+      }
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
+      progress.addStage(stage);
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
       if (Status.FAILED == status || Status.FAILED_ADMIN == status) {

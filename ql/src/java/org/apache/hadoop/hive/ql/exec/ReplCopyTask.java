@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.ReplCopyWork;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
@@ -170,7 +170,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       setException(e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
+              getName(), conf);
     }
   }
 
@@ -233,6 +234,14 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       readSourceAsFileList, false);
   }
 
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean readSourceAsFileList, String dumpDirectory,
+                                        ReplicationMetricCollector metricCollector) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+            readSourceAsFileList, false, dumpDirectory, metricCollector);
+  }
+
   private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                          HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                          boolean readSourceAsFileList,
@@ -262,11 +271,51 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     return copyTask;
   }
 
+  private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                         boolean readSourceAsFileList,
+                                         boolean overWrite,
+                                         String dumpDirectory,
+                                         ReplicationMetricCollector metricCollector) {
+    Task<?> copyTask = null;
+    LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
+    if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
+      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false, overWrite, dumpDirectory,
+              metricCollector);
+      rcwork.setReadSrcAsFilesList(readSourceAsFileList);
+      if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION))) {
+        rcwork.setDeleteDestIfExist(true);
+        rcwork.setAutoPurge(isAutoPurge);
+        rcwork.setNeedRecycle(needRecycle);
+      }
+      // For replace case, duplicate check should not be done. The new base directory will automatically make the older
+      // data invisible. Doing duplicate check and ignoring copy will cause consistency issue if there are multiple
+      // replace events getting replayed in the first incremental load.
+      rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck() && !replicationSpec.isReplace());
+      LOG.debug("ReplCopyTask:\trcwork");
+      String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+      rcwork.setDistCpDoAsUser(distCpDoAsUser);
+      copyTask = TaskFactory.get(rcwork, conf);
+    } else {
+      LOG.debug("ReplCopyTask:\tcwork");
+      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false, dumpDirectory, metricCollector, true), conf);
+    }
+    return copyTask;
+  }
+
+
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf) {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
       true, false);
   }
+
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
+            true, false, dumpDirectory, metricCollector);
+  }
+
 
   /*
    * Invoked in the bootstrap path.
@@ -277,4 +326,12 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
       readSourceAsFileList, overWrite);
   }
+
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean readSourceAsFileList, boolean overWrite,
+                                        String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
+            readSourceAsFileList, overWrite, dumpDirectory, metricCollector);
+  }
+
 }

@@ -163,6 +163,10 @@ public class ReplLoadWork implements Serializable {
     return rootTask;
   }
 
+  public String getDumpDirectory() {
+    return dumpDirectory;
+  }
+
   public void setRootTask(Task<? extends Serializable> rootTask) {
     this.rootTask = rootTask;
   }
@@ -193,7 +197,7 @@ public class ReplLoadWork implements Serializable {
     }
     List<Task<?>> tasks = new ArrayList<>();
     while (externalTableDataCopyItr.hasNext() && tracker.canAddMoreTasks()) {
-      DirCopyWork dirCopyWork = new DirCopyWork();
+      DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, (new Path(dumpDirectory).getParent()).toString());
       dirCopyWork.loadFromString(externalTableDataCopyItr.next());
       Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
       tasks.add(task);

@@ -132,7 +132,9 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       setException(e);
-      return 1;
+      LOG.error("ReplTxnTask failed", e);
+      return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
+              getName(), conf);
     }
   }
 

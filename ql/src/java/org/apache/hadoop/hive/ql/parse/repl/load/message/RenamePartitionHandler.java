@@ -62,7 +62,8 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
               tableName, oldPartSpec, newPartSpec, replicationSpec, null);
       renamePtnDesc.setWriteId(msg.getWriteId());
       Task<DDLWork> renamePtnTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
+          new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc, true,
+                  context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
       context.log.debug("Added rename ptn task : {}:{}->{}",
                         renamePtnTask.getId(), oldPartSpec, newPartSpec);
       updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);

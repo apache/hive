@@ -88,24 +88,28 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       LOG.info("Atlas entities import count {}", importCount);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
+    } catch (RuntimeException e) {
+      LOG.error("RuntimeException while loading atlas metadata", e);
+      setException(e);
+      try{
+        ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
+      throw e;
     } catch (Exception e) {
       LOG.error("Exception while loading atlas metadata", e);
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          //Create non recoverable marker at top level
-          Path nonRecoverableMarker = new Path(work.getStagingDir().getParent(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (Exception ex) {
-        LOG.error("Failed to collect Metrics ", ex);
+      try{
+        return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
       }
-      return errorCode;
+      catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
   }
 

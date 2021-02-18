@@ -51,7 +51,8 @@ public class AllocWriteIdHandler extends AbstractMessageHandler {
 
     // Repl policy should be created based on the table name in context.
     ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), dbName, tableName,
-        ReplTxnWork.OperationType.REPL_ALLOC_WRITE_ID, msg.getTxnToWriteIdList(), context.eventOnlyReplicationSpec());
+        ReplTxnWork.OperationType.REPL_ALLOC_WRITE_ID, msg.getTxnToWriteIdList(), context.eventOnlyReplicationSpec(),
+            context.getDumpDirectory(), context.getMetricCollector());
 
     Task<? extends Serializable> allocWriteIdTask = TaskFactory.get(work, context.hiveConf);
     context.log.info("Added alloc write id task : {}", allocWriteIdTask.getId());
