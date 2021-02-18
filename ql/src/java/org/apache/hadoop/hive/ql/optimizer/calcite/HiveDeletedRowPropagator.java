@@ -99,21 +99,21 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
     visitChild(join, 0, join.getInput(0));
     visitChild(join, 1, join.getInput(1));
     RelNode leftInput = join.getLeft();
-    int leftRowIsNullIndex = leftInput.getRowType().getFieldCount() - 1;
+    int leftRowIsDeletedIndex = leftInput.getRowType().getFieldCount() - 1;
     RelNode rightInput = join.getRight();
-    int rightRowIsNullIndex = rightInput.getRowType().getFieldCount() - 1;
+    int rightRowIsDeletedIndex = rightInput.getRowType().getFieldCount() - 1;
 
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
-    RexNode leftRowIsNull = rexBuilder.makeInputRef(
-            leftInput.getRowType().getFieldList().get(leftRowIsNullIndex).getType(), leftRowIsNullIndex);
-    RexNode rightRowIsNull = rexBuilder.makeInputRef(
-            rightInput.getRowType().getFieldList().get(rightRowIsNullIndex).getType(),
-            leftInput.getRowType().getFieldCount() + rightRowIsNullIndex);
+    RexNode leftRowIsDeleted = rexBuilder.makeInputRef(
+            leftInput.getRowType().getFieldList().get(leftRowIsDeletedIndex).getType(), leftRowIsDeletedIndex);
+    RexNode rightRowIsDeleted = rexBuilder.makeInputRef(
+            rightInput.getRowType().getFieldList().get(rightRowIsDeletedIndex).getType(),
+            leftInput.getRowType().getFieldCount() + rightRowIsDeletedIndex);
 
     List<RexNode> projects = new ArrayList<>(join.getRowType().getFieldCount() + 1);
     List<String> projectNames = new ArrayList<>(join.getRowType().getFieldCount() + 1);
     populateProjects(rexBuilder, join.getRowType(), projects, projectNames);
-    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.AND, leftRowIsNull, rightRowIsNull));
+    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
     projectNames.add("rowIsDeleted");
 
     return relBuilder

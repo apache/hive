@@ -50,7 +50,7 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
     final RelNode joinLeftInput = union.getInput(1);
     final RelNode joinRightInput = union.getInput(0);
 
-    // 2) Build conditions for join and filter and start adding
+    // 2) Build conditions for join and start adding
     // expressions for project operator
     List<RexNode> projExprs = new ArrayList<>();
     List<RexNode> joinConjs = new ArrayList<>();
@@ -64,17 +64,22 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
 
       projExprs.add(rightRef);
       joinConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ImmutableList.of(leftRef, rightRef)));
-//      filterConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ImmutableList.of(leftRef)));
     }
 
     RexNode joinCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, joinConjs);
-//    RexNode filterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, filterConjs);
+
+    int rowIsDeletedIdx = joinRightInput.getRowType().getFieldCount() - 1;
+    RexNode rowIsDeleted = rexBuilder.makeInputRef(
+            joinRightInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(),
+            joinLeftInput.getRowType().getFieldCount() + rowIsDeletedIdx);
+
     // 3) Build plan
     RelNode newNode = call.builder()
             .push(union.getInput(1))
             .push(union.getInput(0))
             .join(JoinRelType.RIGHT, joinCond)
-//            .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR, ImmutableList.of(joinCond, filterCond)))
+            .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR,
+                    rowIsDeleted, rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted)))
             .project(projExprs)
             .build();
     call.transformTo(newNode);
