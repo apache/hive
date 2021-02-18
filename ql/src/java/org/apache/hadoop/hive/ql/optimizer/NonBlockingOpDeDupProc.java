@@ -108,7 +108,7 @@ public class NonBlockingOpDeDupProc extends Transform {
         if (cSEL.getColumnExprMap() == null) {
           // If the child SelectOperator does not have the ColumnExprMap,
           // we do not need to update the ColumnExprMap in the parent SelectOperator.
-          pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(cSELColList, cSEL, pSEL, true));
+          pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(cSELColList, cSEL, pSEL, true, false));
           pSEL.getConf().setOutputColumnNames(cSELOutputColumnNames);
         } else {
           // If the child SelectOperator has the ColumnExprMap,
@@ -120,7 +120,7 @@ public class NonBlockingOpDeDupProc extends Transform {
             String outputColumnName = cSELOutputColumnNames.get(i);
             ExprNodeDesc cSELExprNodeDesc = cSELColList.get(i);
             ExprNodeDesc newPSELExprNodeDesc =
-                ExprNodeDescUtils.backtrack(cSELExprNodeDesc, cSEL, pSEL, true);
+                ExprNodeDescUtils.backtrack(cSELExprNodeDesc, cSEL, pSEL, true, false);
             newPSELColList.add(newPSELExprNodeDesc);
             newPSELOutputColumnNames.add(outputColumnName);
             colExprMap.put(outputColumnName, newPSELExprNodeDesc);

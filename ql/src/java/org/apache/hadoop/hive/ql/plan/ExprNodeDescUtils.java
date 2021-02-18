@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -239,6 +240,23 @@ public class ExprNodeDescUtils {
   }
 
   /**
+   * Create an expression for computing a murmur hash by recursively hashing given expressions by two:
+   * <pre>
+   * Input: HASH(A, B, C, D)
+   * Output: HASH(HASH(HASH(A,B),C),D)
+   * </pre>
+   */
+  public static ExprNodeGenericFuncDesc murmurHash(List<ExprNodeDesc> exps) {
+    assert exps.size() >= 2;
+    ExprNodeDesc hashExp = exps.get(0);
+    for (int i = 1; i < exps.size(); i++) {
+      List<ExprNodeDesc> hArgs = Arrays.asList(hashExp, exps.get(i));
+      hashExp = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFMurmurHash(), "hash", hArgs);
+    }
+    return (ExprNodeGenericFuncDesc) hashExp;
+  }
+
+  /**
    * bind two predicates by AND op
    */
   public static ExprNodeGenericFuncDesc mergePredicates(ExprNodeDesc prev, ExprNodeDesc next) {
@@ -344,26 +362,26 @@ public class ExprNodeDescUtils {
    */
   public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
       Operator<?> current, Operator<?> terminal) throws SemanticException {
-    return backtrack(sources, current, terminal, false);
+    return backtrack(sources, current, terminal, false, false);
   }
 
   public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
-      Operator<?> current, Operator<?> terminal, boolean foldExpr) throws SemanticException {
-    ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>();
+      Operator<?> current, Operator<?> terminal, boolean foldExpr, boolean skipRSParent) throws SemanticException {
+    ArrayList<ExprNodeDesc> result = new ArrayList<>();
     for (ExprNodeDesc expr : sources) {
-      result.add(backtrack(expr, current, terminal, foldExpr));
+      result.add(backtrack(expr, current, terminal, foldExpr, skipRSParent));
     }
     return result;
   }
 
   public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
       Operator<?> terminal) throws SemanticException {
-    return backtrack(source, current, terminal, false);
+    return backtrack(source, current, terminal, false, false);
   }
 
   public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
-      Operator<?> terminal, boolean foldExpr) throws SemanticException {
-    Operator<?> parent = getSingleParent(current, terminal);
+      Operator<?> terminal, boolean foldExpr, boolean skipRSParent) throws SemanticException {
+    Operator<?> parent = skipRSParent ? getNonRSParent(source, current, terminal) : getSingleParent(current, terminal);
     if (parent == null) {
       return source;
     }
@@ -374,7 +392,7 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
-      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal, foldExpr);
+      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal, foldExpr, skipRSParent);
       for (ExprNodeDesc child : children) {
         if (child == null) {
           // Could not resolve all of the function children, fail
@@ -393,12 +411,12 @@ public class ExprNodeDescUtils {
     }
     if (source instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc column = (ExprNodeColumnDesc) source;
-      return backtrack(column, parent, terminal);
+      return backtrack(column, parent, terminal, skipRSParent);
     }
     if (source instanceof ExprNodeFieldDesc) {
       // field expression should be resolved
       ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
-      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal, foldExpr);
+      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal, foldExpr, skipRSParent);
       if (fieldDesc == null) {
         return null;
       }
@@ -411,13 +429,13 @@ public class ExprNodeDescUtils {
 
   // Resolve column expression to input expression by using expression mapping in current operator
   private static ExprNodeDesc backtrack(ExprNodeColumnDesc column, Operator<?> current,
-      Operator<?> terminal) throws SemanticException {
+      Operator<?> terminal, boolean skipRSParent) throws SemanticException {
     Map<String, ExprNodeDesc> mapping = current.getColumnExprMap();
     if (mapping == null) {
-      return backtrack((ExprNodeDesc)column, current, terminal);
+      return backtrack(column, current, terminal, false, skipRSParent);
     }
     ExprNodeDesc mapped = mapping.get(column.getColumn());
-    return mapped == null ? null : backtrack(mapped, current, terminal);
+    return mapped == null ? null : backtrack(mapped, current, terminal, false, skipRSParent);
   }
 
   public static Operator<?> getSingleParent(Operator<?> current, Operator<?> terminal)
@@ -439,6 +457,33 @@ public class ExprNodeDescUtils {
       return terminal;
     }
     throw new SemanticException("Met multiple parent operators");
+  }
+
+  /**
+   * When Multi-Parent backtrack to the non-RS branch and return the found parent.
+   * @param src Expr
+   * @param current Parent OP
+   * @param terminal Parent Op
+   * @return parent Op or Null when not found
+   * @throws SemanticException
+   */
+  public static Operator<?> getNonRSParent(ExprNodeDesc src, Operator<?> current, Operator<?> terminal)
+      throws SemanticException {
+    if (current == terminal) {
+      return null;
+    }
+    List<Operator<?>> parents = current.getParentOperators();
+    if (parents == null || parents.isEmpty()) {
+      return null;
+    }
+    if (parents.size() == 1) {
+      return parents.get(0);
+    }
+    if (terminal != null && parents.contains(terminal)) {
+      return terminal;
+    }
+    // When multi-parent, backtrack to non-RS parent branches looking for the src Expr
+    return parents.stream().filter(op -> !(op instanceof ReduceSinkOperator)).findFirst().get();
   }
 
   public static List<ExprNodeDesc> resolveJoinKeysAsRSColumns(List<ExprNodeDesc> sourceList,

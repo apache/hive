@@ -695,7 +695,7 @@ STAGE PLANS:
                 TableScan
                   alias: t2
                   filterExpr: (c > 2) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:v1, smallTablePos:0, keyRatio:0.4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:c, smallTablePos:0, keyRatio:0.4
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1413,7 +1413,7 @@ STAGE PLANS:
                 TableScan
                   alias: t2
                   filterExpr: (c > 2) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:v1, smallTablePos:0, keyRatio:0.4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:c, smallTablePos:0, keyRatio:0.4
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1594,7 +1594,7 @@ STAGE PLANS:
                 TableScan
                   alias: t2
                   filterExpr: (c > 2) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:v1, smallTablePos:0, keyRatio:0.4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:c, smallTablePos:0, keyRatio:0.4
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
