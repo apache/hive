@@ -247,6 +247,19 @@
          <enabled>true</enabled>
        </snapshots>
     </repository>
+    <repository>
+      <!-- shibboleth doesn't publish artifacts on maven central
+        See https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central -->
+      <id>shibboleth</id>
+      <url>https://build.shibboleth.net/nexus/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <dependencyManagement>
