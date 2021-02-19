@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
@@ -54,6 +55,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
   private final MetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
+  private final PathCache pathCache;
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
   private LlapDaemonCacheMetrics cacheMetrics;
@@ -63,13 +65,14 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final FixedSizedObjectPool<IoTrace> tracePool;
 
   public OrcColumnVectorProducer(MetadataCache metadataCache,
-      LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
+      LowLevelCache lowLevelCache, PathCache pathCache, BufferUsageManager bufferManager,
       Configuration conf, LlapDaemonCacheMetrics cacheMetrics, LlapDaemonIOMetrics ioMetrics,
       FixedSizedObjectPool<IoTrace> tracePool) {
     LlapIoImpl.LOG.info("Initializing ORC column vector producer");
 
     this.metadataCache = metadataCache;
     this.lowLevelCache = lowLevelCache;
+    this.pathCache = pathCache;
     this.bufferManager = bufferManager;
     this.conf = conf;
     this.cacheMetrics = cacheMetrics;
@@ -90,7 +93,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, includes, counters, ioMetrics);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
-        metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool, parts);
+        metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool, parts, pathCache);
     edc.init(reader, reader, reader.getTrace());
     return edc;
   }

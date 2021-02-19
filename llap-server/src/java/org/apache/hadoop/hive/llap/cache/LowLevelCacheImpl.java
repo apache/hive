@@ -335,6 +335,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapDataBuffer oldVal = subCache.getCache().putIfAbsent(offset, buffer);
           if (oldVal == null) {
+            buffer.setStart(offset);
             buffer.setFileCache(subCache);
             // Cached successfully, add to policy.
             cachePolicy.cache(buffer, priority);
