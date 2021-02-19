@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.llap.io.encoded;
 
 import io.jsonwebtoken.lang.Assert;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.CacheTag;
@@ -48,14 +49,9 @@ public class TestLowLevelDataReader {
 
   private static final int ORC_PADDING = 3;
   private static final String TEST_PATH = "../data/files/orc_compressed";
-  private static final SyntheticFileId TEST_KEY = new SyntheticFileId(new Path(TEST_PATH),
-      308L, 1613618550000L);
   private static final String TEST_PATH_UNCOMPRESSED = "../data/files/orc_uncompressed";
-  private static final SyntheticFileId TEST_KEY_UNCOMPRESSED = new SyntheticFileId(new Path(TEST_PATH_UNCOMPRESSED),
-      296L, 1613617056000L);
 
   private Configuration conf;
-  private LowLevelLrfuCachePolicy lrfu;
   private BuddyAllocator buddyAllocator;
   private LlapDaemonCacheMetrics metrics;
   private MetadataCache metaCache;
@@ -68,7 +64,7 @@ public class TestLowLevelDataReader {
   public void setUp() {
     conf = new Configuration();
     HiveConf.setIntVar(conf, HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE, 1);
-    lrfu = new LowLevelLrfuCachePolicy(1, 39, conf);
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, 39, conf);
     buddyAllocator =
         TestBuddyAllocatorForceEvict.create(2048, 2, 4096, false, true);
     metrics = LlapDaemonCacheMetrics.create("", "");
@@ -89,28 +85,32 @@ public class TestLowLevelDataReader {
 
   @Test
   public void testReadFooter() throws IOException {
-    LowLevelDataReader reader = new LowLevelDataReader(new Path(TEST_PATH),
-        TEST_KEY, conf, null, metaCache, null, null);
+    Path path = new Path(TEST_PATH);
+    Object key = fileId(path);
+    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, null, metaCache,
+        null, null);
     reader.init();
 
     reader.readFooter();
 
-    MetadataCache.LlapBufferOrBuffers metadata = metaCache.getFileMetadata(TEST_KEY);
+    MetadataCache.LlapBufferOrBuffers metadata = metaCache.getFileMetadata(key);
     Assert.notNull(metadata);
   }
 
 
   @Test
   public void testUncompressedReadRanges() throws IOException {
-    LowLevelDataReader reader = new LowLevelDataReader(new Path(TEST_PATH_UNCOMPRESSED),
-        TEST_KEY_UNCOMPRESSED, conf, mockDataCache, metaCache, null, tracePool);
+    Path path = new Path(TEST_PATH_UNCOMPRESSED);
+    Object key = fileId(path);
+    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool);
     reader.init();
 
     DiskRangeList range = new DiskRangeList(ORC_PADDING, 296);
     reader.read(range);
 
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    DiskRangeList fileData = cache.getFileData(TEST_KEY_UNCOMPRESSED, range, 0,
+    DiskRangeList fileData = cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
     Assert.isTrue(gotAllData.value);
@@ -118,14 +118,16 @@ public class TestLowLevelDataReader {
 
   @Test
   public void testReadValidRanges() throws IOException {
-    LowLevelDataReader reader = new LowLevelDataReader(new Path(TEST_PATH),
-        TEST_KEY, conf, mockDataCache, metaCache, null, tracePool);
+    Path path = new Path(TEST_PATH);
+    Object key = fileId(path);
+    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool);
     reader.init();
     DiskRangeList range = new DiskRangeList(ORC_PADDING,38);
     reader.read(range);
 
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    DiskRangeList fileData = cache.getFileData(TEST_KEY, range, 0,
+    DiskRangeList fileData = cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
     Assert.isTrue(gotAllData.value);
@@ -134,18 +136,25 @@ public class TestLowLevelDataReader {
 
   @Test
   public void testReadBadlyEstimatedRanges() throws IOException {
-    LowLevelDataReader reader = new LowLevelDataReader(new Path(TEST_PATH),
-        TEST_KEY, conf, mockDataCache, metaCache, null, tracePool);
+    Path path = new Path(TEST_PATH);
+    Object key = fileId(path);
+    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool);
     reader.init();
     DiskRangeList range = new DiskRangeList(ORC_PADDING,40);
     reader.read(range);
 
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    DiskRangeList fileData = cache.getFileData(TEST_KEY, range, 0,
+    DiskRangeList fileData = cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
     Assert.isTrue(!gotAllData.value);
 
+  }
+
+  private SyntheticFileId fileId(Path path) throws IOException {
+    FileStatus fs = path.getFileSystem(conf).getFileStatus(path);
+    return new SyntheticFileId(path, fs.getLen(), fs.getModificationTime());
   }
 
   private class MockDataCache implements DataCache, Allocator.BufferObjectFactory {
