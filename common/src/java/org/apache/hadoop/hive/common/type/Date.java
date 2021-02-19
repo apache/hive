@@ -26,32 +26,63 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
+import java.time.temporal.ChronoField;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
 
 /**
- * This is the internal type for Date.
- * The full qualified input format of Date is "yyyy-MM-dd".
+ * This is the internal type for Date. The full qualified input format of Date
+ * is "uuuu-MM-dd". For example: "2021-02-11".
+ * <table border="2">
+ * <tr>
+ * <th>Field</th>
+ * <th>Format</th>
+ * <th>Description</th>
+ * </tr>
+ * <tr>
+ * <td>Year</td>
+ * <td>uuuu</td>
+ * <td>The proleptic year, such as 2012. This represents the concept of the
+ * year, counting sequentially and using negative numbers.</td>
+ * </tr>
+ * <tr>
+ * <td>Month of Year</td>
+ * <td>MM</td>
+ * <td>The month-of-year, such as March. This represents the concept of the
+ * month within the year. In the default ISO calendar system, this has values
+ * from January (1) to December (12).</td>
+ * </tr>
+ * <tr>
+ * <td>Day of Month</td>
+ * <td>dd</td>
+ * <td>This represents the concept of the day within the month. In the default
+ * ISO calendar system, this has values from 1 to 31 in most months.</td>
+ * </tr>
+ * </table>
+ * <p>
+ * The {@link ChronoField#YEAR} and "uuuu" format string indicate the year. This
+ * is not to be confused with the more common "yyyy" which standard for
+ * "year-of-era" in Java. One important difference is that "year" includes
+ * negative numbers whereas the "year-of-era" value should typically always be
+ * positive.
+ * </p>
+ *
+ * @see {@link ChronoField#YEAR}
+ * @see {@link ChronoField#YEAR_OF_ERA}
  */
 public class Date implements Comparable<Date> {
 
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
-  private static final DateTimeFormatter PARSE_FORMATTER;
-  private static final DateTimeFormatter PRINT_FORMATTER;
-  static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    builder.appendValue(YEAR, 1, 10, SignStyle.NORMAL)
-        .appendLiteral('-')
-        .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL)
-        .appendLiteral('-')
-        .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL);
-    PARSE_FORMATTER = builder.toFormatter().withResolverStyle(ResolverStyle.LENIENT);
-    builder = new DateTimeFormatterBuilder();
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-    PRINT_FORMATTER = builder.toFormatter();
-  }
+
+  private static final DateTimeFormatter PARSE_FORMATTER =
+      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
+          .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
+          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.LENIENT);
+
+  private static final DateTimeFormatter PRINT_FORMATTER =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("uuuu-MM-dd")).toFormatter();
 
   private LocalDate localDate;
 
