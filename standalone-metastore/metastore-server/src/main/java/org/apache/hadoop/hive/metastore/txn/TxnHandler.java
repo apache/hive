@@ -280,6 +280,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "\"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?)";
   private static final String SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID =
       "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
+  private static final String CLEANUP_RECORDS_FOR_DB =
+      "DELETE FROM %s WHERE %s_DATABASE = ?";
+  private static final String CLEANUP_RECORDS_FOR_TABLE =
+      "DELETE FROM %s WHERE %s_DATABASE = ? AND %s_TABLE = ?";
+  private static final String CLEANUP_RECORDS_FOR_PARTITION =
+      "DELETE FROM %s WHERE %s_DATABASE = ? AND %s_TABLE = ? AND %s_PARTITION = ?";
+
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -3692,8 +3699,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String tblName;
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        List<String> queries = new ArrayList<>();
-        StringBuilder buff = new StringBuilder();
+        List<PreparedStatement> statements = new ArrayList<>();
+
+        Map<String, String> tblsAndCols = new HashMap<>();
+          tblsAndCols.put("\"TXN_COMPONENTS\"", "\"TC\"");
+          tblsAndCols.put("\"COMPLETED_TXN_COMPONENTS\"", "\"CTC\"");
+          tblsAndCols.put("\"COMPACTION_QUEUE\"", "\"CQ\"");
+          tblsAndCols.put("\"COMPLETED_COMPACTIONS\"", "\"CC\"");
+
 
         switch (type) {
           case DATABASE: {
@@ -3704,40 +3717,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               return;
             }
 
-            buff.append("DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("'");
-            queries.add(buff.toString());
+            tblsAndCols.put("\"TXN_TO_WRITE_ID\"", "\"T2W\"");
+            tblsAndCols.put("\"NEXT_WRITE_ID\"", "\"NWI\"");
 
-            buff.setLength(0);
-            buff.append("DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
-            buff.append("'");
-            queries.add(buff.toString());
+            for (Map.Entry<String,String> e : tblsAndCols.entrySet()) {
+              String sql = String.format(CLEANUP_RECORDS_FOR_DB, e.getKey(), e.getValue());
+              try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
+                pstmt.setString(1, dbName);
+                statements.add(pstmt);
+              }
+            }
 
             break;
           }
@@ -3750,52 +3739,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               return;
             }
 
-            buff.append("DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("' AND \"TC_TABLE\"='");
-            buff.append(tblName);
-            buff.append("'");
-            queries.add(buff.toString());
+            tblsAndCols.put("\"TXN_TO_WRITE_ID\"", "\"T2W\"");
+            tblsAndCols.put("\"NEXT_WRITE_ID\"", "\"NWI\"");
 
-            buff.setLength(0);
-            buff.append("DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("' AND \"CTC_TABLE\"='");
-            buff.append(tblName);
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("' AND \"CQ_TABLE\"='");
-            buff.append(tblName);
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_DATABASE\"='");
-            buff.append(dbName);
-            buff.append("' AND \"CC_TABLE\"='");
-            buff.append(tblName);
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
-            buff.append("' AND \"T2W_TABLE\"='");
-            buff.append(tblName.toLowerCase());
-            buff.append("'");
-            queries.add(buff.toString());
-
-            buff.setLength(0);
-            buff.append("DELETE FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
-            buff.append("' AND \"NWI_TABLE\"='");
-            buff.append(tblName.toLowerCase());
-            buff.append("'");
-            queries.add(buff.toString());
+            for (Map.Entry<String,String> e : tblsAndCols.entrySet()) {
+              String sql = String.format(CLEANUP_RECORDS_FOR_TABLE, e.getKey(), e.getValue(), e.getValue());
+              try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
+                pstmt.setString(1, dbName);
+                pstmt.setString(2, tblName);
+                statements.add(pstmt);
+              }
+            }
 
             break;
           }
@@ -3817,44 +3771,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               partVals = p.getValues();
               partName = Warehouse.makePartName(partCols, partVals);
 
-              buff.append("DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_DATABASE\"='");
-              buff.append(dbName);
-              buff.append("' AND \"TC_TABLE\"='");
-              buff.append(tblName);
-              buff.append("' AND \"TC_PARTITION\"='");
-              buff.append(partName);
-              buff.append("'");
-              queries.add(buff.toString());
-
-              buff.setLength(0);
-              buff.append("DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_DATABASE\"='");
-              buff.append(dbName);
-              buff.append("' AND \"CTC_TABLE\"='");
-              buff.append(tblName);
-              buff.append("' AND \"CTC_PARTITION\"='");
-              buff.append(partName);
-              buff.append("'");
-              queries.add(buff.toString());
-
-              buff.setLength(0);
-              buff.append("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\"='");
-              buff.append(dbName);
-              buff.append("' AND \"CQ_TABLE\"='");
-              buff.append(tblName);
-              buff.append("' AND \"CQ_PARTITION\"='");
-              buff.append(partName);
-              buff.append("'");
-              queries.add(buff.toString());
-
-              buff.setLength(0);
-              buff.append("DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_DATABASE\"='");
-              buff.append(dbName);
-              buff.append("' AND \"CC_TABLE\"='");
-              buff.append(tblName);
-              buff.append("' AND \"CC_PARTITION\"='");
-              buff.append(partName);
-              buff.append("'");
-              queries.add(buff.toString());
+              for (Map.Entry<String,String> e : tblsAndCols.entrySet()) {
+                String sql = String.format(CLEANUP_RECORDS_FOR_PARTITION,
+                    e.getKey(), e.getValue(), e.getValue(), e.getValue());
+                try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
+                  pstmt.setString(1, dbName);
+                  pstmt.setString(2, tblName);
+                  pstmt.setString(3, partName);
+                  statements.add(pstmt);
+                }
+              }
             }
 
             break;
@@ -3864,9 +3790,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
 
-        for (String query : queries) {
-          LOG.debug("Going to execute update <" + query + ">");
-          stmt.executeUpdate(query);
+        for (PreparedStatement statement : statements) {
+          LOG.debug("Going to execute update <" + statement.toString() + ">");
+          statement.executeQuery();
         }
 
         LOG.debug("Going to commit");
@@ -5319,7 +5245,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private boolean isDuplicateKeyError(SQLException ex) {
     return dbProduct.isDuplicateKeyError(ex);
   }
-  
+
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
   }
