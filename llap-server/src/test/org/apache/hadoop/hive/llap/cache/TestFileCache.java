@@ -15,32 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.llap.cache;
 
-public final class LlapDataBuffer extends BaseLlapDataBuffer {
-  public static final int UNKNOWN_CACHED_LENGTH = -1;
+import com.google.common.base.Function;
+import org.apache.hadoop.hive.common.io.CacheTag;
+import org.junit.Test;
 
-  /**
-   * The starting position of the buffer in the compressed file. Required for cache hydration.
-   */
-  private long start;
+import java.util.concurrent.ConcurrentHashMap;
 
-  /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
-   * the lookup is on compressed ranges, so we need to know this. */
-  public int declaredCachedLength = UNKNOWN_CACHED_LENGTH;
+import static org.junit.Assert.assertEquals;
 
+public class TestFileCache {
 
-  public void setStart(long start){
-    this.start = start;
-  }
+  @Test
+  public void testFileCacheMetadata() {
+    ConcurrentHashMap<Object, FileCache<Object>> cache = new ConcurrentHashMap<>();
+    Object fileKey = 1234L;
+    Function<Void, Object> f = a -> new Object();
+    CacheTag tag = CacheTag.build("test_table");
 
-  public long getStart() {
-    return start;
-  }
+    FileCache<Object> result = FileCache.getOrAddFileSubCache(cache, fileKey, f, tag);
 
-  @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
-    evictionDispatcher.notifyEvicted(this, isProactiveEviction);
+    assertEquals(fileKey, result.getFileKey());
+    assertEquals(tag, result.getTag());
   }
 }

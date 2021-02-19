@@ -32,6 +32,8 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
+import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
@@ -113,6 +115,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
+  private PathCache pathCache;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
@@ -209,6 +212,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         debugDumpComponents.add(metadataCache);
       }
       debugDumpComponents.add(allocator);
+      pathCache = new MemoryLimitedPathCache(conf);
     } else {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
@@ -242,7 +246,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     LOG.info("LLAP IO initialized");
