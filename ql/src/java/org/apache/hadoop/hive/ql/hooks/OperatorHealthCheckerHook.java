@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
@@ -76,8 +77,7 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
       Operator<?> op = (Operator<?>) nd;
       checkOperator(op);
       String opKey = op.getOperatorId();
-      Operator<?> found = opMap.get(opKey);
-      if (found != null) {
+      if (opMap.containsKey(opKey)) {
         throw new RuntimeException("operator id reuse found: " + opKey);
       }
       opMap.put(opKey, op);
@@ -90,7 +90,7 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
     Map<String, ExprNodeDesc> exprMap = conf.getColumnExprMap();
     RowSchema schema = op.getSchema();
 
-    chceckSchema(schema);
+    checkSchema(schema);
     if (op instanceof SelectOperator) {
       checkSelectOperator((SelectOperator) op);
     }
@@ -100,7 +100,7 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
           continue;
         }
         ColumnInfo ci = schema.getColumnInfo(c.getKey());
-        if (c.getKey().startsWith("KEY.reducesinkkey")) {
+        if (c.getKey().startsWith(Utilities.ReduceField.KEY + ".reducesinkkey")) {
           continue;
         }
         if (ci == null && conf.getComputedFields().contains(c.getKey())) {
@@ -131,12 +131,12 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
 
   }
 
-  private static void chceckSchema(RowSchema schema) {
+  private static void checkSchema(RowSchema schema) {
     if (schema != null) {
     List<String> cn = schema.getColumnNames();
     Set<String> cn2 = new HashSet<>(cn);
     if (cn.size() != cn2.size()) {
-      throw new RuntimeException("ambigous columns in the schema!");
+        throw new RuntimeException("ambiguous columns in the schema!");
     }
     }
   }

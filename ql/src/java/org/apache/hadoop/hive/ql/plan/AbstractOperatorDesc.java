@@ -49,7 +49,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    */
   protected Map<String, ExprNodeDesc> colExprMap;
 
-  Set<String> computedFields = new HashSet<String>();
+  private transient Set<String> computedFields = new HashSet<String>();
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
