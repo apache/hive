@@ -35,25 +35,29 @@ public class SchedulerThreadPool {
   /**
    * Initialize the thread pool with configuration.
    */
-  public static void initialize(Configuration conf) {
-    if (pool == null) {
+  public static ScheduledExecutorService initialize(Configuration conf) {
+    ScheduledExecutorService instance = pool;
+    if (instance == null) {
       synchronized (SchedulerThreadPool.class) {
         if (pool == null) {
           ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
               .setNameFormat("Hive-exec Scheduled Worker %d").build();
-          pool = Executors.newScheduledThreadPool(HiveConf.getIntVar(conf,
+          instance = Executors.newScheduledThreadPool(HiveConf.getIntVar(conf,
               HiveConf.ConfVars.HIVE_EXEC_SCHEDULED_POOL_NUM_THREADS), threadFactory);
+          pool = instance;
         }
       }
     }
+    return instance;
   }
 
   public static ScheduledExecutorService getInstance() {
-    if (pool == null) {
+    ScheduledExecutorService instance = pool;
+    if (instance == null) {
       // allow initialization with default pool size because of arbitrary hive-exec.jar usages
-      initialize(new HiveConf());
+      instance = initialize(new HiveConf());
     }
-    return pool;
+    return instance;
   }
 
   public static void shutdown() {
