@@ -66,13 +66,11 @@ public class HmsPackageRegistry implements PackageRegistry {
   public void createPackageBody(String name, String body, boolean replace) {
     try {
       Package existing = msc.findPackage(request(name));
-      if (existing != null && StringUtils.isNotEmpty(existing.getBody()) && !replace)
+      if (existing == null || StringUtils.isEmpty(existing.getHeader()))
+        throw new RuntimeException("Package header does not exists " + name);
+      if (StringUtils.isNotEmpty(existing.getBody()) && !replace)
         throw new RuntimeException("Package body " + name + " already exists");
-      if (existing == null) {
-        msc.addPackage(makePackage(name, "", body));
-      } else {
-        msc.addPackage(makePackage(name, existing.getHeader(), body));
-      }
+      msc.addPackage(makePackage(name, existing.getHeader(), body));
     } catch (TException e) {
       throw new RuntimeException(e.getCause());
     }
