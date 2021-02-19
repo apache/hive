@@ -26,12 +26,15 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.impala.calcite.ImpalaTypeSystemImpl;
 import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.thrift.TPrimitiveType;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -77,9 +80,17 @@ public class ImpalaTypeConverter {
     map.put(Type.TIMESTAMP, factory.createSqlType(SqlTypeName.TIMESTAMP));
     map.put(Type.DATE, factory.createSqlType(SqlTypeName.DATE));
     map.put(Type.DECIMAL, factory.createSqlType(SqlTypeName.DECIMAL));
-    map.put(Type.CHAR, factory.createSqlType(SqlTypeName.CHAR, 1));
-    map.put(Type.VARCHAR, factory.createSqlType(SqlTypeName.VARCHAR, 1));
-    map.put(Type.STRING, factory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE));
+    Charset charSetName = Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
+    RelDataType charType = factory.createTypeWithCharsetAndCollation(
+        factory.createSqlType(SqlTypeName.CHAR, 1), charSetName, SqlCollation.IMPLICIT);
+    map.put(Type.CHAR, charType);
+    RelDataType varcharType = factory.createTypeWithCharsetAndCollation(
+        factory.createSqlType(SqlTypeName.VARCHAR, 1), charSetName, SqlCollation.IMPLICIT);
+    map.put(Type.VARCHAR, varcharType);
+    RelDataType stringType = factory.createTypeWithCharsetAndCollation(
+        factory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE), charSetName,
+            SqlCollation.IMPLICIT);
+    map.put(Type.STRING, stringType);
     impalaToCalciteMap = map.build();
 
     map = ImmutableMap.builder();

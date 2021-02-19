@@ -345,7 +345,9 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     RelDataType rdt;
     if (SqlTypeName.CHAR_TYPES.contains(postCastSqlTypeName)) {
-      rdt = dtFactory.createSqlType(postCastSqlTypeName, postCastRelType.getPrecision());
+      rdt = dtFactory.createTypeWithCharsetAndCollation(
+              dtFactory.createSqlType(postCastSqlTypeName, postCastRelType.getPrecision()),
+              Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
     } else {
       rdt = dtFactory.createSqlType(postCastSqlTypeName);
     }
