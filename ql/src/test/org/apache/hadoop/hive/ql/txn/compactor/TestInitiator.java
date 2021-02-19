@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -1198,6 +1200,36 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals(1, compacts.size());
     Assert.assertEquals("did not initiate", compacts.get(0).getState());
     Assert.assertEquals(tableName, compacts.get(0).getTablename());
+  }
+
+  @Test
+  public void noCompactForInsertOnly() throws Exception {
+    Map<String, String> parameters = new HashMap<String, String>(1);
+    parameters.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+    newTable("default", "ncfio", false, parameters);
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM, false);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 1);
+
+    // 2 aborts
+    for (int i = 0; i < 2; i++) {
+      long txnid = openTxn();
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setTablename("ncfio");
+      comp.setOperationType(DataOperationType.UPDATE);
+      List<LockComponent> components = new ArrayList<LockComponent>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      txnHandler.lock(req);
+      txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    }
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
   @Override
