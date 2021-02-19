@@ -3812,8 +3812,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         req.setDb_name(tbl.getDbName());
         req.setTbl_name(tbl.getTableName());
         req.setNames(partNames.subList(i*batchSize, (i+1)*batchSize));
-        req.setGet_col_stats(getColStats);
-        req.setEngine(Constants.HIVE_ENGINE);
+        req.setGet_col_stats(false);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
 
         if (tParts != null) {
@@ -3824,13 +3823,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (nParts > nBatches * batchSize) {
-        GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
-        req.setDb_name(tbl.getDbName());
-        req.setTbl_name(tbl.getTableName());
-        req.setNames(partNames.subList(nBatches*batchSize, nParts));
-        req.setGet_col_stats(getColStats);
-        req.setEngine(Constants.HIVE_ENGINE);
-        List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
+         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
+          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
+            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);
 
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
