@@ -2171,8 +2171,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names);
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
   }
 
   @Override
@@ -2191,27 +2191,34 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
+          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
           throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
+      validWriteIdList, tableId);
+  }
+
+  @Override public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
+      validWriteIdList, tableId);
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                              List<String> part_names) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
-  }
-
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine) throws TException {
+          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
+            throws TException {
     checkDbAndTableFilters(catName, db_name, tbl_name);
     GetPartitionsByNamesRequest gpbnr =
             new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
-    gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    if( validWriteIdList != null) {
+      gpbnr.setValidWriteIdList(validWriteIdList);
+    }else {
+      gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    }
+    gpbnr.setId(tableId);
     if (getColStats) {
       gpbnr.setEngine(engine);
     }

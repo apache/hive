@@ -1497,8 +1497,8 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names) throws NoSuchObjectException, MetaException, TException;
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1523,8 +1523,8 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names, boolean getColStats,
+      String engine, String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1538,7 +1538,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    */
   List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names)
+                                       List<String> part_names, String validWriteIdList, Long tableId)
       throws NoSuchObjectException, MetaException, TException;
 
     /**
@@ -1554,9 +1554,9 @@ public interface IMetaStoreClient {
      * @throws MetaException error accessing the RDBMS.
      * @throws TException thrift transport error
      */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-            List<String> part_names, boolean getColStats, String engine)
-            throws NoSuchObjectException, MetaException, TException;
+    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name, List<String> part_names,
+        boolean getColStats, String engine, String validWriteIdList, Long tableId)
+        throws NoSuchObjectException, MetaException, TException;
 
     /**
      * Get partitions by a list of partition names.
