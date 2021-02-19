@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import static java.util.Comparator.nullsLast;
+import static java.util.Comparator.comparing;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,12 +30,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
@@ -50,6 +57,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.Impl implements LowLevelCachePolicy {
   private final double lambda;
+  private final double cutoff;
   private double f(long x) {
     return Math.pow(0.5, lambda * x);
   }
@@ -91,6 +99,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     super(conf);
     this.maxQueueSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE);
     this.lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
+    this.cutoff = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE);
 
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
     if (lambda == 0) {
@@ -825,6 +834,59 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
         .append(" for data, ")
         .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.BPWRAPMETA]))
         .append(" for metadata.");
+  }
+
+  @Override public List<LlapCacheableBuffer> getHotBuffers() {
+    List<LlapCacheableBuffer> buffers = Lists.newLinkedList();
+    long allocatedBytesCounter = 0;
+    long[] usageStats = metrics.getUsageStats();
+    long limit = Math.round((usageStats[PolicyMetrics.DATAONHEAP] + usageStats[PolicyMetrics.DATAONLIST]) * cutoff);
+
+    LlapCacheableBuffer[] copy;
+    try {
+      heapLock.lock();
+      copy = Arrays.copyOf(heap, heap.length);
+    } finally {
+      heapLock.unlock();
+    }
+
+    long t = timer.get();
+    Arrays.sort(copy,
+        nullsLast(comparing(b -> b.lastUpdate == t ? b.priority : expirePriority(t, b.lastUpdate, b.priority))));
+    for (int i = copy.length - 1; i >= 0; i--) {
+      if (copy[i] != null && !(copy[i] instanceof MetadataCache.LlapMetadataBuffer)) {
+        long memoryUsage = copy[i].getMemoryUsage();
+        if (allocatedBytesCounter + memoryUsage <= limit) {
+          buffers.add(copy[i]);
+          allocatedBytesCounter += memoryUsage;
+        } else {
+          return buffers;
+        }
+      }
+    }
+
+    try {
+      listLock.lock();
+      LlapCacheableBuffer scan = listHead;
+      while (null != scan) {
+        if (scan instanceof MetadataCache.LlapMetadataBuffer) {
+          scan = scan.next;
+        } else {
+          long memoryUsage = scan.getMemoryUsage();
+          if (allocatedBytesCounter + memoryUsage <= limit) {
+            buffers.add(scan);
+            allocatedBytesCounter += memoryUsage;
+            scan = scan.next;
+          } else {
+            return buffers;
+          }
+        }
+      }
+    } finally {
+      listLock.unlock();
+    }
+
+    return buffers;
   }
 
   /**

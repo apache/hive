@@ -4571,6 +4571,9 @@ public class HiveConf extends Configuration {
         "The meaning of this parameter is the inverse of the number of time ticks (cache\n" +
         " operations, currently) that cause the combined recency-frequency of a block in cache\n" +
         " to be halved."),
+    LLAP_LRFU_HOTBUFFERS_PERCENTAGE("hive.llap.io.lrfu.hotbuffers.percentage", 0.10f,
+        new RangeValidator(0.0f, 1.0f), "The number specifies the percentage of the cached buffers "
+        + "which are considered the most important ones based on the policy."),
     LLAP_LRFU_BP_WRAPPER_SIZE("hive.llap.io.lrfu.bp.wrapper.size", 64, "thread local queue "
         + "used to amortize the lock contention, the idea hear is to try locking as soon we reach max size / 2 "
         + "and block when max queue size reached"),
