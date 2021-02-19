@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
+import org.apache.hadoop.hive.ql.parse.WarehouseInstance.Tuple;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
@@ -67,6 +69,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -1667,6 +1670,33 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
+  public void testHdfsNSLazyCopyBootStrapExtTbls() throws Throwable {
+    List<String> clause = getHdfsNameserviceClause();
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+    Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
+            .run("create external table  ext_table2 (key int, value int) partitioned by (load_time timestamp)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("show partitions ext_table2")
+            .verifyResults(new String[] {
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124"})
+            .dump(primaryDbName, clause);
+
+    assertExternalFileInfo(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, false, primary);
+    //SecurityException expected from DirCopyTask
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (SecurityException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
   public void testHdfsNameserviceLazyCopyIncr() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     primary.run("use " + primaryDbName)
@@ -1706,6 +1736,49 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
+  public void testHdfsNSLazyCopyIncrExtTbls() throws Throwable {
+    List<String> clause = getHdfsNameserviceClause();
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_time timestamp) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
+            .run("create external table  ext_table2 (key int, value int) partitioned by (load_time timestamp)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("show partitions ext_table2")
+            .verifyResults(new String[] {
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124"})
+            .dump(primaryDbName, clause);
+
+    assertExternalFileInfo(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, true, primary);
+    //SecurityException expected from DirCopyTask
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (SecurityException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
   public void testHdfsNameserviceWithDataCopy() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     //NS replacement parameters has no effect when data is also copied to staging
@@ -1730,9 +1803,32 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1"})
+            .verifyResults(new String[]{"acid_table", "table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2", "3"});
+            .verifyResults(new String[]{"1", "2", "3"});
+
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+    primary.run("use " + primaryDbName)
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
+            .run("create external table  ext_table2 (key int, value int) partitioned by (load_time timestamp)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("show partitions ext_table2")
+            .verifyResults(new String[]{
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124"})
+            .dump(primaryDbName, clause);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"acid_table", "table1", "ext_table1", "ext_table2"})
+            .run("select * from ext_table1")
+            .verifyResults(new String[]{"3", "4"})
+            .run("select value from ext_table2")
+            .verifyResults(new String[]{"2", "3"});
   }
 
   @Test
@@ -2119,5 +2215,22 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"
             + NS_REMOTE + "'");
     return withClause;
+  }
+
+  /*
+   * Method used from TestReplicationScenariosExclusiveReplica
+   */
+  private void assertExternalFileInfo(List<String> expected, String dumplocation, boolean isIncremental,
+      WarehouseInstance warehouseInstance)
+      throws IOException {
+    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path metadataPath = new Path(hivePath, EximUtil.METADATA_PATH_NAME);
+    Path externalTableInfoFile;
+    if (isIncremental) {
+      externalTableInfoFile = new Path(hivePath, FILE_NAME);
+    } else {
+      externalTableInfoFile = new Path(metadataPath, primaryDbName.toLowerCase() + File.separator + FILE_NAME);
+    }
+    ReplicationTestUtils.assertExternalFileInfo(warehouseInstance, expected, externalTableInfoFile);
   }
 }
