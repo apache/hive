@@ -83,7 +83,9 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
                 "delta_0000003_0000003_0000"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
 
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    if (isTez(conf)) {
+      conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    }
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
@@ -103,13 +105,15 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Clean up
     testDataProvider.dropTable(tableName);
 
-    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-    while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-      event = reader.readEvent();
+    if (isTez(conf)) {
+      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+      while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+        event = reader.readEvent();
+      }
+      Assert.assertNotNull(event);
+      Assert.assertEquals(event.getQueue(), CUSTOM_COMPACTION_QUEUE);
     }
-    Assert.assertNotNull(event);
-    Assert.assertEquals(event.getQueue(), CUSTOM_COMPACTION_QUEUE);
   }
 
   @Test public void testMmMinorCompactionNotPartitionedWithBuckets() throws Exception {
@@ -631,5 +635,10 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
    */
   private static void rollbackAllTxns(boolean val, IDriver driver) {
     driver.getConf().setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, val);
+  }
+
+  private boolean isTez(HiveConf conf){
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase(
+        ExecutionMode.TEZ.name());
   }
 }
