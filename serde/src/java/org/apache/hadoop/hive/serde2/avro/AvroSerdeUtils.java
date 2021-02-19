@@ -279,13 +279,14 @@ public class AvroSerdeUtils {
   }
 
   public static Schema getSchemaFor(String str) {
-    Schema.Parser parser = new Schema.Parser();
+    // HIVE-24797: Disable validate default values when parsing Avro schemas.
+    Schema.Parser parser = new Schema.Parser().setValidateDefaults(false);
     Schema schema = parser.parse(str);
     return schema;
   }
 
   public static Schema getSchemaFor(File file) {
-    Schema.Parser parser = new Schema.Parser();
+    Schema.Parser parser = new Schema.Parser().setValidateDefaults(false);
     Schema schema;
     try {
       schema = parser.parse(file);
@@ -296,7 +297,7 @@ public class AvroSerdeUtils {
   }
 
   public static Schema getSchemaFor(InputStream stream) {
-    Schema.Parser parser = new Schema.Parser();
+    Schema.Parser parser = new Schema.Parser().setValidateDefaults(false);
     Schema schema;
     try {
       schema = parser.parse(stream);
