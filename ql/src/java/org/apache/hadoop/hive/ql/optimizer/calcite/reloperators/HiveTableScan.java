@@ -137,6 +137,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         newRowtype, this.useQBIdInDigest, this.insideView);
   }
 
+  // We need to include isInsideView inside digest to differentiate direct
+  // tables and tables inside view. Otherwise, Calcite will treat them as the same.
+  // Also include partition list key to trigger cost evaluation even if an
+  // expression was already generated.
   @Override public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
@@ -146,7 +150,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(),
         this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("table:alias", tblAlias,!this.useQBIdInDigest);
+      .itemIf("table:alias", tblAlias, !this.useQBIdInDigest);
   }
 
   @Override
@@ -265,20 +269,4 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public boolean isInsideView() {
     return insideView;
   }
-
-  // We need to include isInsideView inside digest to differentiate direct
-  // tables and tables inside view. Otherwise, Calcite will treat them as the same.
-  // Also include partition list key to trigger cost evaluation even if an
-  // expression was already generated.
-  public String computeDigest() {
-    String digest = super.toString() +
-        "[" + this.neededColIndxsFrmReloptHT + "]" +
-        "[" + this.isInsideView() + "]";
-    String partitionListKey = ((RelOptHiveTable) table).getPartitionListKey();
-    if (partitionListKey != null) {
-      return digest + "[" + partitionListKey + "]";
-    }
-    return digest;
-  }
-
 }

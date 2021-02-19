@@ -65,7 +65,6 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.ChildExpsRexShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -551,13 +550,15 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     final RelNode input = aggregate.getInput();
 
+    if (!(input instanceof Project)) {
+      return aggregate;
+    }
 
     final RelDataType rowType = input.getRowType();
     RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<RexNode> newProjects = new ArrayList<>();
 
-    final List<RexNode> inputExprs = new ArrayList<>();
-    input.accept(new ChildExpsRexShuttle(inputExprs));
+    final List<RexNode> inputExprs = ((Project) input).getProjects();
     if (inputExprs == null || inputExprs.isEmpty()) {
       return aggregate;
     }

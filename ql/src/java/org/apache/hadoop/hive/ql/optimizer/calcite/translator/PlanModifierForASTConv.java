@@ -45,7 +45,6 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.ChildExpsRexShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -402,9 +401,11 @@ public class PlanModifierForASTConv {
   }
 
   private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
+    if (!(parent instanceof Project)) {
+      return;
+    }
     // If this function is called, the parent should only include constant
-    List<RexNode> exps = new ArrayList<>();
-    parent.accept(new ChildExpsRexShuttle(exps));
+    List<RexNode> exps = ((Project) parent).getProjects();
     for (RexNode rexNode : exps) {
       if (!rexNode.accept(new HiveCalciteUtil.ConstantFinder())) {
         throw new RuntimeException("We expect " + parent.toString()
