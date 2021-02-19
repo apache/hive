@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -148,13 +149,13 @@ public class TestReplDumpTask {
     };
 
     task.initialize(queryState, null, null, null);
-    ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
-      null, "", "");
+    ReplDumpWork replDumpWork = new ReplDumpWork(replScope, "", "");
     replDumpWork.setMetricCollector(metricCollector);
     task.setWork(replDumpWork);
 
     try {
-      task.bootStrapDump(new Path("mock"), null, mock(Path.class), hive);
+      task.bootStrapDump(new Path("mock"), new DumpMetaData(new Path("mock"), conf),
+        mock(Path.class), hive);
     } finally {
       verifyStatic();
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));

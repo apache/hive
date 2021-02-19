@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -45,9 +47,13 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Tests Table level replication scenarios.
@@ -155,7 +161,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     if (lastReplId == null) {
       replica.run("drop database if exists " + replicatedDbName + " cascade");
     }
-    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, dumpWithClause);
 
     if (bootstrappedTables != null) {
       verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
@@ -214,7 +220,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       replica.run("drop database if exists " + replicatedDbName + " cascade");
     }
 
-    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, dumpWithClause);
 
     DumpMetaData dumpMetaData = new DumpMetaData(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR), conf);
     Assert.assertEquals(oldReplPolicy != null && !replPolicy.equals(oldReplPolicy),
@@ -346,7 +352,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only 2 tables are replicated to target.
     String replPolicy = primaryDbName + ".'t1|t5'";
     String[] replicatedTables = new String[] {"t1", "t5"};
-    replicateAndVerify(replPolicy, tupleBootstrap.lastReplicationId, null, null, replicatedTables);
+    replicateAndVerify(replPolicy, primaryDbName, tupleBootstrap.lastReplicationId, null,
+      null, null, replicatedTables);
   }
 
   @Test
@@ -361,7 +368,14 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only 3 tables are replicated to target.
     String replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3'";
     String[] replicatedTables = new String[] {"t1", "t111", "t2"};
-    replicateAndVerify(replPolicy, tupleBootstrap.lastReplicationId, null, null, replicatedTables);
+    replicateAndVerify(replPolicy, primaryDbName, tupleBootstrap.lastReplicationId, null,
+      null, null, replicatedTables);
+
+    //remove table expression. fallback to db level.
+    replicatedTables = new String[] {"t1", "t111", "t2", "t11", "t3"};
+    String[] bootstrappedTables = new String[] {"t11", "t3"};
+    replicateAndVerify(primaryDbName, replPolicy, tupleBootstrap.lastReplicationId, null,
+      null, bootstrappedTables, replicatedTables);
   }
 
   @Test
@@ -393,36 +407,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       Assert.assertTrue(failed);
     }
 
-    // Test incremental replication with invalid replication policies in REPLACE clause.
-    String replPolicy = primaryDbName;
-    WarehouseInstance.Tuple tupleBootstrap = primary.run("use " + primaryDbName)
+    primary.run("use " + primaryDbName)
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
-    String lastReplId = tupleBootstrap.lastReplicationId;
-    for (String oldReplPolicy : invalidReplPolicies) {
-      failed = false;
-      try {
-        replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, null, null, null, replicatedTables);
-      } catch (Exception ex) {
-        LOG.info("Got exception: {}", ex.getMessage());
-        Assert.assertTrue(ex instanceof ParseException);
-        failed = true;
-      }
-      Assert.assertTrue(failed);
-    }
-
-    // Replace with replication policy having different DB name.
-    String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + "_dupe.'t1+'.'t1'";
-    failed = false;
-    try {
-      replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, null, null, null, replicatedTables);
-    } catch (Exception ex) {
-      LOG.info("Got exception: {}", ex.getMessage());
-      Assert.assertTrue(ex instanceof SemanticException);
-      failed = true;
-    }
-    Assert.assertTrue(failed);
 
     // Invalid pattern, include/exclude table list is empty.
     invalidReplPolicies = new String[] {
@@ -707,7 +694,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-            .dump(replPolicy, oldReplPolicy, dumpWithClause);
+            .dump(replPolicy, dumpWithClause);
     loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
@@ -741,7 +728,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only 2 tables are replicated to target.
     String[] replicatedTables = new String[] {"in1", "in2"};
     String[] bootstrapTables = new String[] {};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
     // Rename tables to make them satisfy the filter.
@@ -752,7 +739,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
     bootstrapTables = new String[] {"in3", "in4", "in5"};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
     primary.run("use " + primaryDbName)
@@ -764,7 +751,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     replicatedTables = new String[] {"in1", "in2", "in8", "in11"};
     bootstrapTables = new String[] {"in11"};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
     primary.run("use " + primaryDbName)
@@ -779,7 +766,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     replicatedTables = new String[] {"in200", "in12", "in11", "in14"};
     bootstrapTables = new String[] {"in14", "in200"};
-    replicateAndVerify(replPolicy, null, lastReplId, null,
+    replicateAndVerify(replPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables);
   }
 
@@ -835,7 +822,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only 1 tables are replicated to target. Acid tables are not dumped.
     String[] replicatedTables = new String[] {"in1"};
     String[] bootstrapTables = new String[] {};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
+    lastReplId = replicateAndVerify(replPolicy, replPolicy, lastReplId, dumpWithClause,
             null, bootstrapTables, replicatedTables);
 
     // Rename tables to make them satisfy the filter and enable acid tables.
@@ -848,7 +835,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'");
     replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
     bootstrapTables = new String[] {"in2", "in3", "in4", "in5"};
-    replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
+    replicateAndVerify(replPolicy, replPolicy, lastReplId, dumpWithClause,
             null, bootstrapTables, replicatedTables);
   }
 
@@ -1092,4 +1079,302 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     replicateAndVerify(replPolicy, newReplPolicy, lastReplId, dumpWithClause,
             loadWithClause, bootstrapTables, replicatedTables);
   }
+
+  @Test
+  public void testCheckPointingDataDumpFailureSamePolicyExpression() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+      "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+      "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
+      "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+      "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+        + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    String replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3'";
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+      .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+      .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+      .run("insert into t1 values (1)")
+      .run("insert into t1 values (2)")
+      .run("insert into t1 values (3)")
+      .run("insert into t2 values (11)")
+      .run("insert into t2 values (21)")
+      .dump(replPolicy);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
+    long modifiedTimeMetadata = fs.getFileStatus(metadataPath).getModificationTime();
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbDataPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet1Path = new Path(dbDataPath, "t1");
+    Path tablet2Path = new Path(dbDataPath, "t2");
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    //Delete t2 data
+    fs.delete(statuses[0].getPath(), true);
+    long modifiedTimeTable1 = fs.getFileStatus(tablet1Path).getModificationTime();
+    long modifiedTimeTable1CopyFile = fs.listStatus(tablet1Path)[0].getModificationTime();
+    long modifiedTimeTable2 = fs.getFileStatus(tablet2Path).getModificationTime();
+    //Do another dump. It should only dump table t2. Modification time of table t1 should be same while t2 is greater
+    WarehouseInstance.Tuple nextDump = primary.dump(replPolicy, dumpClause);
+    assertEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertEquals(modifiedTimeTable1, fs.getFileStatus(tablet1Path).getModificationTime());
+    assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
+    assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+    assertTrue(modifiedTimeMetadata < fs.getFileStatus(metadataPath).getModificationTime());
+  }
+
+  @Test
+  public void testCheckPointingDataDumpFailureDiffPolicyExpression() throws Throwable {
+    //To force distcp copy
+    List<String> dumpClause = Arrays.asList(
+      "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+      "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
+      "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+      "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+        + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    String replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3'";
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+      .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+      .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+      .run("insert into t1 values (1)")
+      .run("insert into t1 values (2)")
+      .run("insert into t1 values (3)")
+      .run("insert into t2 values (11)")
+      .run("insert into t2 values (21)")
+      .dump(replPolicy);
+
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    Path metadataPath = new Path(dumpPath, EximUtil.METADATA_PATH_NAME);
+    Path dataPath = new Path(dumpPath, EximUtil.DATA_PATH_NAME);
+    Path dbDataPath = new Path(dataPath, primaryDbName.toLowerCase());
+    Path tablet2Path = new Path(dbDataPath, "t2");
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    //Delete dump ack and t2 data, metadata should be rewritten, data should be same for t1 but rewritten for t2
+    fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
+    assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    FileStatus[] statuses = fs.listStatus(tablet2Path);
+    //Delete t2 data
+    fs.delete(statuses[0].getPath(), true);
+    //Do another dump with expression modified. It should redo the dump
+    replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3|t12'";
+    WarehouseInstance.Tuple nextDump = primary.dump(replPolicy, dumpClause);
+    assertNotEquals(nextDump.dumpLocation, bootstrapDump.dumpLocation);
+    dumpPath = new Path(nextDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+  }
+
+  @Test
+  public void testIncrementalDumpCheckpointingSameExpression() throws Throwable {
+    String replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3'";
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+      .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+      .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+      .dump(replPolicy);
+
+    replica.load(replicatedDbName, replPolicy)
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[] {})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[] {});
+
+
+    //Case 1: When the last dump finished all the events and
+    //only  _finished_dump file at the hiveDumpRoot was about to be written when it failed.
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+      .run("insert into t1 values (1)")
+      .run("insert into t2 values (2)")
+      .dump(replPolicy);
+
+    Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+
+    fs.delete(ackFile, false);
+
+    long firstIncEventID = Long.parseLong(bootstrapDump.lastReplicationId) + 1;
+    long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
+    assertTrue(lastIncEventID > (firstIncEventID + 1));
+    Map<Path, Long> pathModTimeMap = new HashMap<>();
+    for (long eventId=firstIncEventID; eventId<=lastIncEventID; eventId++) {
+      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
+      if (fs.exists(eventRoot)) {
+        for (FileStatus fileStatus: fs.listStatus(eventRoot)) {
+          pathModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
+        }
+      }
+    }
+
+    ReplDumpWork.testDeletePreviousDumpMetaPath(false);
+    WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
+      .dump(replPolicy);
+    assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
+    assertTrue(fs.exists(ackFile));
+    //check events were not rewritten.
+    for(Map.Entry<Path, Long> entry :pathModTimeMap.entrySet()) {
+      assertEquals((long)entry.getValue(),
+        fs.getFileStatus(new Path(hiveDumpDir, entry.getKey())).getModificationTime());
+    }
+
+    replica.load(replicatedDbName, replPolicy)
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[] {"1"})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[] {"2"});
+
+
+    //Case 2: When the last dump was half way through
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    WarehouseInstance.Tuple incrementalDump3 = primary.run("use " + primaryDbName)
+      .run("insert into t1 values (3)")
+      .run("insert into t2 values (4)")
+      .dump(replPolicy);
+
+    hiveDumpDir = new Path(incrementalDump3.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+
+    fs.delete(ackFile, false);
+    //delete last three events and test if it recovers.
+    long lastEventID = Long.parseLong(incrementalDump3.lastReplicationId);
+    Path lastEvtRoot = new Path(hiveDumpDir + File.separator + String.valueOf(lastEventID));
+    Path secondLastEvtRoot = new Path(hiveDumpDir + File.separator + String.valueOf(lastEventID - 1));
+    Path thirdLastEvtRoot = new Path(hiveDumpDir + File.separator + String.valueOf(lastEventID - 2));
+    assertTrue(fs.exists(lastEvtRoot));
+    assertTrue(fs.exists(secondLastEvtRoot));
+    assertTrue(fs.exists(thirdLastEvtRoot));
+
+    pathModTimeMap = new HashMap<>();
+    for (long idx = Long.parseLong(incrementalDump2.lastReplicationId)+1; idx < (lastEventID - 2); idx++) {
+      Path eventRoot  = new Path(hiveDumpDir, String.valueOf(idx));
+      if (fs.exists(eventRoot)) {
+        for (FileStatus fileStatus: fs.listStatus(eventRoot)) {
+          pathModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
+        }
+      }
+    }
+    long lastEvtModTimeOld = fs.getFileStatus(lastEvtRoot).getModificationTime();
+    long secondLastEvtModTimeOld = fs.getFileStatus(secondLastEvtRoot).getModificationTime();
+    long thirdLastEvtModTimeOld = fs.getFileStatus(thirdLastEvtRoot).getModificationTime();
+
+    fs.delete(lastEvtRoot, true);
+    fs.delete(secondLastEvtRoot, true);
+    fs.delete(thirdLastEvtRoot, true);
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(String.valueOf(lastEventID - 3), ackLastEventID,
+      primary.hiveConf);
+    ReplDumpWork.testDeletePreviousDumpMetaPath(false);
+
+    WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName)
+      .dump(replPolicy);
+
+    assertEquals(incrementalDump3.dumpLocation, incrementalDump4.dumpLocation);
+
+    assertTrue(fs.getFileStatus(lastEvtRoot).getModificationTime() > lastEvtModTimeOld);
+    assertTrue(fs.getFileStatus(secondLastEvtRoot).getModificationTime() > secondLastEvtModTimeOld);
+    assertTrue(fs.getFileStatus(thirdLastEvtRoot).getModificationTime() > thirdLastEvtModTimeOld);
+
+    //Check other event dump files have not been modified.
+    for (Map.Entry<Path, Long> entry:pathModTimeMap.entrySet()) {
+      assertEquals((long)entry.getValue(), fs.getFileStatus(entry.getKey()).getModificationTime());
+    }
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[] {"1", "3"})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[] {"2", "4"});
+  }
+
+  @Test
+  public void testIncrementalDumpCheckpointingDiffExpression() throws Throwable {
+    String replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3'";
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+      .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+      .run("CREATE TABLE t2(a string) STORED AS TEXTFILE")
+      .dump(replPolicy);
+
+    replica.load(replicatedDbName, replPolicy)
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[] {})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[] {});
+
+    //When the last dump was half way through and expression modified
+    ReplDumpWork.testDeletePreviousDumpMetaPath(true);
+
+    WarehouseInstance.Tuple incrementalDump3 = primary.run("use " + primaryDbName)
+      .run("insert into t1 values (3)")
+      .run("insert into t2 values (4)")
+      .dump(replPolicy);
+
+    Path hiveDumpDir = new Path(incrementalDump3.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
+    Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
+    assertTrue(fs.exists(ackFile));
+    assertTrue(fs.exists(ackLastEventID));
+
+    fs.delete(ackFile, false);
+    //delete last three events and test if it recovers.
+    long lastEventID = Long.parseLong(incrementalDump3.lastReplicationId);
+    Path lastEvtRoot = new Path(hiveDumpDir + File.separator + String.valueOf(lastEventID));
+    Path secondLastEvtRoot = new Path(hiveDumpDir + File.separator + String.valueOf(lastEventID - 1));
+    Path thirdLastEvtRoot = new Path(hiveDumpDir + File.separator + String.valueOf(lastEventID - 2));
+    assertTrue(fs.exists(lastEvtRoot));
+    assertTrue(fs.exists(secondLastEvtRoot));
+    assertTrue(fs.exists(thirdLastEvtRoot));
+
+    Map<Path, Long> pathModTimeMap = new HashMap<>();
+    for (long idx = Long.parseLong(bootstrapDump.lastReplicationId)+1; idx < (lastEventID - 2); idx++) {
+      Path eventRoot  = new Path(hiveDumpDir, String.valueOf(idx));
+      if (fs.exists(eventRoot)) {
+        for (FileStatus fileStatus: fs.listStatus(eventRoot)) {
+          pathModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
+        }
+      }
+    }
+
+    fs.delete(lastEvtRoot, true);
+    fs.delete(secondLastEvtRoot, true);
+    fs.delete(thirdLastEvtRoot, true);
+    org.apache.hadoop.hive.ql.parse.repl.dump.Utils.writeOutput(String.valueOf(lastEventID - 3), ackLastEventID,
+      primary.hiveConf);
+    ReplDumpWork.testDeletePreviousDumpMetaPath(false);
+
+    replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3|t13'";
+    WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName)
+      .dump(replPolicy);
+
+    assertNotEquals(incrementalDump3.dumpLocation, incrementalDump4.dumpLocation);
+
+    replica.load(replicatedDbName, replPolicy)
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[] {"3"})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[] {"4"});
+  }
+
+
 }

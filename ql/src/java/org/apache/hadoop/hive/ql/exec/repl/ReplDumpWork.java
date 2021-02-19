@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -47,7 +46,7 @@ public class ReplDumpWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
-  final ReplScope oldReplScope;
+  ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   Long eventFrom;
   Long eventTo;
@@ -88,11 +87,10 @@ public class ReplDumpWork implements Serializable {
     testDeletePreviousDumpMetaPath = failDeleteDumpMeta;
   }
 
-  public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
+  public ReplDumpWork(ReplScope replScope,
                       String astRepresentationForErrorMsg,
                       String resultTempPath) {
     this.replScope = replScope;
-    this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
     this.resultTempPath = resultTempPath;
@@ -100,6 +98,10 @@ public class ReplDumpWork implements Serializable {
 
   void setEventFrom(long eventId) {
     eventFrom = eventId;
+  }
+
+  void setOldReplScope(ReplScope replScope) {
+    oldReplScope = replScope;
   }
 
   int maxEventLimit() throws Exception {
