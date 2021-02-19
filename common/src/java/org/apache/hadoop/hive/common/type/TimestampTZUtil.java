@@ -48,7 +48,7 @@ public class TimestampTZUtil {
   static {
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
     // Date part
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
     // Time part
     builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
         optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
@@ -124,12 +124,15 @@ public class TimestampTZUtil {
 
   // Converts Date to TimestampTZ.
   public static TimestampTZ convert(Date date, ZoneId defaultTimeZone) {
-    return parse(date.toString(), defaultTimeZone);
+    return new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(date.toEpochMilli()), ZoneOffset.UTC)
+        .withZoneSameLocal(defaultTimeZone));
   }
 
   // Converts Timestamp to TimestampTZ.
   public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
-    return parse(ts.toString(), defaultTimeZone);
+    return new TimestampTZ(
+        ZonedDateTime.ofInstant(Instant.ofEpochSecond(ts.toEpochSecond(), ts.getNanos()), ZoneOffset.UTC)
+            .withZoneSameLocal(defaultTimeZone));
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {
