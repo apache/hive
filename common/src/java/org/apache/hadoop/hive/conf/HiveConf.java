@@ -554,6 +554,8 @@ public class HiveConf extends Configuration {
     REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
             "Indicates maximium number of latest previously used dump-directories which would be retained when " +
              "hive.repl.retain.prev.dump.dir is set to true"),
+    REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET("hive.repl.retain.custom.db.locations.on.target", true,
+            "Indicates if source database has custom warehouse locations, whether that should be retained on target as well"),
     REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
             "Indicates whether replication of materialized views is enabled."),
     REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
