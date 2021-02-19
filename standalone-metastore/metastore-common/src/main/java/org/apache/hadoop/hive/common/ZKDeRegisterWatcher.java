@@ -42,7 +42,7 @@ public class ZKDeRegisterWatcher implements Watcher {
       zooKeeperHiveHelper.deregisterZnode();
     } else {
       if (Event.KeeperState.SyncConnected == event.getState() && Event.EventType.None == event.getType()) {
-        needToSetAgain = true; // connection reestablishment
+        needToSetAgain = true; // connection reestablishment case
       } else if (needToSetAgain &&
           zNodePath != null &&
           Event.KeeperState.SyncConnected == event.getState() &&
