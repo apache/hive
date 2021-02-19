@@ -42,7 +42,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -327,6 +326,128 @@ public class TestLowLevelLrfuCachePolicy {
   @Test
   public void testProactiveEvictionLRUWithInstantDealloc() throws Exception {
     testProactiveEviction(1.0f, true);
+  }
+
+  @Test
+  public void testHotBuffers() {
+    int heapSize = 10;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.1f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first two are the hottest
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(2, hotBuffers.size());
+  }
+
+  @Test
+  public void testHotBuffersHeapAndList() {
+    int heapSize = 3;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
+  public void testHotBuffersOnHalfFullHeap() {
+    int heapSize = 39;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
+  public void testHotBuffersCutoff() {
+    int heapSize = 3;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+
+    buffs[5].allocSize = 40;
+    // Access the big one
+    lrfu.notifyUnlock(buffs[5]);
+
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The big one
+    assertEquals(hotBuffers.get(0), buffs[5]);
+    assertEquals(1, hotBuffers.size());
   }
 
   private void testProactiveEviction(float lambda, boolean isInstantDealloc) throws Exception {
