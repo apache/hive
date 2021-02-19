@@ -160,6 +160,10 @@ public class HiveRelFactories {
         final RelOptCluster cluster = left.getCluster();
         return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);
       }
+      if (joinType == JoinRelType.ANTI) {
+        final RelOptCluster cluster = left.getCluster();
+        return HiveAntiJoin.getAntiJoin(cluster, left.getTraitSet(), left, right, condition);
+      }
       return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
   }
