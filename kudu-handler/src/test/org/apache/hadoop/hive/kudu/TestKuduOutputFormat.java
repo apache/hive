@@ -29,6 +29,7 @@ import org.apache.kudu.client.KuduTable;
 import org.apache.kudu.client.PartialRow;
 import org.apache.kudu.client.RowResult;
 import org.apache.kudu.test.KuduTestHarness;
+import org.apache.kudu.util.DateUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,8 +102,10 @@ public class TestKuduOutputFormat {
       row.addFloat("float", 1.1f);
       row.addDouble("double", 1.1d);
       row.addString("string", "one");
+      row.addVarchar("varchar", "one");
       row.addBinary("binary", "one".getBytes(UTF_8));
       row.addTimestamp("timestamp", new Timestamp(NOW_MS));
+      row.addDate("date", new Date(NOW_MS));
       row.addDecimal("decimal", new BigDecimal("1.111"));
       row.setNull("null");
       // Not setting the "default" column.
@@ -131,11 +135,13 @@ public class TestKuduOutputFormat {
     assertEquals(1.1f, result.getFloat(5), 0);
     assertEquals(1.1d, result.getDouble(6), 0);
     assertEquals("one", result.getString(7));
-    assertEquals("one", new String(result.getBinaryCopy(8), UTF_8));
-    assertEquals(NOW_MS, result.getTimestamp(9).getTime());
-    assertEquals(new BigDecimal("1.111"), result.getDecimal(10));
-    assertTrue(result.isNull(11));
-    assertEquals(1, result.getInt(12)); // default.
+    assertEquals("one", result.getVarchar(8));
+    assertEquals("one", new String(result.getBinaryCopy(9), UTF_8));
+    assertEquals(NOW_MS, result.getTimestamp(10).getTime());
+    assertEquals(DateUtil.sqlDateToEpochDays(new Date(NOW_MS)),  DateUtil.sqlDateToEpochDays(result.getDate(11)));
+    assertEquals(new BigDecimal("1.111"), result.getDecimal(12));
+    assertTrue(result.isNull(13));
+    assertEquals(1, result.getInt(14)); // default.
   }
 
   @Test

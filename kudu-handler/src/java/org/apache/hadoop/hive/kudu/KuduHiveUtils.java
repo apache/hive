@@ -131,6 +131,8 @@ public final class KuduHiveUtils {
       return TypeInfoFactory.longTypeInfo;
     case UNIXTIME_MICROS:
       return TypeInfoFactory.timestampTypeInfo;
+    case DATE:
+        return TypeInfoFactory.dateTypeInfo;
     case DECIMAL:
       return TypeInfoFactory.getDecimalTypeInfo(attributes.getPrecision(), attributes.getScale());
     case FLOAT:
@@ -139,6 +141,8 @@ public final class KuduHiveUtils {
       return TypeInfoFactory.doubleTypeInfo;
     case STRING:
       return TypeInfoFactory.stringTypeInfo;
+    case VARCHAR:
+       return TypeInfoFactory.getVarcharTypeInfo(attributes.getLength());
     case BINARY:
       return TypeInfoFactory.binaryTypeInfo;
     default:

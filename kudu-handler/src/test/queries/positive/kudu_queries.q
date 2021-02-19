@@ -31,8 +31,8 @@ TBLPROPERTIES ("kudu.table_name" = "default.kudu_all_types");
 DESCRIBE EXTENDED all_types_table;
 
 INSERT INTO TABLE all_types_table VALUES
-(1, 1, 1, 1, true, 1.1, 1.1, "one", 'one', '2001-01-01 01:11:11', 1.111, null, 1),
-(2, 2, 2, 2, false, 2.2, 2.2, "two", 'two', '2001-01-01 01:12:12', 2.222, "not null", 2);
+(1, 1, 1, 1, true, 1.1, 1.1, "one", "one", 'one', '2001-01-01 01:11:11', '2001-01-01', 1.111, null, 1),
+(2, 2, 2, 2, false, 2.2, 2.2, "two", "two", 'two', '2001-01-01 01:12:12', '2001-01-02', 2.222, "not null", 2);
 
 SELECT * FROM all_types_table;
 SELECT count(*) FROM all_types_table;
@@ -92,6 +92,16 @@ SELECT key FROM all_types_table WHERE `string` >= "one";
 SELECT key FROM all_types_table WHERE `string` < "two";
 SELECT key FROM all_types_table WHERE `string` <= "two";
 
+-- Verify comparison predicates on varchar.
+-- Note: varchar is escaped because it's a reserved word.
+EXPLAIN SELECT key FROM all_types_table WHERE `string` = "one";
+SELECT key FROM all_types_table WHERE `varchar` = "one";
+SELECT key FROM all_types_table WHERE `varchar` != "one";
+SELECT key FROM all_types_table WHERE `varchar` > "one";
+SELECT key FROM all_types_table WHERE `varchar` >= "one";
+SELECT key FROM all_types_table WHERE `varchar` < "two";
+SELECT key FROM all_types_table WHERE `varchar` <= "two";
+
 -- Verify comparison predicates on binary.
 -- Note: binary is escaped because it's a reserved word.
 EXPLAIN SELECT key FROM all_types_table WHERE `binary` = cast ('one' as binary);
@@ -111,6 +121,16 @@ SELECT key FROM all_types_table WHERE `timestamp` > '2001-01-01 01:11:11';
 SELECT key FROM all_types_table WHERE `timestamp` >= '2001-01-01 01:11:11';
 SELECT key FROM all_types_table WHERE `timestamp` < '2001-01-01 01:12:12';
 SELECT key FROM all_types_table WHERE `timestamp` <= '2001-01-01 01:12:12';
+
+-- Verify comparison predicates on date.
+-- Note: date is escaped because it's a reserved word.
+EXPLAIN SELECT key FROM all_types_table WHERE `timestamp` = '2001-01-01';
+SELECT key FROM all_types_table WHERE `date` = '2001-01-01';
+SELECT key FROM all_types_table WHERE `date` != '2001-01-01';
+SELECT key FROM all_types_table WHERE `date` > '2001-01-01';
+SELECT key FROM all_types_table WHERE `date` >= '2001-01-01';
+SELECT key FROM all_types_table WHERE `date` < '2001-01-01';
+SELECT key FROM all_types_table WHERE `date` <= '2001-01-01';
 
 -- Verify comparison predicates on float.
 -- Note: float is escaped because it's a reserved word.

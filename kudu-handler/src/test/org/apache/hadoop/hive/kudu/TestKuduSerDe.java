@@ -36,6 +36,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -95,8 +96,10 @@ public class TestKuduSerDe {
     before.addFloat("float", 1.1f);
     before.addDouble("double", 1.1d);
     before.addString("string", "one");
+    before.addVarchar("varchar", "one");
     before.addBinary("binary", "one".getBytes(UTF_8));
     before.addTimestamp("timestamp", new Timestamp(NOW_MS));
+    before.addDate("date", new Date(NOW_MS));
     before.addDecimal("decimal", new BigDecimal("1.111"));
     before.setNull("null");
     before.addInt("default", 1);
@@ -106,7 +109,8 @@ public class TestKuduSerDe {
 
     // Capitalized `key` field to check for field case insensitivity.
     List<String> fieldNames = Arrays.asList("KEY", "int16", "int32", "int64", "bool", "float",
-        "double", "string", "binary", "timestamp", "decimal", "null", "default");
+        "double", "string", "varchar", "binary", "timestamp", "date", "decimal", "null",
+        "default");
     List<ObjectInspector> ois = Arrays.asList(
         PrimitiveObjectInspectorFactory.writableByteObjectInspector,
         PrimitiveObjectInspectorFactory.writableShortObjectInspector,
@@ -116,8 +120,10 @@ public class TestKuduSerDe {
         PrimitiveObjectInspectorFactory.writableFloatObjectInspector,
         PrimitiveObjectInspectorFactory.writableDoubleObjectInspector,
         PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector,
         PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector,
+        PrimitiveObjectInspectorFactory.writableDateObjectInspector,
         PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector,
         PrimitiveObjectInspectorFactory.writableStringObjectInspector,
         PrimitiveObjectInspectorFactory.writableIntObjectInspector

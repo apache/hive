@@ -58,6 +58,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -96,8 +97,10 @@ public class TestKuduPredicateHandler {
     ROW.addFloat("float", 1.1f);
     ROW.addDouble("double", 1.1d);
     ROW.addString("string", "one");
+    ROW.addVarchar("varchar", "one");
     ROW.addBinary("binary", "one".getBytes(UTF_8));
     ROW.addTimestamp("timestamp", new Timestamp(NOW_MS));
+    ROW.addDate("date", new Date(NOW_MS));
     ROW.addDecimal("decimal", new BigDecimal("1.111"));
     ROW.setNull("null");
     // Not setting the "default" column.

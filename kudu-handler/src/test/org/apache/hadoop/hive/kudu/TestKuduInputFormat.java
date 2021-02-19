@@ -49,7 +49,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -92,8 +94,10 @@ public class TestKuduInputFormat {
     ROW.addFloat("float", 1.1f);
     ROW.addDouble("double", 1.1d);
     ROW.addString("string", "one");
+    ROW.addVarchar("varchar", "one");
     ROW.addBinary("binary", "one".getBytes(UTF_8));
     ROW.addTimestamp("timestamp", new Timestamp(NOW_MS));
+    ROW.addDate("date", new Date(NOW_MS));
     ROW.addDecimal("decimal", new BigDecimal("1.111"));
     ROW.setNull("null");
     // Not setting the "default" column.
@@ -268,8 +272,10 @@ public class TestKuduInputFormat {
     row.addFloat("float", 2.2f);
     row.addDouble("double", 2.2d);
     row.addString("string", "two");
+    row.addVarchar("varchar", "two");
     row.addBinary("binary", "two".getBytes(UTF_8));
     row.addTimestamp("timestamp", new Timestamp(NOW_MS + 1));
+    row.addDate("date", new Date(NOW_MS + Duration.ofDays(1).toMillis()));
     row.addDecimal("decimal", new BigDecimal("2.222"));
     row.setNull("null");
     // Not setting the "default" column.
@@ -327,10 +333,12 @@ public class TestKuduInputFormat {
     assertEquals(ROW.getFloat(5), value.getFloat(5), 0);
     assertEquals(ROW.getDouble(6), value.getDouble(6), 0);
     assertEquals(ROW.getString(7), value.getString(7));
-    assertArrayEquals(ROW.getBinaryCopy(8), value.getBinaryCopy(8));
-    assertEquals(ROW.getTimestamp(9), value.getTimestamp(9));
-    assertEquals(ROW.getDecimal(10), value.getDecimal(10));
-    assertTrue(value.isNull(11));
-    assertEquals(1, value.getInt(12)); // default.
+    assertEquals(ROW.getVarchar(8), value.getVarchar(8));
+    assertArrayEquals(ROW.getBinaryCopy(9), value.getBinaryCopy(9));
+    assertEquals(ROW.getTimestamp(10), value.getTimestamp(10));
+    assertEquals(ROW.getDate(11), value.getDate(11));
+    assertEquals(ROW.getDecimal(12), value.getDecimal(12));
+    assertTrue(value.isNull(13));
+    assertEquals(1, value.getInt(14)); // default.
   }
 }

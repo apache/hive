@@ -42,8 +42,13 @@ public final class KuduTestUtils {
         new ColumnSchema.ColumnSchemaBuilder("float", Type.FLOAT).build(),
         new ColumnSchema.ColumnSchemaBuilder("double", Type.DOUBLE).build(),
         new ColumnSchema.ColumnSchemaBuilder("string", Type.STRING).build(),
+        new ColumnSchema.ColumnSchemaBuilder("varchar", Type.VARCHAR)
+            .typeAttributes(new ColumnTypeAttributes.ColumnTypeAttributesBuilder()
+                .length(10).build())
+            .build(),
         new ColumnSchema.ColumnSchemaBuilder("binary", Type.BINARY).build(),
         new ColumnSchema.ColumnSchemaBuilder("timestamp", Type.UNIXTIME_MICROS).build(),
+        new ColumnSchema.ColumnSchemaBuilder("date", Type.DATE).build(),
         new ColumnSchema.ColumnSchemaBuilder("decimal", Type.DECIMAL)
             .typeAttributes(new ColumnTypeAttributes.ColumnTypeAttributesBuilder()
                 .precision(5).scale(3).build())

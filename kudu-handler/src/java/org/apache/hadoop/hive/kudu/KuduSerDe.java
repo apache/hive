@@ -25,15 +25,19 @@ import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -44,9 +48,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -66,6 +72,7 @@ import org.apache.kudu.Schema;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.PartialRow;
+import org.apache.kudu.util.DateUtil;
 
 import static org.apache.hadoop.hive.kudu.KuduHiveUtils.createOverlayedConf;
 import static org.apache.hadoop.hive.kudu.KuduHiveUtils.toHiveType;
@@ -182,6 +189,12 @@ public class KuduSerDe extends AbstractSerDe {
               .getPrimitiveJavaObject(value).toSqlTimestamp();
           row.addTimestamp(i, timestampVal);
           break;
+        case DATE:
+          int epochDay = ((DateObjectInspector) inspector)
+              .getPrimitiveJavaObject(value).toEpochDay();
+          java.sql.Date dateVal = DateUtil.epochDaysToSqlDate(epochDay);
+          row.addDate(i, dateVal);
+          break;
         case DECIMAL:
           HiveDecimal decimalVal = ((HiveDecimalObjectInspector) inspector)
               .getPrimitiveJavaObject(value);
@@ -198,6 +211,11 @@ public class KuduSerDe extends AbstractSerDe {
         case STRING:
           String stringVal = ((StringObjectInspector) inspector).getPrimitiveJavaObject(value);
           row.addString(i, stringVal);
+          break;
+        case VARCHAR:
+          String varcharVal = ((HiveVarcharObjectInspector) inspector)
+              .getPrimitiveJavaObject(value).getValue();
+          row.addVarchar(i, varcharVal);
           break;
         case BINARY:
           byte[] bytesVal = ((BinaryObjectInspector) inspector).getPrimitiveJavaObject(value);
@@ -250,6 +268,11 @@ public class KuduSerDe extends AbstractSerDe {
           Timestamp hiveTs = Timestamp.ofEpochMilli(sqlTs.getTime(), sqlTs.getNanos());
           output.add(new TimestampWritableV2(hiveTs));
           break;
+        case DATE:
+          java.sql.Date sqlDate = (java.sql.Date) javaObj;
+          Date hiveDate = Date.ofEpochDay(DateUtil.sqlDateToEpochDays(sqlDate));
+          output.add(new DateWritableV2(hiveDate));
+          break;
         case DECIMAL:
           HiveDecimal hiveDecimal = HiveDecimal.create((BigDecimal) javaObj);
           output.add(new HiveDecimalWritable(hiveDecimal));
@@ -262,6 +285,10 @@ public class KuduSerDe extends AbstractSerDe {
           break;
         case STRING:
           output.add(new Text((String) javaObj));
+          break;
+        case VARCHAR:
+          HiveVarchar hiveVc = new HiveVarchar((String) javaObj, col.getTypeAttributes().getLength());
+          output.add(new HiveVarcharWritable(hiveVc));
           break;
         case BINARY:
           output.add(new BytesWritable((byte[]) javaObj));
