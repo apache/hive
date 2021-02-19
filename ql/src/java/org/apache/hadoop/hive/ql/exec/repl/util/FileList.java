@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -29,23 +29,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class FileList implements AutoCloseable, Iterator<String> {
   private static final Logger LOG = LoggerFactory.getLogger(FileList.class);
-  private Path backingFile;
+  private final Path backingFile;
   private String nextElement = null;
   private HiveConf conf;
   private BufferedReader backingFileReader;
-  private BufferedWriter backingFileWriter;
+  private volatile FSDataOutputStream backingFileWriter;
 
   public FileList(Path backingFile, HiveConf conf) {
     this.backingFile = backingFile;
@@ -58,14 +56,19 @@ public class FileList implements AutoCloseable, Iterator<String> {
             .withRetryOnException(IOException.class).build();
     try {
       retryable.executeCallable((Callable<Void>) ()-> {
-        synchronized (backingFile ) {
-          if (backingFileWriter == null) {
-            backingFileWriter = initWriter();
+        synchronized (backingFile) {
+          try{
+            if (backingFileWriter == null) {
+              backingFileWriter = initWriter();
+            }
+            backingFileWriter.writeBytes(getEntryWithNewline(entry));
+            backingFileWriter.hflush();
+            LOG.info("Writing entry {} to file list backed by {}", entry, backingFile);
+          } catch (IOException e) {
+            LOG.error("Writing entry {} to file list {} failed, attempting retry.", entry, backingFile);
+            throw e;
           }
-          backingFileWriter.write(entry);
-          backingFileWriter.newLine();
         }
-        LOG.info("Writing entry {} to file list backed by {}", entry, backingFile);
         return null;
       });
     } catch (Exception e) {
@@ -74,13 +77,46 @@ public class FileList implements AutoCloseable, Iterator<String> {
     }
   }
 
-  BufferedWriter initWriter() throws IOException {
-    FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(backingFile)));
+  // Return the entry ensuring it ends with newline.
+  private String getEntryWithNewline(String entry) {
+    return new StringWriter()
+            .append(entry)
+            .append(System.lineSeparator())
+            .toString();
+  }
+
+  FSDataOutputStream initWriter() throws IOException {
+    if(FileSystem.get(backingFile.toUri(), conf).exists(backingFile)) {
+      return getWriterAppendMode(); // open in append mode if file has been created already
+    }
+    else {
+      return getWriterCreateMode();
+    }
+  }
+
+  private FSDataOutputStream getWriterCreateMode() throws IOException {
+    try {
+      return FileSystem.get(backingFile.toUri(), conf).create(backingFile);
+    } catch (IOException e) {
+      LOG.error("Error opening {} in append mode", backingFile, e);
+      throw e;
+    }
+  }
+
+  FSDataOutputStream getWriterAppendMode() throws IOException {
+    try {
+      return FileSystem.get(backingFile.toUri(), conf).append(backingFile);
+    } catch (IOException e) {
+      LOG.error("Error creating file {}", backingFile, e);
+      throw e;
+    }
   }
 
   @Override
   public boolean hasNext() {
+    //We assume that every add operation either adds an entry completely or doesn't add at all.
+    //If this assumption changes then in the following check we should check for incomplete entries and
+    //duplicate entries, not just the null string.
     if (nextElement != null) {
       return true;
     } else {
@@ -88,6 +124,8 @@ public class FileList implements AutoCloseable, Iterator<String> {
         nextElement = readNextLine();
         return (nextElement != null);
       } catch (IOException e) {
+        nextElement = null;
+        backingFileReader = null;
         throw new UncheckedIOException(e);
       }
     }
@@ -104,26 +142,16 @@ public class FileList implements AutoCloseable, Iterator<String> {
   }
 
   private String readNextLine() throws IOException {
-    Retryable retryable = Retryable.builder()
-            .withHiveConf(conf)
-            .withRetryOnException(IOException.class).build();
-    try {
-      return retryable.executeCallable(() -> {
-        String nextElement;
-        if (backingFileReader == null) {
-          FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
-          if(!fs.exists(backingFile)) {
-            return null;
-          }
-          backingFileReader = new BufferedReader(new InputStreamReader(fs.open(backingFile)));
-        }
-        nextElement = backingFileReader.readLine();
-        return nextElement;
-      });
-    } catch (Exception e) {
-      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage(),
-              String.valueOf(ErrorMsg.getErrorMsg(e).getErrorCode())));
+    String nextElement;
+    if (backingFileReader == null) {
+      FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
+      if(!fs.exists(backingFile)) {
+        return null;
+      }
+      backingFileReader = new BufferedReader(new InputStreamReader(fs.open(backingFile)));
     }
+    nextElement = backingFileReader.readLine();
+    return nextElement;
   }
 
   @Override

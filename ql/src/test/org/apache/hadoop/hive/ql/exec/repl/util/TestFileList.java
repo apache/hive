@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -29,17 +30,9 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * Tests the File List implementation.
@@ -50,7 +43,7 @@ import static org.junit.Assert.assertTrue;
 public class TestFileList {
 
   @Mock
-  private BufferedWriter bufferedWriter;
+  private FSDataOutputStream outputStream;
 
   @Test
   public void testConcurrentAdd() throws Exception {
@@ -71,7 +64,7 @@ public class TestFileList {
     executorService.awaitTermination(1, TimeUnit.MINUTES);
     fileList.close();
     ArgumentCaptor<String> entryArgs = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(bufferedWriter, Mockito.times(numOfEntries)).write(entryArgs.capture());
+    Mockito.verify(outputStream, Mockito.times(numOfEntries)).writeBytes(entryArgs.capture());
   }
 
   private FileList setupFileList(boolean lazyDataCopy) throws Exception {
@@ -79,7 +72,7 @@ public class TestFileList {
     Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET)).thenReturn(lazyDataCopy);
     Path backingFile = new Path("/tmp/backingFile");
     FileList fileList = Mockito.spy(new FileList(backingFile, hiveConf));
-    Mockito.doReturn(bufferedWriter).when(fileList).initWriter();
+    Mockito.doReturn(outputStream).when(fileList).initWriter();
     return fileList;
   }
 }
