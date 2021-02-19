@@ -305,7 +305,26 @@ public class ImpalaFunctionSignature {
   public static boolean areCompatibleDataTypes(RelDataType dt1, RelDataType dt2) {
     if (SqlTypeName.CHAR_TYPES.contains(dt1.getSqlTypeName()) &&
         SqlTypeName.CHAR_TYPES.contains(dt2.getSqlTypeName())) {
-      return true;
+      // char types must have the same precision (e.g. char(5) != char(6))
+      if (dt1.getSqlTypeName() == SqlTypeName.CHAR &&
+          dt2.getSqlTypeName() == SqlTypeName.CHAR) {
+        return dt1.getPrecision() == dt2.getPrecision();
+      }
+
+      if (dt1.getSqlTypeName() == SqlTypeName.VARCHAR &&
+          dt2.getSqlTypeName() == SqlTypeName.VARCHAR) {
+        // Impala treaats a string type different from a varchar type. So varchar(5) is compatible
+        // So if varchars have the same precision, they're compatible.
+        // If varchars have different precisions, they are compabible unless it's a string type, and
+        // string types are denoted by a precision of Integer.MAX_VALUE
+        if (dt1.getPrecision() == dt2.getPrecision()) {
+          return true;
+        }
+        if (dt1.getPrecision() != Integer.MAX_VALUE && dt2.getPrecision() != Integer.MAX_VALUE) {
+          return true;
+        }
+      }
+      return false;
     }
 
     if (dt1.getSqlTypeName() == SqlTypeName.NULL || dt2.getSqlTypeName() == SqlTypeName.NULL) {

@@ -3684,6 +3684,7 @@
     {
         "impalaFnName": "casttostring",
         "fnName": "cast",
+        "castUp": "true",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
