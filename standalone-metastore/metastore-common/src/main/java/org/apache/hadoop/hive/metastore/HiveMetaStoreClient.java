@@ -2171,6 +2171,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+      List<String> part_names) throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names,
+    null, null);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names, String validWriteIdList, Long tableId) throws TException {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
   }
@@ -2191,16 +2198,52 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine)
+          throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
           throws TException {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
       validWriteIdList, tableId);
   }
 
-  @Override public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+      List<String> part_names) throws TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names, String validWriteIdList, Long tableId) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
       validWriteIdList, tableId);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine)
+            throws TException {
+    checkDbAndTableFilters(catName, db_name, tbl_name);
+    GetPartitionsByNamesRequest gpbnr =
+            new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
+                    tbl_name);
+    gpbnr.setNames(part_names);
+    gpbnr.setGet_col_stats(getColStats);
+    gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    if (getColStats) {
+      gpbnr.setEngine(engine);
+    }
+    if (processorCapabilities != null)
+      gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      gpbnr.setProcessorIdentifier(processorIdentifier);
+    List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
+    return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
 
   @Override
@@ -2218,7 +2261,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }else {
       gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
     }
-    gpbnr.setId(tableId);
+    if( tableId != null) {
+      gpbnr.setId(tableId);
+    }
     if (getColStats) {
       gpbnr.setEngine(engine);
     }

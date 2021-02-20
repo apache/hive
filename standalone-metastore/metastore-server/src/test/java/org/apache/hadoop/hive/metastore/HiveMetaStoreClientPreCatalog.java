@@ -1447,10 +1447,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-                                              List<String> part_names, String validWriteIdList, Long tableId)
+                                              List<String> part_names)
       throws NoSuchObjectException, MetaException, TException {
-    return getPartitionsByNames(db_name, tbl_name, part_names, false, null,
-      null, null);
+    return getPartitionsByNames(db_name, tbl_name, part_names, false, null);
   }
 
   @Override public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
@@ -1460,13 +1459,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean get_col_stats, String engine, String validWriteIdList, Long tableId)
+          List<String> part_names, boolean get_col_stats, String engine)
           throws NoSuchObjectException, MetaException, TException {
     GetPartitionsByNamesRequest gpbnr = new GetPartitionsByNamesRequest(db_name, tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(get_col_stats);
-    gpbnr.setValidWriteIdList(validWriteIdList);
-    gpbnr.setId(tableId);
     if (get_col_stats) {
       gpbnr.setEngine(engine);
     }
@@ -3412,8 +3409,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                              List<String> part_names, String validWriteIdList, Long tableId)
-                                              throws NoSuchObjectException,
+                                              List<String> part_names) throws NoSuchObjectException,
       MetaException, TException {
     throw new UnsupportedOperationException();
   }
@@ -3425,9 +3421,30 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     throw new UnsupportedOperationException();
   }
 
+  @Override public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override public List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      boolean getColStats, String engine, String validWriteIdList, Long tableId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override public List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
-  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
-    throws NoSuchObjectException, MetaException, TException {
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine)
+          throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 
