@@ -2172,8 +2172,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names,
-    null, null);
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names);
   }
 
   @Override
@@ -2228,22 +2227,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
             throws TException {
-    checkDbAndTableFilters(catName, db_name, tbl_name);
-    GetPartitionsByNamesRequest gpbnr =
-            new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
-                    tbl_name);
-    gpbnr.setNames(part_names);
-    gpbnr.setGet_col_stats(getColStats);
-    gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
-    if (getColStats) {
-      gpbnr.setEngine(engine);
-    }
-    if (processorCapabilities != null)
-      gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      gpbnr.setProcessorIdentifier(processorIdentifier);
-    List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
-    return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats, engine,
+      null, null);
   }
 
   @Override
