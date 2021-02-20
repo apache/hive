@@ -98,6 +98,7 @@ public class ImpalaOperatorTable {
     map.put("TINYINT", SqlStdOperatorTable.CAST);
 
     map.put("IN_ITERATE", InIterateOperator.IN_ITERATE);
+    map.put("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM);
 
     IMPALA_OPERATOR_MAP = Collections.unmodifiableMap(map);
   }

@@ -15394,7 +15394,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15410,7 +15410,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15426,7 +15426,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15442,7 +15442,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15458,7 +15458,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15474,7 +15474,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15490,7 +15490,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15506,7 +15506,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15522,7 +15522,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15538,7 +15538,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15554,7 +15554,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15570,7 +15570,7 @@
     },
     {
         "impalaFnName": "distinctfrom",
-        "fnName": "distinctfrom",
+        "fnName": "is distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15586,7 +15586,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15602,7 +15602,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15618,7 +15618,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15634,7 +15634,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15650,7 +15650,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15666,7 +15666,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15682,7 +15682,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15698,7 +15698,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15714,7 +15714,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15730,7 +15730,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15746,7 +15746,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15762,7 +15762,7 @@
     },
     {
         "impalaFnName": "notdistinct",
-        "fnName": "notdistinct",
+        "fnName": "is not distinct from",
         "userVisible": "false",
         "isAgg": "false",
         "hasVarArgs": "false",
