@@ -122,7 +122,7 @@ public class ReplExternalTables {
   }
 
   private void dirLocationToCopy(String tableName, FileList fileList, Path sourcePath, HiveConf conf)
-          throws HiveException {
+          throws HiveException, IOException {
     Path basePath = getExternalTableBaseDir(conf);
     Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
     //Here, when src and target are HA clusters with same NS, then sourcePath would have the correct host

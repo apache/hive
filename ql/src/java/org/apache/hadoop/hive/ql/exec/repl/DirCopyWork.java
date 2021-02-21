@@ -75,18 +75,18 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
   @Override
   public String convertToString() {
     StringBuilder objInStr = new StringBuilder();
-    objInStr.append(tableName)
+    objInStr.append(fullyQualifiedSourcePath)
             .append(URI_SEPARATOR)
-            .append(fullyQualifiedSourcePath)
+            .append(fullyQualifiedTargetPath)
             .append(URI_SEPARATOR)
-            .append(fullyQualifiedTargetPath);
+            .append(tableName);
     return objInStr.toString();
   }
 
   @Override
   public void loadFromString(String objectInStr) {
     String paths[] = objectInStr.split(URI_SEPARATOR);
-    this.fullyQualifiedSourcePath = new Path(paths[1]);
-    this.fullyQualifiedTargetPath = new Path(paths[2]);
+    this.fullyQualifiedSourcePath = new Path(paths[0]);
+    this.fullyQualifiedTargetPath = new Path(paths[1]);
   }
 }

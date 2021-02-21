@@ -125,7 +125,6 @@ public class TestReplDumpTask {
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
     when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
     when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
-    when(conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE)).thenReturn(10000);
     whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
 
     ReplDumpTask task = new StubReplDumpTask() {

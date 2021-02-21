@@ -524,19 +524,21 @@ public class ReplicationTestUtils {
     return withClause;
   }
 
-  public static void assertExternalFileInfo(WarehouseInstance warehouseInstance,
-                                      List<String> expected, Path externalTableInfoFile) throws IOException {
+  public static void assertExternalFileList(WarehouseInstance warehouseInstance,
+                                            List<String> expected, Path externalTableFileList) throws IOException {
     DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
-    Assert.assertTrue(fileSystem.exists(externalTableInfoFile));
-    InputStream inputStream = fileSystem.open(externalTableInfoFile);
+    Assert.assertTrue(fileSystem.exists(externalTableFileList));
+    InputStream inputStream = fileSystem.open(externalTableFileList);
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     Set<String> tableNames = new HashSet<>();
     for (String line = reader.readLine(); line != null; line = reader.readLine()) {
       String[] components = line.split(DirCopyWork.URI_SEPARATOR);
-      Assert.assertEquals("The file should have tableName#sourcelocation#targetloation",
+      Assert.assertEquals("The file should have sourcelocation#targetlocation#tblName",
               3, components.length);
-      tableNames.add(components[0]);
+      tableNames.add(components[2]);
+      Assert.assertTrue(components[0].length() > 0);
       Assert.assertTrue(components[1].length() > 0);
+      Assert.assertTrue(components[2].length() > 0);
     }
     Assert.assertTrue(tableNames.containsAll(expected));
     reader.close();

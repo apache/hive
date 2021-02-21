@@ -1690,7 +1690,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
-    assertExternalFileInfo(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, false, primary);
+    assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     //SecurityException expected from DirCopyTask
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1772,7 +1772,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
-    assertExternalFileInfo(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, true, primary);
+    assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     //SecurityException expected from DirCopyTask
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -2224,11 +2224,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   /*
    * Method used from TestReplicationScenariosExclusiveReplica
    */
-  private void assertExternalFileInfo(List<String> expected, String dumplocation, boolean isIncremental,
+  private void assertExternalFileList(List<String> expected, String dumplocation,
                                       WarehouseInstance warehouseInstance)
           throws IOException {
     Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path externalTableInfoFile = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
-    ReplicationTestUtils.assertExternalFileInfo(warehouseInstance, expected, externalTableInfoFile);
+    Path externalTblFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
+    ReplicationTestUtils.assertExternalFileList(warehouseInstance, expected, externalTblFileList);
   }
 }

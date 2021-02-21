@@ -265,7 +265,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void initiateDataCopyTasks() throws SemanticException {
+  private void initiateDataCopyTasks() throws SemanticException, IOException {
     TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
     if (childTasks == null) {
       childTasks = new ArrayList<>();
@@ -886,7 +886,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       metadataPath.getFileSystem(conf).delete(metadataPath, true);
     }
     List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
-    int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST);
          FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL)) {
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {

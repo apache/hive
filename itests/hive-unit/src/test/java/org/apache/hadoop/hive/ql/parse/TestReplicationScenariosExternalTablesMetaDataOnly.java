@@ -102,9 +102,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("insert into table t2 partition(country='france') values ('paris')")
         .dump(primaryDbName, dumpWithClause);
 
-    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
-    assertFalse(primary.miniDFSCluster.getFileSystem()
-        .exists(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), EximUtil.FILE_LIST_EXTERNAL)));
+    // the _file_list_external only should be created if external tables are to be replicated not otherwise
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
         .run("repl status " + replicatedDbName)
@@ -122,9 +122,10 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("insert into table t3 values (20)")
         .dump(primaryDbName, dumpWithClause);
 
-    // the _external_tables_file data only should be created if external tables are to be replicated not otherwise
+    // the _file_list_external should be created if external tables are to be replicated not otherwise
     assertFalse(primary.miniDFSCluster.getFileSystem()
-        .exists(new Path(tuple.dumpLocation, EximUtil.FILE_LIST_EXTERNAL)));
+        .exists(new Path(new Path(tuple.dumpLocation,
+                REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
         .run("use " + replicatedDbName)
@@ -147,8 +148,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("insert into table t2 partition(country='france') values ('paris')")
         .dumpWithCommand("repl dump " + primaryDbName);
 
-    // verify that the external table info is not written as metadata only replication
-    assertFalseExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), EximUtil.FILE_LIST_EXTERNAL));
+    // verify that the external table list is not written as metadata only replication
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     List<String> withClauseOptions = ReplicationTestUtils.includeExternalTableClause(true);
 
@@ -176,8 +178,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("create external table t4 as select id from t3")
         .dumpWithCommand("repl dump " + primaryDbName);
 
-    // verify that the external table info is written correctly for incremental
-    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, EximUtil.FILE_LIST_EXTERNAL));
+    // verify that the external table list is written correctly for incremental
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
         .run("use " + replicatedDbName)
@@ -192,8 +195,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("drop table t1")
         .dumpWithCommand("repl dump " + primaryDbName);
 
-    // verify that the external table info is written correctly for incremental
-    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, EximUtil.FILE_LIST_EXTERNAL));
+    // verify that the external table list is written correctly for incremental
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
   }
 
   @Test
@@ -266,7 +270,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("insert into t2 partition(country='india') values ('bangalore')")
         .dumpWithCommand("repl dump " + primaryDbName);
 
-    assertFalseExternalFileInfo(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), EximUtil.FILE_LIST_EXTERNAL));
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
+
 
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
         .run("use " + replicatedDbName)
@@ -289,7 +295,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("insert into t2 partition(country='australia') values ('sydney')")
         .dump(primaryDbName);
 
-    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, EximUtil.FILE_LIST_EXTERNAL));
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
         .run("use " + replicatedDbName)
@@ -371,7 +378,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
         .run("alter table t1 add partition(country='us')")
         .dump(primaryDbName);
 
-    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, EximUtil.FILE_LIST_EXTERNAL));
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     // Add new data externally, to a partition, but under the partition level top directory
     // Also, it is added after dumping the events but data should be seen at target after REPL LOAD.
@@ -405,7 +413,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
 
     // Repl load with zero events but external tables location info should present.
     tuple = primary.dump(primaryDbName);
-    assertFalseExternalFileInfo(new Path(tuple.dumpLocation, EximUtil.FILE_LIST_EXTERNAL));
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
             .run("use " + replicatedDbName)
@@ -454,9 +463,9 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
             .run("insert into table t2 partition(country='france') values ('paris')")
             .dump(primaryDbName, dumpWithClause);
 
-    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
-    assertFalse(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), EximUtil.FILE_LIST_EXTERNAL)));
+    // the file _file_list_external only should be created if external tables are to be replicated not otherwise
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, primaryDbName, loadWithClause)
             .status(replicatedDbName)
@@ -482,12 +491,12 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
             .dump(primaryDbName, dumpWithClause);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external should be created as external tables are to be replicated.
     assertTrue(primary.miniDFSCluster.getFileSystem()
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(Arrays.asList("t2", "t3"),
+    // verify that the external table list is written correctly for incremental
+    assertExternalFileList(Arrays.asList("t2", "t3"),
             new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
 
 
@@ -582,8 +591,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
     }
 
     // Only table t2 should exist in the data location list file.
-    String hiveDumpDir = tupleInc.dumpLocation + File.separator + REPL_HIVE_BASE_DIR;
-    assertFalseExternalFileInfo(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
+    assertFalseExternalFileList(new Path(new Path(tupleInc.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
 
     // The newly inserted data "2" should be missing in table "t1". But, table t2 should exist and have
     // inserted data.
@@ -631,14 +640,14 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
             .verifyResult(inc2Tuple.lastReplicationId);
   }
 
-  private void assertFalseExternalFileInfo(Path externalTableInfoFile)
+  private void assertFalseExternalFileList(Path externalTableFileList)
       throws IOException {
     DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
-    Assert.assertFalse(fileSystem.exists(externalTableInfoFile));
+    Assert.assertFalse(fileSystem.exists(externalTableFileList));
   }
 
-  private void assertExternalFileInfo(List<String> expected, Path externalTableInfoFile)
+  private void assertExternalFileList(List<String> expected, Path externalTableFileList)
           throws IOException {
-    ReplicationTestUtils.assertExternalFileInfo(primary, expected, externalTableInfoFile);
+    ReplicationTestUtils.assertExternalFileList(primary, expected, externalTableFileList);
   }
 }

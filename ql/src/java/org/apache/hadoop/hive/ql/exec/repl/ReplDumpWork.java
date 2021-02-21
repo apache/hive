@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -189,7 +190,7 @@ public class ReplDumpWork implements Serializable {
     this.resultValues = resultValues;
   }
 
-  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) throws SemanticException {
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
       return Collections.emptyList();
     }
@@ -203,7 +204,7 @@ public class ReplDumpWork implements Serializable {
           int numEntriesToSkip = tasks == null ? 0 : tasks.size();
           while (externalTblCopyPathIterator.hasNext() &&  tracker.canAddMoreTasks()) {
             if(numEntriesToSkip > 0) {
-              //skip tasks added in previous attempt
+              //skip tasks added in previous attempts of this retryable block
               externalTblCopyPathIterator.next();
               numEntriesToSkip--;
               continue;
@@ -222,13 +223,12 @@ public class ReplDumpWork implements Serializable {
         return null;
       });
     } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage(),
-              String.valueOf(ErrorMsg.getErrorMsg(e).getErrorCode())));
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
     }
     return tasks;
   }
 
-  public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) throws SemanticException {
+  public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
       return Collections.emptyList();
     }
@@ -242,7 +242,7 @@ public class ReplDumpWork implements Serializable {
           int numEntriesToSkip = tasks == null ? 0 : tasks.size();
           while (managedTblCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
             if(numEntriesToSkip > 0) {
-              //skip tasks added in previous attempt
+              //skip tasks added in previous attempts of this retryable block
               managedTblCopyPathIterator.next();
               numEntriesToSkip--;
               continue;
@@ -263,14 +263,13 @@ public class ReplDumpWork implements Serializable {
             LOG.debug("added task for {}", managedTableCopyPath);
           }
         } catch (UncheckedIOException e) {
-          LOG.error("Reading entry for data copy failed for external tables, attempting retry.", e);
+          LOG.error("Reading entry for data copy failed for managed tables, attempting retry.", e);
           throw e;
         }
         return null;
       });
     } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage(),
-              String.valueOf(ErrorMsg.getErrorMsg(e).getErrorCode())));
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
     }
     return tasks;
   }

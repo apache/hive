@@ -210,7 +210,7 @@ public class ReplLoadWork implements Serializable {
           int numEntriesToSkip = tasks == null ? 0 : tasks.size();
           while (externalTableDataCopyItr.hasNext() && tracker.canAddMoreTasks()) {
             if(numEntriesToSkip > 0) {
-              //skip entries added in the previous attempt of this retryable block
+              //skip entries added in the previous attempts of this retryable block
               externalTableDataCopyItr.next();
               numEntriesToSkip--;
               continue;
@@ -229,8 +229,7 @@ public class ReplLoadWork implements Serializable {
         return null;
       });
     } catch (Exception e) {
-      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage(),
-              String.valueOf(ErrorMsg.getErrorMsg(e).getErrorCode())));
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
     }
     LOG.info("Added total {} tasks for external table locations copy.", tasks.size());
     return tasks;

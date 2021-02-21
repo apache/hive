@@ -508,13 +508,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .dump(replPolicy, dumpWithClause);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    Path metaDataPath = new Path(hiveDumpDir, EximUtil.METADATA_PATH_NAME);
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // Verify that the external table info contains only table "a2".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2"),
+    // Verify that _file_list_external  contains only table "a2".
+    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("a2"),
             new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
@@ -549,12 +548,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // Verify that the external table info contains only table "a2".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2"),
+    // Verify that _file_list_external contains only table "a2".
+    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("a2"),
             new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
@@ -698,12 +697,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // _file_list_external should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // Verify that the external table info contains table "a2" and "c2".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2", "c2"),
+    // Verify that _file_list_external contains table "a2" and "c2".
+    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("a2", "c2"),
             new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
 
     // Verify if the expected tables are bootstrapped.
