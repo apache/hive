@@ -35,6 +35,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -54,6 +55,7 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.Operation;
+import org.apache.hive.service.cli.operation.OperationLogManager;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
@@ -91,6 +93,7 @@ public class SessionManager extends CompositeService {
   private int userIpAddressLimit;
   private final OperationManager operationManager = new OperationManager();
   private KillQueryZookeeperManager killQueryZookeeperManager;
+  private OperationLogManager logManager;
   private ThreadPoolExecutor backgroundOperationPool;
   private boolean isOperationLogEnabled;
   private File operationLogRootDir;
@@ -114,6 +117,7 @@ public class SessionManager extends CompositeService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
+    setHiveConf(hiveConf);
     this.hiveConf = hiveConf;
     //Create operation log root directory, if operation logging is enabled
     if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
@@ -281,6 +285,7 @@ public class SessionManager extends CompositeService {
         LOG.warn("Failed to schedule cleanup HS2 operation logging root dir: " +
             operationLogRootDir.getAbsolutePath(), e);
       }
+      logManager = new OperationLogManager(this);
     }
   }
 
@@ -372,6 +377,9 @@ public class SessionManager extends CompositeService {
       backgroundOperationPool = null;
     }
     cleanupLoggingRootDir();
+    if (logManager != null) {
+      logManager.stop();
+    }
   }
 
   private void cleanupLoggingRootDir() {
@@ -653,6 +661,11 @@ public class SessionManager extends CompositeService {
 
   public OperationManager getOperationManager() {
     return operationManager;
+  }
+
+  @VisibleForTesting
+  public OperationLogManager getLogManager() {
+    return logManager;
   }
 
   public KillQueryZookeeperManager getKillQueryZookeeperManager() {

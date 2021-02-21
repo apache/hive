@@ -53,8 +53,8 @@ public class OperationLog {
   // True if we are running test and the extra test file should be used when the logs are
   // requested.
   private final boolean isShortLogs;
-  // True if the logs should be removed after the operation. Should be used only in test mode
-  private final boolean isRemoveLogs;
+
+  protected boolean isRemoveLogs;
 
   private final LoggingLevel opLoggingLevel;
 
@@ -133,7 +133,7 @@ public class OperationLog {
       logFile.close(isRemoveLogs);
       testLogFile.close(isRemoveLogs);
     } else {
-      logFile.close(true);
+      logFile.close(isRemoveLogs);
     }
   }
 

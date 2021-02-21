@@ -25,6 +25,7 @@ java.util.*;
 org.apache.hadoop.hive.ql.QueryDisplay;
 org.apache.hadoop.hive.ql.QueryInfo;
 org.apache.hadoop.hive.conf.HiveConf;
+org.apache.hive.service.cli.operation.OperationLogManager;
 </%import>
 <%class>
 private boolean showGraph = false;
@@ -110,6 +111,7 @@ private boolean showStats = false;
               <li class=""><a href="#tab_stages" data-toggle="tab">Stages</a></li>
               <li class=""><a href="#tab_queryPlan" data-toggle="tab">Query Plan</a></li>
               <li class=""><a href="#tab_perfLogging" data-toggle="tab">Performance Logging</a></li>
+              <li class=""><a href="#tab_operationLog" data-toggle="tab">Operation Log</a></li>
           </ul>
           <div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">
               <div class="tab-pane active" id="tab_baseProfile">
@@ -123,6 +125,9 @@ private boolean showStats = false;
               </div>
               <div class="tab-pane" id="tab_perfLogging">
                   <& perfLogging; queryInfo = queryInfo &>
+              </div>
+              <div class="tab-pane" id="tab_operationLog">
+                  <& operationLog; queryInfo = queryInfo &>
               </div>
           </div>
       </div>
@@ -371,6 +376,15 @@ private boolean showStats = false;
          </%if>
         </table>
       </section>
+</%def>
+
+<%def operationLog>
+<%args>
+    QueryInfo queryInfo;
+</%args>
+<div class="panel panel-default">
+     <pre> <% OperationLogManager.getOperationLog(queryInfo) %></pre>
+</div>
 </%def>
 
 </div>
