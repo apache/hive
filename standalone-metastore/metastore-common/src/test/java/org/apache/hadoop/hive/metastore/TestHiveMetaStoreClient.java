@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -114,6 +116,14 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
 
     return tTable;
 
+  }
+
+  public GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    assertNotNull(req.getId());
+    assertNotNull(req.getValidWriteIdList());
+    GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
+    return res;
   }
 
 }

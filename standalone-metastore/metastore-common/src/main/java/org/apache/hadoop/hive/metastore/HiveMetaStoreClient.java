@@ -2176,6 +2176,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
+  }
+
+  @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
       throws NoSuchObjectException, MetaException, TException {
 
@@ -2197,21 +2203,52 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
+          throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
+      validWriteIdList, tableId);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                              List<String> part_names) throws TException {
+      List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine) throws TException {
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
+      validWriteIdList, tableId);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine)
+            throws TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats, engine,
+      null, null);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
+            throws TException {
     checkDbAndTableFilters(catName, db_name, tbl_name);
     GetPartitionsByNamesRequest gpbnr =
             new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
-    gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    if( validWriteIdList != null) {
+      gpbnr.setValidWriteIdList(validWriteIdList);
+    }else {
+      gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    }
+    if( tableId != null) {
+      gpbnr.setId(tableId);
+    }
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
@@ -2221,6 +2258,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       gpbnr.setProcessorIdentifier(processorIdentifier);
     List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+  }
+
+  @Override
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
+          throws NoSuchObjectException, MetaException, TException {
+    checkDbAndTableFilters(getDefaultCatalog(conf), req.getDb_name(), req.getTbl_name());
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    List<Partition> parts = getPartitionsByNamesInternal(req).getPartitions();
+    GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
+    res.setPartitions(deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(
+            isClientFilterEnabled, filterHook, parts)));
+    return res;
   }
 
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
