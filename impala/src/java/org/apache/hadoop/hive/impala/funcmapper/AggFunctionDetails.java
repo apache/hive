@@ -36,6 +36,7 @@ import org.apache.impala.thrift.TPrimitiveType;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -101,12 +102,11 @@ public class AggFunctionDetails implements FunctionDetails {
           ImpalaFunctionSignature.create(afd.fnName, afd.getArgTypes(), afd.getRetType(), false);
       afd.ifs = ifs;
       AGG_BUILTINS_MAP.put(ifs, afd);
-      try {
-        BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(afd));
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
-      }
     }
+  }
+
+  public static Collection<AggFunctionDetails> getAllFuncDetails() {
+    return AGG_BUILTINS_MAP.values();
   }
 
   public void setFnName(String fnName) {

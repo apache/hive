@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionSignature;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.impala.funcmapper.AggFunctionDetails;
+import org.apache.hadoop.hive.impala.funcmapper.ImpalaBuiltinsDb;
 import org.apache.hadoop.hive.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.impala.analysis.Analyzer;
@@ -98,21 +99,21 @@ public class ImpalaRelUtil {
     Preconditions.checkState(funcDetails.isAgg || funcDetails.isAnalyticFn);
     if (!funcDetails.isAgg) {
       return AggregateFunction
-          .createAnalyticBuiltin(BuiltinsDb.getInstance(true), aggFuncName, operandTypes, retType, intermediateType,
+          .createAnalyticBuiltin(ImpalaBuiltinsDb.getInstance(), aggFuncName, operandTypes, retType, intermediateType,
               funcDetails.initFnSymbol, funcDetails.updateFnSymbol, funcDetails.removeFnSymbol, funcDetails.getValueFnSymbol,
               funcDetails.finalizeFnSymbol);
     }
     // Use the createRewrittenBuiltin() method for grouping_id since it gets
     // rewritten internally in Impala.
     if (aggFuncName.equalsIgnoreCase("grouping_id")) {
-      return AggregateFunction.createRewrittenBuiltin(BuiltinsDb.getInstance(true),
+      return AggregateFunction.createRewrittenBuiltin(ImpalaBuiltinsDb.getInstance(),
           aggFuncName, operandTypes, retType, funcDetails.ignoresDistinct, funcDetails.isAnalyticFn,
           funcDetails.returnsNonNullOnEmpty);
     }
     // Some agg functions are used both in analytic functions and regular aggregations (e.g. count)
     // We can treat them both as a regular builtin.
     return AggregateFunction
-        .createBuiltin(BuiltinsDb.getInstance(true), aggFuncName, operandTypes, retType, intermediateType, funcDetails.initFnSymbol,
+        .createBuiltin(ImpalaBuiltinsDb.getInstance(), aggFuncName, operandTypes, retType, intermediateType, funcDetails.initFnSymbol,
             funcDetails.updateFnSymbol, funcDetails.mergeFnSymbol, funcDetails.serializeFnSymbol, funcDetails.getValueFnSymbol, funcDetails.removeFnSymbol,
             funcDetails.finalizeFnSymbol, funcDetails.ignoresDistinct, funcDetails.isAnalyticFn, funcDetails.returnsNonNullOnEmpty);
   }

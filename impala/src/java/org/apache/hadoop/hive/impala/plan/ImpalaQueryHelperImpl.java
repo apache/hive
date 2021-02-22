@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.impala.calcite.rules.HiveImpalaWindowingFixRule;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.impala.funcmapper.ImpalaBuiltinsDb;
 import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -77,13 +78,6 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaQueryHelperImpl.class);
   private final EngineEventSequence timeline;
-
-  static {
-    // ensure that the instance is created with the "true" parameter.
-    // If we don't call it here, it could be called from within impala-frontend with
-    // the "false" parameter.
-    BuiltinsDb.getInstance(true);
-  }
 
   public ImpalaQueryHelperImpl(HiveConf conf, String dbname, String username, HiveTxnManager txnMgr,
       Context ctx) throws SemanticException {

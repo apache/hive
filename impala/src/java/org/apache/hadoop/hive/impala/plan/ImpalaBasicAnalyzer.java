@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.impala.plan;
 
 import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.impala.funcmapper.ImpalaBuiltinsDb;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BinaryPredicate;
@@ -173,7 +174,7 @@ public class ImpalaBasicAnalyzer extends Analyzer {
   public FeDb getDb(String dbName, Privilege privilege, boolean throwIfDoesNotExist)
       throws AnalysisException {
     if (dbName.equals(BuiltinsDb.NAME)) {
-      return BuiltinsDb.getInstance(true);
+      return ImpalaBuiltinsDb.getInstance();
     }
     throw new AnalysisException("Db " + dbName + " not found.");
   }

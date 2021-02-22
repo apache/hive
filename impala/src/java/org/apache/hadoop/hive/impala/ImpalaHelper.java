@@ -18,9 +18,18 @@
 
 package org.apache.hadoop.hive.impala;
 
+import org.apache.hadoop.hive.impala.funcmapper.ImpalaBuiltinsDb;
 import org.apache.hadoop.hive.ql.engine.EngineHelper;
 
 public class ImpalaHelper extends EngineHelper {
+
+  static {
+    // ensure that the instance is created with the "true" parameter.
+    // If we don't call it here, it could be called from within impala-frontend with
+    // the "false" parameter.
+    ImpalaBuiltinsDb.getInstance();
+  }
+
   public ImpalaHelper() {
     super(new ImpalaCompileHelper(), new ImpalaRuntimeHelper(),
         new ImpalaSessionHelper());

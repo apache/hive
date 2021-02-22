@@ -36,6 +36,7 @@ import org.apache.impala.thrift.TPrimitiveType;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -90,12 +91,11 @@ public class ScalarFunctionDetails implements FunctionDetails {
           ImpalaFunctionSignature.create(sfd.fnName, sfd.getArgTypes(), sfd.getRetType(), sfd.hasVarArgs);
       sfd.ifs = ifs;
       SCALAR_BUILTINS_MAP.put(ifs, sfd);
-      try {
-        BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(sfd));
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
-      }
     }
+  }
+
+  public static Collection<ScalarFunctionDetails> getAllFuncDetails() {
+    return SCALAR_BUILTINS_MAP.values();
   }
 
   public ScalarFunctionDetails() {
