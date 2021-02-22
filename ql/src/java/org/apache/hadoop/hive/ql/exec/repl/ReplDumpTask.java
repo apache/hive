@@ -1075,7 +1075,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     FileSystem fs = dbRoot.getFileSystem(conf);
     Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
     HiveWrapper.Tuple<Database> database = new HiveWrapper(hiveDb, dbName, lastReplId).database();
-    EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec);
+    EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec, context.getConf());
     return dbRoot;
   }
 
