@@ -22,8 +22,13 @@ import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -36,6 +41,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctio
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.impala.node.ImpalaAggregateRel;
+import org.apache.hadoop.hive.impala.node.ImpalaCardinalityCheckRel;
 import org.apache.hadoop.hive.impala.node.ImpalaEmptySetRel;
 import org.apache.hadoop.hive.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.impala.node.ImpalaJoinRel;
@@ -140,9 +146,43 @@ public class HiveImpalaRules {
       final HiveFilter filter = call.rel(0);
       final HiveAggregate agg = call.rel(1);
 
+      if (shouldUseCardinalityCheck(filter.getCondition())) {
+        ImpalaCardinalityCheckRel checkNode = new ImpalaCardinalityCheckRel(filter, agg.getInputs());
+        call.transformTo(checkNode);
+        return;
+      }
+
       ImpalaAggregateRel newAgg = new ImpalaAggregateRel(agg, filter);
 
       call.transformTo(newAgg);
+    }
+
+    /**
+     * shouldUseCardinalityCheck looks for a very specific function
+     * that meets the CardinalityCheck criteria: sq_count_check() <= 1
+     */
+    private boolean shouldUseCardinalityCheck(RexNode condition) {
+      if (!(condition instanceof RexCall)) {
+        return false;
+      }
+      RexCall call = (RexCall) condition;
+      if (call.getKind() != SqlKind.LESS_THAN_OR_EQUAL) {
+        return false;
+      }
+      if (!(call.getOperands().get(0) instanceof RexCall)) {
+        return false;
+      }
+      RexCall leftSideCall = (RexCall) call.getOperands().get(0);
+      if (leftSideCall.getOperator().getName() != "sq_count_check") {
+        return false;
+      }
+      if (!(call.getOperands().get(1) instanceof RexLiteral)) {
+        return false;
+      }
+      if (RexLiteral.intValue(call.getOperands().get(1)) != 1) {
+        return false;
+      }
+      return true;
     }
   }
 
@@ -356,4 +396,22 @@ public class HiveImpalaRules {
     }
   }
 
+  /**
+   * SqCountCheckVisitor checks if the RexNode contains any RexCall operands with
+   * the sq_count_check function.
+   */
+  private static class SqCountCheckVisitor extends RexVisitorImpl<Boolean> {
+    public SqCountCheckVisitor() {
+      super(true);
+    }
+
+    @Override
+    public Boolean visitCall(RexCall rexCall) {
+      Boolean retVal = false;
+      for (RexNode operand : rexCall.getOperands()) {
+        retVal = retVal || BooleanUtils.isTrue(operand.accept(this));
+      }
+      return retVal || rexCall.getOperator().getName().equals("sq_count_check");
+    }
+  }
 }
