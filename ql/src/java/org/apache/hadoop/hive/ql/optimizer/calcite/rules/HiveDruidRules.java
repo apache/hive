@@ -102,45 +102,39 @@ public class HiveDruidRules {
     .as(DruidSortRule.Config.class)
     .toRule();
 
-  public static final SortProjectTransposeRule SORT_PROJECT_TRANSPOSE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Sort.class).oneInput(b1 ->
-        b1.operand(Project.class).noInputs()))
+  public static final SortProjectTransposeRule SORT_PROJECT_TRANSPOSE = SortProjectTransposeRule.Config.DEFAULT
+    .withOperandFor(Sort.class, Project.class, DruidQuery.class)
     .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
     .as(SortProjectTransposeRule.Config.class)
     .toRule();
 
-  public static final ProjectFilterTransposeRule PROJECT_FILTER_TRANSPOSE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Project.class).oneInput(b1 ->
-        b1.operand(Filter.class).noInputs()))
+  public static final ProjectFilterTransposeRule PROJECT_FILTER_TRANSPOSE = ProjectFilterTransposeRule.Config.DEFAULT
+    .withOperandFor(Project.class, Filter.class, DruidQuery.class)
     .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
     .as(ProjectFilterTransposeRule.Config.class)
     .toRule();
 
-  public static final FilterProjectTransposeRule FILTER_PROJECT_TRANSPOSE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Filter.class).oneInput(b1 ->
-        b1.operand(Project.class).noInputs()))
+  public static final FilterProjectTransposeRule FILTER_PROJECT_TRANSPOSE = CoreRules.FILTER_PROJECT_TRANSPOSE.config
+    .withOperandFor(Filter.class, Project.class, DruidQuery.class)
+    .withCopyFilter(true)
+    .withCopyProject(true)
     .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
     .as(FilterProjectTransposeRule.Config.class)
     .toRule();
 
-  public static final AggregateFilterTransposeRule AGGREGATE_FILTER_TRANSPOSE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Aggregate.class).oneInput(b1 ->
-        b1.operand(Filter.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(AggregateFilterTransposeRule.Config.class)
-    .toRule();
+  public static final AggregateFilterTransposeRule AGGREGATE_FILTER_TRANSPOSE =
+    CoreRules.AGGREGATE_FILTER_TRANSPOSE.config
+      .withOperandFor(Aggregate.class, Filter.class, DruidQuery.class)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .as(AggregateFilterTransposeRule.Config.class)
+      .toRule();
 
-  public static final FilterAggregateTransposeRule FILTER_AGGREGATE_TRANSPOSE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Filter.class).oneInput(b1 ->
-        b1.operand(Aggregate.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(FilterAggregateTransposeRule.Config.class)
-    .toRule();
+  public static final FilterAggregateTransposeRule FILTER_AGGREGATE_TRANSPOSE =
+    CoreRules.FILTER_AGGREGATE_TRANSPOSE.config
+      .withOperandFor(Filter.class, Aggregate.class, DruidQuery.class)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .as(FilterAggregateTransposeRule.Config.class)
+      .toRule();
 
   public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT = RelRule.Config.EMPTY
     .withOperandSupplier(b0 ->
