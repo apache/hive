@@ -133,7 +133,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
                 getTablePropsForCustomStorageHandler(tableProperties);
       }
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
-              null, null, newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)));
+              HivePrivObjectActionType.OTHER, null, newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE), newTable.getOwner(), newTable.getOwnerType()));
     }
 
     if (LOG.isDebugEnabled()) {

@@ -217,7 +217,7 @@ final class CommandAuthorizerV2 {
                     getTablePropsForCustomStorageHandler(tableProperties);
           }
           hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
-                  null, null, table.getStorageHandler().getClass().getName()));
+                  actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
         }
       }
       break;
