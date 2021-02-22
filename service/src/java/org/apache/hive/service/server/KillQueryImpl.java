@@ -118,12 +118,10 @@ public class KillQueryImpl implements KillQuery {
   private static boolean isAdmin() {
     boolean isAdmin = false;
     SessionState ss = SessionState.get();
-    if(!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+    if (!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
       // If authorization is disabled, hs2 process owner should have kill privileges
       try {
-        String currentUser = ss.getUserName();
-        String loginUser = UserGroupInformation.getCurrentUser().getShortUserName();
-        return (currentUser != null) && currentUser.equals(loginUser);
+        return StringUtils.equals(ss.getUserName(), UserGroupInformation.getCurrentUser().getShortUserName());
       } catch (IOException e) {
         LOG.warn("Unable to check for admin privileges", e);
         return false;
