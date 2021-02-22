@@ -30,7 +30,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <spark.home>${basedir}/${hive.path.to.root}/itests/hive-unit/target/spark</spark.home>
-    <testcontainers.version>1.15.0</testcontainers.version>
+    <testcontainers.version>1.15.2</testcontainers.version>
     <htmlunit.version>2.45.0</htmlunit.version>
   </properties>
 
