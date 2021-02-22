@@ -286,7 +286,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals(2, statusLen);
   }
 
-  private ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
+  public static ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
       throws IOException {
     Path path = new Path(tmpFolder);
     FileSystem fs = path.getFileSystem(conf);
