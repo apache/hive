@@ -43,7 +43,7 @@ public class HiveSamlRelayStateStore implements ValueGenerator {
       .getLogger(HiveSamlRelayStateStore.class);
   private final Cache<String, HiveSamlRelayStateInfo> relayStateCache =
       CacheBuilder.newBuilder()
-          //TODO(Vihang) make this configurable
+          //TODO make this configurable
           .expireAfterWrite(5, TimeUnit.MINUTES)
           .build();
 
