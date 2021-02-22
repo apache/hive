@@ -131,11 +131,6 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.github.joshelser</groupId>
         <artifactId>dropwizard-metrics-hadoop-metrics2-reporter</artifactId>
         <version>${dropwizard-metrics-hadoop-metrics2-reporter.version}</version>
@@ -391,6 +386,12 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+  </dependencies>
 
   <build>
     <pluginManagement>
