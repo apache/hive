@@ -46,11 +46,12 @@ public abstract class VectorMapJoinFastBytesHashTable
   protected BytesWritable testKeyBytesWritable;
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
+      throws HiveException, IOException {
     // No deserialization of key(s) here -- just get reference to bytes.
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
-    add(keyBytes, 0, keyLength, currentValue);
+    add(keyBytes, 0, keyLength, currentValue, hashCode);
   }
 
   @Override
@@ -60,7 +61,7 @@ public abstract class VectorMapJoinFastBytesHashTable
   }
 
   public abstract void add(byte[] keyBytes, int keyStart, int keyLength,
-      BytesWritable currentValue);
+      BytesWritable currentValue, long hashCode);
 
   protected void expandAndRehash() {
 

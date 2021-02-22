@@ -129,7 +129,11 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
      * Get our Multi-Key hash map information for this specialized class.
      */
 
-    hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    }
 
   }
 

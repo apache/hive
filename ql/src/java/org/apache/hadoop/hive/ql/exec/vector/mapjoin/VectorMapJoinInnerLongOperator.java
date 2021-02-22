@@ -118,7 +118,11 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
      * Get our Single-Column Long hash map information for this specialized class.
      */
 
-    hashMap = (VectorMapJoinLongHashMap) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMap = (VectorMapJoinLongHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMap = (VectorMapJoinLongHashMap) vectorMapJoinHashTable;
+    }
     useMinMax = hashMap.useMinMax();
     if (useMinMax) {
       min = hashMap.min();

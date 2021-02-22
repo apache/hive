@@ -119,7 +119,11 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
      * Get our Single-Column Long hash set information for this specialized class.
      */
 
-    hashSet = (VectorMapJoinLongHashSet) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashSet = (VectorMapJoinLongHashSet) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashSet = (VectorMapJoinLongHashSet) vectorMapJoinHashTable;
+    }
     useMinMax = hashSet.useMinMax();
     if (useMinMax) {
       min = hashSet.min();

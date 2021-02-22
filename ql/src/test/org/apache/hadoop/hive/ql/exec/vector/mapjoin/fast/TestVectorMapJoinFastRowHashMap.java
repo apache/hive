@@ -61,7 +61,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
   }
 
   private void addAndVerifyRows(VectorRandomRowSource valueSource, Object[][] rows,
-                                VectorMapJoinFastHashTable map, HashTableKeyType hashTableKeyType,
+      VectorMapJoinFastHashTableWrapper map, HashTableKeyType hashTableKeyType,
                                 VerifyFastRowHashMap verifyTable, String[] keyTypeNames,
                                 boolean doClipping, boolean useExactBytes)
           throws HiveException, IOException, SerDeException {
@@ -136,7 +136,9 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
       // Serialize keyRow into key bytes.
       BytesWritable keyWritable = new BytesWritable(key);
       BytesWritable valueWritable = new BytesWritable(value);
-      map.putRow(keyWritable, valueWritable);
+      long deserializeKey = map.deserializeToKey(keyWritable);
+      long hashcode = map.calculateLongHashCode(deserializeKey, keyWritable);
+      map.putRow(keyWritable, valueWritable, hashcode, deserializeKey);
       // verifyTable.verify(map);
     }
     verifyTable.verify(map, hashTableKeyType, valueTypeInfos,
@@ -148,10 +150,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(927337);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -175,10 +177,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(927337);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -202,10 +204,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(927337);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastStringHashMap map =
-        new VectorMapJoinFastStringHashMap(
+    VectorMapJoinFastStringHashMapParallel map =
+        new VectorMapJoinFastStringHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -229,10 +231,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(833);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -256,10 +258,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(833099);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -283,10 +285,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(833099);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -310,10 +312,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(326232);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -337,10 +339,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(326232);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -364,10 +366,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(326232);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastStringHashMap map =
-        new VectorMapJoinFastStringHashMap(
+    VectorMapJoinFastStringHashMapParallel map =
+        new VectorMapJoinFastStringHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -391,10 +393,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(2331);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -418,10 +420,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(7403);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -445,10 +447,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(99);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -473,10 +475,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(27722);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -500,10 +502,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(8238383);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -527,10 +529,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(8235);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastStringHashMap map =
-        new VectorMapJoinFastStringHashMap(
+    VectorMapJoinFastStringHashMapParallel map =
+        new VectorMapJoinFastStringHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -554,10 +556,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(8235);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -581,10 +583,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(8235);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -608,10 +610,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(8235);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -635,10 +637,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(2122);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.LONG,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -662,10 +664,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(7520);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(
+    VectorMapJoinFastLongHashMapParallel map =
+        new VectorMapJoinFastLongHashMapParallel(
             false, false, HashTableKeyType.INT,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -689,10 +691,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(7539);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastStringHashMap map =
-        new VectorMapJoinFastStringHashMap(
+    VectorMapJoinFastStringHashMapParallel map =
+        new VectorMapJoinFastStringHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -716,10 +718,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(13);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -743,10 +745,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(12);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
@@ -770,10 +772,10 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     random = new Random(7);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(
+    VectorMapJoinFastMultiKeyHashMapParallel map =
+        new VectorMapJoinFastMultiKeyHashMapParallel(
             false,
-            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, 4);
 
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -31,12 +32,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMap;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -141,7 +136,12 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     super.commonSetup();
 
     // Outer join specific.
-    VectorMapJoinHashMap baseHashMap = (VectorMapJoinHashMap) vectorMapJoinHashTable;
+    VectorMapJoinHashMap baseHashMap = null;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      baseHashMap = (VectorMapJoinHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      baseHashMap = (VectorMapJoinHashMap) vectorMapJoinHashTable;
+    }
 
     hashMapResults = new VectorMapJoinHashMapResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashMapResults.length; i++) {
@@ -852,7 +852,12 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       singleSmallTableKeyOutputColumnVector = null;
     }
 
-    VectorMapJoinLongHashMap hashMap = (VectorMapJoinLongHashMap) vectorMapJoinHashTable;
+    VectorMapJoinLongHashMap hashMap = null;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMap = (VectorMapJoinLongHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMap = (VectorMapJoinLongHashMap) vectorMapJoinHashTable;
+    }
 
     VectorMapJoinNonMatchedIterator nonMatchedIterator =
         hashMap.createNonMatchedIterator(matchTracker);
@@ -923,7 +928,12 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    */
   protected void generateFullOuterMultiKeySmallTableNoMatches() throws HiveException {
 
-    VectorMapJoinBytesHashMap hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    VectorMapJoinBytesHashMap hashMap = null;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    }
 
     VectorMapJoinNonMatchedIterator nonMatchedIterator =
         hashMap.createNonMatchedIterator(matchTracker);
@@ -980,7 +990,12 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       singleSmallTableKeyOutputColumnVector = null;
     }
 
-    VectorMapJoinBytesHashMap hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    VectorMapJoinBytesHashMap hashMap = null;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    }
 
     VectorMapJoinNonMatchedIterator nonMatchedIterator =
         hashMap.createNonMatchedIterator(matchTracker);
@@ -1039,7 +1054,11 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
   protected void fullOuterHashTableSetup() {
 
     // Always track key matches for FULL OUTER.
-    matchTracker = vectorMapJoinHashTable.createMatchTracker();
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      matchTracker = ((VectorMapJoinHashTable)vectorMapJoinFastHashTableWrapper).createMatchTracker();
+    } else {
+      matchTracker = vectorMapJoinHashTable.createMatchTracker();
+    }
 
   }
 

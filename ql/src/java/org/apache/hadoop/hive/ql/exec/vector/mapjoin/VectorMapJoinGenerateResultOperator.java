@@ -588,6 +588,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
           throws IOException, HiveException, SerDeException, ClassNotFoundException {
 
     this.vectorMapJoinHashTable = null;
+    this.vectorMapJoinFastHashTableWrapper = null;
 
     // The super method will reload a hash table partition of one of the small tables.
     // Currently, for native vector map join it will only be one small table.
