@@ -156,7 +156,10 @@ public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
     // functions
     for (int i = 0, leftPos = groupCount, rightPos = totalCount + 1 + groupCount;
          leftPos < totalCount; i++, leftPos++, rightPos++) {
-      // case when mv2.deptno IS NULL AND mv2.deptname IS NULL then s else source.s + mv2.s end
+      // case when source.s is null and mv2.s is null then null
+      // case when source.s IS null then mv2.s
+      // case when mv2.s IS null then source.s
+      // else source.s + mv2.s end
       RexNode leftRef = rexBuilder.makeInputRef(
           joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
       RexNode rightRef = rexBuilder.makeInputRef(
