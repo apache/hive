@@ -29,6 +29,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.util.Objects;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
@@ -155,8 +156,17 @@ public class Date implements Comparable<Date> {
         Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC).toLocalDate();
   }
 
-  public static Date valueOf(String s) {
-    s = s.trim();
+  /**
+   * Obtains an instance of Date from a text string such as 2021-02-22T09:39:27.
+   *
+   * @param text the text to parse, not null
+   * @return The {@code Date} objects parsed from the text
+   * @throws IllegalArgumentException if the text cannot be parsed into a
+   *           {@code Date}
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Date valueOf(final String text) {
+    String s = Objects.requireNonNull(text).trim();
     int idx = s.indexOf(" ");
     if (idx != -1) {
       s = s.substring(0, idx);
