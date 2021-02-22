@@ -350,7 +350,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Failed to canceling delegation token [request: {}]", req, e);
+        LOG.error("Failed to cancel delegation token [request: {}]", req, e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -369,7 +369,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Failed to renewing token [request: {}]", e);
+        LOG.error("Failed to renew delegation token [request: {}]", e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -604,7 +604,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         context.clearSessionHandle();
       }
     } catch (Exception e) {
-      LOG.warn("Error closing session", e);
+      LOG.error("Failed to close the session", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -620,7 +620,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setInfoValue(getInfoValue.toTGetInfoValue());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      LOG.warn("Error getting info", e);
+      LOG.error("Failed to get info", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
