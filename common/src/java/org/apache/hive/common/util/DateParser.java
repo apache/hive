@@ -30,7 +30,12 @@ import com.google.common.cache.LoadingCache;
  */
 public final class DateParser {
 
-  /** Cache 10 years worth of dates before evicting */
+  /**
+   * Cache 10 years worth of dates before evicting. Note, it is possible to cast
+   * timestamps (Date and Time) into Dates, therefore the effectiveness of the
+   * cache may be limited if the Time portion of the timestamp has many distinct
+   * values.
+   */
   private static final LoadingCache<String, Date> DATE_CACHE =
       CacheBuilder.newBuilder().maximumSize(10 * 365).build(new CacheLoader<String, Date>() {
         @Override

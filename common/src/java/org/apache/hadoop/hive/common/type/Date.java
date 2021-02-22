@@ -158,6 +158,9 @@ public class Date implements Comparable<Date> {
 
   /**
    * Obtains an instance of Date from a text string such as 2021-02-22T09:39:27.
+   * Other supported formats are "2021-02-22T09:39:27Z", "2021-02-22 09:39:27",
+   * "2021-02-22T09:39:27+00:00", "2021-02-22". Any time information is simply
+   * dropped.
    *
    * @param text the text to parse, not null
    * @return The {@code Date} objects parsed from the text
