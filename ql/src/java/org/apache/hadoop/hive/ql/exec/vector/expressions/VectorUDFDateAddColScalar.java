@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -43,7 +44,6 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   protected boolean isPositive = true;
 
   private transient final Text text = new Text();
-  private transient final DateParser dateParser = new DateParser();
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
@@ -327,9 +327,8 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   protected void evaluateString(ColumnVector columnVector, LongColumnVector outputVector, int i) {
     BytesColumnVector bcv = (BytesColumnVector) columnVector;
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
-    org.apache.hadoop.hive.common.type.Date hDate = new org.apache.hadoop.hive.common.type.Date();
-    boolean parsed = dateParser.parseDate(text.toString(), hDate);
-    if (!parsed) {
+    Date hDate = DateParser.parseDate(text.toString());
+    if (hDate == null) {
       outputVector.noNulls = false;
       outputVector.isNull[i] = true;
       return;

@@ -17,28 +17,30 @@
  */
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.junit.Test;
 
 public class TestDateParser {
-  DateParser parser = new DateParser();
-  Date date = new Date();
+  private Date date = new Date();
 
   void checkValidCase(String strValue, Date expected) {
-    Date dateValue = parser.parseDate(strValue);
+    Date dateValue = DateParser.parseDate(strValue);
     assertEquals(expected, dateValue);
 
-    assertTrue(parser.parseDate(strValue, date));
+    assertTrue(DateParser.parseDate(strValue, date));
     assertEquals(expected, date);
   }
 
   void checkInvalidCase(String strValue) {
-    Date dateValue = parser.parseDate(strValue);
+    Date dateValue = DateParser.parseDate(strValue);
     assertNull(dateValue);
 
-    assertFalse(parser.parseDate(strValue, date));
+    assertFalse(DateParser.parseDate(strValue, date));
   }
 
   @Test
