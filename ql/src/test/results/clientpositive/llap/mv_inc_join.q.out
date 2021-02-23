@@ -210,7 +210,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
                       Statistics: Num rows: 3 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 5 
             Map Operator Tree:
@@ -313,7 +313,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -329,7 +329,7 @@ STAGE PLANS:
                       name: default.mat1
                   Write Type: DELETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)

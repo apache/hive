@@ -1960,7 +1960,8 @@ public class Hive {
                 HiveMaterializedViewsRegistry.get().createMaterialization(conf, materializedViewTable);
         if (hiveRelOptMaterialization != null && hiveRelOptMaterialization.isSupported(scope)) {
           relOptMaterialization = hiveRelOptMaterialization;
-          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
+//          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
+          HiveMaterializedViewsRegistry.get().createMaterializedView(conf, materializedViewTable);
           if (outdated) {
             // We will rewrite it to include the filters on transaction list
             // so we can produce partial rewritings
