@@ -67,13 +67,13 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
     super(
       (Config) RelRule.Config.EMPTY
+      .withDescription("FilterJoinRule:" + id)
       .withOperandSupplier(b0 ->
-        b0.operand(Filter.class).oneInput(b1 ->
-          b1.operand(Join.class).anyInputs()))
-      .as(FilterIntoJoinRule.Config.class)
+        b0.exactly(operand))
+      .as(FilterJoinRule.Config.class)
       .withSmart(smart)
       .withPredicate((join, joinType, exp) -> true)
-      .as(FilterIntoJoinRule.Config.class)
+//      .as(FilterIntoJoinRule.Config.class)
       .withRelBuilderFactory(relBuilderFactory)
     );
   }
