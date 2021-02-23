@@ -307,7 +307,7 @@ public class GenericUDFTrunc extends GenericUDF {
     switch (inputType1) {
     case STRING:
       String dateString = textConverter1.convert(arguments[0].get()).toString();
-      d = DateParser.parseDate(dateString.toString());
+      d = DateParser.parseDate(dateString);
       if (d == null) {
         return null;
       }
