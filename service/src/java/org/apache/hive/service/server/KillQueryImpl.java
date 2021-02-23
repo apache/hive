@@ -60,7 +60,6 @@ public class KillQueryImpl implements KillQuery {
 
   private enum TagOrId {TAG, ID, UNKNOWN}
 
-
   public KillQueryImpl(OperationManager operationManager, KillQueryZookeeperManager killQueryZookeeperManager) {
     this.operationManager = operationManager;
     this.killQueryZookeeperManager = killQueryZookeeperManager;
@@ -129,9 +128,8 @@ public class KillQueryImpl implements KillQuery {
     }
     if (ss.getAuthorizerV2() != null) {
       try {
-        ss.getAuthorizerV2()
-            .checkPrivileges(HiveOperationType.KILL_QUERY, new ArrayList<>(),
-                new ArrayList<>(), new HiveAuthzContext.Builder().build());
+        ss.getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY, new ArrayList<>(), new ArrayList<>(),
+            new HiveAuthzContext.Builder().build());
         isAdmin = true;
       } catch (Exception e) {
         LOG.warn("Error while checking privileges", e);
@@ -165,8 +163,7 @@ public class KillQueryImpl implements KillQuery {
     killQuery(queryIdOrTag, errMsg, conf, false, SessionState.get().getUserName(), isAdmin());
   }
 
-  public void killLocalQuery(String queryIdOrTag, HiveConf conf, String doAs, boolean doAsAdmin)
-      throws HiveException {
+  public void killLocalQuery(String queryIdOrTag, HiveConf conf, String doAs, boolean doAsAdmin) throws HiveException {
     killQuery(queryIdOrTag, null, conf, true, doAs, doAsAdmin);
   }
 
@@ -186,7 +183,7 @@ public class KillQueryImpl implements KillQuery {
         LOG.debug("Query found with tag: {}", queryIdOrTag);
       }
     }
-    if (!operationsToKill.isEmpty()){
+    if (!operationsToKill.isEmpty()) {
       killOperations(queryIdOrTag, errMsg, conf, tagOrId, operationsToKill, doAs, doAsAdmin);
     } else {
       LOG.debug("Query not found with tag/id: {}", queryIdOrTag);
