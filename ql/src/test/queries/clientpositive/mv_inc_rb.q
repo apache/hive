@@ -37,7 +37,7 @@ select a,b,c from t1 where a > 1;
 select * from mat1;
 
 
--- make additional changes on source and refresh the view
+-- make additional changes on source and refresh the view: new row should be inserted to the view
 insert into t1(a,b, c) values (NULL, NULL, NULL);
 
 explain
