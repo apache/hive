@@ -72,6 +72,10 @@ ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_TXN_ID" bigint;
 -- HIVE-24275
 ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_COMMIT_TIME" bigint;
 
+-- HIVE-24815: Remove "IDXS" Table from Metastore Schema
+DROP TABLE IF EXISTS "INDEX_PARAMS";
+DROP TABLE IF EXISTS "IDXS";
+
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0';
