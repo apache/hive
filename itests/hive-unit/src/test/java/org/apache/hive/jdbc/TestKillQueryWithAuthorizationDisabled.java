@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -91,7 +92,7 @@ public class TestKillQueryWithAuthorizationDisabled{
         conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, false);
         MiniHS2.cleanupLocalDir();
         Class.forName(MiniHS2.getJdbcDriverName());
-        miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.TEZ);
+        miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
         Map<String, String> confOverlay = new HashMap<String, String>();
         miniHS2.start(confOverlay);
         miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
@@ -147,7 +148,7 @@ public class TestKillQueryWithAuthorizationDisabled{
             public void run() {
                 try {
                     System.out.println("Executing query: ");
-//                    stmt.execute("set hive.llap.execution.mode = auto");
+                   stmt.execute("set hive.llap.execution.mode = none");
 
                     if (useTag) {
                         stmt.execute("set hive.query.tag = " + tag);
