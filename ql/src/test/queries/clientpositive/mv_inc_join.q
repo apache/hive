@@ -11,8 +11,7 @@ insert into t1(a, c, d) values (4, 4.4, 104);
 
 create table t2(a int, b varchar(128)) stored as orc TBLPROPERTIES ('transactional'='true');
 
-insert into t2(a, b) values (1, 'one');
-insert into t2(a, b) values (3, 'three');
+insert into t2(a, b) values (1, 'one'), (2, 'two'), (3, 'three');
 
 select t1.a, t2.b, t1.c from t1 inner join t2 ON t1.a = t2.a;
 
@@ -23,7 +22,8 @@ select t1.a, t2.b, t1.c from t1 inner join t2 ON t1.a = t2.a;
 delete from t1 where a = 4;
 delete from t1 where a = 3;
 
-insert into t1(a,b, c) values (2, 'two', 2.2), (2, 'two', 2.2), (5, 'five', 5.5);
+insert into t1(a, c, d) values (2, 2.2, 202), (2, 2.2, 202), (5, 5.5, 505);
+insert into t2(a, b) values (5, 'five');
 
 explain cbo
 alter materialized view mat1 rebuild;
