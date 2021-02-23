@@ -123,5 +123,9 @@ ALTER TABLE COMPACTION_QUEUE ADD CQ_COMMIT_TIME bigint;
 -- HIVE-24770
 UPDATE "APP".SERDES SET SLIB='org.apache.hadoop.hive.serde2.MultiDelimitSerDe' where SLIB='org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe';
 
+-- HIVE-24815 Remove "IDXS" Table from Metastore Schema
+DROP TABLE "APP"."INDEX_PARAMS";
+DROP TABLE "APP"."IDXS";
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.0.0', VERSION_COMMENT='Hive release version 4.0.0' where VER_ID=1;
