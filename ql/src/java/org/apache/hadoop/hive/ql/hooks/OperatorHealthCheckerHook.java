@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -66,7 +68,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
  */
 public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
 
-  static class UniqueOpIdChecker implements SemanticNodeProcessor {
+  static class OperatorHealthCheckerProcessor implements SemanticNodeProcessor {
 
     Map<String, Operator<?>> opMap = new HashMap<>();
 
@@ -171,6 +173,15 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
 
   }
 
+  public static void runCheck(ParseContext pctx) throws SemanticException {
+    if (OperatorHealthCheckerHook.class.desiredAssertionStatus()) {
+      OperatorHealthCheckerHook h = new OperatorHealthCheckerHook();
+      Collection<Node> rootOps = new HashSet<>();
+      rootOps.addAll(pctx.getTopOps().values());
+      h.walkTree(rootOps);
+    }
+  }
+
   @Override
   public void run(HookContext hookContext) throws Exception {
 
@@ -197,15 +208,18 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
         }
       }
     }
+    walkTree(rootOps);
+  }
+
+  private void walkTree(Collection<Node> rootOps) throws SemanticException {
     if (rootOps.isEmpty()) {
       return;
     }
 
-    SemanticDispatcher disp = new DefaultRuleDispatcher(new UniqueOpIdChecker(), new HashMap<>(), null);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new OperatorHealthCheckerProcessor(), new HashMap<>(), null);
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
     ogw.startWalking(rootOps, nodeOutput);
-
   }
 }
