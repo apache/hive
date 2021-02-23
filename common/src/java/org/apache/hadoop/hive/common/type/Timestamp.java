@@ -17,27 +17,22 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.util.Objects;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
-import static java.time.temporal.ChronoField.YEAR;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This is the internal type for Timestamp. The full qualified input format of
@@ -84,22 +79,14 @@ import static java.time.temporal.ChronoField.YEAR;
 public class Timestamp implements Comparable<Timestamp> {
   
   private static final LocalDateTime EPOCH = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
-  private static final DateTimeFormatter PARSE_FORMATTER = new DateTimeFormatterBuilder()
-      // Date
-      .appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-').appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL)
-      .appendLiteral('-').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL)
-      // Time (Optional)
-      .optionalStart().appendLiteral(" ").appendValue(HOUR_OF_DAY, 1, 2, SignStyle.NORMAL).appendLiteral(':')
-      .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NORMAL).appendLiteral(':')
-      .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NORMAL).optionalStart()
-      .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd().optionalEnd().toFormatter()
-      .withResolverStyle(ResolverStyle.LENIENT);
+  private static final DateTimeFormatter PARSE_FORMATTER =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_DATE)
+          // Time (Optional)
+          .optionalStart().parseCaseInsensitive().appendLiteral("T").append(DateTimeFormatter.ISO_LOCAL_TIME)
+          .toFormatter().withResolverStyle(ResolverStyle.STRICT).withChronology(IsoChronology.INSTANCE);
 
   private static final DateTimeFormatter PRINT_FORMATTER = new DateTimeFormatterBuilder()
-      // Date and Time Parts
-      .append(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss"))
-      // Fractional Part (Optional)
-      .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter();
+      .append(DateTimeFormatter.ISO_DATE).appendLiteral(' ').append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter();
 
   private LocalDateTime localDateTime;
 
@@ -178,19 +165,31 @@ public class Timestamp implements Comparable<Timestamp> {
     return localDateTime.getNano();
   }
 
-  public static Timestamp valueOf(String s) {
-    s = s.trim();
-    LocalDateTime localDateTime;
+  /**
+   * Obtains an instance of Timestamp from a text string.
+   *
+   * @param text the text to parse, not null
+   * @return The {@code Timestamp} objects parsed from the text
+   * @throws IllegalArgumentException if the text cannot be parsed into a
+   *           {@code Date}
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Timestamp valueOf(final String text) {
+    final String s = Objects.requireNonNull(text).trim().replace(' ', 'T');
+    final LocalDateTime localDateTime;
+
     try {
-      localDateTime = LocalDateTime.parse(s, PARSE_FORMATTER);
-    } catch (DateTimeParseException e) {
-      // Try ISO-8601 format
-      try {
-        localDateTime = LocalDateTime.parse(s);
-      } catch (DateTimeParseException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error");
+      TemporalAccessor temporalAccessor = PARSE_FORMATTER.parseBest(s, LocalDateTime::from, LocalDate::from);
+
+      if (temporalAccessor instanceof LocalDateTime) {
+        localDateTime = (LocalDateTime) temporalAccessor;
+      } else {
+        localDateTime = ((LocalDate) temporalAccessor).atStartOfDay();
       }
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Cannot create timestamp, parsing error", e);
     }
+
     return new Timestamp(localDateTime);
   }
 

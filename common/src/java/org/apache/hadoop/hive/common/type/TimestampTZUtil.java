@@ -28,11 +28,11 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.TextStyle;
-import java.time.temporal.ChronoField;
+import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
 import java.util.TimeZone;
@@ -49,21 +49,9 @@ public class TimestampTZUtil {
   private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
   private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
 
-  static final DateTimeFormatter FORMATTER;
-  static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    // Date part
-    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
-    // Time part
-    builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
-        optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
-        optionalEnd().optionalEnd();
-    // Zone part
-    builder.optionalStart().appendLiteral(" ").optionalEnd();
-    builder.optionalStart().appendZoneText(TextStyle.NARROW).optionalEnd();
-
-    FORMATTER = builder.toFormatter();
-  }
+  static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_DATE)
+      .optionalStart().parseCaseInsensitive().appendLiteral("T").append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter()
+      .withResolverStyle(ResolverStyle.STRICT).withChronology(IsoChronology.INSTANCE);
 
   public static TimestampTZ parse(String s) {
     return parse(s, null);

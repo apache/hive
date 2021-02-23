@@ -23,17 +23,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
 import java.util.Objects;
-
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.YEAR;
 
 /**
  * This is the internal type for Date. The full qualified input format of Date
@@ -80,12 +76,12 @@ public class Date implements Comparable<Date> {
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
 
   private static final DateTimeFormatter PARSE_FORMATTER =
-      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
-          .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
-          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.LENIENT);
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).optionalStart().parseCaseInsensitive()
+          .appendLiteral('T').append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter()
+          .withResolverStyle(ResolverStyle.STRICT).withChronology(IsoChronology.INSTANCE);
 
   private static final DateTimeFormatter PRINT_FORMATTER =
-      new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("uuuu-MM-dd")).toFormatter();
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).toFormatter();
 
   private LocalDate localDate;
 
@@ -170,15 +166,7 @@ public class Date implements Comparable<Date> {
    */
   public static Date valueOf(final String text) {
     String s = Objects.requireNonNull(text).trim();
-    int idx = s.indexOf(" ");
-    if (idx != -1) {
-      s = s.substring(0, idx);
-    } else {
-      idx = s.indexOf('T');
-      if (idx != -1) {
-        s = s.substring(0, idx);
-      }
-    }
+    s = s.replace(' ', 'T');
     LocalDate localDate;
     try {
       localDate = LocalDate.parse(s, PARSE_FORMATTER);

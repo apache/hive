@@ -269,7 +269,7 @@ public class ObjectStore implements RawStore, Configurable {
   private int batchSize = Batchable.NO_BATCHING;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
-      "yyyy_MM_dd_HH_mm_ss");
+      "uuuu_MM_dd_HH_mm_ss");
   /**
   * Verify the schema only once per JVM since the db connection info is static
   */
