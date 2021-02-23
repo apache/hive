@@ -40,7 +40,19 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
   }
 
   public RelNode propagate(RelNode relNode) {
-    return relNode.accept(this);
+    RelNode newPlan = relNode.accept(this);
+
+    RelDataType rowType = newPlan.getRowType();
+    List<RexNode> projects = new ArrayList<>(rowType.getFieldCount());
+    List<String> projectNames = new ArrayList<>(rowType.getFieldCount());
+    populateProjects(relBuilder.getRexBuilder(), rowType, projects, projectNames);
+    projects.remove(projects.size() - 1);
+    projectNames.remove(projectNames.size() - 1);
+
+    return relBuilder
+            .push(newPlan)
+            .project(projects, projectNames)
+            .build();
   }
 
   @Override
@@ -96,38 +108,46 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(HiveJoin join) {
-    visitChild(join, 0, join.getInput(0));
-    visitChild(join, 1, join.getInput(1));
-    RelNode leftInput = join.getLeft();
-    int leftRowIsDeletedIndex = leftInput.getRowType().getFieldCount() - 1;
-    RelNode rightInput = join.getRight();
-    int rightRowIsDeletedIndex = rightInput.getRowType().getFieldCount() - 1;
+    RelNode newJoin = visitChild(join, 0, join.getInput(0));
+    RelNode leftInput = newJoin.getInput(0);
+    RelDataType leftRowType = newJoin.getInput(0).getRowType();
+    int leftRowIsDeletedIndex = leftRowType.getFieldCount() - 1;
+    newJoin = visitChild(join, 1, join.getInput(1));
+    RelNode rightInput = newJoin.getInput(1);
+    RelDataType rightRowType = rightInput.getRowType();
+    int rightRowIsDeletedIndex = rightRowType.getFieldCount() - 1;
 
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
     RexNode leftRowIsDeleted = rexBuilder.makeInputRef(
-            leftInput.getRowType().getFieldList().get(leftRowIsDeletedIndex).getType(), leftRowIsDeletedIndex);
+            leftRowType.getFieldList().get(leftRowIsDeletedIndex).getType(), leftRowIsDeletedIndex);
     RexNode rightRowIsDeleted = rexBuilder.makeInputRef(
-            rightInput.getRowType().getFieldList().get(rightRowIsDeletedIndex).getType(),
-            leftInput.getRowType().getFieldCount() + rightRowIsDeletedIndex);
+            rightRowType.getFieldList().get(rightRowIsDeletedIndex).getType(),
+            leftRowType.getFieldCount() + rightRowIsDeletedIndex);
 
     List<RexNode> projects = new ArrayList<>(join.getRowType().getFieldCount() + 1);
     List<String> projectNames = new ArrayList<>(join.getRowType().getFieldCount() + 1);
-    populateProjects(rexBuilder, join.getRowType(), projects, projectNames);
+    populateProjects(rexBuilder, leftRowType, 0, projects, projectNames);
+    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), projects, projectNames);
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
     projectNames.add("rowIsDeleted");
 
     return relBuilder
             .push(leftInput)
             .push(rightInput)
-            .join(join.getJoinType(), join.getJoinFilter())
-            .project(projects, projectNames)
+            .join(join.getJoinType(), join.getCondition())
+            .project(projects)
             .build();
   }
 
-  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, List<RexNode> projects, List<String> projectNames) {
+  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType,
+                                List<RexNode> projects, List<String> projectNames) {
+    populateProjects(rexBuilder, inputRowType, 0, projects, projectNames);
+  }
+  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, int offset,
+                                List<RexNode> projects, List<String> projectNames) {
     for (int i = 0; i < inputRowType.getFieldCount(); ++i) {
       RelDataTypeField relDataTypeField = inputRowType.getFieldList().get(i);
-      projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), i));
+      projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), offset + i));
       projectNames.add(relDataTypeField.getName());
     }
   }

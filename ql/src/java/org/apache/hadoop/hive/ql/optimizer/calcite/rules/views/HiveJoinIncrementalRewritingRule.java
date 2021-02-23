@@ -54,8 +54,7 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
     // expressions for project operator
     List<RexNode> projExprs = new ArrayList<>();
     List<RexNode> joinConjs = new ArrayList<>();
-//    List<RexNode> filterConjs = new ArrayList<>();
-    for (int leftPos = 0; leftPos < joinLeftInput.getRowType().getFieldCount(); leftPos++) {
+    for (int leftPos = 0; leftPos < joinLeftInput.getRowType().getFieldCount() - 1; leftPos++) {
       RexNode leftRef = rexBuilder.makeInputRef(
               joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
       RexNode rightRef = rexBuilder.makeInputRef(
@@ -72,6 +71,7 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
     RexNode rowIsDeleted = rexBuilder.makeInputRef(
             joinRightInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(),
             joinLeftInput.getRowType().getFieldCount() + rowIsDeletedIdx);
+    projExprs.add(rowIsDeleted);
 
     // 3) Build plan
     RelNode newNode = call.builder()

@@ -14,6 +14,8 @@ create table t2(a int, b varchar(128)) stored as orc TBLPROPERTIES ('transaction
 insert into t2(a, b) values (1, 'one');
 insert into t2(a, b) values (3, 'three');
 
+select t1.a, t2.b, t1.c from t1 inner join t2 ON t1.a = t2.a;
+
 create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as
 select t1.a, t2.b, t1.c from t1 inner join t2 ON t1.a = t2.a;
 
@@ -33,3 +35,7 @@ explain cbo
 select t1.a, t2.b, t1.c from t1 inner join t2 ON t1.a = t2.a;
 
 select * from mat1;
+
+drop materialized view mat1;
+
+select t1.a, t2.b, t1.c from t1 inner join t2 ON t1.a = t2.a;
