@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+@org.junit.Ignore("hive-test-kube migration")
 public class TestMiniHS2 {
 
   private MiniHS2 miniHS2;

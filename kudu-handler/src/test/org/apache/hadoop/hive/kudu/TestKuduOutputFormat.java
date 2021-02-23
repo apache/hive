@@ -54,6 +54,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests for the KuduOutputFormat implementation.
  */
+@org.junit.Ignore("hive-test-kube")
 public class TestKuduOutputFormat {
 
   private static final String TABLE_NAME = "default.TestKuduOutputFormat";

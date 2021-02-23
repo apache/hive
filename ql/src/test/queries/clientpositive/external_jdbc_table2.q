@@ -1,3 +1,4 @@
+--! qt:disabled:disabled during hive-test-kube migration
 --! qt:dataset:src
 
 -- SORT_QUERY_RESULTS

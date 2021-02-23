@@ -71,6 +71,7 @@ import static org.apache.hadoop.hive.metastore.ColumnType.SERIALIZATION_FORMAT;
  * various combinations of projection spec are set. Also checks the JDO code path in addition to
  * directSQL code path
  */
+@org.junit.Ignore("hive-test-kube migration")
 @Category(MetastoreCheckinTest.class)
 public class TestGetPartitionsUsingProjectionAndFilterSpecs {
   private static final Logger LOG = LoggerFactory.getLogger(TestGetPartitionsUsingProjectionAndFilterSpecs.class);

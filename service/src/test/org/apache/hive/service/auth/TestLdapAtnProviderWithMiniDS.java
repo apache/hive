@@ -43,6 +43,7 @@ import static org.junit.Assert.assertTrue;
  * in-process LDAP Server (Apache Directory Server instance).
  *
  */
+@org.junit.Ignore("hive-test-kube migration")
 @RunWith(FrameworkRunner.class)
 @CreateLdapServer(transports = {
   @CreateTransport(protocol = "LDAP"),

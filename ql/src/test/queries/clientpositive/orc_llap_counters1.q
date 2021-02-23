@@ -1,3 +1,4 @@
+--! qt:disabled:CDPD-1666
 set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 SET hive.optimize.index.filter=true;

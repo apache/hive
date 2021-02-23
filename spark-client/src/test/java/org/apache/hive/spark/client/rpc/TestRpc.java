@@ -57,6 +57,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@org.junit.Ignore("spark")
 public class TestRpc {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestRpc.class);

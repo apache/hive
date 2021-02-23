@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+@org.junit.Ignore("disabled; CDPD-3517")
 @RunWith(Parameterized.class)
 public class TestMinimrCliDriver {
 

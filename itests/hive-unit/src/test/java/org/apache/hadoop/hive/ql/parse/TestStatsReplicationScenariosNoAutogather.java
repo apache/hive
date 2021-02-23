@@ -31,6 +31,7 @@ import java.util.Map;
 /**
  * Tests statistics replication when statistics are collected using ANALYZE command.
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestStatsReplicationScenariosNoAutogather extends TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();

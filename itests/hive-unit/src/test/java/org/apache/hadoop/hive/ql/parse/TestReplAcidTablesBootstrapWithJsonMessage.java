@@ -33,6 +33,7 @@ import java.util.Map;
  * TestReplAcidTablesBootstrapWithJsonMessage - same as
  * TestReplicationScenariosAcidTablesBootstrap but uses JSON messages.
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestReplAcidTablesBootstrapWithJsonMessage
         extends TestReplicationScenariosAcidTablesBootstrap {
 

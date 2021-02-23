@@ -1,3 +1,5 @@
+--! qt:disabled:hive-test-kube
+-- not supported on cdpd-master: qt:dataset::ONLY
 set hive.test.authz.sstd.hs2.mode=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;

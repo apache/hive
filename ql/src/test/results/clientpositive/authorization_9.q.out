@@ -55,14 +55,6 @@ POSTHOOK: type: SHOW_GRANT
 				hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
-default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 authorization_9	dummy_n1		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: grant select to user hive_test_user2
@@ -96,14 +88,6 @@ authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9				hive_test_user2	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1			hive_test_user2	USER	SELECT	false	-1	hive_test_user
-default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 authorization_9	dummy_n1		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1		[key]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
@@ -115,14 +99,6 @@ POSTHOOK: type: SHOW_GRANT
 				hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
-default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 authorization_9	dummy_n1		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 authorization_9	dummy_n1		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
 PREHOOK: query: show grant user hive_test_user2 on all

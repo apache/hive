@@ -1,3 +1,4 @@
+--! qt:disabled:hive-test-kube
 --! qt:dataset:
 
 set hive.test.authz.sstd.hs2.mode=true;

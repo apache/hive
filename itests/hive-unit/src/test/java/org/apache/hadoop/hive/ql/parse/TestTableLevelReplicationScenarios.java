@@ -50,6 +50,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_R
 /**
  * Tests Table level replication scenarios.
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestTableLevelReplicationScenarios extends BaseReplicationScenariosAcidTables {
 
   private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";

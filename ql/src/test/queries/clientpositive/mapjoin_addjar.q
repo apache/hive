@@ -1,3 +1,4 @@
+--! qt:disabled:CDPD-1666
 SET hive.vectorized.execution.enabled=false;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.use.nonstaged=false;

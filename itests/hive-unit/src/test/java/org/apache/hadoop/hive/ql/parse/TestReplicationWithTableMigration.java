@@ -62,6 +62,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * TestReplicationWithTableMigration - test replication for Hive2 to Hive3 (Strict managed tables)
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestReplicationWithTableMigration {
   private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
 

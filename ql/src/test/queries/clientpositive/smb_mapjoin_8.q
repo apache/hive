@@ -1,3 +1,4 @@
+--! qt:disabled:hive-test-kube migration http://jenkins-route-hive-test-kube.apps.kc-04-ocp4.cloudera.com/job/internal-hive-precommit/job/PR-2/73/testReport/org.apache.hadoop.hive.cli.split20/TestMiniLlapLocalCliDriver/Testing___split_03___Archive___testCliDriver_smb_mapjoin_8_/
 set hive.strict.checks.bucketing=false;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;

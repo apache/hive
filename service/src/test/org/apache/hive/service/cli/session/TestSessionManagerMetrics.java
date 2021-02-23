@@ -380,7 +380,7 @@ public class TestSessionManagerMetrics {
 
     // We're going to wait for the session to be abandoned.
     String currentValue;
-    int count = 5; // how many times we'll sleep before giving up
+    int count = 10; // how many times we'll sleep before giving up
     String expectedValue = "1";
     do {
       // HIVE_SERVER2_SESSION_CHECK_INTERVAL is set to 3 seconds, so we have to wait for at least

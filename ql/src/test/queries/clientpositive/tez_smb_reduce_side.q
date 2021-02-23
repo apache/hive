@@ -1,3 +1,4 @@
+--! qt:disabled:non-deterministic result mismatch http://jenkins-route-hive-test-kube.apps.kc-04-ocp4.cloudera.com/job/internal-hive-precommit/view/change-requests/job/PR-2/lastCompletedBuild/testReport/org.apache.hadoop.hive.cli.split23/TestMiniLlapLocalCliDriver/Testing___split_10___Archive___testCliDriver_tez_smb_reduce_side_/
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;

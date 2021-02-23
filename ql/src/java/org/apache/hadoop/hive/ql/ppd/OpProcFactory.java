@@ -161,8 +161,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.debug("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
       // script operator is a black-box to hive so no optimization here
       // assuming that nothing can be pushed above the script op
       // same with LIMIT op
@@ -195,8 +194,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       PTFOperator ptfOp = (PTFOperator) nd;
 
@@ -387,8 +385,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
 
       // The lateral view forward operator has 2 children, a SELECT(*) and
@@ -414,8 +411,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       TableScanOperator tsOp = (TableScanOperator) nd;
       mergeWithChildrenPred(tsOp, owi, null, null);
@@ -447,8 +443,7 @@ public final class OpProcFactory {
 
     Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
             boolean onlySyntheticJoinPredicate, Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
 
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
@@ -536,8 +531,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Set<String> aliases = getAliases(nd);
       // we pass null for aliases here because mergeWithChildrenPred filters
@@ -741,8 +735,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
-          + ((Operator) nd).getIdentifier() + ")");
+      LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
 
       Set<String> includes = getQualifiedAliases((Operator<?>) nd, owi);

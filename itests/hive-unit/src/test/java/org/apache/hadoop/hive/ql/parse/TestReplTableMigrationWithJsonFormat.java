@@ -24,6 +24,7 @@ import org.junit.BeforeClass;
 import java.util.Collections;
 import java.util.HashMap;
 
+@org.junit.Ignore("flaky")
 public class TestReplTableMigrationWithJsonFormat extends TestReplicationWithTableMigration {
   @BeforeClass
   public static void classLevelSetup() throws Exception {

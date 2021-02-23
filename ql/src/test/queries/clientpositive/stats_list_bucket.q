@@ -1,3 +1,4 @@
+--! qt:disabled:breaks sysdb.q HIVE-23370
 --! qt:dataset:src
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)

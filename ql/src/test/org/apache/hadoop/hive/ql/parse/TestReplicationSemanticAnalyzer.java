@@ -31,15 +31,12 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Enclosed.class)
 public class TestReplicationSemanticAnalyzer {
   private static ParseDriver driver = new ParseDriver();
-  private static HiveConf hiveConf;
+  private static HiveConf hiveConf = buildHiveConf();
 
-  private TestReplicationSemanticAnalyzer() {
-  }
-
-  @BeforeClass
-  public static void setUp() throws Exception {
-    hiveConf = new HiveConf();
-    hiveConf.setVar(HIVE_QUOTEDID_SUPPORT, Quotation.NONE.stringValue());
+  public static HiveConf buildHiveConf() {
+    HiveConf conf = new HiveConf();
+    conf.setVar(HIVE_QUOTEDID_SUPPORT, Quotation.NONE.stringValue());
+    return conf;
   }
 
   private static ASTNode parse(String command) throws Exception {

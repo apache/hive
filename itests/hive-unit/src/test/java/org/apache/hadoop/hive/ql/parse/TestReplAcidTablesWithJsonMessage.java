@@ -28,6 +28,7 @@ import org.junit.rules.TestRule;
 import java.util.Collections;
 import java.util.HashMap;
 
+@org.junit.Ignore("test unstable")
 public class TestReplAcidTablesWithJsonMessage extends TestReplicationScenariosAcidTables {
 
   @Rule

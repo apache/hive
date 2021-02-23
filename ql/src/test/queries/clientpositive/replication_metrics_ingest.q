@@ -1,3 +1,4 @@
+--! qt:disabled:test unstable
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb

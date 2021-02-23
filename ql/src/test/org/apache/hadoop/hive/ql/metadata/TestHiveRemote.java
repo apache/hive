@@ -24,6 +24,7 @@ import java.net.ServerSocket;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  *
@@ -54,6 +55,12 @@ public class TestHiveRemote extends TestHive {
           + hiveConf);
       throw e;
     }
+  }
+
+  @Override
+  protected void tearDown() throws IOException {
+    SessionState.get().close();
+    hm.close(false);
   }
 
   /**

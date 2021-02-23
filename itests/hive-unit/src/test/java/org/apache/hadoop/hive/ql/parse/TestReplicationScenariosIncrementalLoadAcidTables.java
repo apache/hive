@@ -44,6 +44,7 @@ import com.google.common.collect.Lists;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
  */
+@org.junit.Ignore("test unstable")
 public class TestReplicationScenariosIncrementalLoadAcidTables {
   @Rule
   public final TestName testName = new TestName();

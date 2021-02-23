@@ -93,13 +93,13 @@
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- To add additional exclude patterns set this property -->
-    <test.excludes.additional />
-    <skip.spark.files />
+    <test.excludes.additional></test.excludes.additional>
+    <skip.spark.files>**/TestSparkStatistics*,**/TestSparkSessionTimeout*,**/TestJdbcWithMiniHS2ErasureCoding*,**/TestLocalHiveSparkClient*,**/TestKryoMessageCodec*</skip.spark.files>
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
-    <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx3080m</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
@@ -184,8 +184,8 @@
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
     <kafka.version>2.5.0.7.2.9.0-SNAPSHOT</kafka.version>
-    <kryo.version>3.0.3</kryo.version>
-    <kudu.version>1.10.0</kudu.version>
+    <kryo.version>4.0.2</kryo.version>
+    <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3-1</libthrift.version>
@@ -527,6 +527,10 @@
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty</artifactId>
         </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -1194,11 +1198,6 @@
               </exclusions>
             </dependency>
           </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <version>${maven.assembly.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

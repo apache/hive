@@ -1,3 +1,4 @@
+--! qt:disabled:CDPD-1666
 --! qt:dataset:src
 
 SELECT histogram_numeric(cast(substr(src.value,5) AS double), 2) FROM src;

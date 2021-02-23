@@ -32,7 +32,7 @@ import org.junit.Ignore;
 /**
  * TestJdbcWithMiniLlap for llap Row format.
  */
-@Ignore
+@Ignore("HIVE-23549")
 public class TestJdbcWithMiniLlapRow extends BaseJdbcWithMiniLlap {
 
   @BeforeClass

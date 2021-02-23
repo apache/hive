@@ -115,9 +115,11 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.qoption.QTestTimezoneHandler;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
@@ -538,6 +540,7 @@ public class QTestUtil {
       LOG.info("initializing llap IO");
       LlapProxy.initializeLlapIo(conf);
     }
+    conf.setVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_DIRECTORY, "/tmp/hive/_resultscache_" + ProcessUtils.getPid());
 
     // Use the current directory if it is not specified
     String dataDir = conf.get("test.data.files");
@@ -557,10 +560,13 @@ public class QTestUtil {
     dispatcher.register("dataset", new FakeDatasetHandler());
     dispatcher.register("replace", replaceHandler);
     dispatcher.register("sysdb", new QTestSysDbHandler());
+    dispatcher.register("transactional", new QTestTransactional());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
+    dispatcher.register("disabled", new QTestDisabledHandler());
+
     String scriptsDir = getScriptsDir();
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();

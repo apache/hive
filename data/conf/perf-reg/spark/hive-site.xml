@@ -49,6 +49,11 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
 </property>
@@ -61,7 +66,7 @@
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
+  <value>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
 
 <property>

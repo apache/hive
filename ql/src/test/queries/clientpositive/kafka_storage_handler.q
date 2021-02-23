@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-23985
 SET hive.vectorized.execution.enabled=true;
 
 CREATE EXTERNAL TABLE kafka_table

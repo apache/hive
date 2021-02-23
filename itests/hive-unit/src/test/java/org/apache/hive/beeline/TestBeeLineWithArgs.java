@@ -176,9 +176,9 @@ import org.junit.Test;
     }
     String[] args = argList.toArray(new String[argList.size()]);
     beeLine.begin(args, inputStream);
-    String output = os.toString("UTF8");
-
     beeLine.close();
+    beelineOutputStream.close();
+    String output = os.toString("UTF8");
     return output;
   }
 
@@ -1155,16 +1155,17 @@ import org.junit.Test;
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
   }
 
-  @Ignore("CDPD-8969: Ignore org.apache.hive.beeline.TestBeeLineWithArgs.testRowsAffected as it is flaky")
+  @Ignore("HIVE-23398 CDPD-8969: Ignore org.apache.hive.beeline.TestBeeLineWithArgs.testRowsAffected as it is flaky")
   @Test
   public void testRowsAffected() throws Throwable {
     final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
       + "insert into new_table values (1);\n";
     final String EXPECTED_PATTERN = "1 row affected";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR,
+        Collections.singletonList(new Tuple<>(EXPECTED_PATTERN, true)),
+        Arrays.asList(Modes.SCRIPT));
   }
-
   /**
    * Test 'describe extended' on tables that have special white space characters in the row format.
    */

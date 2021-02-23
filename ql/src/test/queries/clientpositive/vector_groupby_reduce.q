@@ -1,3 +1,4 @@
+--! qt:disabled:CDPD-1666
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;

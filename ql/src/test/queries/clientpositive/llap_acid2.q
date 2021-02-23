@@ -1,3 +1,4 @@
+--! qt:disabled:CDPD-1666
 --! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;

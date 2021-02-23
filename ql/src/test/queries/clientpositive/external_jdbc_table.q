@@ -1,3 +1,4 @@
+--! qt:disabled:hive-test-kube migration - flaky jdbc tests
 --! qt:dataset:src
 
 set hive.strict.checks.cartesian.product= false;

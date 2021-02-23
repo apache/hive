@@ -1,3 +1,4 @@
+--! qt:disabled:disabled in HIVE-19509 feature HIVE-19064 will enable it back
 set hive.support.special.characters.tablename=false;
 
 -- If hive.support.special.characters.tablename=false, we can not use special characters in table names.

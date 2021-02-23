@@ -33,6 +33,7 @@ import java.io.File;
 /**
  * Unit tests for Codahale reporter config backward compatibility
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestCodahaleReportersConf {
 
   private static File workDir = new File(System.getProperty("test.tmp.dir"));

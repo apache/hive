@@ -47,6 +47,7 @@ import static org.junit.Assert.*;
 /**
  * TestReplicationWithTableMigrationEx - test replication for Hive2 to Hive3 (Strict managed tables)
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestReplicationWithTableMigrationEx {
   @Rule
   public final TestName testName = new TestName();

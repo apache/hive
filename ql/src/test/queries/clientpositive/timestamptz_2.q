@@ -1,3 +1,4 @@
+--! qt:disabled:CDPD-1666
 set hive.fetch.task.conversion=more;
 set time zone UTC;
 

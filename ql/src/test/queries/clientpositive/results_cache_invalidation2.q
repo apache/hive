@@ -1,3 +1,4 @@
+--! qt:disabled:hive-test-kube migration
 --! qt:dataset:src
 
 set hive.metastore.event.listeners=org.apache.hive.hcatalog.listener.DbNotificationListener;
@@ -43,7 +44,7 @@ select count(*) from tab2 where key > 0;
 insert into tab1 select * from src;
 
 -- Run a query long enough that the invalidation check can run.
-select reflect("java.lang.Thread", 'sleep', cast(4000 as bigint));
+select reflect("java.lang.Thread", 'sleep', cast(10000 as bigint));
 
 set test.comment="Cached entry should be invalidated - query should not use cache";
 set test.comment;

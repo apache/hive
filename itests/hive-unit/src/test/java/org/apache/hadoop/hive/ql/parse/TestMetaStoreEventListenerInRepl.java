@@ -49,6 +49,7 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
 /**
  * TestMetaStoreEventListenerInRepl - Test metastore events created by replication.
  */
+@org.junit.Ignore("hive-test-kube")
 public class TestMetaStoreEventListenerInRepl {
 
   @Rule

@@ -337,6 +337,7 @@ POSTHOOK: Input: default@intermediate_n3
 POSTHOOK: Input: default@intermediate_n3@p=455
 POSTHOOK: Input: default@intermediate_n3@p=456
 POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned
 POSTHOOK: Output: default@multi_partitioned@p=1
 POSTHOOK: Output: default@multi_partitioned@p=455
 POSTHOOK: Output: default@multi_partitioned@p=456
@@ -455,6 +456,7 @@ POSTHOOK: Input: default@intermediate_n3
 POSTHOOK: Input: default@intermediate_n3@p=455
 POSTHOOK: Input: default@intermediate_n3@p=456
 POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned
 POSTHOOK: Output: default@multi_partitioned@p=1
 POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]

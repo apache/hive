@@ -1,3 +1,4 @@
+--! qt:disabled:hive-test-kube migration flaky
 --! qt:dataset:src
 -- SORT_QUERY_RESULTS;
 

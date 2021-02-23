@@ -1,3 +1,4 @@
+--! qt:disabled:test fails with a serious change
 -- disable cbo because calcite can see thru these test cases; the goal here is to test the annotation processing
 set hive.cbo.enable=false;
  

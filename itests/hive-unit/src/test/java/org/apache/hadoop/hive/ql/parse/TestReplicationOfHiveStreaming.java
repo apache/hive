@@ -46,6 +46,7 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
 /**
  * TestReplicationOfHiveStreaming - test replication for streaming ingest on ACID tables.
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestReplicationOfHiveStreaming {
 
   @Rule

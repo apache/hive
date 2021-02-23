@@ -290,6 +290,7 @@
                   <exclude>javax.ws.rs:jsr311-api</exclude>
                   <exclude>*:javax.el-api</exclude>
                   <exclude>*:jsp-api*</exclude>
+                  <exclude>org.apache.hive:hive-storage-api</exclude>
                 </excludes>
               </artifactSet>
               <relocations>

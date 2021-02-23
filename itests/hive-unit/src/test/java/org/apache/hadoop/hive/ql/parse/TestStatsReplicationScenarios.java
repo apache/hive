@@ -57,6 +57,7 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
 /**
  * Tests for statistics replication.
  */
+@org.junit.Ignore("hive-test-kube migration")
 public class TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();

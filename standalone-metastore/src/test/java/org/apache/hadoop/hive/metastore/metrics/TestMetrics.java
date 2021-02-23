@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+@org.junit.Ignore("hive-test-kube migration")
 @Category(MetastoreUnitTest.class)
 public class TestMetrics {
   private static final long REPORT_INTERVAL = 1;

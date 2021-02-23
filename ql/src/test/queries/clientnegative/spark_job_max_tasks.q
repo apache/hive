@@ -1,3 +1,4 @@
+--! qt:disabled:spark
 --! qt:dataset:src1
 set hive.spark.job.max.tasks=2;
 

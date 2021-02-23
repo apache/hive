@@ -47,6 +47,7 @@ import org.junit.Test;
 /**
  * TestJdbcWithMiniLlap for Arrow format with vectorized output sink
  */
+@Ignore("unstable HIVE-23549")
 public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
 
 

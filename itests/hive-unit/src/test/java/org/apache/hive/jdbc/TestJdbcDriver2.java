@@ -96,6 +96,7 @@ import static org.junit.Assert.fail;
  * This class tests the JDBC API for HiveServer2 via an embedded HiveServer2 instance
  *
  */
+@org.junit.Ignore("flaky")
 public class TestJdbcDriver2 {
   private static final Logger LOG = LoggerFactory.getLogger(TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";

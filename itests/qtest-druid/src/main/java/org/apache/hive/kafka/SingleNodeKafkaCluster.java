@@ -157,7 +157,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
 
   private void createTopic(String topic) {
     Properties properties = new Properties();
-    properties.setProperty("bootstrap.servers", "localhost:9092");
+    properties.setProperty("bootstrap.servers", kafkaServer);
     properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
     properties.setProperty("value.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
 

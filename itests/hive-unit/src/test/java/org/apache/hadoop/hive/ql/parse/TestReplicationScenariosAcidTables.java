@@ -68,6 +68,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
+@org.junit.Ignore("flaky")
 public class TestReplicationScenariosAcidTables extends BaseReplicationScenariosAcidTables {
 
   @BeforeClass

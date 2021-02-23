@@ -55,6 +55,7 @@ public class TestMiniDruidKafkaCliDriver
   }
 
   @Test
+  @org.junit.Ignore("disabled: CDPD-10054 CDPD-10067")
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);
   }

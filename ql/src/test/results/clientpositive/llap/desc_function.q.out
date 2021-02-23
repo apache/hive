@@ -51,3 +51,27 @@ Example:
   'BLack and BLue'
 Function class:org.apache.hadoop.hive.ql.udf.UDFReplace
 Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION dense_rank
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION dense_rank
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'dense_rank'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED dense_rank
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED dense_rank
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'dense_rank'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFDenseRank
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION surrogate_key
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION surrogate_key
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'surrogate_key'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED surrogate_key
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED surrogate_key
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'surrogate_key'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey
+Function type:BUILTIN

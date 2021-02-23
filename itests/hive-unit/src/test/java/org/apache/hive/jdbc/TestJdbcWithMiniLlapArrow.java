@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 /**
  * TestJdbcWithMiniLlap for Arrow format
  */
+@Ignore("unstable HIVE-23549")
 public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestJdbcWithMiniLlapArrow.class);
@@ -359,7 +360,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
     // wait for other thread to create the stmt handle
     int count = 0;
-    while (count < 10) {
+    while (++count <= 10) {
       try {
         tKillHolder.throwable = null;
         Thread.sleep(2000);
@@ -381,7 +382,6 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
         stmt2.close();
         break;
       } catch (SQLException e) {
-        count++;
         LOG.warn("Exception when kill query", e);
         tKillHolder.throwable = e;
       }

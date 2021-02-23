@@ -1,3 +1,4 @@
+--! qt:disabled:flaky
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb
