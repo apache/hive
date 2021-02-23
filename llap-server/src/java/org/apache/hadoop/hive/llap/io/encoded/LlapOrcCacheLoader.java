@@ -25,8 +25,6 @@ import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedOrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReader;
@@ -43,7 +41,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
-public class LowLevelDataReader implements AutoCloseable {
+import static org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader.determineFileId;
+import static org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader.getFsSupplier;
+
+/**
+ * Loading data from ORC files on the disk into the cache.
+ */
+public class LlapOrcCacheLoader implements AutoCloseable {
 
   private Path path;
   private Object fileKey;
@@ -54,13 +58,12 @@ public class LowLevelDataReader implements AutoCloseable {
   private FixedSizedObjectPool<IoTrace> tracePool;
 
   private Supplier<FileSystem> fsSupplier;
-
   private Reader orcReader;
   private LlapDataReader rawDataReader;
   private EncodedReader encodedReader;
 
 
-  public LowLevelDataReader(Path path, Object fileKey, Configuration daemonConf, DataCache cache,
+  public LlapOrcCacheLoader(Path path, Object fileKey, Configuration daemonConf, DataCache cache,
       FileMetadataCache metadataCache, CacheTag cacheTag, FixedSizedObjectPool<IoTrace> tracePool) {
     this.path = path;
     this.fileKey = fileKey;
@@ -72,11 +75,8 @@ public class LowLevelDataReader implements AutoCloseable {
   }
 
   public void init() throws IOException {
-    this.fsSupplier = getFsSupplier(path, daemonConf);
-    Object fileKey = HdfsUtils.getFileId(fsSupplier.get(), path,
-          HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-          HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
-          !HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_USE_FILEID_PATH));
+    fsSupplier = getFsSupplier(path, daemonConf);
+    Object fileKey = determineFileId(fsSupplier, path, daemonConf);
     if(!fileKey.equals(this.fileKey)) {
       throw new IOException("File key mismatch.");
     }
@@ -84,17 +84,10 @@ public class LowLevelDataReader implements AutoCloseable {
     orcReader = EncodedOrcFile.createReader(path, opts);
   }
 
-  private static Supplier<FileSystem> getFsSupplier(final Path path, final Configuration conf) {
-    return () -> {
-      try {
-        return path.getFileSystem(conf);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    };
-  }
-
-  public void read(DiskRangeList ranges) throws IOException {
+  /**
+   * Pre read the provided ranges into the cache.
+   */
+  public void loadRanges(DiskRangeList ranges) throws IOException {
     boolean useZeroCopy = (daemonConf != null) && OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
     InStream.StreamOptions options = InStream.options()
         .withCodec(OrcCodecPool.getCodec(orcReader.getCompressionKind()))
@@ -111,14 +104,19 @@ public class LowLevelDataReader implements AutoCloseable {
     IoTrace ioTrace = tracePool.take();
 
     try {
+      // Currently no thread pooling is used. Pre loading the cache doesn't have that much priority,
+      // and the whole preRead will be running in a single separate thread.
       encodedReader = orcReader.encodedReader(fileKey, cache, rawDataReader, null, ioTrace, false, cacheTag, false);
-      encodedReader.readDataRanges(ranges);
+      encodedReader.preReadDataRanges(ranges);
     } finally {
       tracePool.offer(ioTrace);
     }
   }
 
-  public void readFooter() {
+  /**
+   * Pre read the file footer into the cache.
+   */
+  public void loadFileFooter() {
     MemoryBufferOrBuffers tailBuffers = metadataCache.getFileMetadata(fileKey);
     if (tailBuffers == null) {
       ByteBuffer tailBufferBb = orcReader.getSerializedFileFooter();
@@ -127,7 +125,7 @@ public class LowLevelDataReader implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
     if (encodedReader != null) {
       encodedReader.close();
     }

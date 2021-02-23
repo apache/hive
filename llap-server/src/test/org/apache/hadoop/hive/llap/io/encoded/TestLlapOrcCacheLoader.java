@@ -45,7 +45,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class TestLowLevelDataReader {
+public class TestLlapOrcCacheLoader {
 
   private static final int ORC_PADDING = 3;
   private static final String TEST_PATH = "../data/files/orc_compressed";
@@ -78,20 +78,20 @@ public class TestLowLevelDataReader {
 
   @Test(expected = IOException.class)
   public void testWrongFileKey() throws IOException {
-    LowLevelDataReader reader = new LowLevelDataReader(new Path(TEST_PATH),
+    LlapOrcCacheLoader loader = new LlapOrcCacheLoader(new Path(TEST_PATH),
         null, conf, null, null, null, null);
-    reader.init();
+    loader.init();
   }
 
   @Test
-  public void testReadFooter() throws IOException {
+  public void testLoadFooter() throws IOException {
     Path path = new Path(TEST_PATH);
     Object key = fileId(path);
-    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, null, metaCache,
+    LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, null, metaCache,
         null, null);
-    reader.init();
+    loader.init();
 
-    reader.readFooter();
+    loader.loadFileFooter();
 
     MetadataCache.LlapBufferOrBuffers metadata = metaCache.getFileMetadata(key);
     Assert.notNull(metadata);
@@ -99,53 +99,80 @@ public class TestLowLevelDataReader {
 
 
   @Test
-  public void testUncompressedReadRanges() throws IOException {
+  public void testLoadUncompressedRanges() throws IOException {
     Path path = new Path(TEST_PATH_UNCOMPRESSED);
     Object key = fileId(path);
-    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, mockDataCache, metaCache,
+    LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
         null, tracePool);
-    reader.init();
+    loader.init();
 
     DiskRangeList range = new DiskRangeList(ORC_PADDING, 296);
-    reader.read(range);
+    loader.loadRanges(range);
 
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    DiskRangeList fileData = cache.getFileData(key, range, 0,
+    cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
     Assert.isTrue(gotAllData.value);
   }
 
   @Test
-  public void testReadValidRanges() throws IOException {
+  public void testLoadValidRanges() throws IOException {
     Path path = new Path(TEST_PATH);
     Object key = fileId(path);
-    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, mockDataCache, metaCache,
-        null, tracePool);
-    reader.init();
     DiskRangeList range = new DiskRangeList(ORC_PADDING,38);
-    reader.read(range);
-
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool)) {
+      loader.init();
+      loader.loadRanges(range);
+    }
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    DiskRangeList fileData = cache.getFileData(key, range, 0,
+    cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
     Assert.isTrue(gotAllData.value);
-
   }
 
   @Test
-  public void testReadBadlyEstimatedRanges() throws IOException {
+  public void testLoadAlreadyLoadedRange() throws IOException {
     Path path = new Path(TEST_PATH);
     Object key = fileId(path);
-    LowLevelDataReader reader = new LowLevelDataReader(path, key, conf, mockDataCache, metaCache,
-        null, tracePool);
-    reader.init();
-    DiskRangeList range = new DiskRangeList(ORC_PADDING,40);
-    reader.read(range);
+    DiskRangeList range = new DiskRangeList(ORC_PADDING,38);
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool)) {
+      loader.init();
+      loader.loadRanges(range);
+    }
 
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    DiskRangeList fileData = cache.getFileData(key, range, 0,
+    cache.getFileData(key, range, 0,
+        mockDiskRangeListFactory, null, gotAllData);
+    Assert.isTrue(gotAllData.value);
+
+    DiskRangeList range2 = new DiskRangeList(ORC_PADDING,14);
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool)) {
+      loader.init();
+      loader.loadRanges(range2);
+    }
+    gotAllData.value = false;
+    cache.getFileData(key, range, 0,
+        mockDiskRangeListFactory, null, gotAllData);
+    Assert.isTrue(gotAllData.value);
+  }
+
+  @Test
+  public void testLoadBadlyEstimatedRanges() throws IOException {
+    Path path = new Path(TEST_PATH);
+    Object key = fileId(path);
+    DiskRangeList range = new DiskRangeList(ORC_PADDING,40);
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool)) {
+      loader.init();
+      loader.loadRanges(range);
+    }
+    DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
+    cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
     Assert.isTrue(!gotAllData.value);
@@ -167,7 +194,7 @@ public class TestLowLevelDataReader {
     @Override
     public DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
         DiskRangeListFactory factory, BooleanRef gotAllData) {
-      return null;
+      return cache.getFileData(fileKey, range, baseOffset, factory, null, gotAllData);
     }
 
     @Override

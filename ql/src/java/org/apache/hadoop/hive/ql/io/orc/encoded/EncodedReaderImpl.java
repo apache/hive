@@ -1085,7 +1085,7 @@ class EncodedReaderImpl implements EncodedReader {
   }
 
   @Override
-  public void readDataRanges(DiskRangeList ranges) throws IOException {
+  public void preReadDataRanges(DiskRangeList ranges) throws IOException {
     boolean hasFileId = this.fileKey != null;
     long baseOffset = 0L;
 
@@ -1094,33 +1094,34 @@ class EncodedReaderImpl implements EncodedReader {
     MutateHelper toRead = getDataFromCacheAndDisk(ranges, 0, hasFileId, toRelease);
 
     // 3. For uncompressed case, we need some special processing before read.
-    //preReadUncompressedStream(stripeOffset, iter, sctx.offset, sctx.offset + sctx.length, sctx.kind);
     preReadUncompressedStreams(baseOffset, toRead, toRelease);
 
     // 4. Decompress the data.
+    ColumnStreamData csd = POOLS.csdPool.take();
     try {
-      ColumnStreamData csd = POOLS.csdPool.take();
       csd.incRef();
       DiskRangeList drl = toRead.next;
       while (drl != null) {
-          drl = readEncodedStream(baseOffset, drl, drl.getOffset(), drl.getEnd(), csd, drl.getOffset(), drl.getEnd(),
-                  toRelease);
-          for (MemoryBuffer buf : csd.getCacheBuffers()) {
-            cacheWrapper.releaseBuffer(buf);
-          }
-          if (drl != null)
-            drl = drl.next;
+        drl = readEncodedStream(baseOffset, drl, drl.getOffset(), drl.getEnd(), csd, drl.getOffset(), drl.getEnd(),
+                toRelease);
+        for (MemoryBuffer buf : csd.getCacheBuffers()) {
+          cacheWrapper.releaseBuffer(buf);
         }
-      csd.decRef();
-      POOLS.csdPool.offer(csd);
+        if (drl != null)
+          drl = drl.next;
+        }
     } finally {
       if (toRead != null) {
-          releaseInitialRefcounts(toRead.next);
-        }
+        releaseInitialRefcounts(toRead.next);
+      }
       if (toRelease != null) {
-          releaseBuffers(toRelease.keySet(), true);
-          toRelease.clear();
-        }
+        releaseBuffers(toRelease.keySet(), true);
+        toRelease.clear();
+      }
+      if (csd != null) {
+        csd.decRef();
+        POOLS.csdPool.offer(csd);
+      }
     }
   }
 

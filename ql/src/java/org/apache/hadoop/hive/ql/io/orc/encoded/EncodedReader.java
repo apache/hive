@@ -73,6 +73,9 @@ public interface EncodedReader {
 
   void setStopped(AtomicBoolean isStopped);
 
-  void readDataRanges(DiskRangeList ranges) throws IOException;
+  /**
+   * Reads the encoded data from ORC file by disk ranges and populates the cache.
+   */
+  void preReadDataRanges(DiskRangeList ranges) throws IOException;
 
 }
