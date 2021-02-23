@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common.type;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hive.common.util.DateParser;
 
 import java.math.BigDecimal;
 import java.time.DateTimeException;
@@ -176,7 +177,7 @@ public class TimestampUtils {
     // Handle simpler cases directly avoiding exceptions
     if (s.length() == DATE_LENGTH) {
       // Its a date!
-      return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+      return Timestamp.ofEpochMilli(DateParser.parseDate(s).toEpochMilli());
     }
     try {
       return Timestamp.valueOf(s);
