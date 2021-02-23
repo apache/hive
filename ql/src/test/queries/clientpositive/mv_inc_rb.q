@@ -16,7 +16,7 @@ select a,b,c from t1;
 -- do some changes on source table data
 delete from t1 where a = 4;
 delete from t1 where a = 3;
-delete from t1 where b = NULL;
+delete from t1 where b is NULL;
 
 insert into t1(a,b, c) values (2, 'two', 2.2), (2, 'two', 2.2), (5, 'five', 5.5);
 

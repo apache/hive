@@ -63,7 +63,9 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
               leftPos + joinLeftInput.getRowType().getFieldCount());
 
       projExprs.add(rightRef);
-      joinConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ImmutableList.of(leftRef, rightRef)));
+
+      joinConjs.add(
+              rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, ImmutableList.of(leftRef, rightRef)));
     }
 
     RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
