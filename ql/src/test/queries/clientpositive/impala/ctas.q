@@ -64,3 +64,8 @@ insert into tab1_imp0_part
 select empid, deptno, name
 from emps_imp0
 limit 10;
+
+drop table tab1_imp0;
+drop table tab1_imp0_part;
+drop table emps_imp0;
+drop table depts_imp0;

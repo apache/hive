@@ -29,3 +29,7 @@ stored as parquet as
 select empid, depts_imp0.deptno from emps_imp0
 join depts_imp0 using (deptno) where depts_imp0.deptno > cast(ltrim('10', 'a') as integer)
 group by empid, depts_imp0.deptno;
+
+drop materialized view mv1_imp0;
+drop table emps_imp0;
+drop table depts_imp0;

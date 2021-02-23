@@ -26,6 +26,7 @@ POSTHOOK: Input: default@t_one_col
 POSTHOOK: Output: default@t_one_col
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -49,4 +50,14 @@ Per-Host Resources: mem-estimate=4B mem-reservation=0B thread-reservation=1
      tuple-ids=0 row-size=4B cardinality=0
      in pipelines: 00(GETNEXT)
 
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.t_one_col
 

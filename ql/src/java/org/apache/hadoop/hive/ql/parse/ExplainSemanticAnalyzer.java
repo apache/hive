@@ -231,10 +231,6 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
     fieldList = ExplainTask.getResultSchema();
-    if (isImpalaPlan(conf) && !conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
-        assert tasks.size() == 1;
-        explTask.addDependentTask(tasks.get(0));
-    }
     rootTasks.add(explTask);
   }
 

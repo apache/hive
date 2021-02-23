@@ -18,8 +18,13 @@
 package org.apache.hadoop.hive.impala.work;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.engine.EngineWork;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.impala.plan.ImpalaCompiledPlan;
@@ -40,56 +45,95 @@ public class ImpalaWork extends EngineWork implements Serializable {
     private final FetchTask fetch;
     /* Desired row batch size (number of rows returned in each request) */
     private final long fetchSize;
+    /* Whether to submit explain plan to backend to register its profile. */
+    private final boolean submitExplainToBackend;
+    /* Query state (used to instantiate task to send explain plan to coordinator). */
+    private final QueryState queryState;
+    /* Context (used to instantiate task to send explain plan to coordinator). */
+    private final Context context;
+    /* Explain plan */
+    private String explain;
 
-    private ImpalaWork(WorkType type, ImpalaCompiledPlan plan, String query, FetchTask fetch, long fetchSize) {
-        this.type = type;
-        this.plan = plan;
-        this.query = query;
-        this.fetch = fetch;
-        this.fetchSize = fetchSize;
+    private ImpalaWork(WorkType type, ImpalaCompiledPlan plan, String query, FetchTask fetch, long fetchSize,
+        boolean submitExplainToBackend, QueryState queryState, Context context) {
+      this.type = type;
+      this.plan = plan;
+      this.query = query;
+      this.fetch = fetch;
+      this.fetchSize = fetchSize;
+      this.submitExplainToBackend = submitExplainToBackend;
+      this.queryState = queryState;
+      this.context = context;
+      this.explain = null;
     }
 
-    public static ImpalaWork createPlannedWork(ImpalaCompiledPlan plan, String query, FetchTask fetch, long fetchSize) {
-        return new ImpalaWork(WorkType.COMPILED_PLAN, plan, query, fetch, fetchSize);
+    public static ImpalaWork createPlannedWork(ImpalaCompiledPlan plan, QueryState queryState, FetchTask fetch, long fetchSize,
+        boolean submitExplainToBackend, Context context) {
+      return new ImpalaWork(WorkType.COMPILED_PLAN, plan, queryState.getQueryString(), fetch, fetchSize,
+          submitExplainToBackend, queryState, context);
     }
 
     public static ImpalaWork createPlannedWork(String query, FetchTask fetch, long fetchSize) {
-        return new ImpalaWork(WorkType.COMPILED_QUERY, null, query, fetch, fetchSize);
+      return new ImpalaWork(WorkType.COMPILED_QUERY, null, query, fetch, fetchSize,
+          false, null, null);
     }
 
     public static ImpalaWork createQuery(String query, FetchTask fetch, long fetchSize) {
-      return new ImpalaWork(WorkType.QUERY, null, query, fetch, fetchSize);
+      return new ImpalaWork(WorkType.QUERY, null, query, fetch, fetchSize,
+          false, null, null);
     }
 
     public WorkType getType() {
-        return type;
+      return type;
     }
 
     public ImpalaCompiledPlan getCompiledPlan() {
-        Preconditions.checkState(type == WorkType.COMPILED_PLAN);
-        return plan;
+      Preconditions.checkState(type == WorkType.COMPILED_PLAN);
+      return plan;
     }
 
     public String getQuery() {
-        return query;
+      return query;
     }
 
     public FetchTask getFetch() {
-        return fetch;
+      return fetch;
     }
 
     public long getFetchSize() {
-        return fetchSize;
+      return fetchSize;
     }
 
     @Explain(displayName = "Impala Plan")
     public String getImpalaExplain() {
-        return type == WorkType.COMPILED_PLAN ? "\n" + plan.getExplain() : null;
+      if (type == WorkType.COMPILED_PLAN) {
+        if (explain == null) {
+          explain = "\n" + plan.getExplain();
+          if (submitExplainToBackend) {
+            submitExplain();
+          }
+        }
+        return explain;
+      }
+      return null;
+    }
+
+    private void submitExplain() {
+      // Send plan to backend by executing this task. The configuration
+      // should already be set properly to avoid executing the query
+      // and rather register this as an EXPLAIN query
+      Task<ImpalaWork> task = TaskFactory.get(this);
+      task.initialize(queryState, null, new TaskQueue(context), context);
+      task.execute();
+      if (task.getException() != null) {
+        throw new RuntimeException("Unexpected error: " + task.getException().getMessage(),
+            task.getException());
+      }
     }
 
     @Explain(displayName = "Impala Query")
     public String getImpalaQuery() {
-        return type == WorkType.COMPILED_QUERY || type == WorkType.QUERY ? query : null;
+      return type == WorkType.COMPILED_QUERY || type == WorkType.QUERY ? query : null;
     }
 
     /**

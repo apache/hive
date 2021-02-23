@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.impala.exec.ImpalaQueryOperator;
@@ -92,13 +93,16 @@ public class ImpalaCompiler extends TaskCompiler {
                 pCtx.getFetchTask(), requestedFetchSize);
         } else {
             MoveWork moveWork = moveTask == null ? null : (MoveWork) moveTask.getWork();
+            ImpalaCompiledPlan impalaCompiledPlan = getFinalizedCompiledPlan(pCtx, moveWork);
+            Preconditions.checkNotNull(impalaCompiledPlan, "Impala compiled plan cannot be null");
+            boolean submitToBackend = !conf.getBoolVar(ConfVars.HIVE_IN_TEST);
             // This is the common path for a planned query
-            work = ImpalaWork.createPlannedWork(getFinalizedCompiledPlan(pCtx, moveWork), pCtx.getQueryState().getQueryString(),
-                pCtx.getFetchTask(), requestedFetchSize);
+            work = ImpalaWork.createPlannedWork(impalaCompiledPlan, pCtx.getQueryState(),
+                pCtx.getFetchTask(), requestedFetchSize, submitToBackend, pCtx.getContext());
         }
 
-        Task task = TaskFactory.get(work);
-        if (moveTask != null && !work.getCompiledPlan().getIsExplain()) {
+        Task<ImpalaWork> task = TaskFactory.get(work);
+        if (moveTask != null) {
             task.addDependentTask(moveTask);
         }
         rootTasks.add(task);

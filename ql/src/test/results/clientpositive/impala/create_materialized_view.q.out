@@ -79,7 +79,8 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_imp0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
   Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
@@ -136,6 +137,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 01(GETNEXT)
 
 
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: hdfs://### HDFS PATH ###
+
   Stage: Stage-2
     Create View
       columns: $f0 int, $f1 int
@@ -155,3 +162,31 @@ group by empid, depts_imp0.deptno
       name: default.mv1_imp0
       retrieve and include: true
 
+HMS CALL get_table_req FOR mv1_imp0
+PREHOOK: query: drop materialized view mv1_imp0
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+HMS CALL get_table_req FOR mv1_imp0
+POSTHOOK: query: drop materialized view mv1_imp0
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+HMS CALL get_table_req FOR emps_imp0
+PREHOOK: query: drop table emps_imp0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@emps_imp0
+PREHOOK: Output: default@emps_imp0
+HMS CALL get_table_req FOR emps_imp0
+HMS CALL get_table_req FOR emps_imp0
+POSTHOOK: query: drop table emps_imp0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@emps_imp0
+POSTHOOK: Output: default@emps_imp0
+HMS CALL get_table_req FOR depts_imp0
+PREHOOK: query: drop table depts_imp0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@depts_imp0
+PREHOOK: Output: default@depts_imp0
+HMS CALL get_table_req FOR depts_imp0
+HMS CALL get_table_req FOR depts_imp0
+POSTHOOK: query: drop table depts_imp0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@depts_imp0
+POSTHOOK: Output: default@depts_imp0
