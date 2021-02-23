@@ -2901,4 +2901,4 @@ const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 const string TABLE_BUCKETING_VERSION = "bucketing_version",
 const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
-
+const string TABLE_IS_CTAS = "created_with_ctas",
