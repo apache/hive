@@ -109,6 +109,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   private Set<FileStatus> filesToFetch = null;
 
+  // contains the partition values for each dynamic Partition written by this FileSink
+  // and the committed files for each partition
   private Map<String, List<Path>> dynPartitionValues = new HashMap<>();
 
   /**
