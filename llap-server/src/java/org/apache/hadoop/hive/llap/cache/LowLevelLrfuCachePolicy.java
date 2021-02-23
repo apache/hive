@@ -18,15 +18,26 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import static java.util.Comparator.nullsLast;
+import static java.util.Comparator.comparing;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
@@ -37,6 +48,8 @@ import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.impl.MsInfo;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Implementation of the algorithm from "On the Existence of a Spectrum of Policies
  * that Subsumes the Least Recently Used (LRU) and Least Frequently Used (LFU) Policies".
@@ -44,6 +57,7 @@ import org.apache.hadoop.metrics2.impl.MsInfo;
  */
 public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.Impl implements LowLevelCachePolicy {
   private final double lambda;
+  private final double cutoff;
   private double f(long x) {
     return Math.pow(0.5, lambda * x);
   }
@@ -74,15 +88,18 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
   private int heapSize = 0;
   private final int maxHeapSize;
   private EvictionListener evictionListener;
-  private final PolicyMetrics metrics;
-  private final ThreadLocal<LlapCacheableBuffer[]> threadLocalBuffers;
-  private final ThreadLocal<Integer> threadLocalCount;
+  @VisibleForTesting
+  final PolicyMetrics metrics;
+  // BP wrapper
+  private final ThreadLocal<BPWrapper> threadLocalBPWrapper;
+  private final Map<Long, BPWrapper> bpWrappers = new ConcurrentHashMap<>();
   private final int maxQueueSize;
 
   public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
     super(conf);
     this.maxQueueSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE);
     this.lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
+    this.cutoff = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE);
 
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
     if (lambda == 0) {
@@ -106,8 +123,49 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     // register new metrics provider for this cache policy
     metrics = new PolicyMetrics(sessID);
     LlapMetricsSystem.instance().register("LowLevelLrfuCachePolicy-" + MetricsUtils.getHostName(), null, metrics);
-    threadLocalBuffers = ThreadLocal.withInitial(() -> new LlapCacheableBuffer[maxQueueSize]);
-    threadLocalCount = ThreadLocal.withInitial(() -> 0);
+
+    // Thread local buffer arrays are also registered in a concurrent map for more control over them. Note that this
+    // concurrent hash map will only have to lock just once for every thread during startup, and later only during
+    // supportability feature use cases e.g. purge, statistics gathering, it does not affect the hot code paths.
+    threadLocalBPWrapper = ThreadLocal.withInitial(() -> {
+      BPWrapper bpWrapper = new BPWrapper();
+      bpWrappers.put(Thread.currentThread().getId(), bpWrapper);
+      return bpWrapper;
+    });
+
+  }
+
+  /**
+   * Wraps around the structures used in thread locals and buffers instances of LlapCachableBuffers in order to prevent
+   * lock contention in LRFU during buffer ingress initiated heap access.
+   */
+  private class BPWrapper {
+    private final LlapCacheableBuffer[] buffers = new LlapCacheableBuffer[maxQueueSize];
+    private int count = 0;
+    // IO-Thread's are granted this lock for almost 100% of the time on the hot code paths, the only occasions these
+    // threads are blocked by this is when supportability features are used.
+    private ReentrantLock lock = new ReentrantLock();
+
+    private void tryFlush() {
+      if (heapLock.tryLock()) {
+        try {
+          doNotifyUnderHeapLock(count, buffers);
+        } finally {
+          count = 0;
+          heapLock.unlock();
+        }
+      }
+    }
+
+    private void flush() {
+      heapLock.lock();
+      try {
+        doNotifyUnderHeapLock(count, buffers);
+      } finally {
+        count = 0;
+        heapLock.unlock();
+      }
+    }
   }
 
   @Override
@@ -157,35 +215,29 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     if (proactiveEvictionEnabled && !instantProactiveEviction) {
       buffer.removeProactiveEvictionMark();
     }
-    int count = threadLocalCount.get();
-    final LlapCacheableBuffer[] cacheableBuffers = threadLocalBuffers.get() ;
-    if (count < maxQueueSize) {
-      cacheableBuffers[count] = buffer;
-      threadLocalCount.set(++count);
-    }
-    if (count <= maxQueueSize / 2) {
-      // case too early to flush
-      return;
-    }
+    BPWrapper bpWrapper = threadLocalBPWrapper.get();
 
-    if (count == maxQueueSize) {
-      // case we have to flush thus block on heap lock
-      heapLock.lock();
-      try {
-        doNotifyUnderHeapLock(count, cacheableBuffers);
-      } finally {
-        threadLocalCount.set(0);
-        heapLock.unlock();
+    // This will only block in a very very rare scenario only.
+    bpWrapper.lock.lock();
+    try {
+      final LlapCacheableBuffer[] cacheableBuffers = bpWrapper.buffers;
+      if (bpWrapper.count < maxQueueSize) {
+        cacheableBuffers[bpWrapper.count] = buffer;
+        ++bpWrapper.count;
       }
-      return;
-    }
-    if (heapLock.tryLock()) {
-      try {
-        doNotifyUnderHeapLock(count, cacheableBuffers);
-      } finally {
-        threadLocalCount.set(0);
-        heapLock.unlock();
+      if (bpWrapper.count <= maxQueueSize / 2) {
+        // case too early to flush
+        return;
       }
+
+      if (bpWrapper.count == maxQueueSize) {
+        // case we have to flush thus block on heap lock
+        bpWrapper.flush();
+        return;
+      }
+      bpWrapper.tryFlush(); //case 50% < queue usage < 100%, flush is preferred but not required yet
+    } finally {
+      bpWrapper.lock.unlock();
     }
   }
 
@@ -249,7 +301,22 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     this.evictionListener = listener;
   }
 
+  /**
+   * Flushes all BPWrappers which will in turn clear IO-Threads' threadlocal buffers.
+   */
+  private void flushAllBPWrappers() {
+    for (BPWrapper bpWrapper : bpWrappers.values()) {
+      bpWrapper.lock.lock();
+      try {
+        bpWrapper.flush();
+      } finally {
+        bpWrapper.lock.unlock();
+      }
+    }
+  }
+
   private long evictOrPurge(boolean isPurge) {
+    flushAllBPWrappers();
     long evicted = 0;
     LlapCacheableBuffer oldTail;
     listLock.lock();
@@ -758,6 +825,68 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
       .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.LOCKEDDATA]));
     sb.append("\nLRFU metadata locked: ")
       .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.LOCKEDMETA]));
+    sb.append("\nLRFU BP wrapper: ")
+        .append(metricData[PolicyMetrics.BPWRAPCNT])
+        .append(" total items, ")
+        .append(metricData[PolicyMetrics.BPWRAPDISTINCT])
+        .append(" distinct buffers, that use cache space: ")
+        .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.BPWRAPDATA]))
+        .append(" for data, ")
+        .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.BPWRAPMETA]))
+        .append(" for metadata.");
+  }
+
+  @Override public List<LlapCacheableBuffer> getHotBuffers() {
+    List<LlapCacheableBuffer> buffers = Lists.newLinkedList();
+    long allocatedBytesCounter = 0;
+    long[] usageStats = metrics.getUsageStats();
+    long limit = Math.round((usageStats[PolicyMetrics.DATAONHEAP] + usageStats[PolicyMetrics.DATAONLIST]) * cutoff);
+
+    LlapCacheableBuffer[] copy;
+    try {
+      heapLock.lock();
+      copy = Arrays.copyOf(heap, heap.length);
+    } finally {
+      heapLock.unlock();
+    }
+
+    long t = timer.get();
+    Arrays.sort(copy,
+        nullsLast(comparing(b -> b.lastUpdate == t ? b.priority : expirePriority(t, b.lastUpdate, b.priority))));
+    for (int i = copy.length - 1; i >= 0; i--) {
+      if (copy[i] != null && !(copy[i] instanceof MetadataCache.LlapMetadataBuffer)) {
+        long memoryUsage = copy[i].getMemoryUsage();
+        if (allocatedBytesCounter + memoryUsage <= limit) {
+          buffers.add(copy[i]);
+          allocatedBytesCounter += memoryUsage;
+        } else {
+          return buffers;
+        }
+      }
+    }
+
+    try {
+      listLock.lock();
+      LlapCacheableBuffer scan = listHead;
+      while (null != scan) {
+        if (scan instanceof MetadataCache.LlapMetadataBuffer) {
+          scan = scan.next;
+        } else {
+          long memoryUsage = scan.getMemoryUsage();
+          if (allocatedBytesCounter + memoryUsage <= limit) {
+            buffers.add(scan);
+            allocatedBytesCounter += memoryUsage;
+            scan = scan.next;
+          } else {
+            return buffers;
+          }
+        }
+      }
+    } finally {
+      listLock.unlock();
+    }
+
+    return buffers;
   }
 
   /**
@@ -776,6 +905,10 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     HeapSize("Number of buffers on the min-heap"),
     HeapSizeMax("Capacity (number of buffers) of the min-heap"),
     ListSize("Number of buffers on the eviction short list"),
+    BPWrapperCount("Number of all buffers in BPWrapper threadlocals"),
+    BPWrapperDistinct("Number of distinct buffers in BPWrapper threadlocals"),
+    BPWrapperData("Amount of bytes for data buffers in BPWrapper threadlocals"),
+    BPWrapperMeta("Amount of bytes for metadata buffers in BPWrapper threadlocals"),
     TotalData("Total amount of bytes, used for data"),
     TotalMeta("Total amount of bytes, used for meta data");
 
@@ -802,14 +935,19 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
    * statistics for the LRFU cache policy for monitoring.
    */
   @Metrics(about = "LRFU Cache Policy Metrics", context = "cache")
-  private class PolicyMetrics implements MetricsSource {
-    public static final int DATAONHEAP = 0;
-    public static final int DATAONLIST = 1;
-    public static final int METAONHEAP = 2;
-    public static final int METAONLIST = 3;
-    public static final int LISTSIZE   = 4;
-    public static final int LOCKEDDATA = 5;
-    public static final int LOCKEDMETA = 6;
+  @VisibleForTesting
+  class PolicyMetrics implements MetricsSource {
+    public static final int DATAONHEAP     = 0;
+    public static final int DATAONLIST     = 1;
+    public static final int METAONHEAP     = 2;
+    public static final int METAONLIST     = 3;
+    public static final int LISTSIZE       = 4;
+    public static final int LOCKEDDATA     = 5;
+    public static final int LOCKEDMETA     = 6;
+    public static final int BPWRAPCNT      = 7;
+    public static final int BPWRAPDISTINCT = 8;
+    public static final int BPWRAPDATA     = 9;
+    public static final int BPWRAPMETA     = 10;
 
     private final String session;  // identifier for the LLAP daemon
 
@@ -836,13 +974,33 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
      * @return long array with LRFU stats
      */
     public long[] getUsageStats() {
-      long dataOnHeap = 0L;   // all non-meta related buffers on min-heap
-      long dataOnList = 0L;   // all non-meta related buffers on eviction list
-      long metaOnHeap = 0L;   // meta data buffers on min-heap
-      long metaOnList = 0L;   // meta data buffers on eviction list
-      long listSize   = 0L;   // number of entries on eviction list
-      long lockedData = 0L;   // number of bytes in locked data buffers
-      long lockedMeta = 0L;   // number of bytes in locked metadata buffers
+      long dataOnHeap     = 0L;   // all non-meta related buffers on min-heap
+      long dataOnList     = 0L;   // all non-meta related buffers on eviction list
+      long metaOnHeap     = 0L;   // meta data buffers on min-heap
+      long metaOnList     = 0L;   // meta data buffers on eviction list
+      long listSize       = 0L;   // number of entries on eviction list
+      long lockedData     = 0L;   // number of bytes in locked data buffers
+      long lockedMeta     = 0L;   // number of bytes in locked metadata buffers
+      long bpWrapCount    = 0L;   // number of buffers in BP wrapper threadlocals
+      long bpWrapDistinct = 0L;   // number of distinct buffers in BP wrapper threadlocals
+      long bpWrapData     = 0L;   // number of bytes stored in BP wrapper data buffers
+      long bpWrapMeta     = 0L;   // number of bytes stored in BP wrapper metadata buffers
+
+      // Using set to produce result of distinct buffers only
+      // (same buffer may be present in multiple thread local bp wrappers, or even inside heap/list, but ultimately
+      // it uses the same cache space)
+      Set<LlapCacheableBuffer> bpWrapperBuffers = new HashSet<>();
+      for (BPWrapper bpWrapper : bpWrappers.values()) {
+        bpWrapper.lock.lock();
+        try {
+          bpWrapCount += bpWrapper.count;
+          for (int i = 0; i < bpWrapper.count; ++i) {
+            bpWrapperBuffers.add(bpWrapper.buffers[i]);
+          }
+        } finally {
+          bpWrapper.lock.unlock();
+        }
+      }
 
       // aggregate values on the heap
       heapLock.lock();
@@ -862,6 +1020,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
                 lockedData += buff.getMemoryUsage();
               }
             }
+            bpWrapperBuffers.remove(buff);
           }
         }
       } finally {
@@ -884,7 +1043,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
               lockedData += scan.getMemoryUsage();
             }
           }
-
+          bpWrapperBuffers.remove(scan);
           ++listSize;
           scan = scan.next;
         }
@@ -892,9 +1051,20 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
         listLock.unlock();
       }
 
+
+      for (LlapCacheableBuffer buff : bpWrapperBuffers) {
+        if (buff instanceof LlapMetadataBuffer) {
+          bpWrapMeta += buff.getMemoryUsage();
+        } else {
+          bpWrapData += buff.getMemoryUsage();
+        }
+        ++bpWrapDistinct;
+      }
+
       return new long[] {dataOnHeap, dataOnList,
                          metaOnHeap, metaOnList, listSize,
-                         lockedData, lockedMeta};
+                         lockedData, lockedMeta,
+                         bpWrapCount, bpWrapDistinct, bpWrapData, bpWrapMeta};
     }
 
     @Override
@@ -909,19 +1079,24 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
                                           .tag(MsInfo.SessionId, session);
 
       // add the values to the new record
-      mrb.addCounter(PolicyInformation.DataOnHeap,   usageStats[DATAONHEAP])
-          .addCounter(PolicyInformation.DataOnList,  usageStats[DATAONLIST])
-          .addCounter(PolicyInformation.MetaOnHeap,  usageStats[METAONHEAP])
-          .addCounter(PolicyInformation.MetaOnList,  usageStats[METAONLIST])
-          .addCounter(PolicyInformation.DataLocked,  usageStats[LOCKEDDATA])
-          .addCounter(PolicyInformation.MetaLocked,  usageStats[LOCKEDMETA])
-          .addCounter(PolicyInformation.HeapSize,    heapSize)
-          .addCounter(PolicyInformation.HeapSizeMax, maxHeapSize)
-          .addCounter(PolicyInformation.ListSize,    usageStats[LISTSIZE])
-          .addCounter(PolicyInformation.TotalData,   usageStats[DATAONHEAP]
-                                                     + usageStats[DATAONLIST])
-          .addCounter(PolicyInformation.TotalMeta,   usageStats[METAONHEAP]
-                                                     + usageStats[METAONLIST]);
+      mrb.addCounter(PolicyInformation.DataOnHeap,         usageStats[DATAONHEAP])
+          .addCounter(PolicyInformation.DataOnList,        usageStats[DATAONLIST])
+          .addCounter(PolicyInformation.MetaOnHeap,        usageStats[METAONHEAP])
+          .addCounter(PolicyInformation.MetaOnList,        usageStats[METAONLIST])
+          .addCounter(PolicyInformation.DataLocked,        usageStats[LOCKEDDATA])
+          .addCounter(PolicyInformation.MetaLocked,        usageStats[LOCKEDMETA])
+          .addCounter(PolicyInformation.HeapSize,          heapSize)
+          .addCounter(PolicyInformation.HeapSizeMax,       maxHeapSize)
+          .addCounter(PolicyInformation.ListSize,          usageStats[LISTSIZE])
+          .addCounter(PolicyInformation.BPWrapperCount,    usageStats[BPWRAPCNT])
+          .addCounter(PolicyInformation.BPWrapperDistinct, usageStats[BPWRAPDISTINCT])
+          .addCounter(PolicyInformation.BPWrapperData,     usageStats[BPWRAPDATA])
+          .addCounter(PolicyInformation.TotalData,         usageStats[DATAONHEAP]
+                                                         + usageStats[DATAONLIST]
+                                                         + usageStats[BPWRAPDATA])
+          .addCounter(PolicyInformation.TotalMeta,         usageStats[METAONHEAP]
+                                                         + usageStats[METAONLIST]
+                                                         + usageStats[BPWRAPMETA]);
     }
   }
 }

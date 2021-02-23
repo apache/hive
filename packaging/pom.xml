@@ -57,7 +57,22 @@
                   <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
               </execution>
-            </executions>
+              <execution>
+                <id>assemble-beeline</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <finalName>apache-hive-beeline-${project.version}</finalName>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <descriptors>
+                    <descriptor>src/main/assembly/beeline.xml</descriptor>
+                  </descriptors>
+                  <tarLongFileMode>posix</tarLongFileMode>
+                </configuration>
+                </execution>
+              </executions>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>

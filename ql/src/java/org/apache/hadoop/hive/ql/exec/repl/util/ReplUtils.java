@@ -85,6 +85,10 @@ public class ReplUtils {
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
 
+  public static final String REPL_IS_CUSTOM_DB_LOC = "hive.repl.is.custom.db.loc";
+
+  public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
+
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
 

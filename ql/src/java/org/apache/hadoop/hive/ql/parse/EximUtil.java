@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,14 +29,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -81,6 +85,7 @@ public class EximUtil {
   public static final String METADATA_PATH_NAME = "metadata";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
+  private static final String DATABASE_PATH_SUFFIX = ".db";
 
   /**
    * Wrapper class for common BaseSemanticAnalyzer non-static members
@@ -350,7 +355,8 @@ public class EximUtil {
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
 
   public static void createDbExportDump(FileSystem fs, Path metadataPath, Database dbObj,
-      ReplicationSpec replicationSpec) throws IOException, SemanticException {
+      ReplicationSpec replicationSpec, Configuration conf) throws IOException, SemanticException {
+    updateIfCustomDbLocations(dbObj, conf);
 
     // WARNING NOTE : at this point, createDbExportDump lives only in a world where ReplicationSpec is in replication scope
     // If we later make this work for non-repl cases, analysis of this logic might become necessary. Also, this is using
@@ -372,6 +378,26 @@ public class EximUtil {
     }
     if (parameters != null) {
       dbObj.setParameters(parameters);
+    }
+  }
+
+  private static void updateIfCustomDbLocations(Database database, Configuration conf) throws SemanticException {
+    try {
+      String whLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL,
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE));
+      Path dbDerivedLoc = new Path(whLocatoion, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      String defaultDbLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedLoc);
+      database.getParameters().put(ReplUtils.REPL_IS_CUSTOM_DB_LOC,
+              Boolean.toString(!defaultDbLoc.equals(database.getLocationUri())));
+      String whManagedLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
+      Path dbDerivedManagedLoc = new Path(whManagedLocatoion, database.getName().toLowerCase()
+              + DATABASE_PATH_SUFFIX);
+      String defaultDbManagedLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedManagedLoc);
+      database.getParameters().put(ReplUtils.REPL_IS_CUSTOM_DB_MANAGEDLOC, Boolean.toString(
+              !(database.getManagedLocationUri() == null
+                      ||defaultDbManagedLoc.equals(database.getManagedLocationUri()))));
+    } catch (HiveException ex) {
+      throw new SemanticException(ex);
     }
   }
 

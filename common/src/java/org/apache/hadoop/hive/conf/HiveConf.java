@@ -460,6 +460,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_AM_USE_FQDN.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_OUTPUT_FORMAT_ARROW.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_PATH_CACHE_SIZE.varname);
   }
 
   /**
@@ -554,6 +555,8 @@ public class HiveConf extends Configuration {
     REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
             "Indicates maximium number of latest previously used dump-directories which would be retained when " +
              "hive.repl.retain.prev.dump.dir is set to true"),
+    REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET("hive.repl.retain.custom.db.locations.on.target", true,
+            "Indicates if source database has custom warehouse locations, whether that should be retained on target as well"),
     REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
             "Indicates whether replication of materialized views is enabled."),
     REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
@@ -2130,6 +2133,8 @@ public class HiveConf extends Configuration {
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
         "format", false),
+    HIVE_EXTEND_BUCKET_ID_RANGE("hive.extend.bucketid.range", true,
+            "Dynamically allocate some bits from statement id when bucket id overflows. This allows having more than 4096 buckets."),
     HIVETESTMODEACIDKEYIDXSKIP("hive.test.acid.key.index.skip", false, "For testing only. OrcRecordUpdater will skip "
         + "generation of the hive.acid.key.index", false),
 
@@ -4175,6 +4180,9 @@ public class HiveConf extends Configuration {
         "If hive (in tez mode only) cannot find a usable hive jar in \"hive.jar.directory\", \n" +
         "it will upload the hive jar to \"hive.user.install.directory/user.name\"\n" +
         "and use it to run queries."),
+    HIVE_MASKING_ALGO("hive.masking.algo","sha256", "This property is used to indicate whether " +
+            "FIPS mode is enabled or not. Value should be sha512 to indicate that FIPS mode is enabled." +
+            "Else the value should be sha256. Using this value column masking is being done"),
 
     // Vectorization enabled
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", true,
@@ -4564,6 +4572,9 @@ public class HiveConf extends Configuration {
         "The meaning of this parameter is the inverse of the number of time ticks (cache\n" +
         " operations, currently) that cause the combined recency-frequency of a block in cache\n" +
         " to be halved."),
+    LLAP_LRFU_HOTBUFFERS_PERCENTAGE("hive.llap.io.lrfu.hotbuffers.percentage", 0.10f,
+        new RangeValidator(0.0f, 1.0f), "The number specifies the percentage of the cached buffers "
+        + "which are considered the most important ones based on the policy."),
     LLAP_LRFU_BP_WRAPPER_SIZE("hive.llap.io.lrfu.bp.wrapper.size", 64, "thread local queue "
         + "used to amortize the lock contention, the idea hear is to try locking as soon we reach max size / 2 "
         + "and block when max queue size reached"),
@@ -4640,6 +4651,8 @@ public class HiveConf extends Configuration {
          "will be cached. If set to 'none', only the base files and insert deltas will be channeled through LLAP, " +
          "while delete deltas will be accessed directly from their configured FS without caching them. " +
          "This feature only works with ColumnizedDeleteEventRegistry, SortMergedDeleteEventRegistry is not supported."),
+    LLAP_IO_PATH_CACHE_SIZE("hive.llap.io.path.cache.size", "10Mb", new SizeValidator(),
+        "The amount of the maximum memory allowed to store the file paths."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
@@ -4675,6 +4688,10 @@ public class HiveConf extends Configuration {
         "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER("hive.llap.io.encode.threadpool.multiplier", 2,
+        "Used to determine the size of IO encode threadpool by multiplying hive.llap.io.threadpool.size" +
+        "with this value. During text table reads a thread from the 'regular' IO thread pool may place a number of" +
+        "encode tasks to the threads in the encode pool."),
     LLAP_USE_KERBEROS("hive.llap.kerberos.enabled", true,
         "If LLAP is configured for Kerberos authentication. This could be useful when cluster\n" +
         "is kerberized, but LLAP is not."),

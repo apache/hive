@@ -1558,6 +1558,78 @@ public interface IMetaStoreClient {
             List<String> part_names, boolean getColStats, String engine)
             throws NoSuchObjectException, MetaException, TException;
 
+   /**
+   * Get partitions by a list of partition names.
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param getColStats if true include statistics in the Partition object
+   * @param engine engine sending the request
+   * @return list of Partition objects
+   * @param validWriteIdList valid write Ids
+   * @param tableId table id
+   * @throws NoSuchObjectException No such partitionscatName
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names, boolean getColStats,
+      String engine, String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param validWriteIdList valid write Ids
+   * @param tableId table id
+   * @return list of Partition objects
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      String validWriteIdList, Long tableId) throws TException;
+
+   /**
+     * Get partitions by a list of partition names.
+     * @param catName catalog name
+     * @param db_name database name
+     * @param tbl_name table name
+     * @param part_names list of partition names
+     * @param getColStats if true, column statistics is added to the Partition objects
+     * @param engine engine sending the request
+     * @param validWriteIdList valid write Ids
+     * @param tableId table id
+     * @return list of Partition objects
+     * @throws TException thrift transport error
+     */
+    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name, List<String> part_names,
+        boolean getColStats, String engine, String validWriteIdList, Long tableId)
+        throws TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param catName catalog name
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param validWriteIdList valid write Ids
+   * @param tableId table id
+   * @return list of Partition objects
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                       List<String> part_names, String validWriteIdList, Long tableId)
+      throws TException;
+
+    /**
+   * Get partitions by a list of partition names.
+   * @param req GetPartitionsByNamesRequest
+   * @return list of Partition objects
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException;
+
   /**
    * List partitions along with privilege information for a user or groups
    * @param dbName database name

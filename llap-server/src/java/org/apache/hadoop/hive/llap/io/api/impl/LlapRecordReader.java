@@ -88,6 +88,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final boolean probeDecodeEnabled;
   private VectorizedOrcAcidRowBatchReader acidReader;
   private Object[] partitionValues;
+  private VectorizedRowBatch acidInputVrb;
 
   private final ArrayBlockingQueue<Object> queue;
   private final AtomicReference<Throwable> pendingError = new AtomicReference<>(null);
@@ -394,19 +395,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         // Exclude the row column.
         int acidColCount = acidReader.includeAcidColumns() ?
             OrcInputFormat.getRootColumn(false) - 1 : 0;
-        VectorizedRowBatch inputVrb = new VectorizedRowBatch(
-            //so +1 is the OrcRecordUpdater.ROW?
-            acidColCount + 1 + vrb.getDataColumnCount());
+        ensureAcidInputVrb(acidColCount, vrb.getDataColumnCount());
         // By assumption, ACID columns are currently always in the beginning of the arrays.
-        System.arraycopy(cvb.cols, 0, inputVrb.cols, 0, acidColCount);
+        System.arraycopy(cvb.cols, 0, acidInputVrb.cols, 0, acidColCount);
         for (int ixInReadSet = acidColCount; ixInReadSet < cvb.cols.length; ++ixInReadSet) {
           int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet) -
               (acidReader.includeAcidColumns() ? 0 : OrcRecordUpdater.ROW);
-          // TODO: should we create the batch from vrbctx, and reuse the vectors, like below? Future work.
-          inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
+          cvb.swapColumnVector(ixInReadSet, acidInputVrb.cols, ixInVrb);
         }
-        inputVrb.size = cvb.size;
-        acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
+        acidInputVrb.size = cvb.size;
+        acidReader.setBaseAndInnerReader(new AcidWrapper(acidInputVrb));
         acidReader.next(NullWritable.get(), vrb);
       } else {
          // TODO: WTF? The old code seems to just drop the ball here.
@@ -432,6 +430,13 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       firstReturnTime = counters.startTimeCounter();
     }
     return true;
+  }
+
+  private void ensureAcidInputVrb(int acidColCount, int dataColCount) {
+    if (acidInputVrb == null) {
+      //+1 is the OrcRecordUpdater.ROW
+      acidInputVrb = new VectorizedRowBatch(acidColCount + 1 + dataColCount);
+    }
   }
 
   public VectorizedRowBatchCtx getVectorizedRowBatchCtx() {

@@ -21,6 +21,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_162_container, bigKeyColName:s_store_id, smallTablePos:1, keyRatio:0.5158450704225352
                   Statistics: Num rows: 1704 Data size: 333984 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: s_store_sk (type: bigint), s_store_id (type: string), s_store_name (type: varchar(50))

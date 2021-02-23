@@ -27,11 +27,13 @@ import org.apache.hadoop.hive.common.io.CacheTag;
 class FileCache<T> {
   private static final int EVICTED_REFCOUNT = -1, EVICTING_REFCOUNT = -2;
   private final T cache;
+  private final Object fileKey;
   private final AtomicInteger refCount = new AtomicInteger(0);
   private final CacheTag tag;
 
-  private FileCache(T value, CacheTag tag) {
+  private FileCache(T value, Object fileKey, CacheTag tag) {
     this.cache = value;
+    this.fileKey = fileKey;
     this.tag = tag;
   }
 
@@ -78,6 +80,10 @@ class FileCache<T> {
     assert result;
   }
 
+  public Object getFileKey() {
+    return fileKey;
+  }
+
   /**
    * All this mess is necessary because we want to be able to remove sub-caches for fully
    * evicted files. It may actually be better to have non-nested map with object keys?
@@ -91,7 +97,7 @@ class FileCache<T> {
       if (subCache != null) {
         if (subCache.incRef()) return subCache; // Main path - found it, incRef-ed it.
         if (newSubCache == null) {
-          newSubCache = new FileCache<T>(createFunc.apply(null), tag);
+          newSubCache = new FileCache<T>(createFunc.apply(null), fileKey, tag);
           newSubCache.incRef();
         }
         // Found a stale value we cannot incRef; try to replace it with new value.
@@ -100,7 +106,7 @@ class FileCache<T> {
       }
       // No value found.
       if (newSubCache == null) {
-        newSubCache = new FileCache<T>(createFunc.apply(null), tag);
+        newSubCache = new FileCache<T>(createFunc.apply(null), fileKey, tag);
         newSubCache.incRef();
       }
       FileCache<T> oldSubCache = cache.putIfAbsent(fileKey, newSubCache);

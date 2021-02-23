@@ -375,12 +375,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Filter Operator
-            predicate: 'foo' (type: string)
-            Select Operator
-              expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
-              outputColumnNames: _col0, _col1, _col2, _col3
-              ListSink
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
 
 PREHOOK: query: explain select * from loc_orc where true = true
 PREHOOK: type: QUERY

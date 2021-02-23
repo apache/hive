@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -83,21 +85,22 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   private final List<Integer> sourceIncludes;
 
   private final boolean isAsync;
-  private final Thread orcThread;
   private final ConcurrentLinkedQueue<WriteOperation> queue;
   private AsyncCallback completion;
+  private Future<?> future;
 
   // Stored here only as async operation context.
   private final boolean[] cacheIncludes;
 
   private VectorizedRowBatch sourceBatch, destinationBatch;
   private List<VectorizedRowBatch> currentBatches;
+  private final ExecutorService encodeExecutor;
 
   // TODO: if more writers are added, separate out an EncodingWriterFactory
-  public static EncodingWriter create(InputFormat<?, ?> sourceIf, Deserializer serDe,
-      Map<Path, PartitionDesc> parts, Configuration daemonConf, Configuration jobConf,
-      Path splitPath, StructObjectInspector sourceOi, List<Integer> sourceIncludes,
-      boolean[] cacheIncludes, int allocSize) throws IOException {
+  public static EncodingWriter create(InputFormat<?, ?> sourceIf, Deserializer serDe, Map<Path, PartitionDesc> parts,
+      Configuration daemonConf, Configuration jobConf, Path splitPath, StructObjectInspector sourceOi,
+      List<Integer> sourceIncludes, boolean[] cacheIncludes, int allocSize, ExecutorService encodeExecutor)
+      throws IOException {
     // Vector SerDe can be disabled both on client and server side.
     if (!HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
         || !HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
@@ -126,12 +129,12 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     }
     LlapIoImpl.LOG.info("Creating VertorDeserializeOrcWriter for " + path);
     return new VectorDeserializeOrcWriter(
-        jobConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize);
+        jobConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize, encodeExecutor);
   }
 
-  private VectorDeserializeOrcWriter(Configuration conf, Properties tblProps,
-      StructObjectInspector sourceOi, List<Integer> sourceIncludes, boolean[] cacheIncludes,
-      int allocSize) throws IOException {
+  private VectorDeserializeOrcWriter(Configuration conf, Properties tblProps, StructObjectInspector sourceOi,
+      List<Integer> sourceIncludes, boolean[] cacheIncludes, int allocSize, ExecutorService encodeExecutor)
+      throws IOException {
     super(sourceOi, allocSize);
     // See also: the usage of VectorDeserializeType, for binary. For now, we only want text.
     this.vrbCtx = createVrbCtx(sourceOi, tblProps, conf);
@@ -190,19 +193,16 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     if (isAsync) {
       currentBatches = new LinkedList<>();
       queue = new ConcurrentLinkedQueue<>();
-      orcThread = new Thread(this);
-      orcThread.setDaemon(true);
-      orcThread.setName(Thread.currentThread().getName() + "-OrcEncode");
     } else {
       queue = null;
-      orcThread = null;
       currentBatches = null;
     }
+    this.encodeExecutor = encodeExecutor;
   }
 
   public void startAsync(AsyncCallback callback) {
     this.completion = callback;
-    this.orcThread.start();
+    this.future = encodeExecutor.submit(this);
   }
 
   private static VectorizedRowBatchCtx createVrbCtx(StructObjectInspector oi, final Properties tblProps,
@@ -506,7 +506,8 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   }
 
   public void interrupt() {
-    assert orcThread != null;
-    orcThread.interrupt();
+    if (future != null) {
+      future.cancel(true);
+    }
   }
 }
