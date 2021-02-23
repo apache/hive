@@ -24,6 +24,7 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
@@ -65,7 +66,7 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
       joinConjs.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ImmutableList.of(leftRef, rightRef)));
     }
 
-    RexNode joinCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, joinConjs);
+    RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
 
     int rowIsDeletedIdx = joinRightInput.getRowType().getFieldCount() - 1;
     RexNode rowIsDeleted = rexBuilder.makeInputRef(
