@@ -144,7 +144,7 @@ POSTHOOK: Output: default@mat1
 CBO PLAN:
 HiveProject(a=[$4], b0=[$5], c=[$6])
   HiveFilter(condition=[OR($7, NOT($7))])
-    HiveJoin(condition=[AND(=($0, $4), =($1, $5), =($2, $6))], joinType=[right], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), IS NOT DISTINCT FROM($1, $5), IS NOT DISTINCT FROM($2, $6))], joinType=[right], algorithm=[none], cost=[not available])
       HiveProject(a=[$0], b=[$1], c=[$2], rowIsDeleted=[false])
         HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
       HiveProject(a=[$0], b0=[$9], c=[$2], $f14=[$14])
@@ -265,6 +265,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
                   1 _col0 (type: int), _col1 (type: varchar(128)), _col2 (type: float)
+                nullSafes: [true, true, true]
                 outputColumnNames: _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 3 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
