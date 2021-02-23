@@ -2371,7 +2371,10 @@ public class Hive {
             }
           } else {
             newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
-            newFiles.addAll(newFileStatuses.stream().map(FileStatus::getPath).collect(Collectors.toList()));
+            newFiles.addAll(newFileStatuses
+                .stream()
+                .map(FileStatus::getPath)
+                .collect(Collectors.toList()));
           }
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {

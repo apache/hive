@@ -58,6 +58,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -2868,15 +2869,15 @@ public final class Utilities {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      Map<Path, List<Path>> allPartition = new HashMap<>();
+      Map<Path, Optional<List<Path>>> allPartition = new HashMap<>();
       if (dynamicPartitionSpecs != null) {
         for (Map.Entry<String, List<Path>> partSpec : dynamicPartitionSpecs.entrySet()) {
-          allPartition.put(new Path(loadPath, partSpec.getKey()), partSpec.getValue());
+          allPartition.put(new Path(loadPath, partSpec.getKey()), Optional.of(partSpec.getValue()));
         }
       } else {
         List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
         for (FileStatus fileStatus : status) {
-          allPartition.put(fileStatus.getPath(), null);
+          allPartition.put(fileStatus.getPath(), Optional.empty());
         }
       }
 
@@ -2907,7 +2908,9 @@ public final class Utilities {
         } else {
           PartitionDetails details = new PartitionDetails();
           details.fullSpec = fullPartSpec;
-          details.newFiles = partEntry.getValue();
+          if (partEntry.getValue().isPresent()) {
+            details.newFiles = partEntry.getValue().get();
+          }
           partitionDetailsMap.put(partPath, details);
         }
       });
@@ -4537,12 +4540,12 @@ public final class Utilities {
           if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
-          for (Map.Entry<String, List<Path>> dynpath : dynamicPartitionSpecs.entrySet()){
-            if (path.toString().contains(dynpath.getKey())){
-              dynpath.getValue().add(path);
-              break;
-            }
-          }
+          dynamicPartitionSpecs.entrySet()
+              .stream()
+              .filter(dynpath -> path.toString().contains(dynpath.getKey()))
+              .findAny()
+              .ifPresent(dynPath -> dynPath.getValue().add(path));
+
           Path parentDirPath = path.getParent();
           while (AcidUtils.isChildOfDelta(parentDirPath, specPath)) {
             // Some cases there are other directory layers between the delta and the datafiles
