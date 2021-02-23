@@ -45,6 +45,8 @@ public class InMemoryPackageRegistry implements PackageRegistry {
   @Override
   public void createPackageBody(String name, String body, boolean replace) {
     Source existing = registry.get(name);
+    if (existing == null || StringUtils.isEmpty(existing.header))
+      throw new RuntimeException("Package header does not exists " + name);
     if (existing != null && StringUtils.isNotEmpty(existing.body) && !replace)
       throw new RuntimeException("Package body " + name + " already exits");
     registry.getOrDefault(name, new Source("", "")).body = body;

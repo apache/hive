@@ -29,7 +29,8 @@ public class MPackage {
   private String header;
   private String body;
   private int createTime = (int)(System.currentTimeMillis() / 1000);
-  public static final int MAX_SOURCE_SIZE = 1073741823;
+  public static final int MAX_HEADER_SIZE = 1073741823;
+  public static final int MAX_BODY_SIZE = 1073741823;
 
   public MPackage() {}
 
@@ -71,8 +72,8 @@ public class MPackage {
   }
 
   public void setHeader(String header) throws MetaException {
-    if (header.length() > MAX_SOURCE_SIZE) {
-      throw new MetaException("Source code is too long: " + header.length() + " max size: " + MAX_SOURCE_SIZE);
+    if (header.length() > MAX_HEADER_SIZE) {
+      throw new MetaException("Header is too long: " + header.length() + " max size: " + MAX_HEADER_SIZE);
     }
     this.header = header;
   }
@@ -82,8 +83,8 @@ public class MPackage {
   }
 
   public void setBody(String body) throws MetaException {
-    if (body.length() > MAX_SOURCE_SIZE) {
-      throw new MetaException("Source code is too long: " + body.length() + " max size: " + MAX_SOURCE_SIZE);
+    if (body.length() > MAX_BODY_SIZE) {
+      throw new MetaException("Source code is too long: " + body.length() + " max size: " + MAX_BODY_SIZE);
     }
     this.body = body;
   }

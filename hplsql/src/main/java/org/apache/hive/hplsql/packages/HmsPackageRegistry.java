@@ -46,7 +46,7 @@ public class HmsPackageRegistry implements PackageRegistry {
               ? Optional.empty()
               : Optional.of(pkg.getHeader() + ";\n" + pkg.getBody());
     } catch (TException e) {
-      throw new RuntimeException(e.getCause());
+      throw new RuntimeException(e);
     }
   }
 
@@ -58,7 +58,7 @@ public class HmsPackageRegistry implements PackageRegistry {
         throw new RuntimeException("Package " + name + " already exists");
       msc.addPackage(makePackage(name, header, ""));
     } catch (TException e) {
-      throw new RuntimeException(e.getCause());
+      throw new RuntimeException(e);
     }
   }
 
@@ -72,7 +72,7 @@ public class HmsPackageRegistry implements PackageRegistry {
         throw new RuntimeException("Package body " + name + " already exists");
       msc.addPackage(makePackage(name, existing.getHeader(), body));
     } catch (TException e) {
-      throw new RuntimeException(e.getCause());
+      throw new RuntimeException(e);
     }
   }
 
@@ -81,7 +81,7 @@ public class HmsPackageRegistry implements PackageRegistry {
     try {
       msc.dropPackage(new DropPackageRequest(hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name));
     } catch (TException e) {
-      throw new RuntimeException(e.getCause());
+      throw new RuntimeException(e);
     }
   }
 
