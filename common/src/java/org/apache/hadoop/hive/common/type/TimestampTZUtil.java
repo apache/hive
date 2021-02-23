@@ -28,17 +28,15 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.chrono.IsoChronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.HiveDateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,18 +47,15 @@ public class TimestampTZUtil {
   private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
   private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
 
-  static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_DATE)
-      .optionalStart().parseCaseInsensitive().appendLiteral("T").append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter()
-      .withResolverStyle(ResolverStyle.STRICT).withChronology(IsoChronology.INSTANCE);
-
   public static TimestampTZ parse(String s) {
     return parse(s, null);
   }
 
-  public static TimestampTZ parse(String s, ZoneId defaultTimeZone) {
+  public static TimestampTZ parse(String text, ZoneId defaultTimeZone) {
     // need to handle offset with single digital hour, see JDK-8066806
-    s = handleSingleDigitHourOffset(s);
-    TemporalAccessor accessor = FORMATTER.parse(s);
+    final String s = handleSingleDigitHourOffset(Objects.requireNonNull(text).trim());
+
+    TemporalAccessor accessor = HiveDateTimeFormatter.HIVE_DATE_TIME.parse(s);
 
     LocalDate localDate = accessor.query(TemporalQueries.localDate());
 

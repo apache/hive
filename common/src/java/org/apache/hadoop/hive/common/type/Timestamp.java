@@ -23,15 +23,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
+import org.apache.hive.common.util.HiveDateTimeFormatter;
 import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
@@ -79,11 +78,6 @@ import org.apache.hive.common.util.SuppressFBWarnings;
 public class Timestamp implements Comparable<Timestamp> {
   
   private static final LocalDateTime EPOCH = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
-  private static final DateTimeFormatter PARSE_FORMATTER =
-      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_DATE)
-          // Time (Optional)
-          .optionalStart().parseCaseInsensitive().appendLiteral("T").append(DateTimeFormatter.ISO_LOCAL_TIME)
-          .toFormatter().withResolverStyle(ResolverStyle.STRICT).withChronology(IsoChronology.INSTANCE);
 
   private static final DateTimeFormatter PRINT_FORMATTER = new DateTimeFormatterBuilder()
       .append(DateTimeFormatter.ISO_DATE).appendLiteral(' ').append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter();
@@ -175,11 +169,12 @@ public class Timestamp implements Comparable<Timestamp> {
    * @throws NullPointerException if {@code text} is null
    */
   public static Timestamp valueOf(final String text) {
-    final String s = Objects.requireNonNull(text).trim().replace(' ', 'T');
+    final String s = Objects.requireNonNull(text).trim();
     final LocalDateTime localDateTime;
 
     try {
-      TemporalAccessor temporalAccessor = PARSE_FORMATTER.parseBest(s, LocalDateTime::from, LocalDate::from);
+      TemporalAccessor temporalAccessor =
+          HiveDateTimeFormatter.HIVE_DATE_TIME.parseBest(s, LocalDateTime::from, LocalDate::from);
 
       if (temporalAccessor instanceof LocalDateTime) {
         localDateTime = (LocalDateTime) temporalAccessor;

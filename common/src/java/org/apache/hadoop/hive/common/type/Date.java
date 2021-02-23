@@ -17,19 +17,19 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
+
+import org.apache.hive.common.util.HiveDateTimeFormatter;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This is the internal type for Date. The full qualified input format of Date
@@ -74,11 +74,6 @@ import java.util.Objects;
 public class Date implements Comparable<Date> {
 
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
-
-  private static final DateTimeFormatter PARSE_FORMATTER =
-      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).optionalStart().parseCaseInsensitive()
-          .appendLiteral('T').append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter()
-          .withResolverStyle(ResolverStyle.STRICT).withChronology(IsoChronology.INSTANCE);
 
   private static final DateTimeFormatter PRINT_FORMATTER =
       new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).toFormatter();
@@ -165,14 +160,22 @@ public class Date implements Comparable<Date> {
    * @throws NullPointerException if {@code text} is null
    */
   public static Date valueOf(final String text) {
-    String s = Objects.requireNonNull(text).trim();
-    s = s.replace(' ', 'T');
-    LocalDate localDate;
+    final String s = Objects.requireNonNull(text).trim().replace(' ', 'T');
+    final LocalDate localDate;
+
     try {
-      localDate = LocalDate.parse(s, PARSE_FORMATTER);
+      TemporalAccessor temporalAccessor =
+          HiveDateTimeFormatter.HIVE_DATE_TIME.parseBest(s, LocalDateTime::from, LocalDate::from);
+
+      if (temporalAccessor instanceof LocalDate) {
+        localDate = (LocalDate) temporalAccessor;
+      } else {
+        localDate = ((LocalDateTime) temporalAccessor).toLocalDate();
+      }
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("Cannot create date, parsing error");
+      throw new IllegalArgumentException("Cannot create date, parsing error", e);
     }
+
     return new Date(localDate);
   }
 
