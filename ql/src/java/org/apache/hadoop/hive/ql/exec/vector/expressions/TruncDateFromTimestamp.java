@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Argument
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.common.util.DateParser;
 
 /**
  * Vectorized implementation of trunc(date, fmt) function for timestamp input
@@ -39,7 +38,6 @@ public class TruncDateFromTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
   protected int colNum;
   protected String fmt;
-  protected transient final DateParser dateParser = new DateParser();
 
   public TruncDateFromTimestamp() {
     super();

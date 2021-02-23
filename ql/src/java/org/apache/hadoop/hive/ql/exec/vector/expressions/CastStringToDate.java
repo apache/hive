@@ -38,8 +38,6 @@ public class CastStringToDate extends VectorExpression {
 
   private final int inputColumn;
 
-  private transient final DateParser dateParser = new DateParser();
-
   public CastStringToDate() {
     super();
 
@@ -153,8 +151,8 @@ public class CastStringToDate extends VectorExpression {
 
   protected void evaluate(LongColumnVector outputColVector, BytesColumnVector inV, int i) {
     String dateString = new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
-    Date hDate = new Date();
-    if (dateParser.parseDate(dateString, hDate)) {
+    Date hDate = DateParser.parseDate(dateString);
+    if (hDate != null) {
       outputColVector.vector[i] = DateWritableV2.dateToDays(hDate);
       return;
     }
