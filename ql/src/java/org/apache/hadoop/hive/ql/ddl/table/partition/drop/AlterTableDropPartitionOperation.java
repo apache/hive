@@ -107,7 +107,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
 
   private void dropPartitions() throws HiveException {
     // ifExists is currently verified in AlterTableDropPartitionAnalyzer
-    TableName tablenName = HiveTableName.of(desc.getTableName());
+    TableName tableName = HiveTableName.of(desc.getTableName());
 
     List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
@@ -116,8 +116,12 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     }
 
     PartitionDropOptions options =
-        PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
-    List<Partition> droppedPartitions = context.getDb().dropPartitions(tablenName.getDb(), tablenName.getTable(),
+        PartitionDropOptions.instance()
+            .deleteData(true)
+            .ifExists(true)
+            .purgeData(desc.getIfPurge())
+            .setWriteId(desc.getWriteId());
+    List<Partition> droppedPartitions = context.getDb().dropPartitions(tableName.getDb(), tableName.getTable(),
         partitionExpressions, options);
 
     ProactiveEviction.Request.Builder llapEvictRequestBuilder = LlapHiveUtils.isLlapMode(context.getConf()) ?
@@ -129,7 +133,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
       DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
       if (llapEvictRequestBuilder != null) {
-        llapEvictRequestBuilder.addPartitionOfATable(tablenName.getDb(), tablenName.getTable(), partition.getSpec());
+        llapEvictRequestBuilder.addPartitionOfATable(tableName.getDb(), tableName.getTable(), partition.getSpec());
       }
     }
 

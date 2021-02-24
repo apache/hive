@@ -2996,6 +2996,9 @@ public class HiveConf extends Configuration {
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
+//    HIVE_TXN_LOCKLESS_READS_ENABLED("hive.txn.lockless.reads.enabled", false,
+//        "Feature flag for enabling lockless read"),
+
 
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT

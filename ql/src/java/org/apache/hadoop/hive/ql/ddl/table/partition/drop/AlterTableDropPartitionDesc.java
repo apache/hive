@@ -117,4 +117,5 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
     return true;
   }
 
+  public Long getWriteId() { return this.writeId; }
 }

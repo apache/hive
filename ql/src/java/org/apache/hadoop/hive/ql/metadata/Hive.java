@@ -52,7 +52,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,7 +73,6 @@ import javax.jdo.JDODataStoreException;
 
 import com.google.common.collect.ImmutableList;
 
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -218,7 +216,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -3516,8 +3513,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
       PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table table = getTable(dbName, tableName);
-      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
-          partitionExpressions, dropOptions);
+      AcidUtils.TableSnapshot snapshot = null;
+
+      if (AcidUtils.isTransactionalTable(table)) {
+        if (dropOptions.writeId <= 0) {
+          snapshot = AcidUtils.getTableSnapshot(conf, table, true);
+        } else {
+          String fullTableName = getFullTableName(table.getDbName(), table.getTableName());
+          ValidWriteIdList writeIdList = getMSC().getValidWriteIds(fullTableName, dropOptions.writeId);
+          snapshot = new TableSnapshot(dropOptions.writeId, writeIdList.writeToString());
+        }
+      }
+
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions;
+        if (snapshot == null) {
+         partitions = getMSC().dropPartitions(dbName, tableName, partitionExpressions, dropOptions);
+        } else {
+         dropOptions.validWriteIds = snapshot.getValidWriteIdList();
+         dropOptions.writeId = snapshot.getWriteId();
+         partitions = getMSC().dropPartitions(dbName, tableName, partitionExpressions, dropOptions);
+        }
+
       return convertFromMetastore(table, partitions);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);

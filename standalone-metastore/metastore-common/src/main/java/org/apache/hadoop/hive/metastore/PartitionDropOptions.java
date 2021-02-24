@@ -27,6 +27,8 @@ public class PartitionDropOptions {
   public boolean ifExists = false;
   public boolean returnResults = true;
   public boolean purgeData = false;
+  public String validWriteIds;
+  public Long writeId;
 
   public static PartitionDropOptions instance() { return new PartitionDropOptions(); }
 
@@ -47,6 +49,16 @@ public class PartitionDropOptions {
 
   public PartitionDropOptions purgeData(boolean purgeData) {
     this.purgeData = purgeData;
+    return this;
+  }
+
+  public PartitionDropOptions setValidWriteIds(String validWriteIds) {
+    this.validWriteIds = validWriteIds;
+    return this;
+  }
+
+  public PartitionDropOptions setWriteId(Long writeId) {
+    this.writeId = writeId;
     return this;
   }
 

@@ -4799,6 +4799,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean mustPurge = false;
     boolean tableDataShouldBeDeleted = false;
     boolean needsCm = false;
+    Long writeId = -1L;
+    boolean locklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
+    boolean writeTruncatedBase = false;
+
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
 
     if (db_name == null) {
@@ -4818,6 +4822,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
       firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
       mustPurge = isMustPurge(envContext, tbl);
+      writeId = Long.parseLong(envContext.getProperties().get("writeId"));
+      writeTruncatedBase = locklessReadsEnabled && TxnUtils.isTransactionalTable(tbl);
 
       if (part == null) {
         throw new NoSuchObjectException("Partition doesn't exist. "
@@ -4865,10 +4871,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
           if (isArchived) {
             assert (archiveParentDir != null);
-            wh.deleteDir(archiveParentDir, true, mustPurge, needsCm);
+            if (writeTruncatedBase) {
+              try {
+                addTruncateBaseFile(archiveParentDir, writeId, archiveParentDir.getFileSystem(getConf()));
+              } catch (Exception e) {
+                throw newMetaException(e);
+              }
+            } else {
+              wh.deleteDir(archiveParentDir, true, mustPurge, needsCm);
+            }
           } else {
             assert (partPath != null);
-            wh.deleteDir(partPath, true, mustPurge, needsCm);
+            if (writeTruncatedBase) {
+              try {
+                addTruncateBaseFile(partPath, writeId, archiveParentDir.getFileSystem(getConf()));
+              } catch (Exception e) {
+                throw newMetaException(e);
+              }
+            } else {
+              wh.deleteDir(partPath, true, mustPurge, needsCm);
+            }
             deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge, needsCm);
           }
           // ok even if the data is not deleted
@@ -4933,6 +4955,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean deleteData = request.isSetDeleteData() && request.isDeleteData();
     boolean ignoreProtection = request.isSetIgnoreProtection() && request.isIgnoreProtection();
     boolean needResult = !request.isSetNeedResult() || request.isNeedResult();
+    boolean locklessReadsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.LOCKLESS_READS_ENABLED);
     List<PathAndPartValSize> dirsToDelete = new ArrayList<>();
     List<Path> archToDelete = new ArrayList<>();
     EnvironmentContext envContext = request.isSetEnvironmentContext()
@@ -5047,21 +5070,37 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!success) {
         ms.rollbackTransaction();
       } else if (checkTableDataShouldBeDeleted(tbl, deleteData)) {
-        LOG.info( mustPurge?
-            "dropPartition() will purge partition-directories directly, skipping trash."
-            :  "dropPartition() will move partition-directories to trash-directory.");
-        // Archived partitions have har:/to_har_file as their location.
-        // The original directory was saved in params
-        for (Path path : archToDelete) {
-          wh.deleteDir(path, true, mustPurge, needsCm);
-        }
-        for (PathAndPartValSize p : dirsToDelete) {
-          wh.deleteDir(p.path, true, mustPurge, needsCm);
+        if (locklessReadsEnabled) {
           try {
-            deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge, needsCm);
-          } catch (IOException ex) {
-            LOG.warn("Error from deleteParentRecursive", ex);
-            throw new MetaException("Failed to delete parent: " + ex.getMessage());
+            if (TxnUtils.isTransactionalTable(tbl)) {
+              for (Partition part : parts) {
+                Path location = new Path(part.getSd().getLocation());
+                Long writeId = Long.parseLong(envContext.getProperties().get("writeId"));
+                addTruncateBaseFile(location, writeId, location.getFileSystem(getConf()));
+              }
+            }
+          } catch (IOException e) {
+            throw new MetaException(e.getMessage());
+          } catch (Exception e) {
+            throw newMetaException(e);
+          }
+        } else {
+          LOG.info(
+              mustPurge ? "dropPartition() will purge partition-directories directly, skipping trash."
+                  : "dropPartition() will move partition-directories to trash-directory.");
+          // Archived partitions have har:/to_har_file as their location.
+          // The original directory was saved in params
+          for (Path path : archToDelete) {
+            wh.deleteDir(path, true, mustPurge, needsCm);
+          }
+          for (PathAndPartValSize p : dirsToDelete) {
+            wh.deleteDir(p.path, true, mustPurge, needsCm);
+            try {
+              deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge, needsCm);
+            } catch (IOException ex) {
+              LOG.warn("Error from deleteParentRecursive", ex);
+              throw new MetaException("Failed to delete parent: " + ex.getMessage());
+            }
           }
         }
       }

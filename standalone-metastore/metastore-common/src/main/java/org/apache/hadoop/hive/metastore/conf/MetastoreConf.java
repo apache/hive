@@ -687,6 +687,8 @@ public class MetastoreConf {
         "hive-metastore/_HOST@EXAMPLE.COM",
         "The service principal for the metastore Thrift server. \n" +
             "The special string _HOST will be replaced automatically with the correct host name."),
+    LOCKLESS_READS_ENABLED("metastore.lockless.reads.enabled", "metastore.lockless.reads.enabled",
+        false, "Feature flag for enabling lockless read"),
     THRIFT_METASTORE_AUTHENTICATION("metastore.authentication", "hive.metastore.authentication",
             "NOSASL",
       new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM"),

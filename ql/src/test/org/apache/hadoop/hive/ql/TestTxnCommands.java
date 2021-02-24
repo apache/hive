@@ -1442,4 +1442,63 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
     Assert.assertEquals(2, r.size());
   }
+
+  @Test
+  public void testDropPartitionOnePartition() throws Exception {
+    hiveConf.setBoolean(MetastoreConf.ConfVars.LOCKLESS_READS_ENABLED.getVarname(), true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='a') values (1,2),(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (5,5),(4,4)");
+    runStatementOnDriver("alter table " + Table.ACIDTBLPART + " drop partition (p='a')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stats =
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+            AcidUtils.baseFileFilter);
+    Assert.assertEquals("Expecting 1 base and found " + stats.length + " files " + Arrays.toString(stats),1, stats.length);
+    String name = stats[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(2, r.size());
+  }
+
+  @Test
+  public void testDropPartitionMultiplePartitions() throws Exception {
+    hiveConf.setBoolean(MetastoreConf.ConfVars.LOCKLESS_READS_ENABLED.getVarname(), true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
+
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+        + " partition (p1='a', p2='a', p3='a') values (1,1),(2,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+        + " partition (p1='a', p2='a', p3='b') values (3,3),(4,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+        + " partition (p1='a', p2='a', p3='c') values (5,5),(6,6)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+        + " partition (p1='a', p2='b', p3='a') values (7,7),(8,8)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+        + " partition (p1='a', p2='b', p3='b') values (9,9),(0,0)");
+    runStatementOnDriver("alter table " + Table.ACIDTBLNESTEDPART + " drop partition (p2='a')");
+
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stats =
+        fs.listStatus(new Path(getWarehouseDir(),
+       Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a/p3=a"),
+            AcidUtils.baseFileFilter);
+
+    Assert.assertEquals("Expecting 1 base and found " + stats.length + " files " + Arrays.toString(stats),1, stats.length);
+    String name = stats[0].getPath().getName();
+    Assert.assertEquals("base_0000006", name);
+
+    stats =
+        fs.listStatus(new Path(getWarehouseDir(),
+       Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=b/p3=b"),
+            AcidUtils.baseFileFilter);
+
+    Assert.assertEquals("Expecting 0 base and found " + stats.length + " files " + Arrays.toString(stats), 0, stats.length);
+  }
 }

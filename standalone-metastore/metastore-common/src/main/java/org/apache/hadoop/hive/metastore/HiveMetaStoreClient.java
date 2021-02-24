@@ -1619,7 +1619,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                         List<Pair<Integer, byte[]>> partExprs,
                                         PartitionDropOptions options) throws TException {
     RequestPartsSpec rps = new RequestPartsSpec();
+    boolean locklessReadsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.LOCKLESS_READS_ENABLED);
     List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
+    EnvironmentContext environmentContext;
     for (Pair<Integer, byte[]> partExpr : partExprs) {
       DropPartitionsExpr dpe = new DropPartitionsExpr();
       dpe.setExpr(partExpr.getRight());
@@ -1627,14 +1629,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       exprs.add(dpe);
     }
     rps.setExprs(exprs);
+
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setCatName(catName);
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
+
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+      environmentContext = getEnvironmentContextWithIfPurgeSet();
+      if (locklessReadsEnabled) {
+        environmentContext.putToProperties("writeId", options.writeId.toString());
+      }
+      req.setEnvironmentContext(environmentContext);
+    } else {
+      if (locklessReadsEnabled) {
+        Map<String, String> warehouseOptions = new HashMap<>();
+        warehouseOptions.put("writeId", options.writeId.toString());
+        environmentContext = new EnvironmentContext(warehouseOptions);
+
+        req.setEnvironmentContext(environmentContext);
+      }
     }
     return client.drop_partitions_req(req).getPartitions();
   }
