@@ -21,6 +21,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.TextStyle;
 
 /**
  * This is the internal type for Timestamp with time zone.
@@ -32,6 +35,10 @@ import java.time.ZonedDateTime;
 public class TimestampTZ implements Comparable<TimestampTZ> {
 
   private static final ZonedDateTime EPOCH = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+
+  private static final DateTimeFormatter FORMATTER =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral(' ')
+          .append(DateTimeFormatter.ISO_LOCAL_TIME).appendLiteral(' ').appendZoneText(TextStyle.NARROW).toFormatter();
 
   private ZonedDateTime zonedDateTime;
 
@@ -67,7 +74,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
 
   @Override
   public String toString() {
-    return zonedDateTime.format(TimestampTZUtil.FORMATTER);
+    return zonedDateTime.format(FORMATTER);
   }
 
   @Override
