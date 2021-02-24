@@ -121,6 +121,18 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1));
   }
 
+  @Test
+  void testAddSameMVTwice() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).get(0), is(defaultMaterialization1));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1));
+  }
+
   private Table getTable(String db, String tableName, String definition) {
     Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
     table.setDbName(db);

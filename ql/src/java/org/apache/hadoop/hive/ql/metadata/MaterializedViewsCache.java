@@ -56,7 +56,7 @@ public class MaterializedViewsCache {
     ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
 
     // You store the materialized view
-    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, aMaterialization) -> {
+    dbMap.computeIfAbsent(materializedViewTable.getTableName(), (mvTableName) -> {
       List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
               materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
       materializationList.add(materialization);
