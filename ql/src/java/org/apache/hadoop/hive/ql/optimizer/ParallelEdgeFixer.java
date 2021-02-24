@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -209,11 +208,6 @@ public class ParallelEdgeFixer extends Transform {
 
       String colName = e.getKey();
       ExprNodeDesc expr = e.getValue();
-
-      // column is added artificially to remove the same column from key/value
-      if (colName.startsWith(Utilities.ReduceField.KEY + ".reducesinkkey")) {
-        continue;
-      }
 
       ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
 
