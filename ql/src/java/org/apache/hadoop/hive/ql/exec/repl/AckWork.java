@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * AckWork.
@@ -35,6 +36,7 @@ public class AckWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path ackFilePath;
   private transient ReplicationMetricCollector metricCollector;
+  private List<Runnable> tasks;
 
   public Path getAckFilePath() {
     return ackFilePath;
@@ -48,8 +50,13 @@ public class AckWork implements Serializable {
     this.ackFilePath = ackFilePath;
   }
 
-  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector) {
+  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector, List<Runnable> preAckTasks) {
     this.ackFilePath = ackFilePath;
     this.metricCollector = metricCollector;
+    this.tasks = preAckTasks;
+  }
+
+  public List<Runnable> getPreAckTasks(){
+    return this.tasks;
   }
 }

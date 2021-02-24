@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
@@ -64,6 +65,9 @@ import org.slf4j.Logger;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -412,6 +416,24 @@ public class WarehouseInstance implements Closeable {
     assertEquals(data.size(), results.size());
     assertTrue(results.containsAll(data));
     return this;
+  }
+
+  long verifyNotificationAck(String dumpLocation, long prevNotificationID) throws Exception {
+    FileSystem fs = new Path(dumpLocation).getFileSystem(hiveConf);
+    Path notificationAckFile = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplAck.NOTIFICATION_FILE);
+    assertTrue(fs.exists(notificationAckFile));
+    long currentNotificationID = getCurrentNotificationEventId().getEventId();
+    long previousLoadNotificationID = fetchNotificationIDFromDump(notificationAckFile, fs);
+    assertTrue(previousLoadNotificationID > prevNotificationID && currentNotificationID > previousLoadNotificationID);
+    return previousLoadNotificationID;
+  }
+
+  long fetchNotificationIDFromDump(Path notificationAckFile, FileSystem fs) throws Exception{
+    InputStream inputstream = fs.open(notificationAckFile);
+    BufferedReader reader = new BufferedReader(new InputStreamReader(inputstream));
+    String line = reader.readLine();
+    assertTrue(line!=null && reader.readLine()==null);
+    return Long.parseLong(line);
   }
 
   public List<String> getOutput() throws IOException {

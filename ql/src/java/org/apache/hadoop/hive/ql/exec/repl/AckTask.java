@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * AckTask.
@@ -43,6 +44,10 @@ public class AckTask extends Task<AckWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      List<Runnable> preAckTasks = work.getPreAckTasks();
+      for(Runnable task:preAckTasks){
+        task.run();
+      }
       Path ackPath = work.getAckFilePath();
       Utils.create(ackPath, conf);
       LOG.info("Created ack file : {} ", ackPath);

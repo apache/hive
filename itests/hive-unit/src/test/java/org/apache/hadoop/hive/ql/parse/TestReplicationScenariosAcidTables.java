@@ -163,6 +163,23 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testNotificationAck() throws Throwable{
+    long previousNotificationID = 0;
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .dump(primaryDbName);
+    previousNotificationID = replica.load(replicatedDbName, primaryDbName)
+            .verifyResults(new String[] {})
+            .verifyNotificationAck(bootstrapDump.dumpLocation, previousNotificationID);
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
+            .run("insert into t1 values (1)")
+            .dump(primaryDbName);
+    previousNotificationID = replica.load(replicatedDbName, primaryDbName)
+            .verifyResults(new String[] {})
+            .verifyNotificationAck(incrementalDump1.dumpLocation, previousNotificationID);
+  }
+
+  @Test
   /**
    * Testcase for getting immutable dataset dump, and its corresponding repl load.
    */
