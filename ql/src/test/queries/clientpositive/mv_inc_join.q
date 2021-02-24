@@ -1,6 +1,6 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
---SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=false;
 set hive.materializedview.rewriting.sql=false;
 
 create table t1(a int, b varchar(128), c float, d int) stored as orc TBLPROPERTIES ('transactional'='true');

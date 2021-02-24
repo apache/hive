@@ -1,6 +1,6 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
---SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=false;
 set hive.materializedview.rewriting.sql=false;
 
 create table t1(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true');
@@ -36,7 +36,7 @@ alter materialized view mat1 rebuild;
 
 -- the view should be up to date and used
 explain cbo
-select a,b,c from t1 where a > 0;
+select a,b,c from t1 where a > 1;
 
 select * from mat1;
 
