@@ -86,22 +86,13 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=20.01KB mem-reservation=0B thread-reservation=1
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
   WRITE TO HDFS [default.mv1_imp0, OVERWRITE=false]
   |  partitions=1
   |  output exprs: default.emps_imp0.empid, default.depts_imp0.deptno
   |  mem-estimate=12B mem-reservation=0B thread-reservation=0
   |
-  04:EXCHANGE [UNPARTITIONED]
-     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=0,2 row-size=12B cardinality=0
-     in pipelines: 00(GETNEXT)
-
-F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.emps_imp0.deptno = default.depts_imp0.deptno
   |  fk/pk conjuncts: assumed fk/pk

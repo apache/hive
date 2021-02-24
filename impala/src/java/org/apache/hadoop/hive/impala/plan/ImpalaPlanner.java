@@ -293,10 +293,8 @@ public class ImpalaPlanner {
           ctx_.getNextFragmentId(), planNodeRoot, DataPartition.UNPARTITIONED));
     } else {
       fragments = new ArrayList<>();
-      // create distributed plan
-      // for queries, isPartitioned is false; in the future, make this conditional
-      // on whether it is an insert/CTAS etc.
-      final boolean isPartitioned = false;
+      // Create distributed plan. For insert/CTAS without limit, isPartitioned should be true.
+      final boolean isPartitioned = stmtType_ == TStmtType.DML && !planNodeRoot.hasLimit();
       distributedPlanner.createPlanFragments(planNodeRoot, isPartitioned, fragments);
     }
 
