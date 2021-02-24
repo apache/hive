@@ -604,7 +604,7 @@ public class HiveConf extends Configuration {
             + "external tables is stored. This is relative base path and hence prefixed to the source "
             + "external table path on target cluster."),
     REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK("hive.repl.external.warehouse.single.copy.task",
-        false, "Should create single copy task for all the tables "
+        false, "Should create single copy task for all the external tables "
         + "within the database default location for external tables, Would require more memory "
         + "for preparing the initial listing, Should be used if the memory "
         + "requirements can be fulfilled."),

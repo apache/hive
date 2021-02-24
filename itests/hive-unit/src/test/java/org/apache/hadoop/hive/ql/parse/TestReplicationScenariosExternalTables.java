@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -28,6 +27,7 @@ import org.apache.hadoop.fs.permission.AclEntryType;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -1386,7 +1386,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     testDatabaseLevelCopy(false);
   }
 
-  public void testDatabaseLevelCopy(boolean isAtTarget) throws Throwable {
+  public void testDatabaseLevelCopy(boolean runCopyTasksOnTarget)
+      throws Throwable {
     Path externalTableLocation =
         new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
@@ -1397,10 +1398,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
     List<String> withClause = Arrays.asList(
-        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy"
-            + ".task'='true'",
+        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy.task'='true'",
         "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
-            + "'='" + isAtTarget + "'");
+            + "'='" + runCopyTasksOnTarget + "'");
 
     // Create a table within the warehouse location, one outside and one with
     // a partition outside the default location.
@@ -1419,7 +1419,35 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("ALTER TABLE c ADD PARTITION (country='france') LOCATION '"
                 + externalTablePartitionLocation.toString() + "'")
             .run("insert into c partition(country='france') values('paris')")
-        .dump(primaryDbName, withClause);
+            .dump(primaryDbName, withClause);
+
+    Database primaryDb = primary.getDatabase(primaryDbName);
+
+    // Confirm the a table is outside the db location.
+    Table aTable = primary.getTable(primaryDbName, "a");
+    new Path(aTable.getSd().getLocation());
+    assertFalse(FileUtils
+        .isPathWithinSubtree(new Path(aTable.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    //Confirm the b table is inside the db location.
+    Table bTable = primary.getTable(primaryDbName, "b");
+    assertTrue(FileUtils
+        .isPathWithinSubtree(new Path(bTable.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    //Confirm the c table is inside the db location.
+    Table cTable = primary.getTable(primaryDbName, "c");
+    assertTrue(FileUtils
+        .isPathWithinSubtree(new Path(cTable.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    // Confirm the partition of c table is outside db location.
+    String partitionBtableLocation =
+        primary.getAllPartitions(primaryDbName, "c").get(0).getSd()
+            .getLocation();
+    assertFalse(FileUtils.isPathWithinSubtree(new Path(partitionBtableLocation),
+        new Path(primaryDb.getLocationUri())));
 
     // Do a load and verify all the data is there.
     replica.load(replicatedDbName, primaryDbName, withClause)
@@ -1460,6 +1488,19 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("insert into newout values(2)")
             .dump(primaryDbName, withClause);
 
+
+    // Check whether table newin is inside the database location.
+    Table tableNewin = primary.getTable(primaryDbName,"newin");
+    assertTrue(FileUtils
+        .isPathWithinSubtree(new Path(tableNewin.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    // Check whether table newout is outside database location,
+    Table tableNewout = primary.getTable(primaryDbName,"newout");
+    assertFalse(FileUtils
+        .isPathWithinSubtree(new Path(tableNewout.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
     // Do an incremental load and check if all the old and new data is there.
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
@@ -1496,8 +1537,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
     List<String> withClause = Arrays.asList(
-        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy"
-            + ".task'='false'");
+        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy.task'='false'");
 
     // Create a table within the warehouse location, one outside and one with
     // a partition outside the default location.

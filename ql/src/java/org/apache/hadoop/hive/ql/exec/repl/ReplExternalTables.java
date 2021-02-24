@@ -150,9 +150,7 @@ public final class ReplExternalTables {
             "only External tables can be writen via this writer, provided table is " + table
                 .getTableType());
       }
-      Path fullyQualifiedDataLocation = PathBuilder
-          .fullyQualifiedHDFSUri(table.getDataLocation(),
-              FileSystem.get(hiveConf));
+      Path fullyQualifiedDataLocation = PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
       if (isTableLevelReplication || !FileUtils
           .isPathWithinSubtree(table.getDataLocation(), dbLoc)) {
         write(lineFor(table.getTableName(), fullyQualifiedDataLocation,
