@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.process.kill.KillQueriesOperation;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,7 +36,9 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -50,6 +53,22 @@ public class TestKillQueryWithAuthorizationDisabled {
 
   private static class ExceptionHolder {
     Throwable throwable;
+  }
+
+  static class FakeGroupAuthenticator extends SessionStateUserAuthenticator {
+    @Override public List<String> getGroupNames() {
+      List<String> groups = new ArrayList<String>();
+      if (getUserName().equals("user1")) {
+        groups.add("group_a");
+      } else if (getUserName().equals("user2")) {
+        groups.add("group_a");
+        groups.add("group_b");
+      } else if (getUserName().equals(System.getProperty("user.name"))) {
+        groups.add("group_b");
+        groups.add("group_c");
+      }
+      return groups;
+    }
   }
 
   public static class SleepMsUDF extends UDF {
@@ -83,9 +102,8 @@ public class TestKillQueryWithAuthorizationDisabled {
 
   @BeforeClass public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
-    conf.setBoolVar(HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
-        "org.apache.hadoop.hive.ql.security" + ".SessionStateUserAuthenticator");
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    conf.set(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
     // Disable Hive Authorization
     conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, false);
     MiniHS2.cleanupLocalDir();
@@ -138,22 +156,25 @@ public class TestKillQueryWithAuthorizationDisabled {
     final StringBuffer stmtQueryId = new StringBuffer();
 
     // Thread executing the query
-    Thread tExecute = new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          System.out.println("Executing query: ");
-          stmt.execute("set hive.llap.execution.mode = none");
+    Thread tExecute = new Thread(() -> {
+      try {
+        String query =
+            "select sleepMsUDF(t1.int_col, 10), t1.int_col, t2.int_col " + "from " + tableName + " t1 join " + tableName
+                + " t2 on t1.int_col = t2.int_col";
+        LOG.info("Executing query: " + query);
+        stmt.execute("set hive.llap.execution.mode = none");
+        stmt.execute("use " + testDbName);
 
-          if (useTag) {
-            stmt.execute("set hive.query.tag = " + tag);
-          }
-          // The test table has 500 rows, so total query time should be ~ 500*100ms = 50 seconds
-          stmt.executeAsync("select sleepMsUDF(t1.int_col, 100), t1.int_col from " + tableName + " t1");
-          stmtQueryId.append(stmt.getQueryId());
-          stmt.getUpdateCount();
-        } catch (SQLException e) {
-          stmtHolder.throwable = e;
+        if (useTag) {
+          stmt.execute("set hive.query.tag = " + tag);
         }
+        // The test table has 500 rows, so total query time should be ~ 500*100ms = 50 seconds
+        stmt.executeAsync(query);
+        Thread.sleep(1000);
+        stmtQueryId.append(stmt.getQueryId());
+        stmt.getUpdateCount();
+      } catch (SQLException | InterruptedException e) {
+        stmtHolder.throwable = e;
       }
     });
 
