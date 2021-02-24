@@ -249,7 +249,7 @@ public class QueryPlan implements Serializable {
    * @return The dynamic partition specifications from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
    * null if there are multiple FileSinkOperators with the same value of these parameters.
    */
-  public Set<String> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+  public Map<String, List<Path>> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
       if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
