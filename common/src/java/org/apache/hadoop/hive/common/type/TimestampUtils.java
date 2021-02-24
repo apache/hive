@@ -24,6 +24,7 @@ import org.apache.hive.common.util.DateParser;
 import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 /**
  * Utilities for Timestamps and the relevant conversions.
@@ -172,12 +173,23 @@ public class TimestampUtils {
 
   private static final int DATE_LENGTH = "YYYY-MM-DD".length();
 
-  public static Timestamp stringToTimestamp(String s) {
-    s = s.trim();
+  /**
+   * Convert (parse) a String into a Timestamp.
+   *
+   * @param text The text to parse
+   * @return The Timestamp parsed from the string
+   * @throws IllegalArgumentException if {@code text} cannot be parsed
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Timestamp stringToTimestamp(final String text) {
+    final String s = Objects.requireNonNull(text).trim();
     // Handle simpler cases directly avoiding exceptions
     if (s.length() == DATE_LENGTH) {
       Date d = DateParser.parseDate(s);
-      return (d == null) ? null : Timestamp.ofEpochMilli(d.toEpochMilli());
+      if (d == null) {
+        throw new IllegalArgumentException("Cannot parse date: " + text);
+      }
+      return Timestamp.ofEpochMilli(d.toEpochMilli());
     }
     try {
       return Timestamp.valueOf(s);
