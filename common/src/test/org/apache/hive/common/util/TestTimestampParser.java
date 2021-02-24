@@ -101,7 +101,7 @@ public class TestTimestampParser {
         "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
 
     final TimestampParser tsp = new TimestampParser(patterns);
-    tsp.parseTimestamp("1945-12-31-23:59:59");
+    tsp.parseTimestamp("1945-12-31!23:59:59");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -147,7 +147,7 @@ public class TestTimestampParser {
     final String[] patterns = {"millis", "yyyy-MM-dd'T'HH:mm:ss"};
 
     final TimestampParser tsp = new TimestampParser(patterns);
-    tsp.parseTimestamp("1945-12-31-23:59:59");
+    tsp.parseTimestamp("1945-12-31!23:59:59");
   }
 
   /**

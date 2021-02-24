@@ -160,7 +160,7 @@ public class Date implements Comparable<Date> {
    * @throws NullPointerException if {@code text} is null
    */
   public static Date valueOf(final String text) {
-    final String s = Objects.requireNonNull(text).trim().replace(' ', 'T');
+    final String s = Objects.requireNonNull(text).trim();
     final LocalDate localDate;
 
     try {

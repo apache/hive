@@ -18,19 +18,34 @@
 
 package org.apache.hive.common.util;
 
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.NANO_OF_SECOND;
 import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
+import static java.time.temporal.ChronoField.YEAR;
 
 import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
+import java.time.format.SignStyle;
 
 public final class HiveDateTimeFormatter {
 
-  // Hour is optional
+  public static final DateTimeFormatter HIVE_LOCAL_DATE =
+      new DateTimeFormatterBuilder()
+      .appendValue(YEAR, 1, 10, SignStyle.NORMAL)
+      .appendLiteral('-')
+      .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NOT_NEGATIVE)
+      .appendLiteral('-')
+      .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE)
+      .toFormatter()
+      .withChronology(IsoChronology.INSTANCE)
+      .withResolverStyle(ResolverStyle.LENIENT);
+
+  // Minute/Second are optional
   public static final DateTimeFormatter HIVE_LOCAL_TIME =
       new DateTimeFormatterBuilder()
          .appendValue(HOUR_OF_DAY, 2)
@@ -49,7 +64,7 @@ public final class HiveDateTimeFormatter {
   public static final DateTimeFormatter HIVE_LOCAL_DATE_TIME = 
      new DateTimeFormatterBuilder()
          .parseCaseInsensitive()
-         .append(DateTimeFormatter.ISO_LOCAL_DATE)
+         .append(HIVE_LOCAL_DATE)
          .optionalStart()
          .optionalStart()
          .appendLiteral(' ')
@@ -57,24 +72,38 @@ public final class HiveDateTimeFormatter {
          .optionalStart()
          .appendLiteral('T')
          .optionalEnd()
+         .optionalStart()
+         .appendLiteral(' ')
+         .optionalEnd()
          .appendOptional(HIVE_LOCAL_TIME)
          .toFormatter()
-         .withResolverStyle(ResolverStyle.STRICT)
+         .withResolverStyle(ResolverStyle.LENIENT)
          .withChronology(IsoChronology.INSTANCE);
 
 
   public static final DateTimeFormatter HIVE_DATE_TIME =
-     new DateTimeFormatterBuilder()
-         .append(HIVE_LOCAL_DATE_TIME)
-         .optionalStart()
-         .appendOffsetId()
-         .optionalStart()
-         .appendLiteral('[')
-         .parseCaseSensitive()
-         .appendZoneRegionId()
-         .appendLiteral(']')
-         .toFormatter()
-         .withResolverStyle(ResolverStyle.STRICT)
-         .withChronology(IsoChronology.INSTANCE);
+      new DateTimeFormatterBuilder()
+          .append(HIVE_LOCAL_DATE_TIME)
+          .optionalStart()
+          .optionalStart()
+          .appendOffsetId()
+          .optionalEnd()
+          .optionalStart()
+          .optionalStart()
+          .appendLiteral(' ')
+          .optionalEnd()
+          .optionalStart()
+          .appendLiteral('[')
+          .optionalEnd()
+          .parseCaseInsensitive()
+          .appendZoneRegionId()
+          .optionalStart()
+          .appendLiteral(']')
+          .optionalEnd()
+          .optionalEnd()
+          .optionalEnd()
+          .toFormatter()
+          .withResolverStyle(ResolverStyle.LENIENT)
+          .withChronology(IsoChronology.INSTANCE);
 
 }
