@@ -176,8 +176,8 @@ public class TimestampUtils {
     s = s.trim();
     // Handle simpler cases directly avoiding exceptions
     if (s.length() == DATE_LENGTH) {
-      // Its a date!
-      return Timestamp.ofEpochMilli(DateParser.parseDate(s).toEpochMilli());
+      Date d = DateParser.parseDate(s);
+      return (d == null) ? null : Timestamp.ofEpochMilli(d.toEpochMilli());
     }
     try {
       return Timestamp.valueOf(s);
