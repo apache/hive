@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -43,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication.ReduceSinkDeduplicateProcCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -384,7 +384,10 @@ public final class CorrelationUtilities {
   protected static SelectOperator replaceReduceSinkWithSelectOperator(ReduceSinkOperator childRS,
       ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
     RowSchema inputRS = childRS.getSchema();
-    SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), childRS.getConf().getOutputValueColumnNames());
+    List<String> columnNames =
+        childRS.getConf().getOutputValueColumnNames().stream().map(n -> "VALUE." + n).collect(Collectors.toList());
+
+    SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), columnNames);
 
     Operator<?> parent = getSingleParent(childRS);
     parent.removeChild(childRS);
