@@ -80,52 +80,11 @@ public class MaterializedViewsCache {
     return dbMap;
   }
 
-  public void refresh(
-          Table oldMaterializedViewTable, Table materializedViewTable, HiveRelOptMaterialization newMaterialization) {
-    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
+  public void refresh(Table materializedViewTable, HiveRelOptMaterialization newMaterialization) {
+    remove(materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    putIfAbsent(materializedViewTable, newMaterialization);
 
-    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
-      List<HiveRelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
-              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
-
-      if (existingMaterialization == null) {
-        // If it was not existing, we just create it
-        optMaterializationList.add(newMaterialization);
-        return newMaterialization;
-      }
-      Table existingMaterializedViewTable = HiveMaterializedViewUtils.extractTable(existingMaterialization);
-      if (existingMaterializedViewTable.equals(oldMaterializedViewTable)) {
-        // If the old version is the same, we replace it
-        optMaterializationList.remove(existingMaterialization);
-        optMaterializationList.add(newMaterialization);
-        return newMaterialization;
-      }
-      // Otherwise, we return existing materialization
-      return existingMaterialization;
-    });
-
-    LOG.debug("Refreshed materialized view {}.{} -> {}.{}",
-            oldMaterializedViewTable.getDbName(), oldMaterializedViewTable.getTableName(),
-            materializedViewTable.getDbName(), materializedViewTable.getTableName());
-  }
-
-  public void remove(Table materializedViewTable) {
-    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
-    if (dbMap != null) {
-      // Delete only if the create time for the input materialized view table and the table
-      // in the map match. Otherwise, keep the one in the map.
-      dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
-        if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
-          List<HiveRelOptMaterialization> materializationList =
-                  sqlToMaterializedView.get(materializedViewTable.getViewExpandedText());
-          materializationList.remove(oldMaterialization);
-          return null;
-        }
-        return oldMaterialization;
-      });
-    }
-
-    LOG.debug("Materialized view {}.{} removed from registry",
+    LOG.debug("Refreshed materialized view {}.{}",
             materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
@@ -136,10 +95,9 @@ public class MaterializedViewsCache {
         String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
         List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
         materializationList.remove(materialization);
+        LOG.debug("Materialized view {}.{} removed from registry", dbName, tableName);
         return null;
       });
-
-      LOG.debug("Materialized view {}.{} removed from registry", dbName, tableName);
     }
   }
 

@@ -181,17 +181,17 @@ public final class HiveMaterializedViewsRegistry {
               if (existingMVTable.getCreateTime() < mvTable.getCreateTime() ||
                   (existingMVTable.getCreateTime() == mvTable.getCreateTime() &&
                       existingMVTable.getCreationMetadata().getMaterializationTime() <= mvTable.getCreationMetadata().getMaterializationTime())) {
-                refreshMaterializedView(db.getConf(), existingMVTable, mvTable);
+                refreshMaterializedView(db.getConf(), mvTable);
               }
             } else {
               // Simply replace if it still does not exist
-              refreshMaterializedView(db.getConf(), null, mvTable);
+              createMaterializedView(db.getConf(), mvTable);
             }
           }
           LOG.info("Materialized views registry has been refreshed");
         } else {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
-            refreshMaterializedView(db.getConf(), null, mvTable);
+            createMaterializedView(db.getConf(), mvTable);
           }
           initialized.set(true);
           LOG.info("Materialized views registry has been initialized");
@@ -271,7 +271,7 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Update the materialized view in the registry (if existing materialized view matches).
    */
-  public void refreshMaterializedView(HiveConf conf, Table oldMaterializedViewTable, Table materializedViewTable) {
+  public void refreshMaterializedView(HiveConf conf, Table materializedViewTable) {
     final boolean cache = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
         .equals("DUMMY");
     if (!cache) {
@@ -281,7 +281,7 @@ public final class HiveMaterializedViewsRegistry {
 
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
-      dropMaterializedView(oldMaterializedViewTable);
+      dropMaterializedView(materializedViewTable.getDbName(), materializedViewTable.getTableName());
       LOG.debug("Materialized view " + materializedViewTable.getCompleteName() +
           " dropped; it is not rewrite enabled");
       return;
@@ -291,18 +291,11 @@ public final class HiveMaterializedViewsRegistry {
     if (newMaterialization == null) {
       return;
     }
-    materializedViewsCache.refresh(oldMaterializedViewTable, materializedViewTable, newMaterialization);
+    materializedViewsCache.refresh(materializedViewTable, newMaterialization);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Materialized view refreshed: " + materializedViewTable.getFullyQualifiedName());
     }
-  }
-
-  /**
-   * Removes the materialized view from the cache (based on table object equality), if exists.
-   */
-  public void dropMaterializedView(Table materializedViewTable) {
-    materializedViewsCache.remove(materializedViewTable);
   }
 
   /**
