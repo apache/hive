@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -81,7 +80,7 @@ import java.util.Map;
 import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NOTIFICATION_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -513,11 +512,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           try{
             HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
             long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
-            Path notificationFilePath = new Path(work.dumpDirectory, NOTIFICATION_FILE.toString());
+            Path notificationFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
             Utils.writeOutput(String.valueOf(currentNotificationID), notificationFilePath, conf);
             LOG.info("Created NotificationACK file : {} with NotificationID : {}", notificationFilePath, currentNotificationID);
           }catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
           }
         }
       });

@@ -25,7 +25,7 @@ public enum ReplAck {
     EVENTS_DUMP("_events_dump"),
     LOAD_ACKNOWLEDGEMENT("_finished_load"),
     NON_RECOVERABLE_MARKER("_non_recoverable"),
-    NOTIFICATION_FILE("_notification_id");
+    LOAD_METADATA("_load_metadata");
   private String ack;
   ReplAck(String ack) {
     this.ack = ack;
