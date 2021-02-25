@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.calcite.util.Pair;
 import org.apache.commons.collections4.ListValuedMap;
@@ -259,7 +259,7 @@ public class ParallelEdgeFixer extends Transform {
       for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
         ret.put(extractColumnName(e.getValue()), e.getKey());
       }
-      return Optional.of(new HashSet<>(ret.values()));
+      return Optional.of(new TreeSet<>(ret.values()));
     } catch (Exception e) {
       return Optional.empty();
     }
