@@ -277,6 +277,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncr
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
@@ -2379,7 +2380,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
         materializations = materializations.stream().
-                map(materialization -> copyMaterializationToNewCluster(optCluster, materialization)).
+                map(materialization -> materialization.copyToNewCluster(optCluster)).
                 collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
@@ -2481,9 +2482,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveAggregateIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
+            } else if (!materializations.get(0).isSourceTablesUpdateDeleteModified()) {
+              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                  HiveNoAggregateIncrementalRewritingRule.INSTANCE);
+              mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
             } else {
-//              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-//                  HiveNoAggregateIncrementalRewritingRule.INSTANCE);
               CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveJoinIncrementalRewritingRule.INSTANCE);
@@ -2553,7 +2556,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                       singletonList(hiveTableMD),
                       singletonList(hiveTableMD.getFullyQualifiedName()),
                       getTxnMgr())) {
-                return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
+                return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
               }
             } else {
               LOG.debug("User does not have privilege to use materialized view {}",
@@ -2852,7 +2855,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
-        List<RelOptMaterialization> materializations) {
+        List<HiveRelOptMaterialization> materializations) {
 
       // Create planner and copy context
       HepPlanner planner = new HepPlanner(program,

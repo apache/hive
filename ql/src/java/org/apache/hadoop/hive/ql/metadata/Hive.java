@@ -1903,6 +1903,7 @@ public class Hive {
         }
 
         final CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
+        Materialization invalidationInfo = null;
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           boolean ignore;
@@ -1915,7 +1916,7 @@ public class Hive {
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
             // We will not try partial rewriting if there were update/delete operations on source tables
-            Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
+            invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                 creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
             ignore = invalidationInfo == null;
           }
@@ -1941,11 +1942,7 @@ public class Hive {
                   relOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                       creationMetadata.getValidTxnList()));
             }
-            if (expandGroupingSets) {
-              result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization));
-            } else {
-              result.add(relOptMaterialization);
-            }
+            addResult(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
             continue;
           }
         }
@@ -1968,16 +1965,30 @@ public class Hive {
                     hiveRelOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                     creationMetadata.getValidTxnList()));
           }
-          if (expandGroupingSets) {
-            result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization));
-          } else {
-            result.add(relOptMaterialization);
-          }
+          addResult(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
         }
       }
       return result;
     } catch (Exception e) {
       throw new HiveException(e);
+    }
+  }
+
+  private void addResult(
+          boolean expandGroupingSets, Materialization invalidationInfo, HiveRelOptMaterialization relOptMaterialization,
+          List<HiveRelOptMaterialization> result) {
+    if (expandGroupingSets) {
+      List<HiveRelOptMaterialization> hiveRelOptMaterializationList =
+              HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization);
+      if (invalidationInfo != null) {
+        final Materialization tmp = invalidationInfo;
+        hiveRelOptMaterializationList = hiveRelOptMaterializationList.stream()
+                .map(entry -> entry.update(tmp))
+                .collect(Collectors.toList());
+      }
+      result.addAll(hiveRelOptMaterializationList);
+    } else {
+      result.add(invalidationInfo == null ? relOptMaterialization : relOptMaterialization.update(invalidationInfo));
     }
   }
 

@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.metastore.api.Materialization;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -86,5 +88,12 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
   public HiveRelOptMaterialization update(Materialization materialization) {
     return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
             materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  public HiveRelOptMaterialization copyToNewCluster(
+          RelOptCluster optCluster) {
+    final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(optCluster, tableRel);
+    return new HiveRelOptMaterialization(newViewScan, queryRel, null,
+            qualifiedTableName, scope, sourceTablesUpdateDeleteModified);
   }
 }
