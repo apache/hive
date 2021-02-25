@@ -4013,6 +4013,13 @@ public final class Utilities {
     int headerCount;
     try {
       headerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.HEADER_COUNT, "0"));
+      if (headerCount > 0 && table.getInputFileFormatClass() != null
+          && !TextInputFormat.class
+          .isAssignableFrom(table.getInputFileFormatClass())) {
+        LOG.warn("skip.header.line.count is only valid for TextInputFormat "
+            + "files, ignoring the value.");
+        headerCount = 0;
+      }
     } catch (NumberFormatException nfe) {
       throw new IOException(nfe);
     }
@@ -4032,6 +4039,13 @@ public final class Utilities {
     int footerCount;
     try {
       footerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.FOOTER_COUNT, "0"));
+      if (footerCount > 0 && table.getInputFileFormatClass() != null
+          && !TextInputFormat.class
+          .isAssignableFrom(table.getInputFileFormatClass())) {
+        LOG.warn("skip.footer.line.count is only valid for TextInputFormat "
+            + "files, ignoring the value.");
+        footerCount = 0;
+      }
       if (footerCount > HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_FILE_MAX_FOOTER)) {
         throw new IOException("footer number exceeds the limit defined in hive.file.max.footer");
       }
