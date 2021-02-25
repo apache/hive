@@ -91,7 +91,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       Class clazz) throws Exception {
 
     conf = new HiveConf(clazz);
-    conf.set(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
