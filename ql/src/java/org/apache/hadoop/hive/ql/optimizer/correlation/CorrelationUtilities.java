@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -384,10 +383,21 @@ public final class CorrelationUtilities {
   protected static SelectOperator replaceReduceSinkWithSelectOperator(ReduceSinkOperator childRS,
       ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
     RowSchema inputRS = childRS.getSchema();
-    List<String> columnNames =
-        childRS.getConf().getOutputValueColumnNames().stream().map(n -> "VALUE." + n).collect(Collectors.toList());
 
-    SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), columnNames);
+    List<String> columnNames = new ArrayList<String>();
+
+    for (String colName : childRS.getConf().getOutputValueColumnNames()) {
+      columnNames.add("VALUE." + colName);
+    }
+    for (String colName : childRS.getConf().getOutputKeyColumnNames()) {
+      columnNames.add("KEY." + colName);
+    }
+
+    List<ExprNodeDesc> colExprs = new ArrayList<ExprNodeDesc>();
+    colExprs.addAll(childRS.getConf().getKeyCols());
+    colExprs.addAll(childRS.getConf().getValueCols());
+
+    SelectDesc select = new SelectDesc(colExprs, columnNames);
 
     Operator<?> parent = getSingleParent(childRS);
     parent.removeChild(childRS);
