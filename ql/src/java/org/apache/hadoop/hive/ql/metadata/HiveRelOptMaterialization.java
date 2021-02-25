@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -49,12 +50,20 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
 
   }
   private final EnumSet<RewriteAlgorithm> scope;
+  private final boolean sourceTablesUpdateDeleteModified;
 
   public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
                                    EnumSet<RewriteAlgorithm> scope) {
+    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false);
+  }
+
+  private HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
+                                   RelOptTable starRelOptTable, List<String> qualifiedTableName,
+                                   EnumSet<RewriteAlgorithm> scope, boolean sourceTablesUpdateDeleteModified) {
     super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
+    this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
   }
 
   public EnumSet<RewriteAlgorithm> getScope() {
@@ -68,5 +77,14 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
    */
   public boolean isSupported(EnumSet<RewriteAlgorithm> scope) {
     return !intersection(this.scope, scope).isEmpty();
+  }
+
+  public boolean isSourceTablesUpdateDeleteModified() {
+    return sourceTablesUpdateDeleteModified;
+  }
+
+  public HiveRelOptMaterialization update(Materialization materialization) {
+    return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
+            materialization.isSourceTablesUpdateDeleteModified());
   }
 }

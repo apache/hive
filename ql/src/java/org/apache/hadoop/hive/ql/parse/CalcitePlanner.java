@@ -2354,7 +2354,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final boolean mvRebuild = mvRebuildMode != MaterializationRebuildMode.NONE;
 
       // Add views to planner
-      List<RelOptMaterialization> materializations = new ArrayList<>();
+      List<HiveRelOptMaterialization> materializations = new ArrayList<>();
       try {
         if (mvRebuild) {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
