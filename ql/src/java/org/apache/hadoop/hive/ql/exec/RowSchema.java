@@ -37,15 +37,18 @@ public class RowSchema implements Serializable {
   }
 
   public RowSchema(RowSchema that) {
-    this.signature = new ArrayList<>(that.signature);
+    this(that.signature);
   }
 
   public RowSchema(List<ColumnInfo> signature) {
-    this.signature = signature;
+    setSignature(signature);
   }
 
   public void setSignature(List<ColumnInfo> signature) {
-    this.signature = signature;
+    this.signature = new ArrayList<ColumnInfo>();
+    for (ColumnInfo columnInfo : signature) {
+      this.signature.add(new ColumnInfo(columnInfo));
+    }
   }
 
   public List<ColumnInfo> getSignature() {
