@@ -1836,6 +1836,60 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
+  public void testReplWithRetryDisabledIterators() throws Throwable {
+    List<String> clause = new ArrayList<>();
+    //NS replacement parameters has no effect when data is also copied to staging
+    clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
+    clause.add("'" + HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY + "'='false'");
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, clause);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 values (3)")
+            .dump(primaryDbName, clause);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[]{"1", "2", "3"});
+
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+    primary.run("use " + primaryDbName)
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
+            .run("create external table  ext_table2 (key int, value int) partitioned by (load_time timestamp)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("show partitions ext_table2")
+            .verifyResults(new String[]{
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124"})
+            .dump(primaryDbName, clause);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"acid_table", "table1", "ext_table1", "ext_table2"})
+            .run("select * from ext_table1")
+            .verifyResults(new String[]{"3", "4"})
+            .run("select value from ext_table2")
+            .verifyResults(new String[]{"2", "3"});
+  }
+
+  @Test
   public void testCreateFunctionWithHdfsNameservice() throws Throwable {
     Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
     Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");

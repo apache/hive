@@ -496,9 +496,8 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t2", "t3"),
+    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("t2", "t3"),
             new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
-
 
     // _bootstrap directory should be created as bootstrap enabled on external tables.
     Path dumpPath = new Path(hiveDumpDir, INC_BOOTSTRAP_ROOT_DIR_NAME);
@@ -644,10 +643,5 @@ public class TestReplicationScenariosExternalTablesMetaDataOnly extends BaseRepl
       throws IOException {
     DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
     Assert.assertFalse(fileSystem.exists(externalTableFileList));
-  }
-
-  private void assertExternalFileList(List<String> expected, Path externalTableFileList)
-          throws IOException {
-    ReplicationTestUtils.assertExternalFileList(primary, expected, externalTableFileList);
   }
 }

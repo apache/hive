@@ -120,8 +120,7 @@ public class Retryable {
   }
 
   private long elapsedTimeInSeconds(long fromTimeMillis) {
-    long ret = (System.currentTimeMillis() - fromTimeMillis)/ 1000;
-    return ret;
+    return (System.currentTimeMillis() - fromTimeMillis)/ 1000;
   }
 
   public static class Builder {
