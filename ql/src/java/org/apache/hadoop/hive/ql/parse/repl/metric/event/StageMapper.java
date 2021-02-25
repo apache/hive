@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric.event;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.util.ArrayList;
 import java.util.List;

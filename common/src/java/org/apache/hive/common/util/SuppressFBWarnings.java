@@ -15,31 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
-import org.codehaus.jackson.annotate.JsonProperty;
+package org.apache.hive.common.util;
 
-/**
- * Replication state for Atlas Load Begin.
- **/
-public class AtlasLoadBegin extends ReplState {
-  @SuppressFBWarnings("URF_UNREAD_FIELD")
-  @JsonProperty
-  private String sourceDbName;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-  @SuppressFBWarnings("URF_UNREAD_FIELD")
-  @JsonProperty
-  private String targetDbName;
+@Retention(RetentionPolicy.CLASS)
+public @interface SuppressFBWarnings {
+  /**
+   * The set of FindBugs warnings that are to be suppressed in
+   * annotated element. The value can be a bug category, kind or pattern.
+   *
+   */
+  String[] value() default {};
 
-  @SuppressFBWarnings("URF_UNREAD_FIELD")
-  @JsonProperty
-  private Long loadStartTime;
-
-  public AtlasLoadBegin(String sourceDbName, String targetDbName) {
-    this.sourceDbName = sourceDbName;
-    this.targetDbName = targetDbName;
-    this.loadStartTime = System.currentTimeMillis() / 1000;
-  }
+  /**
+   * Optional documentation of the reason why the warning is suppressed
+   */
+  String justification() default "";
 }
