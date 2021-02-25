@@ -1379,7 +1379,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final JdbcImplementor jdbcImplementor =
           new JdbcImplementor(dialect, (JavaTypeFactory) optimizedOptiqPlan.getCluster()
               .getTypeFactory());
-      final JdbcImplementor.Result result = jdbcImplementor.visitChild(0, optimizedOptiqPlan);
+      final JdbcImplementor.Result result = jdbcImplementor.visitRoot(optimizedOptiqPlan);
       String sql = result.asStatement().toSqlString(dialect).getSql();
       sql = PATTERN_VARCHAR.matcher(sql).replaceAll("STRING"); // VARCHAR(INTEGER.MAX) -> STRING
       sql = PATTERN_TIMESTAMP.matcher(sql).replaceAll("TIMESTAMP"); // TIMESTAMP(9) -> TIMESTAMP
