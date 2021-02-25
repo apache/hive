@@ -55,14 +55,14 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
     // but it's more efficient to unconditionally perform cleanup for the database, especially
     // when there are a lot of tables
     txnHandler = getTxnHandler();
-    txnHandler.cleanupRecords(HiveObjectType.DATABASE, dbEvent.getDatabase(), null, null);
+    txnHandler.cleanupRecords(HiveObjectType.DATABASE, dbEvent.getDatabase(), null, null, false);
   }
 
   @Override
   public void onDropTable(DropTableEvent tableEvent)  throws MetaException {
     if (TxnUtils.isTransactionalTable(tableEvent.getTable())) {
       txnHandler = getTxnHandler();
-      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, tableEvent.getTable(), null);
+      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, tableEvent.getTable(), null, !tableEvent.getDeleteData());
     }
   }
 
@@ -71,7 +71,7 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
     if (TxnUtils.isTransactionalTable(partitionEvent.getTable())) {
       txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
-          partitionEvent.getPartitionIterator());
+          partitionEvent.getPartitionIterator(), false);
     }
   }
 

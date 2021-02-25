@@ -2213,9 +2213,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
-        if (tbl.getSd().getLocation() == null
-            || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, tbl);
+        if (tbl.getSd().getLocation() == null || tbl.getSd().getLocation().isEmpty()) {
+          String relPath = tbl.isSetTxnid() ? tbl.getTableName() + "_v" + tbl.getTxnid() : tbl.getTableName();
+          tblPath = wh.getDefaultTablePath(db, relPath, isExternal(tbl));
         } else {
           if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
             LOG.warn("Location: " + tbl.getSd().getLocation()
@@ -2784,8 +2784,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private boolean drop_table_core(final RawStore ms, final String catName, final String dbname,
                                   final String name, final boolean deleteData,
                                   final EnvironmentContext envContext, final String indexName)
-      throws NoSuchObjectException, MetaException, IOException, InvalidObjectException,
-      InvalidInputException {
+      throws IOException, TException {
     boolean success = false;
     boolean tableDataShouldBeDeleted = false;
     Path tblPath = null;
@@ -2863,6 +2862,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
         // Delete the data in the table
         deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
+      } else if (TxnUtils.isTransactionalTable(tbl)) {
+        CompactionRequest rqst = new CompactionRequest(dbname, name, CompactionType.MAJOR);
+        rqst.putToProperties("ifPurge", String.valueOf(ifPurge));
+        compact2(rqst);
       }
 
       if (!listeners.isEmpty()) {

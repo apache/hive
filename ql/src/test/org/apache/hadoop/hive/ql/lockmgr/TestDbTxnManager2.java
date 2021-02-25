@@ -18,6 +18,10 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -37,6 +41,7 @@ import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,6 +54,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -3239,4 +3247,60 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
   }
+
+  @Test
+  public void testDropTable() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_LOCKLESS_READS_ENABLED, true);
+    driver2.getConf().setBoolVar( HiveConf.ConfVars.HIVE_TXN_LOCKLESS_READS_ENABLED, true);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.compileAndRespond("select * from tab_acid");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.run("drop table if exists tab_acid");
+
+    swapTxnManager(txnMgr);
+    driver.run();
+
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(Paths.get("target/warehouse").toUri()),
+      p -> p.getName().startsWith("tab_acid_v"));
+    if (1 != stat.length) {
+      Assert.fail("Table data was removed from FS");
+    }
+
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("No records found", 2, res.size());
+
+    try {
+      driver.run("select * from tab_acid");
+    } catch (CommandProcessorException ex) {
+      Assert.assertEquals(ErrorMsg.INVALID_TABLE.getErrorCode(), ex.getResponseCode());
+      Assert.assertTrue(ex.getMessage().contains(ErrorMsg.INVALID_TABLE.getMsg("'tab_acid'")));
+    }
+
+    //re-create table with the same name
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.run("select * from tab_acid ");
+    res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("No records found", 2, res.size());
+
+    stat = fs.listStatus(new Path(Paths.get("target/warehouse").toUri()),
+      p -> p.getName().startsWith("tab_acid_v"));
+    for (FileStatus toDelete : stat) {
+      fs.delete(toDelete.getPath(), true);
+    }
+  }
+
 }

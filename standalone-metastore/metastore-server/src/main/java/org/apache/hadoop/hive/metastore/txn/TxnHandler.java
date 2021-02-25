@@ -3678,7 +3678,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException {
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
 
     // cleanup should be done only for objects belonging to default catalog
     final String defaultCatalog = getDefaultCatalog(conf);
@@ -3781,22 +3781,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buff.append("'");
             queries.add(buff.toString());
 
-            buff.setLength(0);
-            buff.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
-            buff.append("' AND \"T2W_TABLE\"='");
-            buff.append(tblName.toLowerCase());
-            buff.append("'");
-            queries.add(buff.toString());
+            if (!keepTxnToWriteIdMetaData) {
+              buff.setLength(0);
+              buff.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\"='");
+              buff.append(dbName.toLowerCase());
+              buff.append("' AND \"T2W_TABLE\"='");
+              buff.append(tblName.toLowerCase());
+              buff.append("'");
+              queries.add(buff.toString());
 
-            buff.setLength(0);
-            buff.append("DELETE FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\"='");
-            buff.append(dbName.toLowerCase());
-            buff.append("' AND \"NWI_TABLE\"='");
-            buff.append(tblName.toLowerCase());
-            buff.append("'");
-            queries.add(buff.toString());
-
+              buff.setLength(0);
+              buff.append("DELETE FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\"='");
+              buff.append(dbName.toLowerCase());
+              buff.append("' AND \"NWI_TABLE\"='");
+              buff.append(tblName.toLowerCase());
+              buff.append("'");
+              queries.add(buff.toString());
+            }
             break;
           }
           case PARTITION: {
@@ -3885,7 +3886,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         closeDbConn(dbConn);
       }
     } catch (RetryException e) {
-      cleanupRecords(type, db, table, partitionIterator);
+      cleanupRecords(type, db, table, partitionIterator, keepTxnToWriteIdMetaData);
     }
   }
   /**

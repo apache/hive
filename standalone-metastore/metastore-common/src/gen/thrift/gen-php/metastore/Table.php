@@ -171,6 +171,11 @@ class Table
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        26 => array(
+            'var' => 'txnid',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -273,6 +278,10 @@ class Table
      * @var int
      */
     public $id = null;
+    /**
+     * @var int
+     */
+    public $txnid = null;
 
     public function __construct($vals = null)
     {
@@ -351,6 +360,9 @@ class Table
             }
             if (isset($vals['id'])) {
                 $this->id = $vals['id'];
+            }
+            if (isset($vals['txnid'])) {
+                $this->txnid = $vals['txnid'];
             }
         }
     }
@@ -593,6 +605,13 @@ class Table
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 26:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->txnid);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -771,6 +790,11 @@ class Table
         if ($this->id !== null) {
             $xfer += $output->writeFieldBegin('id', TType::I64, 25);
             $xfer += $output->writeI64($this->id);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->txnid !== null) {
+            $xfer += $output->writeFieldBegin('txnid', TType::I64, 26);
+            $xfer += $output->writeI64($this->txnid);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

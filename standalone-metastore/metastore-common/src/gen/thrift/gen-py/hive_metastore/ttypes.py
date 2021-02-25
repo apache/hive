@@ -6104,11 +6104,12 @@ class Table(object):
      - requiredReadCapabilities
      - requiredWriteCapabilities
      - id
+     - txnid
 
     """
 
 
-    def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=False, rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=1, writeId=-1, isStatsCompliant=None, colStats=None, accessType=None, requiredReadCapabilities=None, requiredWriteCapabilities=None, id=None,):
+    def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=False, rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=1, writeId=-1, isStatsCompliant=None, colStats=None, accessType=None, requiredReadCapabilities=None, requiredWriteCapabilities=None, id=None, txnid=None,):
         self.tableName = tableName
         self.dbName = dbName
         self.owner = owner
@@ -6134,6 +6135,7 @@ class Table(object):
         self.requiredReadCapabilities = requiredReadCapabilities
         self.requiredWriteCapabilities = requiredWriteCapabilities
         self.id = id
+        self.txnid = txnid
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6295,6 +6297,11 @@ class Table(object):
                     self.id = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 26:
+                if ftype == TType.I64:
+                    self.txnid = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6417,6 +6424,10 @@ class Table(object):
         if self.id is not None:
             oprot.writeFieldBegin('id', TType.I64, 25)
             oprot.writeI64(self.id)
+            oprot.writeFieldEnd()
+        if self.txnid is not None:
+            oprot.writeFieldBegin('txnid', TType.I64, 26)
+            oprot.writeI64(self.txnid)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27354,6 +27365,7 @@ Table.thrift_spec = (
     (23, TType.LIST, 'requiredReadCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 23
     (24, TType.LIST, 'requiredWriteCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 24
     (25, TType.I64, 'id', None, None, ),  # 25
+    (26, TType.I64, 'txnid', None, None, ),  # 26
 )
 all_structs.append(Partition)
 Partition.thrift_spec = (

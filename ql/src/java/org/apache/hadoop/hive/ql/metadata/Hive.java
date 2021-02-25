@@ -1129,6 +1129,9 @@ public class Hive {
           principalPrivs.setRolePrivileges(grants.getRoleGrants());
           tTbl.setPrivileges(principalPrivs);
         }
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_LOCKLESS_READS_ENABLED) && AcidUtils.isTransactionalTable(tbl)) {
+          tTbl.setTxnid(ss.getTxnMgr().getCurrentTxnId());
+        }
       }
       // Set table snapshot to api.Table to make it persistent. A transactional table being
       // replicated may have a valid write Id copied from the source. Use that instead of
@@ -1136,7 +1139,7 @@ public class Hive {
       if (tTbl.getWriteId() <= 0) {
         TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
         if (tableSnapshot != null) {
-          tbl.getTTable().setWriteId(tableSnapshot.getWriteId());
+          tTbl.setWriteId(tableSnapshot.getWriteId());
         }
       }
 
@@ -1188,6 +1191,13 @@ public class Hive {
   public void dropTable(String tableName, boolean ifPurge) throws HiveException {
     String[] names = Utilities.getDbTableName(tableName);
     dropTable(names[0], names[1], true, true, ifPurge);
+  }
+
+  public void dropTable(Table table, boolean ifPurge) throws HiveException {
+    boolean deleteData = !HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_LOCKLESS_READS_ENABLED)
+        || !AcidUtils.isTransactionalTable(table);
+    String[] names = Utilities.getDbTableName(table.getTableName());
+    dropTable(names[0], names[1], deleteData, true, ifPurge);
   }
 
   /**

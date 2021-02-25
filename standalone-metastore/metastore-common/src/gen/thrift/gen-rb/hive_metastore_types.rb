@@ -2200,6 +2200,7 @@ class Table
   REQUIREDREADCAPABILITIES = 23
   REQUIREDWRITECAPABILITIES = 24
   ID = 25
+  TXNID = 26
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -2226,7 +2227,8 @@ class Table
     ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true},
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true}
   }
 
   def struct_fields; FIELDS; end
