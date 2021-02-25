@@ -1501,13 +1501,13 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
-      long tempId) throws SQLException, MetaException {
+  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, 
+      Long commitId, long tempId) throws SQLException, MetaException {
     super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
+    
     if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
-      stmt.executeUpdate(
-          "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
-              getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
+      stmt.executeUpdate("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
+          getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
   }
 
@@ -1545,7 +1545,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  protected void createCommitNotificationEvent(Connection dbConn, long txnid, Optional<TxnType> txnType)
+  protected void createCommitNotificationEvent(Connection dbConn, long txnid, TxnType txnType)
       throws MetaException, SQLException {
     super.createCommitNotificationEvent(dbConn, txnid, txnType);
     if (transactionalListeners != null) {

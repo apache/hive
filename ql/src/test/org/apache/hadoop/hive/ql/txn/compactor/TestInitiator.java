@@ -900,7 +900,7 @@ public class TestInitiator extends CompactorTest {
   }
 
   /**
-   * Tests org.apache.hadoop.hive.metastore.txn.#findUserToRunAs(java.lang.String, org.apache.hadoop
+   * Tests org.apache.hadoop.hive.metastore.txn.TxnUtils#findUserToRunAs(java.lang.String, org.apache.hadoop
    * .hive.metastore.api.Table).
    * Used by Worker and Initiator.
    * Initiator caches this via Initiator#resolveUserToRunAs.

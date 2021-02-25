@@ -639,7 +639,8 @@ struct Table {
                                        // read purposes
   26: optional FileMetadata fileMetadata, // optional serialized file-metadata for this table
 					  // for certain execution engines
-  27: optional ObjectDictionary dictionary
+  27: optional ObjectDictionary dictionary,
+  28: optional i64 txnId,              // txnId associated with the table creation
 }
 
 struct Partition {
@@ -998,7 +999,7 @@ enum TxnType {
     READ_ONLY    = 2,
     COMPACTION   = 3,
     MATER_VIEW_REBUILD = 4,
-    SOFT_DELETE = 5
+    SOFT_DELETE  = 5
 }
 
 // specifies which info to return with GetTablesExtRequest

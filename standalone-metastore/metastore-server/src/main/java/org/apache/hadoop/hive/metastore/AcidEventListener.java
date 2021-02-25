@@ -71,10 +71,32 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
   }
 
   @Override
-  public void onDropTable(DropTableEvent tableEvent)  throws MetaException {
-    if (TxnUtils.isTransactionalTable(tableEvent.getTable())) {
+  public void onDropTable(DropTableEvent tableEvent) throws MetaException {
+    Table table = tableEvent.getTable();
+    
+    if (TxnUtils.isTransactionalTable(table)) {
       txnHandler = getTxnHandler();
-      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, tableEvent.getTable(), null);
+      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, table, null, !tableEvent.getDeleteData());
+      
+      if (!tableEvent.getDeleteData()) {
+        long currentTxn = Optional.ofNullable(tableEvent.getEnvironmentContext())
+          .map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get("txnId"))
+          .map(Long::parseLong)
+          .orElse(0L);
+        
+        try {
+          if (currentTxn > 0) {
+            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+            rqst.putToProperties("location", table.getSd().getLocation());
+            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(tableEvent.getEnvironmentContext(), table)));
+            txnHandler.submitForCleanup(rqst, table.getWriteId(), currentTxn);
+          }
+        } catch (InterruptedException | IOException e) {
+          throwMetaException(e);
+        }
+      }
     }
   }
 

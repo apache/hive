@@ -514,8 +514,8 @@ public class TxnUtils {
    * @throws java.io.IOException if neither the hive metastore user nor the table owner can stat
    * the location.
    */
-  public static String findUserToRunAs(String location, Table t, Configuration conf)
-    throws IOException, InterruptedException {
+  public static String findUserToRunAs(String location, Table t, Configuration conf) 
+      throws IOException, InterruptedException {
     LOG.debug("Determining who to run the job as.");
 
     // check if a specific user is set in config
@@ -558,8 +558,8 @@ public class TxnUtils {
         return wrapper.get(0);
       }
     }
-    LOG.error("Unable to stat file " + p + " as either current user(" +
-      UserGroupInformation.getLoginUser() + ") or table owner(" + t.getOwner() + "), giving up");
+    LOG.error("Unable to stat file " + p + " as either current user(" + 
+        UserGroupInformation.getLoginUser() + ") or table owner(" + t.getOwner() + "), giving up");
     throw new IOException("Unable to stat file: " + p);
   }
 }

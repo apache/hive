@@ -18,11 +18,12 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
@@ -39,7 +41,22 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -180,14 +197,15 @@ public class Cleaner extends MetaStoreCompactorThread {
       if (metricsEnabled) {
         perfLogger.perfLogBegin(CLASS_NAME, cleanerMetric);
       }
-      String location = Optional.ofNullable(ci.properties).map(StringableMap::new)
-          .map(config -> config.get("location")).orElse(null);
+      Optional<String> location = Optional.ofNullable(ci.properties).map(StringableMap::new)
+          .map(config -> config.get("location"));
       
       Callable<Boolean> cleanUpTask;
-      Table t = resolveTable(ci);
+      Table t = null;
       Partition p = resolvePartition(ci);
 
-      if (location == null) {
+      if (!location.isPresent()) {
+        t = resolveTable(ci);
         if (t == null) {
           // The table was dropped before we got around to cleaning it.
           LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
@@ -218,11 +236,15 @@ public class Cleaner extends MetaStoreCompactorThread {
         }
       }
       txnHandler.markCleanerStart(ci);
-      
-      StorageDescriptor sd = resolveStorageDescriptor(t, p);
-      cleanUpTask = () -> removeFiles(Optional.ofNullable(location).orElse(sd.getLocation()), 
-          minOpenTxnGLB, ci, ci.partName != null && p == null);
 
+      if (t != null) {
+        StorageDescriptor sd = resolveStorageDescriptor(t, p);
+        cleanUpTask = () -> removeFiles(location.orElse(sd.getLocation()), minOpenTxnGLB, ci, 
+            ci.partName != null && p == null);
+      } else {
+        cleanUpTask = () -> removeFiles(location.get(), ci);
+      }
+      
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
         removedFiles.value = cleanUpTask.call();
@@ -301,15 +323,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       try {
         res = txnHandler.lock(lockRequest);
         if (res.getState() == LockState.ACQUIRED) {
+          //check if partition wasn't recreated
           if (resolvePartition(ci) == null) {
-            Path path = new Path(location);
-            StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
-
-            boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
-              .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
-
-            return remove(location, ci, Collections.singletonList(path), ifPurge,
-              path.getFileSystem(conf), extraDebugInfo);
+            return removeFiles(location, ci);
           }
         }
       } catch (NoSuchTxnException | TxnAbortedException e) {
@@ -399,6 +415,18 @@ public class Cleaner extends MetaStoreCompactorThread {
     return remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
   }
 
+  private boolean removeFiles(String location, CompactionInfo ci)
+    throws NoSuchObjectException, IOException, MetaException {
+    Path path = new Path(location);
+    StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
+
+    boolean ifPurge = Optional.ofNullable(ci.properties).map(StringableMap::new)
+      .map(config -> config.get("ifPurge")).map(Boolean::valueOf).orElse(true);
+
+    return remove(location, ci, Collections.singletonList(path), ifPurge,
+      path.getFileSystem(conf), extraDebugInfo);
+  }
+  
   private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge, 
       FileSystem fs, StringBuilder extraDebugInfo) 
       throws NoSuchObjectException, MetaException, IOException {

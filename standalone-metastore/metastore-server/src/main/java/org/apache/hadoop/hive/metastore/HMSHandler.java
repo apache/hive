@@ -105,6 +105,9 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
+import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
@@ -2410,7 +2413,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
         if (tbl.getSd().getLocation() == null
             || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, tbl);
+          tblPath = wh.getDefaultTablePath(db, getTableName(tbl), isExternal(tbl));
         } else {
           if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
             LOG.warn("Location: " + tbl.getSd().getLocation()
@@ -2560,6 +2563,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       updateTableColumnStatsInternal(colStats, validWriteIds, tbl.getWriteId());
     }
+  }
+
+  private String getTableName(Table tbl) {
+    return tbl.getTableName() + (tbl.isSetTxnId() &&
+      tbl.getParameters() != null && Boolean.parseBoolean(tbl.getParameters().get(SOFT_DELETE_TABLE)) ?
+          SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, tbl.getTxnId()) : "");
   }
 
   @Override
@@ -2952,8 +2961,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private boolean drop_table_core(final RawStore ms, final String catName, final String dbname,
                                   final String name, final boolean deleteData,
                                   final EnvironmentContext envContext, final String indexName, boolean dropPartitions)
-      throws NoSuchObjectException, MetaException, IOException, InvalidObjectException,
-      InvalidInputException {
+    throws TException, IOException {
     boolean success = false;
     boolean tableDataShouldBeDeleted = false;
     Path tblPath = null;
