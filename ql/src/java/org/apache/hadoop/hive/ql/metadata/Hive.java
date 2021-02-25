@@ -1795,7 +1795,8 @@ public class Hive {
         if (materializedViewTable == null || !materializedViewTable.isRewriteEnabled()) {
           // This could happen if materialized view has been deleted or rewriting has been disabled.
           // We remove it from the registry and set result to false.
-          HiveMaterializedViewsRegistry.get().dropMaterializedView(cachedMaterializedViewTable);
+          HiveMaterializedViewsRegistry.get().dropMaterializedView(
+                  cachedMaterializedViewTable.getDbName(), cachedMaterializedViewTable.getTableName());
           result = false;
         } else {
           final Boolean outdated = isOutdatedMaterializedView(cachedMaterializedViewTable, tablesUsed, false, txnMgr);
@@ -1814,7 +1815,7 @@ public class Hive {
           if (outdated) {
             if (!cachedMaterializedViewTable.equals(materializedViewTable)) {
               // We ignore and update the registry
-              HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, cachedMaterializedViewTable, materializedViewTable);
+              HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, materializedViewTable);
               result = false;
             } else {
               // Obtain additional information if we should try incremental rewriting / rebuild
@@ -1829,7 +1830,7 @@ public class Hive {
             }
           } else if (!cachedMaterializedViewTable.equals(materializedViewTable)) {
             // Update the registry
-            HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, cachedMaterializedViewTable, materializedViewTable);
+            HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, materializedViewTable);
           }
         }
       }
@@ -1960,7 +1961,7 @@ public class Hive {
                 HiveMaterializedViewsRegistry.get().createMaterialization(conf, materializedViewTable);
         if (hiveRelOptMaterialization != null && hiveRelOptMaterialization.isSupported(scope)) {
           relOptMaterialization = hiveRelOptMaterialization;
-          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
+          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, materializedViewTable);
           if (outdated) {
             // We will rewrite it to include the filters on transaction list
             // so we can produce partial rewritings
