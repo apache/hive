@@ -22,19 +22,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalQueries;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.hive.common.util.HiveDateTimeFormatter;
 import org.slf4j.Logger;
@@ -44,50 +39,40 @@ public class TimestampTZUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(TimestampTZ.class);
 
-  private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
-  private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
-
   public static TimestampTZ parse(String s) {
     return parse(s, null);
   }
 
   public static TimestampTZ parse(String text, ZoneId defaultTimeZone) {
-    // need to handle offset with single digital hour, see JDK-8066806
-    final String s = handleSingleDigitHourOffset(Objects.requireNonNull(text).trim());
+    Objects.requireNonNull(text);
 
-    TemporalAccessor accessor = HiveDateTimeFormatter.HIVE_DATE_TIME.parse(s);
+    final String s = HiveDateTimeFormatter.handleSingleDigitHourOffset(text.trim());
 
-    LocalDate localDate = accessor.query(TemporalQueries.localDate());
+    TemporalAccessor accessor =
+        HiveDateTimeFormatter.HIVE_DATE_DEFAULT_TIME.parseBest(s, ZonedDateTime::from, LocalDateTime::from);
 
-    LocalTime localTime = accessor.query(TemporalQueries.localTime());
-    if (localTime == null) {
-      localTime = DEFAULT_LOCAL_TIME;
-    }
+    final ZonedDateTime zonedDateTime;
 
-    ZoneId zoneId = accessor.query(TemporalQueries.zone());
-    if (zoneId == null) {
-      zoneId = defaultTimeZone;
-      if (zoneId == null) {
+    if (ZonedDateTime.class.isInstance(accessor)) {
+      zonedDateTime = ZonedDateTime.class.cast(accessor);
+    } else {
+      if (defaultTimeZone == null) {
         throw new DateTimeException("Time Zone not available");
+      }
+      if (LocalDateTime.class.isInstance(accessor)) {
+        zonedDateTime = ZonedDateTime.of(LocalDateTime.class.cast(accessor), defaultTimeZone);
+      } else {
+        // Should never happen as parseBest itself will error if there are no
+        // matches
+        throw new DateTimeException("Unknown TemporalAccessor type");
       }
     }
 
-    ZonedDateTime zonedDateTime = ZonedDateTime.of(localDate, localTime, zoneId);
     if (defaultTimeZone == null) {
       return new TimestampTZ(zonedDateTime);
     }
     return new TimestampTZ(zonedDateTime.withZoneSameInstant(defaultTimeZone));
   }
-
-  private static String handleSingleDigitHourOffset(String s) {
-    Matcher matcher = SINGLE_DIGIT_PATTERN.matcher(s);
-    if (matcher.find()) {
-      int index = matcher.start() + 1;
-      s = s.substring(0, index) + "0" + s.substring(index, s.length());
-    }
-    return s;
-  }
-
 
   public static TimestampTZ parseOrNull(String s, ZoneId defaultTimeZone) {
     try {

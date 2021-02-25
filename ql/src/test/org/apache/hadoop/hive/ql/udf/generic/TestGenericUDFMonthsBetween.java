@@ -104,6 +104,8 @@ public class TestGenericUDFMonthsBetween {
     // test UDF considers the difference in time components date1 and date2
     runTestStr("1997-02-28 10:30:00", "1996-10-30", 3.94959677, udf);
     runTestStr("1996-10-30", "1997-02-28 10:30:00", -3.94959677, udf);
+    runTestStr("1995-02-02 10:39", "1995-01-01", 1.04657258, udf);
+    runTestStr("1995-02-02", "1995-01-01 10:39", 1.01794355, udf);
 
     // if both are last day of the month then time part should be ignored
     runTestStr("2002-03-31", "2002-02-28", 1.0, udf);
@@ -114,9 +116,7 @@ public class TestGenericUDFMonthsBetween {
     runTestStr("2002-03-24", "2002-02-24 10:30:00", 1.0, udf);
     runTestStr("2002-03-24 10:30:00", "2002-02-24", 1.0, udf);
 
-    // partial time. time part will be skipped
-//    runTestStr("1995-02-02 10:39", "1995-01-01", 1.03225806, udf);
-//    runTestStr("1995-02-02", "1995-01-01 10:39", 1.03225806, udf);
+
     // no leading 0 for month and day should work
     runTestStr("1995-02-2", "1995-1-01", 1.03225806, udf);
     runTestStr("1995-2-02", "1995-01-1", 1.03225806, udf);

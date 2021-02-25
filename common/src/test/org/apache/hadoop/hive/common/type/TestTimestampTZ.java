@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.common.type;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.TimeZone;
@@ -28,9 +29,9 @@ import java.util.TimeZone;
 public class TestTimestampTZ {
   @Test
   public void testConvertToUTC() {
-    String s = "2017-04-14 18:00:00 Asia/Shanghai";
+    String s = "2017-04-14 18:00:00.123 Asia/Shanghai";
     TimestampTZ timestampTZ = TimestampTZUtil.parse(s, ZoneId.of("UTC"));
-    Assert.assertEquals("2017-04-14 10:00:00.0 UTC", timestampTZ.toString());
+    Assert.assertEquals("2017-04-14 10:00:00.123 UTC", timestampTZ.toString());
   }
 
   @Test
@@ -97,7 +98,7 @@ public class TestTimestampTZ {
     try {
       TimestampTZUtil.parse("2017-01-01 13:33:61");
       Assert.fail("Invalid time should cause exception");
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeException e) {
       // expected
     }
   }
