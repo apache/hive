@@ -74,6 +74,7 @@ import java.util.Base64;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
@@ -1397,8 +1398,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "part/");
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
-    List<String> withClause = Arrays.asList(
-        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy.task'='true'",
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='true'",
         "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
             + "'='" + runCopyTasksOnTarget + "'");
 
@@ -1425,7 +1426,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // Confirm the a table is outside the db location.
     Table aTable = primary.getTable(primaryDbName, "a");
-    new Path(aTable.getSd().getLocation());
     assertFalse(FileUtils
         .isPathWithinSubtree(new Path(aTable.getSd().getLocation()),
             new Path(primaryDb.getLocationUri())));
@@ -1536,8 +1536,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "part/");
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
-    List<String> withClause = Arrays.asList(
-        "'distcp.options.update'='','hive.repl.external.warehouse.single.copy.task'='false'");
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='false'");
 
     // Create a table within the warehouse location, one outside and one with
     // a partition outside the default location.
