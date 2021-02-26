@@ -201,7 +201,7 @@ public class HiveMetaStoreUtils {
 
   private static final String FROM_SERIALIZER = "from deserializer";
   private static String determineFieldComment(String comment) {
-    return (comment == null) ? FROM_SERIALIZER : comment;
+    return ("".equals(comment)) ? null : comment;
   }
 
   /**

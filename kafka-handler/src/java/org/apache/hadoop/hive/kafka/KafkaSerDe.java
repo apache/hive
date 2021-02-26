@@ -53,6 +53,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.rmi.server.UID;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -120,7 +121,18 @@ import java.util.stream.Collectors;
     inspectors.addAll(delegateDeserializerOI.getAllStructFieldRefs().stream().map(StructField::getFieldObjectInspector)
         .collect(Collectors.toList()));
     inspectors.addAll(MetadataColumn.KAFKA_METADATA_INSPECTORS);
-    objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
+
+    //init comment info
+    String commentStr = tableProperties.getProperty("columns.comments");
+    List<String> colComments =  new ArrayList<>(Collections.nCopies(columnNames.size(), ""));
+    if (commentStr != null) {
+      String[] commentArr = commentStr.split("\0", columnNames.size() - MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.size());
+      for (int i = 0; i < commentArr.length; i++) {
+        colComments.set(i, commentArr[i]);
+      }
+    }
+
+    objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors, colComments);
     metadataStartIndex = columnNames.size() - MetadataColumn.values().length;
     // Setup Read and Write Path From/To Kafka
     if (delegateSerDe.getSerializedClass() == Text.class) {
