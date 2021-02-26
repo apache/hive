@@ -750,7 +750,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   private void updatePoolMetricsAfterKillTrigger(HashSet<String> poolsToRedistribute, KillQueryContext ctx) {
     String poolName = ctx.getPoolName();
-    if (poolName != null) {
+    if (StringUtils.isNotBlank(poolName)) {
       poolsToRedistribute.add(poolName);
       PoolState pool = pools.get(poolName);
       if (pool != null) {
@@ -2254,7 +2254,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     WmTezSession toKill = killQueryContext.session;
     String poolName = toKill.getPoolName();
-    boolean validPoolName = poolName != null;
+
+    boolean validPoolName = StringUtils.isNotBlank(poolName);
+
     if (validPoolName) {
       killQueryContext.setPoolName(poolName);
     }
