@@ -29,9 +29,9 @@ import java.util.TimeZone;
 public class TestTimestampTZ {
   @Test
   public void testConvertToUTC() {
-    String s = "2017-04-14 18:00:00.123 Asia/Shanghai";
+    String s = "2017-04-14 18:00:00 Asia/Shanghai";
     TimestampTZ timestampTZ = TimestampTZUtil.parse(s, ZoneId.of("UTC"));
-    Assert.assertEquals("2017-04-14 10:00:00.123 UTC", timestampTZ.toString());
+    Assert.assertEquals("2017-04-14 10:00:00.0 UTC", timestampTZ.toString());
   }
 
   @Test

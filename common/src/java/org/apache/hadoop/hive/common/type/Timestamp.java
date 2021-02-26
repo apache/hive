@@ -174,7 +174,7 @@ public class Timestamp implements Comparable<Timestamp> {
 
     try {
       TemporalAccessor temporalAccessor =
-          HiveDateTimeFormatter.HIVE_DATE_TIME.parseBest(s, LocalDateTime::from, LocalDate::from);
+          HiveDateTimeFormatter.HIVE_LOCAL_DATE_TIME.parseBest(s, LocalDateTime::from, LocalDate::from);
 
       if (temporalAccessor instanceof LocalDateTime) {
         localDateTime = (LocalDateTime) temporalAccessor;
@@ -184,7 +184,6 @@ public class Timestamp implements Comparable<Timestamp> {
     } catch (DateTimeParseException e) {
       throw new IllegalArgumentException("Cannot create timestamp, parsing error", e);
     }
-
     return new Timestamp(localDateTime);
   }
 

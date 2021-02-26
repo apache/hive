@@ -175,7 +175,6 @@ public class Date implements Comparable<Date> {
     } catch (DateTimeParseException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error", e);
     }
-
     return new Date(localDate);
   }
 
