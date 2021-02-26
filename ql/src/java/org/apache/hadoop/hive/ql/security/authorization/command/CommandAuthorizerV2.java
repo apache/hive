@@ -211,6 +211,8 @@ final class CommandAuthorizerV2 {
                       conf.getClassByName(table.getStorageHandler().getClass().getName()), SessionState.get().getConf());
               storageuri = authorizationHandler.getURIForAuth(tableProperties).toString();
             }
+          }catch(NullPointerException nullExp){
+            throw nullExp;
           }catch(Exception ex){
             //Custom storage handler that has not implemented the getURIForAuth()
             storageuri = table.getStorageHandler().getClass().getName()+"://"+

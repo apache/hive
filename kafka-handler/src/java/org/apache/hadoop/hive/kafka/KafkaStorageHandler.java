@@ -203,7 +203,9 @@ import java.util.function.Predicate;
     String host_name = tableProperties.get(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName()) != null ?
             tableProperties.get(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName()) :
             configuration.get(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
+    Preconditions.checkNotNull(host_name, "Set Table property " + KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
     String table_name = tableProperties.get(KafkaTableProperties.HIVE_KAFKA_TOPIC.getName());
+    Preconditions.checkNotNull(table_name, "Set Table property " + KafkaTableProperties.HIVE_KAFKA_TOPIC.getName());
     return new URI(KAFKA_PREFIX+"//"+host_name+"/"+table_name);
   }
 
