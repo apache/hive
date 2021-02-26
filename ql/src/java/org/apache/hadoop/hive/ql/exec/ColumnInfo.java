@@ -256,4 +256,13 @@ public class ColumnInfo implements Serializable {
   public void setObjectinspector(ObjectInspector writableObjectInspector) {
     this.objectInspector = writableObjectInspector;
   }
+
+  public void setBelongsTo(RowSchema rowSchema) {
+    if (belongsTo == null || belongsTo == rowSchema) {
+      belongsTo = rowSchema;
+    } else {
+      throw new RuntimeException("this colInfo already belongs to: " + belongsTo);
+    }
+
+  }
 }

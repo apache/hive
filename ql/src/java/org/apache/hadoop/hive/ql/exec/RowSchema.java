@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -33,44 +34,60 @@ public class RowSchema implements Serializable {
   private static final long serialVersionUID = 1L;
   private List<ColumnInfo> signature = new ArrayList<ColumnInfo>();
 
-  static boolean b1;
-  static boolean b2 = false;
-  static boolean b3 = true;
-
   public RowSchema() {
   }
 
   public RowSchema(RowSchema that) {
-
-    if (b1) {
-      setSignature1(signature);
-      this.signature = that.signature;
-    } else {
-      setSignature1(that.signature);
-    }
+    setSignature(that.signature);
   }
 
   public RowSchema(List<ColumnInfo> signature) {
-    if (b2) {
-      this.signature = signature;
-    } else {
-      setSignature1(signature);
+    setSignature2(signature);
+  }
+
+  public void setSignature(List<ColumnInfo> signature) {
+    this.signature = new RsArrayList();
+    for (ColumnInfo columnInfo : signature) {
+      this.signature.add(columnInfo);
+      //      this.signature.add(new ColumnInfo(columnInfo));
     }
   }
 
   public void setSignature2(List<ColumnInfo> signature) {
-    if (b3) {
-      this.signature = signature;
-    } else {
-      setSignature1(signature);
+    this.signature = new RsArrayList();
+    for (ColumnInfo columnInfo : signature) {
+      //      this.signature.add(columnInfo);
+      this.signature.add(new ColumnInfo(columnInfo));
     }
   }
 
-  public void setSignature1(List<ColumnInfo> signature) {
-    this.signature = new ArrayList<ColumnInfo>();
-    for (ColumnInfo columnInfo : signature) {
-      this.signature.add(new ColumnInfo(columnInfo));
+  class RsArrayList extends ArrayList<ColumnInfo> {
+
+    @Override
+    public boolean add(ColumnInfo e) {
+      e.setBelongsTo(RowSchema.this);
+      return super.add(e);
     }
+
+    @Override
+    public void add(int index, ColumnInfo element) {
+      //      super.add(index, element);
+      throw new RuntimeException("Unimplemented!");
+
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends ColumnInfo> c) {
+      throw new RuntimeException("Unimplemented!");
+
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends ColumnInfo> c) {
+      throw new RuntimeException("Unimplemented!");
+
+    }
+
   }
 
   public List<ColumnInfo> getSignature() {
