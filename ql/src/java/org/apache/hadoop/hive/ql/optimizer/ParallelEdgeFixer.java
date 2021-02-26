@@ -111,7 +111,7 @@ public class ParallelEdgeFixer extends Transform {
     }
   }
 
-  private void fixParallelEdges(OperatorGraph og) {
+  private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
     // Identify edge operators
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
@@ -184,7 +184,7 @@ public class ParallelEdgeFixer extends Transform {
   /**
    * Fixes a parallel edge going into a mapjoin by introducing a concentrator RS.
    */
-  private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) {
+  private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) throws SemanticException {
     LOG.info("Fixing parallel by adding a concentrator RS between {} -> {}", p, o);
 
     ReduceSinkDesc conf = (ReduceSinkDesc) p.getConf();
@@ -212,7 +212,8 @@ public class ParallelEdgeFixer extends Transform {
 
   }
 
-  private Operator<SelectDesc> buildSEL(Operator<? extends OperatorDesc> p, ReduceSinkDesc conf) {
+  private Operator<SelectDesc> buildSEL(Operator<? extends OperatorDesc> p, ReduceSinkDesc conf)
+      throws SemanticException {
     List<ExprNodeDesc> colList = new ArrayList<>();
     List<String> outputColumnNames = new ArrayList<>();
     List<ColumnInfo> newColumns = new ArrayList<>();
@@ -239,7 +240,7 @@ public class ParallelEdgeFixer extends Transform {
     return newSEL;
   }
 
-  private static String extractColumnName(ExprNodeDesc expr) {
+  private static String extractColumnName(ExprNodeDesc expr) throws SemanticException {
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
       return exprNodeColumnDesc.getColumn();
@@ -249,7 +250,7 @@ public class ParallelEdgeFixer extends Transform {
       ExprNodeConstantDesc exprNodeConstantDesc = (ExprNodeConstantDesc) expr;
       return exprNodeConstantDesc.getFoldedFromCol();
     }
-    throw new RuntimeException("unexpected mapping expression!");
+    throw new SemanticException("unexpected mapping expression!");
   }
 
   public static Optional<Set<String>> colMappingInverseKeys(ReduceSinkOperator rs) {
@@ -260,7 +261,7 @@ public class ParallelEdgeFixer extends Transform {
         ret.put(extractColumnName(e.getValue()), e.getKey());
       }
       return Optional.of(new TreeSet<>(ret.values()));
-    } catch (Exception e) {
+    } catch (SemanticException e) {
       return Optional.empty();
     }
 
