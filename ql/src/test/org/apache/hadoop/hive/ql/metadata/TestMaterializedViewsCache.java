@@ -238,6 +238,18 @@ class TestMaterializedViewsCache {
   }
 
   @Test
+  void testMultipleRefresh() {
+    Table defaultMV1SameTable2 = getTable(defaultMV1.getDbName(), defaultMV1.getTableName(), defaultMV1.getViewExpandedText(), 30);
+    HiveRelOptMaterialization defaultMaterialization1SameTable2 = createMaterialization(defaultMV1SameTable2);
+
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewsCache.refresh(defaultMV1SameTable, defaultMaterialization1SameTable);
+    materializedViewsCache.refresh(defaultMV1SameTable2, defaultMaterialization1SameTable2);
+
+    assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1SameTable2));
+  }
+
+  @Test
   void testRemoveByTableName() {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
 
