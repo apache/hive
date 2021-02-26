@@ -115,7 +115,6 @@ import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
-import static org.apache.hadoop.hive.ql.exec.Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -185,7 +184,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             initiateAuthorizationDumpTask();
           }
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
-          dmd.setDumpFormatVersion(MIN_VERSION_FOR_NEW_DUMP_FORMAT);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
