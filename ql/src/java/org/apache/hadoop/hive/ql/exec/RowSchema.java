@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -32,13 +32,13 @@ import java.util.Set;
 public class RowSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private List<ColumnInfo> signature = new ArrayList<ColumnInfo>();
+  private List<ColumnInfo> signature = new RsArrayList(this);
 
   public RowSchema() {
   }
 
   public RowSchema(RowSchema that) {
-    setSignature(that.signature);
+    setSignature2(that.signature);
   }
 
   public RowSchema(List<ColumnInfo> signature) {
@@ -46,7 +46,7 @@ public class RowSchema implements Serializable {
   }
 
   public void setSignature(List<ColumnInfo> signature) {
-    this.signature = new RsArrayList();
+    this.signature = new RsArrayList(this);
     for (ColumnInfo columnInfo : signature) {
       this.signature.add(columnInfo);
       //      this.signature.add(new ColumnInfo(columnInfo));
@@ -54,40 +54,47 @@ public class RowSchema implements Serializable {
   }
 
   public void setSignature2(List<ColumnInfo> signature) {
-    this.signature = new RsArrayList();
+    this.signature = new RsArrayList(this);
     for (ColumnInfo columnInfo : signature) {
       //      this.signature.add(columnInfo);
       this.signature.add(new ColumnInfo(columnInfo));
     }
   }
 
-  class RsArrayList extends ArrayList<ColumnInfo> {
+  static class RsArrayList extends AbstractList<ColumnInfo> {
+
+    List<ColumnInfo> delegate = new ArrayList<>();
+    private RowSchema RowSchemathis;
+
+    public RsArrayList() {
+      super();
+    }
+    public RsArrayList(RowSchema tr) {
+      super();
+      RowSchemathis = tr;
+    };
 
     @Override
     public boolean add(ColumnInfo e) {
-      e.setBelongsTo(RowSchema.this);
       return super.add(e);
     }
 
     @Override
     public void add(int index, ColumnInfo element) {
-      //      super.add(index, element);
-      throw new RuntimeException("Unimplemented!");
+      element.setBelongsTo(RowSchemathis);
+      delegate.add(index, element);
+    }
 
+
+    @Override
+    public ColumnInfo get(int index) {
+      return delegate.get(index);
     }
 
     @Override
-    public boolean addAll(Collection<? extends ColumnInfo> c) {
-      throw new RuntimeException("Unimplemented!");
-
+    public int size() {
+      return delegate.size();
     }
-
-    @Override
-    public boolean addAll(int index, Collection<? extends ColumnInfo> c) {
-      throw new RuntimeException("Unimplemented!");
-
-    }
-
   }
 
   public List<ColumnInfo> getSignature() {

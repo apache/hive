@@ -61,7 +61,7 @@ public class ColumnInfo implements Serializable {
 
   private String typeName;
 
-  private RowSchema belongsTo;
+  private transient RowSchema belongsTo;
 
   public ColumnInfo() {
   }
