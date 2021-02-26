@@ -20,9 +20,15 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.calcite.util.Pair;
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
@@ -30,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
@@ -104,7 +111,7 @@ public class ParallelEdgeFixer extends Transform {
     }
   }
 
-  private void fixParallelEdges(OperatorGraph og) {
+  private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
     // Identify edge operators
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
@@ -157,7 +164,13 @@ public class ParallelEdgeFixer extends Transform {
     values.remove(toKeep);
   }
 
-  private boolean isParallelEdgeSupported(Pair<Operator<?>, Operator<?>> pair) {
+  public boolean isParallelEdgeSupported(Pair<Operator<?>, Operator<?>> pair) {
+
+    Operator<?> rs = pair.left;
+    if (rs instanceof ReduceSinkOperator && !colMappingInverseKeys((ReduceSinkOperator) rs).isPresent()) {
+      return false;
+    }
+
     Operator<?> child = pair.right;
     if (child instanceof MapJoinOperator) {
       return true;
@@ -171,7 +184,7 @@ public class ParallelEdgeFixer extends Transform {
   /**
    * Fixes a parallel edge going into a mapjoin by introducing a concentrator RS.
    */
-  private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) {
+  private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) throws SemanticException {
     LOG.info("Fixing parallel by adding a concentrator RS between {} -> {}", p, o);
 
     ReduceSinkDesc conf = (ReduceSinkDesc) p.getConf();
@@ -199,16 +212,16 @@ public class ParallelEdgeFixer extends Transform {
 
   }
 
-  private Operator<SelectDesc> buildSEL(Operator<? extends OperatorDesc> p, ReduceSinkDesc conf) {
+  private Operator<SelectDesc> buildSEL(Operator<? extends OperatorDesc> p, ReduceSinkDesc conf)
+      throws SemanticException {
     List<ExprNodeDesc> colList = new ArrayList<>();
     List<String> outputColumnNames = new ArrayList<>();
     List<ColumnInfo> newColumns = new ArrayList<>();
 
-    for (Entry<String, ExprNodeDesc> e : conf.getColumnExprMap().entrySet()) {
+    Set<String> inverseKeys = colMappingInverseKeys((ReduceSinkOperator) p).get();
+    for (String colName : inverseKeys) {
 
-      String colName = e.getKey();
-      ExprNodeDesc expr = e.getValue();
-
+      ExprNodeDesc expr = conf.getColumnExprMap().get(colName);
       ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
 
       colList.add(colRef);
@@ -227,7 +240,7 @@ public class ParallelEdgeFixer extends Transform {
     return newSEL;
   }
 
-  private String extractColumnName(ExprNodeDesc expr) {
+  private static String extractColumnName(ExprNodeDesc expr) throws SemanticException {
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
       return exprNodeColumnDesc.getColumn();
@@ -237,6 +250,20 @@ public class ParallelEdgeFixer extends Transform {
       ExprNodeConstantDesc exprNodeConstantDesc = (ExprNodeConstantDesc) expr;
       return exprNodeConstantDesc.getFoldedFromCol();
     }
-    throw new RuntimeException("unexpected mapping expression!");
+    throw new SemanticException("unexpected mapping expression!");
+  }
+
+  public static Optional<Set<String>> colMappingInverseKeys(ReduceSinkOperator rs) {
+    Map<String, String> ret = new HashMap<String, String>();
+    Map<String, ExprNodeDesc> exprMap = rs.getColumnExprMap();
+    try {
+      for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
+        ret.put(extractColumnName(e.getValue()), e.getKey());
+      }
+      return Optional.of(new TreeSet<>(ret.values()));
+    } catch (SemanticException e) {
+      return Optional.empty();
+    }
+
   }
 }
