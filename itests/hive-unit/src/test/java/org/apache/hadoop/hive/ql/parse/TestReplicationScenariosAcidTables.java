@@ -53,7 +53,6 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -166,7 +165,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testNotificationAck() throws Throwable{
+  public void testNotificationFromLoadMetadataAck() throws Throwable{
     long previousLoadNotificationID = 0, currentLoadNotificationID, currentNotificationID;
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
@@ -189,8 +188,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception{
     Path loadMetadataFilePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplAck.LOAD_METADATA);
     FileSystem fs = dumpLocation.getFileSystem(conf);
-    InputStream inputstream = fs.open(loadMetadataFilePath);
-    BufferedReader reader = new BufferedReader(new InputStreamReader(inputstream));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(loadMetadataFilePath)));
     String line = reader.readLine();
     assertTrue(line != null && reader.readLine() == null);
     if(reader != null)  reader.close();
