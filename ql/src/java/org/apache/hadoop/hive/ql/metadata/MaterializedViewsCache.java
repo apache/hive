@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -69,8 +70,7 @@ public class MaterializedViewsCache {
 
   private ConcurrentMap<String, HiveRelOptMaterialization> ensureDbMap(Table materializedViewTable) {
     // We are going to create the map for each view in the given database
-    ConcurrentMap<String, HiveRelOptMaterialization> dbMap =
-            new ConcurrentHashMap<String, HiveRelOptMaterialization>();
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = new ConcurrentHashMap<>();
     // If we are caching the MV, we include it in the cache
     final ConcurrentMap<String, HiveRelOptMaterialization> prevDbMap = materializedViews.putIfAbsent(
             materializedViewTable.getDbName(), dbMap);
@@ -81,11 +81,21 @@ public class MaterializedViewsCache {
   }
 
   public void refresh(Table materializedViewTable, HiveRelOptMaterialization newMaterialization) {
-    remove(materializedViewTable.getDbName(), materializedViewTable.getTableName());
-    putIfAbsent(materializedViewTable, newMaterialization);
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
+    if (dbMap != null) {
+      dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, materialization) -> {
+          String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
+          List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
+          materializationList.remove(materialization);
+          materializationList.add(newMaterialization);
+          LOG.debug("Refreshed materialized view {}.{}",
+                  materializedViewTable.getDbName(), materializedViewTable.getTableName());
 
-    LOG.debug("Refreshed materialized view {}.{}",
-            materializedViewTable.getDbName(), materializedViewTable.getTableName());
+        return newMaterialization;
+      });
+    } else {
+      putIfAbsent(materializedViewTable, newMaterialization);
+    }
   }
 
   public void remove(String dbName, String tableName) {
