@@ -81,21 +81,25 @@ public class MaterializedViewsCache {
   }
 
   public void refresh(Table materializedViewTable, HiveRelOptMaterialization newMaterialization) {
-    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
-    if (dbMap != null) {
-      dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, materialization) -> {
-          String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
-          List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
-          materializationList.remove(materialization);
-          materializationList.add(newMaterialization);
-          LOG.debug("Refreshed materialized view {}.{}",
-                  materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
+    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, materialization) -> {
+      if (materialization == null) {
+        List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
+                materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+        materializationList.add(newMaterialization);
+        LOG.debug("Added materialized view {}.{}",
+                materializedViewTable.getDbName(), materializedViewTable.getTableName());
+      } else {
+        String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
+        List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
+        materializationList.remove(materialization);
+        materializationList.add(newMaterialization);
+        LOG.debug("Refreshed materialized view {}.{}",
+                materializedViewTable.getDbName(), materializedViewTable.getTableName());
+      }
 
-        return newMaterialization;
-      });
-    } else {
-      putIfAbsent(materializedViewTable, newMaterialization);
-    }
+      return newMaterialization;
+    });
   }
 
   public void remove(String dbName, String tableName) {
