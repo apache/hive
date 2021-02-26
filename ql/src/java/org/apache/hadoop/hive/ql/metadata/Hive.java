@@ -2364,10 +2364,20 @@ public class Hive {
               + ", Direct insert = " + isDirectInsert + ")");
         }
         if (newFiles != null) {
-          newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
-          newFiles.addAll(newFileStatuses.stream()
-              .map(FileStatus::getPath)
-              .collect(Collectors.toList()));
+          if (!newFiles.isEmpty()) {
+            // We already know the file list from the direct insert manifestfile
+            FileSystem srcFs = loadPath.getFileSystem(conf);
+            newFileStatuses = new ArrayList<>();
+            for (Path filePath : newFiles) {
+              newFileStatuses.add(srcFs.getFileStatus(filePath));
+            }
+          } else {
+            newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
+            newFiles.addAll(newFileStatuses
+                .stream()
+                .map(FileStatus::getPath)
+                .collect(Collectors.toList()));
+          }
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
@@ -2851,8 +2861,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
           SessionState.setCurrentSessionState(parentSession);
           LOG.info("New loading path = " + entry.getKey() + " withPartSpec " + fullPartSpec);
 
-          List<Path> newFiles = Lists.newArrayList();
           Partition oldPartition = partitionDetails.partition;
+          List<Path> newFiles = null;
+          if (partitionDetails.newFiles != null) {
+            // If we already know the files from the direct insert manifest, use them
+            newFiles = partitionDetails.newFiles;
+          } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPartition == null) {
+            // Otherwise only collect them, if we are going to fire write notifications
+            newFiles = new ArrayList<>();
+          }
           // load the partition
           Partition partition = loadPartitionInternal(entry.getKey(), tbl,
                   fullPartSpec, oldPartition, tbd.getLoadFileType(), true, false, numLB > 0, false, isAcid,

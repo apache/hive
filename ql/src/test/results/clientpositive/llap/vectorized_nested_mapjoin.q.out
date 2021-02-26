@@ -155,8 +155,8 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: double), KEY.reducesinkkey0 (type: smallint)
-                outputColumnNames: _col0, _col2, _col1
+                expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: tinyint), VALUE._col1 (type: double)
+                outputColumnNames: _col1, _col0, _col2
                 Reduce Output Operator
                   key expressions: _col1 (type: smallint)
                   null sort order: z
