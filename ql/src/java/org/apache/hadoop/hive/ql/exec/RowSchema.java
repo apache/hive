@@ -33,18 +33,40 @@ public class RowSchema implements Serializable {
   private static final long serialVersionUID = 1L;
   private List<ColumnInfo> signature = new ArrayList<ColumnInfo>();
 
+  static boolean b1;
+  static boolean b2 = false;
+  static boolean b3 = true;
+
   public RowSchema() {
   }
 
   public RowSchema(RowSchema that) {
-    this(that.signature);
+
+    if (b1) {
+      setSignature1(signature);
+      this.signature = that.signature;
+    } else {
+      setSignature1(that.signature);
+    }
   }
 
   public RowSchema(List<ColumnInfo> signature) {
-    setSignature(signature);
+    if (b2) {
+      this.signature = signature;
+    } else {
+      setSignature1(signature);
+    }
   }
 
-  public void setSignature(List<ColumnInfo> signature) {
+  public void setSignature2(List<ColumnInfo> signature) {
+    if (b3) {
+      this.signature = signature;
+    } else {
+      setSignature1(signature);
+    }
+  }
+
+  public void setSignature1(List<ColumnInfo> signature) {
     this.signature = new ArrayList<ColumnInfo>();
     for (ColumnInfo columnInfo : signature) {
       this.signature.add(new ColumnInfo(columnInfo));
