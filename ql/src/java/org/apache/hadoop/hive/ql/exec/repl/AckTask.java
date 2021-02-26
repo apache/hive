@@ -44,8 +44,7 @@ public class AckTask extends Task<AckWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      List<Runnable> preAckTasks = work.getPreAckTasks();
-      for(Runnable task:preAckTasks){
+      for( preAckTask task : work.getPreAckTasks() ){
         task.run();
       }
       Path ackPath = work.getAckFilePath();

@@ -503,21 +503,18 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void createReplLoadCompleteAckTask() {
-    if (!work.hasBootstrapLoadTasks() && (work.isIncrementalLoad() ? !work.incrementalLoadTasksBuilder().hasMoreWork() : true)){
+    if ( !work.hasBootstrapLoadTasks() &&
+            ( work.isIncrementalLoad() ? !work.incrementalLoadTasksBuilder().hasMoreWork() : true ) ) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
-      List<Runnable> listOfPreAckTasks = new LinkedList<>();
-      listOfPreAckTasks.add(new Runnable() {
+      List<preAckTask> listOfPreAckTasks = new LinkedList<>();
+      listOfPreAckTasks.add(new preAckTask() {
         @Override
-        public void run() {
-          try{
-            HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
-            long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
-            Path notificationFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
-            Utils.writeOutput(String.valueOf(currentNotificationID), notificationFilePath, conf);
-            LOG.info("Created NotificationACK file : {} with NotificationID : {}", notificationFilePath, currentNotificationID);
-          }catch (Exception e) {
-            throw new RuntimeException(e);
-          }
+        public void run() throws Exception {
+          HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+          long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
+          Path loadMetadataFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
+          Utils.writeOutput(String.valueOf(currentNotificationID), loadMetadataFilePath, conf);
+          LOG.info("Created LOAD Metadata file : {} with NotificationID : {}", loadMetadataFilePath, currentNotificationID);
         }
       });
       AckWork replLoadAckWork = new AckWork(
@@ -681,3 +678,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 }
+
+interface preAckTask{
+  void run() throws Exception;
+};

@@ -51,7 +51,6 @@ import org.junit.BeforeClass;
 
 import javax.annotation.Nullable;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -188,9 +187,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception{
-    Path notificationAckFile = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplAck.LOAD_METADATA);
+    Path loadMetadataFilePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplAck.LOAD_METADATA);
     FileSystem fs = dumpLocation.getFileSystem(conf);
-    InputStream inputstream = fs.open(notificationAckFile);
+    InputStream inputstream = fs.open(loadMetadataFilePath);
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputstream));
     String line = reader.readLine();
     assertTrue(line != null && reader.readLine() == null);

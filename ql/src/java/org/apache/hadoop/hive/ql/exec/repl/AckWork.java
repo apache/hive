@@ -36,7 +36,7 @@ public class AckWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path ackFilePath;
   private transient ReplicationMetricCollector metricCollector;
-  private List<Runnable> tasks;
+  private List<preAckTask> preAcktasks;
 
   public Path getAckFilePath() {
     return ackFilePath;
@@ -50,13 +50,13 @@ public class AckWork implements Serializable {
     this.ackFilePath = ackFilePath;
   }
 
-  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector, List<Runnable> preAckTasks) {
+  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector, List<preAckTask> preAckTasks) {
     this.ackFilePath = ackFilePath;
     this.metricCollector = metricCollector;
-    this.tasks = preAckTasks;
+    this.preAcktasks = preAckTasks;
   }
 
-  public List<Runnable> getPreAckTasks(){
-    return this.tasks;
+  public List<preAckTask> getPreAckTasks(){
+    return this.preAcktasks;
   }
 }
