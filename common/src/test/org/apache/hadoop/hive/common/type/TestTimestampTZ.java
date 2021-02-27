@@ -31,7 +31,7 @@ public class TestTimestampTZ {
   public void testConvertToUTC() {
     String s = "2017-04-14 18:00:00 Asia/Shanghai";
     TimestampTZ timestampTZ = TimestampTZUtil.parse(s, ZoneId.of("UTC"));
-    Assert.assertEquals("2017-04-14 10:00:00.0 UTC", timestampTZ.toString());
+    Assert.assertEquals("2017-04-14 10:00:00 UTC", timestampTZ.toString());
   }
 
   @Test

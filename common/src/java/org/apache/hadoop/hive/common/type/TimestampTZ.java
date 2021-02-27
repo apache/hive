@@ -74,8 +74,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
 
   @Override
   public String toString() {
-    String str = zonedDateTime.format(FORMATTER);
-    return zonedDateTime.getNano() == 0 ? str += ".0" : str;
+    return zonedDateTime.format(FORMATTER);
   }
 
   @Override
