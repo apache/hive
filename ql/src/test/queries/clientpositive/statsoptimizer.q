@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.cbo.enable=false;
 set hive.compute.query.using.stats=true;
 
