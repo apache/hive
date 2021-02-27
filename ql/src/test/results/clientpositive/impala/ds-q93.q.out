@@ -46,14 +46,14 @@ POSTHOOK: Input: default@impala_tpcds_store_sales
 CBO PLAN:
 ImpalaSortRel(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)])
-    ImpalaProjectPassthroughRel(ss_customer_sk=[$7], act_sales=[CASE($2, *(CAST(-($10, $3)):DECIMAL(19, 0) NOT NULL, $9), $11)])
+    ImpalaProjectPassthroughRel(ss_customer_sk=[$7], act_sales=[CASE($2, *(CAST(-($10, $3)):DECIMAL(19, 0), $9), $11)])
       ImpalaJoinRel(condition=[AND(=($0, $6), =($1, $8))], joinType=[inner])
         ImpalaJoinRel(condition=[=($4, $5)], joinType=[inner])
           ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9], IS NOT NULL=[IS NOT NULL($10)], CAST=[CAST($10):BIGINT], CAST4=[CAST($8):BIGINT])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL(CAST($8):BIGINT), IS NOT NULL($2), IS NOT NULL($9))])
           ImpalaProjectPassthroughRel(r_reason_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_reason]], condition=[AND(=($2, _UTF-16LE'reason 66'), IS NOT NULL($0))])
-        ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_sales_price=[$12], CAST=[CAST($9):BIGINT], *=[*(CAST($9):DECIMAL(10, 0) NOT NULL, $12)])
+        ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_sales_price=[$12], CAST=[CAST($9):BIGINT], *=[*(CAST($9):DECIMAL(10, 0), $12)])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8))])
 
 HMS CALL get_table_req FOR impala_tpcds_store_sales

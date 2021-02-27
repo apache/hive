@@ -307,7 +307,8 @@ public class ImpalaTypeConverter {
     ScalarType decimalType = impalaType.getMinResolutionDecimal();
     int precision = (decimalType != Type.NULL) ? decimalType.decimalPrecision() : 1;
     int scale = (decimalType != Type.NULL) ? decimalType.decimalScale() : 0;
-    return factory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
+    RelDataType rdt = factory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
+    return factory.createTypeWithNullability(rdt, preCastDataType.isNullable());
   }
 
   /**

@@ -44,8 +44,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImpalaFunctionSignature {
+  protected static final Logger LOG = LoggerFactory.getLogger(ImpalaFunctionSignature.class);
 
   private enum SqlTypeOrdering {
     BOOLEAN,
@@ -296,19 +299,30 @@ public class ImpalaFunctionSignature {
   }
 
 
+  public static boolean areCompatibleDataTypes(RelDataType dt1, RelDataType dt2) {
+    return areCompatibleDataTypes(dt1, dt2, false);
+  }
+
   /**
    * Returns true if datatypes are compatible within the Impala function. In the case of character,
    * data, char, varchar, and string are all compatible.  Nulls are compatible with everything
    * since the function signature will never take a null type and if the data is null, it can
    * go into any Impala function.
+   * If isStrictDecimal is true, then the precision and scale of the reldatatypes need to match.
+   * If isStrictDecimal is false, then any two decimal types will be compatible.
    */
-  public static boolean areCompatibleDataTypes(RelDataType dt1, RelDataType dt2) {
+  public static boolean areCompatibleDataTypes(RelDataType dt1, RelDataType dt2,
+      boolean isStrictDecimal) {
     if (SqlTypeName.CHAR_TYPES.contains(dt1.getSqlTypeName()) &&
         SqlTypeName.CHAR_TYPES.contains(dt2.getSqlTypeName())) {
-      // char types must have the same precision (e.g. char(5) != char(6))
+      // char types are always compatible from a compilation point of view, so no
+      // casting is needed.  At runtime, however, different char sizes will not
+      // be equal to each other.
+      // TODO: If we do have different chars, the optimizer should be able to remove the
+      // clause.
       if (dt1.getSqlTypeName() == SqlTypeName.CHAR &&
           dt2.getSqlTypeName() == SqlTypeName.CHAR) {
-        return dt1.getPrecision() == dt2.getPrecision();
+        return true;
       }
 
       if (dt1.getSqlTypeName() == SqlTypeName.VARCHAR &&
@@ -325,6 +339,13 @@ public class ImpalaFunctionSignature {
         }
       }
       return false;
+    }
+
+    if (dt1.getSqlTypeName() == SqlTypeName.DECIMAL && dt2.getSqlTypeName() == SqlTypeName.DECIMAL) {
+      if (!isStrictDecimal) {
+        return true;
+      }
+      return dt1.getPrecision() == dt2.getPrecision() && dt1.getScale() == dt2.getScale();
     }
 
     if (dt1.getSqlTypeName() == SqlTypeName.NULL || dt2.getSqlTypeName() == SqlTypeName.NULL) {

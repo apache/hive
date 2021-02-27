@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
-import org.apache.hadoop.hive.impala.operator.InIterateOperator;
+import org.apache.impala.analysis.TypesUtil;
 import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 
@@ -279,21 +279,47 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     List<RexNode> newOperands = Lists.newArrayList();
     Preconditions.checkState(inputs.size() == castTypes.size());
     RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+
+    // Some functions (e.g. IN) require all decimal parameters to use the same precision
+    // and scale. The commonDecimalType will hold a value only for these functions.
+    RelDataType commonDecimalType =
+        getCommonDecimalTypeIfNeeded(typeFactory, inputs, castTypes);
+
     for (int i = 0; i < inputs.size(); ++i) {
       RelDataType preCastDataType =  inputs.get(i).getType();
+      boolean strictDecimalComparison = (commonDecimalType != null);
+      RelDataType postCastDataType =
+          (strictDecimalComparison && castTypes.get(i).getSqlTypeName() == SqlTypeName.DECIMAL)
+              ? commonDecimalType : castTypes.get(i);
       // If the datatypes are compatible, we don't want to cast it.
       // If the datatype is null, they are compatible, but we always want to cast it
       // to its proper datatype.
+      // The strictDecimalComparison boolean is false (normal case) when we don't want to cast
+      // decimal types with different precisions (e.g. for multiplication, it's ok to multiply
+      // dec(3,2) * dec(8,1). For "IN" clauses, the params need a compatible decimal
+      // precision/scale.
       if (preCastDataType.getSqlTypeName() != SqlTypeName.NULL &&
-          ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, castTypes.get(i))) {
+          ImpalaFunctionSignature.areCompatibleDataTypes(preCastDataType, postCastDataType,
+              strictDecimalComparison)) {
         newOperands.add(inputs.get(i));
       } else {
-        RelDataType castedRelDataType = getCastedDataType(typeFactory, castTypes.get(i), preCastDataType);
+        RelDataType castedRelDataType = (castTypes.get(i).getSqlTypeName() == SqlTypeName.DECIMAL)
+            ? getCastedDecimalDataType(typeFactory, commonDecimalType, preCastDataType)
+            : getCastedDataType(typeFactory, castTypes.get(i), preCastDataType);
         // cast to appropriate type
         newOperands.add(rexBuilder.makeCast(castedRelDataType, inputs.get(i), true));
       }
     }
     return newOperands;
+  }
+
+  /**
+   * needsCommonDecimalType returns true if the function requires all decimal parameters
+   * to have the same precision and scale. The default is that it's ok to have different
+   * precisions and scales. A derived FunctionResolver can override this method.
+   */
+  protected boolean needsCommonDecimalType(List<RelDataType> castTypes) {
+    return false;
   }
 
   public RexNode castToType(RexNode node, RelDataType toType) {
@@ -341,6 +367,48 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
   }
 
   /**
+   * getCommonDecimalTypeIfNeeded returns a common decimal RelDataType across all the
+   * decimal input parameters.  IT is only required for functions that need a common
+   * data type.
+   */
+  private RelDataType getCommonDecimalTypeIfNeeded(RelDataTypeFactory typeFactory,
+      List<RexNode> inputs, List<RelDataType> castTypes) {
+    if (!needsCommonDecimalType(castTypes)) {
+      return null;
+    }
+
+    ScalarType commonScalarType = null;
+    for (RexNode input : inputs) {
+      RelDataType dt = input.getType();
+      ScalarType impalaType = (ScalarType) ImpalaTypeConverter.createImpalaType(dt);
+      // get minimum resolution decimal (e.g. tinyint returns dec(3,0))
+      ScalarType decimalType = impalaType.getMinResolutionDecimal();
+      // nulls do not change the requirements of the common decimal type
+      if (decimalType.isNull()) {
+        continue;
+      }
+      commonScalarType = (commonScalarType == null)
+          ? decimalType
+          : TypesUtil.getDecimalAssignmentCompatibleType(commonScalarType, decimalType, false);
+    }
+    return commonScalarType == null
+        ? null
+        : typeFactory.createSqlType(SqlTypeName.DECIMAL, commonScalarType.decimalPrecision(),
+            commonScalarType.decimalScale());
+  }
+
+  private RelDataType getCastedDecimalDataType(RelDataTypeFactory dtFactory,
+      RelDataType commonDecimalType, RelDataType preCastRelDataType) {
+    // if there is no common decimal type, the appropriate size decimal will be created based
+    // on the datatype that is going to be case.
+    // If there is a common datatype, the common datatype is created with the appropriate
+    // nullability.
+    return commonDecimalType == null
+        ? ImpalaTypeConverter.createDecimalType(dtFactory, preCastRelDataType)
+        : dtFactory.createTypeWithNullability(commonDecimalType, preCastRelDataType.isNullable());
+  }
+
+  /**
    * Return the casted RelDatatype of the provided postCastSqlTypeName
    */
   private RelDataType getCastedDataType(RelDataTypeFactory dtFactory,
@@ -353,6 +421,9 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     RelDataType rdt;
     if (SqlTypeName.CHAR_TYPES.contains(postCastSqlTypeName)) {
+      // It should always be a string type.
+      Preconditions.checkState(postCastSqlTypeName == SqlTypeName.VARCHAR);
+      Preconditions.checkState(postCastRelType.getPrecision() == Integer.MAX_VALUE);
       rdt = dtFactory.createTypeWithCharsetAndCollation(
               dtFactory.createSqlType(postCastSqlTypeName, postCastRelType.getPrecision()),
               Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
@@ -472,15 +543,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
         }
         return new CaseFunctionResolver(helper, op, inputs);
       case IN:
-        // if any param other than the first (which is outside of the 'in'), has an
-        // inputref, Impala needs the in_iterate algorithm.
-        for (int i = 1; i < inputs.size(); ++i) {
-          if (RexUtil.containsInputRef(inputs.get(i))) {
-            op = InIterateOperator.IN_ITERATE;
-            break;
-          }
-        }
-        return new ImpalaFunctionResolverImpl(helper, op, inputs);
+        return new InFunctionResolver(helper, op, inputs);
       case EXTRACT:
         return new ExtractFunctionResolver(helper, op, inputs);
       case GROUPING:

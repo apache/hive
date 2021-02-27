@@ -39,9 +39,12 @@ import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
@@ -78,12 +81,14 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
                                                           SqlKind.LESS_THAN);
 
   private HiveReduceExpressionsWithStatsRule() {
-    super(operand(Filter.class, operand(RelNode.class, any())));
+    super(operand(Filter.class, operand(RelNode.class, any())),
+        HiveRelFactories.HIVE_BUILDER, "HiveReduceExpressionsWithStatsRule");
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
     final Filter filter = call.rel(0);
+    final RelBuilder relBuilder = call.builder();
 
     final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
     final RelMetadataQuery metadataProvider = call.getMetadataQuery();
@@ -93,7 +98,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
     RexNode newFilterCondition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
     // 2. Reduce filter with stats information
-    RexReplacer replacer = new RexReplacer(filter, rexBuilder, metadataProvider);
+    RexReplacer replacer = new RexReplacer(filter, rexBuilder, relBuilder, metadataProvider);
     newFilterCondition = replacer.apply(newFilterCondition);
 
     // 3. Transform if we have created a new filter operator
@@ -111,11 +116,14 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
   protected static class RexReplacer extends RexShuttle {
     private final Filter filterOp;
     private final RexBuilder rexBuilder;
+    private final RelBuilder relBuilder;
     private final RelMetadataQuery metadataProvider;
 
-    RexReplacer(Filter filterOp, RexBuilder rexBuilder, RelMetadataQuery metadataProvider) {
+    RexReplacer(Filter filterOp, RexBuilder rexBuilder, RelBuilder relBuilder,
+        RelMetadataQuery metadataProvider) {
       this.filterOp = filterOp;
       this.rexBuilder = rexBuilder;
+      this.relBuilder = relBuilder;
       this.metadataProvider = metadataProvider;
     }
 
@@ -192,7 +200,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             if (newOperands.size() == 1) {
               return rexBuilder.makeLiteral(false);
             }
-            return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
+            return relBuilder.call(HiveIn.INSTANCE, newOperands);
           }
         } else if (call.getOperands().get(0).getKind() == SqlKind.ROW) {
           // Struct
@@ -245,7 +253,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
           if (newOperands.size() == 1) {
             return rexBuilder.makeLiteral(false);
           }
-          return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
+          return relBuilder.call(HiveIn.INSTANCE, newOperands);
         }
         // We cannot apply the reduction
         return call;

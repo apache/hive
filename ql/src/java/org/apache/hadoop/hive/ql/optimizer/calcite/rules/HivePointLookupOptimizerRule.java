@@ -46,9 +46,11 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -87,10 +89,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     @Override
     public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
+      final RelBuilder relBuilder = call.builder();
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition, relBuilder);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -111,10 +114,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     @Override
     public void onMatch(RelOptRuleCall call) {
       final Join join = call.rel(0);
+      final RelBuilder relBuilder = call.builder();
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition, relBuilder);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -141,11 +145,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     @Override
     public void onMatch(RelOptRuleCall call) {
       final Project project = call.rel(0);
+      final RelBuilder relBuilder = call.builder();
       boolean changed = false;
       final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
       List<RexNode> newProjects = new ArrayList<>();
       for (RexNode oldNode : project.getProjects()) {
-        RexNode newNode = analyzeRexNode(rexBuilder, oldNode);
+        RexNode newNode = analyzeRexNode(rexBuilder, oldNode, relBuilder);
         if (!newNode.toString().equals(oldNode.toString())) {
           changed = true;
           newProjects.add(newNode);
@@ -172,19 +177,20 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   protected HivePointLookupOptimizerRule(
     RelOptRuleOperand operand, int minNumORClauses, boolean multiColumnClauseSupported) {
-    super(operand);
+    super(operand, HiveRelFactories.HIVE_BUILDER, "HivePointLookupOptimizerRule");
     this.minNumORClauses = minNumORClauses;
     this.multiColumnClauseSupported = multiColumnClauseSupported;
   }
 
-  public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
+  public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition,
+      RelBuilder relBuilder) {
     // 1. We try to transform possible candidates
     RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(
-        rexBuilder, minNumORClauses, multiColumnClauseSupported);
+        rexBuilder, relBuilder, minNumORClauses, multiColumnClauseSupported);
     RexNode newCondition = transformIntoInClause.apply(condition);
 
     // 2. We merge IN expressions
-    RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
+    RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder, relBuilder);
     newCondition = mergeInClause.apply(newCondition);
 
     // 3. Close BETWEEN expressions if possible
@@ -515,12 +521,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   protected static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
+    private final RelBuilder relBuilder;
     private final int minNumORClauses;
     private final boolean multiColumnClauseSupported;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder,
+    RexTransformIntoInClause(RexBuilder rexBuilder, RelBuilder relBuilder,
         int minNumORClauses, boolean multiColumnClauseSupported) {
       this.rexBuilder = rexBuilder;
+      this.relBuilder = relBuilder;
       this.minNumORClauses = minNumORClauses;
       this.multiColumnClauseSupported = multiColumnClauseSupported;
     }
@@ -668,7 +676,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         operands.add(useStructIfNeeded(values));
       }
 
-      return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
+      return relBuilder.call(HiveIn.INSTANCE, operands);
     }
 
     private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
@@ -687,23 +695,26 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   protected static class RexMergeInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
+    private final RelBuilder relBuilder;
 
-    RexMergeInClause(RexBuilder rexBuilder) {
+    RexMergeInClause(RexBuilder rexBuilder, RelBuilder relBuilder) {
       this.rexBuilder = rexBuilder;
+      this.relBuilder = relBuilder;
     }
 
     @Override public RexNode visitCall(RexCall call) {
       switch (call.getKind()) {
         case AND:
-          return handleAND(rexBuilder, call);
+          return handleAND(rexBuilder, call, relBuilder);
         case OR:
-          return handleOR(rexBuilder, call);
+          return handleOR(rexBuilder, call, relBuilder);
         default:
           return super.visitCall(call);
       }
     }
 
-    private static RexNode handleAND(RexBuilder rexBuilder, RexCall call) {
+    private static RexNode handleAND(RexBuilder rexBuilder, RexCall call,
+        RelBuilder relBuilder) {
       // Visited nodes
       final Set<RexNode> visitedRefs = new LinkedHashSet<>();
       // IN clauses need to be combined by keeping only common elements
@@ -767,7 +778,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         }
       }
       // Create IN clauses
-      final List<RexNode> newOperands = createInClauses(rexBuilder,
+      final List<RexNode> newOperands = createInClauses(rexBuilder, relBuilder,
           visitedRefs, inLHSExprToRHSExprs, inLHSExprToRHSNullableExprs);
       newOperands.addAll(operands);
       // Return node
@@ -779,7 +790,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return result;
     }
 
-    private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
+    private static RexNode handleOR(RexBuilder rexBuilder, RexCall call,
+        RelBuilder relBuilder) {
       // IN clauses need to be combined by keeping all elements
       final List<RexNode> operands = new ArrayList<>(RexUtil.flattenOr(call.getOperands()));
       final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
@@ -799,7 +811,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         }
       }
       // Create IN clauses (fourth parameter is not needed since no expressions were removed)
-      final List<RexNode> newOperands = createInClauses(rexBuilder,
+      final List<RexNode> newOperands = createInClauses(rexBuilder, relBuilder,
           inLHSExprToRHSExprs.keySet(), inLHSExprToRHSExprs, null);
       newOperands.addAll(operands);
       // Return node
@@ -829,8 +841,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return rexBuilder.makeLiteral(false);
     }
 
-    private static List<RexNode> createInClauses(RexBuilder rexBuilder, Set<RexNode> visitedRefs,
-        Multimap<RexNode, RexNode> inLHSExprToRHSExprs, Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs) {
+    private static List<RexNode> createInClauses(RexBuilder rexBuilder, RelBuilder relBuilder,
+        Set<RexNode> visitedRefs, Multimap<RexNode, RexNode> inLHSExprToRHSExprs, 
+        Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs) {
       final List<RexNode> newExpressions = new ArrayList<>();
       for (RexNode ref : visitedRefs) {
         Collection<RexNode> exprs = inLHSExprToRHSExprs.get(ref);
@@ -846,7 +859,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           List<RexNode> newOperands = new ArrayList<>(exprs.size() + 1);
           newOperands.add(ref);
           newOperands.addAll(exprs);
-          newExpressions.add(rexBuilder.makeCall(HiveIn.INSTANCE, newOperands));
+          newExpressions.add(relBuilder.call(HiveIn.INSTANCE, newOperands));
         }
       }
       return newExpressions;
