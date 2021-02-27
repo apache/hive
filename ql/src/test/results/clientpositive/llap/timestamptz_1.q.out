@@ -27,7 +27,7 @@ POSTHOOK: query: select cast(t as string) from tstz1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
 #### A masked pattern was here ####
-2016-01-03 12:26:34.0 US/Pacific
+2016-01-03 12:26:34 US/Pacific
 PREHOOK: query: select cast(t as date) from tstz1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1

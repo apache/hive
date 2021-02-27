@@ -31,8 +31,8 @@ POSTHOOK: query: select * from tstz2 where t='2005-01-02 19:01:00 GMT-07:00'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz2
 #### A masked pattern was here ####
-2005-01-03 02:01:00.0 UTC
-2005-01-03 02:01:00.0 UTC
+2005-01-03 02:01:00 UTC
+2005-01-03 02:01:00 UTC
 PREHOOK: query: select * from tstz2 where t>'2013-06-03 02:01:00.30547 GMT+01:00'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz2
@@ -50,7 +50,7 @@ POSTHOOK: query: select min(t),max(t) from tstz2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz2
 #### A masked pattern was here ####
-2005-01-03 02:01:00.0 UTC	2016-01-03 04:26:34.0123 UTC
+2005-01-03 02:01:00 UTC	2016-01-03 04:26:34.0123 UTC
 PREHOOK: query: select t from tstz2 group by t order by t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz2
@@ -59,7 +59,7 @@ POSTHOOK: query: select t from tstz2 group by t order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz2
 #### A masked pattern was here ####
-2005-01-03 02:01:00.0 UTC
+2005-01-03 02:01:00 UTC
 2005-04-03 10:01:00.04067 UTC
 2013-06-03 01:01:00.30547 UTC
 2016-01-03 04:26:34.0123 UTC
@@ -71,10 +71,10 @@ POSTHOOK: query: select * from tstz2 a join tstz2 b on a.t=b.t order by a.t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz2
 #### A masked pattern was here ####
-2005-01-03 02:01:00.0 UTC	2005-01-03 02:01:00.0 UTC
-2005-01-03 02:01:00.0 UTC	2005-01-03 02:01:00.0 UTC
-2005-01-03 02:01:00.0 UTC	2005-01-03 02:01:00.0 UTC
-2005-01-03 02:01:00.0 UTC	2005-01-03 02:01:00.0 UTC
+2005-01-03 02:01:00 UTC	2005-01-03 02:01:00 UTC
+2005-01-03 02:01:00 UTC	2005-01-03 02:01:00 UTC
+2005-01-03 02:01:00 UTC	2005-01-03 02:01:00 UTC
+2005-01-03 02:01:00 UTC	2005-01-03 02:01:00 UTC
 2005-04-03 10:01:00.04067 UTC	2005-04-03 10:01:00.04067 UTC
 2013-06-03 01:01:00.30547 UTC	2013-06-03 01:01:00.30547 UTC
 2016-01-03 04:26:34.0123 UTC	2016-01-03 04:26:34.0123 UTC

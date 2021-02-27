@@ -411,12 +411,12 @@ POSTHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_test
 #### A masked pattern was here ####
-2011-01-01 00:00:00.0 GMT-07:00
-2010-12-31 00:00:00.0 GMT-07:00
-2010-12-31 00:00:00.0 GMT-07:00
-2011-01-01 00:00:00.0 GMT-07:00
-2010-12-31 00:00:00.0 GMT-07:00
-2010-12-31 00:00:00.0 GMT-07:00
+2011-01-01 00:00:00 GMT-07:00
+2010-12-31 00:00:00 GMT-07:00
+2010-12-31 00:00:00 GMT-07:00
+2011-01-01 00:00:00 GMT-07:00
+2010-12-31 00:00:00 GMT-07:00
+2010-12-31 00:00:00 GMT-07:00
 NULL
 PREHOOK: query: select cast(`mydate1` as timestamp) from `timestamptz_test`
 PREHOOK: type: QUERY

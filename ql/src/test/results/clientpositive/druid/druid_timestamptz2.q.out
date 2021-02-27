@@ -72,12 +72,12 @@ POSTHOOK: query: select * FROM druid_test_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: druid_test_dst@druid_test_table_1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2015-03-08 00:00:00.0 US/Pacific	i1-start	4.0
-2015-03-08 23:59:59.0 US/Pacific	i1-end	1.0
-2015-03-09 00:00:00.0 US/Pacific	i2-start	4.0
-2015-03-09 23:59:59.0 US/Pacific	i2-end	1.0
-2015-03-10 00:00:00.0 US/Pacific	i3-start	2.0
-2015-03-10 23:59:59.0 US/Pacific	i3-end	2.0
+2015-03-08 00:00:00 US/Pacific	i1-start	4.0
+2015-03-08 23:59:59 US/Pacific	i1-end	1.0
+2015-03-09 00:00:00 US/Pacific	i2-start	4.0
+2015-03-09 23:59:59 US/Pacific	i2-end	1.0
+2015-03-10 00:00:00 US/Pacific	i3-start	2.0
+2015-03-10 23:59:59 US/Pacific	i3-end	2.0
 PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
@@ -118,12 +118,12 @@ POSTHOOK: query: select * FROM druid_test_table_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: druid_test_dst@druid_test_table_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2015-03-08 00:00:00.0 US/Pacific	i1-start	4.0
-2015-03-08 23:59:59.0 US/Pacific	i1-end	1.0
-2015-03-09 00:00:00.0 US/Pacific	i2-start	4.0
-2015-03-09 23:59:59.0 US/Pacific	i2-end	1.0
-2015-03-10 00:00:00.0 US/Pacific	i3-start	2.0
-2015-03-10 23:59:59.0 US/Pacific	i3-end	2.0
+2015-03-08 00:00:00 US/Pacific	i1-start	4.0
+2015-03-08 23:59:59 US/Pacific	i1-end	1.0
+2015-03-09 00:00:00 US/Pacific	i2-start	4.0
+2015-03-09 23:59:59 US/Pacific	i2-end	1.0
+2015-03-10 00:00:00 US/Pacific	i3-start	2.0
+2015-03-10 23:59:59 US/Pacific	i3-end	2.0
 PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_utc
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
@@ -155,12 +155,12 @@ POSTHOOK: query: select * FROM druid_test_table_utc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: druid_test_dst@druid_test_table_utc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2015-03-08 00:00:00.0 UTC	i1-start	4.0
-2015-03-08 23:59:59.0 UTC	i1-end	1.0
-2015-03-09 00:00:00.0 UTC	i2-start	4.0
-2015-03-09 23:59:59.0 UTC	i2-end	1.0
-2015-03-10 00:00:00.0 UTC	i3-start	2.0
-2015-03-10 23:59:59.0 UTC	i3-end	2.0
+2015-03-08 00:00:00 UTC	i1-start	4.0
+2015-03-08 23:59:59 UTC	i1-end	1.0
+2015-03-09 00:00:00 UTC	i2-start	4.0
+2015-03-09 23:59:59 UTC	i2-end	1.0
+2015-03-10 00:00:00 UTC	i3-start	2.0
+2015-03-10 23:59:59 UTC	i3-end	2.0
 PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
@@ -201,9 +201,9 @@ POSTHOOK: query: select * FROM druid_test_table_utc2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: druid_test_dst@druid_test_table_utc2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2015-03-08 00:00:00.0 UTC	i1-start	4.0
-2015-03-08 23:59:59.0 UTC	i1-end	1.0
-2015-03-09 00:00:00.0 UTC	i2-start	4.0
-2015-03-09 23:59:59.0 UTC	i2-end	1.0
-2015-03-10 00:00:00.0 UTC	i3-start	2.0
-2015-03-10 23:59:59.0 UTC	i3-end	2.0
+2015-03-08 00:00:00 UTC	i1-start	4.0
+2015-03-08 23:59:59 UTC	i1-end	1.0
+2015-03-09 00:00:00 UTC	i2-start	4.0
+2015-03-09 23:59:59 UTC	i2-end	1.0
+2015-03-10 00:00:00 UTC	i3-start	2.0
+2015-03-10 23:59:59 UTC	i3-end	2.0
