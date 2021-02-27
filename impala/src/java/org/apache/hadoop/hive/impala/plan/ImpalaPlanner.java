@@ -40,11 +40,12 @@ import org.apache.hadoop.hive.ql.parse.QBMetaData;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.JoinOperator;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.analysis.NullLiteral;
 import org.apache.impala.analysis.StatementBase;
-import org.apache.impala.catalog.Column;
 import org.apache.impala.catalog.FeTable;
 import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.common.AnalysisException;
@@ -54,6 +55,8 @@ import org.apache.impala.compat.MetastoreShim;
 import org.apache.impala.planner.DataPartition;
 import org.apache.impala.planner.DistributedPlanner;
 import org.apache.impala.planner.HdfsTableSink;
+import org.apache.impala.planner.JoinNode;
+import org.apache.impala.planner.NestedLoopJoinNode;
 import org.apache.impala.planner.ParallelPlanner;
 import org.apache.impala.planner.PlanFragment;
 import org.apache.impala.planner.PlanNode;
@@ -61,6 +64,8 @@ import org.apache.impala.planner.PlanRootSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.planner.SingleNodePlanner;
+import org.apache.impala.planner.SingularRowSrcNode;
+import org.apache.impala.planner.SubplanNode;
 import org.apache.impala.planner.TableSink;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TColumn;
@@ -131,7 +136,7 @@ public class ImpalaPlanner {
       // joins, currently it does not swap left and right inputs if the right
       // input has higher estimated cardinality. Do this through Impala's method
       // since we are using Impala's cardinality estimates in the physical planning.
-      Planner.invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
+      invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
       Planner.checkParallelPlanEligibility(ctx_);
       SingleNodePlanner.validatePlan(ctx_, planNodeRoot);
 
@@ -153,6 +158,81 @@ public class ImpalaPlanner {
       // Catch and wrap Impala exception types
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Traverses the plan tree rooted at 'root' and inverts joins in the following
+   * situations:
+   * 1. If the left-hand side is a SingularRowSrcNode then we invert the join because
+   *    then the build side is guaranteed to have only a single row.
+   * 2. There is no backend support for distributed non-equi right outer/semi joins,
+   *    so we invert them (any distributed left semi/outer join is ok).
+   * 3. If we estimate that the inverted join is cheaper (see isInvertedJoinCheaper()).
+   *    Do not invert if relevant stats are missing.
+   * The first two inversion rules are independent of the presence/absence of stats.
+   * Left Null Aware Anti Joins are never inverted due to lack of backend support.
+   * Joins that originate from query blocks with a straight join hint are not inverted.
+   * The 'isLocalPlan' parameter indicates whether the plan tree rooted at 'root'
+   * will be executed locally within one machine, i.e., without any data exchanges.
+   * Return true if any join in the plan rooted at 'root' was inverted.
+   *
+   * TODO: This should be replaced once we conclude the changes contained in this method
+   *       are safe to be pushed to Planner.invertJoins, i.e., they do not cause any
+   *       performance regressions with Impala FE.
+   */
+  private static boolean invertJoins(PlanNode root, boolean isLocalPlan, Analyzer analyzer) {
+    boolean inverted = false;
+    if (root instanceof SubplanNode) {
+      inverted |= invertJoins(root.getChild(0), isLocalPlan, analyzer);
+      inverted |= invertJoins(root.getChild(1), true, analyzer);
+    } else {
+      for (PlanNode child: root.getChildren()) inverted |= invertJoins(child, isLocalPlan, analyzer);
+    }
+
+    if (root instanceof JoinNode) {
+      JoinNode joinNode = (JoinNode) root;
+      JoinOperator joinOp = joinNode.getJoinOp();
+
+      if (!joinNode.isInvertible(isLocalPlan)) {
+        if (inverted) {
+          // Re-compute tuple ids since their order must correspond to the order
+          // of children.
+          root.computeTupleIds();
+          // Re-compute stats since PK-FK inference and cardinality may have changed after
+          // inversion.
+          root.computeStats(analyzer);
+        }
+        return inverted;
+      }
+
+      if (joinNode.getChild(0) instanceof SingularRowSrcNode) {
+        // Always place a singular row src on the build side because it
+        // only produces a single row.
+        joinNode.invertJoin();
+        inverted = true;
+      } else if (!isLocalPlan && joinNode instanceof NestedLoopJoinNode &&
+          (joinOp.isRightSemiJoin() || joinOp.isRightOuterJoin())) {
+        // The current join is a distributed non-equi right outer or semi join
+        // which has no backend support. Invert the join to make it executable.
+        joinNode.invertJoin();
+        inverted = true;
+      } else if (Planner.isInvertedJoinCheaper(joinNode, isLocalPlan)) {
+        joinNode.invertJoin();
+        inverted = true;
+      }
+      // Re-compute the numNodes and numInstances based on the new input order
+      joinNode.recomputeNodes();
+    }
+
+    if (inverted) {
+      // Re-compute tuple ids because the backend assumes that their order corresponds to
+      // the order of children.
+      root.computeTupleIds();
+      // Re-compute stats since PK-FK inference and cardinality may have changed after
+      // inversion.
+      root.computeStats(analyzer);
+    }
+    return inverted;
   }
 
   /**
