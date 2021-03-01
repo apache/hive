@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -488,9 +491,15 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   /**
    * @return the table properties
    */
-  @Explain(displayName = "table properties")
   public Map<String, String> getTblProps() {
     return tblProps;
+  }
+
+  @Explain(displayName = "table properties")
+  public Map<String, String> getTblPropsExplain() { // only for displaying plan
+    HashMap<String, String> copy = new HashMap<>(tblProps);
+    copy.remove(TABLE_IS_CTAS);
+    return copy;
   }
 
   /**

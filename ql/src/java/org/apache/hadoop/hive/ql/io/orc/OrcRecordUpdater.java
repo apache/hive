@@ -284,7 +284,11 @@ public class OrcRecordUpdater implements RecordUpdater {
             BucketCodec.V1.getVersion()));
       }
     }
-    this.bucket.set(bucketCodec.encode(options));
+    this.bucket.set(bucketCodec.encode(options)); // encode might chang bucketId/stmtId, use the new one for file name generation
+    if (options.getStatementId() != -1) { // -1 is treated specially in createFilename during compaction
+      options.statementId(bucketCodec.decodeStatementId(this.bucket.get()));
+    }
+    options.bucket(bucketCodec.decodeWriterId(this.bucket.get()));
     this.path = AcidUtils.createFilename(partitionRoot, options);
     this.deleteEventWriter = null;
     this.deleteEventPath = null;

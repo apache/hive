@@ -1203,39 +1203,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // 4.2) Modifying filter condition. The incremental rewriting rule generated an OR
     // clause where first disjunct contains the condition for the UPDATE branch.
     // TOK_WHERE
-    //   or
-    //      and <- DISJUNCT FOR <UPDATE>
-    //         =
-    //            .
-    //               TOK_TABLE_OR_COL
-    //                  $hdt$_0
-    //               a
-    //            .
-    //               TOK_TABLE_OR_COL
-    //                  $hdt$_1
-    //               a
-    //         =
-    //            .
-    //               TOK_TABLE_OR_COL
-    //                  $hdt$_0
-    //               c
-    //            .
-    //               TOK_TABLE_OR_COL
-    //                  $hdt$_1
-    //               c
-    //      and <- DISJUNCT FOR <INSERT>
-    //         TOK_FUNCTION
-    //            isnull
-    //            .
-    //               TOK_TABLE_OR_COL
-    //                  $hdt$_0
-    //               a
-    //         TOK_FUNCTION
-    //            isnull
-    //            .
-    //               TOK_TABLE_OR_COL
-    //                  $hdt$_0
-    //               c
+    //    or
+    //       .                        <- DISJUNCT FOR <UPDATE>
+    //          TOK_TABLE_OR_COL
+    //             $hdt$_0
+    //          $f3
+    //       TOK_FUNCTION             <- DISJUNCT FOR <INSERT>
+    //          isnull
+    //          .
+    //             TOK_TABLE_OR_COL
+    //                $hdt$_0
+    //             $f3
     ASTNode whereClauseInUpdate = null;
     for (int i = 0; i < updateNode.getChildren().size(); i++) {
       if (updateNode.getChild(i).getType() == HiveParser.TOK_WHERE) {
@@ -1252,14 +1230,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // We bypass the OR clause and select the first disjunct
     int indexUpdate;
     int indexInsert;
-    if (whereClauseInUpdate.getChild(0).getChild(0).getType() == HiveParser.EQUAL ||
-        (whereClauseInUpdate.getChild(0).getChild(0).getType() == HiveParser.KW_AND &&
-            whereClauseInUpdate.getChild(0).getChild(0).getChild(0).getType() == HiveParser.EQUAL)) {
+    if (whereClauseInUpdate.getChild(0).getChild(0).getType() == HiveParser.DOT) {
       indexUpdate = 0;
       indexInsert = 1;
-    } else if (whereClauseInUpdate.getChild(0).getChild(1).getType() == HiveParser.EQUAL ||
-        (whereClauseInUpdate.getChild(0).getChild(1).getType() == HiveParser.KW_AND &&
-            whereClauseInUpdate.getChild(0).getChild(1).getChild(0).getType() == HiveParser.EQUAL)) {
+    } else if (whereClauseInUpdate.getChild(0).getChild(1).getType() == HiveParser.DOT) {
       indexUpdate = 1;
       indexInsert = 0;
     } else {

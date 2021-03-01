@@ -1217,12 +1217,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (tblDesc.getLocation() == null) {
-      if (!waitOnPrecursor) {
+      if (parentDb != null && !tblDesc.isExternal() && org.apache.commons.lang.StringUtils.isNotBlank(parentDb.getManagedLocationUri())) {
+        tblDesc.setLocation(new Path(parentDb.getManagedLocationUri(), tblDesc.getTableName()).toString());
+        LOG.info("Setting the location for table {} as {}", tblDesc.getTableName(), tblDesc.getLocation());
+      } else if (!waitOnPrecursor) {
         tblDesc.setLocation(wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString());
       } else {
         tblDesc.setLocation(
-          wh.getDnsPath(wh.getDefaultTablePath(tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal())
-          ).toString());
+                wh.getDnsPath(wh.getDefaultTablePath(tblDesc.getDatabaseName(), tblDesc.getTableName(),
+                        tblDesc.isExternal())).toString());
       }
     }
 

@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Superclass to support vectorized functions that take a long
- * and return a string, optionally with additional configuration arguments.
+ * Superclass to support vectorized functions that take a string
+ * and return a long, optionally with additional configuration arguments.
  * Used for cast(string), length(string), etc
  */
 public abstract class FuncStringToLong extends VectorExpression {

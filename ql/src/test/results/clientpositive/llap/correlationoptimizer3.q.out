@@ -551,6 +551,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_87_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.032
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1223,8 +1224,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col2, _col1
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col1, _col2
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   null sort order: z

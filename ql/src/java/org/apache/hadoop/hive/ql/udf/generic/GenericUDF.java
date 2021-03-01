@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * A Generic User-defined function (GenericUDF) for the use with Hive.
@@ -502,11 +503,7 @@ public abstract class GenericUDF implements Closeable {
     case VARCHAR:
     case CHAR:
       String dateStr = converters[i].convert(obj).toString();
-      try {
-        date = Date.valueOf(dateStr);
-      } catch (IllegalArgumentException e) {
-        date = null;
-      }
+      date = DateParser.parseDate(dateStr);
       break;
     case TIMESTAMP:
     case DATE:

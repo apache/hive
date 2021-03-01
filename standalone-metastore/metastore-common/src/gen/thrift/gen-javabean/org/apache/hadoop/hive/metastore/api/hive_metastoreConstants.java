@@ -61,6 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String TABLE_IS_TRANSACTIONAL = "transactional";
 
+  public static final java.lang.String TABLE_IS_CTAS = "created_with_ctas";
+
   public static final java.lang.String TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
 
   public static final java.lang.String TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";

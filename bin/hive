@@ -25,14 +25,11 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/hive-config.sh
 
-if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
-  . "${HIVE_CONF_DIR}/hive-env.sh"
-fi
-
 SERVICE=""
 HELP=""
 SKIP_HBASECP=false
 SKIP_HADOOPVERSION=false
+EXECUTE_WITH_JAVA=false
 
 SERVICE_ARGS=()
 while [ $# -gt 0 ]; do
@@ -89,13 +86,15 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+USE_BEELINE_FOR_HIVE_CLI="true"
 if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
   CLIUSER=`whoami`
   SERVICE="beeline"
 fi
 
 if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
-  SERVICE="beeline -c $BEELINE_URL_LEGACY"
+  SERVICE="beeline"
+  SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-c" "${BEELINE_URL_LEGACY}")
 fi
 
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
@@ -106,15 +105,21 @@ if [[ "$SERVICE" =~ ^(help|schemaTool)$ ]] ; then
   SKIP_HADOOPVERSION=true
 fi
 
-if [[ -z "$SPARK_HOME" ]]
-then
-  bin=`dirname "$0"`
-  # many hadoop installs are in dir/{spark,hive,hadoop,..}
-  if test -e $bin/../../spark; then 
-    sparkHome=$(readlink -f $bin/../../spark)
-    if [[ -d $sparkHome ]]
-    then
-      export SPARK_HOME=$sparkHome
+if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
+  . "${HIVE_CONF_DIR}/hive-env.sh"
+fi
+
+if [ "$SERVICE" != "beeline" ]; then
+  if [[ -z "$SPARK_HOME" ]]
+  then
+    bin=`dirname "$0"`
+    # many hadoop installs are in dir/{spark,hive,hadoop,..}
+    if test -e $bin/../../spark; then 
+      sparkHome=$(readlink -f $bin/../../spark)
+      if [[ -d $sparkHome ]]
+      then
+        export SPARK_HOME=$sparkHome
+      fi
     fi
   fi
 fi
@@ -123,34 +128,27 @@ CLASSPATH="${TEZ_CONF_DIR:-/etc/tez/conf}:${HIVE_CONF_DIR}"
 
 HIVE_LIB=${HIVE_HOME}/lib
 
-# needed for execution
-if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
-  echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive-exec-*.jar"
-  exit 1;
-fi
+if [ "$SERVICE" != "beeline" ]; then
+  # needed for execution
+  if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
+    echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive-exec-*.jar"
+    exit 1;
+  fi
 
-if [ ! -f ${HIVE_LIB}/hive-metastore-*.jar ]; then
-  echo "Missing Hive MetaStore Jar"
-  exit 2;
-fi
+  if [ ! -f ${HIVE_LIB}/hive-metastore-*.jar ]; then
+    echo "Missing Hive MetaStore Jar"
+    exit 2;
+  fi
 
-# cli specific code
-if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
-  echo "Missing Hive CLI Jar"
-  exit 3;
+  # cli specific code
+  if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
+    echo "Missing Hive CLI Jar"
+    exit 3;
+  fi
 fi
-
-# Hbase and Hadoop use their own log4j jars.  Including hives log4j jars can cause
-# log4j warnings.  So save hives log4j jars in LOG_JAR_CLASSPATH, and add it to classpath
-# after Hbase and Hadoop calls finish
-LOG_JAR_CLASSPATH="";
 
 for f in ${HIVE_LIB}/*.jar; do
-  if [[ $f == *"log4j"* ]]; then
-    LOG_JAR_CLASSPATH=${LOG_JAR_CLASSPATH}:$f;
-  else
-    CLASSPATH=${CLASSPATH}:$f;
-  fi
+  CLASSPATH=${CLASSPATH}:$f;
 done
 
 # add the auxillary jars such as serdes
@@ -228,47 +226,69 @@ fi
 # HADOOP_HOME env variable overrides hadoop in the path
 HADOOP_HOME=${HADOOP_HOME:-${HADOOP_PREFIX:-$HADOOP_DIR}}
 if [ "$HADOOP_HOME" == "" ]; then
-  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
-  exit 4;
+  if [ "$SERVICE" != "beeline" ]; then
+    echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
+    exit 4;
+  fi
+else
+  # add distcp to classpath, hive depends on it
+  for f in ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-distcp-*.jar; do
+    export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f;
+  done
 fi
-
-# add distcp to classpath, hive depends on it
-for f in ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-distcp-*.jar; do
-  export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f;
-done
 
 HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
-  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
-  exit 4;
+  if [ "$SERVICE" != "beeline" ]; then
+    echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
+    exit 4;
+  else
+    JAVAEXE=$JAVA_HOME/bin/java
+    if [ ! -f ${JAVAEXE} ]; then
+      JAVAEXE=`which java 2>/dev/null`
+      if [ ! -f ${JAVAEXE} ]; then
+        echo "Cannot find hadoop or java installation: \$HADOOP_HOME or \$JAVA_HOME must be set or PATH be set";
+        exit 5;
+      fi
+    else
+      echo "HADOOP_HOME not set, executing beeline using JAVA";
+      export EXECUTE_WITH_JAVA=true
+      if [ -z ${HIVE_LIB} ]; then
+        export HIVE_LIB="${PWD}/lib"
+        export JAVAEXE=$JAVAEXE
+      fi
+    fi
+  fi
 fi
 
-if [ "$SKIP_HADOOPVERSION" = false ]; then
-  # Make sure we're using a compatible version of Hadoop
-  if [ "x$HADOOP_VERSION" == "x" ]; then
-      HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
-  fi
+if [ "$EXECUTE_WITH_JAVA" == "false" ]; then
+  if [ "$SKIP_HADOOPVERSION" = false ]; then
+    # Make sure we're using a compatible version of Hadoop
+    if [ "x$HADOOP_VERSION" == "x" ]; then
+        HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
+    fi
   
-  # Save the regex to a var to workaround quoting incompatabilities
-  # between Bash 3.1 and 3.2
-  hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
+    # Save the regex to a var to workaround quoting incompatabilities
+    # between Bash 3.1 and 3.2
+    hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
   
-  if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
+    if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
       hadoop_major_ver=${BASH_REMATCH[1]}
       hadoop_minor_ver=${BASH_REMATCH[2]}
       hadoop_patch_ver=${BASH_REMATCH[4]}
-  else
+    else
       echo "Unable to determine Hadoop version information."
       echo "'hadoop version' returned:"
       echo `$HADOOP version`
       exit 5
-  fi
+    fi
   
-  if [ "$hadoop_major_ver" -lt "1" -a  "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
+    if [ "$hadoop_major_ver" -lt "1" -a  "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
       echo "Hive requires Hadoop 0.20.x (x >= 1)."
       echo "'hadoop version' returned:"
       echo `$HADOOP version`
       exit 6
+    fi
   fi
 fi
 
@@ -335,10 +355,6 @@ if [ "$DEBUG" ]; then
 fi
 
 TORUN=""
-if [[ "$SERVICE" = "beeline -c"* ]] ; then
-  TORUN=$SERVICE$HELP
-fi
-
 for j in $SERVICE_LIST ; do
   if [ "$j" = "$SERVICE" ] ; then
     TORUN=${j}$HELP
@@ -362,9 +378,6 @@ if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
   fi
 fi
 
-# include the log4j jar that is used for hive into the classpath
-CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
-export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
 export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then

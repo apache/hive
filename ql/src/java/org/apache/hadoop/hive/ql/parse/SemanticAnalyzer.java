@@ -22,6 +22,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
@@ -3579,6 +3580,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (ExprNodeDescUtils.isNullConstant(c)) {
         // If filter condition is NULL, transform to FALSE
         filterCond = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false);
+      }
+    }
+
+    if (!filterCond.getTypeInfo().accept(TypeInfoFactory.booleanTypeInfo)) {
+      // If the returning type of the filter condition is not boolean, try to implicitly
+      // convert the result of the condition to a boolean value.
+      if (filterCond.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        // For primitive types like string/double/timestamp, try to cast the result of
+        // the child expression to a boolean.
+        filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .createConversionCast(filterCond, TypeInfoFactory.booleanTypeInfo);
+      } else {
+        // For complex types like map/list/struct, create a isnotnull function on the child expression.
+        filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .getFuncExprNodeDesc("isnotnull", filterCond);
       }
     }
 
@@ -13185,12 +13201,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param tblProp
    *          property map
+   * @param isCTAS
    * @return Modified table property map
    */
   private Map<String, String> validateAndAddDefaultProperties(
-      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable, boolean isTransactional, boolean isManaged) throws SemanticException {
+          Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
+          String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
+          boolean isTemporaryTable, boolean isTransactional, boolean isManaged, boolean isCTAS) throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
 
     String paraString = HiveConf.getVar(conf, ConfVars.NEWTABLEDEFAULTPARA);
@@ -13239,6 +13256,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (makeAcid || isTransactional || (isManaged && !makeInsertOnly)) {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
+    }
+    if (isCTAS) {
+      retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
     }
     return retValue;
   }
@@ -13566,7 +13586,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13594,7 +13614,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
       }
       tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-          isTemporary, isTransactional, isManaged);
+          isTemporary, isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, false, tblProps);
 
@@ -13618,7 +13638,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13704,7 +13724,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, true);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,

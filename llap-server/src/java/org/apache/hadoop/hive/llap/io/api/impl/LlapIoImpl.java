@@ -32,6 +32,8 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
+import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
@@ -102,6 +104,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   // TODO: later, we may have a map
   private final ColumnVectorProducer orcCvp, genericCvp;
   private final ExecutorService executor;
+  private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
@@ -112,6 +115,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
+  private PathCache pathCache;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
@@ -208,6 +212,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         debugDumpComponents.add(metadataCache);
       }
       debugDumpComponents.add(allocator);
+      pathCache = new MemoryLimitedPathCache(conf);
     } else {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
@@ -229,11 +234,21 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
     FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
+    if (isEncodeEnabled) {
+      int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
+      int encodeThreads = numThreads * encodePoolMultiplier;
+      encodeExecutor = new StatsRecordingThreadPool(encodeThreads, encodeThreads, 0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<Runnable>(),
+          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true).build());
+    } else {
+      encodeExecutor = null;
+    }
+
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
+        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
@@ -314,6 +329,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       buddyAllocatorMXBean = null;
     }
     executor.shutdownNow();
+    if (encodeExecutor != null) {
+      encodeExecutor.shutdownNow();
+    }
   }
 
 

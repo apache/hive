@@ -98,7 +98,8 @@ public class TypeCheckProcFactory<T> {
   static final HashMap<Integer, String> SPECIAL_UNARY_OPERATOR_TEXT_MAP;
   static final HashMap<Integer, String> CONVERSION_FUNCTION_TEXT_MAP;
   static final HashSet<Integer> WINDOWING_TOKENS;
-  
+  private static final Object ALIAS_PLACEHOLDER = new Object();
+
   static {
     SPECIAL_UNARY_OPERATOR_TEXT_MAP = new HashMap<>();
     SPECIAL_UNARY_OPERATOR_TEXT_MAP.put(HiveParser.PLUS, "positive");
@@ -213,6 +214,7 @@ public class TypeCheckProcFactory<T> {
     astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, getColumnExprProcessor());
 
     astNodeToProcessor.put(HiveParser.TOK_SUBQUERY_EXPR, getSubQueryExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_ALIAS, getValueAliasProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -836,6 +838,29 @@ public class TypeCheckProcFactory<T> {
           children.set(0, newColumn);
         }
       }
+
+      if (funcText.equalsIgnoreCase("and") || funcText.equalsIgnoreCase("or")
+          || funcText.equalsIgnoreCase("not") || funcText.equalsIgnoreCase("!")) {
+        // If the current function is a conjunction, the returning types of the children should be booleans.
+        // Iterate on the children, if the result of a child expression is not a boolean, try to implicitly
+        // convert the result of such a child to a boolean value.
+        for (int i = 0; i < children.size(); i++) {
+          T child = children.get(i);
+          TypeInfo typeInfo = exprFactory.getTypeInfo(child);
+          if (!TypeInfoFactory.booleanTypeInfo.accept(typeInfo)) {
+            if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+              // For primitive types like string/double/timestamp, try to cast the result of
+              // the child expression to a boolean.
+              children.set(i, createConversionCast(child, TypeInfoFactory.booleanTypeInfo));
+            } else {
+              // For complex types like map/list/struct, create a isnotnull function on the child expression.
+              child = exprFactory.createFuncCallExpr(TypeInfoFactory.booleanTypeInfo,
+                  exprFactory.getFunctionInfo("isnotnull"),"isnotnull", Arrays.asList(child));
+              children.set(i, child);
+            }
+          }
+        }
+      }
     }
 
     protected T getXpathOrFuncExprNodeDesc(ASTNode node,
@@ -1060,6 +1085,10 @@ public class TypeCheckProcFactory<T> {
           }
         } else {
           expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children);
+        }
+
+        if (exprFactory.isSTRUCTFuncCallExpr(expr)) {
+          expr = exprFactory.replaceFieldNamesInStruct(expr, ctx.getColumnAliases());
         }
 
         // If the function is deterministic and the children are constants,
@@ -1396,6 +1425,10 @@ public class TypeCheckProcFactory<T> {
       List<T> children = new ArrayList<T>(
           expr.getChildCount() - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
+        if (nodeOutputs[ci] == ALIAS_PLACEHOLDER) {
+          continue;
+        }
+
         T nodeOutput = (T) nodeOutputs[ci];
         if (exprFactory.isExprsListExpr(nodeOutput)) {
           children.addAll(exprFactory.getExprChildren(nodeOutput));
@@ -1630,6 +1663,20 @@ public class TypeCheckProcFactory<T> {
       }
     }
     return BaseSemanticAnalyzer.unescapeIdentifier(funcText);
+  }
+
+  private SemanticNodeProcessor getValueAliasProcessor() {
+    return new ValueAliasProcessor();
+  }
+
+  public static class ValueAliasProcessor implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      ASTNode astNode = (ASTNode) nd;
+      ((TypeCheckCtx) procCtx).addColumnAlias(astNode.getChild(0).getText());
+      return ALIAS_PLACEHOLDER;
+    }
   }
 
 }

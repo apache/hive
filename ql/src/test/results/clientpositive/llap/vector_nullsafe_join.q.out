@@ -328,12 +328,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: key, value
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: value, key
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 0]
+                    projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
                   key expressions: value (type: int)
                   null sort order: z
@@ -509,12 +509,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: key, value
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: value, key
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 0]
+                    projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
                   key expressions: value (type: int)
                   null sort order: z
@@ -1470,12 +1470,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: key, value
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: value, key
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 0]
+                    projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
                   key expressions: value (type: int)
                   null sort order: z
@@ -1651,12 +1651,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: key, value
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: value, key
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 0]
+                    projectedOutputColumnNums: [0, 1]
                 Reduce Output Operator
                   key expressions: value (type: int)
                   null sort order: z
