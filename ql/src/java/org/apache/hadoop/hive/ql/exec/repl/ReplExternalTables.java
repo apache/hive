@@ -139,7 +139,8 @@ public final class ReplExternalTables {
      * table if the table is partitioned and the partition location is outside the table.
      * It returns list of all the external table locations.
      */
-    void dataLocationDump(Table table, FileList fileList, HiveConf conf)
+    void dataLocationDump(Table table, FileList fileList,
+        Path dbLoc, boolean isTableLevelReplication, HiveConf conf)
             throws InterruptedException, IOException, HiveException {
       if (!shouldWrite()) {
         return;
@@ -149,10 +150,13 @@ public final class ReplExternalTables {
             "only External tables can be writen via this writer, provided table is " + table
                 .getTableType());
       }
-      Path fullyQualifiedDataLocation =
-          PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
-      write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
+      Path fullyQualifiedDataLocation = PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
+      if (isTableLevelReplication || !FileUtils
+          .isPathWithinSubtree(table.getDataLocation(), dbLoc)) {
+        write(lineFor(table.getTableName(), fullyQualifiedDataLocation,
+            hiveConf));
+        dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
+      }
       if (table.isPartitioned()) {
         List<Partition> partitions;
         try {
@@ -171,6 +175,15 @@ public final class ReplExternalTables {
               partition.getDataLocation(), table.getDataLocation()
           );
           if (partitionLocOutsideTableLoc) {
+            // check if the entire db location is getting copied, then the
+            // partition isn't inside the db location, if so we can skip
+            // copying this separately.
+            if (!isTableLevelReplication && FileUtils
+                .isPathWithinSubtree(partition.getDataLocation(), dbLoc)) {
+              partitionLocOutsideTableLoc = false;
+            }
+          }
+          if (partitionLocOutsideTableLoc) {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
             write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
@@ -178,6 +191,14 @@ public final class ReplExternalTables {
           }
         }
       }
+    }
+
+    void dbLocationDump(String dbName, Path dbLocation, FileList fileList,
+        HiveConf conf) throws Exception {
+      Path fullyQualifiedDataLocation = PathBuilder
+          .fullyQualifiedHDFSUri(dbLocation, FileSystem.get(hiveConf));
+      write(lineFor(dbName, fullyQualifiedDataLocation, hiveConf));
+      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
     }
 
     private void dirLocationToCopy(FileList fileList, Path sourcePath, HiveConf conf)
