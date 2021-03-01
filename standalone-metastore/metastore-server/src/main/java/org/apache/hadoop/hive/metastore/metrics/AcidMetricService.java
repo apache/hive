@@ -88,7 +88,7 @@ public class AcidMetricService extends Thread implements MetaStoreThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        LOG.info("AcidMetricService thread finished one loop in {} seconds.", elapsedTime / 1000);
+        LOG.debug("AcidMetricService thread finished one loop in {} seconds.", elapsedTime / 1000);
         if (elapsedTime < checkInterval && !stop.get()) {
           Thread.sleep(checkInterval - elapsedTime);
         }
