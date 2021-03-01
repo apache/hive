@@ -2482,20 +2482,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveAggregateIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
-            } else if (!materializations.get(0).isSourceTablesUpdateDeleteModified()) {
-              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveNoAggregateIncrementalRewritingRule.INSTANCE);
-              mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
-            } else {
-              CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
-              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveJoinIncrementalRewritingRule.INSTANCE);
-              mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
-              basePlan = new HiveDeletedRowPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
-                      .propagate(basePlan);
+            } else if (!materializations.get(0).isSourceTablesCompacted()) {
+              if (!materializations.get(0).isSourceTablesUpdateDeleteModified()) {
+                generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                        HiveNoAggregateIncrementalRewritingRule.INSTANCE);
+                mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
+              } else {
+                CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
+                generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                        HiveJoinIncrementalRewritingRule.INSTANCE);
+                mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
+                basePlan = new HiveDeletedRowPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
+                        .propagate(basePlan);
+                return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+              }
             }
             basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-            return basePlan;
           }
         }
       } else if (useMaterializedViewsRegistry) {

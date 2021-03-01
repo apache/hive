@@ -2417,6 +2417,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // where the transaction had to be committed after the materialization was created...
         if (i != 0) {
           queryUpdateDelete.append("OR");
+          queryCompactions.append("OR");
         }
         String[] names = TxnUtils.getDbTableName(fullyQualifiedName);
         assert(names.length == 2);
@@ -2468,7 +2469,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       boolean hasCompaction = rs.next();
 
-      return new Materialization(hasUpdateDelete);
+      return new Materialization(hasUpdateDelete, hasCompaction);
     } catch (SQLException ex) {
       LOG.warn("getMaterializationInvalidationInfo failed due to " + getMessage(ex), ex);
       throw new MetaException("Unable to retrieve materialization invalidation information due to " +

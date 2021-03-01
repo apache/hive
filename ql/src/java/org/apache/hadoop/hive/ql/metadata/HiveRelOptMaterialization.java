@@ -53,19 +53,22 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
   }
   private final EnumSet<RewriteAlgorithm> scope;
   private final boolean sourceTablesUpdateDeleteModified;
+  private final boolean sourceTablesCompacted;
 
   public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
                                    EnumSet<RewriteAlgorithm> scope) {
-    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false);
+    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false);
   }
 
   private HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
-                                   RelOptTable starRelOptTable, List<String> qualifiedTableName,
-                                   EnumSet<RewriteAlgorithm> scope, boolean sourceTablesUpdateDeleteModified) {
+                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
+                                    EnumSet<RewriteAlgorithm> scope,
+                                    boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted) {
     super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
     this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
+    this.sourceTablesCompacted = sourceTablesCompacted;
   }
 
   public EnumSet<RewriteAlgorithm> getScope() {
@@ -85,15 +88,19 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
     return sourceTablesUpdateDeleteModified;
   }
 
+  public boolean isSourceTablesCompacted() {
+    return sourceTablesCompacted;
+  }
+
   public HiveRelOptMaterialization update(Materialization materialization) {
     return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
-            materialization.isSourceTablesUpdateDeleteModified());
+            materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted());
   }
 
   public HiveRelOptMaterialization copyToNewCluster(
           RelOptCluster optCluster) {
     final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(optCluster, tableRel);
     return new HiveRelOptMaterialization(newViewScan, queryRel, null,
-            qualifiedTableName, scope, sourceTablesUpdateDeleteModified);
+            qualifiedTableName, scope, sourceTablesUpdateDeleteModified, sourceTablesCompacted);
   }
 }

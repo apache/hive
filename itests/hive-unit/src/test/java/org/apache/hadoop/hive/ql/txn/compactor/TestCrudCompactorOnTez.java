@@ -89,17 +89,17 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     executeStatementOnDriver("delete from t1 where a = 1", driver);
 
-//    CompactorTestUtil.runCompaction(conf, "default", "t1", CompactionType.MAJOR, true);
-//    CompactorTestUtil.runCleaner(conf);
-//    verifySuccessfulCompaction(1);
+    CompactorTestUtil.runCompaction(conf, "default", "t1", CompactionType.MAJOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
 
     executeStatementOnDriver("alter materialized view mat1 rebuild", driver);
 
     List<String> result = execSelectAndDumpData("select * from mat1", driver, "");
     Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
 
-    result = execSelectAndDumpData("select * from t1", driver, "");
-    Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
+    result = execSelectAndDumpData("explain cbo select a,b,c from t1 where a > 0 or a is null", driver, "");
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])", ""), result);
   }
 
 

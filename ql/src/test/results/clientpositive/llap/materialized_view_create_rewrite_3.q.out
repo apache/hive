@@ -925,14 +925,16 @@ PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
+PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
+POSTHOOK: Input: default@cmv_mat_view
 POSTHOOK: Output: default@cmv_mat_view
-POSTHOOK: Lineage: cmv_mat_view.a SIMPLE [(cmv_basetable)cmv_basetable.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: cmv_mat_view.c SIMPLE [(cmv_basetable_2)cmv_basetable_2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view.a EXPRESSION [(cmv_basetable)cmv_basetable.FieldSchema(name:a, type:int, comment:null), (cmv_mat_view)default.cmv_mat_view.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view.c EXPRESSION [(cmv_basetable_2)cmv_basetable_2.FieldSchema(name:c, type:decimal(10,2), comment:null), (cmv_mat_view)default.cmv_mat_view.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
@@ -989,6 +991,8 @@ POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
 #### A masked pattern was here ####
+3
+3
 1
 PREHOOK: query: create table cmv_irrelevant_table (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -1070,6 +1074,8 @@ POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
 #### A masked pattern was here ####
+3
+3
 1
 PREHOOK: query: drop materialized view cmv_mat_view
 PREHOOK: type: DROP_MATERIALIZED_VIEW

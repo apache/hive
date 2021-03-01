@@ -27,9 +27,13 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
@@ -175,6 +179,11 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     return sourceASC == null ? false : sourceASC.shouldSkipCombine(path, conf);
   }
 
+  static Map<String, VirtualColumn> ALLOWED_VIRTUAL_COLUMNS = new HashMap<String, VirtualColumn>() {{
+    put(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID);
+    put(VirtualColumn.ROWISDELETED.getName(), VirtualColumn.ROWISDELETED);
+  }};
+
   static VectorizedRowBatchCtx createFakeVrbCtx(MapWork mapWork) throws HiveException {
     // This is based on Vectorizer code, minus the validation.
 
@@ -183,10 +192,11 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     final List<String> colNames = new ArrayList<String>(rowSchema.getSignature().size());
     final List<TypeInfo> colTypes = new ArrayList<TypeInfo>(rowSchema.getSignature().size());
     boolean hasRowId = false;
+    ArrayList<VirtualColumn> virtualColumnList = new ArrayList<>(2);
     for (ColumnInfo c : rowSchema.getSignature()) {
       String columnName = c.getInternalName();
-      if (VirtualColumn.ROWID.getName().equals(columnName)) {
-        hasRowId = true;
+      if (ALLOWED_VIRTUAL_COLUMNS.containsKey(columnName)) {
+        virtualColumnList.add(ALLOWED_VIRTUAL_COLUMNS.get(columnName));
       } else {
         if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
       }
@@ -207,12 +217,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         }
       }
     }
-    final VirtualColumn[] virtualColumns;
-    if (hasRowId) {
-      virtualColumns = new VirtualColumn[] {VirtualColumn.ROWID};
-    } else {
-      virtualColumns = new VirtualColumn[0];
-    }
+    final VirtualColumn[] virtualColumns = virtualColumnList.toArray(new VirtualColumn[0]);
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
         colTypes.toArray(new TypeInfo[colTypes.size()]), null, null, partitionColumnCount,
         virtualColumns.length, virtualColumns, new String[0], null);
