@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -66,7 +67,6 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
-import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.IOException;
@@ -503,22 +503,27 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void createReplLoadCompleteAckTask() {
-    if ( !work.hasBootstrapLoadTasks() &&
-            ( work.isIncrementalLoad() ? !work.incrementalLoadTasksBuilder().hasMoreWork() : true ) ) {
+    if (!work.hasBootstrapLoadTasks()
+            && (work.isIncrementalLoad() ? !work.incrementalLoadTasksBuilder().hasMoreWork() : true)) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
-      List<preAckTask> listOfPreAckTasks = new LinkedList<>();
-      listOfPreAckTasks.add(new preAckTask() {
+      List<PreAckTask> listOfPreAckTasks = new LinkedList<>();
+      listOfPreAckTasks.add(new PreAckTask() {
         @Override
-        public void run() throws Exception {
-          HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
-          long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
-          Path loadMetadataFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
-          Utils.writeOutput(String.valueOf(currentNotificationID), loadMetadataFilePath, conf);
-          LOG.info("Created LOAD Metadata file : {} with NotificationID : {}", loadMetadataFilePath, currentNotificationID);
+        public void run() throws SemanticException {
+          try {
+            HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+            long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
+            Path loadMetadataFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
+            Utils.writeOutput(String.valueOf(currentNotificationID), loadMetadataFilePath, conf);
+            LOG.info("Created LOAD Metadata file : {} with NotificationID : {}",
+                    loadMetadataFilePath, currentNotificationID);
+          } catch (TException ex) {
+            throw new SemanticException(ex);
+          }
         }
       });
-      AckWork replLoadAckWork = new AckWork(
-              new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()), work.getMetricCollector(), listOfPreAckTasks);
+      AckWork replLoadAckWork = new AckWork(new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()),
+              work.getMetricCollector(), listOfPreAckTasks);
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
       if (childTasks.isEmpty()) {
         childTasks.add(loadAckWorkTask);
@@ -678,7 +683,3 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 }
-
-interface preAckTask{
-  void run() throws Exception;
-};

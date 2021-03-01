@@ -186,7 +186,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception{
-    Path loadMetadataFilePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplAck.LOAD_METADATA);
+    Path loadMetadataFilePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplAck.LOAD_METADATA);
     FileSystem fs = dumpLocation.getFileSystem(conf);
     BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(loadMetadataFilePath)));
     String line = reader.readLine();

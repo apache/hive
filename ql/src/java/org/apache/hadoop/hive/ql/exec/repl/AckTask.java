@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
@@ -43,7 +42,7 @@ public class AckTask extends Task<AckWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      for( preAckTask task : work.getPreAckTasks() ){
+      for(PreAckTask task : work.getPreAckTasks()) {
         task.run();
       }
       Path ackPath = work.getAckFilePath();
