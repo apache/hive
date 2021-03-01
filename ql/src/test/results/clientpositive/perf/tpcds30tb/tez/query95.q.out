@@ -241,8 +241,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey0 (type: bigint)
-                outputColumnNames: _col0, _col1
+                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: bigint)
+                outputColumnNames: _col1, _col0
                 Reduce Output Operator
                   key expressions: _col1 (type: bigint)
                   null sort order: z
@@ -445,15 +445,6 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
-<<<<<<< HEAD
-=======
-        Reducer 7 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: bigint)
-                outputColumnNames: _col1, _col0
->>>>>>> apache/master
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
