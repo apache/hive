@@ -46,6 +46,7 @@ class hive_metastoreConstants {
   std::string TABLE_BUCKETING_VERSION;
   std::string DRUID_CONFIG_PREFIX;
   std::string JDBC_CONFIG_PREFIX;
+  std::string TABLE_IS_CTAS;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;
