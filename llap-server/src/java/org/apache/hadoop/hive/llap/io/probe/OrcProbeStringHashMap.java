@@ -82,25 +82,17 @@ public class OrcProbeStringHashMap extends OrcProbeHashTable {
         boolean saveKeyMatch = false;
         int saveKeyIndex = -1;
         for (int row = 0; row < batchSize; ++row) {
-          boolean isNull = !probeCol.noNulls && probeCol.isNull[row];
-          // Equal key series checking.
-          if (isNull || !haveSaveKey || StringExpr
-              .equal(vector[saveKeyIndex], start[saveKeyIndex], length[saveKeyIndex], vector[row], start[row], length[row]) == false) {
-            // New key.
-            if (isNull) {
-              haveSaveKey = false;
-              saveKeyMatch = false;
-            } else {
+          if (probeCol.noNulls || !probeCol.isNull[row]) {
+            // Equal key series checking.
+            if (!haveSaveKey || StringExpr.equal(vector[saveKeyIndex], start[saveKeyIndex], length[saveKeyIndex],
+                vector[row], start[row], length[row]) == false) {
+              // New key.
               haveSaveKey = true;
               saveKeyIndex = row;
-              saveKeyMatch = probeStringHashMap.lookup(vector[row], start[row], length[row], hashMapResult) == JoinUtil.JoinResult.MATCH;
-              // Pass Valid key
-              if (saveKeyMatch) {
-                selected[newSize++] = row;
-              }
+              saveKeyMatch = probeStringHashMap.lookup(vector[row], start[row], length[row], hashMapResult)
+                  == JoinUtil.JoinResult.MATCH;
             }
-          } else {
-            // Series of equal keys.
+            // Pass Valid keys
             if (saveKeyMatch) {
               selected[newSize++] = row;
             }

@@ -87,15 +87,11 @@ public class OrcProbeLongHashSet extends OrcProbeHashTable {
         boolean saveKeyMatch = false;
         long saveKey = 0;
         for (int row = 0; row < batchSize; ++row) {
-          boolean isNull = !probeCol.noNulls && probeCol.isNull[row];
-          long currentKey = probeCol.vector[row];
-          // Equal key series checking.
-          if (isNull || !haveSaveKey || currentKey != saveKey) {
-            // New key.
-            if (isNull) {
-              haveSaveKey = false;
-              saveKeyMatch = false;
-            } else {
+          if (probeCol.noNulls || !probeCol.isNull[row]) {
+            long currentKey = probeCol.vector[row];
+            // Equal key series checking.
+            if (!haveSaveKey || currentKey != saveKey) {
+              // New key.
               haveSaveKey = true;
               saveKey = currentKey;
               if (useMinMax && (currentKey < min || currentKey > max)) {
@@ -103,14 +99,9 @@ public class OrcProbeLongHashSet extends OrcProbeHashTable {
                 saveKeyMatch = false;
               } else {
                 saveKeyMatch = probeLongHashSet.contains(currentKey, hashSetResult) == JoinUtil.JoinResult.MATCH;
-                // Pass Valid key
-                if (saveKeyMatch) {
-                  selected[newSize++] = row;
-                }
               }
             }
-          } else {
-            // Series of equal keys.
+            // Pass Valid keys
             if (saveKeyMatch) {
               selected[newSize++] = row;
             }
@@ -119,7 +110,7 @@ public class OrcProbeLongHashSet extends OrcProbeHashTable {
         selectedInUse = true;
       }
       cntx.setFilterContext(selectedInUse, selected, newSize);
-      LlapIoImpl.LOG.info("ProbeDecode Long Matched: {} selectedInUse {} batchSize {}", newSize, selectedInUse, batchSize);
+      LlapIoImpl.LOG.debug("ProbeDecode Long Matched: {} selectedInUse {} batchSize {}", newSize, selectedInUse, batchSize);
     } catch (IOException e) {
       LlapIoImpl.LOG.error("ProbeDecode MultiKey Filter failed: {}", e);
       e.printStackTrace();

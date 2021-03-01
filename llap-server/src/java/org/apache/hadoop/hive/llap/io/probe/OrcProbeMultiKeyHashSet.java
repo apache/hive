@@ -76,8 +76,7 @@ public class OrcProbeMultiKeyHashSet extends OrcProbeHashTable {
           multiKeySerializeWrite.reset();
           multiKeyVectorSerializeRow.serializePrimitiveWrite(probeCol, multiKeyVectorSerializeRow.getFields()[0], 0);
           if (probeHashMultiHashSet.contains(currKeyOutput.getData(), 0, currKeyOutput.getLength(),
-              hashMultiHashSetResult)
-              == JoinUtil.JoinResult.MATCH) {
+              hashMultiHashSetResult) == JoinUtil.JoinResult.MATCH) {
             // If repeating and match, next CVs of batch are read FULLY
             // DO NOT set selected here as next CVs are not necessarily repeating!
             newSize = batchSize;
@@ -94,32 +93,22 @@ public class OrcProbeMultiKeyHashSet extends OrcProbeHashTable {
         boolean saveKeyMatch = false;
         Output temp;
         for (int row = 0; row < batchSize; ++row) {
-          boolean isNull =!probeCol.noNulls && probeCol.isNull[row];
-          // Equal key series checking.
-          if (isNull || !haveSaveKey || !saveKeyOutput.arraysEquals(currKeyOutput)) {
-            // New key.
-            if (isNull) {
-              haveSaveKey = false;
-              saveKeyMatch = false;
-            } else {
-              // MultiKey to binary sortable
-              multiKeyVectorSerializeRow.setOutput(currKeyOutput);
-              multiKeySerializeWrite.reset();
-              multiKeyVectorSerializeRow.serializePrimitiveWrite(probeCol, multiKeyVectorSerializeRow.getFields()[0], row);
-              // swap
+          if (probeCol.noNulls || !probeCol.isNull[row]) {
+            // MultiKey to binary sortable
+            multiKeyVectorSerializeRow.setOutput(currKeyOutput);
+            multiKeySerializeWrite.reset();
+            multiKeyVectorSerializeRow.serializePrimitiveWrite(probeCol, multiKeyVectorSerializeRow.getFields()[0], row);
+            // Equal key series checking.
+            if (!haveSaveKey || !saveKeyOutput.arraysEquals(currKeyOutput)) {
+              // New key -- swap Output Buffers
               temp = saveKeyOutput;
               saveKeyOutput = currKeyOutput;
               currKeyOutput = temp;
               haveSaveKey = true;
               saveKeyMatch = probeHashMultiHashSet.contains(saveKeyOutput.getData(), 0, saveKeyOutput.getLength(),
                   hashMultiHashSetResult) == JoinUtil.JoinResult.MATCH;
-              // Pass Valid key
-              if (saveKeyMatch) {
-                selected[newSize++] = row;
-              }
             }
-          } else {
-            // Series of equal keys.
+            // Pass Valid keys
             if (saveKeyMatch) {
               selected[newSize++] = row;
             }

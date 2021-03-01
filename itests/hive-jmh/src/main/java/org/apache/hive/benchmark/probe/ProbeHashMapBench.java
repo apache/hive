@@ -127,17 +127,17 @@ public class ProbeHashMapBench {
     new Runner(opt).run();
   }
 //  Laptop Benchmark
-//Benchmark                                          (SELECT_PERCENT)  Mode  Cnt    Score   Error  Units
-//  ProbeHashMapBench.DummyLongProbeHashMap.bench                  0.01  avgt    2    6.723          ms/op
-//  ProbeHashMapBench.DummyLongProbeHashMap.bench                   0.2  avgt    2    8.363          ms/op
-//  ProbeHashMapBench.DummyMultiKeyProbeHashMap.bench              0.01  avgt    2  134.172          ms/op
-//  ProbeHashMapBench.DummyMultiKeyProbeHashMap.bench               0.2  avgt    2  134.070          ms/op
-//  ProbeHashMapBench.DummyStringHashMap.bench                     0.01  avgt    2   14.830          ms/op
-//  ProbeHashMapBench.DummyStringHashMap.bench                      0.2  avgt    2   29.053          ms/op
-//  ProbeHashMapBench.LongProbeHashMap.bench                       0.01  avgt    2    7.731          ms/op
-//  ProbeHashMapBench.LongProbeHashMap.bench                        0.2  avgt    2    9.019          ms/op
-//  ProbeHashMapBench.MultiKeyProbeHashMap.bench                   0.01  avgt    2  167.197          ms/op
-//  ProbeHashMapBench.MultiKeyProbeHashMap.bench                    0.2  avgt    2  208.904          ms/op
-//  ProbeHashMapBench.StringProbeHashMap.bench                     0.01  avgt    2   26.041          ms/op
-//  ProbeHashMapBench.StringProbeHashMap.bench                      0.2  avgt    2   37.801          ms/op
+//Benchmark                                          (SELECT_PERCENT)  Mode  Cnt    Score    Error  Units
+//  ProbeHashMapBench.DummyLongProbeHashMap.bench                  0.01  avgt    5    5.863 ±  0.275  ms/op
+//  ProbeHashMapBench.DummyLongProbeHashMap.bench                   0.2  avgt    5    6.726 ±  0.594  ms/op
+//  ProbeHashMapBench.DummyMultiKeyProbeHashMap.bench              0.01  avgt    5   89.491 ± 12.824  ms/op
+//  ProbeHashMapBench.DummyMultiKeyProbeHashMap.bench               0.2  avgt    5   80.803 ±  5.771  ms/op
+//  ProbeHashMapBench.DummyStringHashMap.bench                     0.01  avgt    5   10.441 ±  0.386  ms/op
+//  ProbeHashMapBench.DummyStringHashMap.bench                      0.2  avgt    5   23.287 ±  0.713  ms/op
+//  ProbeHashMapBench.LongProbeHashMap.bench                       0.01  avgt    5    6.248 ±  0.142  ms/op
+//  ProbeHashMapBench.LongProbeHashMap.bench                        0.2  avgt    5    7.055 ±  0.185  ms/op
+//  ProbeHashMapBench.MultiKeyProbeHashMap.bench                   0.01  avgt    5  105.396 ±  0.260  ms/op
+//  ProbeHashMapBench.MultiKeyProbeHashMap.bench                    0.2  avgt    5  125.180 ±  0.464  ms/op
+//  ProbeHashMapBench.StringProbeHashMap.bench                     0.01  avgt    5   21.131 ±  0.410  ms/op
+//  ProbeHashMapBench.StringProbeHashMap.bench                      0.2  avgt    5   29.884 ±  1.143  ms/op
 }

@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
 
 
 @BenchmarkMode(Mode.AverageTime)
-@Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -376,7 +376,7 @@ public abstract class AbstractProbeHashTableBench {
   }
 
   @Benchmark
-  @Measurement(batchSize = 1_000, iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
+  @Measurement(batchSize = 1_000, iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
   public void bench() {
     this.probeLongHashTable.filterColumnVector(filterColumnVector, FILTER_CONTEXT, VectorizedRowBatch.DEFAULT_SIZE);
   }

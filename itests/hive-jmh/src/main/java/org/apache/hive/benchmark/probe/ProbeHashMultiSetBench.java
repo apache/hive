@@ -127,17 +127,17 @@ public class ProbeHashMultiSetBench {
     new Runner(opt).run();
   }
 //  Laptop Benchmark
-// Benchmark                                                    (SELECT_PERCENT)  Mode  Cnt    Score   Error  Units
-//  ProbeHashMultiSetBench.DummyLongProbeHashMultiSet.bench                  0.01  avgt    2    6.042          ms/op
-//  ProbeHashMultiSetBench.DummyLongProbeHashMultiSet.bench                   0.2  avgt    2    6.656          ms/op
-//  ProbeHashMultiSetBench.DummyMultiKeyProbeHashMultiSet.bench              0.01  avgt    2  150.088          ms/op
-//  ProbeHashMultiSetBench.DummyMultiKeyProbeHashMultiSet.bench               0.2  avgt    2  134.422          ms/op
-//  ProbeHashMultiSetBench.DummyStringHashMultiSet.bench                     0.01  avgt    2   10.223          ms/op
-//  ProbeHashMultiSetBench.DummyStringHashMultiSet.bench                      0.2  avgt    2   21.364          ms/op
-//  ProbeHashMultiSetBench.LongProbeHashMultiSet.bench                       0.01  avgt    2    6.457          ms/op
-//  ProbeHashMultiSetBench.LongProbeHashMultiSet.bench                        0.2  avgt    2    6.802          ms/op
-//  ProbeHashMultiSetBench.MultiKeyProbeHashMultiSet.bench                   0.01  avgt    2  111.328          ms/op
-//  ProbeHashMultiSetBench.MultiKeyProbeHashMultiSet.bench                    0.2  avgt    2  127.228          ms/op
-//  ProbeHashMultiSetBench.StringProbeHashMultiSet.bench                     0.01  avgt    2   18.714          ms/op
-//  ProbeHashMultiSetBench.StringProbeHashMultiSet.bench                      0.2  avgt    2   23.863          ms/op
+//Benchmark                                                    (SELECT_PERCENT)  Mode  Cnt    Score    Error  Units
+//  ProbeHashMultiSetBench.DummyLongProbeHashMultiSet.bench                  0.01  avgt    5    6.462 ±  1.297  ms/op
+//  ProbeHashMultiSetBench.DummyLongProbeHashMultiSet.bench                   0.2  avgt    5    6.313 ±  0.940  ms/op
+//  ProbeHashMultiSetBench.DummyMultiKeyProbeHashMultiSet.bench              0.01  avgt    5   91.979 ± 18.517  ms/op
+//  ProbeHashMultiSetBench.DummyMultiKeyProbeHashMultiSet.bench               0.2  avgt    5   92.038 ± 17.364  ms/op
+//  ProbeHashMultiSetBench.DummyStringHashMultiSet.bench                     0.01  avgt    5   10.672 ±  1.415  ms/op
+//  ProbeHashMultiSetBench.DummyStringHashMultiSet.bench                      0.2  avgt    5   26.093 ±  0.593  ms/op
+//  ProbeHashMultiSetBench.LongProbeHashMultiSet.bench                       0.01  avgt    5    6.546 ±  0.375  ms/op
+//  ProbeHashMultiSetBench.LongProbeHashMultiSet.bench                        0.2  avgt    5    7.535 ±  0.149  ms/op
+//  ProbeHashMultiSetBench.MultiKeyProbeHashMultiSet.bench                   0.01  avgt    5  105.387 ±  0.273  ms/op
+//  ProbeHashMultiSetBench.MultiKeyProbeHashMultiSet.bench                    0.2  avgt    5  111.257 ±  0.281  ms/op
+//  ProbeHashMultiSetBench.StringProbeHashMultiSet.bench                     0.01  avgt    5   16.362 ±  1.473  ms/op
+//  ProbeHashMultiSetBench.StringProbeHashMultiSet.bench                      0.2  avgt    5   25.227 ±  1.324  ms/op
 }
