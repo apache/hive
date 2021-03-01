@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.MetaStoreThread;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -33,53 +33,32 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
  * Collect and publish ACID and compaction related metrics.
  */
-public class AcidMetricService extends Thread implements MetaStoreThread {
+public class AcidMetricService  implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidMetricService.class);
   private Configuration conf;
-  private int threadId;
-  private AtomicBoolean stop;
   private TxnStore txnHandler;
-  private long checkInterval;
 
   @Override
-  public void setThreadId(int threadId) {
-    setPriority(MIN_PRIORITY);
-    this.threadId = threadId;
-  }
-
-  @Override
-  public void init(AtomicBoolean stop) throws Exception {
-    setDaemon(true); // the process will exit without waiting for this thread
-
-    this.stop = stop;
-    checkInterval = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    // Get our own instance of the transaction handler
-    txnHandler = TxnUtils.getTxnStore(conf);
+  public long runFrequency(TimeUnit unit) {
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_CHECK_INTERVAL, unit);
   }
 
   @Override
   public void run() {
-    LOG.info("Starting AcidMetricService thread");
+    LOG.debug("Starting AcidMetricService thread");
     try {
-      do {
         long startedAt = System.currentTimeMillis();
 
         boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
             MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON);
         if (!metricsEnabled) {
-          // Make it possible to disable metrics collection without a restart
-          LOG.debug("AcidMetricService is running but metric collection is not enabled");
-          if (!stop.get()) {
-            Thread.sleep(checkInterval);
-          }
-          continue;
+          return;
         }
         try {
           collectMetrics();
@@ -89,11 +68,7 @@ public class AcidMetricService extends Thread implements MetaStoreThread {
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
         LOG.debug("AcidMetricService thread finished one loop in {} seconds.", elapsedTime / 1000);
-        if (elapsedTime < checkInterval && !stop.get()) {
-          Thread.sleep(checkInterval - elapsedTime);
-        }
 
-      } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of AcidMetricService, exiting ", t);
     }
@@ -147,6 +122,7 @@ public class AcidMetricService extends Thread implements MetaStoreThread {
   @Override
   public void setConf(Configuration configuration) {
     this.conf = configuration;
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @Override

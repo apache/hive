@@ -140,10 +140,7 @@ public abstract class CompactorTest {
   protected void runAcidMetricService() throws Exception {
     TestTxnDbUtil.setConfValues(conf);
     AcidMetricService t = new AcidMetricService();
-    t.setThreadId((int) t.getId());
     t.setConf(conf);
-    stop.set(true);
-    t.init(stop);
     t.run();
   }
 

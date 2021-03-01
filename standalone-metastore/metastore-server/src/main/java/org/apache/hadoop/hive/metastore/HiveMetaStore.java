@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
-import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
@@ -655,7 +654,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             startCompactorCleaner(conf);
             startRemoteOnlyTasks(conf);
             startStatsUpdater(conf);
-            startAcidMetrics(conf);
             HMSHandler.startAlwaysTaskThreads(conf);
           }
 
@@ -694,17 +692,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     MetaStoreThread t = instantiateThread("org.apache.hadoop.hive.ql.stats.StatsUpdaterThread");
     initializeAndStartThread(t, conf);
   }
-
-  protected static void startAcidMetrics(Configuration conf) throws Exception {
-    if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED) &&
-        MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_ACIDMETRICS_THREAD_ON)) {
-      MetaStoreThread acidMetricsService =
-          instantiateThread(AcidMetricService.class.getName());
-      initializeAndStartThread(acidMetricsService, conf);
-      LOG.info("This HMS instance will collect metrics in AcidMetricsService.");
-    }
-  }
-
 
   private static void startCompactorInitiator(Configuration conf) throws Exception {
     if (MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
