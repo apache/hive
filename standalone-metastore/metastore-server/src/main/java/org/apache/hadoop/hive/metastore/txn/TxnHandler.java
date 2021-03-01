@@ -2385,9 +2385,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           currentValidTxnList.getHighWatermark(), currentTblValidWriteIdsList);
 
       List<String> params = new ArrayList<>();
-      StringBuilder query = new StringBuilder();
+      StringBuilder queryUpdateDelete = new StringBuilder();
+      StringBuilder queryCompactions = new StringBuilder();
       // compose a query that select transactions containing an update...
-      query.append("SELECT \"CTC_UPDATE_DELETE\" FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_UPDATE_DELETE\" ='Y' AND (");
+      queryUpdateDelete.append("SELECT \"CTC_UPDATE_DELETE\" FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_UPDATE_DELETE\" ='Y' AND (");
+      queryCompactions.append("SELECT 1 FROM \"COMPLETED_COMPACTIONS\" WHERE (");
       int i = 0;
       for (String fullyQualifiedName : creationMetadata.getTablesUsed()) {
         ValidWriteIdList tblValidWriteIdList =
@@ -2414,29 +2416,36 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // ...for each of the tables that are part of the materialized view,
         // where the transaction had to be committed after the materialization was created...
         if (i != 0) {
-          query.append("OR");
+          queryUpdateDelete.append("OR");
         }
         String[] names = TxnUtils.getDbTableName(fullyQualifiedName);
         assert(names.length == 2);
-        query.append(" (\"CTC_DATABASE\"=? AND \"CTC_TABLE\"=?");
+        queryUpdateDelete.append(" (\"CTC_DATABASE\"=? AND \"CTC_TABLE\"=?");
+        queryCompactions.append(" (\"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
         params.add(names[0]);
         params.add(names[1]);
-        query.append(" AND (\"CTC_WRITEID\" > " + tblValidWriteIdList.getHighWatermark());
-        query.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
+        queryUpdateDelete.append(" AND (\"CTC_WRITEID\" > " + tblValidWriteIdList.getHighWatermark());
+        queryCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > " + tblValidWriteIdList.getHighWatermark());
+        queryUpdateDelete.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
             " OR \"CTC_WRITEID\" IN(" + StringUtils.join(",",
                 Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
-        query.append(") ");
+        queryCompactions.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
+            " OR \"CC_HIGHEST_WRITE_ID\" IN(" + StringUtils.join(",",
+                Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
+        queryUpdateDelete.append(") ");
+        queryCompactions.append(") ");
         i++;
       }
       // ... and where the transaction has already been committed as per snapshot taken
       // when we are running current query
-      query.append(") AND \"CTC_TXNID\" <= " + currentValidTxnList.getHighWatermark());
-      query.append(currentValidTxnList.getInvalidTransactions().length == 0 ? " " :
+      queryUpdateDelete.append(") AND \"CTC_TXNID\" <= " + currentValidTxnList.getHighWatermark());
+      queryUpdateDelete.append(currentValidTxnList.getInvalidTransactions().length == 0 ? " " :
           " AND \"CTC_TXNID\" NOT IN(" + StringUtils.join(",",
               Arrays.asList(ArrayUtils.toObject(currentValidTxnList.getInvalidTransactions()))) + ") ");
+      queryCompactions.append(")");
 
       // Execute query
-      String s = query.toString();
+      String s = queryUpdateDelete.toString();
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query <" + s + ">");
       }
@@ -2444,7 +2453,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       pst.setMaxRows(1);
       rs = pst.executeQuery();
 
-      return new Materialization(rs.next());
+      boolean hasUpdateDelete = rs.next();
+      close(rs, pst, dbConn);
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+
+      // Execute query
+      s = queryCompactions.toString();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to execute query <" + s + ">");
+      }
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+      pst.setMaxRows(1);
+      rs = pst.executeQuery();
+
+      boolean hasCompaction = rs.next();
+
+      return new Materialization(hasUpdateDelete);
     } catch (SQLException ex) {
       LOG.warn("getMaterializationInvalidationInfo failed due to " + getMessage(ex), ex);
       throw new MetaException("Unable to retrieve materialization invalidation information due to " +
