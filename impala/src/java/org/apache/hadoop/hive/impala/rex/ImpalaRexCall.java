@@ -117,9 +117,10 @@ public class ImpalaRexCall {
         retExpr = new ImpalaIsNullExpr(analyzer, fn, params.get(0), true, impalaRetType);
         break;
       case EXTRACT:
-        // for specific extract functions (e.g.year, month), we ignore the first redundant
-        // "SYMBOL" parameter
-        if (!funcName.equals("extract")) {
+        // for specific extract functions (e.g.year, month), there will be two parameters, and
+        // we need to ignore the first redundant one. As an example, the parameter in the explain
+        // cbo plan will show up like "MINUTE(FLAG(MINUTE), $10)" for the "extract minute" function.
+        if (params.size() == 2) {
           retExpr = new ImpalaFunctionCallExpr(analyzer, fn, params.subList(1,2), rexCall, impalaRetType);
         } else {
         // CDPD-8867: normal 'extract function currently uses default ImpalaFunctionCallExpr
