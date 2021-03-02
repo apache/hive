@@ -56,8 +56,8 @@ AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP B
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00.0 US/Pacific
-1969-12-31 16:00:00.0 US/Pacific
+1969-12-31 15:59:00 US/Pacific
+1969-12-31 16:00:00 US/Pacific
 PREHOOK: query: EXPLAIN SELECT floor(`__time` to MINUTE) FROM druid_table_alltypesorc
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to MINUTE)
