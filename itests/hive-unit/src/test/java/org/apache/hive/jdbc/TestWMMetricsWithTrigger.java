@@ -183,19 +183,19 @@ public class TestWMMetricsWithTrigger {
   public void testWmPoolMetricsAfterKillTrigger() throws Exception {
     CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
     String json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numExecutors", 0);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numExecutorsMax", 4);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numParallelQueries", 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numRunningQueries", 0);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutors", 0);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
     runQueryWithTrigger(10);
     //Wait for Workload Manager main thread to update the metrics after kill query succeeded.
     Thread.sleep(10000);
     //Metrics should reset to original value after query is killed
     json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numExecutors", 0);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numExecutorsMax", 4);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numParallelQueries", 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "WM_llap_numRunningQueries", 0);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutors", 0);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
 
   }
 }
