@@ -1870,8 +1870,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       }
-      calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
-          HepMatchOrder.DEPTH_FIRST, new HiveSubQueryRemoveRule(conf));
+      calciteGenPlan = removeSubqueries(calciteGenPlan, mdProvider.getMetadataProvider());
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       }
@@ -2611,23 +2610,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     /**
-     * Run the HEP Planner with the given rule set.
-     *
-     * @param basePlan
-     * @param followPlanChanges
-     * @param mdProvider
-     * @param executorProvider
-     * @param order
-     * @param rules
-     * @return optimized RelNode
+     * Removes sub-queries (if present) from the specified query plan.
+     * @return a new query plan without subquery expressions.
      */
-    @Deprecated
-    private RelNode hepPlan(RelNode basePlan, boolean followPlanChanges,
-        RelMetadataProvider mdProvider, RexExecutor executorProvider, HepMatchOrder order,
-        RelOptRule... rules) {
-      final HepProgramBuilder programBuilder = new HepProgramBuilder();
-      generatePartialProgram(programBuilder, followPlanChanges, order, rules);
-      return executeProgram(basePlan, programBuilder.build(), mdProvider, executorProvider);
+    private RelNode removeSubqueries(RelNode basePlan, RelMetadataProvider mdProvider) {
+      final HepProgramBuilder builder = new HepProgramBuilder();
+      builder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
+      builder.addRuleCollection(
+          ImmutableList.of(HiveSubQueryRemoveRule.forFilter(conf), HiveSubQueryRemoveRule.forProject(conf)));
+      return executeProgram(basePlan, builder.build(), mdProvider, null);
     }
 
     /**
