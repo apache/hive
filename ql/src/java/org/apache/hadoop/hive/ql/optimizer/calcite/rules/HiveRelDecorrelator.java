@@ -1333,6 +1333,12 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
   }
 
   public Frame decorrelateRel(Join rel) {
+    // For SEMI/ANTI join decorrelate it's input directly,
+    // because the correlate variables can only be propagated from
+    // the left side, which is not supported yet.
+    if (!rel.getJoinType().projectsRight()) {
+      return decorrelateRel((RelNode) rel);
+    }
     //
     // Rewrite logic:
     //
