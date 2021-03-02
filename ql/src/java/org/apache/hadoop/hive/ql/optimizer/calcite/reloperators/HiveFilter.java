@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import com.google.common.base.Preconditions;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
@@ -68,32 +69,30 @@ public class HiveFilter extends Filter implements HiveRelNode {
   //traverse the given node to find all correlated variables
   // Note that correlated variables are supported in Filter only i.e. Where & Having
   private static void traverseFilter(RexNode node, Set<CorrelationId> allVars) {
-      if(node instanceof RexSubQuery) {
-          //we expect correlated variables in HiveFilter only for now.
-          // Also check for case where operator has 0 inputs .e.g TableScan
-          RelNode input = ((RexSubQuery)node).rel.getInput(0);
-          while(input != null && !(input instanceof HiveFilter)
-                  && input.getInputs().size() >=1) {
-              //we don't expect corr vars withing JOIN or UNION for now
-              // we only expect cor vars in top level filter
-              if(input.getInputs().size() > 1) {
-                  return;
-              }
-              input = input.getInput(0);
-          }
-          if(input != null && input instanceof HiveFilter) {
-              findCorrelatedVar(((HiveFilter)input).getCondition(), allVars);
-          }
-          return;
+    Preconditions.checkNotNull(allVars);
+    if (node instanceof RexSubQuery) {
+      RelNode input = ((RexSubQuery)node).rel.getInput(0);
+      Preconditions.checkNotNull(input);
+      // initialize number of correlated variables input here to check if it changes.
+      int correlatedVars = allVars.size();
+      // Loop until we find the first filter that contains a correlated variable.
+      // CDPD-24188: Is it possible to have both a having and where clause with
+      // a correlated variable?
+      while (input != null && input.getInputs().size() == 1 &&
+          correlatedVars == allVars.size()) {
+        if (input instanceof HiveFilter) {
+          findCorrelatedVar(((HiveFilter)input).getCondition(), allVars);
+        }
+        input = input.getInput(0);
       }
+    } else if (node instanceof RexCall) {
       //AND, NOT etc
-      if(node instanceof RexCall) {
-          int numOperands = ((RexCall)node).getOperands().size();
-          for(int i=0; i<numOperands; i++) {
-              RexNode op = ((RexCall)node).getOperands().get(i);
-              traverseFilter(op, allVars);
-          }
+      int numOperands = ((RexCall)node).getOperands().size();
+      for(int i=0; i<numOperands; i++) {
+          RexNode op = ((RexCall)node).getOperands().get(i);
+          traverseFilter(op, allVars);
       }
+    }
   }
 
   @Override

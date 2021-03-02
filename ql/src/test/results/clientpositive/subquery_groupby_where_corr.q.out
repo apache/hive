@@ -1,0 +1,61 @@
+PREHOOK: query: CREATE TABLE alltypestiny (id int, int_col int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: CREATE TABLE alltypestiny (id int, int_col int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypestiny
+PREHOOK: query: INSERT INTO alltypestiny values (3, 8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: INSERT INTO alltypestiny values (3, 8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypestiny
+POSTHOOK: Lineage: alltypestiny.id SCRIPT []
+POSTHOOK: Lineage: alltypestiny.int_col SCRIPT []
+PREHOOK: query: INSERT INTO alltypestiny values (3, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: INSERT INTO alltypestiny values (3, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypestiny
+POSTHOOK: Lineage: alltypestiny.id SCRIPT []
+POSTHOOK: Lineage: alltypestiny.int_col SCRIPT []
+PREHOOK: query: INSERT INTO alltypestiny values (4, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: INSERT INTO alltypestiny values (4, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypestiny
+POSTHOOK: Lineage: alltypestiny.id SCRIPT []
+POSTHOOK: Lineage: alltypestiny.int_col SCRIPT []
+PREHOOK: query: SELECT id
+FROM alltypestiny t1
+WHERE EXISTS
+  (SELECT 1
+   FROM alltypestiny t2
+   WHERE t1.id = t2.id
+   GROUP BY t2.id
+   HAVING count(1) = 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id
+FROM alltypestiny t1
+WHERE EXISTS
+  (SELECT 1
+   FROM alltypestiny t2
+   WHERE t1.id = t2.id
+   GROUP BY t2.id
+   HAVING count(1) = 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+4
