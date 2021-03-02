@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.impala.expr;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.impala.node.ImpalaRelUtil;
@@ -26,11 +27,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.FunctionCallExpr;
+import org.apache.impala.analysis.FunctionName;
 import org.apache.impala.analysis.FunctionParams;
-import org.apache.impala.analysis.NumericLiteral;
 import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.Function;
-import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 import org.apache.impala.common.AnalysisException;
 
@@ -198,11 +198,30 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
         }
         fn_ = ImpalaRelUtil.getAggregateFunction(getFnName().getFunction(), getReturnType(), operandTypes);
         type_ = fn_.getReturnType();
-
         break;
       default:
         throw new HiveException("Unsupported aggregate function.");
       }
     }
   }
+
+  /**
+   * Given a new FunctionName and FunctionParams, do a lookup in the function
+   * registry by using the existing return type and return a new instance of
+   * ImpalaFunctionCallExpr.
+   */
+  public FunctionCallExpr getRewrittenFunction(FunctionName funcName,
+      FunctionParams funcParams) throws HiveException {
+    List<Type> operandTypes = Lists.newArrayList();
+    for (Expr e : funcParams.exprs()) {
+      operandTypes.add(e.getType());
+    }
+    String newName = funcName.getFunction().toLowerCase();
+    Function newFn = ImpalaRelUtil.getAggregateFunction(newName,
+        getReturnType(), operandTypes);
+    Type retType = newFn.getReturnType();
+    return new ImpalaFunctionCallExpr(analyzer, newFn, funcParams,
+        this.addedCost, retType);
+  }
+
 }

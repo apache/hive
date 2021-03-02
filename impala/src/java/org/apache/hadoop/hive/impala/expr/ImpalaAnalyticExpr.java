@@ -27,6 +27,8 @@ import org.apache.impala.analysis.AnalyticWindow;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.FunctionCallExpr;
+import org.apache.impala.analysis.FunctionName;
+import org.apache.impala.analysis.FunctionParams;
 import org.apache.impala.analysis.OrderByElement;
 import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.ScalarType;
@@ -78,12 +80,16 @@ public class ImpalaAnalyticExpr extends AnalyticExpr {
     // avoid potential side effects for all analytic functions.
     FunctionCallExpr origFuncExpr = getFnCall();
     String fname = origFuncExpr.getFnName().getFunction().toLowerCase();
-    if (fname.equals("lag") || fname.equals("lead")) {
+    if (isStandardizationNeeded(fname)) {
       this.standardize(analyzer);
       // If the function expr has changed, make relevant adjustments
       if (getFnCall() != origFuncExpr) {
         setChildren();
         Preconditions.checkArgument(getFnCall() instanceof ImpalaFunctionCallExpr);
+        if (!isResetNeeded(getFnCall().getFnName().
+            getFunction().toLowerCase())) {
+          return;
+        }
         // Since standardization may change the function signature, we need to find
         // the new matching function in the function registry
         try {
@@ -123,5 +129,29 @@ public class ImpalaAnalyticExpr extends AnalyticExpr {
     } catch (AnalysisException e) {
       throw new RuntimeException("Exception reanalyzing expression.", e);
     }
+  }
+
+  @Override
+  protected FunctionCallExpr createRewrittenFunction(FunctionName funcName,
+      FunctionParams funcParams) {
+    Preconditions.checkArgument(getFnCall() instanceof ImpalaFunctionCallExpr);
+    try {
+      return ((ImpalaFunctionCallExpr) getFnCall()).
+          getRewrittenFunction(funcName, funcParams);
+    } catch (HiveException e) {
+      // Cannot throw AnalysisException here since the base method does not allow
+      // it, hence throw a runtime exception
+      throw new IllegalStateException(
+          "Encountered exception creating rewritten analytic expr: ", e);
+    }
+  }
+
+  private boolean isStandardizationNeeded(String fname) {
+    return fname.equals("lag") || fname.equals("lead") ||
+        fname.equals("first_value") || fname.equals("last_value");
+  }
+
+  private boolean isResetNeeded(String fname) {
+    return fname.equals("lag") || fname.equals("lead");
   }
 }

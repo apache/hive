@@ -77,7 +77,8 @@ public class ImpalaRelUtil {
     AggFunctionDetails funcDetails = AggFunctionDetails.get(aggFuncName, operandTypes, retType, false);
 
     if (funcDetails == null) {
-      throw new SemanticException("Could not find function \"" + aggFuncName + "\"");
+      throw new SemanticException("Could not find function \"" + aggFuncName + "\" " +
+          "for operands: " + operandTypes + " and return type: " + retType);
     }
 
     int intermediateTypePrecision = funcDetails.intermediateTypeLength != 0 ?
