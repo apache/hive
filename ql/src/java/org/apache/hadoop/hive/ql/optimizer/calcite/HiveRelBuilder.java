@@ -152,11 +152,21 @@ public class HiveRelBuilder extends RelBuilder {
   @Nonnull
   private RexNode call(SqlOperator operator, List<RexNode> operandList) {
     switch (operator.getKind()) {
+    // These operators should not go through the engine-specific helper
+    // because they are not actual engine functions.
     case AS:
     case DESCENDING:
     case NULLS_FIRST:
     case NULLS_LAST:
-      // These operators should not go through the engine-specific helper.
+    // These operators do not need to go through the engine-specific helper
+    // because they do not need adjustments and their nullability would
+    // need to be set correctly in all of them.
+    case IS_NOT_NULL:
+    case IS_NULL:
+    case IS_NOT_TRUE:
+    case IS_TRUE:
+    case IS_NOT_FALSE:
+    case IS_FALSE:
       return super.call(operator, operandList);
     default:
       try {

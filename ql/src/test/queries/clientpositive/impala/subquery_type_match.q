@@ -44,3 +44,10 @@ from my_test_table t1 left join
      (select day as int_col from my_test_table where t1.id = day)) t2
 on t2.int_col = t1.month
 where t1.month is not null;
+
+-- CDPD-23399
+explain cbo physical
+select id,
+  exists (select id from my_test_table)
+  from my_test_table
+order by id;

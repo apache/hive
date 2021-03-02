@@ -244,7 +244,7 @@ Per-Host Resources: mem-estimate=137.78MB mem-reservation=43.69MB thread-reserva
   12:HASH JOIN [LEFT OUTER JOIN, BROADCAST]
   |  hash predicates: ws1.ws_order_number = wr1.wr_order_number
   |  fk/pk conjuncts: assumed fk/pk
-  |  other predicates: isnottrue(if(TupleIsNull(12), NULL, TRUE) IS NOT NULL)
+  |  other predicates: if(TupleIsNull(12), NULL, TRUE) IS NULL
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2,4,6,12N row-size=88B cardinality=0
   |  in pipelines: 01(GETNEXT), 21(OPEN)

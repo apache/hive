@@ -78,7 +78,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@my_test_table
 CBO PLAN:
 ImpalaProjectPassthroughRel(_o__col2=[count($0) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
-  ImpalaProjectRel($f0=[$2], c=[$3], ck=[$4], _o__c0=[$0], literalTrue=[$1], condition=[OR(=($1, 0), IS NOT TRUE(OR(IS NOT NULL($4), IS NULL($0), <($2, $1))))])
+  ImpalaProjectRel($f0=[$2], c=[$3], ck=[$4], _o__c0=[$0], literalTrue=[$1], condition=[OR(=($1, 0), AND(IS NULL($4), >=($2, $1), IS NOT NULL($0)))])
     ImpalaJoinRel(condition=[true], joinType=[inner])
       ImpalaJoinRel(condition=[=(CAST($2):BIGINT, $0)], joinType=[right])
         ImpalaProjectPassthroughRel(_o__c0=[$0], literalTrue=[true])
@@ -220,4 +220,31 @@ ImpalaProjectPassthroughRel(int_col=[$0])
           ImpalaHdfsScanRel(table=[[default, my_test_table]], condition=[AND(IS NOT NULL(COALESCE($5, 384)), IS NOT NULL($0), IS NOT NULL($4), IS NOT NULL(CAST($0):BIGINT))])
         ImpalaProjectPassthroughRel(int_col=[$7], day=[$7])
           ImpalaHdfsScanRel(table=[[default, my_test_table]], condition=[AND(IS NOT NULL($7), IS NOT NULL(CAST($7):BIGINT))])
+
+HMS CALL get_table_req FOR my_test_table
+HMS CALL get_foreign_keys FOR my_test_table
+PREHOOK: query: explain cbo physical
+select id,
+  exists (select id from my_test_table)
+  from my_test_table
+order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_test_table
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id,
+  exists (select id from my_test_table)
+  from my_test_table
+order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_test_table
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(id=[$0], _o__c1=[IS NOT NULL($1)])
+    ImpalaJoinRel(condition=[true], joinType=[left])
+      ImpalaProjectPassthroughRel(id=[$0])
+        ImpalaHdfsScanRel(table=[[default, my_test_table]])
+      ImpalaAggregateRel(group=[{0}])
+        ImpalaProjectPassthroughRel($f0=[true])
+          ImpalaHdfsScanRel(table=[[default, my_test_table]])
 
