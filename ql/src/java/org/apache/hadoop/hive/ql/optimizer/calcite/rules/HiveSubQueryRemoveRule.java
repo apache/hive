@@ -19,18 +19,16 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.CorrelationId;
-import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.LogicVisitor;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexSubQuery;
@@ -45,7 +43,6 @@ import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Pair;
-import org.apache.calcite.util.Util;
 
 import com.google.common.collect.ImmutableList;
 
@@ -53,7 +50,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
@@ -84,11 +80,22 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_CONVERT_ANTI_JO
  */
 public class HiveSubQueryRemoveRule extends RelOptRule {
 
+  public static RelOptRule forProject(HiveConf conf) {
+    return new HiveSubQueryRemoveRule(
+        RelOptRule.operandJ(HiveProject.class, null, RexUtil.SubQueryFinder::containsSubQuery, any()),
+        "SubQueryRemoveRule:Project", conf);
+  }
+
+  public static RelOptRule forFilter(HiveConf conf) {
+    return new HiveSubQueryRemoveRule(
+        RelOptRule.operandJ(HiveFilter.class, null, RexUtil.SubQueryFinder::containsSubQuery, any()),
+        "SubQueryRemoveRule:Filter", conf);
+  }
+  
   private final HiveConf conf;
 
-  public HiveSubQueryRemoveRule(HiveConf conf) {
-    super(operandJ(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE, any()),
-        HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter");
+  private HiveSubQueryRemoveRule(RelOptRuleOperand operand, String description, HiveConf conf) {
+    super(operand, HiveRelFactories.HIVE_BUILDER, description);
     this.conf = conf;
   }
 
@@ -98,8 +105,8 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         new HiveSubQRemoveRelBuilder(null, call.rel(0).getCluster(), null);
 
     // if subquery is in FILTER
-    if (relNode instanceof Filter) {
-      final Filter filter = call.rel(0);
+    if (relNode instanceof HiveFilter) {
+      final HiveFilter filter = call.rel(0);
       final RexSubQuery e = RexUtil.SubQueryFinder.find(filter.getCondition());
       assert e != null;
 
@@ -108,9 +115,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       builder.push(filter.getInput());
       final int fieldCount = builder.peek().getRowType().getFieldCount();
 
-      assert (filter instanceof HiveFilter);
-      SubqueryConf subqueryConfig = filter.getCluster().getPlanner().
-          getContext().unwrap(SubqueryConf.class);
+      SubqueryConf subqueryConfig = filter.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
       boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
 
       final RexNode target =
@@ -121,9 +126,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       builder.project(fields(builder, filter.getRowType().getFieldCount()));
       RelNode newRel = builder.build();
       call.transformTo(newRel);
-    } else if (relNode instanceof Project) {
+    } else if (relNode instanceof HiveProject) {
       // if subquery is in PROJECT
-      final Project project = call.rel(0);
+      final HiveProject project = call.rel(0);
       final RexSubQuery e = RexUtil.SubQueryFinder.find(project.getProjects());
       assert e != null;
 
@@ -616,74 +621,6 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
     @Override public RexNode visitSubQuery(RexSubQuery subQuery) {
       return subQuery.equals(this.subQuery) ? replacement : subQuery;
-    }
-  }
-
-  // TODO:
-  // Following HiveSubQueryFinder has been copied from RexUtil::SubQueryFinder
-  // since there is BUG in there (CALCITE-1726).
-  // Once CALCITE-1726 is fixed we should get rid of the following code
-
-  /**
-   * Visitor that throws {@link org.apache.calcite.util.Util.FoundOne} if
-   * applied to an expression that contains a {@link RexSubQuery}.
-   */
-  public static final class HiveSubQueryFinder extends RexVisitorImpl<Void> {
-    public static final HiveSubQueryFinder INSTANCE = new HiveSubQueryFinder();
-
-    /**
-     * Returns whether a {@link Project} contains a sub-query.
-     */
-    public static final Predicate<RelNode> RELNODE_PREDICATE = new Predicate<RelNode>() {
-      @Override public boolean test(RelNode relNode) {
-        if (relNode instanceof Project) {
-          Project project = (Project) relNode;
-          for (RexNode node : project.getProjects()) {
-            try {
-              node.accept(INSTANCE);
-            } catch (Util.FoundOne e) {
-              return true;
-            }
-          }
-          return false;
-        } else if (relNode instanceof Filter) {
-          try {
-            ((Filter) relNode).getCondition().accept(INSTANCE);
-            return false;
-          } catch (Util.FoundOne e) {
-            return true;
-          }
-        }
-        return false;
-      }
-    };
-
-    private HiveSubQueryFinder() {
-      super(true);
-    }
-
-    @Override public Void visitSubQuery(RexSubQuery subQuery) {
-      throw new Util.FoundOne(subQuery);
-    }
-
-    public static RexSubQuery find(Iterable<RexNode> nodes) {
-      for (RexNode node : nodes) {
-        try {
-          node.accept(INSTANCE);
-        } catch (Util.FoundOne e) {
-          return (RexSubQuery) e.getNode();
-        }
-      }
-      return null;
-    }
-
-    public static RexSubQuery find(RexNode node) {
-      try {
-        node.accept(INSTANCE);
-        return null;
-      } catch (Util.FoundOne e) {
-        return (RexSubQuery) e.getNode();
-      }
     }
   }
 
