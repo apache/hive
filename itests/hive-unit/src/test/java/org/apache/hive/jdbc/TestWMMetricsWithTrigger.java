@@ -187,7 +187,9 @@ public class TestWMMetricsWithTrigger {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
+
     runQueryWithTrigger(10);
+
     //Wait for Workload Manager main thread to update the metrics after kill query succeeded.
     Thread.sleep(10000);
     //Metrics should reset to original value after query is killed
@@ -196,6 +198,5 @@ public class TestWMMetricsWithTrigger {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
-
   }
 }
