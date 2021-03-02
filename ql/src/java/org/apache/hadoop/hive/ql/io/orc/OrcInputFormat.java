@@ -2002,13 +2002,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * with NullWritable for the key instead of RecordIdentifier.
    */
   public static final class NullKeyRecordReader implements AcidRecordReader<NullWritable, OrcStruct> {
-    private final RecordIdentifier id;
+    private final OrcRawRecordMerger.ReaderKey id;
     private final RowReader<OrcStruct> inner;
 
     @Override
-    public RecordIdentifier getRecordIdentifier() {
+    public OrcRawRecordMerger.ReaderKey getRecordIdentifier() {
       return id;
     }
+
     private NullKeyRecordReader(RowReader<OrcStruct> inner, Configuration conf) {
       this.inner = inner;
       id = inner.createKey();
@@ -2127,7 +2128,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     @Override
-    public boolean next(RecordIdentifier recordIdentifier,
+    public boolean next(OrcRawRecordMerger.ReaderKey recordIdentifier,
             OrcStruct orcStruct) throws IOException {
       boolean result;
       // filter out the deleted records
@@ -2142,7 +2143,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     @Override
-    public RecordIdentifier createKey() {
+    public OrcRawRecordMerger.ReaderKey createKey() {
       return records.createKey();
     }
 

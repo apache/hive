@@ -4056,7 +4056,7 @@ public class TestInputOutputFormat {
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
     int record = 0;
-    RecordIdentifier id = reader.createKey();
+    OrcRawRecordMerger.ReaderKey id = reader.createKey();
     OrcStruct struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
@@ -4203,7 +4203,7 @@ public class TestInputOutputFormat {
         new AcidInputFormat.Options(conf));
 
     int record = 0;
-    RecordIdentifier id = reader.createKey();
+    OrcRawRecordMerger.ReaderKey id = reader.createKey();
     OrcStruct struct = reader.createValue();
     // Iterate through any records.
     // Because our read offset was past the stripe offset, the rows from the last stripe will

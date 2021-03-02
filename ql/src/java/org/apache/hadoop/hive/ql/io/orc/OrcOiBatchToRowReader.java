@@ -20,29 +20,28 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.AcidRecordReader;
-import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier.Field;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.io.BatchToRowReader;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.RecordReader;
 
 /** BatchToRowReader that returns the rows readable by ORC IOs. */
 public class OrcOiBatchToRowReader extends BatchToRowReader<OrcStruct, OrcUnion>
     implements AcidRecordReader<NullWritable, Object> {
 
-  private final RecordIdentifier recordIdentifier;
+  private final OrcRawRecordMerger.ReaderKey recordIdentifier;
   private boolean isNull;
 
   public OrcOiBatchToRowReader(RecordReader<NullWritable, VectorizedRowBatch> vrbReader,
       VectorizedRowBatchCtx vrbCtx, List<Integer> includedCols) {
     super(vrbReader, vrbCtx, includedCols);
-    this.recordIdentifier = new RecordIdentifier();
+    this.recordIdentifier = new OrcRawRecordMerger.ReaderKey();
     this.isNull = true;
   }
 
@@ -100,8 +99,12 @@ public class OrcOiBatchToRowReader extends BatchToRowReader<OrcStruct, OrcUnion>
   }
 
   @Override
-  public RecordIdentifier getRecordIdentifier() {
-    return this.isNull ? null : recordIdentifier;
+  protected void populateIsDeleted(BooleanWritable deleted) {
+    recordIdentifier.setDeleteEvent(deleted != null && deleted.get());
   }
 
+  @Override
+  public OrcRawRecordMerger.ReaderKey getRecordIdentifier() {
+    return this.isNull ? null : recordIdentifier;
+  }
 }

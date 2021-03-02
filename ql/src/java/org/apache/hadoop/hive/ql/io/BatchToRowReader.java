@@ -92,6 +92,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
   private int rowInBatch = 0;
 
   private final int rowIdIdx;
+  private final int rowIsDeletedIdx;
 
   public BatchToRowReader(RecordReader<NullWritable, VectorizedRowBatch> vrbReader,
       VectorizedRowBatchCtx vrbCtx, List<Integer> includedCols) {
@@ -113,6 +114,10 @@ public abstract class BatchToRowReader<StructType, UnionType>
     if (this.rowIdIdx >= 0) {
       included[rowIdIdx] = true;
     }
+    this.rowIsDeletedIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
+    if (this.rowIsDeletedIdx >= 0) {
+      included[rowIsDeletedIdx] = true;
+    }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Including the columns " + DebugUtils.toString(included));
     }
@@ -127,6 +132,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
   protected abstract void setUnion(UnionType unionObj, byte tag, Object object);
   protected abstract Object getUnionField(UnionType unionObj);
   protected abstract void populateRecordIdentifier(StructType o);
+  protected abstract void populateIsDeleted(BooleanWritable deleted);
 
   @Override
   public NullWritable createKey() {
@@ -158,6 +164,9 @@ public abstract class BatchToRowReader<StructType, UnionType>
     if (this.rowIdIdx >= 0) {
       populateRecordIdentifier(null);
     }
+    if (this.rowIsDeletedIdx >= 0) {
+      populateIsDeleted(null);
+    }
 
     StructType value = (StructType) previous;
     for (int i = 0; i < schema.size(); ++i) {
@@ -168,6 +177,8 @@ public abstract class BatchToRowReader<StructType, UnionType>
         if (i == rowIdIdx) {
           // Populate key
           populateRecordIdentifier((StructType) getStructCol(value, i));
+        } else if (i == rowIsDeletedIdx) {
+          populateIsDeleted((BooleanWritable) getStructCol(value, i));
         }
       } catch (Throwable t) {
         LOG.error("Error at row " + rowInBatch + "/" + batch.size + ", column " + i

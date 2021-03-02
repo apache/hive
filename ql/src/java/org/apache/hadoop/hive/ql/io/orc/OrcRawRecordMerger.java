@@ -109,6 +109,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       this.isDeleteEvent = isDelete;
     }
 
+    public void setDeleteEvent(boolean deleteEvent) {
+      isDeleteEvent = deleteEvent;
+    }
+
     @Override
     public boolean equals(Object other) {
       return super.equals(other) &&
@@ -1412,7 +1416,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   }
 
   @Override
-  public RecordIdentifier createKey() {
+  public OrcRawRecordMerger.ReaderKey createKey() {
     return new ReaderKey();
   }
 

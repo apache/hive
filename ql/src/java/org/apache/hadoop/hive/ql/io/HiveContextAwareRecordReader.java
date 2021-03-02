@@ -124,13 +124,10 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
         }
         else if(recordReader instanceof AcidInputFormat.AcidRecordReader) {
           //supports AcidInputFormat which do not use the KEY pass ROW__ID info
-          RecordIdentifier recordIdentifier = ((AcidInputFormat.AcidRecordReader) recordReader).getRecordIdentifier();
+          AcidInputFormat.AcidRecordReader acidRecordReader = (AcidInputFormat.AcidRecordReader) this.recordReader;
+          OrcRawRecordMerger.ReaderKey recordIdentifier = acidRecordReader.getRecordIdentifier();
           ioCxtRef.setRecordIdentifier(recordIdentifier);
-          if (recordIdentifier instanceof OrcRawRecordMerger.ReaderKey) {
-            ioCxtRef.setDeletedRecord(((OrcRawRecordMerger.ReaderKey) recordIdentifier).isDeleteEvent());
-          } else {
-            ioCxtRef.setDeletedRecord(false);
-          }
+          ioCxtRef.setDeletedRecord(recordIdentifier.isDeleteEvent());
         }
       }
       return retVal;
