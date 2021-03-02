@@ -64,7 +64,7 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
     // For the pure "case" function, extra processing needs to be done to turn
     // this into a "case-when" function.  So we can't find a matching signature
     // directly as we do in the base class.
-    return getCastFunction();
+    return getFunctionWithCasts();
   }
 
   @Override

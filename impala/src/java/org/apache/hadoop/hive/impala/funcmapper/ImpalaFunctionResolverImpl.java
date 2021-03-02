@@ -93,12 +93,16 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     // with arithmetic operators.
     ImpalaFunctionSignature candidate =
         ImpalaFunctionSignature.fetch(functionDetailsMap, func, argTypes, null);
-    if (candidate != null) {
+
+    // if the candidate has varargs, we always want to check if the arguments need to be
+    // cast.  The signature fetched will match the first <n> arguments, but we don't know
+    // if the variable part of the signature needs casting at this point.
+    if (candidate != null && !candidate.hasVarArgs()) {
       return candidate;
     }
 
     // No directly matching, so we try to retrieve a function to which we can cast.
-    return getCastFunction();
+    return getFunctionWithCasts();
   }
 
   public List<RexNode> getConvertedInputs(ImpalaFunctionSignature candidate) throws HiveException {
@@ -168,7 +172,11 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     return func + "(" + StringUtils.join(argTypes, ", ") + ")";
   }
 
-  protected ImpalaFunctionSignature getCastFunction() throws SemanticException {
+  /**
+   * Return the most optimal function signature that can resolve "this" object if
+   * casting is allowed.
+   */
+  protected ImpalaFunctionSignature getFunctionWithCasts() throws SemanticException {
     // castCandidates contains a list of potential functions that matches the name.
     // These candidates will have the same function name, but different operand/return types.
     List<ImpalaFunctionSignature> castCandidates = getCastCandidates(func);

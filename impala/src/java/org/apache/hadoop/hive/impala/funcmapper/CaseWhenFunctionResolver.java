@@ -70,7 +70,7 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
     }
 
     // No directly matching, so we try to retrieve a function to which we can cast.
-    return getCastFunction();
+    return getFunctionWithCasts();
   }
 
 
