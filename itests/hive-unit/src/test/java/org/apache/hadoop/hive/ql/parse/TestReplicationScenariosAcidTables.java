@@ -194,7 +194,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(loadMetadataFilePath)));
     String line = reader.readLine();
     assertTrue(line != null && reader.readLine() == null);
-    if(reader != null)  reader.close();
+    if (reader != null) {
+      reader.close();
+    }
     return Long.parseLong(line);
   }
 
