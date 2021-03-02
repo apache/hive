@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -256,9 +257,20 @@ public class ParallelEdgeFixer extends Transform {
   public static Optional<Set<String>> colMappingInverseKeys(ReduceSinkOperator rs) {
     Map<String, String> ret = new HashMap<String, String>();
     Map<String, ExprNodeDesc> exprMap = rs.getColumnExprMap();
+    Set<String> neededColumns = new HashSet<String>();
     try {
       for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
-        ret.put(extractColumnName(e.getValue()), e.getKey());
+        String columnName = extractColumnName(e.getValue());
+        if (rs.getSchema().getColumnInfo(e.getKey()) == null) {
+          // ignore incorrectly mapped columns (if there's any) - but require its input to be present
+          neededColumns.add(columnName);
+        } else {
+          ret.put(columnName, e.getKey());
+        }
+      }
+      neededColumns.removeAll(ret.keySet());
+      if (!neededColumns.isEmpty()) {
+        throw new SemanticException("There is no way to compute: " + neededColumns);
       }
       return Optional.of(new TreeSet<>(ret.values()));
     } catch (SemanticException e) {
