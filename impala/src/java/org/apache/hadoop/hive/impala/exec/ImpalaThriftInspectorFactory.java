@@ -52,8 +52,9 @@ public class ImpalaThriftInspectorFactory {
                 return new ImpalaThriftCharInspector();
             case BYTE: // tinyint
                 return new ImpalaThriftByteInspector();
+            case VOID: // null
+                return new ImpalaThriftVoidInspector();
             case UNKNOWN: // Not transmitted
-            case VOID: // Not transmitted
             case INTERVAL_YEAR_MONTH: // Not transmitted
             case INTERVAL_DAY_TIME: // Not transmitted
             case TIMESTAMPLOCALTZ: // Impala does not support timestamp with local timezone
