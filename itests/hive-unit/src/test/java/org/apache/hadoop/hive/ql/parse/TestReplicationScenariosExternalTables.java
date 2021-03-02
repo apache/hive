@@ -1373,7 +1373,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     primary.run("drop database if exists " + sparkDbName + " cascade");
   }
 
-<<<<<<< HEAD
   @Test
   public void testDatabaseLevelCopyLazy() throws Throwable {
     testDatabaseLevelCopy(true);
@@ -1461,8 +1460,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Check the task copied post bootstrap, It should have the database loc,
     // the table 'a' since that is outside of the default location, and the
     // 'c', since its partition is out of the default location.
-    assertExternalFileInfo(Arrays.asList(primaryDbName.toLowerCase(), "a", "c"),
-        tuple.dumpLocation, primaryDbName, false);
+    assertExternalFileList(Arrays.asList(primaryDbName.toLowerCase(), "a", "c"),
+        tuple.dumpLocation);
 
     // Add more data to tables and do a incremental run and create another
     // tables one inside and other outside default location.
@@ -1517,9 +1516,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // New table in the warehouse shouldn't be there but the table created
     // outside should be there, apart from the ones in the previous run.
 
-    assertExternalFileInfo(
+    assertExternalFileList(
         Arrays.asList(primaryDbName.toLowerCase(), "a", "c", "newout"),
-        tuple.dumpLocation, true);
+        tuple.dumpLocation);
   }
 
   @Test
@@ -1567,8 +1566,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("select place from c where country='france'")
         .verifyResult("paris");
 
-    assertExternalFileInfo(Arrays.asList("a", "b", "c"), tuple.dumpLocation,
-        primaryDbName, false);
+    assertExternalFileList(Arrays.asList("a", "b", "c"), tuple.dumpLocation);
 
     // Add more data to tables and do a incremental run and create another
     // tables one inside and other outside default location.
@@ -1607,9 +1605,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("select id from newout")
         .verifyResult("2");
 
-    assertExternalFileInfo(Arrays
+    assertExternalFileList(Arrays
             .asList("a", "b", "c", "newin", "newout"),
-        tuple.dumpLocation, true);
+        tuple.dumpLocation);
   }
 
   private void assertExternalFileList(List<String> expected, String dumplocation)

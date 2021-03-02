@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -69,6 +70,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_HIVE_BASE_DIR;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -1841,13 +1843,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     //NS replacement parameters has no effect when data is also copied to staging
     clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
     clause.add("'" + HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY + "'='false'");
-    primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
             .run("create table table1 (i String)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
             .dump(primaryDbName, clause);
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -1855,9 +1859,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("select * from table1")
             .verifyResults(new String[] {"1", "2"});
 
-    primary.run("use " + primaryDbName)
+    tuple = primary.run("use " + primaryDbName)
             .run("insert into table1 values (3)")
             .dump(primaryDbName, clause);
+    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
+            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -1866,7 +1872,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[]{"1", "2", "3"});
 
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
-    primary.run("use " + primaryDbName)
+    tuple = primary.run("use " + primaryDbName)
             .run("create external table ext_table1 (id int)")
             .run("insert into ext_table1 values (3)")
             .run("insert into ext_table1 values (4)")
@@ -1878,7 +1884,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.123",
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
-
+    assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -2273,6 +2279,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"
             + NS_REMOTE + "'");
     return withClause;
+  }
+
+  private void assertFalseExternalFileList(Path externalTableFileList)
+          throws IOException {
+    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
+    Assert.assertFalse(fileSystem.exists(externalTableFileList));
   }
 
   /*
