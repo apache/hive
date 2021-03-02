@@ -57,7 +57,7 @@ public class AckWork implements Serializable {
     this.preAckTasks = preAckTasks;
   }
 
-  public List<PreAckTask> getPreAckTasks(){
+  public List<PreAckTask> getPreAckTasks() {
     return this.preAckTasks;
   }
 }

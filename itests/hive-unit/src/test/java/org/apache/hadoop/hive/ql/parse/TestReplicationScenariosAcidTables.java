@@ -165,16 +165,17 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testNotificationFromLoadMetadataAck() throws Throwable{
-    long previousLoadNotificationID = 0, currentLoadNotificationID, currentNotificationID;
+  public void testNotificationFromLoadMetadataAck() throws Throwable {
+    long previousLoadNotificationID = 0;
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName)
             .verifyResults(new String[] {});
-    currentLoadNotificationID = fetchNotificationIDFromDump(new Path(bootstrapDump.dumpLocation));
-    currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
-    assertTrue(currentLoadNotificationID > previousLoadNotificationID && currentNotificationID > currentLoadNotificationID);
+    long currentLoadNotificationID = fetchNotificationIDFromDump(new Path(bootstrapDump.dumpLocation));
+    long currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
+    assertTrue(currentLoadNotificationID > previousLoadNotificationID);
+    assertTrue(currentNotificationID > currentLoadNotificationID);
     previousLoadNotificationID = currentLoadNotificationID;
     WarehouseInstance.Tuple incrementalDump1 = primary.run("insert into t1 values (1)")
             .dump(primaryDbName);
@@ -182,11 +183,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[] {});
     currentLoadNotificationID = fetchNotificationIDFromDump(new Path(incrementalDump1.dumpLocation));
     currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
-    assertTrue(currentLoadNotificationID > previousLoadNotificationID && currentNotificationID > currentLoadNotificationID);
+    assertTrue(currentLoadNotificationID > previousLoadNotificationID);
+    assertTrue(currentNotificationID > currentLoadNotificationID);
   }
 
-  private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception{
-    Path loadMetadataFilePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR + File.separator + ReplAck.LOAD_METADATA);
+  private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception {
+    Path hiveDumpDir = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR.toString());
+    Path loadMetadataFilePath = new Path(hiveDumpDir, ReplAck.LOAD_METADATA.toString());
     FileSystem fs = dumpLocation.getFileSystem(conf);
     BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(loadMetadataFilePath)));
     String line = reader.readLine();
