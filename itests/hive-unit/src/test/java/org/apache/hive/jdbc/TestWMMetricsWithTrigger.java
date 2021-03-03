@@ -187,6 +187,7 @@ public class TestWMMetricsWithTrigger {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
+
     // Run Query with Kill Trigger in place
     runQueryWithTrigger(10);
 
