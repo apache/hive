@@ -116,7 +116,7 @@ FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00.0 US/Pacific	-64.0	-16373.0	-64	-16373	-1073279343	-2147311592
+1969-01-01 00:00:00 US/Pacific	-64.0	-16373.0	-64	-16373	-1073279343	-2147311592
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
@@ -157,7 +157,7 @@ FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00.0 US/Pacific	79.553	9763215.5639	62	16370	1073680599	2145498388
+1969-01-01 00:00:00 US/Pacific	79.553	9763215.5639	62	16370	1073680599	2145498388
 PREHOOK: query: EXPLAIN SELECT cstring1, SUM(cdouble) as s FROM druid_table_alltypesorc GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
