@@ -108,8 +108,7 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
     }
 
     // Now output this timestamp's millis value to the equivalent toTz.
-    Timestamp result = Timestamp.valueOf(
-        fromTs.getZonedDateTime().withZoneSameInstant(toTz.toZoneId()).toLocalDateTime().toString());
+    Timestamp result = Timestamp.valueOf(fromTs.getZonedDateTime().withZoneSameInstant(toTz.toZoneId()));
     return result;
   }
 

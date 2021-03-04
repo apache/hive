@@ -38,50 +38,38 @@ public final class HiveDateTimeFormatter {
 
   public static final DateTimeFormatter HIVE_LOCAL_DATE =
       new DateTimeFormatterBuilder()
-          .appendValue(YEAR, 1, 10, SignStyle.NORMAL)
-          .appendLiteral('-')
-          .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NOT_NEGATIVE)
-          .appendLiteral('-')
-          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE)
-          .toFormatter()
-          .withChronology(IsoChronology.INSTANCE)
-          .withResolverStyle(ResolverStyle.LENIENT);
+      .appendValue(YEAR, 1, 10, SignStyle.NORMAL)
+      .appendLiteral('-')
+      .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NOT_NEGATIVE)
+      .appendLiteral('-')
+      .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE)
+      .toFormatter()
+      .withChronology(IsoChronology.INSTANCE)
+      .withResolverStyle(ResolverStyle.STRICT);
 
   // Minute/Second are optional
   public static final DateTimeFormatter HIVE_LOCAL_TIME =
       new DateTimeFormatterBuilder()
-          .appendValue(HOUR_OF_DAY, 1, 2, SignStyle.NOT_NEGATIVE)
-          .optionalStart()
-          .appendLiteral(':')
-          .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NOT_NEGATIVE)
-          .optionalStart()
-          .appendLiteral(':')
-          .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NOT_NEGATIVE)
-          .optionalStart()
-          .appendFraction(NANO_OF_SECOND, 0, 9, true)
-          .toFormatter()
-          .withResolverStyle(ResolverStyle.STRICT);
+         .appendValue(HOUR_OF_DAY, 1, 2, SignStyle.NOT_NEGATIVE)
+         .appendLiteral(':')
+         .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NOT_NEGATIVE)
+         .optionalStart()
+         .appendLiteral(':')
+         .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NOT_NEGATIVE)
+         .optionalStart()
+         .appendFraction(NANO_OF_SECOND, 0, 9, true)
+         .toFormatter()
+         .withResolverStyle(ResolverStyle.STRICT);
 
-  // T or ' '
   public static final DateTimeFormatter HIVE_LOCAL_DATE_TIME = 
-      new DateTimeFormatterBuilder()
-          .parseCaseInsensitive()
-          .append(HIVE_LOCAL_DATE)
-          .optionalStart()
-          .optionalStart()
-          .appendLiteral(' ')
-          .optionalEnd()
-          .optionalStart()
-          .appendLiteral('T')
-          .optionalEnd()
-          .optionalStart()
-          .appendLiteral(' ')
-          .optionalEnd()
-          .appendOptional(HIVE_LOCAL_TIME)
-          .toFormatter()
-          .withResolverStyle(ResolverStyle.LENIENT)
-          .withChronology(IsoChronology.INSTANCE);
-
+     new DateTimeFormatterBuilder()
+         .parseCaseInsensitive()
+         .append(HIVE_LOCAL_DATE)
+         .appendLiteral(' ')
+         .append(HIVE_LOCAL_TIME)
+         .toFormatter()
+         .withResolverStyle(ResolverStyle.STRICT)
+         .withChronology(IsoChronology.INSTANCE);
 
   public static final DateTimeFormatter HIVE_DATE_TIME =
       new DateTimeFormatterBuilder()
@@ -108,15 +96,44 @@ public final class HiveDateTimeFormatter {
           .withResolverStyle(ResolverStyle.LENIENT)
           .withChronology(IsoChronology.INSTANCE);
 
-  public static final DateTimeFormatter HIVE_DATE_DEFAULT_TIME =
+  public static final DateTimeFormatter HIVE_DATE_TIME_ZONED =
       new DateTimeFormatterBuilder()
-          .append(HIVE_DATE_TIME)
+          .append(HIVE_LOCAL_DATE)
+          .optionalStart()
+          .appendLiteral(' ')
+          .append(HIVE_LOCAL_TIME)
+          .optionalEnd()
           .parseDefaulting(HOUR_OF_DAY, 0)
           .parseDefaulting(MINUTE_OF_HOUR, 0)
           .parseDefaulting(SECOND_OF_MINUTE, 0)
+          .optionalStart()
+          .optionalStart()
+          .appendOffsetId()
+          .optionalEnd()
+          .optionalStart()
+          .optionalStart()
+          .appendLiteral(' ')
+          .optionalEnd()
+          .optionalStart()
+          .appendLiteral('[')
+          .optionalEnd()
+          .parseCaseInsensitive()
+          .appendZoneRegionId()
+          .optionalStart()
+          .appendLiteral(']')
+          .optionalEnd()
+          .optionalEnd()
+          .optionalEnd()
           .toFormatter()
-          .withResolverStyle(ResolverStyle.LENIENT)
+          .withResolverStyle(ResolverStyle.STRICT)
           .withChronology(IsoChronology.INSTANCE);
+
+  public static final DateTimeFormatter HIVE_DATE_TIME_FORMATTER =
+      new DateTimeFormatterBuilder()
+          .append(DateTimeFormatter.ISO_DATE)
+          .appendLiteral(' ')
+          .append(DateTimeFormatter.ISO_LOCAL_TIME)
+          .toFormatter();
 
   private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
 

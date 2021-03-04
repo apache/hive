@@ -52,15 +52,10 @@ public class TestDateParser {
     checkValidCase("1678-09-10", Date.valueOf("1678-09-10"));
     checkValidCase("9999-10-11", Date.valueOf("9999-10-11"));
 
-    // Timestamp strings should parse ok
-    checkValidCase("2001-11-12 01:02:03", Date.valueOf("2001-11-12"));
-
-    // Leading spaces
+    // Extra spaces
     checkValidCase(" 1946-01-01", Date.valueOf("1946-01-01"));
-    checkValidCase(" 2001-11-12 01:02:03", Date.valueOf("2001-11-12"));
+    checkValidCase(" 2001-11-12 ", Date.valueOf("2001-11-12"));
 
-    checkValidCase("2001-13-12", Date.valueOf("2002-01-12"));
-    checkValidCase("2001-11-31", Date.valueOf("2001-12-01"));
   }
 
   @Test
@@ -70,5 +65,11 @@ public class TestDateParser {
     checkInvalidCase("abc");
     checkInvalidCase(" 2001 ");
     checkInvalidCase("a2001-01-01");
+    checkInvalidCase("a2001-01-01");
+
+    // MM-DD-YYYY (Common format but not Hive standard YYYY-MM-DD)
+    checkInvalidCase("12-01-2018");
+    checkInvalidCase("2001-13-12");
+    checkInvalidCase("2001-11-31");
   }
 }

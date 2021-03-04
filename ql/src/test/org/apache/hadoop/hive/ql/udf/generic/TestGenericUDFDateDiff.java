@@ -92,9 +92,9 @@ public class TestGenericUDFDateDiff {
 
     udf.initialize(arguments);
     DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritableV2(
-        Timestamp.valueOf(LocalDateTime.of(109, 06, 20, 0, 0, 0, 0).toString())));
+        Timestamp.valueOf(LocalDateTime.of(109, 06, 20, 0, 0, 0, 0))));
     DeferredObject valueObj2 = new DeferredJavaObject(new TimestampWritableV2(
-        Timestamp.valueOf(LocalDateTime.of(109, 06, 17, 0, 0, 0, 0).toString())));
+        Timestamp.valueOf(LocalDateTime.of(109, 06, 17, 0, 0, 0, 0))));
     DeferredObject[] args = {valueObj1, valueObj2};
     IntWritable output = (IntWritable) udf.evaluate(args);
 

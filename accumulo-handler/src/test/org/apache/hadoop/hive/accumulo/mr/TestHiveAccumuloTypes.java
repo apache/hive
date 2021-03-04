@@ -599,7 +599,7 @@ public class TestHiveAccumuloTypes {
     m.put(cfBytes, "date".getBytes(), baos.toByteArray());
 
     // timestamp
-    Timestamp timestampValue = Timestamp.valueOf(LocalDateTime.now().toString());
+    Timestamp timestampValue = Timestamp.valueOf(LocalDateTime.now());
     baos.reset();
     JavaTimestampObjectInspector timestampOI = (JavaTimestampObjectInspector) PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(TypeInfoFactory

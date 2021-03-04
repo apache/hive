@@ -49,7 +49,7 @@ public class TimestampTZUtil {
     final String s = HiveDateTimeFormatter.handleSingleDigitHourOffset(text.trim());
 
     TemporalAccessor accessor =
-        HiveDateTimeFormatter.HIVE_DATE_DEFAULT_TIME.parseBest(s, ZonedDateTime::from, LocalDateTime::from);
+        HiveDateTimeFormatter.HIVE_DATE_TIME_ZONED.parseBest(s, ZonedDateTime::from, LocalDateTime::from);
 
     final ZonedDateTime zonedDateTime;
 

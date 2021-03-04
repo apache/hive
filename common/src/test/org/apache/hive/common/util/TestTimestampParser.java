@@ -45,7 +45,7 @@ public class TestTimestampParser {
     Assert.assertEquals(Timestamp.valueOf("1970-01-01 00:00:00"),
         tsp.parseTimestamp("1970-01-01 00:00:00"));
 
-    Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59"),
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59"),
         tsp.parseTimestamp("1945-12-31 23:59:59"));
   }
 
@@ -76,10 +76,10 @@ public class TestTimestampParser {
     Assert.assertEquals(Timestamp.valueOf("2001-01-01 00:00:00.001"),
         tsp.parseTimestamp("2001-01-01T00:00:00.001"));
 
-    Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59.123"),
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.123"),
         tsp.parseTimestamp("1945-12-31T23:59:59.123"));
 
-    Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59.123"),
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.123"),
         tsp.parseTimestamp("1945-12-31T23:59:59.1234"));
 
     Assert.assertEquals(Timestamp.valueOf("1970-01-01 00:00:00"),
@@ -89,9 +89,6 @@ public class TestTimestampParser {
 
     Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.1234"),
         tsp.parseTimestamp("1945-12-31 23:59:59.1234"));
-
-    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.12345"),
-        tsp.parseTimestamp("1945-12-31T23:59:59.12345"));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -164,9 +161,6 @@ public class TestTimestampParser {
 
     Assert.assertEquals(Timestamp.valueOf("1970-05-06 00:00:07"),
         tsp.parseTimestamp("05:06:07"));
-
-    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59"),
-        tsp.parseTimestamp("1945-12-31T23:59:59"));
   }
 
   @Test

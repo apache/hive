@@ -21,11 +21,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
 import org.apache.hive.common.util.HiveDateTimeFormatter;
@@ -75,9 +72,6 @@ public class Date implements Comparable<Date> {
 
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
 
-  private static final DateTimeFormatter PRINT_FORMATTER =
-      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).toFormatter();
-
   private LocalDate localDate;
 
   private Date(LocalDate localDate) {
@@ -94,7 +88,7 @@ public class Date implements Comparable<Date> {
 
   @Override
   public String toString() {
-    return localDate.format(PRINT_FORMATTER);
+    return localDate.toString();
   }
 
   public int hashCode() {
@@ -148,10 +142,10 @@ public class Date implements Comparable<Date> {
   }
 
   /**
-   * Obtains an instance of Date from a text string such as 2021-02-22T09:39:27.
-   * Other supported formats are "2021-02-22T09:39:27Z", "2021-02-22 09:39:27",
-   * "2021-02-22T09:39:27+00:00", "2021-02-22". Any time information is simply
-   * dropped.
+   * DATE values describe a particular year/month/day, in the form YYYY-MM-DD.
+   * For example, DATE '2014-01-02'. Date types do not have a time of day
+   * component. The range of values supported for the Date type is 0000-01-01
+   * to 9999-12-31.
    *
    * @param text the text to parse, not null
    * @return The {@code Date} objects parsed from the text
@@ -161,21 +155,12 @@ public class Date implements Comparable<Date> {
    */
   public static Date valueOf(final String text) {
     final String s = Objects.requireNonNull(text).trim();
-    final LocalDate localDate;
-
     try {
-      TemporalAccessor temporalAccessor =
-          HiveDateTimeFormatter.HIVE_DATE_TIME.parseBest(s, LocalDateTime::from, LocalDate::from);
-
-      if (temporalAccessor instanceof LocalDate) {
-        localDate = (LocalDate) temporalAccessor;
-      } else {
-        localDate = ((LocalDateTime) temporalAccessor).toLocalDate();
-      }
+      final LocalDate localDate = LocalDate.parse(s, HiveDateTimeFormatter.HIVE_LOCAL_DATE);
+      return new Date(localDate);
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("Cannot create date, parsing error", e);
+      throw new IllegalArgumentException("Cannot create date, parsing error: " + text, e);
     }
-    return new Date(localDate);
   }
 
   public static Date ofEpochDay(int epochDay) {

@@ -53,8 +53,7 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
       SessionState ss = SessionState.get();
       ZonedDateTime dateTime = ss.getQueryCurrentTimestamp().atZone(
           ss.getConf().getLocalTimeZone());
-      currentTimestamp = new TimestampWritableV2(
-          Timestamp.valueOf(dateTime.toLocalDateTime().toString()));
+      currentTimestamp = new TimestampWritableV2(Timestamp.valueOf(dateTime));
     }
 
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;

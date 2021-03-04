@@ -75,7 +75,7 @@ public class TestGenericUDFDateSub {
 
     udf.initialize(arguments);
     DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritableV2(
-        Timestamp.valueOf(LocalDateTime.of(109, 06, 20, 4, 17, 52, 0).toString())));
+        Timestamp.valueOf(LocalDateTime.of(109, 06, 20, 4, 17, 52, 0))));
     DeferredObject valueObj2 = new DeferredJavaObject(Integer.valueOf(3));
     DeferredObject[] args = {valueObj1, valueObj2};
     DateWritableV2 output = (DateWritableV2) udf.evaluate(args);
