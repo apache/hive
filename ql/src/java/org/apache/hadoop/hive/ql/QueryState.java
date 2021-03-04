@@ -57,13 +57,16 @@ public class QueryState {
    */
   private long numModifiedRows = 0;
 
+  private final Map<String, String> confOverlay;
+
   static public final String USERID_TAG = "userid";
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
    */
-  private QueryState(HiveConf conf) {
+  private QueryState(HiveConf conf, Map<String, String> confOverlay) {
     this.queryConf = conf;
+    this.confOverlay = confOverlay;
   }
 
   // Get the query id stored in query specific config.
@@ -73,6 +76,10 @@ public class QueryState {
 
   public String getQueryString() {
     return queryConf.getQueryString();
+  }
+
+  public Map<String, String> getConfOverlay() {
+    return confOverlay;
   }
 
   public String getCommandType() {
@@ -272,7 +279,7 @@ public class QueryState {
         }
       }
 
-      QueryState queryState = new QueryState(queryConf);
+      QueryState queryState = new QueryState(queryConf, confOverlay);
       if (lineageState != null) {
         queryState.setLineageState(lineageState);
       }

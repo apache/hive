@@ -28,9 +28,14 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.impala.calcite.rules.HiveImpalaRules;
+import org.apache.hadoop.hive.impala.calcite.rules.HiveImpalaWindowingFixRule;
+import org.apache.hadoop.hive.impala.exec.ImpalaSessionManager;
+import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionHelper;
+import org.apache.hadoop.hive.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.impala.exec.ImpalaSessionManager;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 import org.apache.hadoop.hive.ql.engine.EngineQueryHelper;
 import org.apache.hadoop.hive.ql.engine.EngineSession;
@@ -38,18 +43,12 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.impala.calcite.rules.HiveImpalaRules;
-import org.apache.hadoop.hive.impala.calcite.rules.HiveImpalaWindowingFixRule;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.impala.funcmapper.ImpalaBuiltinsDb;
-import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionHelper;
-import org.apache.hadoop.hive.impala.node.ImpalaPlanRel;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.common.InternalException;
 import org.apache.impala.planner.PlanNode;
@@ -66,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,11 +78,13 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaQueryHelperImpl.class);
   private final EngineEventSequence timeline;
+  private final QueryState queryState;
 
   public ImpalaQueryHelperImpl(HiveConf conf, String dbname, String username, HiveTxnManager txnMgr,
-      Context ctx) throws SemanticException {
+      Context ctx, QueryState queryState) throws SemanticException {
     timeline = ctx.getTimeline();
     Preconditions.checkNotNull(timeline);
+    this.queryState = queryState;
     try {
       this.queryContext =
           new ImpalaQueryContext(conf, dbname, username, createQueryOptions(conf), txnMgr, ctx);
@@ -237,10 +239,18 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
     mgr.ensureCurrentMembership(session);
     timeline.markEvent("Set current executor membership");
 
+    Map<String, String> configurations = session.getSessionConfig();
+    if (queryState.getConfOverlay() != null && !queryState.getConfOverlay().isEmpty()) {
+      configurations = new LinkedHashMap<>(session.getSessionConfig());
+      // The conf overlay contains overrides for the session config to be used
+      // at execution time.
+      configurations.putAll(queryState.getConfOverlay());
+    }
+
     // Collect the option settings that are returned in the HS2 session
     // config and generate a comma separated string apply using FeSupport
     // http_addr is added by HS2 and will cause an error if not removed
-    String csvQueryOptions = session.getSessionConfig().entrySet().stream()
+    String csvQueryOptions = configurations.entrySet().stream()
         .filter(e -> !e.getKey().equals("http_addr"))
         .map(e -> e.getKey() + "=" + e.getValue())
         .collect(Collectors.joining(","));

@@ -22,6 +22,7 @@ import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HMSConverter;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
 import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 import org.apache.hadoop.hive.ql.engine.EngineQueryHelper;
@@ -45,7 +46,8 @@ public class NativeEngineCompileHelper implements EngineCompileHelper {
   }
 
   public EngineQueryHelper getQueryHelper(HiveConf conf, String dbname, String username,
-                                             HiveTxnManager txnMgr, Context ctx) throws SemanticException {
+                                             HiveTxnManager txnMgr, Context ctx,
+                                             QueryState queryState) throws SemanticException {
     return null;
   }
 

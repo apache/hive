@@ -291,7 +291,8 @@ public abstract class BaseSemanticAnalyzer {
       impalaHelper = isImpalaPlan(conf)
           ? EngineCompileHelper.getInstance(conf).getQueryHelper(conf,
              SessionState.get().getCurrentDatabase(),
-             StringUtils.defaultString(SessionState.get().getUserName()), getTxnMgr(), ctx)
+             StringUtils.defaultString(SessionState.get().getUserName()), getTxnMgr(), ctx,
+             queryState)
           : null;
     } catch (SemanticException e) {
       throw new RuntimeException(e);

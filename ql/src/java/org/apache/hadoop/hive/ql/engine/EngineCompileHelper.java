@@ -23,6 +23,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HMSConverter;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TaskCompiler;
@@ -41,7 +42,8 @@ public interface EngineCompileHelper {
   public EngineEventSequence getEventSequence(String event);
 
   public EngineQueryHelper getQueryHelper(HiveConf conf, String dbname, String username,
-                                             HiveTxnManager txnMgr, Context ctx) throws SemanticException;
+                                             HiveTxnManager txnMgr, Context ctx,
+                                             QueryState queryState) throws SemanticException;
 
   public RelDataTypeSystem getRelDataTypeSystem();
 
