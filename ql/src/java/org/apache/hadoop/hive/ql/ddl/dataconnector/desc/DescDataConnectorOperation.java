@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -40,7 +40,7 @@ public class DescDataConnectorOperation extends DDLOperation<DescDataConnectorDe
 
   @Override
   public int execute() throws HiveException {
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       DataConnector connector = context.getDb().getDataConnector(desc.getConnectorName());
       if (connector == null) {
         throw new HiveException(ErrorMsg.DATACONNECTOR_NOT_EXISTS, desc.getConnectorName());
@@ -51,7 +51,8 @@ public class DescDataConnectorOperation extends DDLOperation<DescDataConnectorDe
         params = new TreeMap<>(connector.getParameters());
       }
 
-      context.getFormatter().showDataConnectorDescription(outStream, connector.getName(), connector.getType(),
+      DescDataConnectorFormatter formatter = DescDataConnectorFormatter.getFormatter(context.getConf());
+      formatter.showDataConnectorDescription(outStream, connector.getName(), connector.getType(),
           connector.getUrl(), connector.getOwnerName(), connector.getOwnerType(), connector.getDescription(), params);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);

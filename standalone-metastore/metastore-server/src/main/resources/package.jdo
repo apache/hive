@@ -1608,6 +1608,7 @@
         <column name="NAME"/>
         <column name="DB_ID"/>
       </index>
+    </class>
     <class name="MDataConnector" table="DATACONNECTORS" identity-type="application" detachable="true">
        <field name="name" primary-key="true">
          <column name="NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>

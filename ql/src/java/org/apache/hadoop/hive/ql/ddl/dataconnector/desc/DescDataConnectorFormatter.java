@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.database.desc;
+package org.apache.hadoop.hive.ql.ddl.dataconnector.desc;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -34,48 +34,40 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Formats DESC DATABASES results.
+ * Formats DESC CONNECTOR results.
  */
-abstract class DescDatabaseFormatter {
-  static DescDatabaseFormatter getFormatter(HiveConf conf) {
+abstract class DescDataConnectorFormatter {
+  static DescDataConnectorFormatter getFormatter(HiveConf conf) {
     if (MetaDataFormatUtils.isJson(conf)) {
-      return new JsonDescDatabaseFormatter();
+      return new JsonDescDataConnectorFormatter();
     } else {
-      return new TextDescDatabaseFormatter();
+      return new TextDescDataConnectorFormatter();
     }
   }
 
-  abstract void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-      String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
-      String connectorName, String remoteDbName)
+  abstract void showDataConnectorDescription(DataOutputStream out, String connector, String type, String url,
+      String ownerName, PrincipalType ownerType, String comment, Map<String, String> params)
       throws HiveException;
 
   // ------ Implementations ------
 
-  static class JsonDescDatabaseFormatter extends DescDatabaseFormatter {
+  static class JsonDescDataConnectorFormatter extends DescDataConnectorFormatter {
     @Override
-    void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-        String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
-        String connectorName, String remoteDbName)
+    void showDataConnectorDescription(DataOutputStream out, String connector, String type, String url,
+        String ownerName, PrincipalType ownerType, String comment, Map<String, String> params)
         throws HiveException {
       MapBuilder builder = MapBuilder.create()
-          .put("database", database)
-          .put("comment", comment)
-          .put("location", location);
-      if (managedLocation != null) {
-        builder.put("managedLocation", managedLocation);
-      }
+          .put("connector", connector)
+          .put("type", type)
+          .put("url", url);
       if (ownerName != null) {
         builder.put("owner", ownerName);
       }
       if (ownerType != null) {
         builder.put("ownerType", ownerType.name());
       }
-      if (null != connectorName) {
-        builder.put("connector_name", connectorName);
-      }
-      if (null != remoteDbName) {
-        builder.put("remote_dbname", remoteDbName);
+      if (comment != null) {
+        builder.put("comment", comment);
       }
       if (MapUtils.isNotEmpty(params)) {
         builder.put("params", params);
@@ -84,25 +76,20 @@ abstract class DescDatabaseFormatter {
     }
   }
 
-  static class TextDescDatabaseFormatter extends DescDatabaseFormatter {
+  static class TextDescDataConnectorFormatter extends DescDataConnectorFormatter {
     @Override
-    void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-        String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
-        String connectorName, String remoteDbName)
+    void showDataConnectorDescription(DataOutputStream out, String connector, String type, String url,
+        String ownerName, PrincipalType ownerType, String comment, Map<String, String> params)
         throws HiveException {
       try {
-        out.write(database.getBytes(StandardCharsets.UTF_8));
+        out.write(connector.getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.tabCode);
-        if (comment != null) {
-          out.write(HiveStringUtils.escapeJava(comment).getBytes(StandardCharsets.UTF_8));
+        if (type != null) {
+          out.write(type.getBytes(StandardCharsets.UTF_8));
         }
         out.write(Utilities.tabCode);
-        if (location != null) {
-          out.write(location.getBytes(StandardCharsets.UTF_8));
-        }
-        out.write(Utilities.tabCode);
-        if (managedLocation != null) {
-          out.write(managedLocation.getBytes(StandardCharsets.UTF_8));
+        if (url != null) {
+          out.write(url.getBytes(StandardCharsets.UTF_8));
         }
         out.write(Utilities.tabCode);
         if (ownerName != null) {
@@ -113,12 +100,8 @@ abstract class DescDatabaseFormatter {
           out.write(ownerType.name().getBytes(StandardCharsets.UTF_8));
         }
         out.write(Utilities.tabCode);
-        if (connectorName != null) {
-          out.write(connectorName.getBytes(StandardCharsets.UTF_8));
-        }
-        out.write(Utilities.tabCode);
-        if (remoteDbName != null) {
-          out.write(remoteDbName.getBytes(StandardCharsets.UTF_8));
+        if (comment != null) {
+          out.write(HiveStringUtils.escapeJava(comment).getBytes(StandardCharsets.UTF_8));
         }
         out.write(Utilities.tabCode);
         if (MapUtils.isNotEmpty(params)) {
