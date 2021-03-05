@@ -713,19 +713,21 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     j = originalGroupCount; // because lookup in fieldsUsed is done using original group count
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
       if (fieldsUsed.get(j)) {
-        final ImmutableList<RexNode> args =
-            relBuilder.fields(
-                Mappings.apply2(inputMapping, aggCall.getArgList()));
-        final RexNode filterArg = aggCall.filterArg < 0 ? null
-            : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
         RelBuilder.AggCall newAggCall =
-            relBuilder.aggregateCall(aggCall.getAggregation(),
-                aggCall.isDistinct(), aggCall.isApproximate(),
-                filterArg, aggCall.name, args);
+            getNewAggCall(relBuilder, aggCall, inputMapping);
         mapping.set(j, updatedGroupCount +  newAggCallList.size());
         newAggCallList.add(newAggCall);
       }
       ++j;
+    }
+
+    // If both the new group by and new agg call lists are empty, keep at least 1
+    // agg call from the original list such that the RelBuilder can create a valid
+    // aggregate node.
+    if (newGroupSet.isEmpty() && newAggCallList.isEmpty()) {
+      assert aggregate.getAggCallList().size() > 0;
+      AggregateCall aggCall = aggregate.getAggCallList().get(0);
+      newAggCallList.add(getNewAggCall(relBuilder, aggCall, inputMapping));
     }
 
     final RelBuilder.GroupKey groupKey =
@@ -733,6 +735,20 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     relBuilder.aggregate(groupKey, newAggCallList);
 
     return result(relBuilder.build(), mapping);
+  }
+
+  private RelBuilder.AggCall getNewAggCall(RelBuilder relBuilder,
+      AggregateCall aggCall, Mapping inputMapping) {
+    final ImmutableList<RexNode> args =
+        relBuilder.fields(
+            Mappings.apply2(inputMapping, aggCall.getArgList()));
+    final RexNode filterArg = aggCall.filterArg < 0 ? null
+        : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
+    RelBuilder.AggCall newAggCall =
+        relBuilder.aggregateCall(aggCall.getAggregation(),
+            aggCall.isDistinct(), aggCall.isApproximate(),
+            filterArg, aggCall.name, args);
+    return newAggCall;
   }
 
   /**
