@@ -48,7 +48,7 @@ public class TestGenericUDFDateAdd {
     ObjectInspector[] arguments = {valueOI1, valueOI2};
 
     udf.initialize(arguments);
-    DeferredObject valueObj1 = new DeferredJavaObject(new Text("2009-07-20 04:17:52"));
+    DeferredObject valueObj1 = new DeferredJavaObject(new Text("2009-07-20"));
     DeferredObject valueObj2 = new DeferredJavaObject(Integer.valueOf("2"));
     DeferredObject[] args = {valueObj1, valueObj2};
     DateWritableV2 output = (DateWritableV2) udf.evaluate(args);
