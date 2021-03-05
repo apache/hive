@@ -66,7 +66,6 @@ public class TestGenericUDFDateFormat {
     runAndVerifyStr("2015-04-08 10:30:45", fmtText, "Wednesday", udf);
     runAndVerifyStr("2015-04-09 10:30", fmtText, "Thursday", udf);
     runAndVerifyStr("2015-04-10 10:30:45.123", fmtText, "Friday", udf);
-    runAndVerifyStr("2015-04-11T10:30:45", fmtText, "Saturday", udf);
     runAndVerifyStr("2015-04-12 10", fmtText, "Sunday", udf);
   }
 
@@ -80,8 +79,8 @@ public class TestGenericUDFDateFormat {
     ObjectInspector[] arguments = {valueOI0, valueOI1};
 
     udf.initialize(arguments);
-    runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
-    runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
+    runAndVerifyStr("2016-02-29 10:30:45", fmtText, "Monday", udf);
+    runAndVerifyStr("2014-01-30", fmtText, "Thursday", udf);
     runAndVerifyStr("01/14/2014", fmtText, null, udf);
     runAndVerifyStr(null, fmtText, null, udf);
   }

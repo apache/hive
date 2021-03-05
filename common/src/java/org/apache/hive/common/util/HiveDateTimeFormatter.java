@@ -51,6 +51,7 @@ public final class HiveDateTimeFormatter {
   public static final DateTimeFormatter HIVE_LOCAL_TIME =
       new DateTimeFormatterBuilder()
          .appendValue(HOUR_OF_DAY, 1, 2, SignStyle.NOT_NEGATIVE)
+         .optionalStart()
          .appendLiteral(':')
          .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NOT_NEGATIVE)
          .optionalStart()

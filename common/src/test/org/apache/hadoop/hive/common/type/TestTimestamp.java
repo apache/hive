@@ -57,6 +57,13 @@ public class TestTimestamp {
     assertEquals("2012-10-10 20:32:00", t.toString());
   }
 
+  @Test
+  public void testValueOfMissingMinutes() {
+    // Seconds are optional - default value is "00:00"
+    Timestamp t = Timestamp.valueOf("2012-10-10 20");
+    assertEquals("2012-10-10 20:00:00", t.toString());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testValueOfIso8601() {
     // Hive does not natively support ISO 8601 format
