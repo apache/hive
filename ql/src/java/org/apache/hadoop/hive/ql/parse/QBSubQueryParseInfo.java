@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.calcite.rel.RelNode;
+
 import static org.apache.hadoop.hive.ql.parse.SubQueryUtils.buildSQOperator;
 
 public class QBSubQueryParseInfo {
@@ -61,6 +63,7 @@ public class QBSubQueryParseInfo {
   private final boolean hasAggregateExprs;
   private final boolean noImplicityGby;
   private final QBSubQuery.SubQueryTypeDef operator;
+  private RelNode subQueryRelNode;
 
   public boolean hasFullAggregate() {
     return hasAggregateExprs && noImplicityGby;
@@ -68,6 +71,15 @@ public class QBSubQueryParseInfo {
 
   public QBSubQuery.SubQueryTypeDef getOperator() {
     return operator;
+  }
+
+  public QBSubQueryParseInfo setSubQueryRelNode(RelNode subQueryRelNode) {
+    this.subQueryRelNode = subQueryRelNode;
+    return this;
+  }
+
+  public RelNode getSubQueryRelNode() {
+    return subQueryRelNode;
   }
 }
 
