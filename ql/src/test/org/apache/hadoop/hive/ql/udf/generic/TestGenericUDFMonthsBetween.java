@@ -88,33 +88,14 @@ public class TestGenericUDFMonthsBetween {
     runTestStr("2000-06-01", "2004-07-01", -49.0, udf);
     // test February of non-leap year, 2/28
     runTestStr("2002-02-28", "2002-03-01", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-    runTestStr("2002-02-31", "2002-03-01", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestStr("2012-02-29", "2012-03-01", -0.09677419, udf);
-    // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
-    // 2/31 to 2/29
-    runTestStr("2012-02-31", "2012-03-01", 0.03225806, udf);
-
-    // time part
-    // test that there is no lead second adjustment
-    runTestStr("1976-01-01 00:00:00", "1975-12-31 23:59:59", 0.00000037, udf);
-    // test UDF considers the difference in time components date1 and date2
-    runTestStr("1997-02-28 10:30:00", "1996-10-30", 3.94959677, udf);
-    runTestStr("1996-10-30", "1997-02-28 10:30:00", -3.94959677, udf);
-    runTestStr("1995-02-02 10:39", "1995-01-01", 1.04657258, udf);
-    runTestStr("1995-02-02", "1995-01-01 10:39", 1.01794355, udf);
 
     // if both are last day of the month then time part should be ignored
     runTestStr("2002-03-31", "2002-02-28", 1.0, udf);
-    runTestStr("2002-03-31", "2002-02-28 10:30:00", 1.0, udf);
-    runTestStr("2002-03-31 10:30:00", "2002-02-28", 1.0, udf);
     // if the same day of the month then time part should be ignored
     runTestStr("2002-03-24", "2002-02-24", 1.0, udf);
-    runTestStr("2002-03-24", "2002-02-24 10:30:00", 1.0, udf);
-    runTestStr("2002-03-24 10:30:00", "2002-02-24", 1.0, udf);
 
     // no leading 0 for month and day should work
     runTestStr("1995-02-2", "1995-1-01", 1.03225806, udf);
@@ -133,66 +114,6 @@ public class TestGenericUDFMonthsBetween {
 
     //Test for Julian vs Gregorian dates
     runTestStr("1582-10-05", "1582-11-05", -1., udf);
-  }
-
-
-
-  @Test
-  public void testMonthsBetweenForTimestamp() throws HiveException {
-    GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
-    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-    ObjectInspector[] arguments = { valueOI1, valueOI2 };
-    udf.initialize(arguments);
-
-    testMonthsBetweenForTimestamp(udf);
-
-    // Run without round-off
-    GenericUDFMonthsBetween udfWithoutRoundOff = new GenericUDFMonthsBetween();
-    ObjectInspector vOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-    ObjectInspector vOI2 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-    ObjectInspector vOI3 = PrimitiveObjectInspectorFactory
-        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.booleanTypeInfo,
-            new BooleanWritable(false));
-    ObjectInspector[] args = { vOI1, vOI2, vOI3 };
-    udfWithoutRoundOff.initialize(args);
-
-    testMonthsBetweenForTimestamp(udfWithoutRoundOff);
-  }
-
-  public void testMonthsBetweenForTimestamp(GenericUDFMonthsBetween udf) throws HiveException {
-    // test month diff with fraction considering time components
-    runTestTs("1995-02-02 00:00:00", "1995-01-01 00:00:00", 1.03225806, udf);
-    runTestTs("2003-07-17 00:00:00", "2005-07-06 00:00:00", -23.64516129, udf);
-    // test the last day of month
-    runTestTs("2001-06-30 00:00:00", "2000-05-31 00:00:00", 13.0, udf);
-    // test the same day of month
-    runTestTs("2000-06-01 00:00:00", "2004-07-01 00:00:00", -49.0, udf);
-    // test February of non-leap year, 2/28
-    runTestTs("2002-02-28 00:00:00", "2002-03-01 00:00:00", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-
-    // test Feb of leap year, 2/29
-    runTestTs("2012-02-29 00:00:00", "2012-03-01 00:00:00", -0.09677419, udf);
-
-    // time part
-    // test that there is no lead second adjustment
-    runTestTs("1976-01-01 00:00:00", "1975-12-31 23:59:59", 0.00000037, udf);
-    // test UDF considers the difference in time components date1 and date2
-    runTestTs("1997-02-28 10:30:00", "1996-10-30 00:00:00", 3.94959677, udf);
-    runTestTs("1996-10-30 00:00:00", "1997-02-28 10:30:00", -3.94959677, udf);
-
-    // if both are last day of the month then time part should be ignored
-    runTestTs("2002-03-31 00:00:00", "2002-02-28 00:00:00", 1.0, udf);
-    runTestTs("2002-03-31 00:00:00", "2002-02-28 10:30:00", 1.0, udf);
-    runTestTs("2002-03-31 10:30:00", "2002-02-28 00:00:00", 1.0, udf);
-    // if the same day of the month then time part should be ignored
-    runTestTs("2002-03-24 00:00:00", "2002-02-24 00:00:00", 1.0, udf);
-    runTestTs("2002-03-24 00:00:00", "2002-02-24 10:30:00", 1.0, udf);
-    runTestTs("2002-03-24 10:30:00", "2002-02-24 00:00:00", 1.0, udf);
-
-    runTestTs("2003-04-23 23:59:59", "2003-03-24 00:00:00", 0.99999963, udf);
   }
 
   @Test
@@ -228,15 +149,10 @@ public class TestGenericUDFMonthsBetween {
     runTestDt("2000-06-01", "2004-07-01", -49.0, udf);
     // test February of non-leap year, 2/28
     runTestDt("2002-02-28", "2002-03-01", -0.12903226, udf);
-    // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
-    // from 2/31 to 2/28
-    runTestDt("2002-02-31", "2002-03-01", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestDt("2012-02-29", "2012-03-01", -0.09677419, udf);
-    // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
-    // 2/31 to 2/29
-    runTestDt("2012-02-31", "2012-03-01", 0.03225806, udf);
+
     // Test with null args
     runTestDt(null, "2002-03-01", null, udf);
     runTestDt("2002-02-28", null, null, udf);

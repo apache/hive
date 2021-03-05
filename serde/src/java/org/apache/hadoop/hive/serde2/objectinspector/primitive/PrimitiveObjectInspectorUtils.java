@@ -1256,7 +1256,7 @@ public final class PrimitiveObjectInspectorUtils {
 
     try {
       return TimestampUtils.stringToTimestamp(s);
-    } catch (IllegalArgumentException e) {
+    } catch (Exception e) {
       return null;
     }
   }
