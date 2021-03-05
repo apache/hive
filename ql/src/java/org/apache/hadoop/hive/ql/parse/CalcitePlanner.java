@@ -1469,20 +1469,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
   }
 
-  private ASTNode getRowDeletedNode(String tableName) {
-    ASTNode dotRowDeletedNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.DOT, ".");
-    ASTNode columnTokRowDeleteNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
-    ASTNode rowDeletedNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.Identifier, VirtualColumn.ROWISDELETED.getName());
-    ASTNode tableNameNodeLeftInput = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.Identifier, tableName);
-    ParseDriver.adaptor.addChild(dotRowDeletedNode, columnTokRowDeleteNode);
-    ParseDriver.adaptor.addChild(dotRowDeletedNode, rowDeletedNode);
-    ParseDriver.adaptor.addChild(columnTokRowDeleteNode, tableNameNodeLeftInput);
-    return dotRowDeletedNode;
-  }
-
   private void fixUpASTNoAggregateIncrementalRebuild(ASTNode newAST) throws SemanticException {
     // Replace INSERT OVERWRITE by INSERT INTO
     // AST tree will have this shape:
