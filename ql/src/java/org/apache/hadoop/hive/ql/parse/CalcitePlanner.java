@@ -108,6 +108,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
@@ -122,6 +123,8 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.dialect.HiveSqlDialect;
+import org.apache.calcite.sql.fun.SqlQuantifyOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
@@ -301,6 +304,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -348,6 +352,7 @@ import javax.sql.DataSource;
 import static java.util.Collections.singletonList;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.copyMaterializationToNewCluster;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
+import static org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.convertSubquerySomeAll;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -3628,6 +3633,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           switch (next.getType()) {
           case HiveParser.TOK_SUBQUERY_EXPR:
+
+            QBSubQueryParseInfo parseInfo = QBSubQueryParseInfo.parse(next);
+            if (parseInfo.hasFullAggregate() && (
+                    parseInfo.getOperator().getType() == QBSubQuery.SubQueryType.EXISTS ||
+                            parseInfo.getOperator().getType() == QBSubQuery.SubQueryType.NOT_EXISTS)) {
+              subQueryToRelNode.put(next, null);
+              isSubQuery = true;
+              break;
+            }
 
             //disallow subqueries which HIVE doesn't currently support
             SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,

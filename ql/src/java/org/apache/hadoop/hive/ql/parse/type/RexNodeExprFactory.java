@@ -952,6 +952,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     // we will create subquery expression of boolean type
     switch (subqueryType) {
       case EXISTS: {
+        if (subqueryRel == null) {
+          return rexBuilder.makeLiteral(true);
+        }
         return RexSubQuery.exists(subqueryRel);
       }
       case IN: {
