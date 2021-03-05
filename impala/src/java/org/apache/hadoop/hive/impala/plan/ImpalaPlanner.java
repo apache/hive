@@ -520,7 +520,7 @@ public class ImpalaPlanner {
       Preconditions.checkState(sink instanceof HdfsTableSink, "Currently only HDFS table sinks are supported");
       Preconditions.checkNotNull(destination, "Invalid destination for Impala sink");
       HdfsTableSink s = (HdfsTableSink) sink;
-      s.setExternalStagingDir(destination.toUri().toString());
+      s.setExternalStagingDir(destination.toString());
       // This is how deep into a partition that FENG has precreated in destination.
       // Table Partitioning - (year, month, day)
       // I.E. hdfs://localhost/warehouse/test.db/test_table/year=2020/month=2
