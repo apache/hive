@@ -11,16 +11,16 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class Timestamp implements org.apache.thrift.TBase<Timestamp, Timestamp._Fields>, java.io.Serializable, Cloneable, Comparable<Timestamp> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Timestamp");
 
-  private static final org.apache.thrift.protocol.TField SECONDS_SINCE_EPOCH_FIELD_DESC = new org.apache.thrift.protocol.TField("secondsSinceEpoch", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField MICROSECONDS_SINCE_EPOCH_FIELD_DESC = new org.apache.thrift.protocol.TField("microsecondsSinceEpoch", org.apache.thrift.protocol.TType.I64, (short)1);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TimestampStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TimestampTupleSchemeFactory();
 
-  private long secondsSinceEpoch; // required
+  private long microsecondsSinceEpoch; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    SECONDS_SINCE_EPOCH((short)1, "secondsSinceEpoch");
+    MICROSECONDS_SINCE_EPOCH((short)1, "microsecondsSinceEpoch");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -36,8 +36,8 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SECONDS_SINCE_EPOCH
-          return SECONDS_SINCE_EPOCH;
+        case 1: // MICROSECONDS_SINCE_EPOCH
+          return MICROSECONDS_SINCE_EPOCH;
         default:
           return null;
       }
@@ -79,12 +79,12 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final int __SECONDSSINCEEPOCH_ISSET_ID = 0;
+  private static final int __MICROSECONDSSINCEEPOCH_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SECONDS_SINCE_EPOCH, new org.apache.thrift.meta_data.FieldMetaData("secondsSinceEpoch", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.MICROSECONDS_SINCE_EPOCH, new org.apache.thrift.meta_data.FieldMetaData("microsecondsSinceEpoch", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Timestamp.class, metaDataMap);
@@ -94,11 +94,11 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public Timestamp(
-    long secondsSinceEpoch)
+    long microsecondsSinceEpoch)
   {
     this();
-    this.secondsSinceEpoch = secondsSinceEpoch;
-    setSecondsSinceEpochIsSet(true);
+    this.microsecondsSinceEpoch = microsecondsSinceEpoch;
+    setMicrosecondsSinceEpochIsSet(true);
   }
 
   /**
@@ -106,7 +106,7 @@ package org.apache.hadoop.hive.metastore.api;
    */
   public Timestamp(Timestamp other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.secondsSinceEpoch = other.secondsSinceEpoch;
+    this.microsecondsSinceEpoch = other.microsecondsSinceEpoch;
   }
 
   public Timestamp deepCopy() {
@@ -115,39 +115,39 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
-    setSecondsSinceEpochIsSet(false);
-    this.secondsSinceEpoch = 0;
+    setMicrosecondsSinceEpochIsSet(false);
+    this.microsecondsSinceEpoch = 0;
   }
 
-  public long getSecondsSinceEpoch() {
-    return this.secondsSinceEpoch;
+  public long getMicrosecondsSinceEpoch() {
+    return this.microsecondsSinceEpoch;
   }
 
-  public void setSecondsSinceEpoch(long secondsSinceEpoch) {
-    this.secondsSinceEpoch = secondsSinceEpoch;
-    setSecondsSinceEpochIsSet(true);
+  public void setMicrosecondsSinceEpoch(long microsecondsSinceEpoch) {
+    this.microsecondsSinceEpoch = microsecondsSinceEpoch;
+    setMicrosecondsSinceEpochIsSet(true);
   }
 
-  public void unsetSecondsSinceEpoch() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SECONDSSINCEEPOCH_ISSET_ID);
+  public void unsetMicrosecondsSinceEpoch() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __MICROSECONDSSINCEEPOCH_ISSET_ID);
   }
 
-  /** Returns true if field secondsSinceEpoch is set (has been assigned a value) and false otherwise */
-  public boolean isSetSecondsSinceEpoch() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SECONDSSINCEEPOCH_ISSET_ID);
+  /** Returns true if field microsecondsSinceEpoch is set (has been assigned a value) and false otherwise */
+  public boolean isSetMicrosecondsSinceEpoch() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __MICROSECONDSSINCEEPOCH_ISSET_ID);
   }
 
-  public void setSecondsSinceEpochIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SECONDSSINCEEPOCH_ISSET_ID, value);
+  public void setMicrosecondsSinceEpochIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MICROSECONDSSINCEEPOCH_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case SECONDS_SINCE_EPOCH:
+    case MICROSECONDS_SINCE_EPOCH:
       if (value == null) {
-        unsetSecondsSinceEpoch();
+        unsetMicrosecondsSinceEpoch();
       } else {
-        setSecondsSinceEpoch((java.lang.Long)value);
+        setMicrosecondsSinceEpoch((java.lang.Long)value);
       }
       break;
 
@@ -157,8 +157,8 @@ package org.apache.hadoop.hive.metastore.api;
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case SECONDS_SINCE_EPOCH:
-      return getSecondsSinceEpoch();
+    case MICROSECONDS_SINCE_EPOCH:
+      return getMicrosecondsSinceEpoch();
 
     }
     throw new java.lang.IllegalStateException();
@@ -171,8 +171,8 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
-    case SECONDS_SINCE_EPOCH:
-      return isSetSecondsSinceEpoch();
+    case MICROSECONDS_SINCE_EPOCH:
+      return isSetMicrosecondsSinceEpoch();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -192,12 +192,12 @@ package org.apache.hadoop.hive.metastore.api;
     if (this == that)
       return true;
 
-    boolean this_present_secondsSinceEpoch = true;
-    boolean that_present_secondsSinceEpoch = true;
-    if (this_present_secondsSinceEpoch || that_present_secondsSinceEpoch) {
-      if (!(this_present_secondsSinceEpoch && that_present_secondsSinceEpoch))
+    boolean this_present_microsecondsSinceEpoch = true;
+    boolean that_present_microsecondsSinceEpoch = true;
+    if (this_present_microsecondsSinceEpoch || that_present_microsecondsSinceEpoch) {
+      if (!(this_present_microsecondsSinceEpoch && that_present_microsecondsSinceEpoch))
         return false;
-      if (this.secondsSinceEpoch != that.secondsSinceEpoch)
+      if (this.microsecondsSinceEpoch != that.microsecondsSinceEpoch)
         return false;
     }
 
@@ -208,7 +208,7 @@ package org.apache.hadoop.hive.metastore.api;
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(secondsSinceEpoch);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(microsecondsSinceEpoch);
 
     return hashCode;
   }
@@ -221,12 +221,12 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.valueOf(isSetSecondsSinceEpoch()).compareTo(other.isSetSecondsSinceEpoch());
+    lastComparison = java.lang.Boolean.valueOf(isSetMicrosecondsSinceEpoch()).compareTo(other.isSetMicrosecondsSinceEpoch());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSecondsSinceEpoch()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.secondsSinceEpoch, other.secondsSinceEpoch);
+    if (isSetMicrosecondsSinceEpoch()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.microsecondsSinceEpoch, other.microsecondsSinceEpoch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -252,8 +252,8 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("Timestamp(");
     boolean first = true;
 
-    sb.append("secondsSinceEpoch:");
-    sb.append(this.secondsSinceEpoch);
+    sb.append("microsecondsSinceEpoch:");
+    sb.append(this.microsecondsSinceEpoch);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -261,8 +261,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetSecondsSinceEpoch()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'secondsSinceEpoch' is unset! Struct:" + toString());
+    if (!isSetMicrosecondsSinceEpoch()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'microsecondsSinceEpoch' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -304,10 +304,10 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
-          case 1: // SECONDS_SINCE_EPOCH
+          case 1: // MICROSECONDS_SINCE_EPOCH
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.secondsSinceEpoch = iprot.readI64();
-              struct.setSecondsSinceEpochIsSet(true);
+              struct.microsecondsSinceEpoch = iprot.readI64();
+              struct.setMicrosecondsSinceEpochIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -325,8 +325,8 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(SECONDS_SINCE_EPOCH_FIELD_DESC);
-      oprot.writeI64(struct.secondsSinceEpoch);
+      oprot.writeFieldBegin(MICROSECONDS_SINCE_EPOCH_FIELD_DESC);
+      oprot.writeI64(struct.microsecondsSinceEpoch);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -345,14 +345,14 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, Timestamp struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeI64(struct.secondsSinceEpoch);
+      oprot.writeI64(struct.microsecondsSinceEpoch);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Timestamp struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.secondsSinceEpoch = iprot.readI64();
-      struct.setSecondsSinceEpochIsSet(true);
+      struct.microsecondsSinceEpoch = iprot.readI64();
+      struct.setMicrosecondsSinceEpochIsSet(true);
     }
   }
 

@@ -514,7 +514,7 @@ struct DateColumnStatsData {
 }
 
 struct Timestamp {
-1: required i64 secondsSinceEpoch
+1: required i64 microsecondsSinceEpoch
 }
 
 struct TimestampColumnStatsData {

@@ -883,9 +883,9 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
       cs.setNumNulls(csd.getTimestampStats().getNumNulls());
       Long lowVal = (csd.getTimestampStats().getLowValue() != null) ? csd.getTimestampStats().getLowValue()
-          .getSecondsSinceEpoch() : null;
+          .getMicrosecondsSinceEpoch() : null;
       Long highVal = (csd.getTimestampStats().getHighValue() != null) ? csd.getTimestampStats().getHighValue()
-          .getSecondsSinceEpoch() : null;
+          .getMicrosecondsSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());

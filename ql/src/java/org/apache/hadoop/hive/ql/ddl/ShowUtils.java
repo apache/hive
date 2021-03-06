@@ -221,7 +221,7 @@ public final class ShowUtils {
       return "";
     }
 
-    TimestampWritableV2 writableValue = new TimestampWritableV2(Timestamp.ofEpochSecond(val.getSecondsSinceEpoch()));
+    TimestampWritableV2 writableValue = new TimestampWritableV2(Timestamp.ofEpochSecond(val.getMicrosecondsSinceEpoch()));
     return writableValue.toString();
   }
 

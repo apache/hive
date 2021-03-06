@@ -5463,13 +5463,13 @@ class DateColumnStatsData(object):
 class Timestamp(object):
     """
     Attributes:
-     - secondsSinceEpoch
+     - microsecondsSinceEpoch
 
     """
 
 
-    def __init__(self, secondsSinceEpoch=None,):
-        self.secondsSinceEpoch = secondsSinceEpoch
+    def __init__(self, microsecondsSinceEpoch=None,):
+        self.microsecondsSinceEpoch = microsecondsSinceEpoch
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -5482,7 +5482,7 @@ class Timestamp(object):
                 break
             if fid == 1:
                 if ftype == TType.I64:
-                    self.secondsSinceEpoch = iprot.readI64()
+                    self.microsecondsSinceEpoch = iprot.readI64()
                 else:
                     iprot.skip(ftype)
             else:
@@ -5495,16 +5495,16 @@ class Timestamp(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('Timestamp')
-        if self.secondsSinceEpoch is not None:
-            oprot.writeFieldBegin('secondsSinceEpoch', TType.I64, 1)
-            oprot.writeI64(self.secondsSinceEpoch)
+        if self.microsecondsSinceEpoch is not None:
+            oprot.writeFieldBegin('microsecondsSinceEpoch', TType.I64, 1)
+            oprot.writeI64(self.microsecondsSinceEpoch)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.secondsSinceEpoch is None:
-            raise TProtocolException(message='Required field secondsSinceEpoch is unset!')
+        if self.microsecondsSinceEpoch is None:
+            raise TProtocolException(message='Required field microsecondsSinceEpoch is unset!')
         return
 
     def __repr__(self):
@@ -27742,7 +27742,7 @@ DateColumnStatsData.thrift_spec = (
 all_structs.append(Timestamp)
 Timestamp.thrift_spec = (
     None,  # 0
-    (1, TType.I64, 'secondsSinceEpoch', None, None, ),  # 1
+    (1, TType.I64, 'microsecondsSinceEpoch', None, None, ),  # 1
 )
 all_structs.append(TimestampColumnStatsData)
 TimestampColumnStatsData.thrift_spec = (

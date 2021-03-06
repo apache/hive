@@ -9502,8 +9502,8 @@ Timestamp::~Timestamp() noexcept {
 }
 
 
-void Timestamp::__set_secondsSinceEpoch(const int64_t val) {
-  this->secondsSinceEpoch = val;
+void Timestamp::__set_microsecondsSinceEpoch(const int64_t val) {
+  this->microsecondsSinceEpoch = val;
 }
 std::ostream& operator<<(std::ostream& out, const Timestamp& obj)
 {
@@ -9524,7 +9524,7 @@ uint32_t Timestamp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_secondsSinceEpoch = false;
+  bool isset_microsecondsSinceEpoch = false;
 
   while (true)
   {
@@ -9536,8 +9536,8 @@ uint32_t Timestamp::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->secondsSinceEpoch);
-          isset_secondsSinceEpoch = true;
+          xfer += iprot->readI64(this->microsecondsSinceEpoch);
+          isset_microsecondsSinceEpoch = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -9551,7 +9551,7 @@ uint32_t Timestamp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_secondsSinceEpoch)
+  if (!isset_microsecondsSinceEpoch)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -9561,8 +9561,8 @@ uint32_t Timestamp::write(::apache::thrift::protocol::TProtocol* oprot) const {
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("Timestamp");
 
-  xfer += oprot->writeFieldBegin("secondsSinceEpoch", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->secondsSinceEpoch);
+  xfer += oprot->writeFieldBegin("microsecondsSinceEpoch", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->microsecondsSinceEpoch);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -9572,20 +9572,20 @@ uint32_t Timestamp::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
 void swap(Timestamp &a, Timestamp &b) {
   using ::std::swap;
-  swap(a.secondsSinceEpoch, b.secondsSinceEpoch);
+  swap(a.microsecondsSinceEpoch, b.microsecondsSinceEpoch);
 }
 
 Timestamp::Timestamp(const Timestamp& other311) {
-  secondsSinceEpoch = other311.secondsSinceEpoch;
+  microsecondsSinceEpoch = other311.microsecondsSinceEpoch;
 }
 Timestamp& Timestamp::operator=(const Timestamp& other312) {
-  secondsSinceEpoch = other312.secondsSinceEpoch;
+  microsecondsSinceEpoch = other312.microsecondsSinceEpoch;
   return *this;
 }
 void Timestamp::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "Timestamp(";
-  out << "secondsSinceEpoch=" << to_string(secondsSinceEpoch);
+  out << "microsecondsSinceEpoch=" << to_string(microsecondsSinceEpoch);
   out << ")";
 }
 

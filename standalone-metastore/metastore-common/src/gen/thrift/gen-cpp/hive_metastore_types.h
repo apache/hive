@@ -4079,17 +4079,17 @@ class Timestamp : public virtual ::apache::thrift::TBase {
 
   Timestamp(const Timestamp&);
   Timestamp& operator=(const Timestamp&);
-  Timestamp() : secondsSinceEpoch(0) {
+  Timestamp() : microsecondsSinceEpoch(0) {
   }
 
   virtual ~Timestamp() noexcept;
-  int64_t secondsSinceEpoch;
+  int64_t microsecondsSinceEpoch;
 
-  void __set_secondsSinceEpoch(const int64_t val);
+  void __set_microsecondsSinceEpoch(const int64_t val);
 
   bool operator == (const Timestamp & rhs) const
   {
-    if (!(secondsSinceEpoch == rhs.secondsSinceEpoch))
+    if (!(microsecondsSinceEpoch == rhs.microsecondsSinceEpoch))
       return false;
     return true;
   }

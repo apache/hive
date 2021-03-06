@@ -135,8 +135,8 @@ public class StatObjectConverter {
            timestampStats.isSetNumNulls() ? timestampStats.getNumNulls() : null,
            timestampStats.isSetNumDVs() ? timestampStats.getNumDVs() : null,
            timestampStats.isSetBitVectors() ? timestampStats.getBitVectors() : null,
-           timestampStats.isSetLowValue() ? timestampStats.getLowValue().getSecondsSinceEpoch() : null,
-           timestampStats.isSetHighValue() ? timestampStats.getHighValue().getSecondsSinceEpoch() : null);
+           timestampStats.isSetLowValue() ? timestampStats.getLowValue().getMicrosecondsSinceEpoch() : null,
+           timestampStats.isSetHighValue() ? timestampStats.getHighValue().getMicrosecondsSinceEpoch() : null);
      }
      mColStats.setEngine(engine);
      return mColStats;
@@ -424,8 +424,8 @@ public class StatObjectConverter {
           timestampStats.isSetNumNulls() ? timestampStats.getNumNulls() : null,
           timestampStats.isSetNumDVs() ? timestampStats.getNumDVs() : null,
           timestampStats.isSetBitVectors() ? timestampStats.getBitVectors() : null,
-          timestampStats.isSetLowValue() ? timestampStats.getLowValue().getSecondsSinceEpoch() : null,
-          timestampStats.isSetHighValue() ? timestampStats.getHighValue().getSecondsSinceEpoch() : null);
+          timestampStats.isSetLowValue() ? timestampStats.getLowValue().getMicrosecondsSinceEpoch() : null,
+          timestampStats.isSetHighValue() ? timestampStats.getHighValue().getMicrosecondsSinceEpoch() : null);
     }
     mColStats.setEngine(engine);
     return mColStats;

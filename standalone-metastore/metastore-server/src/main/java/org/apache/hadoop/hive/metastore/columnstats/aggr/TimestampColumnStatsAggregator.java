@@ -240,7 +240,7 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
   }
 
   private long diff(Timestamp d1, Timestamp d2) {
-    return d1.getSecondsSinceEpoch() - d2.getSecondsSinceEpoch();
+    return d1.getMicrosecondsSinceEpoch() - d2.getMicrosecondsSinceEpoch();
   }
 
   private Timestamp min(Timestamp d1, Timestamp d2) {
@@ -274,8 +274,8 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
     double maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     long lowValue = 0;
-    long min = list.get(0).getValue().getLowValue().getSecondsSinceEpoch();
-    long max = list.get(list.size() - 1).getValue().getLowValue().getSecondsSinceEpoch();
+    long min = list.get(0).getValue().getLowValue().getMicrosecondsSinceEpoch();
+    long max = list.get(list.size() - 1).getValue().getLowValue().getMicrosecondsSinceEpoch();
     if (minInd == maxInd) {
       lowValue = min;
     } else if (minInd < maxInd) {
@@ -297,8 +297,8 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
     minInd = adjustedIndexMap.get(list.get(0).getKey());
     maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     long highValue = 0;
-    min = list.get(0).getValue().getHighValue().getSecondsSinceEpoch();
-    max = list.get(list.size() - 1).getValue().getHighValue().getSecondsSinceEpoch();
+    min = list.get(0).getValue().getHighValue().getMicrosecondsSinceEpoch();
+    max = list.get(list.size() - 1).getValue().getHighValue().getMicrosecondsSinceEpoch();
     if (minInd == maxInd) {
       highValue = min;
     } else if (minInd < maxInd) {

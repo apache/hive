@@ -22,7 +22,7 @@ class Timestamp
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'secondsSinceEpoch',
+            'var' => 'microsecondsSinceEpoch',
             'isRequired' => true,
             'type' => TType::I64,
         ),
@@ -31,13 +31,13 @@ class Timestamp
     /**
      * @var int
      */
-    public $secondsSinceEpoch = null;
+    public $microsecondsSinceEpoch = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['secondsSinceEpoch'])) {
-                $this->secondsSinceEpoch = $vals['secondsSinceEpoch'];
+            if (isset($vals['microsecondsSinceEpoch'])) {
+                $this->microsecondsSinceEpoch = $vals['microsecondsSinceEpoch'];
             }
         }
     }
@@ -63,7 +63,7 @@ class Timestamp
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::I64) {
-                        $xfer += $input->readI64($this->secondsSinceEpoch);
+                        $xfer += $input->readI64($this->microsecondsSinceEpoch);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -82,9 +82,9 @@ class Timestamp
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('Timestamp');
-        if ($this->secondsSinceEpoch !== null) {
-            $xfer += $output->writeFieldBegin('secondsSinceEpoch', TType::I64, 1);
-            $xfer += $output->writeI64($this->secondsSinceEpoch);
+        if ($this->microsecondsSinceEpoch !== null) {
+            $xfer += $output->writeFieldBegin('microsecondsSinceEpoch', TType::I64, 1);
+            $xfer += $output->writeI64($this->microsecondsSinceEpoch);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

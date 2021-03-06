@@ -2001,16 +2001,16 @@ end
 
 class Timestamp
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  SECONDSSINCEEPOCH = 1
+  MICROSECONDSSINCEEPOCH = 1
 
   FIELDS = {
-    SECONDSSINCEEPOCH => {:type => ::Thrift::Types::I64, :name => 'secondsSinceEpoch'}
+    MICROSECONDSSINCEEPOCH => {:type => ::Thrift::Types::I64, :name => 'microsecondsSinceEpoch'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field secondsSinceEpoch is unset!') unless @secondsSinceEpoch
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field microsecondsSinceEpoch is unset!') unless @microsecondsSinceEpoch
   end
 
   ::Thrift::Struct.generate_accessors self
