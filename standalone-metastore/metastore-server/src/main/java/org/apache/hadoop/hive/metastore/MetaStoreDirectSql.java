@@ -1783,11 +1783,15 @@ class MetaStoreDirectSql {
       MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
       List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
       List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(list.size());
-      for (Object[] row : list) {
-        colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
-        Deadline.checkTimeout();
+      try {
+        for (Object[] row : list) {
+          colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+              useDensityFunctionForNDVEstimation, ndvTuner));
+          Deadline.checkTimeout();
+        }
+      } finally {
+        query.closeAll();
       }
-      query.closeAll();
       return colStats;
     } else {
       // Extrapolation is needed for some columns.
@@ -1814,22 +1818,26 @@ class MetaStoreDirectSql {
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
       List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
-      for (Object[] row : list) {
-        String colName = (String) row[0];
-        String colType = (String) row[1];
-        // Extrapolation is not needed for this column if
-        // count(\"PARTITION_NAME\")==partNames.size()
-        // Or, extrapolation is not possible for this column if
-        // count(\"PARTITION_NAME\")<2
-        Long count = MetastoreDirectSqlUtils.extractSqlLong(row[2]);
-        if (count == partNames.size() || count < 2) {
-          noExtraColumnNames.add(colName);
-        } else {
-          extraColumnNameTypeParts.put(colName, new String[] { colType, String.valueOf(count) });
+      try {
+        for (Object[] row : list) {
+          String colName = (String) row[0];
+          String colType = (String) row[1];
+          // Extrapolation is not needed for this column if
+          // count(\"PARTITION_NAME\")==partNames.size()
+          // Or, extrapolation is not possible for this column if
+          // count(\"PARTITION_NAME\")<2
+          Long count = MetastoreDirectSqlUtils.extractSqlLong(row[2]);
+          if (count == partNames.size() || count < 2) {
+            noExtraColumnNames.add(colName);
+          } else {
+            extraColumnNameTypeParts
+                .put(colName, new String[] {colType, String.valueOf(count)});
+          }
+          Deadline.checkTimeout();
         }
-        Deadline.checkTimeout();
+      } finally {
+        query.closeAll();
       }
-      query.closeAll();
       // Extrapolation is not needed for columns noExtraColumnNames
       if (noExtraColumnNames.size() != 0) {
         queryText = commonPrefix + " and \"COLUMN_NAME\" in ("
@@ -1846,13 +1854,17 @@ class MetaStoreDirectSql {
           return Collections.emptyList();
         }
         list = MetastoreDirectSqlUtils.ensureList(qResult);
-        for (Object[] row : list) {
-          colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
-          Deadline.checkTimeout();
+        try {
+          for (Object[] row : list) {
+            colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+                useDensityFunctionForNDVEstimation, ndvTuner));
+            Deadline.checkTimeout();
+          }
+          end = doTrace ? System.nanoTime() : 0;
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        } finally {
+          query.closeAll();
         }
-        end = doTrace ? System.nanoTime() : 0;
-        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-        query.closeAll();
       }
       // Extrapolation is needed for extraColumnNames.
       // give a sequence number for all the partitions
@@ -2094,22 +2106,26 @@ class MetaStoreDirectSql {
         Math.min(list.size(), partNames.size()));
     String lastPartName = null;
     int from = 0;
-    for (int i = 0; i <= list.size(); ++i) {
-      boolean isLast = i == list.size();
-      String partName = isLast ? null : (String)list.get(i)[0];
-      if (!isLast && partName.equals(lastPartName)) {
-        continue;
-      } else if (from != i) {
-        ColumnStatisticsDesc csd = new ColumnStatisticsDesc(false, dbName, tableName);
-        csd.setCatName(catName);
-        csd.setPartName(lastPartName);
-        result.add(makeColumnStats(list.subList(from, i), csd, 1, engine));
+    try {
+      for (int i = 0; i <= list.size(); ++i) {
+        boolean isLast = i == list.size();
+        String partName = isLast ? null : (String) list.get(i)[0];
+        if (!isLast && partName.equals(lastPartName)) {
+          continue;
+        } else if (from != i) {
+          ColumnStatisticsDesc csd =
+              new ColumnStatisticsDesc(false, dbName, tableName);
+          csd.setCatName(catName);
+          csd.setPartName(lastPartName);
+          result.add(makeColumnStats(list.subList(from, i), csd, 1, engine));
+        }
+        lastPartName = partName;
+        from = i;
+        Deadline.checkTimeout();
       }
-      lastPartName = partName;
-      from = i;
-      Deadline.checkTimeout();
+    } finally {
+      b.closeAllQueries();
     }
-    b.closeAllQueries();
     return result;
   }
 
