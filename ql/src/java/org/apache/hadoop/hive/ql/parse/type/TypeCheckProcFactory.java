@@ -103,6 +103,7 @@ public class TypeCheckProcFactory<T> {
   static final HashMap<Integer, String> SPECIAL_UNARY_OPERATOR_TEXT_MAP;
   static final HashMap<Integer, String> CONVERSION_FUNCTION_TEXT_MAP;
   static final HashSet<Integer> WINDOWING_TOKENS;
+  private static final Object ALIAS_PLACEHOLDER = new Object();
 
   static {
     SPECIAL_UNARY_OPERATOR_TEXT_MAP = new HashMap<>();
@@ -218,6 +219,7 @@ public class TypeCheckProcFactory<T> {
     astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, getColumnExprProcessor());
 
     astNodeToProcessor.put(HiveParser.TOK_SUBQUERY_EXPR, getSubQueryExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_ALIAS, getValueAliasProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -1039,6 +1041,10 @@ public class TypeCheckProcFactory<T> {
           expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children);
         }
 
+        if (exprFactory.isSTRUCTFuncCallExpr(expr)) {
+          expr = exprFactory.replaceFieldNamesInStruct(expr, ctx.getColumnAliases());
+        }
+
         // If the function is deterministic and the children are constants,
         // we try to fold the expression to remove e.g. cast on constant
         if (ctx.isFoldExpr() && exprFactory.isFuncCallExpr(expr) &&
@@ -1367,6 +1373,10 @@ public class TypeCheckProcFactory<T> {
       List<T> children = new ArrayList<T>(
           expr.getChildCount() - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
+        if (nodeOutputs[ci] == ALIAS_PLACEHOLDER) {
+          continue;
+        }
+
         T nodeOutput = (T) nodeOutputs[ci];
         if (exprFactory.isExprsListExpr(nodeOutput)) {
           children.addAll(exprFactory.getExprChildren(nodeOutput));
@@ -1601,6 +1611,20 @@ public class TypeCheckProcFactory<T> {
       }
     }
     return BaseSemanticAnalyzer.unescapeIdentifier(funcText);
+  }
+
+  private SemanticNodeProcessor getValueAliasProcessor() {
+    return new ValueAliasProcessor();
+  }
+
+  public static class ValueAliasProcessor implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      ASTNode astNode = (ASTNode) nd;
+      ((TypeCheckCtx) procCtx).addColumnAlias(astNode.getChild(0).getText());
+      return ALIAS_PLACEHOLDER;
+    }
   }
 
 }

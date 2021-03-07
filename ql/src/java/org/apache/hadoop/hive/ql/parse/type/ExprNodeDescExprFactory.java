@@ -60,12 +60,12 @@ import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
@@ -902,5 +902,16 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     return FunctionRegistry.getFunctionInfo(funcName);
   }
 
+  @Override
+  protected ExprNodeDesc replaceFieldNamesInStruct(ExprNodeDesc expr, List<String> newFieldNames) {
+    if (newFieldNames.isEmpty()) {
+      return expr;
+    }
 
+    ExprNodeGenericFuncDesc structCall = (ExprNodeGenericFuncDesc) expr;
+    List<TypeInfo> newTypes = structCall.getChildren().stream().map(ExprNodeDesc::getTypeInfo).collect(Collectors.toList());
+    TypeInfo newType = TypeInfoFactory.getStructTypeInfo(newFieldNames, newTypes);
+
+    return new ExprNodeGenericFuncDesc(newType, structCall.getGenericUDF(), structCall.getChildren());
+  }
 }
