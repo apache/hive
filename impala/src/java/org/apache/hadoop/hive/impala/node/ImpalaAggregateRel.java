@@ -109,10 +109,6 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     List<Expr> groupingExprs = getGroupingExprs();
     List<FunctionCallExpr> aggExprs = getAggregateExprs(ctx);
 
-    if (groupingExprs.size() == 0 && aggExprs.size() == 0) {
-      throw new HiveException("Both grouping exprs and aggregate exprs cannot be empty.");
-    }
-
     // Impala's MultiAggregateInfo encapsulates functionality to represent
     // aggregation functions and grouping exprs belonging to multiple
     // aggregation classes - such as in the case of multiple DISTINCT
