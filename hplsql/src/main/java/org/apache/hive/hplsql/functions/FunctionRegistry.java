@@ -20,9 +20,10 @@ package org.apache.hive.hplsql.functions;
 
 import org.apache.hive.hplsql.HplsqlParser;
 
-public interface Function {
+public interface FunctionRegistry {
   boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx);
   void addUserFunction(HplsqlParser.Create_function_stmtContext ctx);
   void addUserProcedure(HplsqlParser.Create_procedure_stmtContext ctx);
   boolean exists(String name);
+  void remove(String name);
 }

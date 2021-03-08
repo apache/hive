@@ -169,7 +169,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -255,7 +254,6 @@ public final class Utilities {
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
-  public static final int MIN_VERSION_FOR_NEW_DUMP_FORMAT = 2;
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -4013,7 +4011,8 @@ public final class Utilities {
   public static int getHeaderCount(TableDesc table) throws IOException {
     int headerCount;
     try {
-      headerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.HEADER_COUNT, "0"));
+      headerCount =
+          getHeaderOrFooterCount(table, serdeConstants.HEADER_COUNT);
     } catch (NumberFormatException nfe) {
       throw new IOException(nfe);
     }
@@ -4032,7 +4031,8 @@ public final class Utilities {
   public static int getFooterCount(TableDesc table, JobConf job) throws IOException {
     int footerCount;
     try {
-      footerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.FOOTER_COUNT, "0"));
+      footerCount =
+          getHeaderOrFooterCount(table, serdeConstants.FOOTER_COUNT);
       if (footerCount > HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_FILE_MAX_FOOTER)) {
         throw new IOException("footer number exceeds the limit defined in hive.file.max.footer");
       }
@@ -4042,6 +4042,20 @@ public final class Utilities {
       throw new IOException(nfe);
     }
     return footerCount;
+  }
+
+  private static int getHeaderOrFooterCount(TableDesc table,
+      String propertyName) {
+    int count =
+        Integer.parseInt(table.getProperties().getProperty(propertyName, "0"));
+    if (count > 0 && table.getInputFileFormatClass() != null
+        && !TextInputFormat.class
+        .isAssignableFrom(table.getInputFileFormatClass())) {
+      LOG.warn(propertyName
+          + "  is only valid for TextInputFormat, ignoring the value.");
+      count = 0;
+    }
+    return count;
   }
 
   /**

@@ -21,6 +21,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 
 public class MStoredProc {
   private String name;
@@ -31,6 +32,13 @@ public class MStoredProc {
   public static final int MAX_SOURCE_SIZE = 1073741823;
 
   public MStoredProc() {}
+
+  public static void populate(MStoredProc result, StoredProcedure proc, MDatabase mDatabase) throws MetaException {
+    result.setName(proc.getName());
+    result.setOwner(proc.getOwnerName());
+    result.setSource(proc.getSource());
+    result.setDatabase(mDatabase);
+  }
 
   public String getName() {
     return name;

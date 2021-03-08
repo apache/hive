@@ -1870,8 +1870,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       }
-      calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
-          HepMatchOrder.DEPTH_FIRST, new HiveSubQueryRemoveRule(conf));
+      calciteGenPlan = removeSubqueries(calciteGenPlan, mdProvider.getMetadataProvider());
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       }
@@ -2036,6 +2035,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
@@ -2611,23 +2611,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     /**
-     * Run the HEP Planner with the given rule set.
-     *
-     * @param basePlan
-     * @param followPlanChanges
-     * @param mdProvider
-     * @param executorProvider
-     * @param order
-     * @param rules
-     * @return optimized RelNode
+     * Removes sub-queries (if present) from the specified query plan.
+     * @return a new query plan without subquery expressions.
      */
-    @Deprecated
-    private RelNode hepPlan(RelNode basePlan, boolean followPlanChanges,
-        RelMetadataProvider mdProvider, RexExecutor executorProvider, HepMatchOrder order,
-        RelOptRule... rules) {
-      final HepProgramBuilder programBuilder = new HepProgramBuilder();
-      generatePartialProgram(programBuilder, followPlanChanges, order, rules);
-      return executeProgram(basePlan, programBuilder.build(), mdProvider, executorProvider);
+    private RelNode removeSubqueries(RelNode basePlan, RelMetadataProvider mdProvider) {
+      final HepProgramBuilder builder = new HepProgramBuilder();
+      builder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
+      builder.addRuleCollection(
+          ImmutableList.of(HiveSubQueryRemoveRule.forFilter(conf), HiveSubQueryRemoveRule.forProject(conf)));
+      return executeProgram(basePlan, builder.build(), mdProvider, null);
     }
 
     /**
@@ -2910,8 +2902,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<RexNode> leftJoinKeys = new ArrayList<RexNode>();
         List<RexNode> rightJoinKeys = new ArrayList<RexNode>();
 
-        RexNode nonEquiConds = RelOptUtil.splitJoinCondition(sysFieldList, leftRel, rightRel,
-            calciteJoinCond, leftJoinKeys, rightJoinKeys, null, null);
+        RexNode nonEquiConds = HiveRelOptUtil.splitHiveJoinCondition(sysFieldList, ImmutableList.of(leftRel, rightRel),
+            calciteJoinCond, ImmutableList.of(leftJoinKeys, rightJoinKeys), null, null);
 
         RelNode[] inputRels = new RelNode[] { leftRel, rightRel };
         final List<Integer> leftKeys = new ArrayList<Integer>();
