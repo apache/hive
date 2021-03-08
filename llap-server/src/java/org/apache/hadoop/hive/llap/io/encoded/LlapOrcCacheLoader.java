@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -126,6 +127,9 @@ public class LlapOrcCacheLoader implements AutoCloseable {
 
   @Override
   public void close() throws IOException {
+    if (orcReader != null) {
+      IOUtils.closeQuietly(orcReader);
+    }
     if (encodedReader != null) {
       encodedReader.close();
     }
