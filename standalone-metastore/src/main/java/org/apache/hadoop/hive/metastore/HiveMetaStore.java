@@ -1483,53 +1483,48 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             madeExternalDir = true;
           }
         } else {
-          if (dbMgdPath != null) {
-            try {
-              // Since this may be done as random user (if doAs=true) he may not have access
-              // to the managed directory. We run this as an admin user
-              madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-                @Override public Boolean run() throws MetaException {
-                  if (!wh.isDir(dbMgdPath)) {
-                    LOG.info("Creating database path in managed directory " + dbMgdPath);
-                    if (!wh.mkdirs(dbMgdPath)) {
-                      throw new MetaException("Unable to create database managed path " + dbMgdPath + ", failed to create database " + db.getName());
-                    }
-                    return true;
+          final Path mgdPath = dbMgdPath != null ? dbMgdPath : defaultDbMgdPath;
+          try {
+            // Since this may be done as random user (if doAs=true) he may not have access
+            // to the managed directory. We run this as an admin user
+            madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+              @Override public Boolean run() throws MetaException {
+                if (!wh.isDir(mgdPath)) {
+                  LOG.info("Creating database path in managed directory " + mgdPath);
+                  if (!wh.mkdirs(mgdPath)) {
+                    throw new MetaException("Unable to create database managed path " + mgdPath + ", failed to create database " + db.getName());
                   }
-                  return false;
+                  return true;
                 }
-              });
-              if (madeManagedDir) {
-                LOG.info("Created database path in managed directory " + dbMgdPath);
+                return false;
               }
-            } catch (IOException | InterruptedException e) {
-              throw new MetaException(
-                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
+            });
+            if (madeManagedDir) {
+              LOG.info("Created database path in managed directory " + mgdPath);
             }
+          } catch (IOException | InterruptedException e) {
+            throw new MetaException(
+                "Unable to create database managed directory " + mgdPath + ", failed to create database " + db.getName());
           }
-          if (dbExtPath != null) {
-            try {
-              madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-                @Override public Boolean run() throws MetaException {
-                  if (!wh.isDir(dbExtPath)) {
-                    LOG.info("Creating database path in external directory " + dbExtPath);
-                    return wh.mkdirs(dbExtPath);
-                  }
-                  return false;
+          try {
+            madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+              @Override public Boolean run() throws MetaException {
+                if (!wh.isDir(dbExtPath)) {
+                  LOG.info("Creating database path in external directory " + dbExtPath);
+                  return wh.mkdirs(dbExtPath);
                 }
-              });
-              if (madeExternalDir) {
-                LOG.info("Created database path in external directory " + dbExtPath);
-              } else {
-                LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                    + "StorageBasedAuthorizationProvider is enabled ");
+                return false;
               }
-            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+            });
+            if (madeExternalDir) {
+              LOG.info("Created database path in external directory " + dbExtPath);
+            } else {
               LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                  + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+                  + "StorageBasedAuthorizationProvider is enabled ");
             }
-          } else {
-            LOG.info("Database external path won't be created since the external warehouse directory is not defined");
+          } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+            LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
           }
         }
 

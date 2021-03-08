@@ -89,6 +89,7 @@ public class Warehouse {
       throw new MetaException(ConfVars.WAREHOUSE.getVarname()
           + " is not set in the config or blank");
     }
+    FileSystem fs = getFs(new Path(whRootString));
     whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
     fsHandler = getMetaStoreFsHandler(conf);
     cm = ReplChangeManager.getInstance(conf);
