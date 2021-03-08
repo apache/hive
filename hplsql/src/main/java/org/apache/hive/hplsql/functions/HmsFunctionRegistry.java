@@ -20,7 +20,7 @@
 
 package org.apache.hive.hplsql.functions;
 
-import static org.apache.hive.hplsql.functions.InMemoryFunction.setCallParameters;
+import static org.apache.hive.hplsql.functions.InMemoryFunctionRegistry.setCallParameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ import org.apache.hive.hplsql.Scope;
 import org.apache.hive.hplsql.Var;
 import org.apache.thrift.TException;
 
-public class HmsFunction implements Function {
+public class HmsFunctionRegistry implements FunctionRegistry {
   private Exec exec;
   private boolean trace;
   private IMetaStoreClient msc;
@@ -51,7 +51,7 @@ public class HmsFunction implements Function {
   private HplSqlSessionState hplSqlSession;
   private Map<String, ParserRuleContext> cache = new HashMap<>();
 
-  public HmsFunction(Exec e, IMetaStoreClient msc, BuiltinFunctions builtinFunctions, HplSqlSessionState hplSqlSession) {
+  public HmsFunctionRegistry(Exec e, IMetaStoreClient msc, BuiltinFunctions builtinFunctions, HplSqlSessionState hplSqlSession) {
     this.exec = e;
     this.msc = msc;
     this.builtinFunctions = builtinFunctions;
@@ -61,8 +61,19 @@ public class HmsFunction implements Function {
 
   @Override
   public boolean exists(String name) {
-    name = name.toUpperCase();
     return isCached(name) || getProcFromHMS(name).isPresent();
+  }
+
+  @Override
+  public void remove(String name) {
+    try {
+      msc.dropStoredProcedure(new StoredProcedureRequest(
+              hplSqlSession.currentCatalog(),
+              hplSqlSession.currentDatabase(),
+              name));
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   protected boolean isCached(String name) {
@@ -71,7 +82,6 @@ public class HmsFunction implements Function {
 
   @Override
   public boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx) {
-    name = name.toUpperCase();
     if (builtinFunctions.exec(name, ctx)) {
       return true;
     }
