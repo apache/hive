@@ -1118,13 +1118,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1188,13 +1188,13 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: int), _col0 (type: int), _col2 (type: int)
                   outputColumnNames: _col0, _col1, _col3
-                  Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: int)
-                    Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: int), _col3 (type: int)
         Reducer 3 
             Execution mode: llap
