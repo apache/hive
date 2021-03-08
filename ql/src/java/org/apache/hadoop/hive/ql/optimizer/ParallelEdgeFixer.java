@@ -270,7 +270,8 @@ public class ParallelEdgeFixer extends Transform {
       }
       neededColumns.removeAll(ret.keySet());
       if (!neededColumns.isEmpty()) {
-        throw new SemanticException("There is no way to compute: " + neededColumns);
+        // There is no way to compute all parts of neededColumns
+        return Optional.empty();
       }
       return Optional.of(new TreeSet<>(ret.values()));
     } catch (SemanticException e) {
