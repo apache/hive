@@ -17,10 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
 
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.AcidRecordReader;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier.Field;
@@ -34,6 +31,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.RecordReader;
+
+import static java.util.Arrays.asList;
 
 /** BatchToRowReader that returns the rows readable by ORC IOs. */
 public class OrcOiBatchToRowReader extends BatchToRowReader<OrcStruct, OrcUnion>
@@ -50,25 +49,23 @@ public class OrcOiBatchToRowReader extends BatchToRowReader<OrcStruct, OrcUnion>
   }
 
   @Override
-  protected Map<VirtualColumn, Consumer<Object>> requestedVirtualColumns() {
-    return new HashMap<VirtualColumn, Consumer<Object>>(2) {{
-      put(VirtualColumn.ROWID, (value) -> {
-        OrcStruct rowId = (OrcStruct) value;
-        if (value == null) {
-          isNull = true;
-          return;
-        }
-        recordIdentifier.setValues(((LongWritable) rowId.getFieldValue(Field.writeId.ordinal())).get(),
-                ((IntWritable) rowId.getFieldValue(Field.bucketId.ordinal())).get(),
-                ((LongWritable) rowId.getFieldValue(Field.rowId.ordinal())).get());
-        isNull = false;
-      });
-
-      put(VirtualColumn.ROWISDELETED, (value) -> {
-        BooleanWritable deleted = (BooleanWritable) value;
-        recordIdentifier.setDeleteEvent(deleted != null && deleted.get());
-      });
-    }};
+  protected List<VirtualColumnHandler> requestedVirtualColumns() {
+    return asList(
+            new VirtualColumnHandler(VirtualColumn.ROWID, (value) -> {
+              OrcStruct rowId = (OrcStruct) value;
+              if (value == null) {
+                isNull = true;
+                return;
+              }
+              recordIdentifier.setValues(((LongWritable) rowId.getFieldValue(Field.writeId.ordinal())).get(),
+                      ((IntWritable) rowId.getFieldValue(Field.bucketId.ordinal())).get(),
+                      ((LongWritable) rowId.getFieldValue(Field.rowId.ordinal())).get());
+              isNull = false;
+            }),
+            new VirtualColumnHandler(VirtualColumn.ROWISDELETED, (value) -> {
+              BooleanWritable deleted = (BooleanWritable) value;
+              recordIdentifier.setDeleteEvent(deleted != null && deleted.get());
+            }));
   }
 
   @Override

@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,11 +91,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
   private final boolean[] included;
   private int rowInBatch = 0;
 
-  protected Map<Integer, Consumer<Object>> virtualColumnHandlers;
-
-  protected interface VirtualColumnHandler {
-    void setValue(Object o);
-  }
+  protected List<VirtualColumnHandler> virtualColumnHandlers;
 
   public BatchToRowReader(RecordReader<NullWritable, VectorizedRowBatch> vrbReader,
       VectorizedRowBatchCtx vrbCtx, List<Integer> includedCols) {
@@ -114,13 +109,12 @@ public abstract class BatchToRowReader<StructType, UnionType>
       Arrays.fill(included, true);
     }
 
-    Map<VirtualColumn, Consumer<Object>> requestedVirtualColumns = requestedVirtualColumns();
-    virtualColumnHandlers = new HashMap<>(requestedVirtualColumns.size());
-    for (Map.Entry<VirtualColumn, Consumer<Object>> entry : requestedVirtualColumns.entrySet()) {
-      int idx = vrbCtx.findVirtualColumnNum(entry.getKey());
+    virtualColumnHandlers = requestedVirtualColumns();
+    for (VirtualColumnHandler handler : virtualColumnHandlers) {
+      int idx = vrbCtx.findVirtualColumnNum(handler.virtualColumn);
       if (idx >= 0) {
         included[idx] = true;
-        virtualColumnHandlers.put(idx, entry.getValue());
+        handler.indexInSchema = idx;
       }
     }
 
@@ -130,7 +124,18 @@ public abstract class BatchToRowReader<StructType, UnionType>
     this.included = included;
   }
 
-  protected abstract Map<VirtualColumn, Consumer<Object>> requestedVirtualColumns();
+  public static class VirtualColumnHandler {
+    private final VirtualColumn virtualColumn;
+    private final Consumer<Object> handler;
+    private int indexInSchema = -1;
+
+    public VirtualColumnHandler(VirtualColumn virtualColumn, Consumer<Object> handler) {
+      this.virtualColumn = virtualColumn;
+      this.handler = handler;
+    }
+  }
+
+  protected abstract List<VirtualColumnHandler> requestedVirtualColumns();
   protected abstract StructType createStructObject(Object previous, List<TypeInfo> childrenTypes);
   protected abstract void setStructCol(StructType structObj, int i, Object value);
   protected abstract Object getStructCol(StructType structObj, int i);
@@ -166,7 +171,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
       return false;
     }
 
-    virtualColumnHandlers.forEach((idx, virtualColumnHandler) -> virtualColumnHandler.accept(null));
+    virtualColumnHandlers.forEach(handler -> handler.handler.accept(null));
 
     StructType value = (StructType) previous;
     for (int i = 0; i < schema.size(); ++i) {
@@ -175,21 +180,30 @@ public abstract class BatchToRowReader<StructType, UnionType>
         setStructCol(value, i,
             nextValue(batch.cols[i], rowInBatch, schema.get(i), getStructCol(value, i)));
       } catch (Throwable t) {
-        LOG.error("Error at row " + rowInBatch + "/" + batch.size + ", column " + i
-            + "/" + schema.size() + " " + batch.cols[i], t);
-        throw (t instanceof IOException) ? (IOException)t : new IOException(t);
+        throwIOException(i, t);
       }
     }
 
-    for (Map.Entry<Integer, Consumer<Object>> entry : virtualColumnHandlers.entrySet()) {
-      if (!included[entry.getKey()] || entry.getKey() >= getStructLength(value)) {
+    for (VirtualColumnHandler handler : virtualColumnHandlers) {
+      if (handler.indexInSchema < 0 || !included[handler.indexInSchema] ||
+              handler.indexInSchema >= getStructLength(value)) {
         continue;
       }
-      entry.getValue().accept(getStructCol(value, entry.getKey()));
+      try {
+        handler.handler.accept(getStructCol(value, handler.indexInSchema));
+      } catch (Throwable t) {
+        throwIOException(handler.indexInSchema, t);
+      }
     }
 
     ++rowInBatch;
     return true;
+  }
+
+  private void throwIOException(int i, Throwable t) throws IOException {
+    LOG.error("Error at row " + rowInBatch + "/" + batch.size + ", column " + i
+        + "/" + schema.size() + " " + batch.cols[i], t);
+    throw (t instanceof IOException) ? (IOException) t : new IOException(t);
   }
 
   /**
