@@ -34,20 +34,20 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
-PREHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, t1.ROW__ID, * from t1
+PREHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, * from t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, t1.ROW__ID, * from t1
+POSTHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, * from t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-true	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	1	one
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	2	two
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	3	three
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	4	four
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":2}	4	four again
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":3}	5	five
+true	1	one
+false	2	two
+false	3	three
+false	4	four
+false	4	four again
+false	5	five
 PREHOOK: query: update t1
 set b = 'updated'
 where a = 3
@@ -60,21 +60,21 @@ where a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-PREHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, t1.ROW__ID, * from t1
+PREHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, * from t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, t1.ROW__ID, * from t1
+POSTHOOK: query: select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, * from t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-true	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	1	one
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	2	two
-true	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	3	three
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	4	four
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":2}	4	four again
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":3}	5	five
-false	{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	3	updated
+true	1	one
+false	2	two
+true	3	three
+false	4	four
+false	4	four again
+false	5	five
+false	3	updated
 PREHOOK: query: create table t2(a int, c float) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

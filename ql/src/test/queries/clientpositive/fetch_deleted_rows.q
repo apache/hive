@@ -10,13 +10,13 @@ delete from t1 where a = 1;
 
 insert into t1(a,b) values (3, 'three'), (4, 'four'), (4, 'four again'), (5, 'five');
 
-select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, t1.ROW__ID, * from t1;
+select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, * from t1;
 
 update t1
 set b = 'updated'
 where a = 3;
 
-select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, t1.ROW__ID, * from t1;
+select /*+ FETCH_DELETED_ROWS(t1)*/ t1.ROW__IS__DELETED, * from t1;
 
 
 create table t2(a int, c float) stored as orc TBLPROPERTIES ('transactional'='true');
