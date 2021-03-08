@@ -1918,7 +1918,7 @@ public class Hive {
             // We will not try partial rewriting if there were update/delete operations on source tables
             invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                 creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
-            ignore = invalidationInfo == null;
+            ignore = invalidationInfo == null || invalidationInfo.isSetSourceTablesCompacted();
           }
           if (ignore) {
             LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
