@@ -138,23 +138,30 @@ class MetastoreDirectSqlUtils {
     List<Object[]> list = ensureList(result);
     Iterator<Object[]> iter = list.iterator();
     Object[] fields = null;
-    for (Map.Entry<Long, T> entry : tree.entrySet()) {
-      if (fields == null && !iter.hasNext()) break;
-      long id = entry.getKey();
-      while (fields != null || iter.hasNext()) {
-        if (fields == null) {
-          fields = iter.next();
+    int rv = 0;
+    try {
+      for (Map.Entry<Long, T> entry : tree.entrySet()) {
+        if (fields == null && !iter.hasNext())
+          break;
+        long id = entry.getKey();
+        while (fields != null || iter.hasNext()) {
+          if (fields == null) {
+            fields = iter.next();
+          }
+          long nestedId = extractSqlLong(fields[keyIndex]);
+          if (nestedId < id)
+            throw new MetaException("Found entries for unknown ID " + nestedId);
+          if (nestedId > id)
+            break; // fields belong to one of the next entries
+          func.apply(entry.getValue(), fields);
+          fields = null;
         }
-        long nestedId = extractSqlLong(fields[keyIndex]);
-        if (nestedId < id) throw new MetaException("Found entries for unknown ID " + nestedId);
-        if (nestedId > id) break; // fields belong to one of the next entries
-        func.apply(entry.getValue(), fields);
-        fields = null;
+        Deadline.checkTimeout();
       }
-      Deadline.checkTimeout();
+      rv = list.size();
+    } finally {
+      query.closeAll();
     }
-    int rv = list.size();
-    query.closeAll();
     timingTrace(doTrace, queryText, start, queryTime);
     return rv;
   }
