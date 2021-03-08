@@ -180,8 +180,13 @@ public abstract class BatchToRowReader<StructType, UnionType>
         throw (t instanceof IOException) ? (IOException)t : new IOException(t);
       }
     }
-    virtualColumnHandlers
-            .forEach((idx, virtualColumnHandler) -> virtualColumnHandler.accept(getStructCol(value, idx)));
+
+    for (Map.Entry<Integer, Consumer<Object>> entry : virtualColumnHandlers.entrySet()) {
+      if (!included[entry.getKey()] || entry.getKey() >= getStructLength(value)) {
+        continue;
+      }
+      entry.getValue().accept(getStructCol(value, entry.getKey()));
+    }
 
     ++rowInBatch;
     return true;
