@@ -11476,10 +11476,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Virtual columns are only for native tables
         while (vcs.hasNext()) {
           VirtualColumn vc = vcs.next();
-          if (!ctx.getFetchDeletedRowsScans().contains(tab.getDbName() + "." + tab.getTableName()) &&
-                  vc == VirtualColumn.ROWISDELETED) {
-            continue;
-          }
           rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
                   vc.getTypeInfo(), alias, true, vc.getIsHidden()
           ));
@@ -11491,8 +11487,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
-      tsDesc.setFetchDeletedRows(
-              ctx.getFetchDeletedRowsScans().contains(tsDesc.getDatabaseName() + "." + tsDesc.getTableName()));
+      if (ctx.getFetchDeletedRowsScans().contains(tsDesc.getDatabaseName() + "." + tsDesc.getTableName())) {
+        tsDesc.setFetchDeletedRows(true);
+        rwsch.put(alias,
+                VirtualColumn.ROWISDELETED.getName().toLowerCase(),
+                new ColumnInfo(VirtualColumn.ROWISDELETED.getName(), VirtualColumn.ROWISDELETED.getTypeInfo(),
+                        alias, true, VirtualColumn.ROWISDELETED.getIsHidden()));
+        vcList.add(VirtualColumn.ROWISDELETED);
+      }
 
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {

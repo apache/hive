@@ -110,7 +110,6 @@ public enum VirtualColumn {
       l.add(ROWOFFSET);
     }
     l.add(ROWID);
-    l.add(ROWISDELETED);
 
     return l;
   }
