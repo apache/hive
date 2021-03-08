@@ -165,6 +165,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 
 import com.google.common.annotations.VisibleForTesting;
+import org.stringtemplate.v4.ST;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -2386,10 +2387,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       List<String> params = new ArrayList<>();
       StringBuilder queryUpdateDelete = new StringBuilder();
-      StringBuilder queryCompactions = new StringBuilder();
+      StringBuilder queryCompletedCompactions = new StringBuilder();
+      StringBuilder queryCompactionQueue = new StringBuilder();
       // compose a query that select transactions containing an update...
       queryUpdateDelete.append("SELECT \"CTC_UPDATE_DELETE\" FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_UPDATE_DELETE\" ='Y' AND (");
-      queryCompactions.append("SELECT 1 FROM \"COMPLETED_COMPACTIONS\" WHERE (");
+      queryCompletedCompactions.append("SELECT 1 FROM \"COMPLETED_COMPACTIONS\" WHERE (");
+      queryCompactionQueue.append("SELECT 1 FROM \"COMPACTION_QUEUE\" WHERE (");
       int i = 0;
       for (String fullyQualifiedName : creationMetadata.getTablesUsed()) {
         ValidWriteIdList tblValidWriteIdList =
@@ -2417,24 +2420,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // where the transaction had to be committed after the materialization was created...
         if (i != 0) {
           queryUpdateDelete.append("OR");
-          queryCompactions.append("OR");
+          queryCompletedCompactions.append("OR");
+          queryCompactionQueue.append("OR");
         }
         String[] names = TxnUtils.getDbTableName(fullyQualifiedName);
         assert(names.length == 2);
         queryUpdateDelete.append(" (\"CTC_DATABASE\"=? AND \"CTC_TABLE\"=?");
-        queryCompactions.append(" (\"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
+        queryCompletedCompactions.append(" (\"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
+        queryCompactionQueue.append(" (\"CQ_DATABASE\"=? AND \"CQ_TABLE\"=?");
         params.add(names[0]);
         params.add(names[1]);
         queryUpdateDelete.append(" AND (\"CTC_WRITEID\" > " + tblValidWriteIdList.getHighWatermark());
-        queryCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > " + tblValidWriteIdList.getHighWatermark());
+        queryCompletedCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > " + tblValidWriteIdList.getHighWatermark());
         queryUpdateDelete.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
             " OR \"CTC_WRITEID\" IN(" + StringUtils.join(",",
                 Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
-        queryCompactions.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
+        queryCompletedCompactions.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
             " OR \"CC_HIGHEST_WRITE_ID\" IN(" + StringUtils.join(",",
                 Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
         queryUpdateDelete.append(") ");
-        queryCompactions.append(") ");
+        queryCompletedCompactions.append(") ");
+        queryCompactionQueue.append(") ");
         i++;
       }
       // ... and where the transaction has already been committed as per snapshot taken
@@ -2443,7 +2449,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       queryUpdateDelete.append(currentValidTxnList.getInvalidTransactions().length == 0 ? " " :
           " AND \"CTC_TXNID\" NOT IN(" + StringUtils.join(",",
               Arrays.asList(ArrayUtils.toObject(currentValidTxnList.getInvalidTransactions()))) + ") ");
-      queryCompactions.append(")");
+      queryCompletedCompactions.append(")");
+      queryCompactionQueue.append(") ");
 
       // Execute query
       String s = queryUpdateDelete.toString();
@@ -2459,11 +2466,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
 
       // Execute query
-      s = queryCompactions.toString();
+      queryCompletedCompactions.append(" UNION ");
+      queryCompletedCompactions.append(queryCompactionQueue.toString());
+      s = queryCompletedCompactions.toString();
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query <" + s + ">");
       }
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+      List<String> params2 = new ArrayList<>(params);
+      params2.addAll(params);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params2);
       pst.setMaxRows(1);
       rs = pst.executeQuery();
 
