@@ -305,7 +305,6 @@ public class HiveAlterHandler implements AlterHandler {
           String newTblLocPath = dataWasMoved ? destPath.toUri().getPath() : null;
 
           // also the location field in partition
-          Deadline.checkTimeout();
           parts = msdb.getPartitions(catName, dbname, name, -1);
           Multimap<Partition, ColumnStatistics> columnStatsNeedUpdated = ArrayListMultimap.create();
           for (Partition part : parts) {
@@ -343,12 +342,11 @@ public class HiveAlterHandler implements AlterHandler {
               for (Partition part : partBatch) {
                 partValues.add(part.getValues());
               }
-              Deadline.checkTimeout();
               msdb.alterPartitions(catName, newDbName, newTblName, partValues,
                   partBatch, newt.getWriteId(), writeIdList);
             }
           }
-
+          Deadline.checkTimeout();
           for (Entry<Partition, ColumnStatistics> partColStats : columnStatsNeedUpdated.entries()) {
             ColumnStatistics newPartColStats = partColStats.getValue();
             newPartColStats.getStatsDesc().setDbName(newDbName);
@@ -357,10 +355,8 @@ public class HiveAlterHandler implements AlterHandler {
                 writeIdList, newt.getWriteId());
           }
         } else {
-          Deadline.checkTimeout();
           alterTableUpdateTableColumnStats(
               msdb, oldt, newt, environmentContext, writeIdList, conf, null);
-          Deadline.checkTimeout();
         }
       } else {
         // operations other than table rename
@@ -400,10 +396,8 @@ public class HiveAlterHandler implements AlterHandler {
                 } else {
                   // update changed properties (stats)
                   oldPart.setParameters(part.getParameters());
-                  Deadline.checkTimeout();
                   msdb.alterPartition(catName, dbname, name, part.getValues(), oldPart, writeIdList);
                 }
-                Deadline.checkTimeout();
               }
             } else {
               // clear all column stats to prevent incorract behaviour in case same column is reintroduced
@@ -554,7 +548,6 @@ public class HiveAlterHandler implements AlterHandler {
               "Unable to alter partition because table or database does not exist.");
         }
         oldPart = msdb.getPartition(catName, dbname, name, new_part.getValues());
-        Deadline.checkTimeout();
         if (MetaStoreServerUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
           // if stats are same, no need to update
           if (MetaStoreServerUtils.isFastStatsSame(oldPart, new_part)) {
@@ -567,14 +560,12 @@ public class HiveAlterHandler implements AlterHandler {
 
         // PartitionView does not have SD. We do not need update its column stats
         if (oldPart.getSd() != null) {
-          Deadline.checkTimeout();
           updateOrGetPartitionColumnStats(msdb, catName, dbname, name, new_part.getValues(),
               oldPart.getSd().getCols(), tbl, new_part, null, null);
         }
         Deadline.checkTimeout();
         msdb.alterPartition(
             catName, dbname, name, new_part.getValues(), new_part, validWriteIds);
-        Deadline.checkTimeout();
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                 EventMessage.EventType.ALTER_PARTITION,

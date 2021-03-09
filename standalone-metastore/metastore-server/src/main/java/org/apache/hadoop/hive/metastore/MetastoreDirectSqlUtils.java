@@ -149,8 +149,9 @@ class MetastoreDirectSqlUtils {
             fields = iter.next();
           }
           long nestedId = extractSqlLong(fields[keyIndex]);
-          if (nestedId < id)
+          if (nestedId < id) {
             throw new MetaException("Found entries for unknown ID " + nestedId);
+          }
           if (nestedId > id)
             break; // fields belong to one of the next entries
           func.apply(entry.getValue(), fields);
