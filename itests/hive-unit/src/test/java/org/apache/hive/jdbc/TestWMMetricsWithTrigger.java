@@ -71,6 +71,10 @@ public class TestWMMetricsWithTrigger {
     }
   }
 
+  private static class ExceptionHolder {
+    Throwable throwable;
+  }
+
   static HiveConf defaultConf() throws Exception {
     String confDir = "../../data/conf/llap/";
     if (StringUtils.isNotBlank(confDir)) {
@@ -129,7 +133,7 @@ public class TestWMMetricsWithTrigger {
     wmPool.setQueryParallelism(1);
     WMFullResourcePlan resourcePlan = new WMFullResourcePlan(new WMResourcePlan("rp"), Lists.newArrayList(wmPool));
     resourcePlan.getPlan().setDefaultPoolPath(wmPoolName);
-    Expression expression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
+    Expression expression = ExpressionFactory.fromString("EXECUTION_TIME > 10000");
     Trigger trigger = new ExecutionTrigger("kill_query", expression, new Action(Action.Type.KILL_QUERY));
     WMTrigger wmTrigger = wmTriggerFromTrigger(trigger);
     resourcePlan.addToTriggers(wmTrigger);
@@ -181,23 +185,43 @@ public class TestWMMetricsWithTrigger {
 
   @Test(timeout = 30000)
   public void testWmPoolMetricsAfterKillTrigger() throws Exception {
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    String json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutors", 0);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
+    verifyMetrics(0, 4, 1, 0);
 
+    ExceptionHolder stmtHolder = new ExceptionHolder();
     // Run Query with Kill Trigger in place
-    runQueryWithTrigger(10);
+    Thread tExecute = new Thread(() -> {
+      try {
+        runQueryWithTrigger(10);
+      } catch (Exception e) {
+        LOG.error("Exception while executing runQueryWithTrigger", e);
+        stmtHolder.throwable = e;
+      }
+    });
+    tExecute.start();
+
+    //Wait for Workload Manager main thread to update the metrics after query enters processing.
+    Thread.sleep(5000);
+    verifyMetrics(4, 4, 1, 1);
+
+    tExecute.join();
+    assertNull("Exception while executing statement", stmtHolder.throwable);
 
     //Wait for Workload Manager main thread to update the metrics after kill query succeeded.
     Thread.sleep(10000);
+
     //Metrics should reset to original value after query is killed
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutors", 0);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", 4);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", 0);
+    verifyMetrics(0, 4, 1, 0);
+
   }
+
+  private static void verifyMetrics(int numExecutors, int numExecutorsMax, int numParallelQueries, int numRunningQueries)
+      throws Exception {
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutors", numExecutors);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numExecutorsMax", numExecutorsMax);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numParallelQueries", numParallelQueries);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "WM_llap_numRunningQueries", numRunningQueries);
+  }
+
 }
