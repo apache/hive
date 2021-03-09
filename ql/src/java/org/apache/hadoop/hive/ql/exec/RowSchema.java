@@ -95,6 +95,11 @@ public class RowSchema implements Serializable {
     public int size() {
       return delegate.size();
     }
+
+    @Override
+    public ColumnInfo remove(int index) {
+      return delegate.remove(index);
+    }
   }
 
   public List<ColumnInfo> getSignature() {

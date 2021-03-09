@@ -159,15 +159,7 @@ public final class ColumnPrunerProcFactory {
         if (lookupColumn(neededCols, groupingColumn) == null) {
           conf.getOutputColumnNames().remove(groupingSetPosition);
           if (gbOp.getSchema() != null) {
-            List<ColumnInfo> newSig = new ArrayList<>();
-            List<ColumnInfo> aa = gbOp.getSchema().getSignature();
-            for (int i = 0; i < aa.size(); i++) {
-              if (i != groupingSetPosition) {
-                newSig.add(new ColumnInfo(aa.get(i)));
-              }
-            }
-            RowSchema newSchema = new RowSchema(newSig);
-            gbOp.setSchema(newSchema);
+            gbOp.getSchema().getSignature().remove(groupingSetPosition);
           }
         }
       }
@@ -374,7 +366,8 @@ public final class ColumnPrunerProcFactory {
     private RowResolver buildPrunedRR(List<FieldNode> prunedCols, RowSchema oldRS) throws SemanticException {
       RowResolver resolver = new RowResolver();
       HashSet<FieldNode> prunedColsSet = new HashSet<>(prunedCols);
-      for (ColumnInfo cInfo : oldRS.getSignature()) {
+      for (ColumnInfo cInfo0 : oldRS.getSignature()) {
+        ColumnInfo cInfo = new ColumnInfo(cInfo0);
         if (lookupColumn(prunedColsSet, cInfo.getInternalName()) != null) {
           resolver.put(cInfo.getTabAlias(), cInfo.getAlias(), cInfo);
         }
