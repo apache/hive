@@ -34,9 +34,6 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Util;
-import org.apache.hadoop.hive.impala.funcmapper.AggFunctionDetails;
-import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionSignature;
-import org.apache.hadoop.hive.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -108,6 +105,21 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     ImpalaBasicAnalyzer analyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
     List<Expr> groupingExprs = getGroupingExprs();
     List<FunctionCallExpr> aggExprs = getAggregateExprs(ctx);
+
+    // In some cases the HiveRelFieldTrimmer may have trimmed both the grouping
+    // and aggregate exprs. This typically happens when an EXISTS non-correlated
+    // subquery has an agg function. Since the agg function is not referenced (the
+    // EXISTS only cares about presence of a row), it could get dropped. We compensate
+    // here by adding a count(*) in order to create a valid aggregate node. This doesn't
+    // affect the parent/ancestor nodes because in any case the aggregate was not being
+    // referenced by the parent.
+    if (groupingExprs.isEmpty() && aggExprs.isEmpty()) {
+      Function countFunc =
+          ImpalaRelUtil.getAggregateFunction("count", Type.BIGINT, Lists.newArrayList());
+      FunctionParams params = FunctionParams.createStarParam();
+      aggExprs.add(new ImpalaFunctionCallExpr(ctx.getRootAnalyzer(), countFunc, params,
+          null, Type.BIGINT));
+    }
 
     // Impala's MultiAggregateInfo encapsulates functionality to represent
     // aggregation functions and grouping exprs belonging to multiple
