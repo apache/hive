@@ -11873,7 +11873,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     RowResolver rr = opParseCtx.get(operator).getRowResolver();
     RowResolver newRR = new RowResolver();
-    for (ColumnInfo colInfo : rr.getColumnInfos()) {
+    for (ColumnInfo colInfo0 : rr.getColumnInfos()) {
+      ColumnInfo colInfo = new ColumnInfo(colInfo0);
       String name = colInfo.getInternalName();
       String[] tmp = rr.reverseLookup(name);
       if ("".equals(tmp[0]) || tmp[1] == null) {
