@@ -135,12 +135,12 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: char(50)), _col2 (type: decimal(17,2))
                     outputColumnNames: _col0, _col1, _col3
-                    Statistics: Num rows: 110 Data size: 34980 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 110 Data size: 22660 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col3 (type: decimal(17,2)), _col0 (type: int), _col1 (type: char(50))
                       null sort order: azz
                       sort order: -++
-                      Statistics: Num rows: 110 Data size: 34980 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 110 Data size: 22660 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

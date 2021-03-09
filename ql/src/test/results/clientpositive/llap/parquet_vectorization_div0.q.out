@@ -473,7 +473,7 @@ STAGE PLANS:
                             native: true
                             projectedOutputColumnNums: [14, 18, 20, 21, 22]
                             selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColDivideDoubleColumn(col 15:double, col 17:double)(children: CastLongToDouble(col 3:bigint) -> 15:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 17:double) -> 18:double, DoubleColDivideDoubleColumn(col 15:double, col 19:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 19:double) -> 20:double, DoubleScalarDivideDoubleColumn(val 3.0, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 21:double, DoubleScalarDivideDoubleColumn(val 1.2, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 22:double
-                        Statistics: Num rows: 20 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 20 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: double), _col1 (type: double)
                           null sort order: zz
@@ -482,7 +482,7 @@ STAGE PLANS:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 20 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 20 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)

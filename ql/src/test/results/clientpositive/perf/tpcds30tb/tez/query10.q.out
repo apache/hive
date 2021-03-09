@@ -171,13 +171,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: ca_address_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 103627 Data size: 10984462 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 103627 Data size: 829016 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 103627 Data size: 10984462 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 103627 Data size: 829016 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 8 
@@ -376,7 +376,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col1 (type: bigint)
                         outputColumnNames: _col1
-                        Statistics: Num rows: 5209374 Data size: 81749960 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5209374 Data size: 40074968 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -419,12 +419,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: char(1)), _col1 (type: char(1)), _col2 (type: char(20)), _col8 (type: bigint), _col3 (type: int), _col4 (type: char(10)), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col8, _col10, _col12
-                  Statistics: Num rows: 1920800 Data size: 804815200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1920800 Data size: 727983200 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: char(1)), _col1 (type: char(1)), _col2 (type: char(20)), _col4 (type: int), _col6 (type: char(10)), _col8 (type: int), _col10 (type: int), _col12 (type: int)
                     null sort order: zzzzzzzz
                     sort order: ++++++++
-                    Statistics: Num rows: 1920800 Data size: 804815200 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1920800 Data size: 727983200 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col3 (type: bigint)
         Reducer 5 
             Execution mode: vectorized, llap
