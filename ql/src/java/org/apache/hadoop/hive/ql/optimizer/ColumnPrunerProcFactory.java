@@ -159,7 +159,15 @@ public final class ColumnPrunerProcFactory {
         if (lookupColumn(neededCols, groupingColumn) == null) {
           conf.getOutputColumnNames().remove(groupingSetPosition);
           if (gbOp.getSchema() != null) {
-            gbOp.getSchema().getSignature().remove(groupingSetPosition);
+            List<ColumnInfo> newSig = new ArrayList<>();
+            List<ColumnInfo> aa = gbOp.getSchema().getSignature();
+            for (int i = 0; i < aa.size(); i++) {
+              if (i != groupingSetPosition) {
+                newSig.add(new ColumnInfo(aa.get(i)));
+              }
+            }
+            RowSchema newSchema = new RowSchema(newSig);
+            gbOp.setSchema(newSchema);
           }
         }
       }
