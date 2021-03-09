@@ -46,7 +46,6 @@ public class HiveSamlGroupNameFilter implements Predicate<SAMLAttribute> {
           .addAll(COMMA_SPLITTER.split(groupNameStr));
     }
     groupNames = builder.build();
-    LOG.debug("Initialized allowed group names as {}", groupNames);
   }
 
   public boolean apply(List<SAMLAttribute> attributes) {
@@ -72,12 +71,9 @@ public class HiveSamlGroupNameFilter implements Predicate<SAMLAttribute> {
       return false;
     }
     if (!attributeName.equals(attribute.getName())) {
-      LOG.debug("Attribute name {} did not match with {}", attribute.getName(),
-          attributeName);
       return false;
     }
     for (String attrVal : attribute.getAttributeValues()) {
-      LOG.debug("Evaluating group name {}", attrVal);
       if (groupNames.contains(attrVal)) {
         return true;
       }
