@@ -690,7 +690,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         //       "in use". That is because all the user ops above like return, reopen, etc.
         //       don't actually return/reopen/... when kill query is in progress.
         syncWork.toRestartInUse.add(ctx.session);
-        
+
         // Running query metrics needs to be updated for the pool
         updatePoolMetricsAfterKillTrigger(poolsToRedistribute, ctx);
         break;
@@ -755,7 +755,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (StringUtils.isNotBlank(poolName)) {
       poolsToRedistribute.add(poolName);
       PoolState pool = pools.get(poolName);
-      if (pool != null && pool.metrics != null) {
+      if ((pool != null) && (pool.metrics != null)) {
           LOG.debug(String.format("Removing 1 query from pool %s, Current numRunningQueries: %s", pool.fullName,
               pool.metrics.numRunningQueries.value()));
           pool.metrics.removeRunningQueries(1);
