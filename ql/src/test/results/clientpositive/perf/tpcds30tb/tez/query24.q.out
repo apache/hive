@@ -130,7 +130,7 @@ STAGE PLANS:
                               null sort order: zz
                               sort order: ++
                               Map-reduce partition columns: _col9 (type: bigint), _col0 (type: bigint)
-                              Statistics: Num rows: 7981221 Data size: 5203756092 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 7981221 Data size: 3639436776 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col2 (type: char(20)), _col3 (type: char(30)), _col6 (type: char(2)), _col10 (type: varchar(50)), _col11 (type: char(2))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)

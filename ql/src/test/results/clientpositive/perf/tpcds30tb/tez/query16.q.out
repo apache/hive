@@ -71,10 +71,10 @@ STAGE PLANS:
                               value expressions: _col3 (type: bigint), _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
                             Select Operator
                               expressions: _col4 (type: bigint)
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 17851352 Data size: 285621632 Basic stats: COMPLETE Column stats: COMPLETE
+                              outputColumnNames: _col4
+                              Statistics: Num rows: 17851352 Data size: 142810816 Basic stats: COMPLETE Column stats: COMPLETE
                               Group By Operator
-                                aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1869746)
+                                aggregations: min(_col4), max(_col4), bloom_filter(_col4, expectedEntries=1869746)
                                 minReductionHashAggr: 0.99
                                 mode: hash
                                 outputColumnNames: _col0, _col1, _col2
