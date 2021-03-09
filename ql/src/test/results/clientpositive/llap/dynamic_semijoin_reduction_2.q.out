@@ -152,11 +152,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  filterExpr: (UDFToLong(tinyint_col_15) is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null and UDFToInteger(smallint_col_19) is not null) (type: boolean)
-=======
-                  filterExpr: (((smallint_col_19 = -92S) and UDFToLong(tinyint_col_15) is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null) or (timestamp_col_18 is not null and decimal1911_col_16 is not null)) (type: boolean)
->>>>>>> apache/master
+                  filterExpr: ((smallint_col_19 = -92S) and UDFToLong(tinyint_col_15) is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((smallint_col_19 = -92S) and UDFToLong(tinyint_col_15) is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null) (type: boolean)
