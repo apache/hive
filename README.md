@@ -17,7 +17,7 @@ using SQL. Built on top of Apache Hadoop (TM), it provides:
   data storage systems such as Apache HBase (TM)
 
 * Query execution using Apache Hadoop MapReduce, Apache Tez
-  or Apache Spark frameworks.
+  or Apache Spark frameworks
 
 Hive provides standard SQL functionality, including many of the later
 2003 and 2011 features for analytics.  These include OLAP functions,
