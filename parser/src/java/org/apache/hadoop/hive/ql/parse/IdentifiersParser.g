@@ -274,11 +274,18 @@ function
         (STAR) => (star=STAR)
         | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
       )
-    RPAREN ((KW_OVER ws=window_specification) | (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))?
+    RPAREN ((nt=null_treatment)? (KW_OVER ws=window_specification) | (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
            -> {$within != null}? ^(TOK_FUNCTION functionName (selectExpression+)? ^(TOK_WITHIN_GROUP $ordBy))
-           -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $ws?)
+           -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $nt? $ws?)
                             -> ^(TOK_FUNCTIONDI functionName (selectExpression+)? $ws?)
+    ;
+
+null_treatment
+@init { gParent.pushMsg("null_treatment", state); }
+@after { gParent.popMsg(state); }
+    : KW_RESPECT KW_NULLS -> KW_FALSE
+    | KW_IGNORE KW_NULLS -> KW_TRUE
     ;
 
 functionName
