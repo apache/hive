@@ -874,6 +874,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       if (lockMgr != null) {
         lockMgr.close();
       }
+      shutdownHeartbeatExecutorService();
     } catch (Exception e) {
       LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
       + ">, swallowing as there is nothing we can do with it.");
@@ -912,6 +913,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (heartbeatExecutorService != null && !heartbeatExecutorService.isShutdown()) {
       LOG.info("Shutting down Heartbeater thread pool.");
       heartbeatExecutorService.shutdown();
+      heartbeatExecutorService = null;
     }
   }
 
