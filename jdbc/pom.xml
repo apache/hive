@@ -186,6 +186,7 @@
                       <exclude>org.tukaani:*</exclude>
                       <exclude>io.airlift:*</exclude>
                       <exclude>io.dropwizard.metrics:*</exclude>
+                      <exclude>io.netty:*</exclude>
                       <exclude>org.apache.velocity:*</exclude>
                       <exclude>net.sf.jpam:*</exclude>
                       <exclude>org.apache.avro:*</exclude>
@@ -376,10 +377,6 @@
                     <relocation>
                       <pattern>javolution</pattern>
                       <shadedPattern>org.apache.hive.javolution</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>io.netty</pattern>
-                      <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                     </relocation>
                   </relocations>
                 </configuration>
