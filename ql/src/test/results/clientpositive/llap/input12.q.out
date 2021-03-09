@@ -145,7 +145,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: key
-                        Statistics: Num rows: 166 Data size: 30544 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 166 Data size: 664 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key)
                           keys: '2008-04-08' (type: string), '12' (type: string)

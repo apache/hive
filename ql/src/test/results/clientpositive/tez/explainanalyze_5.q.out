@@ -324,7 +324,7 @@ Stage-3
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_3]
                     PartitionCols:UDFToInteger(_col0)
-                    Select Operator [SEL_2] (rows=2/2 width=302)
+                    Select Operator [SEL_2] (rows=2/2 width=190)
                       Output:["_col0","_col1","_col3"]
                       Filter Operator [FIL_9] (rows=2/2 width=226)
                         predicate:(de) IN (109.23, 119.23)

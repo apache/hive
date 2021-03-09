@@ -250,4 +250,14 @@ public class OperatorGraph {
   public Set<Cluster> getClusters() {
     return new HashSet<>(nodeCluster.values());
   }
+
+  public Operator<?> findOperator(String name) {
+    for (Operator<?> o : g.nodes()) {
+      if (name.equals(o.toString())) {
+        return o;
+      }
+    }
+    return null;
+  }
+
 }
