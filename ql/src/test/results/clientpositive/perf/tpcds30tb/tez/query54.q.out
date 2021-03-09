@@ -370,13 +370,13 @@ STAGE PLANS:
                               Select Operator
                                 expressions: _col0 (type: bigint)
                                 outputColumnNames: _col0
-                                Statistics: Num rows: 7800003 Data size: 124800048 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 7800003 Data size: 62400024 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   key expressions: _col0 (type: bigint)
                                   null sort order: z
                                   sort order: +
                                   Map-reduce partition columns: _col0 (type: bigint)
-                                  Statistics: Num rows: 7800003 Data size: 124800048 Basic stats: COMPLETE Column stats: COMPLETE
+                                  Statistics: Num rows: 7800003 Data size: 62400024 Basic stats: COMPLETE Column stats: COMPLETE
                                 Select Operator
                                   expressions: _col0 (type: bigint)
                                   outputColumnNames: _col0

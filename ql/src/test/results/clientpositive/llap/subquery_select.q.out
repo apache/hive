@@ -3508,11 +3508,11 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: p_size (type: int)
                     outputColumnNames: p_size
@@ -3794,11 +3794,11 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_partkey BETWEEN 10000 AND 20000 (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4407,11 +4407,11 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: p_size (type: int)
                     outputColumnNames: p_size
@@ -5045,10 +5045,10 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: bigint)
                   outputColumnNames: _col1, _col2
-                  Statistics: Num rows: 25 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 25 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (_col2 > 0L) (type: boolean)
-                    Statistics: Num rows: 25 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 25 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col1 (type: int)
                       outputColumnNames: _col0
@@ -5342,10 +5342,10 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: bigint)
                   outputColumnNames: _col1, _col2
-                  Statistics: Num rows: 25 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 25 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (_col2 > 0L) (type: boolean)
-                    Statistics: Num rows: 25 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 25 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col1 (type: int)
                       outputColumnNames: _col0

@@ -357,11 +357,11 @@ STAGE PLANS:
                   alias: mytbl_n1
                   Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -479,11 +479,11 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 2440 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -567,11 +567,11 @@ STAGE PLANS:
                   alias: mytbl_n1
                   Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -877,7 +877,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 1770 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -897,7 +897,7 @@ STAGE PLANS:
                               window function: GenericUDAFRowNumberEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 5 Data size: 1770 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: array(struct(row_number_window_0,'A',10,row_number_window_0),struct(row_number_window_0,'B',20,row_number_window_0)) (type: array<struct<col1:int,col2:string,col3:int,col4:int>>)
                     outputColumnNames: _col0

@@ -177,13 +177,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), id2 (type: string)
                       outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)

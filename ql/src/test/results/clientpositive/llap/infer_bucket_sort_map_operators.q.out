@@ -514,7 +514,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: string)
                           outputColumnNames: key, value
-                          Statistics: Num rows: 791 Data size: 208033 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                             keys: '1' (type: string)
@@ -719,7 +719,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 307 Data size: 110520 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 307 Data size: 84425 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                       keys: '1' (type: string)
