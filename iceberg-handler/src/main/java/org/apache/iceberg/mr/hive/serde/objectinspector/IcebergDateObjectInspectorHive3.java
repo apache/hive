@@ -43,11 +43,7 @@ public final class IcebergDateObjectInspectorHive3 extends AbstractPrimitiveJava
 
   @Override
   public Date getPrimitiveJavaObject(Object o) {
-    if (o == null) {
-      return null;
-    }
-    LocalDate date = (LocalDate) o;
-    return Date.ofEpochDay(DateTimeUtil.daysFromDate(date));
+    return o == null ? null : Date.ofEpochDay(DateTimeUtil.daysFromDate((LocalDate) o));
   }
 
   @Override

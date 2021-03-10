@@ -16,41 +16,46 @@
 
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
-        <iceberg-api.version>0.11.0</iceberg-api.version>
         <kryo-shaded.version>4.0.2</kryo-shaded.version>
-        <avro.iceberg.version>1.9.2</avro.iceberg.version>
+        <avro.iceberg.test.version>1.9.2</avro.iceberg.test.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-api</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-core</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-hive-metastore</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-data</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-parquet</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-orc</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -115,11 +120,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>
-            <artifactId>hive-standalone-metastore-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
             <artifactId>hive-standalone-metastore-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -133,7 +133,7 @@
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>${avro.iceberg.version}</version>
+            <version>${avro.iceberg.test.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -186,4 +186,50 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>shaded-build</id>
+            <activation>
+                <property>
+                    <name>skipShade</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>org.apache.iceberg</pattern>
+                                            <shadedPattern>org.apache.hive.org.apache.iceberg</shadedPattern>
+                                            <!-- don't shade the classes inside the Hive iceberg-handler module-->
+                                            <excludes>
+                                                <exclude>org.apache.iceberg.mr.**</exclude>
+                                            </excludes>
+                                        </relocation>
+                                    </relocations>
+                                    <artifactSet>
+                                        <includes>
+                                            <include>org.apache.iceberg:*</include>
+                                        </includes>
+                                    </artifactSet>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
