@@ -82,20 +82,13 @@ public class TestShowPartitionAnalyzer {
     TypeCheckCtx tcCtx = new TypeCheckCtx(rwsch);
     // Numeric columns compare with the default partition
     String showPart1 = "show partitions databaseFoo.tableBar " +
-        "where ds > '2010-03-03' and hr = '__HIVE_DEFAULT_PARTITION__' and "
+        "where ds > '2010-03-03' and "
         + "rs <= 421021";
     ASTNode command = ParseUtils.parse(showPart1, new Context(conf));
     ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)genExprNodeByDefault(tcCtx, command);
-    // the hr op '__HIVE_DEFAULT_PARTITION__' converts to null
-    Assert.assertEquals(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo,
-        null).getExprString(), funcDesc.getChildren().get(1).getExprString());
-    // the type between the column ds and the constant '2010-03-03' do not mismatch
-    ExprNodeGenericFuncDesc child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(0);
-    Assert.assertEquals("ds", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
-    Assert.assertEquals("2010-03-03", ((ExprNodeConstantDesc)child.getChildren().get(1)).getValue());
 
     // rs <= 421021
-    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(2);
+    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(1);
     Assert.assertEquals("rs", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
     Assert.assertEquals(421021, ((ExprNodeConstantDesc)child.getChildren().get(1)).getValue());
 
