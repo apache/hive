@@ -188,7 +188,7 @@ public class TestWMMetricsWithTrigger {
     verifyMetrics(0, 4, 1, 0);
 
     ExceptionHolder stmtHolder = new ExceptionHolder();
-    // Run Query with Kill Trigger in place
+    // Run Query with Kill Trigger in place in a separate thread
     Thread tExecute = new Thread(() -> {
       try {
         runQueryWithTrigger(10);
