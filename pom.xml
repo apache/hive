@@ -93,7 +93,7 @@
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- To add additional exclude patterns set this property -->
-    <test.excludes.additional></test.excludes.additional>
+    <test.excludes.additional />
     <skip.spark.files>**/TestSparkStatistics*,**/TestSparkSessionTimeout*,**/TestJdbcWithMiniHS2ErasureCoding*,**/TestLocalHiveSparkClient*,**/TestKryoMessageCodec*</skip.spark.files>
 
     <!-- Plugin and Plugin Dependency Versions -->
