@@ -4017,6 +4017,7 @@
     {
         "impalaFnName": "casttofloat",
         "fnName": "cast",
+        "castUp": "true",
         "userVisible": "true",
         "isAgg": "false",
         "hasVarArgs": "false",
@@ -15903,5 +15904,2058 @@
         ],
         "symbolName": "_ZN6impala27SubqueryValidationFunctions12SqCountCheckEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_10BooleanValE",
         "hdfsUriLoc": ""
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S9_S6_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_SC_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_10BooleanValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_9DoubleValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_first_n",
+        "fnName" : "mask_show_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S9_S6_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_SC_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions13MaskShowLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_10BooleanValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_9DoubleValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_show_last_n",
+        "fnName" : "mask_show_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_S9_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S9_S6_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_SC_S9_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions10MaskFirstNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_10BooleanValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_9DoubleValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_first_n",
+        "fnName" : "mask_first_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S6_S9_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES6_S6_S6_S9_S6_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_SC_S9_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions9MaskLastNEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValES9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions14MaskShowFirstNEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_10BooleanValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_9DoubleValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask_last_n",
+        "fnName" : "mask_last_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP",
+            "INT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskNullEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_6IntValERKNS1_9StringValESC_SC_S9_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValES6_S6_S6_S6_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValES6_S6_S6_S6_RKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValES6_S6_S6_RKNS1_6IntValES6_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValES6_S6_S6_S6_RKNS1_6IntValES9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValES6_S6_S6_RKNS1_6IntValES6_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValES9_S9_S9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_9StringValES9_S9_S9_RKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_9StringValES9_S9_RKNS1_6IntValES9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValES9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_9StringValES9_S9_S9_RKNS1_6IntValESC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_9StringValES9_S9_RKNS1_6IntValES9_SC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValES9_S9_S9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_7DateValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_9StringValES9_S9_S9_RKNS1_6IntValESC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_9StringValES9_S9_S9_RKNS1_6IntValESC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_9StringValES9_S9_RKNS1_6IntValES9_SC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "STRING",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_9StringValES9_S9_S9_RKNS1_6IntValESC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_6IntValES9_S9_S9_S9_S9_S9_S9_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_10BooleanValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_10BooleanValERKNS1_9StringValES9_S9_RKNS1_6IntValES9_SC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9DoubleValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_9DoubleValERKNS1_9StringValES9_S9_RKNS1_6IntValES9_SC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_12TimestampValE"
+    },
+    {
+        "impalaFnName" : "mask",
+        "fnName" : "mask",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP",
+            "STRING",
+            "STRING",
+            "STRING",
+            "INT",
+            "STRING",
+            "INT",
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions4MaskEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_9StringValES9_S9_RKNS1_6IntValES9_SC_SC_SC_"
+    },
+    {
+        "impalaFnName" : "mask_hash",
+        "fnName" : "mask_hash",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskHashEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "mask_hash",
+        "fnName" : "mask_hash",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskHashEPN10impala_udf15FunctionContextERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "mask_hash",
+        "fnName" : "mask_hash",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "DOUBLE"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskHashEPN10impala_udf15FunctionContextERKNS1_9DoubleValE"
+    },
+    {
+        "impalaFnName" : "mask_hash",
+        "fnName" : "mask_hash",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BOOLEAN",
+        "argTypes" : [
+            "BOOLEAN"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskHashEPN10impala_udf15FunctionContextERKNS1_10BooleanValE"
+    },
+    {
+        "impalaFnName" : "mask_hash",
+        "fnName" : "mask_hash",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "TIMESTAMP",
+        "argTypes" : [
+            "TIMESTAMP"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskHashEPN10impala_udf15FunctionContextERKNS1_12TimestampValE"
+    },
+    {
+        "impalaFnName" : "mask_hash",
+        "fnName" : "mask_hash",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DATE",
+        "argTypes" : [
+            "DATE"
+        ],
+        "symbolName" : "_ZN6impala13MaskFunctions8MaskHashEPN10impala_udf15FunctionContextERKNS1_7DateValE"
+    },
+    {
+        "impalaFnName" : "ds_hll_estimate",
+        "fnName" : "ds_hll_estimate",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions13DsHllEstimateEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "ds_hll_estimate_bounds_as_string",
+        "fnName" : "ds_hll_estimate_bounds_as_string",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions27DsHllEstimateBoundsAsStringEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "ds_hll_estimate_bounds_as_string",
+        "fnName" : "ds_hll_estimate_bounds_as_string",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions27DsHllEstimateBoundsAsStringEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "ds_hll_union_f",
+        "fnName" : "ds_hll_union_f",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions11DsHllUnionFEPN10impala_udf15FunctionContextERKNS1_9StringValES6_"
+    },
+    {
+        "impalaFnName" : "ds_hll_stringify",
+        "fnName" : "ds_hll_stringify",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions14DsHllStringifyEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_quantile",
+        "fnName" : "ds_kll_quantile",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "FLOAT",
+        "argTypes" : [
+            "STRING",
+            "DOUBLE"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions13DsKllQuantileEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_9DoubleValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_n",
+        "fnName" : "ds_kll_n",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions6DsKllNEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_rank",
+        "fnName" : "ds_kll_rank",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DOUBLE",
+        "argTypes" : [
+            "STRING",
+            "FLOAT"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions9DsKllRankEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_8FloatValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_quantiles_as_string",
+        "fnName" : "ds_kll_quantiles_as_string",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "true",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "DOUBLE"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions22DsKllQuantilesAsStringEPN10impala_udf15FunctionContextERKNS1_9StringValEiPKNS1_9DoubleValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_pmf_as_string",
+        "fnName" : "ds_kll_pmf_as_string",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "true",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "FLOAT"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions16DsKllPMFAsStringEPN10impala_udf15FunctionContextERKNS1_9StringValEiPKNS1_8FloatValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_cdf_as_string",
+        "fnName" : "ds_kll_cdf_as_string",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "true",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "FLOAT"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions16DsKllCDFAsStringEPN10impala_udf15FunctionContextERKNS1_9StringValEiPKNS1_8FloatValE"
+    },
+    {
+        "impalaFnName" : "ds_kll_stringify",
+        "fnName" : "ds_kll_stringify",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "true",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING"
+        ],
+        "symbolName" : "_ZN6impala21DataSketchesFunctions14DsKllStringifyEPN10impala_udf15FunctionContextERKNS1_9StringValE"
+    },
+    {
+        "impalaFnName" : "iceberg_truncate_transform",
+        "fnName" : "iceberg_truncate_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions26TruncatePartitionTransformEPN10impala_udf15FunctionContextERKNS1_6IntValES6_"
+    },
+    {
+        "impalaFnName" : "iceberg_truncate_transform",
+        "fnName" : "iceberg_truncate_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "BIGINT",
+        "argTypes" : [
+            "BIGINT",
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions26TruncatePartitionTransformEPN10impala_udf15FunctionContextERKNS1_9BigIntValES6_"
+    },
+    {
+        "impalaFnName" : "iceberg_truncate_transform",
+        "fnName" : "iceberg_truncate_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DECIMAL",
+        "argTypes" : [
+            "DECIMAL",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions26TruncatePartitionTransformEPN10impala_udf15FunctionContextERKNS1_10DecimalValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_truncate_transform",
+        "fnName" : "iceberg_truncate_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "DECIMAL",
+        "argTypes" : [
+            "DECIMAL",
+            "BIGINT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions26TruncatePartitionTransformEPN10impala_udf15FunctionContextERKNS1_10DecimalValERKNS1_9BigIntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_truncate_transform",
+        "fnName" : "iceberg_truncate_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "STRING",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions26TruncatePartitionTransformEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_bucket_transform",
+        "fnName" : "iceberg_bucket_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "INT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions24BucketPartitionTransformEPN10impala_udf15FunctionContextERKNS1_6IntValES6_"
+    },
+    {
+        "impalaFnName" : "iceberg_bucket_transform",
+        "fnName" : "iceberg_bucket_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "BIGINT",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions24BucketPartitionTransformEPN10impala_udf15FunctionContextERKNS1_9BigIntValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_bucket_transform",
+        "fnName" : "iceberg_bucket_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "DECIMAL",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions24BucketPartitionTransformEPN10impala_udf15FunctionContextERKNS1_10DecimalValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_bucket_transform",
+        "fnName" : "iceberg_bucket_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "STRING",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions24BucketPartitionTransformEPN10impala_udf15FunctionContextERKNS1_9StringValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_bucket_transform",
+        "fnName" : "iceberg_bucket_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "DATE",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions24BucketPartitionTransformEPN10impala_udf15FunctionContextERKNS1_7DateValERKNS1_6IntValE"
+    },
+    {
+        "impalaFnName" : "iceberg_bucket_transform",
+        "fnName" : "iceberg_bucket_transform",
+        "binaryType" : "BUILTIN",
+        "userVisible" : "false",
+        "isPersistent" : "true",
+        "isAgg" : "false",
+        "hasVarArgs" : "false",
+        "retType" : "INT",
+        "argTypes" : [
+            "TIMESTAMP",
+            "INT"
+        ],
+        "symbolName" : "_ZN6impala16IcebergFunctions24BucketPartitionTransformEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_6IntValE"
     }
 ]
