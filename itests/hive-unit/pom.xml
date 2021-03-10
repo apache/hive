@@ -519,6 +519,10 @@
               <groupId>com.esotericsoftware.kryo</groupId>
               <artifactId>kryo</artifactId>
             </exclusion>
+              <exclusion>
+                  <groupId>org.bouncycastle</groupId>
+                  <artifactId>bcprov-jdk15on</artifactId>
+              </exclusion>
           </exclusions>
         </dependency>
       </dependencies>
