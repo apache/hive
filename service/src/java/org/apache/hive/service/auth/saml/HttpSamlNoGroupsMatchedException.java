@@ -16,29 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.service.auth.saml;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML("SAML");
+/**
+ * Exception which is thrown when the groups of a user do not match with the
+ * allowed list of groups.
+ */
+public class HttpSamlNoGroupsMatchedException extends HttpSamlAuthenticationException {
 
-    private final String authType;
-
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
+  public HttpSamlNoGroupsMatchedException(String s) {
+    super(s);
   }
-
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
 }
