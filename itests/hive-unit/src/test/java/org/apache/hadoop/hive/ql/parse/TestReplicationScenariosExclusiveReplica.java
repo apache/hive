@@ -87,7 +87,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
         .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
         .run("use " + replicatedDbName)
@@ -108,7 +108,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
         .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
         .run("use " + replicatedDbName)
@@ -143,7 +143,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName +".'t[0-9]+'", withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
 
     //verify table list
     verifyTableListForPolicy(replica.miniDFSCluster.getFileSystem(),
@@ -171,7 +171,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName + ".'t[0-9]+'", withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
 
     //verify table list
     verifyTableListForPolicy(replica.miniDFSCluster.getFileSystem(),
@@ -214,7 +214,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -235,7 +235,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -271,7 +271,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -292,7 +292,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -328,7 +328,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -349,7 +349,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -384,7 +384,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, replica);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -405,7 +405,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, replica);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -439,7 +439,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for bootstrap
-    assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -460,7 +460,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .dump(primaryDbName, withClauseOptions);
 
     // verify that the external table list is written correctly for incremental
-    assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t3"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClauseOptions)
             .run("use " + replicatedDbName)
@@ -757,14 +757,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
               + UserGroupInformation.getCurrentUser().getUserName() + "'");
     }
     return confList;
-  }
-
-  private void assertExternalFileList(List<String> expected, String dumplocation,
-                                      WarehouseInstance warehouseInstance)
-      throws IOException {
-    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path externalTableFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
-    ReplicationTestUtils.assertExternalFileList(warehouseInstance, expected, externalTableFileList);
   }
 
   /*

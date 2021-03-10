@@ -1692,7 +1692,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
-    assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     //SecurityException expected from DirCopyTask
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1774,7 +1774,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
-    assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     //SecurityException expected from DirCopyTask
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1842,7 +1842,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> clause = new ArrayList<>();
     //NS replacement parameters has no effect when data is also copied to staging
     clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
-    clause.add("'" + HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY + "'='false'");
+    clause.add("'" + HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY + "'='false'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
@@ -1850,8 +1850,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
             .dump(primaryDbName, clause);
-    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
-            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
+    ReplicationTestUtils.assertFalseExternalFileList(primary, tuple.dumpLocation);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -1862,8 +1861,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     tuple = primary.run("use " + primaryDbName)
             .run("insert into table1 values (3)")
             .dump(primaryDbName, clause);
-    assertFalseExternalFileList(new Path(new Path(tuple.dumpLocation,
-            REPL_HIVE_BASE_DIR), EximUtil.FILE_LIST_EXTERNAL));
+    ReplicationTestUtils.assertFalseExternalFileList(primary, tuple.dumpLocation);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -1884,7 +1882,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.123",
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
-    assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -2279,22 +2277,5 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"
             + NS_REMOTE + "'");
     return withClause;
-  }
-
-  private void assertFalseExternalFileList(Path externalTableFileList)
-          throws IOException {
-    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
-    Assert.assertFalse(fileSystem.exists(externalTableFileList));
-  }
-
-  /*
-   * Method used from TestReplicationScenariosExclusiveReplica
-   */
-  private void assertExternalFileList(List<String> expected, String dumplocation,
-                                      WarehouseInstance warehouseInstance)
-          throws IOException {
-    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path externalTblFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
-    ReplicationTestUtils.assertExternalFileList(warehouseInstance, expected, externalTblFileList);
   }
 }

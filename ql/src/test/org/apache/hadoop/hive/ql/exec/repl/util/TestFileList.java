@@ -152,20 +152,20 @@ public class TestFileList {
     FileList fileList = new FileList(testFilePath, conf);
 
     for (int i = 1; i <= numUniqueEntries; i++) {
-      String currentUniqueEntry = testEntry + Integer.valueOf(i);
+      String currentUniqueEntry = testEntry + i;
       for (int duplicateFactor = 0; duplicateFactor < i; duplicateFactor++) {
         fileList.add(currentUniqueEntry);
       }
     }
     fileList.close();
 
-    int currentCount = 0;
+    int currentCount = 1;
     while (fileList.hasNext()) {
       String entry = fileList.next();
-      Assert.assertEquals(testEntry + Integer.valueOf(currentCount + 1), entry);
+      Assert.assertEquals(testEntry + currentCount, entry);
       currentCount++;
     }
-    Assert.assertEquals(currentCount, numUniqueEntries);
+    Assert.assertEquals(currentCount - 1, numUniqueEntries);
   }
 
   @Test
@@ -177,18 +177,18 @@ public class TestFileList {
     FileList fileList = new FileList(testFilePath, conf);
 
     for (int i = 1; i <= numUniqueEntries; i++) {
-      String currentUniqueEntry = testEntry + Integer.valueOf(i);
+      String currentUniqueEntry = testEntry + i;
       fileList.add(currentUniqueEntry);
     }
     fileList.close();
 
-    int currentCount = 0;
+    int currentCount = 1;
     while (fileList.hasNext()) {
       String entry = fileList.next();
-      Assert.assertEquals(testEntry + Integer.valueOf(currentCount + 1), entry);
+      Assert.assertEquals(testEntry + currentCount, entry);
       currentCount++;
     }
-    Assert.assertEquals(currentCount, numUniqueEntries);
+    Assert.assertEquals(currentCount - 1, numUniqueEntries);
   }
 
   @Test
@@ -231,13 +231,13 @@ public class TestFileList {
       Mockito.doReturn(retryable)
               .when(fileList).buildRetryable();
       Mockito.doReturn(true)
-              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY);
+              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
       Mockito.doReturn(testFileStream).when(fileList).initWriter();
     }
     else if (retryParams.length == 1) {
       //setup for retries
       Mockito.doReturn(true)
-              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY);
+              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
       Mockito.doReturn(retryable)
               .when(fileList).buildRetryable();
       Mockito.doReturn(mockFs)
@@ -265,7 +265,7 @@ public class TestFileList {
     } else if (retryParams.length == 2) {
       //setup for failure but no retry
       Mockito.doReturn(false)
-              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY);
+              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
       Mockito.doReturn(outStream)
               .when(fileList).getWriterCreateMode();
       Mockito.doThrow(testException)
@@ -274,7 +274,7 @@ public class TestFileList {
       //setup for abort case
       Mockito.doReturn(true)
               .when(hiveConf)
-              .getBoolVar(HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY);
+              .getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
       Mockito.doReturn(outStream)
               .when(fileList).initWriter();
     }

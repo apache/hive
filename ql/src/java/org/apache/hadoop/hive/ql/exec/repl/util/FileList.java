@@ -54,7 +54,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
   }
 
   public void add(String entry) throws IOException {
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_COPY_ITERATOR_RETRY)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY)) {
       writeWithRetry(entry);
     } else {
       writeEntry(entry);
@@ -67,7 +67,8 @@ public class FileList implements AutoCloseable, Iterator<String> {
       try {
         Retryable retryable = buildRetryable();
         retryable.executeCallable((Callable<Void>) () -> {
-          if(this.abortOperation) {
+          if (this.abortOperation) {
+            LOG.debug("Aborting write operation for entry {} to file {}.", entry, backingFile);
             return null;
           }
           backingFileWriter = getWriterCreateMode();
@@ -78,7 +79,8 @@ public class FileList implements AutoCloseable, Iterator<String> {
         throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
       }
     }
-    if(this.abortOperation) {
+    if (this.abortOperation) {
+      LOG.debug("Aborting write operation for entry {} to file {}.", entry, backingFile);
       return;
     }
     try {
@@ -96,6 +98,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
     try {
       retryable.executeCallable((Callable<Void>) () -> {
         if (this.abortOperation) {
+          LOG.debug("Aborting write operation for entry {} to file {}.", entry, backingFile);
           return null;
         }
         try {
@@ -150,7 +153,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
     try {
       return backingFile.getFileSystem(conf).create(backingFile);
     } catch (IOException e) {
-      LOG.error("Error opening {} in append mode", backingFile, e);
+      LOG.error("Error creating file {}", backingFile, e);
       throw e;
     }
   }
@@ -159,7 +162,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
     try {
       return backingFile.getFileSystem(conf).append(backingFile);
     } catch (IOException e) {
-      LOG.error("Error creating file {}", backingFile, e);
+      LOG.error("Error opening file {} in append mode", backingFile, e);
       throw e;
     }
   }
@@ -231,12 +234,8 @@ public class FileList implements AutoCloseable, Iterator<String> {
       }
       LOG.info("Completed close for File List backed by:{}", backingFile);
     } finally {
-      if(backingFileReader != null) {
-        backingFileReader = null;
-      }
-      if(backingFileWriter != null) {
-        backingFileWriter = null;
-      }
+      backingFileReader = null;
+      backingFileWriter = null;
     }
   }
 }

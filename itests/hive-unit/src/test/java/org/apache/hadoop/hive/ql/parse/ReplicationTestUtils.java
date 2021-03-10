@@ -22,6 +22,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.DirCopyWork;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.junit.Assert;
 
 import java.io.BufferedReader;
@@ -524,8 +525,18 @@ public class ReplicationTestUtils {
     return withClause;
   }
 
-  public static void assertExternalFileList(WarehouseInstance warehouseInstance,
-                                            List<String> expected, Path externalTableFileList) throws IOException {
+  public static void assertFalseExternalFileList(WarehouseInstance warehouseInstance,
+                                                 String dumpLocation) throws IOException {
+    DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
+    Path hivePath = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path externalTblFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
+    Assert.assertFalse(fileSystem.exists(externalTblFileList));
+  }
+
+  public static void assertExternalFileList(List<String> expected, String dumplocation,
+                                            WarehouseInstance warehouseInstance) throws IOException {
+    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path externalTableFileList = new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL);
     DistributedFileSystem fileSystem = warehouseInstance.miniDFSCluster.getFileSystem();
     Assert.assertTrue(fileSystem.exists(externalTableFileList));
     InputStream inputStream = fileSystem.open(externalTableFileList);

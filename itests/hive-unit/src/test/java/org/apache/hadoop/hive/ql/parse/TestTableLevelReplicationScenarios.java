@@ -513,8 +513,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
     // Verify that _file_list_external  contains only table "a2".
-    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("a2"),
-            new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
             .run("use " + replicatedDbName)
@@ -553,8 +552,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
     // Verify that _file_list_external contains only table "a2".
-    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("a2"),
-            new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
             .run("use " + replicatedDbName)
@@ -702,8 +700,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
     // Verify that _file_list_external contains table "a2" and "c2".
-    ReplicationTestUtils.assertExternalFileList(primary, Arrays.asList("a2", "c2"),
-            new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL));
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a2", "c2"), tuple.dumpLocation, primary);
 
     // Verify if the expected tables are bootstrapped.
     verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
@@ -1374,6 +1371,4 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       .run("select * from " + replicatedDbName + ".t2")
       .verifyResults(new String[] {"4"});
   }
-
-
 }
