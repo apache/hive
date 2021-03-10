@@ -19,49 +19,49 @@
 
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestIcebergTimestampObjectInspector {
+import java.time.LocalDate;
+
+public class TestIcebergDateObjectInspectorHive3 {
 
   @Test
-  public void testIcebergTimestampObjectInspector() {
-    IcebergTimestampObjectInspector oi = IcebergTimestampObjectInspector.get();
+  public void testIcebergDateObjectInspector() {
+    DateObjectInspector oi = IcebergDateObjectInspectorHive3.get();
 
     Assert.assertEquals(ObjectInspector.Category.PRIMITIVE, oi.getCategory());
-    Assert.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMP, oi.getPrimitiveCategory());
+    Assert.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.DATE, oi.getPrimitiveCategory());
 
-    Assert.assertEquals(TypeInfoFactory.timestampTypeInfo, oi.getTypeInfo());
-    Assert.assertEquals(TypeInfoFactory.timestampTypeInfo.getTypeName(), oi.getTypeName());
+    Assert.assertEquals(TypeInfoFactory.dateTypeInfo, oi.getTypeInfo());
+    Assert.assertEquals(TypeInfoFactory.dateTypeInfo.getTypeName(), oi.getTypeName());
 
-    Assert.assertEquals(Timestamp.class, oi.getJavaPrimitiveClass());
-    Assert.assertEquals(TimestampWritable.class, oi.getPrimitiveWritableClass());
+    Assert.assertEquals(Date.class, oi.getJavaPrimitiveClass());
+    Assert.assertEquals(DateWritableV2.class, oi.getPrimitiveWritableClass());
 
     Assert.assertNull(oi.copyObject(null));
     Assert.assertNull(oi.getPrimitiveJavaObject(null));
     Assert.assertNull(oi.getPrimitiveWritableObject(null));
-    Assert.assertNull(oi.convert(null));
 
-    LocalDateTime local = LocalDateTime.of(2020, 1, 1, 12, 55, 30, 5560000);
-    Timestamp ts = Timestamp.valueOf(local);
+    int epochDays = 5005;
+    LocalDate local = LocalDate.ofEpochDay(epochDays);
+    Date date = Date.ofEpochDay(epochDays);
 
-    Assert.assertEquals(ts, oi.getPrimitiveJavaObject(local));
-    Assert.assertEquals(new TimestampWritable(ts), oi.getPrimitiveWritableObject(local));
+    Assert.assertEquals(date, oi.getPrimitiveJavaObject(local));
+    Assert.assertEquals(new DateWritableV2(date), oi.getPrimitiveWritableObject(local));
 
-    Timestamp copy = (Timestamp) oi.copyObject(ts);
+    Date copy = (Date) oi.copyObject(date);
 
-    Assert.assertEquals(ts, copy);
-    Assert.assertNotSame(ts, copy);
+    Assert.assertEquals(date, copy);
+    Assert.assertNotSame(date, copy);
 
     Assert.assertFalse(oi.preferWritable());
-
-    Assert.assertEquals(local, oi.convert(ts));
   }
 
 }

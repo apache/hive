@@ -106,8 +106,7 @@ public class TestHiveIcebergStorageHandlerTimezone {
     localTimeZone.ifPresent(ThreadLocal::remove);
 
     this.testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, TestTables.TestTableType.HIVE_CATALOG, temp);
-    // Uses spark as an engine so we can detect if we unintentionally try to use any execution engines
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "spark");
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "tez");
   }
 
   @After

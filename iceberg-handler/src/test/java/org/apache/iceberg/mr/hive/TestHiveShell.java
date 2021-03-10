@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -188,6 +190,15 @@ public class TestHiveShell {
 
     // Disable vectorization for HiveIcebergInputFormat
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+
+    hiveConf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname, DbTxnManager.class.getName());
+    hiveConf.set(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, SQLStdHiveAuthorizerFactory.class.getName());
+
+    // set to false so that TxnManager#checkLock does not throw exception when using UNSET data type operation
+    // in the requested lock component
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
+    // set to true so that the Tez session will create an empty jar for localization
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_IDE, true);
 
     return hiveConf;
   }

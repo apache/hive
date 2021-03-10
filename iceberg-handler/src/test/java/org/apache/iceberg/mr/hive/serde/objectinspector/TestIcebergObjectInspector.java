@@ -91,13 +91,7 @@ public class TestIcebergObjectInspector {
     Assert.assertEquals(3, dateField.getFieldID());
     Assert.assertEquals("date_field", dateField.getFieldName());
     Assert.assertEquals("date comment", dateField.getFieldComment());
-    if (MetastoreUtil.hive3PresentOnClasspath()) {
-      Assert.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspectorHive3",
-              dateField.getFieldObjectInspector().getClass().getName());
-    } else {
-      Assert.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspector",
-              dateField.getFieldObjectInspector().getClass().getName());
-    }
+    Assert.assertEquals(IcebergDateObjectInspectorHive3.get(), dateField.getFieldObjectInspector());
 
     // decimal
     StructField decimalField = soi.getStructFieldRef("decimal_field");
@@ -153,24 +147,14 @@ public class TestIcebergObjectInspector {
     Assert.assertEquals(11, timestampField.getFieldID());
     Assert.assertEquals("timestamp_field", timestampField.getFieldName());
     Assert.assertEquals("timestamp comment", timestampField.getFieldComment());
-    if (MetastoreUtil.hive3PresentOnClasspath()) {
-      Assert.assertEquals("IcebergTimestampObjectInspectorHive3",
-          timestampField.getFieldObjectInspector().getClass().getSimpleName());
-    } else {
-      Assert.assertEquals(IcebergTimestampObjectInspector.get(), timestampField.getFieldObjectInspector());
-    }
+    Assert.assertEquals(IcebergTimestampObjectInspectorHive3.get(), timestampField.getFieldObjectInspector());
 
     // timestamp with tz
     StructField timestampTzField = soi.getStructFieldRef("timestamptz_field");
     Assert.assertEquals(12, timestampTzField.getFieldID());
     Assert.assertEquals("timestamptz_field", timestampTzField.getFieldName());
     Assert.assertEquals("timestamptz comment", timestampTzField.getFieldComment());
-    if (MetastoreUtil.hive3PresentOnClasspath()) {
-      Assert.assertEquals("IcebergTimestampWithZoneObjectInspectorHive3",
-          timestampTzField.getFieldObjectInspector().getClass().getSimpleName());
-    } else {
-      Assert.assertEquals(IcebergTimestampWithZoneObjectInspector.get(), timestampTzField.getFieldObjectInspector());
-    }
+    Assert.assertEquals(IcebergTimestampWithZoneObjectInspectorHive3.get(), timestampTzField.getFieldObjectInspector());
 
     // UUID
     StructField uuidField = soi.getStructFieldRef("uuid_field");

@@ -59,7 +59,7 @@ public class TestHiveIcebergSerDe {
     tables.create(schema, location.toString());
 
     HiveIcebergSerDe serDe = new HiveIcebergSerDe();
-    serDe.initialize(conf, properties);
+    serDe.initialize(conf, properties, new Properties());
 
     Assert.assertEquals(IcebergObjectInspector.create(schema), serDe.getObjectInspector());
   }

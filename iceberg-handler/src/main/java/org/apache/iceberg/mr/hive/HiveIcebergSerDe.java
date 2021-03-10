@@ -59,7 +59,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Container<Record> row = new Container<>();
 
   @Override
-  public void initialize(@Nullable Configuration configuration, Properties serDeProperties) throws SerDeException {
+  public void initialize(@Nullable Configuration configuration, Properties serDeProperties, Properties partitionProperties)
+      throws SerDeException {
     // HiveIcebergSerDe.initialize is called multiple places in Hive code:
     // - When we are trying to create a table - HiveDDL data is stored at the serDeProperties, but no Iceberg table
     // is created yet.

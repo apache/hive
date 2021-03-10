@@ -61,6 +61,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -353,6 +354,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
   }
 
+  @Ignore("Ignored until iceberg-hive-metastore module is migrated over to Hive repo as well")
   @Test
   public void testCreateTableWithColumnSpecificationHierarchy() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -484,6 +486,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     }
   }
 
+  @Ignore("Ignored until HMS-Iceberg property sync patches are released in Iceberg 0.12.0")
   @Test
   public void testIcebergAndHmsTableProperties() throws TException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
