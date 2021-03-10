@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,27 +25,38 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {
+  public static final Logger LOG = LoggerFactory.getLogger(OrcFileStripeMergeRecordReader.class);
   private final Reader reader;
   private final Path path;
   protected Iterator<StripeInformation> iter;
   protected List<OrcProto.StripeStatistics> stripeStatistics;
   private int stripeIdx;
-  private long start;
-  private long end;
   private boolean skipFile;
 
   public OrcFileStripeMergeRecordReader(Configuration conf, FileSplit split) throws IOException {
     path = split.getPath();
-    start = split.getStart();
-    end = start + split.getLength();
+    long start = split.getStart();
+    // if the combined split has only part of the file split, the entire file will be handled by the mapper that
+    // owns the start of file split.
+    skipFile = start > 0; // skip the file if start is not 0
     FileSystem fs = path.getFileSystem(conf);
     this.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
     this.iter = reader.getStripes().iterator();
     this.stripeIdx = 0;
     this.stripeStatistics = ((ReaderImpl) reader).getOrcProtoStripeStatistics();
+    LOG.info("Processing file {}. skipFile: {}", path, skipFile);
   }
 
   public Class<?> getKeyClass() {
@@ -87,39 +91,35 @@ public class OrcFileStripeMergeRecordReader implements
       keyWrapper.setInputPath(path);
       keyWrapper.setIsIncompatFile(true);
       skipFile = true;
+      LOG.info("Skipping file {} because of missing stripe stats", path);
       return true;
     }
 
-    while (iter.hasNext()) {
+    // file split starts with 0 and hence this mapper owns concatenate of all stripes in the file.
+    if (iter.hasNext()) {
       StripeInformation si = iter.next();
-
-      // if stripe offset is outside the split boundary then ignore the current
-      // stripe as it will be handled by some other mapper.
-      if (si.getOffset() >= start && si.getOffset() < end) {
-        valueWrapper.setStripeStatistics(stripeStatistics.get(stripeIdx++));
-        valueWrapper.setStripeInformation(si);
-        if (!iter.hasNext()) {
-          valueWrapper.setLastStripeInFile(true);
-          Map<String, ByteBuffer> userMeta = new HashMap<>();
-          for(String key: reader.getMetadataKeys()) {
-            userMeta.put(key, reader.getMetadataValue(key));
-          }
-          valueWrapper.setUserMetadata(userMeta);
+      valueWrapper.setStripeStatistics(stripeStatistics.get(stripeIdx));
+      valueWrapper.setStripeInformation(si);
+      if (!iter.hasNext()) {
+        valueWrapper.setLastStripeInFile(true);
+        Map<String, ByteBuffer> userMeta = new HashMap<>();
+        for (String key : reader.getMetadataKeys()) {
+          userMeta.put(key, reader.getMetadataValue(key));
         }
-        keyWrapper.setInputPath(path);
-        keyWrapper.setCompression(reader.getCompressionKind());
-        keyWrapper.setCompressBufferSize(reader.getCompressionSize());
-        keyWrapper.setFileVersion(reader.getFileVersion());
-        keyWrapper.setWriterVersion(reader.getWriterVersion());
-        keyWrapper.setRowIndexStride(reader.getRowIndexStride());
-        keyWrapper.setFileSchema(reader.getSchema());
-      } else {
-        stripeIdx++;
-        continue;
+        valueWrapper.setUserMetadata(userMeta);
       }
+      keyWrapper.setInputPath(path);
+      keyWrapper.setCompression(reader.getCompressionKind());
+      keyWrapper.setCompressBufferSize(reader.getCompressionSize());
+      keyWrapper.setFileVersion(reader.getFileVersion());
+      keyWrapper.setWriterVersion(reader.getWriterVersion());
+      keyWrapper.setRowIndexStride(reader.getRowIndexStride());
+      keyWrapper.setFileSchema(reader.getSchema());
+      stripeIdx++;
       return true;
     }
 
+    LOG.info("Processed file {} with {} stripes and {} rows", path, stripeIdx, reader.getNumberOfRows());
     return false;
   }
 
