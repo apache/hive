@@ -53,6 +53,8 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -162,6 +164,42 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
     verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
+  }
+
+  @Test
+  public void testNotificationFromLoadMetadataAck() throws Throwable {
+    long previousLoadNotificationID = 0;
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .verifyResults(new String[] {});
+    long currentLoadNotificationID = fetchNotificationIDFromDump(new Path(bootstrapDump.dumpLocation));
+    long currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
+    assertTrue(currentLoadNotificationID > previousLoadNotificationID);
+    assertTrue(currentNotificationID > currentLoadNotificationID);
+    previousLoadNotificationID = currentLoadNotificationID;
+    WarehouseInstance.Tuple incrementalDump1 = primary.run("insert into t1 values (1)")
+            .dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName)
+            .verifyResults(new String[] {});
+    currentLoadNotificationID = fetchNotificationIDFromDump(new Path(incrementalDump1.dumpLocation));
+    currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
+    assertTrue(currentLoadNotificationID > previousLoadNotificationID);
+    assertTrue(currentNotificationID > currentLoadNotificationID);
+  }
+
+  private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception {
+    Path hiveDumpDir = new Path(dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR.toString());
+    Path loadMetadataFilePath = new Path(hiveDumpDir, ReplAck.LOAD_METADATA.toString());
+    FileSystem fs = dumpLocation.getFileSystem(conf);
+    BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(loadMetadataFilePath)));
+    String line = reader.readLine();
+    assertTrue(line != null && reader.readLine() == null);
+    if (reader != null) {
+      reader.close();
+    }
+    return Long.parseLong(line);
   }
 
   @Test

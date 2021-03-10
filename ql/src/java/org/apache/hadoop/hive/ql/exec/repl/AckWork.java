@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * AckWork.
@@ -35,6 +37,7 @@ public class AckWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path ackFilePath;
   private transient ReplicationMetricCollector metricCollector;
+  private List<PreAckTask> preAckTasks;
 
   public Path getAckFilePath() {
     return ackFilePath;
@@ -48,8 +51,17 @@ public class AckWork implements Serializable {
     this.ackFilePath = ackFilePath;
   }
   
-  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector) {
+  public AckWork(Path ackFilePath, ReplicationMetricCollector metricCollector, List<PreAckTask> preAckTasks) {
     this.ackFilePath = ackFilePath;
     this.metricCollector = metricCollector;
+    this.preAckTasks = preAckTasks;
+  }
+
+  public List<PreAckTask> getPreAckTasks() {
+    return this.preAckTasks;
   }
 }
+
+interface PreAckTask {
+  void run() throws SemanticException;
+};
