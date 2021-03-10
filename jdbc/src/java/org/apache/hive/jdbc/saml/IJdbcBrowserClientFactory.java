@@ -16,29 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.jdbc.saml;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML("SAML");
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.saml.IJdbcBrowserClient.HiveJdbcBrowserException;
 
-    private final String authType;
+/**
+ * Factory class to instantiate the {@link IJdbcBrowserClient}. This is mostly used for
+ * testing purposes so that test can instantiate a test browser client which can do
+ * browser interaction programmatically.
+ */
+public interface IJdbcBrowserClientFactory {
 
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
-  }
-
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
+  /**
+   * Create a {@link IJdbcBrowserClient} from a the given {@link JdbcConnectionParams}
+   * @throws HiveJdbcBrowserException In case of any error to instantiate the browser
+   * client.
+   */
+  IJdbcBrowserClient create(JdbcConnectionParams connectionParams)
+      throws HiveJdbcBrowserException;
 }

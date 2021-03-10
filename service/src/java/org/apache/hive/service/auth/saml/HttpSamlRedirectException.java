@@ -16,29 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.service.auth.saml;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML("SAML");
+/**
+ * Exception used in SAML auth workflow to determine if a given request needs
+ * to be redirected to the external identity provider.
+ */
+public class HttpSamlRedirectException extends HttpSamlAuthenticationException {
 
-    private final String authType;
-
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
+  public HttpSamlRedirectException(String msg) {
+    super(msg);
   }
-
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
 }

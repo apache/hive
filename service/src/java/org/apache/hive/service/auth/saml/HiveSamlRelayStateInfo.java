@@ -16,29 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.service.auth.saml;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML("SAML");
+/**
+ * Wrapper class to store the RelayState of the SAML authentication flow.
+ */
+public class HiveSamlRelayStateInfo {
+  private final int port;
+  private final String clientIdentifier;
 
-    private final String authType;
-
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
+  HiveSamlRelayStateInfo(int port, String clientIdentifier) {
+    this.port = port;
+    this.clientIdentifier = clientIdentifier;
   }
 
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
+  public int getPort() {
+    return port;
+  }
+
+  public String getClientIdentifier() {
+    return clientIdentifier;
+  }
 }
