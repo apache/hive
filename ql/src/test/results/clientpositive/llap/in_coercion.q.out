@@ -18,15 +18,15 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE sr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@src_table
-PREHOOK: query: select count(*) from src_table
+PREHOOK: query: select assert_true(count(*) = 100) from src_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_table
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from src_table
+POSTHOOK: query: select assert_true(count(*) = 100) from src_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_table
 #### A masked pattern was here ####
-100
+NULL
 PREHOOK: query: select count(*) from src_table where key in (355.8)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_table
