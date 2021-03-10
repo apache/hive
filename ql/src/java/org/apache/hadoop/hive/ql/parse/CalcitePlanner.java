@@ -112,6 +112,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
@@ -126,6 +127,8 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.dialect.HiveSqlDialect;
+import org.apache.calcite.sql.fun.SqlQuantifyOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
@@ -312,6 +315,9 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.SubqueryType;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -3808,10 +3814,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private boolean genSubQueryRelNode(QB qb, ASTNode node, RelNode srcRel, boolean forHavingClause,
-                                       Map<ASTNode, RelNode> subQueryToRelNode) throws SemanticException {
+            Map<ASTNode, QBSubQueryParseInfo> subQueryToRelNode)
+            throws SemanticException {
 
       Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
       boolean isSubQuery = false;
+      boolean enableJoinReordering = false;
       Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
       stack.push(node);
 
@@ -3821,9 +3829,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
         switch (next.getType()) {
         case HiveParser.TOK_SUBQUERY_EXPR:
 
+          QBSubQueryParseInfo parseInfo = QBSubQueryParseInfo.parse(next);
+          if (parseInfo.hasFullAggregate() && (
+                  parseInfo.getOperator().getType() == QBSubQuery.SubQueryType.EXISTS ||
+                          parseInfo.getOperator().getType() == QBSubQuery.SubQueryType.NOT_EXISTS)) {
+            subQueryToRelNode.put(next, parseInfo);
+            isSubQuery = true;
+            break;
+          }
+
           //disallow subqueries which HIVE doesn't currently support
           SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,
               corrScalarQueriesWithAgg, ctx, this.relToHiveRR);
+
           String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
           QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
           qbSQ.setInsideView(qb.isInsideView());
@@ -3833,8 +3851,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           this.subqueryId++;
           RelNode subQueryRelNode =
               genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
-          subQueryToRelNode.put(next, subQueryRelNode);
-          //keep track of subqueries which are scalar, correlated and contains aggregate
+          subQueryToRelNode.put(next, parseInfo.setSubQueryRelNode(subQueryRelNode));
+          // keep track of subqueries which are scalar, correlated and contains aggregate
           // subquery expression. This will later be special cased in Subquery remove rule
           // for correlated scalar queries with aggregate we have take care of the case where
           // inner aggregate happens on empty result
@@ -3842,6 +3860,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             corrScalarRexSQWithAgg.add(subQueryRelNode);
           }
           isSubQuery = true;
+          enableJoinReordering = true;
           break;
         default:
           int childCount = next.getChildCount();
@@ -3850,7 +3869,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
       }
-      if(isSubQuery) {
+      if (enableJoinReordering) {
         // since subqueries will later be rewritten into JOINs we want join reordering logic to trigger
         profilesCBO.add(ExtendedCBOProfile.JOIN_REORDERING);
       }
@@ -3860,7 +3879,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genFilterRelNode(QB qb, ASTNode searchCond, RelNode srcRel,
         ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR, boolean forHavingClause)
         throws SemanticException {
-      final Map<ASTNode, RelNode> subQueryToRelNode = new HashMap<>();
+      final Map<ASTNode, QBSubQueryParseInfo> subQueryToRelNode = new HashMap<>();
       boolean isSubQuery = genSubQueryRelNode(qb, searchCond, srcRel, forHavingClause, subQueryToRelNode);
       if(isSubQuery) {
         RexNode filterExpression = genRexNode(searchCond, relToHiveRR.get(srcRel),
@@ -5014,7 +5033,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        Map<ASTNode, RelNode> subQueryToRelNode = new HashMap<>();
+        Map<ASTNode, QBSubQueryParseInfo> subQueryToRelNode = new HashMap<>();
         boolean isSubQuery = genSubQueryRelNode(qb, expr, srcRel, false,
                 subQueryToRelNode);
         if(isSubQuery) {
@@ -5687,7 +5706,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   RexNode genRexNode(ASTNode expr, RowResolver input,
-      RowResolver outerRR, Map<ASTNode, RelNode> subqueryToRelNode,
+      RowResolver outerRR, Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode,
       boolean useCaching, RexBuilder rexBuilder) throws SemanticException {
     TypeCheckCtx tcCtx = new TypeCheckCtx(input, rexBuilder, useCaching, false);
     tcCtx.setOuterRR(outerRR);
