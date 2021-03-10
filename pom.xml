@@ -64,6 +64,7 @@
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
+    <module>iceberg-handler</module>
   </modules>
 
   <properties>
