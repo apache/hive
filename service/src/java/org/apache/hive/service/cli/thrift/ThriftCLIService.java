@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -123,8 +122,6 @@ import org.apache.thrift.server.ServerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.EvictingQueue;
-
 
 /**
  * ThriftCLIService.
@@ -161,14 +158,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     private final AtomicInteger messagesProcessedCounter;
     private final long createTime;
-    private final Collection<SessionHandle> hiveSessionHandles;
     private Optional<SessionHandle> hiveSessionHandle;
 
     public ThriftCLIServerContext() {
       this.messagesProcessedCounter = new AtomicInteger();
       this.hiveSessionHandle = Optional.empty();
       this.createTime = System.nanoTime();
-      this.hiveSessionHandles = EvictingQueue.create(4);
     }
 
     /**
@@ -179,7 +174,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
      */
     public void setSessionHandle(SessionHandle hiveSessionHandle) {
       this.hiveSessionHandle = Optional.of(hiveSessionHandle);
-      this.hiveSessionHandles.add(hiveSessionHandle);
     }
 
     /**
@@ -205,19 +199,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
     public void incMessagesProcessedCount() {
       this.messagesProcessedCounter.incrementAndGet();
-    }
-
-    /**
-     * This {@code ServerContext} can be re-used to support different Hive
-     * sessions. Keep track of the sessions that this {@code ServerContext} has
-     * even been assigned. To conserve resources, this history may only return
-     * the last N session handles; however, an empty collection implies that a
-     * session has never been assigned.
-     *
-     * @return A history of session handles assigned to this {@code ServerContext}
-     */
-    public Collection<SessionHandle> getSessionHandles() {
-      return this.hiveSessionHandles;
     }
 
     /**
