@@ -61,7 +61,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -73,8 +72,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Need to change some of these to have better test coverage.
  */
 public class TestWorker extends CompactorTest {
-  static final private String CLASS_NAME = TestWorker.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  private static final String CLASS_NAME = TestWorker.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   @Test
   public void nothing() throws Exception {
@@ -1164,7 +1164,7 @@ public class TestWorker extends CompactorTest {
       this.looped = new AtomicBoolean(false);
     }
 
-    protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
+    protected Boolean findNextCompactionAndExecute(boolean computeStats, boolean metricsEnabled) throws InterruptedException {
       looped.set(true);
       if (runForever) {
         while (!stop.get()) {

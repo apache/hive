@@ -31,9 +31,11 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
@@ -97,12 +99,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   public void run() {
     LOG.info("Starting Worker thread");
     boolean computeStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
+    boolean metricsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED);
     long timeout = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
+
     boolean launchedJob;
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
       do {
-        Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(computeStats));
+        Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(computeStats, metricsEnabled));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException te) {
@@ -390,10 +394,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @throws InterruptedException is thrown when the process is interrupted because of timeout for example
    */
   @VisibleForTesting
-  protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
+  protected Boolean findNextCompactionAndExecute(boolean computeStats, boolean metricsEnabled) throws InterruptedException {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
+    PerfLogger perfLogger = SessionState.getPerfLogger(false);
+    String workerMetric = null;
     CompactionHeartbeater heartbeater = null;
+
     CompactionInfo ci = null;
     try (CompactionTxn compactionTxn = new CompactionTxn()) {
       if (msc == null) {
@@ -410,9 +417,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (ci == null) {
         return false;
       }
-
       checkInterrupt();
 
+      workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" + ci.type;
+      if (metricsEnabled) {
+        perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
+      }
       // Find the table we will be working with.
       Table t1;
       try {
@@ -568,6 +578,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     } finally {
       if (heartbeater != null) {
         heartbeater.cancel();
+      }
+      if (metricsEnabled && workerMetric != null) {
+        perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
     }
     return true;

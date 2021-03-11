@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -51,6 +54,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   private static final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
   private static final String INITIATOR_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_INITIATOR_CYCLE;
   private static final String CLEANER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_CLEANER_CYCLE;
+  private static final String WORKER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_WORKER_CYCLE;
 
   @Test
   public void testInitiatorMetricsEnabled() throws Exception {
@@ -239,6 +243,84 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(cleanerCyclesMinor, Objects.requireNonNull(
         Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR)).getCount());
+  }
+
+  @Test
+  public void testWorkerMetricsEnabled() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    MetricsFactory.close();
+    MetricsFactory.init(conf);
+
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
+    Table t = newTable("default", "mapwb", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mapwb", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mapwb", CompactionType.MINOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
+        WORKER_CYCLE_KEY + "_" + CompactionType.MINOR, 1);
+
+    rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
+        WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR, 1);
+  }
+
+  @Test
+  public void testWorkerMetricsDisabled() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, false);
+    MetricsFactory.close();
+    MetricsFactory.init(conf);
+
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 2);
+    Table t = newTable("default", "mapwb", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mapwb", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
+        WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR, "");
   }
 
   @Test
