@@ -1790,9 +1790,7 @@ class MetaStoreDirectSql {
         }
         return colStats;
       } catch (Exception e) {
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        }
+        throwMetaOrRuntimeException(e);
         return Collections.emptyList();
       }
     } else {
@@ -1839,9 +1837,7 @@ class MetaStoreDirectSql {
           Deadline.checkTimeout();
         }
       } catch (Exception e) {
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        }
+        throwMetaOrRuntimeException(e);
       }
       // Extrapolation is not needed for columns noExtraColumnNames
       List<Object[]> list;
@@ -1871,9 +1867,7 @@ class MetaStoreDirectSql {
             MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
           }
         } catch (Exception e) {
-          if (e instanceof MetaException) {
-            throw (MetaException) e;
-          }
+          throwMetaOrRuntimeException(e);
         }
       }
       // Extrapolation is needed for extraColumnNames.
@@ -1917,9 +1911,7 @@ class MetaStoreDirectSql {
           end = doTrace ? System.nanoTime() : 0;
           MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
         } catch (Exception e) {
-          if (e instanceof MetaException) {
-            throw (MetaException) e;
-          }
+          throwMetaOrRuntimeException(e);
         }
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
           Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 2];
@@ -1998,9 +1990,7 @@ class MetaStoreDirectSql {
                       .extrapolate(min, max, colStatIndex, indexMap);
                 }
               } catch (Exception e) {
-                if (e instanceof MetaException) {
-                  throw (MetaException) e;
-                }
+                throwMetaOrRuntimeException(e);
               }
             } else {
               // if the aggregation type is avg, we use the average on the existing ones.
@@ -2030,9 +2020,7 @@ class MetaStoreDirectSql {
                 MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
                 query.closeAll();
               } catch (Exception e) {
-                if (e instanceof MetaException) {
-                  throw (MetaException) e;
-                }
+                throwMetaOrRuntimeException(e);
               }
             }
           }
@@ -2041,6 +2029,16 @@ class MetaStoreDirectSql {
         }
       }
       return colStats;
+    }
+  }
+
+  private void throwMetaOrRuntimeException(Exception e) throws MetaException {
+    if (e instanceof MetaException) {
+      throw (MetaException) e;
+    } else if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    } else {
+      throw new RuntimeException(e);
     }
   }
 

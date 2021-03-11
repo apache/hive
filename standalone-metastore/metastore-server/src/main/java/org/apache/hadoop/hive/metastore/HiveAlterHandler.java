@@ -1135,10 +1135,10 @@ public class HiveAlterHandler implements AlterHandler {
                 break;
               }
             }
+            Deadline.checkTimeout();
             if (found) {
               if (rename) {
                 if (updateColumnStats) {
-                  Deadline.checkTimeout();
                   msdb.deletePartitionColumnStatistics(catName, dbname, tblname,
                       partColStats.getStatsDesc().getPartName(), partVals, statsObj.getColName(),
                       partColStats.getEngine());
@@ -1149,7 +1149,6 @@ public class HiveAlterHandler implements AlterHandler {
               }
             } else {
               if (updateColumnStats) {
-                Deadline.checkTimeout();
                 msdb.deletePartitionColumnStatistics(catName, dbname, tblname, partColStats.getStatsDesc().getPartName(),
                     partVals, statsObj.getColName(), partColStats.getEngine());
               }
