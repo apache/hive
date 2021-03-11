@@ -88,7 +88,7 @@ public class TestShowPartitionAnalyzer {
     ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)genExprNodeByDefault(tcCtx, command);
 
     // rs <= 421021
-    child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(1);
+    ExprNodeGenericFuncDesc child = (ExprNodeGenericFuncDesc)funcDesc.getChildren().get(1);
     Assert.assertEquals("rs", ((ExprNodeColumnDesc)child.getChildren().get(0)).getColumn());
     Assert.assertEquals(421021, ((ExprNodeConstantDesc)child.getChildren().get(1)).getValue());
 
