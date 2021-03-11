@@ -574,13 +574,13 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       SessionManager sessionManager = cliService.getSessionManager();
       if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle)) {
-        StringBuilder urlBuilder = new StringBuilder("The url to track the operation: ")
+        StringBuilder urlBuilder = new StringBuilder("The url to track the statement: ")
             .append(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_USE_SSL) ? "https" : "http")
             .append("://")
             .append(sessionManager.getHiveServer2HostName())
             .append(":")
             .append(hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT))
-            .append("/query_page?operationId=")
+            .append("/query_page.html?operationId=")
             .append(operationHandle.getHandleIdentifier().toString());
         TStatus successWithInfo = new TStatus(TStatusCode.SUCCESS_WITH_INFO_STATUS);
         successWithInfo.addToInfoMessages(urlBuilder.toString());

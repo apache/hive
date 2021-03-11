@@ -6,6 +6,6 @@ create or replace package body a as
 procedure test() 
 is 
 begin 
-print "test ok"; 
+print 'test ok';
 end; 
 end;

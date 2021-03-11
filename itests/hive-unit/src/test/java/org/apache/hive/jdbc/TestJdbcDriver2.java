@@ -3338,4 +3338,30 @@ public class TestJdbcDriver2 {
       fs.delete(cmQualPath, true);
     }
   }
+
+  @Test
+  public void testHeaderFooterNonTextFiles() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    try {
+      // Test with header for non text file.
+      stmt.execute(
+          "CREATE EXTERNAL TABLE parquet_emp (id int) STORED AS PARQUET "
+              + "TBLPROPERTIES ('skip.header.line.count'='1')");
+      stmt.execute("insert into parquet_emp values(1),(2),(3),(4)");
+      ResultSet result = stmt.executeQuery("select count(*) from parquet_emp");
+      assertTrue(result.next());
+      assertEquals(4, result.getInt("_c0"));
+
+      // Test with footer for non text file
+      stmt.execute(
+          "CREATE EXTERNAL TABLE parquetf_emp (id int) STORED AS PARQUET "
+              + "TBLPROPERTIES ('skip.footer.line.count'='1')");
+      stmt.execute("insert into parquetf_emp values(1),(2),(3),(4)");
+      result = stmt.executeQuery("select count(*) from parquetf_emp");
+      assertTrue(result.next());
+      assertEquals(4, result.getInt("_c0"));
+    } finally {
+      stmt.close();
+    }
+  }
 }

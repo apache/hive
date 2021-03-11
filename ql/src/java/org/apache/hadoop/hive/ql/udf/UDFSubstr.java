@@ -174,8 +174,10 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     }
 
     private Optional<Double> getRangeWidth(Range range) {
-      if (range.minValue != null && range.maxValue != null) {
-        return Optional.of(range.maxValue.doubleValue() - range.minValue.doubleValue());
+      if (range != null) {
+        if (range.minValue != null && range.maxValue != null) {
+          return Optional.of(range.maxValue.doubleValue() - range.minValue.doubleValue());
+        }
       }
       return Optional.empty();
     }

@@ -1275,6 +1275,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_all_stored_procedures\n");
   }
 
+  void find_package(Package& _return, const GetPackageRequest& request) {
+    // Your implementation goes here
+    printf("find_package\n");
+  }
+
+  void add_package(const AddPackageRequest& request) {
+    // Your implementation goes here
+    printf("add_package\n");
+  }
+
+  void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request) {
+    // Your implementation goes here
+    printf("get_all_packages\n");
+  }
+
+  void drop_package(const DropPackageRequest& request) {
+    // Your implementation goes here
+    printf("drop_package\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

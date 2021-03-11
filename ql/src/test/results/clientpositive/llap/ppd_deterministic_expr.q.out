@@ -395,13 +395,13 @@ STAGE PLANS:
                   Select Operator
                     expressions: CAST( col1 AS decimal(38,18)) (type: decimal(38,18)), CAST( col2 AS decimal(38,18)) (type: decimal(38,18)), CAST( col3 AS decimal(38,18)) (type: decimal(38,18))
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: 'US' (type: char(2)), 'DEF' (type: char(3)), '200' (type: char(3))
                       null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: 'US' (type: char(2)), 'DEF' (type: char(3)), '200' (type: char(3))
-                      Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: decimal(38,18)), _col1 (type: decimal(38,18)), _col2 (type: decimal(38,18))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -413,13 +413,13 @@ STAGE PLANS:
                   Select Operator
                     expressions: CAST( cola AS decimal(38,18)) (type: decimal(38,18)), CAST( colb AS decimal(38,18)) (type: decimal(38,18)), CAST( part1 AS CHAR(2)) (type: char(2)), CAST( part2 AS CHAR(3)) (type: char(3))
                     outputColumnNames: _col0, _col1, _col3, _col4
-                    Statistics: Num rows: 2 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 794 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col3 (type: char(2)), _col4 (type: char(3)), '200' (type: char(3))
                       null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: _col3 (type: char(2)), _col4 (type: char(3)), '200' (type: char(3))
-                      Statistics: Num rows: 2 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 794 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: decimal(38,18)), _col1 (type: decimal(38,18))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -542,13 +542,13 @@ STAGE PLANS:
                   Select Operator
                     expressions: CAST( col1 AS decimal(38,18)) (type: decimal(38,18)), CAST( col2 AS decimal(38,18)) (type: decimal(38,18)), CAST( col3 AS decimal(38,18)) (type: decimal(38,18))
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: 'US' (type: string), 'DEF' (type: string), '200' (type: string)
                       null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: 'US' (type: string), 'DEF' (type: string), '200' (type: string)
-                      Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: decimal(38,18)), _col1 (type: decimal(38,18)), _col2 (type: decimal(38,18))
                     Select Operator
                       expressions: 'US' (type: string)
@@ -592,13 +592,13 @@ STAGE PLANS:
                   Select Operator
                     expressions: CAST( cola AS decimal(38,18)) (type: decimal(38,18)), CAST( colb AS decimal(38,18)) (type: decimal(38,18)), part1 (type: string), part2 (type: string)
                     outputColumnNames: _col0, _col1, _col3, _col4
-                    Statistics: Num rows: 2 Data size: 1546 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 1184 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col3 (type: string), _col4 (type: string), '200' (type: string)
                       null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: _col3 (type: string), _col4 (type: string), '200' (type: string)
-                      Statistics: Num rows: 2 Data size: 1546 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 1184 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: decimal(38,18)), _col1 (type: decimal(38,18))
             Execution mode: vectorized, llap
             LLAP IO: no inputs

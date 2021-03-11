@@ -282,7 +282,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     });
   }
 
-  private static Supplier<FileSystem> getFsSupplier(final Path path,
+  static Supplier<FileSystem> getFsSupplier(final Path path,
       final Configuration conf) {
     return () -> {
       try {
@@ -510,7 +510,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return determineFileId(fsSupplier, split.getPath(), daemonConf);
   }
 
-  private static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
+  static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
       throws IOException {
 
     boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);
