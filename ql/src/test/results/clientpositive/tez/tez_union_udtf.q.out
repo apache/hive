@@ -72,7 +72,7 @@ Stage-3
                                   Select Operator [SEL_42] (rows=2 width=8)
                                     Output:["_col1"]
                                     Lateral View Join Operator [LVJ_40] (rows=2 width=56)
-                                      Output:["_col5"]
+                                      Output:["_col6"]
                                       Select Operator [SEL_38] (rows=2 width=8)
                                         Lateral View Forward [LVF_37] (rows=2 width=86)
                                           Filter Operator [FIL_36] (rows=2 width=86)
@@ -92,7 +92,7 @@ Stage-3
                                   Select Operator [SEL_42] (rows=2 width=8)
                                     Output:["_col1"]
                                     Lateral View Join Operator [LVJ_40] (rows=2 width=56)
-                                      Output:["_col5"]
+                                      Output:["_col6"]
                                       UDTF Operator [UDTF_41] (rows=2 width=48)
                                         function name:explode
                                         Select Operator [SEL_39] (rows=2 width=48)
