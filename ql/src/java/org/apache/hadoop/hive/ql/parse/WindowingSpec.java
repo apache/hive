@@ -471,6 +471,7 @@ public class WindowingSpec {
     private String sourceId;
     private PartitioningSpec partitioning;
     private WindowFrameSpec windowFrame;
+    private boolean ignoreNulls;
 
     public String getSourceId() {
       return sourceId;
@@ -527,6 +528,14 @@ public class WindowingSpec {
           sourceId == null ? "" : "Name='" + sourceId + "'",
           partitioning == null ? "" : partitioning,
           windowFrame == null ? "" : windowFrame);
+    }
+
+    public void setIgnoreNulls(boolean ignoreNulls) {
+      this.ignoreNulls = ignoreNulls;
+    }
+
+    public boolean ignoreNulls() {
+      return ignoreNulls;
     }
   };
 

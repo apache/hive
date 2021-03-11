@@ -4699,7 +4699,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         w = cluster.getRexBuilder().makeOver(calciteAggFnRetType, calciteAggFn, calciteAggFnArgs,
             partitionKeys, ImmutableList.<RexFieldCollation> copyOf(orderKeys), lowerBound,
-            upperBound, isRows, true, false, hiveAggInfo.isDistinct());
+            upperBound, isRows, true, false, hiveAggInfo.isDistinct(), wndSpec.ignoreNulls());
       } else {
         // TODO: Convert to Semantic Exception
         throw new RuntimeException("Unsupported window Spec");

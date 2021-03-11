@@ -689,6 +689,10 @@ public class ASTConverter {
 
       // 1. Translate the UDAF
       final ASTNode wUDAFAst = visitCall(over);
+      if (over.ignoreNulls()) {
+        ASTNode trueLiteral = ASTBuilder.createAST(HiveParser.KW_TRUE, "true");
+        wUDAFAst.addChild(trueLiteral);
+      }
 
       // 2. Add TOK_WINDOW as child of UDAF
       ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");
