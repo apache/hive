@@ -11487,14 +11487,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
-      if (ctx.getFetchDeletedRowsScans().contains(tsDesc.getDatabaseName() + "." + tsDesc.getTableName())) {
-        tsDesc.setFetchDeletedRows(true);
-        rwsch.put(alias,
-                VirtualColumn.ROWISDELETED.getName().toLowerCase(),
-                new ColumnInfo(VirtualColumn.ROWISDELETED.getName(), VirtualColumn.ROWISDELETED.getTypeInfo(),
-                        alias, true, VirtualColumn.ROWISDELETED.getIsHidden()));
-        vcList.add(VirtualColumn.ROWISDELETED);
-      }
+      tsDesc.setFetchDeletedRows(
+              ctx.getFetchDeletedRowsScans().contains(tsDesc.getDatabaseName() + "." + tsDesc.getTableName()));
 
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {
