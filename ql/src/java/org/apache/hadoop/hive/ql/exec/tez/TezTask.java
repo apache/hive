@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +35,7 @@ import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -240,7 +239,7 @@ public class TezTask extends Task<TezWork> {
         }
 
         // Log all the info required to find the various logs for this query
-        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", getHostNameIP(), queryId,
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
             this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
 
         // finally monitor will print progress until the job is done
@@ -356,17 +355,6 @@ public class TezTask extends Task<TezWork> {
       if (userName != null) return userName;
     }
     return ss.getUserName();
-  }
-
-  private static String getHostNameIP() {
-    try {
-      InetAddress ip = InetAddress.getLocalHost();
-      String hostname = ip.getHostName();
-      return String.format("%s (%s)", hostname, ip.getHostAddress());
-    } catch (UnknownHostException e) {
-      LOG.debug("Unable to determine hostname", e);
-      return "unknown (unknown)";
-    }
   }
 
   private void closeDagClientOnCancellation(DAGClient dagClient) {
