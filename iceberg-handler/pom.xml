@@ -16,8 +16,9 @@
 
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
-        <kryo-shaded.version>4.0.2</kryo-shaded.version>
-        <avro.iceberg.test.version>1.9.2</avro.iceberg.test.version>
+        <iceberg.avro.version>1.9.2</iceberg.avro.version>
+        <iceberg.kryo.version>4.0.2</iceberg.kryo.version>
+        <shade.relocation.package.prefix>org.apache.hive.iceberg</shade.relocation.package.prefix>
     </properties>
 
     <dependencies>
@@ -76,40 +77,24 @@
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>jsr305</artifactId>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.orc</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.avro</groupId>
-                    <artifactId>avro</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.calcite.avatica</groupId>
+                    <groupId>com.fasterxml</groupId>
                     <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hive</groupId>
-                    <artifactId>hive-llap-tez</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.pentaho</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -123,17 +108,17 @@
             <artifactId>hive-standalone-metastore-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${iceberg.avro.version}</version>
+            <optional>true</optional>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>${avro.iceberg.test.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -143,15 +128,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.orc</groupId>
-            <artifactId>orc-core</artifactId>
-            <version>${orc.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.esotericsoftware</groupId>
             <artifactId>kryo-shaded</artifactId>
-            <version>${kryo-shaded.version}</version>
+            <version>${iceberg.kryo.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -212,16 +191,41 @@
                                     <relocations>
                                         <relocation>
                                             <pattern>org.apache.iceberg</pattern>
-                                            <shadedPattern>org.apache.hive.org.apache.iceberg</shadedPattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.org.apache.iceberg</shadedPattern>
                                             <!-- don't shade the classes inside the Hive iceberg-handler module-->
                                             <excludes>
                                                 <exclude>org.apache.iceberg.mr.**</exclude>
                                             </excludes>
                                         </relocation>
+                                        <relocation>
+                                            <pattern>org.apache.avro</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.org.apache.avro</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.apache.orc</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.org.apache.orc</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.apache.parquet</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.org.apache.parquet</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.google</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.com.google</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.fasterxml</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.com.fasterxml</shadedPattern>
+                                        </relocation>
                                     </relocations>
                                     <artifactSet>
                                         <includes>
                                             <include>org.apache.iceberg:*</include>
+                                            <include>org.apache.avro:*</include>
+                                            <include>org.apache.orc:*</include>
+                                            <include>org.apache.parquet:*</include>
+                                            <include>com.google*:*</include>
+                                            <include>com.fasterxml*:*</include>
                                         </includes>
                                     </artifactSet>
                                 </configuration>

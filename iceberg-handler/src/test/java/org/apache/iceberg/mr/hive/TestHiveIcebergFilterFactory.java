@@ -231,7 +231,6 @@ public class TestHiveIcebergFilterFactory {
   public void testTimestampType() {
     Literal<Long> timestampLiteral = Literal.of("2012-10-02T05:16:17.123456").to(Types.TimestampType.withoutZone());
     long timestampMicros = timestampLiteral.value();
-    // `org.apache.hadoop.hive.common.type.Timestamp.valueOf(lit.toString()).toSqlTimestamp()`
     Timestamp ts = Timestamp.from(DateTimeUtil.timestampFromMicros(timestampMicros).toInstant(ZoneOffset.UTC));
 
     SearchArgument.Builder builder = SearchArgumentFactory.newBuilder();
