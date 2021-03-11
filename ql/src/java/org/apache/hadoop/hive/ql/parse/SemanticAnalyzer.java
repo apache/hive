@@ -9255,7 +9255,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       final List<String> topSelectOutputColNames = new ArrayList<>();
       final RowResolver topSelectRR = new RowResolver();
       final Map<String, ExprNodeDesc> topSelectColExprMap = new HashMap<String, ExprNodeDesc>();
-      for (ColumnInfo colInfo : topSelectInputColumns) {
+      for (ColumnInfo colInfo0 : topSelectInputColumns) {
+        ColumnInfo colInfo = new ColumnInfo(colInfo0);
         ExprNodeColumnDesc columnExpr = new ExprNodeColumnDesc(colInfo);
         topSelectExprs.add(columnExpr);
         topSelectOutputColNames.add(colInfo.getInternalName());
