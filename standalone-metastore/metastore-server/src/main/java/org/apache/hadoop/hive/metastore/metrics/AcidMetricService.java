@@ -82,7 +82,7 @@ public class AcidMetricService  implements MetastoreTaskThread {
   }
 
   @VisibleForTesting
-  static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse) {
+  public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse) {
     Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
     long oldestEnqueueTime = Long.MAX_VALUE;
 

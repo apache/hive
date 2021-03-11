@@ -37,9 +37,6 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +57,6 @@ import org.mockito.Mockito;
  * Tests for the compactor Initiator thread.
  */
 public class TestInitiator extends CompactorTest {
-  private final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
 
   @Test
   public void nothing() throws Exception {
@@ -862,96 +858,6 @@ public class TestInitiator extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(10, compacts.size());
-  }
-
-  @Test
-  public void testAcidMetricsEnabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
-    int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
-    Table t = newTable("default", "ime", true);
-    List<LockComponent> components = new ArrayList<>();
-
-    for (int i = 0; i < 10; i++) {
-      Partition p = newPartition(t, "part" + (i + 1));
-      addBaseFile(t, p, 20L, 20);
-      addDeltaFile(t, p, 21L, 22L, 2);
-      addDeltaFile(t, p, 23L, 24L, 2);
-
-      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
-      comp.setTablename("ime");
-      comp.setPartitionname("ds=part" + (i + 1));
-      comp.setOperationType(DataOperationType.UPDATE);
-      components.add(comp);
-    }
-    burnThroughTransactions("default", "ime", 23);
-    long txnid = openTxn();
-
-    LockRequest req = new LockRequest(components, "me", "localhost");
-    req.setTxnid(txnid);
-    LockResponse res = txnHandler.lock(req);
-    Assert.assertEquals(LockState.ACQUIRED, res.getState());
-
-    long writeid = allocateWriteId("default", "ime", txnid);
-    Assert.assertEquals(24, writeid);
-    txnHandler.commitTxn(new CommitTxnRequest(txnid));
-
-    startInitiator();
-
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(10, compacts.size());
-
-    // The metrics will appear after the next AcidMetricsService run
-    runAcidMetricService();
-
-    Assert.assertEquals(originalValue + 10,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
-  }
-
-  @Test
-  public void testAcidMetricsDisabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
-    Metrics.initialize(conf);
-    int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
-    Table t = newTable("default", "imd", true);
-    List<LockComponent> components = new ArrayList<>();
-
-    for (int i = 0; i < 10; i++) {
-      Partition p = newPartition(t, "part" + (i + 1));
-      addBaseFile(t, p, 20L, 20);
-      addDeltaFile(t, p, 21L, 22L, 2);
-      addDeltaFile(t, p, 23L, 24L, 2);
-
-      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
-      comp.setTablename("imd");
-      comp.setPartitionname("ds=part" + (i + 1));
-      comp.setOperationType(DataOperationType.UPDATE);
-      components.add(comp);
-    }
-    burnThroughTransactions("default", "imd", 23);
-    long txnid = openTxn();
-
-    LockRequest req = new LockRequest(components, "me", "localhost");
-    req.setTxnid(txnid);
-    LockResponse res = txnHandler.lock(req);
-    Assert.assertEquals(LockState.ACQUIRED, res.getState());
-
-    long writeid = allocateWriteId("default", "imd", txnid);
-    Assert.assertEquals(24, writeid);
-    txnHandler.commitTxn(new CommitTxnRequest(txnid));
-
-    startInitiator();
-
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(10, compacts.size());
-
-    // The metrics will appear after the next AcidMetricsService run
-    runAcidMetricService();
-
-    Assert.assertEquals(originalValue,
-        Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
   }
 
 
