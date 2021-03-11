@@ -88,7 +88,7 @@ public class GenericUDFIn extends GenericUDF {
     for (ObjectInspector oi : arguments) {
       if(!conversionHelper.updateForComparison(oi)) {
         StringBuilder sb = new StringBuilder();
-        sb.append("The arguments for IN should be the same type! Types are: {");
+        sb.append("Type mismatch: {");
         sb.append(arguments[0].getTypeName());
         sb.append(" IN (");
         for(int i=1; i<arguments.length; i++) {
