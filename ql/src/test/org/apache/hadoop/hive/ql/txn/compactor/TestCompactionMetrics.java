@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
@@ -41,15 +43,20 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TestCompactionMetrics  extends CompactorTest {
-  private final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
+
+  private static final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
+  private static final String INITIATOR_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_INITIATOR_CYCLE;
+  private static final String CLEANER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_CLEANER_CYCLE;
 
   @Test
   public void testInitiatorMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
     int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
+    long initiatorCycles = Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount();
     Table t = newTable("default", "ime", true);
     List<LockComponent> components = new ArrayList<>();
 
@@ -82,12 +89,14 @@ public class TestCompactionMetrics  extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(10, compacts.size());
+    Assert.assertEquals(initiatorCycles + 1,
+        Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
 
     // The metrics will appear after the next AcidMetricsService run
     runAcidMetricService();
 
     Assert.assertEquals(originalValue + 10,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
+        Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
   }
 
   @Test
@@ -95,6 +104,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
     Metrics.initialize(conf);
     int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
+    long initiatorCycles = Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount();
     Table t = newTable("default", "imd", true);
     List<LockComponent> components = new ArrayList<>();
 
@@ -133,6 +143,103 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(originalValue,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
+    Assert.assertEquals(initiatorCycles,
+        Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
+  }
+
+  @Test
+  public void testCleanerMetricsEnabled() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    Metrics.initialize(conf);
+
+    long cleanerCyclesMinor = Objects.requireNonNull(
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR)).getCount();
+    long cleanerCyclesMajor = Objects.requireNonNull(
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR)).getCount();
+
+    Table t = newTable("default", "camipc", true);
+    List<Partition> partitions = new ArrayList<>();
+    Partition p;
+    for (int i = 0; i < 10; i++) {
+      p = newPartition(t, "today" + i);
+
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+      addDeltaFile(t, p, 21L, 24L, 4);
+      partitions.add(p);
+    }
+
+    burnThroughTransactions("default", "camipc", 25);
+    for (int i = 0; i < 10; i++) {
+      CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
+      rqst.setPartitionname("ds=today" + i);
+      compactInTxn(rqst);
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM, 3);
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(10, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    Assert.assertEquals(cleanerCyclesMinor + 10, Objects.requireNonNull(
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR)).getCount());
+
+    for (int i = 0; i < 10; i++) {
+      p = partitions.get(i);
+      addBaseFile(t, p, 25L, 25, 26 + i);
+
+      CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MAJOR);
+      rqst.setPartitionname("ds=today" + i);
+      compactInTxn(rqst);
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM, 3);
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(20, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    Assert.assertEquals(cleanerCyclesMajor + 10, Objects.requireNonNull(
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR)).getCount());
+  }
+
+  @Test
+  public void testCleanerMetricsDisabled() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
+    Metrics.initialize(conf);
+
+    long cleanerCyclesMinor = Objects.requireNonNull(
+      Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR)).getCount();
+
+    Table t = newTable("default", "camipc", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "camipc", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, p, 25L, 25, compactTxn);
+
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    Assert.assertEquals(cleanerCyclesMinor, Objects.requireNonNull(
+        Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR)).getCount());
   }
 
   @Test
