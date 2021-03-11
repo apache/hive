@@ -59222,14 +59222,6 @@ uint32_t ThriftHiveMetastore_get_stored_procedure_result::read(::apache::thrift:
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->o2.read(iprot);
-          this->__isset.o2 = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -59255,10 +59247,6 @@ uint32_t ThriftHiveMetastore_get_stored_procedure_result::write(::apache::thrift
   } else if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
     xfer += this->o1.write(oprot);
-    xfer += oprot->writeFieldEnd();
-  } else if (this->__isset.o2) {
-    xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
-    xfer += this->o2.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -59304,14 +59292,6 @@ uint32_t ThriftHiveMetastore_get_stored_procedure_presult::read(::apache::thrift
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->o1.read(iprot);
           this->__isset.o1 = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->o2.read(iprot);
-          this->__isset.o2 = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -59441,14 +59421,6 @@ uint32_t ThriftHiveMetastore_drop_stored_procedure_result::read(::apache::thrift
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->o2.read(iprot);
-          this->__isset.o2 = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -59470,10 +59442,6 @@ uint32_t ThriftHiveMetastore_drop_stored_procedure_result::write(::apache::thrif
   if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
     xfer += this->o1.write(oprot);
-    xfer += oprot->writeFieldEnd();
-  } else if (this->__isset.o2) {
-    xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
-    xfer += this->o2.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -59511,14 +59479,6 @@ uint32_t ThriftHiveMetastore_drop_stored_procedure_presult::read(::apache::thrif
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->o1.read(iprot);
           this->__isset.o1 = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->o2.read(iprot);
-          this->__isset.o2 = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -76255,9 +76215,6 @@ void ThriftHiveMetastoreClient::recv_get_stored_procedure(StoredProcedure& _retu
   if (result.__isset.o1) {
     throw result.o1;
   }
-  if (result.__isset.o2) {
-    throw result.o2;
-  }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_stored_procedure failed: unknown result");
 }
 
@@ -76313,9 +76270,6 @@ void ThriftHiveMetastoreClient::recv_drop_stored_procedure()
 
   if (result.__isset.o1) {
     throw result.o1;
-  }
-  if (result.__isset.o2) {
-    throw result.o2;
   }
   return;
 }
@@ -91357,9 +91311,6 @@ void ThriftHiveMetastoreProcessor::process_get_stored_procedure(int32_t seqid, :
   } catch (MetaException &o1) {
     result.o1 = o1;
     result.__isset.o1 = true;
-  } catch (NoSuchObjectException &o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_stored_procedure");
@@ -91416,9 +91367,6 @@ void ThriftHiveMetastoreProcessor::process_drop_stored_procedure(int32_t seqid, 
   } catch (MetaException &o1) {
     result.o1 = o1;
     result.__isset.o1 = true;
-  } catch (NoSuchObjectException &o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.drop_stored_procedure");
@@ -114260,10 +114208,6 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_stored_procedure(StoredProced
         sentry.commit();
         throw result.o1;
       }
-      if (result.__isset.o2) {
-        sentry.commit();
-        throw result.o2;
-      }
       // in a bad state, don't commit
       throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_stored_procedure failed: unknown result");
     }
@@ -114345,10 +114289,6 @@ void ThriftHiveMetastoreConcurrentClient::recv_drop_stored_procedure(const int32
       if (result.__isset.o1) {
         sentry.commit();
         throw result.o1;
-      }
-      if (result.__isset.o2) {
-        sentry.commit();
-        throw result.o2;
       }
       sentry.commit();
       return;
