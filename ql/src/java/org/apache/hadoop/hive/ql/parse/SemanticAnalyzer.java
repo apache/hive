@@ -14410,6 +14410,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private WindowSpec processWindowSpec(ASTNode node) throws SemanticException {
     boolean hasSrcId = false, hasPartSpec = false, hasWF = false;
+    boolean ignoreNulls = false;
     int srcIdIdx = -1, partIdx = -1, wfIdx = -1;
 
     for(int i=0; i < node.getChildCount(); i++)
@@ -14427,6 +14428,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_WINDOWVALUES:
         hasWF = true; wfIdx = i;
         break;
+      case HiveParser.TOK_RESPECT_NULLS:
+        ignoreNulls = false;
+        break;
+      case HiveParser.TOK_IGNORE_NULLS:
+        ignoreNulls = true;
+        break;
       }
     }
 
@@ -14443,12 +14450,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ws.setPartitioning(partitioning);
     }
 
-    if ( hasWF)
-    {
+    if (hasWF) {
       ASTNode wfNode = (ASTNode) node.getChild(wfIdx);
       WindowFrameSpec wfSpec = processWindowFrame(wfNode);
       ws.setWindowFrame(wfSpec);
     }
+
+    ws.setIgnoreNulls(ignoreNulls);
 
     return ws;
   }

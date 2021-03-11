@@ -274,11 +274,18 @@ function
         (STAR) => (star=STAR)
         | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
       )
-    RPAREN ((KW_OVER ws=window_specification) | (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))?
+    RPAREN ((nt=null_treatment)? (KW_OVER ws=window_specification[$null_treatment.tree]) | (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
            -> {$within != null}? ^(TOK_FUNCTION functionName (selectExpression+)? ^(TOK_WITHIN_GROUP $ordBy))
            -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $ws?)
                             -> ^(TOK_FUNCTIONDI functionName (selectExpression+)? $ws?)
+    ;
+
+null_treatment
+@init { gParent.pushMsg("null_treatment", state); }
+@after { gParent.popMsg(state); }
+    : KW_RESPECT KW_NULLS -> TOK_RESPECT_NULLS
+    | KW_IGNORE KW_NULLS -> TOK_IGNORE_NULLS
     ;
 
 functionName
@@ -900,7 +907,7 @@ nonReserved
     | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY
     | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DISTRIBUTED | KW_DOW | KW_ELEM_TYPE
     | KW_ENABLE | KW_ENFORCED | KW_ESCAPED | KW_EXCLUSIVE | KW_EXPLAIN | KW_EXPORT | KW_FIELDS | KW_FILE | KW_FILEFORMAT
-    | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOLD_DDLTIME | KW_HOUR | KW_IDXPROPERTIES | KW_IGNORE
+    | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOLD_DDLTIME | KW_HOUR | KW_IDXPROPERTIES | KW_RESPECT | KW_IGNORE
     | KW_INDEX | KW_INDEXES | KW_INPATH | KW_INPUTDRIVER | KW_INPUTFORMAT | KW_ITEMS | KW_JAR | KW_JOINCOST | KW_KILL
     | KW_KEYS | KW_KEY_TYPE | KW_LAST | KW_LIMIT | KW_OFFSET | KW_LINES | KW_LOAD | KW_LOCATION | KW_LOCK | KW_LOCKS | KW_LOGICAL | KW_LONG | KW_MANAGED
     | KW_MANAGEDLOCATION | KW_MAPJOIN | KW_MATERIALIZED | KW_METADATA | KW_MINUTE | KW_MONTH | KW_MSCK | KW_NOSCAN | KW_NO_DROP | KW_NULLS | KW_OFFLINE
