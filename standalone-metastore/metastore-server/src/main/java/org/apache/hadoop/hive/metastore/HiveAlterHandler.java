@@ -1064,8 +1064,8 @@ public class HiveAlterHandler implements AlterHandler {
           }
         }
       }
-      Deadline.checkTimeout();
       if (doAlterTable) {
+        Deadline.checkTimeout();
         // Change to new table and append stats for the new table
         msdb.alterTable(catName, dbName, tableName, newTable, validWriteIds);
         if (updateColumnStats) {
