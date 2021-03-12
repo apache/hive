@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.common.io;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -339,7 +340,7 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     @Override
     public String[] getEncodedPartitionDesc() {
-      return partitionDesc;
+      return Arrays.copyOf(partitionDesc, partitionDesc.length);
     }
   }
 
