@@ -123,23 +123,23 @@ class MetastoreDirectSqlUtils {
       String queryText, Object[] parameters, int keyIndex, ApplyFunc<T> func) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
     long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    Object result = null;
-    if (parameters == null || parameters.length == 0) {
-      result = query.execute();
-    } else {
-      result = query.executeWithArray(parameters);
-    }
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    if (result == null) {
-      query.closeAll();
-      return 0;
-    }
-    List<Object[]> list = ensureList(result);
-    Iterator<Object[]> iter = list.iterator();
-    Object[] fields = null;
     int rv = 0;
-    try {
+    long queryTime = 0;
+    try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+      Object result = null;
+      if (parameters == null || parameters.length == 0) {
+        result = query.execute();
+      } else {
+        result = query.executeWithArray(parameters);
+      }
+      queryTime = doTrace ? System.nanoTime() : 0;
+      if (result == null) {
+        query.closeAll();
+        return 0;
+      }
+      List<Object[]> list = ensureList(result);
+      Iterator<Object[]> iter = list.iterator();
+      Object[] fields = null;
       for (Map.Entry<Long, T> entry : tree.entrySet()) {
         if (fields == null && !iter.hasNext())
           break;
@@ -160,8 +160,8 @@ class MetastoreDirectSqlUtils {
         Deadline.checkTimeout();
       }
       rv = list.size();
-    } finally {
-      query.closeAll();
+    } catch (Exception e) {
+      throwMetaOrRuntimeException(e);
     }
     timingTrace(doTrace, queryText, start, queryTime);
     return rv;
@@ -604,5 +604,15 @@ class MetastoreDirectSqlUtils {
   @FunctionalInterface
   static interface ApplyFunc<Target> {
     void apply(Target t, Object[] fields) throws MetaException;
+  }
+
+  public static void throwMetaOrRuntimeException(Exception e) throws MetaException {
+    if (e instanceof MetaException) {
+      throw (MetaException) e;
+    } else if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    } else {
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.throwMetaOrRuntimeException;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -1772,7 +1774,7 @@ class MetaStoreDirectSql {
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+      try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
         qResult = executeWithArray(query,
             prepareParams(catName, dbName, tableName, partNames, colNames,
                 engine), queryText);
@@ -1850,7 +1852,7 @@ class MetaStoreDirectSql {
             + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
         start = doTrace ? System.nanoTime() : 0;
 
-        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
           qResult = executeWithArray(query,
               prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
           if (qResult == null) {
@@ -1885,7 +1887,7 @@ class MetaStoreDirectSql {
             + " and \"ENGINE\" = ? "
             + " group by \"COLUMN_NAME\"";
         start = doTrace ? System.nanoTime() : 0;
-        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
           List<String> extraColumnNames = new ArrayList<String>();
           extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
           qResult = executeWithArray(query,
@@ -2028,16 +2030,6 @@ class MetaStoreDirectSql {
         }
       }
       return colStats;
-    }
-  }
-
-  private void throwMetaOrRuntimeException(Exception e) throws MetaException {
-    if (e instanceof MetaException) {
-      throw (MetaException) e;
-    } else if (e instanceof RuntimeException) {
-      throw (RuntimeException) e;
-    } else {
-      throw new RuntimeException(e);
     }
   }
 
