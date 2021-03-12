@@ -328,7 +328,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo,
             selRS.getSignature().get(0).getTabAlias(), true, true);
         selRS.getSignature().add(ci);
-        rsOp.getSchema().getSignature().add(ci);
+        rsOp.getSchema().getSignature().add(new ColumnInfo(ci));
       }
       // Create SelectDesc
       SelectDesc selConf = new SelectDesc(descs, colNames);

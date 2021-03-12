@@ -4783,7 +4783,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if(targetCol2Projection.containsKey(f)) {
         //put existing column in new list to make sure it is in the right position
         newColList.add(targetCol2Projection.get(f));
-        ColumnInfo ci = targetCol2ColumnInfo.get(f);
+        ColumnInfo ci = new ColumnInfo(targetCol2ColumnInfo.get(f));
         ci.setInternalName(getColumnInternalName(colListPos));
         newOutputRR.put(ci.getTabAlias(), ci.getInternalName(), ci);
       }
@@ -12001,7 +12001,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, ExprNodeDesc> selColExprMap = new HashMap<String, ExprNodeDesc>();
     List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
     List<String> colNames = new ArrayList<String>();
-    for (ColumnInfo col : source.getColumnInfos()) {
+    for (ColumnInfo col0 : source.getColumnInfos()) {
+      ColumnInfo col = new ColumnInfo(col0);
       String[] tabCol = source.reverseLookup(col.getInternalName());
       lvForwardRR.put(tabCol[0], tabCol[1], col);
       ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(col);
