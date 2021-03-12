@@ -142,7 +142,7 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: multiply(CAST(0.10000000000000001 AS DECIMAL(17,17)), default.impala_tpch_customer.c_acctbal)
+  |  output exprs: multiply(CAST(0.10000000000000001 AS DECIMAL(18,17)), default.impala_tpch_customer.c_acctbal)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]

@@ -43,6 +43,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -67,6 +68,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -436,6 +438,33 @@ public class HiveFunctionHelper implements FunctionHelper {
         rexBuilder.getTypeFactory().createSqlType(type),
         false);
   }
+
+  @Override
+  public RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
+    HiveDecimal hd = HiveDecimal.create(value);
+    if (!allowNullValueConstantExpr && hd == null) {
+      return null;
+    }
+    DecimalTypeInfo type = adjustType(hd);
+    return rexBuilder.makeExactLiteral(
+        hd != null ? hd.bigDecimalValue() : null,
+        TypeConverter.convert(type, rexBuilder.getTypeFactory()));
+  }
+
+  protected DecimalTypeInfo adjustType(HiveDecimal hd) {
+    // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
+    //       precision and scale of the value by throwing away trailing zeroes. This may or may
+    //       not be desirable for the literals; however, this used to be the default behavior
+    //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
+    int prec = 1;
+    int scale = 0;
+    if (hd != null) {
+      prec = hd.precision();
+      scale = hd.scale();
+    }
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+  }
+
 
   /**
    * {@inheritDoc}

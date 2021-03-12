@@ -100,6 +100,13 @@ public interface FunctionHelper {
   RexNode getExactWholeNumber(String value);
 
   /**
+   * Create a RexNode decimal expression from a string. If allowNullValueConstantExpr
+   * is false, this method will return null if the value cannot be parsed. If it is
+   * true, it will return a RexNode Decimal type of value null.
+   */
+  public RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr);
+
+  /**
    * Returns aggregation information based on given parameters.
    */
   AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,

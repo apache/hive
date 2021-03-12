@@ -71,7 +71,7 @@ CBO PLAN:
 ImpalaProjectPassthroughRel(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7])
   ImpalaSortRel(sort0=[$8], sort1=[$3], dir0=[ASC], dir1=[ASC], fetch=[100])
     ImpalaProjectRel(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))=[-($6, $7)])
-      ImpalaProjectRel((tok_table_or_col i_category)=[$5], (tok_table_or_col i_class)=[$4], (tok_table_or_col i_brand)=[$3], (tok_table_or_col s_store_name)=[$1], (tok_table_or_col s_company_name)=[$2], (tok_table_or_col d_moy)=[$0], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $5, $3, $1, $2 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], condition=[CASE(<>($7, 0), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(1, 1)), false)])
+      ImpalaProjectRel((tok_table_or_col i_category)=[$5], (tok_table_or_col i_class)=[$4], (tok_table_or_col i_brand)=[$3], (tok_table_or_col s_store_name)=[$1], (tok_table_or_col s_company_name)=[$2], (tok_table_or_col d_moy)=[$0], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $5, $3, $1, $2 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], condition=[CASE(<>($7, 0), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(2, 1)), false)])
         ImpalaAggregateRel(group=[{5, 7, 8, 10, 11, 12}], agg#0=[sum($2)])
           ImpalaJoinRel(condition=[=($0, $9)], joinType=[inner])
             ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
@@ -191,7 +191,7 @@ Per-Host Resources: mem-estimate=16.08MB mem-reservation=16.00MB thread-reservat
   |  in pipelines: 10(GETNEXT)
   |
   12:SELECT
-  |  predicates: CASE WHEN avg(sum(default.impala_tpcds_store_sales.ss_sales_price)) != CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(sum(default.impala_tpcds_store_sales.ss_sales_price), avg(sum(default.impala_tpcds_store_sales.ss_sales_price)))), avg(sum(default.impala_tpcds_store_sales.ss_sales_price))) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
+  |  predicates: CASE WHEN avg(sum(default.impala_tpcds_store_sales.ss_sales_price)) != CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(sum(default.impala_tpcds_store_sales.ss_sales_price), avg(sum(default.impala_tpcds_store_sales.ss_sales_price)))), avg(sum(default.impala_tpcds_store_sales.ss_sales_price))) > CAST(0.1 AS DECIMAL(2,1)) ELSE FALSE END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=14 row-size=96B cardinality=0
   |  in pipelines: 10(GETNEXT)

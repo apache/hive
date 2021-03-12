@@ -234,6 +234,28 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   }
 
   /**
+   * Given a string, it returns a RexNode of Decimal type.  If allowNullValueConstantExpr
+   * is false, then this returns null if the string cannot be parsed. If it is true, then
+   * this returns a RexNode of Decimal type with a null value.
+   */
+  @Override
+  public RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
+    BigDecimal bd = null;
+    try {
+      bd = new BigDecimal(value);
+    } catch (NumberFormatException e) {
+      if (!allowNullValueConstantExpr) {
+        return null;
+      }
+    }
+
+    RexBuilder rexBuilder = factory.getRexBuilder();
+    return bd == null 
+        ? rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DECIMAL))
+        : rexBuilder.makeExactLiteral(bd);
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override

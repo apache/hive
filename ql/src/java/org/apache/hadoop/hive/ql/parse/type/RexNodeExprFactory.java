@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.type;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
@@ -290,36 +291,17 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexNode createDecimalConstantExpr(String value, boolean allowNullValueConstantExpr) {
-    HiveDecimal hd = HiveDecimal.create(value);
-    if (!allowNullValueConstantExpr && hd == null) {
-      return null;
-    }
-    DecimalTypeInfo type = adjustType(hd);
-    return rexBuilder.makeExactLiteral(
-        hd != null ? hd.bigDecimalValue() : null,
-        TypeConverter.convert(type, rexBuilder.getTypeFactory()));
+    return functionHelper.createDecimalConstantExpr(value, allowNullValueConstantExpr);
   }
 
   @Override
   protected TypeInfo adjustConstantType(PrimitiveTypeInfo targetType, Object constantValue) {
     if (constantValue instanceof HiveDecimal) {
-      return adjustType((HiveDecimal) constantValue);
+      Preconditions.checkState(functionHelper instanceof HiveFunctionHelper);
+      HiveFunctionHelper helper = (HiveFunctionHelper) functionHelper;
+      return helper.adjustType((HiveDecimal) constantValue);
     }
     return targetType;
-  }
-
-  private DecimalTypeInfo adjustType(HiveDecimal hd) {
-    // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
-    //       precision and scale of the value by throwing away trailing zeroes. This may or may
-    //       not be desirable for the literals; however, this used to be the default behavior
-    //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
-    int prec = 1;
-    int scale = 0;
-    if (hd != null) {
-      prec = hd.precision();
-      scale = hd.scale();
-    }
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
   }
 
   /**

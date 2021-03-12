@@ -124,7 +124,7 @@ ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[CAST(1999):INTEGER], d_mo
       ImpalaJoinRel(condition=[AND(=($0, $14), =($1, $15), =($2, $16), =($3, $17), =($7, $19))], joinType=[inner])
         ImpalaJoinRel(condition=[AND(=($0, $8), =($1, $9), =($2, $10), =($3, $11), =($7, $13))], joinType=[inner])
           ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_table_or_col d_moy)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[$7], rank_window_1=[$8])
-            ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $1, $0, $4, $5, $2 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(>($7, 0), =($4, 1999), CASE(>($7, 0), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(1, 1)), false), IS NOT NULL($8))])
+            ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $1, $0, $4, $5, $2 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(>($7, 0), =($4, 1999), CASE(>($7, 0), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(2, 1)), false), IS NOT NULL($8))])
               ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
                 ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
                   ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
@@ -346,7 +346,7 @@ Per-Host Resources: mem-estimate=20.11MB mem-reservation=19.88MB thread-reservat
   |     in pipelines: 24(GETNEXT)
   |
   14:SELECT
-  |  predicates: rank() IS NOT NULL, avg(sum(default.impala_tpcds_store_sales.ss_sales_price)) > CAST(0 AS DECIMAL(38,6)), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT), CASE WHEN avg(sum(default.impala_tpcds_store_sales.ss_sales_price)) > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(sum(default.impala_tpcds_store_sales.ss_sales_price), avg(sum(default.impala_tpcds_store_sales.ss_sales_price)))), avg(sum(default.impala_tpcds_store_sales.ss_sales_price))) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
+  |  predicates: rank() IS NOT NULL, avg(sum(default.impala_tpcds_store_sales.ss_sales_price)) > CAST(0 AS DECIMAL(38,6)), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT), CASE WHEN avg(sum(default.impala_tpcds_store_sales.ss_sales_price)) > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(sum(default.impala_tpcds_store_sales.ss_sales_price), avg(sum(default.impala_tpcds_store_sales.ss_sales_price)))), avg(sum(default.impala_tpcds_store_sales.ss_sales_price))) > CAST(0.1 AS DECIMAL(2,1)) ELSE FALSE END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=18 row-size=96B cardinality=0
   |  in pipelines: 12(GETNEXT)

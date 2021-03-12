@@ -86,7 +86,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel($f0=[$0], $f1=[CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6)])
                 ImpalaAggregateRel(group=[{1}], agg#0=[sum($21)], agg#1=[count($21)], condition=[IS NOT NULL(CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[=($6, 410)])
-              ImpalaProjectPassthroughRel(*=[*(0.9:DECIMAL(1, 1), CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
+              ImpalaProjectPassthroughRel(*=[*(0.9:DECIMAL(2, 1), CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
                 ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)], agg#1=[count($1)], condition=[IS NOT NULL(CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
                   ImpalaProjectPassthroughRel($f0=[true], $f1=[$21])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(=($6, 410), IS NULL($4))])
@@ -101,7 +101,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel($f0=[$0], $f1=[CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6)])
                 ImpalaAggregateRel(group=[{1}], agg#0=[sum($21)], agg#1=[count($21)], condition=[IS NOT NULL(CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[=($6, 410)])
-              ImpalaProjectPassthroughRel(*=[*(0.9:DECIMAL(1, 1), CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
+              ImpalaProjectPassthroughRel(*=[*(0.9:DECIMAL(2, 1), CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
                 ImpalaAggregateRel(group=[{0}], agg#0=[sum($1)], agg#1=[count($1)], condition=[IS NOT NULL(CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(11, 6))])
                   ImpalaProjectPassthroughRel($f0=[true], $f1=[$21])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(=($6, 410), IS NULL($4))])
@@ -300,7 +300,7 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 08(GETNEXT), 26(OPEN)
   |
   07:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: casttodecimal(divide(sum(ss1.ss_net_profit), casttodecimal(count(ss1.ss_net_profit)))) > multiply(CAST(0.9 AS DECIMAL(1,1)), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_net_profit), casttodecimal(count(default.impala_tpcds_store_sales.ss_net_profit)))))
+  |  join predicates: casttodecimal(divide(sum(ss1.ss_net_profit), casttodecimal(count(ss1.ss_net_profit)))) > multiply(CAST(0.9 AS DECIMAL(2,1)), casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_net_profit), casttodecimal(count(default.impala_tpcds_store_sales.ss_net_profit)))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=3,5 row-size=57B cardinality=0
   |  in pipelines: 26(GETNEXT), 28(OPEN)
@@ -441,7 +441,7 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 18(GETNEXT), 33(OPEN)
   |
   17:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: casttodecimal(divide(sum(ss1_0.ss_net_profit), casttodecimal(count(ss1_0.ss_net_profit)))) > multiply(CAST(0.9 AS DECIMAL(1,1)), casttodecimal(divide(sum(default.impala_tpcds_store_sales_0.ss_net_profit), casttodecimal(count(default.impala_tpcds_store_sales_0.ss_net_profit)))))
+  |  join predicates: casttodecimal(divide(sum(ss1_0.ss_net_profit), casttodecimal(count(ss1_0.ss_net_profit)))) > multiply(CAST(0.9 AS DECIMAL(2,1)), casttodecimal(divide(sum(default.impala_tpcds_store_sales_0.ss_net_profit), casttodecimal(count(default.impala_tpcds_store_sales_0.ss_net_profit)))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=14,16 row-size=57B cardinality=0
   |  in pipelines: 33(GETNEXT), 35(OPEN)

@@ -36,9 +36,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
 CBO PLAN:
-ImpalaProjectPassthroughRel(promo_revenue=[/(*(100:DECIMAL(3, 0), $0), $1)])
+ImpalaProjectPassthroughRel(promo_revenue=[/(*(100.00:DECIMAL(5, 2), $0), $1)])
   ImpalaAggregateRel(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)])
-    ImpalaProjectPassthroughRel($f0=[CASE($3, $1, 0:DECIMAL(1, 0))], $f1=[$1])
+    ImpalaProjectPassthroughRel($f0=[CASE($3, $1, 0.0:DECIMAL(2, 1))], $f1=[$1])
       ImpalaJoinRel(condition=[=($0, $2)], joinType=[inner])
         ImpalaProjectPassthroughRel(l_partkey=[$1], *=[*($5, -(1:DECIMAL(3, 0), $6))])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1995-09-01'), <($10, _UTF-16LE'1995-10-01'), IS NOT NULL($1))])
@@ -93,7 +93,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: divide(multiply(CAST(100 AS DECIMAL(3,0)), sum(CASE WHEN like(default.impala_tpch_part.p_type, 'PROMO%') THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END)), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))))
+  |  output exprs: divide(multiply(CAST(100.00 AS DECIMAL(5,2)), sum(CASE WHEN like(default.impala_tpch_part.p_type, 'PROMO%') THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END)), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   06:AGGREGATE [FINALIZE]
@@ -112,7 +112,7 @@ Per-Host Resources: mem-estimate=11.94MB mem-reservation=1.94MB thread-reservati
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE
-  |  output: sum(CASE WHEN like(default.impala_tpch_part.p_type, 'PROMO%') THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(1,0)) END), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(CASE WHEN like(default.impala_tpch_part.p_type, 'PROMO%') THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(2,1)) END), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=32B cardinality=1
   |  in pipelines: 03(GETNEXT), 00(OPEN)
