@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -363,6 +364,21 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     public String toString() {
       return srcSession.getSessionId() + " moving from " + srcSession.getPoolName() + " to " + destPool;
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o==this) return true;
+      if(!(o instanceof MoveSession)) return false;
+      MoveSession moveSession = (MoveSession)o;
+      return moveSession.srcSession.getSessionId().equals(srcSession.getSessionId()) &&
+          moveSession.srcSession.getPoolName().equals(srcSession.getPoolName()) &&
+          moveSession.destPool.equals(destPool);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(srcSession.getSessionId(), srcSession.getPoolName(), destPool);
+    }
   }
 
   /**
@@ -641,7 +657,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // as possible
     Map<WmTezSession, WmEvent> recordMoveEvents = new HashMap<>();
     for (MoveSession moveSession : e.moveSessions) {
-      handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents);
+      handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, false);
     }
     e.moveSessions.clear();
 
@@ -656,6 +672,30 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       queueGetRequestOnMasterThread(req, poolsToRedistribute, syncWork);
     }
     e.toReuse.clear();
+
+    // For pools which have queued requests, move the "delayed moves" now
+    for (String poolName : poolsToRedistribute) {
+      PoolState pool = pools.get(poolName);
+      if (pool == null) return;
+      int queueSize = pool.queue.size();
+      if (queueSize > 0)
+      {
+        int i = 0;
+        while (i < queueSize && pool.delayedMoveSessionsQueue.size() > 0) {
+          MoveSession moveSession = pool.delayedMoveSessionsQueue.pollFirst();
+          pool.delayedMoveSessionsSet.remove(moveSession);
+          WmTezSession srcSession = moveSession.srcSession;
+          if (pool.sessions.contains(srcSession)) {
+            LOG.info("Processing delayed move {} for pool {} in wm main thread as the pool has queued requests",
+                moveSession, poolName);
+            i++;
+            handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents,
+                true);
+          } else
+            continue;
+        }
+      }
+    }
 
     // 9. Resolve all the kill query requests in flight. Nothing below can affect them.
     Iterator<KillQueryContext> iter = killQueryInProgress.values().iterator();
@@ -794,17 +834,18 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     final WmThreadSyncWork syncWork,
     final HashSet<String> poolsToRedistribute,
     final Map<WmTezSession, GetRequest> toReuse,
-    final Map<WmTezSession, WmEvent> recordMoveEvents) {
+    final Map<WmTezSession, WmEvent> recordMoveEvents,
+      final boolean moveImmediately) {
     String destPoolName = moveSession.destPool;
-    LOG.info("Handling move session event: {}", moveSession);
+    LOG.info("Handling move session event: {}, move immediately: {}", moveSession, moveImmediately);
     if (validMove(moveSession.srcSession, destPoolName)) {
       WmEvent moveEvent = new WmEvent(WmEvent.EventType.MOVE);
-      // remove from src pool
-      RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
+      // check if there is capacity in dest pool
+      if (capacityAvailable(destPoolName)) {
+        // remove from src pool
+        RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
           moveSession.srcSession, poolsToRedistribute, true, true);
       if (rr == RemoveSessionResult.OK) {
-        // check if there is capacity in dest pool, if so move else kill the session
-        if (capacityAvailable(destPoolName)) {
           // add to destination pool
           Boolean added = checkAndAddSessionToAnotherPool(
               moveSession.srcSession, destPoolName, poolsToRedistribute);
@@ -816,18 +857,36 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             LOG.error("Failed to move session: {}. Session is not added to destination.", moveSession);
           }
         } else {
-          WmTezSession session = moveSession.srcSession;
-          KillQueryContext killQueryContext = new KillQueryContext(session, "Destination pool " + destPoolName +
-            " is full. Killing query.");
-          resetAndQueueKill(syncWork.toKillQuery, killQueryContext, toReuse);
+        LOG.error("Failed to move session: {}. Session is not removed from its pool.", moveSession);
         }
       } else {
-        LOG.error("Failed to move session: {}. Session is not removed from its pool.", moveSession);
+        // If delayed move is set to true, don't kill the query. Let the query run in source pool
+        // add the session to the source pool's delayed move sessions so that the session can be moved
+        // later when there is a new request on the source pool.
+        if(HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE) && !moveImmediately) {
+          LOG.info("Move: {} is a delayed move.Since destination pool {} is full, running in source pool "
+              + "as long as possible.", moveSession, destPoolName);
+          String srcPoolName = moveSession.srcSession.getPoolName();
+          if (srcPoolName != null) {
+            PoolState srcPool = pools.get(srcPoolName);
+            if (srcPool != null) {
+              if (srcPool.delayedMoveSessionsSet.add(moveSession)) {
+                srcPool.delayedMoveSessionsQueue.addLast(moveSession);
+              }
+            }
+          }
+          moveSession.future.set(true);
+          return;
+        }
+        WmTezSession session = moveSession.srcSession;
+        LOG.info("Destination Pool {} is full and this is not a delayed move. Killing query, destPoolName");
+        KillQueryContext killQueryContext = new KillQueryContext(session, "Destination pool " + destPoolName +
+            " is full. Killing query.");
+        resetAndQueueKill(syncWork.toKillQuery, killQueryContext, toReuse);
       }
     } else {
       LOG.error("Validation failed for move session: {}. Invalid move or session/pool got removed.", moveSession);
     }
-
     moveSession.future.set(false);
   }
 
@@ -1757,6 +1816,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // Note: the list is expected to be a few items; if it's longer we may want an IHM.
     private final LinkedList<WmTezSession> sessions = new LinkedList<>();
     private final LinkedList<GetRequest> queue = new LinkedList<>();
+    private final LinkedList<MoveSession> delayedMoveSessionsQueue = new LinkedList<>();
+    private final HashSet<MoveSession> delayedMoveSessionsSet = new HashSet<>();
     private final WmPoolMetrics metrics;
 
     private final String fullName;

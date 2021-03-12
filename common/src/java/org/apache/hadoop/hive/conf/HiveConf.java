@@ -3749,6 +3749,10 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "The timeout for AM registry registration, after which (on attempting to use the\n" +
         "session), we kill it and try to get another one."),
+    HIVE_SERVER2_WM_DELAYED_MOVE("hive.server2.wm.delayed.move", false,
+        "Determines behavior of the wm move trigger when destination pool is full.\n"+
+        "If true, the query will run in source pool as long as possible if destination pool is full;\n"+
+        "if false, the query will be killed if destination pool is full."),
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
         "A list of comma separated values corresponding to YARN queues of the same name.\n" +
         "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +

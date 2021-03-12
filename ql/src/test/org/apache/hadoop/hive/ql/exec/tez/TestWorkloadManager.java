@@ -1111,6 +1111,94 @@ public class TestWorkloadManager {
   }
 
   @Test(timeout=10000)
+  public void testDelayedMoveSessions() throws Exception {
+    final HiveConf conf = createConfForDelayedMove();
+    MockQam qam = new MockQam();
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 2, 0.6f), pool("B", 1, 0.4f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
+
+    // [A: 1, B: 0]
+    Map<String, SessionTriggerProvider> allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA1));
+    assertFalse(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA1.getPoolName());
+
+    // If dest pool has capacity, move immediately
+    // [A: 0, B: 1]
+    Future<Boolean> future = wm.applyMoveSessionAsync(sessionA1, "B");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertFalse(allSessionProviders.get("A").getSessions().contains(sessionA1));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("B", sessionA1.getPoolName());
+
+    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
+    // [A: 1, B: 1]
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA2));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA2.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    // Dest pool is maxed out. Keep running in source pool
+    // [A: 1, B: 1]
+    future = wm.applyMoveSessionAsync(sessionA2, "B");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA2));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA2.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    // A has queued requests. The new requests should get accepted. The delayed move should be killed
+    WmTezSession sessionA3 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
+    WmTezSession sessionA4 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
+
+    while(sessionA2.isOpen()) {
+      Thread.sleep(100);
+    }
+    assertNull(sessionA2.getPoolName());
+    assertEquals("Destination pool B is full. Killing query.", sessionA2.getReasonForKill());
+
+    // [A: 2, B: 1]
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(2, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA3));
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA4));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.3f, sessionA3.getClusterFraction(), EPSILON);
+    assertEquals(0.3f, sessionA4.getClusterFraction(), EPSILON);
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA3.getPoolName());
+    assertEquals("A", sessionA4.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+  }
+
+  @Test(timeout=10000)
   public void testAsyncSessionInitFailures() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
@@ -1253,4 +1341,11 @@ public class TestWorkloadManager {
     conf.set(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME.varname, "");
     return conf;
   }
+
+  private HiveConf createConfForDelayedMove() {
+    HiveConf conf = createConf();
+    conf.set(ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE.varname, "true");
+    return conf;
+  }
 }
+
