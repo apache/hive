@@ -174,7 +174,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
                   + "Most likely it is a client that is connecting to this server then "
                   + "immediately closing the socket (i.e., TCP health check or port scanner)");
             } else {
-              LOG.info("Closing server connection which served (parital history) : {}", context.getSessionHandles());
+              LOG.info("Closing server connection which served session: {}", context.getSessionHandle().get());
             }
           }
         }
