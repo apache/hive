@@ -1772,17 +1772,19 @@ class MetaStoreDirectSql {
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
-      qResult = executeWithArray(query, prepareParams(catName, dbName, tableName, partNames, colNames, engine),
-          queryText);
-      if (qResult == null) {
-        query.closeAll();
-        return Collections.emptyList();
-      }
-      end = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-      List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
-      List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(list.size());
+      try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+        qResult = executeWithArray(query,
+            prepareParams(catName, dbName, tableName, partNames, colNames,
+                engine), queryText);
+        if (qResult == null) {
+          query.closeAll();
+          return Collections.emptyList();
+        }
+        end = doTrace ? System.nanoTime() : 0;
+        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
+        List<ColumnStatisticsObj> colStats =
+            new ArrayList<ColumnStatisticsObj>(list.size());
         for (Object[] row : list) {
           colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
               useDensityFunctionForNDVEstimation, ndvTuner));
@@ -1831,8 +1833,7 @@ class MetaStoreDirectSql {
           if (count == partNames.size() || count < 2) {
             noExtraColumnNames.add(colName);
           } else {
-            extraColumnNameTypeParts
-                .put(colName, new String[] {colType, String.valueOf(count)});
+            extraColumnNameTypeParts.put(colName, new String[] {colType, String.valueOf(count)});
           }
           Deadline.checkTimeout();
         }
@@ -1849,8 +1850,7 @@ class MetaStoreDirectSql {
             + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
         start = doTrace ? System.nanoTime() : 0;
 
-        try {
-          try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
           qResult = executeWithArray(query,
               prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
           if (qResult == null) {
@@ -1858,14 +1858,13 @@ class MetaStoreDirectSql {
             return Collections.emptyList();
           }
           list = MetastoreDirectSqlUtils.ensureList(qResult);
-            for (Object[] row : list) {
-              colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
-                  useDensityFunctionForNDVEstimation, ndvTuner));
-              Deadline.checkTimeout();
-            }
-            end = doTrace ? System.nanoTime() : 0;
-            MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+          for (Object[] row : list) {
+            colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+                useDensityFunctionForNDVEstimation, ndvTuner));
+            Deadline.checkTimeout();
           }
+          end = doTrace ? System.nanoTime() : 0;
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
         } catch (Exception e) {
           throwMetaOrRuntimeException(e);
         }

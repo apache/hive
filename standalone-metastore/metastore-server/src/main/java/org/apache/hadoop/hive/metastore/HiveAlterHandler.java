@@ -389,8 +389,8 @@ public class HiveAlterHandler implements AlterHandler {
                 List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
                     part.getValues(), oldCols, oldt, part, null, null);
                 assert (colStats.isEmpty());
+                Deadline.checkTimeout();
                 if (cascade) {
-                  Deadline.checkTimeout();
                   msdb.alterPartition(
                     catName, dbname, name, part.getValues(), part, writeIdList);
                 } else {
@@ -1064,12 +1064,10 @@ public class HiveAlterHandler implements AlterHandler {
           }
         }
       }
-
+      Deadline.checkTimeout();
       if (doAlterTable) {
         // Change to new table and append stats for the new table
-        Deadline.checkTimeout();
         msdb.alterTable(catName, dbName, tableName, newTable, validWriteIds);
-        Deadline.checkTimeout();
         if (updateColumnStats) {
           for (ColumnStatistics colStats : newMultiColStats) {
             msdb.updateTableColumnStatistics(colStats, validWriteIds, newTable.getWriteId());
