@@ -115,7 +115,6 @@
 
     <!-- Library Dependency Versions -->
     <accumulo.version>1.7.3</accumulo.version>
-    <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
@@ -424,22 +423,6 @@
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-trace</artifactId>
         <version>${accumulo.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-core</artifactId>
-        <version>${activemq.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>kahadb</artifactId>
-        <version>${activemq.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.avro</groupId>
