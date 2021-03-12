@@ -250,6 +250,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   }
 
   @Test
+  @Ignore("HIVE-24766")
   public void testSetPolicyId() throws Throwable {
     String withClause =
         " WITH('" + HiveConf.ConfVars.HIVE_IN_TEST + "' = 'true'" + ",'"
