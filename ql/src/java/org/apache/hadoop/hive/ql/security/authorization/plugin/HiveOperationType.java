@@ -149,6 +149,7 @@ public enum HiveOperationType {
   CREATE_SCHEDULED_QUERY,
   ALTER_SCHEDULED_QUERY,
   DROP_SCHEDULED_QUERY,
+  REFRESH_TABLE,
 
   // ==== Hive command operation types starts here ==== //
   SET,

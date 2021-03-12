@@ -108,6 +108,9 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DROP_SCHEDULED_QUERY:
         return new ScheduledQueryAnalyzer(queryState);
 
+      case HiveParser.TOK_REFRESH_TABLE:
+        return new ResetMetadataSemanticAnalyzer(queryState);
+
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:
       case HiveParser.TOK_ROLLBACK:

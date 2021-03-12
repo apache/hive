@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsSemanticAnalyzer;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TaskCompiler;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -61,6 +64,8 @@ import org.apache.hadoop.hive.impala.work.ImpalaWork;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.impala.thrift.TExecRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,18 +94,24 @@ public class ImpalaCompiler extends TaskCompiler {
         boolean computeStats = pCtx.getQueryProperties().isAnalyzeCommand() ||
             pCtx.getQueryProperties().isAnalyzeRewrite();
         boolean dropStats = pCtx.getQueryProperties().isDropStatsCommand();
-        if (computeStats || dropStats) {
-            // Compute and drop statistics statements are sent to the Impala engine
-            // as a SQL statement.
-            // We need to create a fetch operator since only Impala returns
-            // results for this statement
-            createFetchTask(pCtx);
-            if (computeStats) {
-              work = ImpalaWork.createPlannedWork(generateComputeStatsStatement(pCtx, inputs),
-                  pCtx.getFetchTask(), requestedFetchSize, generateInvalidateTableMetadataStatement(pCtx, inputs));
+        boolean isRefreshCommand = pCtx.getQueryProperties().isRefreshCommand();
+
+        if (computeStats || dropStats || isRefreshCommand) {
+            // Compute, drop statistics and refresh statements are sent to the Impala engine
+            if (computeStats || dropStats) {
+                // We need to create a fetch operator since only Impala returns
+                // results for these statement
+                createFetchTask(pCtx);
+                String statsStatement = computeStats ? generateComputeStatsStatement(pCtx, inputs) :
+                        generateDropStatsStatement(pCtx, inputs);
+                work = ImpalaWork.createPlannedWork(statsStatement,
+                        pCtx.getFetchTask(), requestedFetchSize, generateInvalidateTableMetadataStatement(pCtx, inputs));
             } else {
-              work = ImpalaWork.createPlannedWork(generateDropStatsStatement(pCtx, inputs),
-                  pCtx.getFetchTask(), requestedFetchSize, generateInvalidateTableMetadataStatement(pCtx, inputs));
+                //Impala doesn't produce any output for these
+                // statements and so we don't define any fetch operator
+                // in Hive. Instead these statements are executed in sync mode.
+                work = ImpalaWork.createPlannedWork(generateRefreshStatement(inputs),
+                        null, -1, false);
             }
         } else {
             MoveWork moveWork = moveTask == null ? null : moveTask.getWork();
@@ -195,39 +206,42 @@ public class ImpalaCompiler extends TaskCompiler {
         return sb.toString();
     }
 
-    // This method is taken from CDPD-23225, we will unify both once it is pushed
-    private String genPartValueString(FieldSchema fs, Map<String, String> partitionSpec) {
-        String partVal = partitionSpec.get(fs.getName());
-        String partType = fs.getType().toLowerCase();
+    /*
+     * Generates refresh sql statement. If the partition column
+     * is of type String or Date, we wrap partition value with double quotes
+     * otherwise for partition column types like int, double etc we return
+     * the value as it.
+     * Few examples:
+     * - No partition spec:
+     *       REFRESH `tab`
+     * - Partition spec (partial spec not allowed)
+     *       REFRESH `tab` PARTITION (`part_col_str`="v1",`part_col_int`=v2..)
+     * - Partition spec of type char or varchar
+     *       REFRESH `tab` PARTITION (`part_col_char`=CAST("V1" AS CHAR(10)))
+     */
+
+    private String generateRefreshStatement(Set<ReadEntity> inputs) {
+        Table table = inputs.iterator().next().getTable();
         StringBuilder sb = new StringBuilder();
-        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(partType);
-        switch (pti.getTypeName()) {
-        // TODD: Remove the partition column data types
-        // not supported in Impala
-        case serdeConstants.BOOLEAN_TYPE_NAME: // NOT supported ?
-        case serdeConstants.INT_TYPE_NAME: // supported
-        case serdeConstants.BIGINT_TYPE_NAME: // supported
-        case serdeConstants.CHAR_TYPE_NAME:
-        case serdeConstants.FLOAT_TYPE_NAME: // supported
-        case serdeConstants.DOUBLE_TYPE_NAME: // supported
-        case serdeConstants.TINYINT_TYPE_NAME: // supported
-        case serdeConstants.SMALLINT_TYPE_NAME: // supported
-        case serdeConstants.BINARY_TYPE_NAME: // NOT supported
-            sb.append(partVal);
-            break;
-        case serdeConstants.STRING_TYPE_NAME: // supported
-        case serdeConstants.DATE_TYPE_NAME: // supported
-        case serdeConstants.TIMESTAMP_TYPE_NAME: // NOT supported
-        case serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME:
-        case serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME:
-            sb.append("\"");
-            sb.append(partVal);
-            sb.append("\"");
-            break;
-        default:
-            throw new RuntimeException("Unknown data type " + pti.getTypeName()
-                + " for partition column: " + fs.getName());
+        sb.append("REFRESH ");
+        sb.append(unparseIdentifier(table.getDbName(), conf));
+        sb.append(".");
+        sb.append(unparseIdentifier(table.getTableName(), conf));
+
+        List<FieldSchema> partCols = table.getPartCols();
+        Map<String, String> partitionSpec = table.getTableSpec().partSpec;
+
+        // partSpec are partitions specified in sql
+        if(partitionSpec != null) {
+            sb.append(" PARTITION ");
+            sb.append("(");
+            sb.append(partCols.stream()
+                    .map(fs -> unparseIdentifier(fs.getName(), conf) + "=" +
+                            genPartValueString(fs, partitionSpec))
+                    .collect(Collectors.joining(", ")));
+            sb.append(")");
         }
+        LOG.debug("Refresh statement passed to Impala for execution is: " + sb.toString());
         return sb.toString();
     }
 
@@ -276,6 +290,43 @@ public class ImpalaCompiler extends TaskCompiler {
         sb.append(unparseIdentifier(table.getDbName(), conf));
         sb.append(".");
         sb.append(unparseIdentifier(table.getTableName(), conf));
+        return sb.toString();
+    }
+
+    private String genPartValueString(FieldSchema fs, Map<String, String> partitionSpec) {
+        String partVal = partitionSpec.get(fs.getName());
+        String partType = fs.getType().toLowerCase();
+        StringBuilder sb = new StringBuilder();
+        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(partType);
+        String ptName = pti.getTypeName();
+        if (ptName.equals(serdeConstants.BOOLEAN_TYPE_NAME) ||
+           ptName.equals(serdeConstants.INT_TYPE_NAME) ||
+           ptName.equals(serdeConstants.BIGINT_TYPE_NAME) ||
+           ptName.equals(serdeConstants.FLOAT_TYPE_NAME) ||
+           ptName.equals(serdeConstants.DOUBLE_TYPE_NAME) ||
+           ptName.equals(serdeConstants.TINYINT_TYPE_NAME) ||
+           ptName.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+            sb.append(partVal);
+        } else if (ptName.equals(serdeConstants.STRING_TYPE_NAME) ||
+                  ptName.equals(serdeConstants.DATE_TYPE_NAME)) {
+            sb.append("\"");
+            sb.append(BaseSemanticAnalyzer.escapeSQLString(partVal));
+            sb.append("\"");
+        } else if (ptName.startsWith(serdeConstants.CHAR_TYPE_NAME) ||
+                  ptName.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+            // Impala expects char and varchar values to be type casted
+            sb.append("CAST");
+            sb.append("(");
+            sb.append("\"");
+            sb.append(BaseSemanticAnalyzer.escapeSQLString(partVal));
+            sb.append("\"");
+            sb.append(" AS ");
+            sb.append(ptName);
+            sb.append(")");
+        } else {
+            throw new RuntimeException("Data type: " + pti.getTypeName()
+                    + " unknown to Impala for partition column: " + fs.getName());
+        }
         return sb.toString();
     }
 

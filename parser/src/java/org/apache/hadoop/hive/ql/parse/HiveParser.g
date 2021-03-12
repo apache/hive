@@ -460,6 +460,7 @@ TOK_EXECUTE;
 TOK_SCHEDULE;
 TOK_EVERY;
 TOK_WITHIN_GROUP;
+TOK_REFRESH_TABLE;
 }
 
 
@@ -1023,6 +1024,7 @@ ddlStatement
     | abortTransactionStatement
     | killQueryStatement
     | resourcePlanDdlStatements
+    | refreshTableStatement
     ;
 
 ifExists
@@ -3202,3 +3204,9 @@ killQueryStatement
   :
   KW_KILL KW_QUERY ( StringLiteral )+ -> ^(TOK_KILL_QUERY ( StringLiteral )+)
   ;
+
+refreshTableStatement
+@init { pushMsg("refresh table query statement", state); }
+@after {popMsg(state); }
+  : KW_REFRESH tablePartitionPrefix
+  -> ^(TOK_REFRESH_TABLE tablePartitionPrefix);

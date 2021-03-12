@@ -76,6 +76,8 @@ public class QueryProperties {
   // True if this statement creates or replaces a materialized view
   private boolean isMaterializedView;
 
+  private boolean refreshCommand;
+
   public boolean isQuery() {
     return query;
   }
@@ -324,6 +326,14 @@ public class QueryProperties {
     this.isMaterializedView = isMaterializedView;
   }
 
+  public boolean isRefreshCommand() {
+    return refreshCommand;
+  }
+
+  public void setRefreshCommand(boolean refreshCommand) {
+    this.refreshCommand = refreshCommand;
+  }
+
   public void clear() {
     query = false;
     analyzeCommand = false;
@@ -359,6 +369,7 @@ public class QueryProperties {
 
     multiDestQuery = false;
     filterWithSubQuery = false;
+    refreshCommand = false;
   }
 
 }

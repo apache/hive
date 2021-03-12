@@ -74,14 +74,20 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
                 opHandle = sessionImpl.executePlan(work.getQuery(), work.getCompiledPlan());
                 break;
             case COMPILED_QUERY:
-                Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE ||
-                    queryPlan.getOperation() == HiveOperation.DROP_STATS);
+                Preconditions.checkState(
+                        queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE ||
+                        queryPlan.getOperation() == HiveOperation.DROP_STATS ||
+                        queryPlan.getOperation() == HiveOperation.REFRESH_TABLE);
                 if (work.getInvalidateTableMetadataQuery() != null) {
                   TOperationHandle opHandleInvalidate = session.execute(work.getInvalidateTableMetadataQuery(), false);
                   closeOperation(opHandleInvalidate);
                 }
-                isStreaming = true;
-                opHandle = session.execute(work.getQuery(), true);
+                //  isStreaming is true only for ANALYZE_TABLE || DROP_STATS hive operation
+                // For REFRESH_TABLE op, refresh query in Impala does not produce any output
+                // and so we execute the sql query in sync mode.
+                isStreaming = (queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE ||
+                        queryPlan.getOperation() == HiveOperation.DROP_STATS);
+                opHandle = session.execute(work.getQuery(), !work.isRunInSyncMode());
                 break;
             case QUERY:
                 isStreaming = conf.getResultMethod() == ResultMethod.STREAMING;

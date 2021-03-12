@@ -254,6 +254,9 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.DROP_STATS,
         PrivRequirement.newIOPrivRequirement(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT),
             null));
+    // Currently REFRESH_TABLE authorization is deferred to the execution engine and so not controlling privileges.
+    // When REFRESH_TABLE is natively implemented in Hive, we need to update the privileges here
+    op2Priv.put(HiveOperationType.REFRESH_TABLE, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.CACHE_METADATA,
         PrivRequirement.newIOPrivRequirement(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT),
             null));

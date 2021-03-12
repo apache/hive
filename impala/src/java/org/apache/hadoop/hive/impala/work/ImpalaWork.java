@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.impala.plan.ImpalaCompiledPlan;
+import org.apache.hadoop.hive.ql.plan.api.Query;
+
 import java.io.Serializable;
 
 /**
@@ -56,8 +58,12 @@ public class ImpalaWork extends EngineWork implements Serializable {
     /* Generated invalidate metadata query for some compiled queries, e.g., compute stats. */
     private final String invalidateTableMetadataQuery;
 
+    /* Execute in async mode */
+    private final boolean runAsync;
+
     private ImpalaWork(WorkType type, ImpalaCompiledPlan plan, String query, FetchTask fetch, long fetchSize,
-        boolean submitExplainToBackend, QueryState queryState, Context context, String invalidateTableMetadataQuery) {
+        boolean submitExplainToBackend, QueryState queryState, Context context, String invalidateTableMetadataQuery,
+        boolean runAsync) {
       this.type = type;
       this.plan = plan;
       this.query = query;
@@ -68,22 +74,32 @@ public class ImpalaWork extends EngineWork implements Serializable {
       this.context = context;
       this.explain = null;
       this.invalidateTableMetadataQuery = invalidateTableMetadataQuery;
+      this.runAsync = runAsync;
     }
 
     public static ImpalaWork createPlannedWork(ImpalaCompiledPlan plan, QueryState queryState, FetchTask fetch, long fetchSize,
         boolean submitExplainToBackend, Context context) {
       return new ImpalaWork(WorkType.COMPILED_PLAN, plan, queryState.getQueryString(), fetch, fetchSize,
-          submitExplainToBackend, queryState, context, null);
+          submitExplainToBackend, queryState, context, null, true);
     }
 
     public static ImpalaWork createPlannedWork(String query, FetchTask fetch, long fetchSize, String invalidateTableMetadataQuery) {
       return new ImpalaWork(WorkType.COMPILED_QUERY, null, query, fetch, fetchSize,
-          false, null, null, invalidateTableMetadataQuery);
+          false, null, null, invalidateTableMetadataQuery, true);
+    }
+
+    public static ImpalaWork createPlannedWork(String query, FetchTask fetch, long fetchSize) {
+      return createPlannedWork(query, fetch, fetchSize, true);
+    }
+
+    public static ImpalaWork createPlannedWork(String query, FetchTask fetch, long fetchSize, boolean runAsync) {
+        return new ImpalaWork(WorkType.COMPILED_QUERY, null, query, fetch, fetchSize,
+                false, null, null,null, runAsync);
     }
 
     public static ImpalaWork createQuery(String query, FetchTask fetch, long fetchSize) {
       return new ImpalaWork(WorkType.QUERY, null, query, fetch, fetchSize,
-          false, null, null, null);
+          false, null, null, null, true);
     }
 
     public WorkType getType() {
@@ -149,6 +165,10 @@ public class ImpalaWork extends EngineWork implements Serializable {
       return invalidateTableMetadataQuery;
     }
 
+    @Explain(displayName = "Run In Sync Mode", displayOnlyOnTrue = true)
+    public Boolean isRunInSyncMode() {
+        return runAsync == false;
+    }
     /**
      * Whether this is a generated plan, a generated query, or a query.
      */

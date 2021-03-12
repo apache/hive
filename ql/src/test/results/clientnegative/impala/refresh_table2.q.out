@@ -1,0 +1,12 @@
+PREHOOK: query: create external table external_tbl_neg (c1 int)
+partitioned by (p_double double , p_boolean boolean, p_bigint bigint, p_float float, p_tinyint tinyint, p_smallint smallint, p_date date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@external_tbl_neg
+POSTHOOK: query: create external table external_tbl_neg (c1 int)
+partitioned by (p_double double , p_boolean boolean, p_bigint bigint, p_float float, p_tinyint tinyint, p_smallint smallint, p_date date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@external_tbl_neg
+HMS CALL get_table_req FOR external_tbl_neg
+FAILED: ValidationFailureSemanticException default.external_tbl_neg: partition spec {p_double=1.0, p_bigint=1} doesn't contain all (7) partition columns

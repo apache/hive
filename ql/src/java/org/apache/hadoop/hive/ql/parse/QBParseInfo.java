@@ -89,6 +89,8 @@ public class QBParseInfo {
 
   private AnalyzeRewriteContext analyzeRewrite;
 
+  private boolean isRefreshCommand; // used for refresh <tab_name> command
+
 
   /**
    * ClusterBy is a short name for both DistributeBy and SortBy.
@@ -752,6 +754,14 @@ public class QBParseInfo {
 
   public void setColAliases(ASTNode colAliases) {
     this.colAliases = colAliases;
+  }
+
+  public void setIsRefreshCommand(boolean isRefreshCommand) {
+    this.isRefreshCommand = isRefreshCommand;
+  }
+
+  public boolean isRefreshCommand() {
+    return this.isRefreshCommand;
   }
 }
 

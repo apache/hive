@@ -1,0 +1,50 @@
+PREHOOK: query: create external table external_tbl_pos (c1 int)
+partitioned by (p_double double , p_boolean boolean, p_bigint bigint, p_float float, p_tinyint tinyint, p_smallint smallint, p_date date, p_char char(10), p_varchar varchar(10), p_str string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@external_tbl_pos
+POSTHOOK: query: create external table external_tbl_pos (c1 int)
+partitioned by (p_double double , p_boolean boolean, p_bigint bigint, p_float float, p_tinyint tinyint, p_smallint smallint, p_date date, p_char char(10), p_varchar varchar(10), p_str string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@external_tbl_pos
+HMS CALL get_table_req FOR external_tbl_pos
+HMS CALL get_foreign_keys FOR external_tbl_pos
+PREHOOK: query: explain
+refresh `external_tbl_pos`
+PREHOOK: type: REFRESH TABLE
+PREHOOK: Input: default@external_tbl_pos
+POSTHOOK: query: explain
+refresh `external_tbl_pos`
+POSTHOOK: type: REFRESH TABLE
+POSTHOOK: Input: default@external_tbl_pos
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Impala
+      Impala Query: REFRESH `default`.`external_tbl_pos`
+      Invalidate Table Metadata: false
+      Run In Sync Mode: true
+
+HMS CALL get_table_req FOR external_tbl_pos
+HMS CALL get_foreign_keys FOR external_tbl_pos
+PREHOOK: query: explain
+refresh `external_tbl_pos` partition(p_double=1.0, p_boolean=true, p_bigint=1, p_float=1.0, p_tinyint=1, p_smallint=1, p_date='2021-03-16', p_char="testChar", p_varchar="testVarchar", p_str="testString")
+PREHOOK: type: REFRESH TABLE
+PREHOOK: Input: default@external_tbl_pos
+POSTHOOK: query: explain
+refresh `external_tbl_pos` partition(p_double=1.0, p_boolean=true, p_bigint=1, p_float=1.0, p_tinyint=1, p_smallint=1, p_date='2021-03-16', p_char="testChar", p_varchar="testVarchar", p_str="testString")
+POSTHOOK: type: REFRESH TABLE
+POSTHOOK: Input: default@external_tbl_pos
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Impala
+      Impala Query: REFRESH `default`.`external_tbl_pos` PARTITION (`p_double`=1.0, `p_boolean`=true, `p_bigint`=1, `p_float`=1.0, `p_tinyint`=1, `p_smallint`=1, `p_date`="2021-03-16", `p_char`=CAST("testChar  " AS char(10)), `p_varchar`=CAST("testVarcha" AS varchar(10)), `p_str`="testString")
+      Invalidate Table Metadata: false
+      Run In Sync Mode: true
+

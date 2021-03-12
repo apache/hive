@@ -1890,6 +1890,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.getParseInfo().setIncrementalStats(AnalyzeCommandUtils.isIncrementalStats(ast));
         break;
 
+      case HiveParser.TOK_REFRESH_TABLE:
+        // Case of Refresh command
+        String tbl_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
+        qb.setTabAlias(tbl_name, tbl_name);
+        qb.addAlias(tbl_name);
+        qb.getParseInfo().setIsRefreshCommand(true);
+        queryState.setCommandType(HiveOperation.REFRESH_TABLE);
+        break;
+
       case HiveParser.TOK_UNIONALL:
         if (!qbp.getIsSubQ()) {
           // this shouldn't happen. The parser should have converted the union to be
@@ -2266,6 +2275,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (qb.getParseInfo().isAnalyzeCommand()) {
           throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
         }
+        if(qb.getParseInfo().isRefreshCommand()) {
+          throw new SemanticException(ErrorMsg.REFRESH_VIEW.getMsg());
+        }
         String fullViewName = tab.getFullyQualifiedName();
         // Prevent view cycles
         if (viewsExpanded.contains(fullViewName)) {
@@ -2317,7 +2329,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.getParseInfo().addTableSpec(alias, ts);
       }
 
-      if (qb.getParseInfo().isDropStatsCommand()) {
+      if (qb.getParseInfo().isDropStatsCommand() ||
+              qb.getParseInfo().isRefreshCommand()) {
+        // don't allow partial and dynamic partition specifications
         TableSpec ts = new TableSpec(db, conf, (ASTNode) ast.getChild(0), false, false);
         tab.setTableSpec(ts);
         qb.getParseInfo().addTableSpec(alias, ts);
@@ -15548,6 +15562,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
       queryProperties.setMaterializedView(qb.getViewDesc() != null);
+      queryProperties.setRefreshCommand(qb.getParseInfo().isRefreshCommand());
     }
   }
   private void warn(String msg) {
