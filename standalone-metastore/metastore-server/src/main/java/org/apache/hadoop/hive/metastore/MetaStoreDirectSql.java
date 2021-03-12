@@ -1812,7 +1812,7 @@ class MetaStoreDirectSql {
       start = doTrace ? System.nanoTime() : 0;
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
-      try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+      try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
         qResult = executeWithArray(query,
             prepareParams(catName, dbName, tableName, partNames, colNames,
                 engine), queryText);
@@ -1971,7 +1971,7 @@ class MetaStoreDirectSql {
                     + " order by cast(\"" + colStatName + "\" as decimal)";
               }
               start = doTrace ? System.nanoTime() : 0;
-              try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText);) {
+              try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
                 qResult = executeWithArray(query,
                     prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
                 if (qResult == null) {

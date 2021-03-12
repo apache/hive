@@ -125,7 +125,7 @@ class MetastoreDirectSqlUtils {
     long start = doTrace ? System.nanoTime() : 0;
     int rv = 0;
     long queryTime = 0;
-    try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+    try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
       Object result = null;
       if (parameters == null || parameters.length == 0) {
         result = query.execute();
