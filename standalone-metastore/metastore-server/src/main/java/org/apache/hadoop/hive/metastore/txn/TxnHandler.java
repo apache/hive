@@ -301,6 +301,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   // (End user) Transaction timeout, in milliseconds.
   private long timeout;
+  private long replicationTxnTimeout;
   // Timeout for opening a transaction
 
   private int maxBatchSize;
@@ -377,6 +378,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
     timeout = MetastoreConf.getTimeVar(conf, ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    replicationTxnTimeout = MetastoreConf.getTimeVar(conf, ConfVars.REPL_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     retryInterval = MetastoreConf.getTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL,
         TimeUnit.MILLISECONDS);
     retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
@@ -5067,6 +5069,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.Idempotent
   public void performTimeOuts() {
+    try {
+      // time out non-replication txns
+      String epochFn = getEpochFn(dbProduct);
+      String timeoutTxnsQuery = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
+              " AND \"TXN_LAST_HEARTBEAT\" <  " + epochFn + "-" + timeout +
+              " AND \"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue();
+      performTimeOutsInternal(timeoutTxnsQuery);
+
+      // time out replication txns (has different timeout value)
+      String timeoutReplicationTxnsQuery = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
+              " AND \"TXN_LAST_HEARTBEAT\" <  " + epochFn + "-" + replicationTxnTimeout +
+              " AND \"TXN_TYPE\" = " + TxnType.REPL_CREATED.getValue();
+      performTimeOutsInternal(timeoutReplicationTxnsQuery);
+    } catch (MetaException e) {
+      LOG.warn("Aborting timed out transactions failed due to " + e.getMessage(), e);
+    }
+  }
+
+  private void performTimeOutsInternal(String s) {
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -5085,9 +5106,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       timeOutLocks(dbConn);
       while(true) {
         stmt = dbConn.createStatement();
-        String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
-            " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + timeout +
-            " AND \"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue();
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
@@ -5136,6 +5154,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       close(rs, stmt, dbConn);
     }
   }
+
   @Override
   @RetrySemantics.ReadOnly
   public void countOpenTxns() throws MetaException {
