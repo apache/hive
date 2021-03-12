@@ -575,4 +575,7 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   @Deprecated
   long findMinTxnIdSeenOpen() throws MetaException;
+
+  @RetrySemantics.ReadOnly
+  MetricsInfo getMetricsInfo() throws MetaException;
 }
