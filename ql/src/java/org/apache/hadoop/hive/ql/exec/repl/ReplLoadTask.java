@@ -424,29 +424,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return functionsTracker;
   }
 
-  public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf)
-      throws SemanticException {
-    Table table = new Table(metaData.getTable());
-    String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
-    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
-    String dbDotView = tableName.getNotEmptyDbTable();
-
-    String viewOriginalText = table.getViewOriginalText();
-    String viewExpandedText = table.getViewExpandedText();
-    if (!dbName.equals(table.getDbName())) {
-      // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
-      // texts using new DB name. Currently it refers to the source database name.
-    }
-
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
-        table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
-
-    desc.setReplicationSpec(metaData.getReplicationSpec());
-    desc.setOwnerName(table.getOwner());
-
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), conf);
-  }
-
   public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf,
                                        String dumpDirectory, ReplicationMetricCollector metricCollector)
           throws SemanticException {
@@ -462,7 +439,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // texts using new DB name. Currently it refers to the source database name.
     }
 
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getCols(), null, table.getParameters(),
             table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
 
     desc.setReplicationSpec(metaData.getReplicationSpec());
