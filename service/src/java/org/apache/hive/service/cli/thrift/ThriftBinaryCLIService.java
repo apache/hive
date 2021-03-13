@@ -169,7 +169,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
             // There is no session handle because the client gracefully closed
             // the session *or* because the client had some issue and never was
             // able to create one in the first place
-            if (!context.getSessionHandle().isPresent()) {
+            if (context.getSessionCount() == 0) {
               LOG.info("A client connection was closed before creating a Hive session. "
                   + "Most likely it is a client that is connecting to this server then "
                   + "immediately closing the socket (i.e., TCP health check or port scanner)");

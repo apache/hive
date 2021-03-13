@@ -159,11 +159,13 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     private final AtomicInteger messagesProcessedCounter;
     private final long createTime;
     private Optional<SessionHandle> hiveSessionHandle;
+    private int sessionCount;
 
     public ThriftCLIServerContext() {
       this.messagesProcessedCounter = new AtomicInteger();
       this.hiveSessionHandle = Optional.empty();
       this.createTime = System.nanoTime();
+      this.sessionCount = 0;
     }
 
     /**
@@ -174,6 +176,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
      */
     public void setSessionHandle(SessionHandle hiveSessionHandle) {
       this.hiveSessionHandle = Optional.of(hiveSessionHandle);
+      this.sessionCount++;
     }
 
     /**
@@ -209,6 +212,18 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
      */
     public Duration getDuration() {
       return Duration.ofNanos(System.nanoTime() - this.createTime);
+    }
+
+    /**
+     * Return the number of Hive sessions this context has handled. It is
+     * technically possible that a single connection context could handle an
+     * unbounded number of sequential Hive sessions, though it is currently not
+     * implemented.
+     *
+     * @return The number of sessions this thrift context has handled
+     */
+    public int getSessionCount() {
+      return this.sessionCount;
     }
   }
 
