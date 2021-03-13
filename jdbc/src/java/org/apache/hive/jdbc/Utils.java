@@ -420,6 +420,20 @@ public class Utils {
       throw new JdbcUriParseException("Bad URL format: Missing prefix " + URL_PREFIX);
     }
 
+    // Apply configs supplied in the JDBC connection properties object
+    for (Map.Entry<Object, Object> kv : info.entrySet()) {
+      if ((kv.getKey() instanceof String)) {
+        String key = (String) kv.getKey();
+        if (key.startsWith(JdbcConnectionParams.HIVE_VAR_PREFIX)) {
+          connParams.getHiveVars().put(key.substring(JdbcConnectionParams.HIVE_VAR_PREFIX.length()),
+              info.getProperty(key));
+        } else if (key.startsWith(JdbcConnectionParams.HIVE_CONF_PREFIX)) {
+          connParams.getHiveConfs().put(
+              key.substring(JdbcConnectionParams.HIVE_CONF_PREFIX.length()), info.getProperty(key));
+        }
+      }
+    }
+
     // For URLs with no other configuration
     // Don't parse them, but set embedded mode as true
     if (uri.equalsIgnoreCase(URL_PREFIX)) {
@@ -494,19 +508,7 @@ public class Utils {
       }
     }
 
-    // Apply configs supplied in the JDBC connection properties object
-    for (Map.Entry<Object, Object> kv : info.entrySet()) {
-      if ((kv.getKey() instanceof String)) {
-        String key = (String) kv.getKey();
-        if (key.startsWith(JdbcConnectionParams.HIVE_VAR_PREFIX)) {
-          connParams.getHiveVars().put(key.substring(JdbcConnectionParams.HIVE_VAR_PREFIX.length()),
-              info.getProperty(key));
-        } else if (key.startsWith(JdbcConnectionParams.HIVE_CONF_PREFIX)) {
-          connParams.getHiveConfs().put(
-              key.substring(JdbcConnectionParams.HIVE_CONF_PREFIX.length()), info.getProperty(key));
-        }
-      }
-    }
+
 
     // Extract user/password from JDBC connection properties if its not supplied
     // in the connection URL

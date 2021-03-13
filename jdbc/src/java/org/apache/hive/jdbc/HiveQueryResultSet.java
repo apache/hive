@@ -338,17 +338,20 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         fetchedRowsItr = null;
         fetchFirst = false;
       }
-      if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
+      while (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
         LOG.debug("HiveQueryResultsFetchReq: {}", fetchReq);
         TFetchResultsResp fetchResp;
         fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
-
         TRowSet results = fetchResp.getResults();
         fetchedRows = RowSetFactory.create(results, protocol);
         fetchedRowsItr = fetchedRows.iterator();
+        if (fetchResp.isHasMoreRows() && !fetchedRowsItr.hasNext()) {
+          continue;
+        }
+        break;
       }
 
       if (!fetchedRowsItr.hasNext()) {

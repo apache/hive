@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -27,11 +28,19 @@ import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 
 public class EmbeddedCLIServicePortal {
 
+  public static final String EMBEDDED_CLISERVICE = "embeddedCliServiceClass";
+
   public static Iface get(Map<String, String> hiveConfs) {
     TCLIService.Iface embeddedClient;
     try {
-      Class<TCLIService.Iface> clazz =
-          (Class<Iface>) Class.forName("org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService");
+      String embeddedClass = "org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService";
+      if (hiveConfs != null) {
+        String cls = hiveConfs.get(EMBEDDED_CLISERVICE);
+        if (!StringUtils.isEmpty(cls)) {
+          embeddedClass = cls;
+        }
+      }
+      Class<TCLIService.Iface> clazz = (Class<Iface>) Class.forName(embeddedClass);
       embeddedClient = clazz.newInstance();
       ((Service) embeddedClient).init(buildOverlayedConf(hiveConfs));
     } catch (ClassNotFoundException e) {
