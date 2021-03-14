@@ -3469,6 +3469,15 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
+   * Get one latest record of completed compaction by given table/partition.
+   * @param request info on which compaction to retrieve
+   * @return one completed compaction record or null
+   * @throws TException
+   */
+  GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest request)
+    throws TException;
+
+  /**
    * @deprecated in Hive 1.3.0/2.1.0 - will be removed in 2 releases
    */
   @Deprecated

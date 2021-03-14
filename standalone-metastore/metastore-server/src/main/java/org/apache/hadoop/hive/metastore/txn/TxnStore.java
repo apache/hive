@@ -306,6 +306,15 @@ public interface TxnStore extends Configurable {
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
 
   /**
+   * Get one latest record of completed compaction by given table/partition.
+   * @param rqst info on which compaction to retrieve
+   * @return one completed compaction record or null
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  public GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest rqst) throws MetaException;
+
+  /**
    * Add information on a set of dynamic partitions that participated in a transaction.
    * @param rqst dynamic partition info.
    * @throws NoSuchTxnException

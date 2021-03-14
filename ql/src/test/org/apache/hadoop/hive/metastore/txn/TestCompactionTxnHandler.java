@@ -18,27 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.LockComponent;
-import org.apache.hadoop.hive.metastore.api.LockLevel;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
@@ -53,12 +33,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD;
 
@@ -256,6 +236,109 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
+  public void testGetLatestCompaction() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String errorMessage = "Dummy error";
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    GetLatestCompactionRequest rqst = new GetLatestCompactionRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    GetLatestCompactionResponse response = txnHandler.getLatestCompaction(rqst);
+
+    assertNotNull("Should got a response", response);
+    assertEquals("Should got only one compaction", 1, response.getCompactionsSize());
+    LatestCompactionInfo lci = response.getCompactions().get(0);
+    assertEquals("Should return the first succeeded compaction", 1, lci.getId());
+    assertNull("Partitionname should be null for non partitioned table", lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
+  @Test
+  public void testGetLatestCompactionPartition() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    final String errorMessage = "Dummy error";
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    GetLatestCompactionRequest rqst = new GetLatestCompactionRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    rqst.addToPartitionnames(partitionName);
+    GetLatestCompactionResponse response = txnHandler.getLatestCompaction(rqst);
+
+    assertNotNull("Should got a response", response);
+    assertEquals("Should got only one compaction", 1, response.getCompactionsSize());
+    LatestCompactionInfo lci = response.getCompactions().get(0);
+    assertEquals("Should return the first succeeded compaction", 1, lci.getId());
+    assertEquals("Should return same partition name as the request", partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    final String anotherPartitionName = "ds=yesterday";
+    addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, anotherPartitionName, errorMessage);
+    rqst.addToPartitionnames(anotherPartitionName);
+    response = txnHandler.getLatestCompaction(rqst);
+
+    assertNotNull("Should got a response", response);
+    assertEquals("Should got two compactions", 2, response.getCompactionsSize());
+    LatestCompactionInfo lci1 = response.getCompactions().stream().filter(c -> c.getPartitionname().equals(partitionName)).findFirst().get();
+    assertEquals("The compaction id for the first partition should be 1", 1, lci1.getId());
+    LatestCompactionInfo lci2 = response.getCompactions().stream().filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
+    assertEquals("The compaction id for the second partition should be 3", 3, lci2.getId());
+  }
+
+  @Test
+  public void testGetLatestSucceededCompaction() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    final String errorMessage = "Dummy error";
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    GetLatestCompactionRequest rqst = new GetLatestCompactionRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    rqst.addToPartitionnames(partitionName);
+    GetLatestCompactionResponse response = txnHandler.getLatestCompaction(rqst);
+
+    assertEquals("Should got only one response for a partition", 1, response.getCompactionsSize());
+    LatestCompactionInfo lci = response.getCompactions().get(0);
+    assertEquals("Should return the second succeeded compaction", 2, lci.getId());
+    assertEquals("Should return same partition name as the request", partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    response = txnHandler.getLatestCompaction(rqst);
+
+    assertNotNull("Should got a response", response);
+    assertEquals("Should got only one response for a partition", 1, response.getCompactionsSize());
+    lci = response.getCompactions().get(0);
+    assertEquals("Should return the compaction waiting for cleaning", 3, lci.getId());
+    assertEquals("Should return same partition name as the request", partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
+  @Test
+  public void testGetNoCompaction() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String errorMessage = "Dummy error";
+    GetLatestCompactionRequest rqst = new GetLatestCompactionRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    GetLatestCompactionResponse response = txnHandler.getLatestCompaction(rqst);
+
+    assertEquals("Should have no compactions", 0, response.getCompactionsSize());
+
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    response = txnHandler.getLatestCompaction(rqst);
+
+    assertEquals("Should have no compactions", 0, response.getCompactionsSize());
+  }
+
+  @Test
   public void testMarkFailed() throws Exception {
     final String dbName = "foo";
     final String tableName = "bar";
@@ -331,12 +414,36 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst;
     CompactionInfo ci;
     rqst = new CompactionRequest(dbName, tableName, type);
-    rqst.setPartitionname(partitionName);
+    if (partitionName != null) rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
     ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
+  }
+
+  private void addSucceededCompaction(String dbName, String tableName, CompactionType type,
+      String partitionName, String errorMessage) throws MetaException {
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    CompactionInfo ci;
+    if (partitionName != null) rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+    ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    ci.errorMessage = errorMessage;
+    txnHandler.markCleaned(ci);
+  }
+
+  private void addWaitingForCleaningCompaction(String dbName, String tableName, CompactionType type,
+      String partitionName, String errorMessage) throws MetaException {
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    CompactionInfo ci;
+    if (partitionName != null) rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+    ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    ci.errorMessage = errorMessage;
+    txnHandler.markCompacted(ci);
   }
 
   @Test

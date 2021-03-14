@@ -331,14 +331,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // EVENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list844 = iprot.readListBegin();
-                struct.events = new java.util.ArrayList<NotificationEvent>(_list844.size);
-                @org.apache.thrift.annotation.Nullable NotificationEvent _elem845;
-                for (int _i846 = 0; _i846 < _list844.size; ++_i846)
+                org.apache.thrift.protocol.TList _list860 = iprot.readListBegin();
+                struct.events = new java.util.ArrayList<NotificationEvent>(_list860.size);
+                @org.apache.thrift.annotation.Nullable NotificationEvent _elem861;
+                for (int _i862 = 0; _i862 < _list860.size; ++_i862)
                 {
-                  _elem845 = new NotificationEvent();
-                  _elem845.read(iprot);
-                  struct.events.add(_elem845);
+                  _elem861 = new NotificationEvent();
+                  _elem861.read(iprot);
+                  struct.events.add(_elem861);
                 }
                 iprot.readListEnd();
               }
@@ -364,9 +364,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(EVENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.events.size()));
-          for (NotificationEvent _iter847 : struct.events)
+          for (NotificationEvent _iter863 : struct.events)
           {
-            _iter847.write(oprot);
+            _iter863.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.events.size());
-        for (NotificationEvent _iter848 : struct.events)
+        for (NotificationEvent _iter864 : struct.events)
         {
-          _iter848.write(oprot);
+          _iter864.write(oprot);
         }
       }
     }
@@ -402,14 +402,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, NotificationEventResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list849 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new java.util.ArrayList<NotificationEvent>(_list849.size);
-        @org.apache.thrift.annotation.Nullable NotificationEvent _elem850;
-        for (int _i851 = 0; _i851 < _list849.size; ++_i851)
+        org.apache.thrift.protocol.TList _list865 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.events = new java.util.ArrayList<NotificationEvent>(_list865.size);
+        @org.apache.thrift.annotation.Nullable NotificationEvent _elem866;
+        for (int _i867 = 0; _i867 < _list865.size; ++_i867)
         {
-          _elem850 = new NotificationEvent();
-          _elem850.read(iprot);
-          struct.events.add(_elem850);
+          _elem866 = new NotificationEvent();
+          _elem866.read(iprot);
+          struct.events.add(_elem866);
         }
       }
       struct.setEventsIsSet(true);

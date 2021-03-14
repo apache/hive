@@ -22,13 +22,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -52,6 +46,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -390,6 +385,39 @@ public class TestHiveMetaStoreTxns {
     Assert.assertFalse(validTxnList.isTxnValid(tids.get(1)));
     Assert.assertEquals(writeIdList.getHighWatermark(), 3);
     Assert.assertEquals(writeIdList.getMinOpenWriteId().longValue(), 2);
+  }
+
+  @Test
+  public void testGetLatestCompaction() throws Exception {
+    final String dbName = "mydb";
+    final String tblName = "mytable";
+    Database db = new DatabaseBuilder().setName(dbName).build(conf);
+    db.unsetCatalogName();
+    client.createDatabase(db);
+
+    Table tbl = new TableBuilder().setDbName(dbName).setTableName(tblName)
+        .addCol("id", "int").addCol("name", "string")
+        .setType(TableType.MANAGED_TABLE.name()).build(conf);
+    client.createTable(tbl);
+    tbl = client.getTable(dbName, tblName);
+
+    client.compact2(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MINOR, new HashMap<>());
+    OptionalCompactionInfoStruct optionalCi = client.findNextCompact("myworker");
+    client.markCleaned(optionalCi.getCi());
+
+    GetLatestCompactionRequest rqst = new GetLatestCompactionRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tblName);
+    GetLatestCompactionResponse response = client.getLatestCompaction(rqst);
+
+    Assert.assertNotNull("Response should not be null", response);
+    Assert.assertEquals(1, response.getCompactionsSize());
+    Assert.assertEquals(dbName, response.getDbname());
+    Assert.assertEquals(tblName, response.getTablename());
+    LatestCompactionInfo lci = response.getCompactions().get(0);
+    Assert.assertEquals("Compaction ID should be 1", 1, lci.getId());
+    Assert.assertNull("Partition name should be null", lci.getPartitionname());
+    Assert.assertEquals(CompactionType.MINOR, lci.getType());
   }
 
   @BeforeClass

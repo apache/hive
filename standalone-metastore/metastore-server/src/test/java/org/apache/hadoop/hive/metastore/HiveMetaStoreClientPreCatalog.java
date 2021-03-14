@@ -2605,6 +2605,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return client.show_compact(new ShowCompactRequest());
   }
 
+  @Override
+  public GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest request) throws TException {
+    return client.get_latest_compaction(request);
+  }
+
   @Deprecated
   @Override
   public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,

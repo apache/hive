@@ -3187,6 +3187,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def get_latest_compaction(rqst)
+      send_get_latest_compaction(rqst)
+      return recv_get_latest_compaction()
+    end
+
+    def send_get_latest_compaction(rqst)
+      send_message('get_latest_compaction', Get_latest_compaction_args, :rqst => rqst)
+    end
+
+    def recv_get_latest_compaction()
+      result = receive_message(Get_latest_compaction_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_compaction failed: unknown result')
+    end
+
     def get_next_notification(rqst)
       send_get_next_notification(rqst)
       return recv_get_next_notification()
@@ -6643,6 +6658,13 @@ module ThriftHiveMetastore
       result = Set_hadoop_jobid_result.new()
       @handler.set_hadoop_jobid(args.jobId, args.cq_id)
       write_result(result, oprot, 'set_hadoop_jobid', seqid)
+    end
+
+    def process_get_latest_compaction(seqid, iprot, oprot)
+      args = read_args(iprot, Get_latest_compaction_args)
+      result = Get_latest_compaction_result.new()
+      result.success = @handler.get_latest_compaction(args.rqst)
+      write_result(result, oprot, 'get_latest_compaction', seqid)
     end
 
     def process_get_next_notification(seqid, iprot, oprot)
@@ -14499,6 +14521,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
 
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_latest_compaction_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetLatestCompactionRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_latest_compaction_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetLatestCompactionResponse}
     }
 
     def struct_fields; FIELDS; end

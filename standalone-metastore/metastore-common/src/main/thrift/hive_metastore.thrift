@@ -1249,6 +1249,24 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct GetLatestCompactionRequest {
+    1: required string dbname,
+    2: required string tablename,
+    3: optional list<string> partitionnames,
+}
+
+struct LatestCompactionInfo {
+    1: required i64 id,
+    2: optional string partitionname,
+    3: required CompactionType type,
+}
+
+struct GetLatestCompactionResponse {
+    1: required string dbname,
+    2: required string tablename,
+    3: optional list<LatestCompactionInfo> compactions,
+}
+
 struct AddDynamicPartitions {
     1: required i64 txnid,
     2: required i64 writeid,
@@ -2769,6 +2787,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
+  GetLatestCompactionResponse get_latest_compaction(1:GetLatestCompactionRequest rqst)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 

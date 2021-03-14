@@ -78,60 +78,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.LockTypeComparator;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
-import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.LockComponent;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.Materialization;
-import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
-import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
-import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
-import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.TxnOpenException;
-import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -3582,6 +3529,77 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return response;
     } catch (RetryException e) {
       return showCompact(rqst);
+    }
+  }
+
+  @RetrySemantics.ReadOnly
+  public GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest rqst) throws MetaException {
+    GetLatestCompactionResponse response = new GetLatestCompactionResponse();
+    response.setDbname(rqst.getDbname());
+    response.setTablename(rqst.getTablename());
+    Connection dbConn = null;
+    PreparedStatement pst = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+
+        List<String> params = new ArrayList<>();
+        StringBuilder sb = new StringBuilder()
+            .append("SELECT * FROM (")
+            .append("   SELECT")
+            .append("   \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_TYPE\"")
+            .append("   FROM \"COMPLETED_COMPACTIONS\"")
+            .append("     WHERE \"CC_STATE\" = " + quoteChar(SUCCEEDED_STATE))
+            .append("   UNION ALL")
+            .append("   SELECT")
+            .append("   \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\"")
+            .append("   ,\"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\"")
+            .append("   ,\"CQ_TYPE\" AS \"CC_TYPE\"")
+            .append("   FROM \"COMPACTION_QUEUE\"")
+            .append("     WHERE \"CQ_STATE\" = " + quoteChar(READY_FOR_CLEANING))
+            .append(") AS compactions ")
+            .append(" WHERE \"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
+        params.add(rqst.getDbname());
+        params.add(rqst.getTablename());
+        if (rqst.getPartitionnames() != null) {
+          sb.append(" AND \"CC_PARTITION\" IN (");
+          sb.append(String.join(",",
+              Collections.nCopies(rqst.getPartitionnamesSize(), "?")));
+          sb.append(")");
+          params.addAll(rqst.getPartitionnames());
+        } else {
+          sb.append(" AND \"CC_PARTITION\" IS NULL");
+        }
+        sb.append(" ORDER BY \"CC_ID\" DESC");
+
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
+        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        ResultSet rs = pst.executeQuery();
+        HashSet<String> partitionSet = new HashSet<>();
+        while (rs.next()) {
+          LatestCompactionInfo lci = new LatestCompactionInfo();
+          lci.setId(rs.getLong(1));
+          String partition = rs.getString(4);
+          if (!rs.wasNull()) lci.setPartitionname(partition);
+          lci.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+          // Only put the latest record of each partition into response
+          if (!partitionSet.contains(partition)) {
+            response.addToCompactions(lci);
+            partitionSet.add(partition);
+          }
+        }
+      } catch (SQLException e) {
+        LOG.error("Unable to execute query " + e.getMessage());
+        checkRetryable(dbConn, e, "getLatestCompact");
+      } finally {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        closeStmt(pst);
+        closeDbConn(dbConn);
+      }
+      return response;
+    } catch (RetryException e) {
+      return getLatestCompaction(rqst);
     }
   }
 

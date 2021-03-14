@@ -975,6 +975,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("set_hadoop_jobid\n");
   }
 
+  void get_latest_compaction(GetLatestCompactionResponse& _return, const GetLatestCompactionRequest& rqst) {
+    // Your implementation goes here
+    printf("get_latest_compaction\n");
+  }
+
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     // Your implementation goes here
     printf("get_next_notification\n");

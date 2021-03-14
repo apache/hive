@@ -8458,6 +8458,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public GetLatestCompactionResponse get_latest_compaction(GetLatestCompactionRequest rqst) throws MetaException {
+    return getTxnHandler().getLatestCompaction(rqst);
+  }
+
+  @Override
   public AllocateTableWriteIdsResponse allocate_table_write_ids(
       AllocateTableWriteIdsRequest rqst) throws TException {
     AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);

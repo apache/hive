@@ -3901,6 +3901,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return response;
   }
 
+  @Override
+  public GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest request) throws TException {
+    GetLatestCompactionResponse response = client.get_latest_compaction(request);
+    return FilterUtils.filterLatestCompactionIfEnabled(isClientFilterEnabled, filterHook,
+        getDefaultCatalog(conf), response);
+  }
+
   @Deprecated
   @Override
   public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,

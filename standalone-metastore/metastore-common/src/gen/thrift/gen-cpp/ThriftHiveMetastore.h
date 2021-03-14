@@ -214,6 +214,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void mark_compacted(const CompactionInfoStruct& cr) = 0;
   virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
   virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
+  virtual void get_latest_compaction(GetLatestCompactionResponse& _return, const GetLatestCompactionRequest& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
@@ -906,6 +907,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void set_hadoop_jobid(const std::string& /* jobId */, const int64_t /* cq_id */) {
+    return;
+  }
+  void get_latest_compaction(GetLatestCompactionResponse& /* _return */, const GetLatestCompactionRequest& /* rqst */) {
     return;
   }
   void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
@@ -24524,6 +24528,110 @@ class ThriftHiveMetastore_set_hadoop_jobid_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_latest_compaction_args__isset {
+  _ThriftHiveMetastore_get_latest_compaction_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_get_latest_compaction_args__isset;
+
+class ThriftHiveMetastore_get_latest_compaction_args {
+ public:
+
+  ThriftHiveMetastore_get_latest_compaction_args(const ThriftHiveMetastore_get_latest_compaction_args&);
+  ThriftHiveMetastore_get_latest_compaction_args& operator=(const ThriftHiveMetastore_get_latest_compaction_args&);
+  ThriftHiveMetastore_get_latest_compaction_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_latest_compaction_args() noexcept;
+  GetLatestCompactionRequest rqst;
+
+  _ThriftHiveMetastore_get_latest_compaction_args__isset __isset;
+
+  void __set_rqst(const GetLatestCompactionRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_latest_compaction_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_latest_compaction_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_latest_compaction_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_latest_compaction_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_latest_compaction_pargs() noexcept;
+  const GetLatestCompactionRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_compaction_result__isset {
+  _ThriftHiveMetastore_get_latest_compaction_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_latest_compaction_result__isset;
+
+class ThriftHiveMetastore_get_latest_compaction_result {
+ public:
+
+  ThriftHiveMetastore_get_latest_compaction_result(const ThriftHiveMetastore_get_latest_compaction_result&);
+  ThriftHiveMetastore_get_latest_compaction_result& operator=(const ThriftHiveMetastore_get_latest_compaction_result&);
+  ThriftHiveMetastore_get_latest_compaction_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_latest_compaction_result() noexcept;
+  GetLatestCompactionResponse success;
+
+  _ThriftHiveMetastore_get_latest_compaction_result__isset __isset;
+
+  void __set_success(const GetLatestCompactionResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_get_latest_compaction_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_latest_compaction_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_latest_compaction_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_compaction_presult__isset {
+  _ThriftHiveMetastore_get_latest_compaction_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_latest_compaction_presult__isset;
+
+class ThriftHiveMetastore_get_latest_compaction_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_latest_compaction_presult() noexcept;
+  GetLatestCompactionResponse* success;
+
+  _ThriftHiveMetastore_get_latest_compaction_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_next_notification_args__isset {
   _ThriftHiveMetastore_get_next_notification_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -32466,6 +32574,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void recv_set_hadoop_jobid();
+  void get_latest_compaction(GetLatestCompactionResponse& _return, const GetLatestCompactionRequest& rqst);
+  void send_get_latest_compaction(const GetLatestCompactionRequest& rqst);
+  void recv_get_latest_compaction(GetLatestCompactionResponse& _return);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   void send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return);
@@ -32859,6 +32970,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_mark_compacted(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_latest_compaction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_notification_events_count(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -33118,6 +33230,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["mark_compacted"] = &ThriftHiveMetastoreProcessor::process_mark_compacted;
     processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
     processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
+    processMap_["get_latest_compaction"] = &ThriftHiveMetastoreProcessor::process_get_latest_compaction;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["get_notification_events_count"] = &ThriftHiveMetastoreProcessor::process_get_notification_events_count;
@@ -35046,6 +35159,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->set_hadoop_jobid(jobId, cq_id);
   }
 
+  void get_latest_compaction(GetLatestCompactionResponse& _return, const GetLatestCompactionRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_latest_compaction(_return, rqst);
+    }
+    ifaces_[i]->get_latest_compaction(_return, rqst);
+    return;
+  }
+
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -36257,6 +36380,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   int32_t send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void recv_set_hadoop_jobid(const int32_t seqid);
+  void get_latest_compaction(GetLatestCompactionResponse& _return, const GetLatestCompactionRequest& rqst);
+  int32_t send_get_latest_compaction(const GetLatestCompactionRequest& rqst);
+  void recv_get_latest_compaction(GetLatestCompactionResponse& _return, const int32_t seqid);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   int32_t send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return, const int32_t seqid);
