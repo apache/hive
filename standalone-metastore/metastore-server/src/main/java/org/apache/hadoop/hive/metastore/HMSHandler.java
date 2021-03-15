@@ -1644,7 +1644,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       db = getMS().getDatabase(request.getCatalogName(), request.getName());
       firePreEvent(new PreReadDatabaseEvent(db, this));
-      if (processorCapabilities != null && transformer != null) {
+      if (transformer != null && !isInTest) {
         db = transformer.transformDatabase(db, processorCapabilities, processorId);
       }
     } catch (MetaException | NoSuchObjectException e) {
@@ -2150,6 +2150,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> processorCapabilities = req.getProcessorCapabilities();
     String processorId = req.getProcessorIdentifier();
 
+    if (!tbl.isSetCatName()) {
+      tbl.setCatName(getDefaultCatalog(conf));
+    }
     if (transformer != null && !isInTest) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
@@ -2208,9 +2211,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Database db = null;
     boolean isReplicated = false;
     try {
-      if (!tbl.isSetCatName()) {
-        tbl.setCatName(getDefaultCatalog(conf));
-      }
       firePreEvent(new PreCreateTableEvent(tbl, this));
 
       ms.openTransaction();
