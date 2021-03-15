@@ -1,5 +1,8 @@
 package org.apache.hadoop.hive.metastore.txn;
 
+/**
+ * ACID metrics info object.
+ */
 public class MetricsInfo {
 
   private int txnToWriteIdRowCount;

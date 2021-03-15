@@ -81,8 +81,7 @@ public class AcidMetricService  implements MetastoreTaskThread {
     updateDBMetrics();
   }
 
-  @VisibleForTesting
-  void updateDBMetrics() throws MetaException {
+  private void updateDBMetrics() throws MetaException {
     MetricsInfo metrics = txnHandler.getMetricsInfo();
     Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").set(
         metrics.getTxnToWriteIdRowCount());
