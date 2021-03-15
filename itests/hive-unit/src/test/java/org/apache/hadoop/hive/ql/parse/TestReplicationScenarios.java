@@ -2808,7 +2808,9 @@ public class TestReplicationScenarios {
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ext_ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
     run("CREATE VIEW " + dbName + ".virtual_view AS SELECT * FROM " + dbName + ".unptned", driver);
+    run("CREATE VIEW " + dbName + ".virtual_view_with_partition PARTITIONED ON (b) AS SELECT * FROM " + dbName + ".ext_ptned", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -2818,14 +2820,17 @@ public class TestReplicationScenarios {
     String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
     String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
     String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+    String ext_ptned_locn = new Path(TEST_PATH , testName + "_ext_ptned").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ext_ptned_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
     verifySetup("SELECT a from " + dbName + ".ptned", empty, driver);
     verifySetup("SELECT * from " + dbName + ".unptned", empty, driver);
     verifySetup("SELECT * from " + dbName + ".virtual_view", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".virtual_view_with_partition", empty, driver);
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
     verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
@@ -2835,6 +2840,9 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ext_ptned_locn + "' OVERWRITE INTO TABLE " + dbName + ".ext_ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ext_ptned WHERE b=2", ptn_data_2, driver);
 
     // TODO: This does not work because materialized views need the creation metadata
     // to be updated in case tables used were replicated to a different database.
@@ -2847,11 +2855,16 @@ public class TestReplicationScenarios {
     verifyRun("SELECT * from " + replDbName + ".virtual_view", empty, driverMirror);
     //verifyRun("SELECT a from " + replDbName + ".mat_view", ptn_data_1, driverMirror);
 
+    verifySetup("SELECT * from " + replDbName + ".virtual_view_with_partition", empty, driver);
+
     run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
     verifySetup("SELECT a from " + dbName + ".virtual_view2", ptn_data_2, driver);
 
     // Create a view with name already exist. Just to verify if failure flow clears the added create_table event.
     run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
+
+    // Create view with partition
+    run("CREATE VIEW " + dbName + ".virtual_view_with_partition_2 PARTITIONED ON (b) AS SELECT * FROM " + dbName + ".ext_ptned", driver);
 
     //run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view2 AS SELECT * FROM " + dbName + ".unptned", driver);
     //verifySetup("SELECT * from " + dbName + ".mat_view2", unptn_data, driver);
@@ -2867,6 +2880,7 @@ public class TestReplicationScenarios {
     // view is referring to old database, so no data
     verifyRun("SELECT * from " + replDbName + ".virtual_view2", empty, driverMirror);
     //verifyRun("SELECT * from " + replDbName + ".mat_view2", unptn_data, driverMirror);
+    verifySetup("SELECT * from " + dbName + ".virtual_view_with_partition_2", empty, driver);
 
     // Test "alter table" with rename
     run("ALTER VIEW " + dbName + ".virtual_view RENAME TO " + dbName + ".virtual_view_rename", driver);
