@@ -3890,7 +3890,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     cr.setType(type);
     cr.setProperties(tblproperties);
+    cr.setInitiatorId(hostname() + "-manual");
+    cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
+  }
+
+  private String hostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException var1) {
+      LOG.error("Unable to resolve my host name " + var1.getMessage());
+      throw new RuntimeException(var1);
+    }
   }
 
   @Override
@@ -4638,8 +4649,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
-    return client.find_next_compact(workerId);
+  public OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException {
+    return client.find_next_compact(workerId, workerVersion);
   }
 
   @Override

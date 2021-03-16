@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -76,20 +77,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
-
-  /**
-   * Get the hostname that this worker is run on.  Made static and public so that other classes
-   * can use the same method to know what host their worker threads are running on.
-   * @return hostname
-   */
-  public static String hostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
-  }
+  private String runtimeVersion;
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   // don't go through Initiator for user initiated compactions)
@@ -156,11 +144,17 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
 
-    StringBuilder name = new StringBuilder(hostname());
+    StringBuilder name = new StringBuilder(ServerUtils.hostname());
     name.append("-");
     name.append(getId());
     this.workerName = name.toString();
     setName(name.toString());
+    this.runtimeVersion = getRuntimeVersion();
+  }
+
+  @VisibleForTesting
+  protected String getRuntimeVersion() {
+    return Worker.class.getPackage().getImplementationVersion();
   }
 
   static final class StatsUpdater {
@@ -404,7 +398,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           return false;
         }
       }
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
+      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName, runtimeVersion));
       LOG.debug("Processing compaction request " + ci);
 
       if (ci == null) {

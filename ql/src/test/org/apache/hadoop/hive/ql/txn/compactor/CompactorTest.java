@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -210,7 +211,7 @@ public abstract class CompactorTest {
   }
 
   protected long openTxn(TxnType txnType) throws MetaException {
-    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), Worker.hostname());
+    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), ServerUtils.hostname());
     rqst.setTxn_type(txnType);
     List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
@@ -614,7 +615,7 @@ public abstract class CompactorTest {
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    CompactionInfo ci = txnHandler.findNextToCompact("fred", "4.0.0");
     ci.runAs = System.getProperty("user.name");
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci

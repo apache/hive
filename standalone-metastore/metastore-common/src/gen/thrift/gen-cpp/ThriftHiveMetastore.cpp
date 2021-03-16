@@ -45411,6 +45411,14 @@ uint32_t ThriftHiveMetastore_find_next_compact_args::read(::apache::thrift::prot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->workerVersion);
+          this->__isset.workerVersion = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -45432,6 +45440,10 @@ uint32_t ThriftHiveMetastore_find_next_compact_args::write(::apache::thrift::pro
   xfer += oprot->writeString(this->workerId);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("workerVersion", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->workerVersion);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -45449,6 +45461,10 @@ uint32_t ThriftHiveMetastore_find_next_compact_pargs::write(::apache::thrift::pr
 
   xfer += oprot->writeFieldBegin("workerId", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString((*(this->workerId)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("workerVersion", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->workerVersion)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -72271,19 +72287,20 @@ void ThriftHiveMetastoreClient::recv_add_dynamic_partitions()
   return;
 }
 
-void ThriftHiveMetastoreClient::find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId)
+void ThriftHiveMetastoreClient::find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion)
 {
-  send_find_next_compact(workerId);
+  send_find_next_compact(workerId, workerVersion);
   recv_find_next_compact(_return);
 }
 
-void ThriftHiveMetastoreClient::send_find_next_compact(const std::string& workerId)
+void ThriftHiveMetastoreClient::send_find_next_compact(const std::string& workerId, const std::string& workerVersion)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("find_next_compact", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_find_next_compact_pargs args;
   args.workerId = &workerId;
+  args.workerVersion = &workerVersion;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -87609,7 +87626,7 @@ void ThriftHiveMetastoreProcessor::process_find_next_compact(int32_t seqid, ::ap
 
   ThriftHiveMetastore_find_next_compact_result result;
   try {
-    iface_->find_next_compact(result.success, args.workerId);
+    iface_->find_next_compact(result.success, args.workerId, args.workerVersion);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = o1;
@@ -108510,13 +108527,13 @@ void ThriftHiveMetastoreConcurrentClient::recv_add_dynamic_partitions(const int3
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId)
+void ThriftHiveMetastoreConcurrentClient::find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion)
 {
-  int32_t seqid = send_find_next_compact(workerId);
+  int32_t seqid = send_find_next_compact(workerId, workerVersion);
   recv_find_next_compact(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_find_next_compact(const std::string& workerId)
+int32_t ThriftHiveMetastoreConcurrentClient::send_find_next_compact(const std::string& workerId, const std::string& workerVersion)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
@@ -108524,6 +108541,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_find_next_compact(const std::s
 
   ThriftHiveMetastore_find_next_compact_pargs args;
   args.workerId = &workerId;
+  args.workerVersion = &workerVersion;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();

@@ -1,5 +1,7 @@
 -- Mask the enqueue time which is based on current time
 --! qt:replace:/(initiated\s+---\s+---\s+)[0-9]*(\s+---)/$1#Masked#$2/
+-- Mask the hostname in show compaction
+--! qt:replace:/(---\s+)[\S]*(\s+manual)/$1#Masked#$2/
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 

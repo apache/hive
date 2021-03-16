@@ -33,8 +33,8 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
 
   // @formatter:off
   public static final String SCHEMA =
-      "compactionid,dbname,tabname,partname,type,state,hostname,workerid,enqueuetime,starttime,duration,hadoopjobid,errormessage#" +
-      "string:string:string:string:string:string:string:string:string:string:string:string:string";
+      "compactionid,dbname,tabname,partname,type,state,workerhostname,workerid,enqueuetime,starttime,duration,hadoopjobid,errormessage,initiatorhostname,initiatorid#" +
+      "string:string:string:string:string:string:string:string:string:string:string:string:string:string:string";
   // @formatter:on
 
   private String resFile;

@@ -4101,11 +4101,12 @@ public interface IMetaStoreClient {
   /**
    * Get the next compaction job to do.
    * @param workerId id of the worker requesting.
+   * @param workerVersion runtime version of the Worker
    * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
    * @throws MetaException
    * @throws TException
    */
-  OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
+  OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException;
 
   /**
    * Set the compaction highest write id.

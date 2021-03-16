@@ -1418,10 +1418,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function add_dynamic_partitions(\metastore\AddDynamicPartitions $rqst);
     /**
      * @param string $workerId
+     * @param string $workerVersion
      * @return \metastore\OptionalCompactionInfoStruct
      * @throws \metastore\MetaException
      */
-    public function find_next_compact($workerId);
+    public function find_next_compact($workerId, $workerVersion);
     /**
      * @param \metastore\CompactionInfoStruct $cr
      * @param int $txn_id
