@@ -1032,7 +1032,7 @@ public class MetastoreConf {
       "hive.metastore.repl.metrics.max.age", 7, TimeUnit.DAYS,
       "Maximal age of a replication metrics entry before it is removed."),
     REPL_TXN_TIMEOUT("metastore.repl.txn.timeout", "hive.repl.txn.timeout", 24, TimeUnit.HOURS,
-      "time after which replication transactions are declared aborted if the client has not" +
+      "Time after which replication transactions are declared aborted if the client has not" +
       "sent a heartbeat."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",

@@ -5069,25 +5069,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.Idempotent
   public void performTimeOuts() {
-    try {
-      // time out non-replication txns
-      String epochFn = getEpochFn(dbProduct);
-      String timeoutTxnsQuery = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
-              " AND \"TXN_LAST_HEARTBEAT\" <  " + epochFn + "-" + timeout +
-              " AND \"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue();
-      performTimeOutsInternal(timeoutTxnsQuery);
-
-      // time out replication txns (has different timeout value)
-      String timeoutReplicationTxnsQuery = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
-              " AND \"TXN_LAST_HEARTBEAT\" <  " + epochFn + "-" + replicationTxnTimeout +
-              " AND \"TXN_TYPE\" = " + TxnType.REPL_CREATED.getValue();
-      performTimeOutsInternal(timeoutReplicationTxnsQuery);
-    } catch (MetaException e) {
-      LOG.warn("Aborting timed out transactions failed due to " + e.getMessage(), e);
-    }
+    performTimeOutsInternal(false);
+    performTimeOutsInternal(true); // replication timeouts
   }
 
-  private void performTimeOutsInternal(String s) {
+  private void performTimeOutsInternal(boolean replication) {
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -5106,6 +5092,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       timeOutLocks(dbConn);
       while(true) {
         stmt = dbConn.createStatement();
+        String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
+            " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" +
+            (replication ? replicationTxnTimeout : timeout) +
+            " AND \"TXN_TYPE\" " +
+                (replication ? "=" : "!= ") + TxnType.REPL_CREATED.getValue();
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");

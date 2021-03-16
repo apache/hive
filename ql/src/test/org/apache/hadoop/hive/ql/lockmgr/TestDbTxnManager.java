@@ -429,11 +429,12 @@ public class TestDbTxnManager {
 
   /**
    * Same as testHeartbeater, but testing cleanup of replication txns (TxnType.REPL_CREATED)
+   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 1 minute for testing purposes
    */
   @Test
   public void testHeartbeaterReplicationTxn() throws Exception {
     testHeartbeater(TxnType.REPL_CREATED, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT);
-  }
+  };
 
   /**
    * @param txnType e.g. TxnType.DEFAULT or TxnType.REPL_CREATED. There's a similar but different mechanism for
@@ -447,7 +448,7 @@ public class TestDbTxnManager {
     QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
 
     // Case 1: If there's no delay for the heartbeat, txn should be able to commit
-    txnMgr.openTxn(ctx, "u0", txnType);
+    txnMgr.openTxn(ctx, "fred", txnType);
     txnMgr.acquireLocks(qp, ctx, "fred"); // heartbeat started..
     runReaper();
     try {
@@ -503,6 +504,7 @@ public class TestDbTxnManager {
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 1, TimeUnit.MINUTES);
     houseKeeperService.setConf(conf);
   }
 
