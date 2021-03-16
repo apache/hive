@@ -6,7 +6,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
     HiveAggregate(group=[{0}], agg#0=[count()])
-      HiveProject(segment=[CAST(/($1, 50:DECIMAL(10, 0))):INTEGER])
+      HiveProject($f0=[CAST(/($1, 50:DECIMAL(10, 0))):INTEGER])
         HiveAggregate(group=[{10}], agg#0=[sum($1)])
           HiveJoin(condition=[=($2, $12)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($10, $0)], joinType=[inner], algorithm=[none], cost=[not available])

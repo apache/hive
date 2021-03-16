@@ -715,7 +715,7 @@ STAGE PLANS:
           properties:
             hive.sql.query SELECT "ikey"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-WHERE "bkey" IN (10, 20) AND "dkey" IN (15.15, 25.25) AND ("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "ikey" IS NOT NULL
+WHERE "bkey" IN (10, 20) AND "dkey" IN (15.15, 25.25) AND (("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "ikey" IS NOT NULL)
             hive.sql.query.fieldNames ikey
             hive.sql.query.fieldTypes int
             hive.sql.query.split true

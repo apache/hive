@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)], agg#2=[sum($2)])
-  HiveProject($f0=[CAST(CASE(AND(IS NULL($2), IS NOT NULL($0)), 1, 0)):INTEGER], $f1=[CASE(AND(IS NULL($0), IS NOT NULL($2)), 1, 0)], $f2=[CASE(AND(IS NOT NULL($0), IS NOT NULL($2)), 1, 0)])
+  HiveProject($f0=[CAST(CASE(AND(IS NULL($2), IS NOT NULL($0)), 1, 0)):INTEGER], $f1=[CAST(CASE(AND(IS NULL($0), IS NOT NULL($2)), 1, 0)):INTEGER], $f2=[CAST(CASE(AND(IS NOT NULL($0), IS NOT NULL($2)), 1, 0)):INTEGER])
     HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[full], algorithm=[none], cost=[not available])
       HiveProject(ss_customer_sk=[$1], ss_item_sk=[$0])
         HiveAggregate(group=[{0, 1}])

@@ -92,14 +92,11 @@ FROM `default`.`user_small`
 WHERE `userid` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `dealid`, `date`, `cityid`, `userid`
 FROM `default`.`orderpayment_small`
-WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND `cityid` IS NOT NULL AND `userid` IS NOT NULL) AS `t2`
-INNER JOIN (SELECT `date`
+WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND (`cityid` IS NOT NULL AND `userid` IS NOT NULL)) AS `t2` INNER JOIN (SELECT `date`
 FROM `default`.`orderpayment_small`
-WHERE `date` IS NOT NULL) AS `t4` ON `t2`.`date` = `t4`.`date`
-INNER JOIN (SELECT `dealid`
+WHERE `date` IS NOT NULL) AS `t4` ON `t2`.`date` = `t4`.`date` INNER JOIN (SELECT `dealid`
 FROM `default`.`orderpayment_small`
-WHERE `dealid` IS NOT NULL) AS `t6` ON `t2`.`dealid` = `t6`.`dealid`
-INNER JOIN (SELECT `cityid`
+WHERE `dealid` IS NOT NULL) AS `t6` ON `t2`.`dealid` = `t6`.`dealid` INNER JOIN (SELECT `cityid`
 FROM `default`.`orderpayment_small`
 WHERE `cityid` IS NOT NULL) AS `t8` ON `t2`.`cityid` = `t8`.`cityid`) ON `t0`.`userid` = `t2`.`userid`
 LIMIT 5

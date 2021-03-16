@@ -32,7 +32,7 @@ FROM `default`.`src`
 WHERE `key` < 20 AND `key` > 15) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`srcpart`
-WHERE `key` > 15 AND `key` < 20 AND `ds` = '2008-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` > 15 AND (`key` < 20 AND `ds` = '2008-04-08')) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -331,7 +331,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`srcpart`
-WHERE `key` < 20 AND `key` > 15 AND `ds` = '2008-04-08') AS `t0`
+WHERE `key` < 20 AND (`key` > 15 AND `ds` = '2008-04-08')) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` > 15 AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
@@ -636,7 +636,7 @@ FROM `default`.`src`
 WHERE `key` < 20 AND `key` > 15) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`srcpart`
-WHERE `key` > 15 AND `key` < 20 AND `ds` = '2008-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` > 15 AND (`key` < 20 AND `ds` = '2008-04-08')) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -935,7 +935,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`srcpart`
-WHERE `key` < 20 AND `key` > 15 AND `ds` = '2008-04-08') AS `t0`
+WHERE `key` < 20 AND (`key` > 15 AND `ds` = '2008-04-08')) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` > 15 AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`

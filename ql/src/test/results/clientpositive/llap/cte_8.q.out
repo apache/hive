@@ -31,7 +31,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(int_col=[$0], bigint_col=[$1])
+HiveProject(a=[$0], b=[$1])
   HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: with cte1(a, b) as (select int_col x, bigint_col y from t1)

@@ -185,7 +185,7 @@ CBO PLAN:
 HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
   HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
     HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(literalTrue=[true], ws_order_number0=[$0])
+  HiveProject(literalTrue=[true], ws_order_number=[$0])
     HiveFilter(condition=[IS NOT NULL($0)])
       HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
