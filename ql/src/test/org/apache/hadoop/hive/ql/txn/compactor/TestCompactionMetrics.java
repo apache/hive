@@ -57,7 +57,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   private static final String WORKER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_WORKER_CYCLE;
 
   @Test
-  public void testInitiatorMetricsEnabled() throws Exception {
+  public void testInitiatorPerfMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
     int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
@@ -104,7 +104,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void testInitiatorMetricsDisabled() throws Exception {
+  public void testInitiatorPerfMetricsDisabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
     Metrics.initialize(conf);
     int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
@@ -151,7 +151,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void testCleanerMetricsEnabled() throws Exception {
+  public void testCleanerPerfMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
 
@@ -213,7 +213,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void testCleanerMetricsDisabled() throws Exception {
+  public void testCleanerPerfMetricsDisabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
     Metrics.initialize(conf);
 
@@ -246,7 +246,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void testWorkerMetricsEnabled() throws Exception {
+  public void testWorkerPerfMetrics() throws Exception {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     MetricsFactory.close();
     MetricsFactory.init(conf);
@@ -289,38 +289,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
         WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR, 1);
-  }
-
-  @Test
-  public void testWorkerMetricsDisabled() throws Exception {
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, false);
-    MetricsFactory.close();
-    MetricsFactory.init(conf);
-
-    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 2);
-    Table t = newTable("default", "mapwb", true);
-    Partition p = newPartition(t, "today");
-
-    addBaseFile(t, p, 20L, 20);
-    addDeltaFile(t, p, 21L, 22L, 2);
-    addDeltaFile(t, p, 23L, 24L, 2);
-
-    burnThroughTransactions("default", "mapwb", 25);
-
-    CompactionRequest rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
-    rqst.setPartitionname("ds=today");
-    txnHandler.compact(rqst);
-
-    startWorker();
-
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
-
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    String json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
-        WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR, "");
   }
 
   @Test
