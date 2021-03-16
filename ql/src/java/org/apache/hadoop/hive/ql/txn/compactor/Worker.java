@@ -389,7 +389,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * in case of timeout.
    * @param computeStats If true then for MR compaction the stats are regenerated
    * @return Returns true, if there was compaction in the queue, and we started working on it.
-   * @throws InterruptedException is thrown when the process is interrupted because of timeout for example
    */
   @VisibleForTesting
   protected Boolean findNextCompactionAndExecute(boolean computeStats) {
