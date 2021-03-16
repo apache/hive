@@ -226,8 +226,21 @@
                                             <include>org.apache.parquet:*</include>
                                             <include>com.google*:*</include>
                                             <include>com.fasterxml*:*</include>
+                                            <include>com.github.ben-manes*:*</include>
                                         </includes>
                                     </artifactSet>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                                <exclude>META-INF/versions/**</exclude>
+                                                <exclude>static/</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
                                 </configuration>
                             </execution>
                         </executions>
