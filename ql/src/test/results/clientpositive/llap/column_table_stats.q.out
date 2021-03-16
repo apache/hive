@@ -310,7 +310,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain extended analyze table spart compute statistics for columnsr
+PREHOOK: query: explain extended analyze table spart compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
