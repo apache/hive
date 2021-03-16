@@ -274,7 +274,16 @@ function
         (STAR) => (star=STAR)
         | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
       )
-    RPAREN ((nt=null_treatment)? (KW_OVER ws=window_specification[$null_treatment.tree]) | (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))?
+      (
+        // SELECT rank(3) WITHIN GROUP (<order by clause>)
+        (RPAREN KW_WITHIN) => (RPAREN (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))
+        // No null treatment: SELECT first_value(b) OVER (<window spec>)
+        // Standard null treatment spec: SELECT first_value(b) IGNORE NULLS OVER (<window spec>)
+        | (RPAREN (nt=null_treatment)? KW_OVER) => (RPAREN ((nt=null_treatment)? (KW_OVER ws=window_specification[$nt.tree])))
+        // Non-standard null treatment spec: SELECT first_value(b IGNORE NULLS) OVER (<window spec>)
+        | (nt=null_treatment) RPAREN (KW_OVER ws=window_specification[$nt.tree])
+        | RPAREN
+      )
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
            -> {$within != null}? ^(TOK_FUNCTION functionName (selectExpression+)? ^(TOK_WITHIN_GROUP $ordBy))
            -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $ws?)
