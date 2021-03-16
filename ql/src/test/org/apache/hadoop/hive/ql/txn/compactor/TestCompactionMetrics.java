@@ -93,7 +93,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(initiatorCycles + 1,
         Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
 
-    // The metrics will appear after the next AcidMetricsService run
     runAcidMetricService();
 
     Assert.assertEquals(originalValue + 10,
@@ -139,7 +138,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(10, compacts.size());
 
-    // The metrics will appear after the next AcidMetricsService run
     runAcidMetricService();
 
     Assert.assertEquals(originalValue,
@@ -371,13 +369,19 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(25, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
-    // The metrics will appear after the next AcidMetricsService run
     runAcidMetricService();
 
     Assert.assertEquals(25,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").intValue());
+
+    txnHandler.cleanTxnToWriteIdTable();
+    runAcidMetricService();
+
+    // As there are no open or aborted txns in the system, then max(TXNS.txn_id) would be min_uncommitted_txnid
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
