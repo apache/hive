@@ -99,14 +99,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   public void run() {
     LOG.info("Starting Worker thread");
     boolean computeStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS);
-    boolean metricsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED);
     long timeout = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS);
-
     boolean launchedJob;
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
       do {
-        Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(computeStats, metricsEnabled));
+        Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(computeStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException te) {
@@ -394,13 +392,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @throws InterruptedException is thrown when the process is interrupted because of timeout for example
    */
   @VisibleForTesting
-  protected Boolean findNextCompactionAndExecute(boolean computeStats, boolean metricsEnabled) throws InterruptedException {
+  protected Boolean findNextCompactionAndExecute(boolean computeStats) {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
     PerfLogger perfLogger = SessionState.getPerfLogger(false);
     String workerMetric = null;
-    CompactionHeartbeater heartbeater = null;
 
+    CompactionHeartbeater heartbeater = null;
     CompactionInfo ci = null;
     try (CompactionTxn compactionTxn = new CompactionTxn()) {
       if (msc == null) {
@@ -420,9 +418,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       checkInterrupt();
 
       workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" + ci.type;
-      if (metricsEnabled) {
-        perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
-      }
+      perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
+
       // Find the table we will be working with.
       Table t1;
       try {
@@ -579,7 +576,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (heartbeater != null) {
         heartbeater.cancel();
       }
-      if (metricsEnabled && workerMetric != null) {
+      if (workerMetric != null) {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
     }
