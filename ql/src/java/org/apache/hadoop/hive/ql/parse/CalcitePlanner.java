@@ -163,6 +163,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JdbcImplementorExtended;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
@@ -1376,8 +1377,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
     };
     try {
-      final JdbcImplementor jdbcImplementor =
-          new JdbcImplementor(dialect, (JavaTypeFactory) optimizedOptiqPlan.getCluster()
+      final JdbcImplementorExtended jdbcImplementor =
+          new JdbcImplementorExtended(dialect, (JavaTypeFactory) optimizedOptiqPlan.getCluster()
               .getTypeFactory());
       final JdbcImplementor.Result result = jdbcImplementor.visitRoot(optimizedOptiqPlan);
       String sql = result.asStatement().toSqlString(dialect).getSql();
