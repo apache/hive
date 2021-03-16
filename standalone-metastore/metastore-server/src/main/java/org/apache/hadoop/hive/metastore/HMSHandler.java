@@ -8458,8 +8458,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public GetLatestCompactionResponse get_latest_compaction(GetLatestCompactionRequest rqst) throws MetaException {
-    return getTxnHandler().getLatestCompaction(rqst);
+  public GetLatestCompactionInfoResponse get_latest_compaction_info(GetLatestCompactionInfoRequest rqst)
+      throws MetaException {
+    return getTxnHandler().getLatestCompactionInfo(rqst);
   }
 
   @Override

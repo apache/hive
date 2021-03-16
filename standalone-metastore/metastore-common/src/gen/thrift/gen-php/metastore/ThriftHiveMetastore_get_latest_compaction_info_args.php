@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_latest_compaction_args
+class ThriftHiveMetastore_get_latest_compaction_info_args
 {
     static public $isValidate = false;
 
@@ -25,12 +25,12 @@ class ThriftHiveMetastore_get_latest_compaction_args
             'var' => 'rqst',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\GetLatestCompactionRequest',
+            'class' => '\metastore\GetLatestCompactionInfoRequest',
         ),
     );
 
     /**
-     * @var \metastore\GetLatestCompactionRequest
+     * @var \metastore\GetLatestCompactionInfoRequest
      */
     public $rqst = null;
 
@@ -45,7 +45,7 @@ class ThriftHiveMetastore_get_latest_compaction_args
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_get_latest_compaction_args';
+        return 'ThriftHiveMetastore_get_latest_compaction_info_args';
     }
 
 
@@ -64,7 +64,7 @@ class ThriftHiveMetastore_get_latest_compaction_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->rqst = new \metastore\GetLatestCompactionRequest();
+                        $this->rqst = new \metastore\GetLatestCompactionInfoRequest();
                         $xfer += $this->rqst->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
@@ -83,7 +83,7 @@ class ThriftHiveMetastore_get_latest_compaction_args
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_compaction_args');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_compaction_info_args');
         if ($this->rqst !== null) {
             if (!is_object($this->rqst)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

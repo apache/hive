@@ -3187,19 +3187,19 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_latest_compaction(rqst)
-      send_get_latest_compaction(rqst)
-      return recv_get_latest_compaction()
+    def get_latest_compaction_info(rqst)
+      send_get_latest_compaction_info(rqst)
+      return recv_get_latest_compaction_info()
     end
 
-    def send_get_latest_compaction(rqst)
-      send_message('get_latest_compaction', Get_latest_compaction_args, :rqst => rqst)
+    def send_get_latest_compaction_info(rqst)
+      send_message('get_latest_compaction_info', Get_latest_compaction_info_args, :rqst => rqst)
     end
 
-    def recv_get_latest_compaction()
-      result = receive_message(Get_latest_compaction_result)
+    def recv_get_latest_compaction_info()
+      result = receive_message(Get_latest_compaction_info_result)
       return result.success unless result.success.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_compaction failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_compaction_info failed: unknown result')
     end
 
     def get_next_notification(rqst)
@@ -6660,11 +6660,11 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'set_hadoop_jobid', seqid)
     end
 
-    def process_get_latest_compaction(seqid, iprot, oprot)
-      args = read_args(iprot, Get_latest_compaction_args)
-      result = Get_latest_compaction_result.new()
-      result.success = @handler.get_latest_compaction(args.rqst)
-      write_result(result, oprot, 'get_latest_compaction', seqid)
+    def process_get_latest_compaction_info(seqid, iprot, oprot)
+      args = read_args(iprot, Get_latest_compaction_info_args)
+      result = Get_latest_compaction_info_result.new()
+      result.success = @handler.get_latest_compaction_info(args.rqst)
+      write_result(result, oprot, 'get_latest_compaction_info', seqid)
     end
 
     def process_get_next_notification(seqid, iprot, oprot)
@@ -14531,12 +14531,12 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_latest_compaction_args
+  class Get_latest_compaction_info_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
     FIELDS = {
-      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetLatestCompactionRequest}
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetLatestCompactionInfoRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -14547,12 +14547,12 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_latest_compaction_result
+  class Get_latest_compaction_info_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetLatestCompactionResponse}
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetLatestCompactionInfoResponse}
     }
 
     def struct_fields; FIELDS; end

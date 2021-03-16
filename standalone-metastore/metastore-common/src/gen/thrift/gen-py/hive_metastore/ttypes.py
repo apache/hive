@@ -15199,7 +15199,7 @@ class ShowCompactResponse(object):
         return not (self == other)
 
 
-class GetLatestCompactionRequest(object):
+class GetLatestCompactionInfoRequest(object):
     """
     Attributes:
      - dbname
@@ -15252,7 +15252,7 @@ class GetLatestCompactionRequest(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('GetLatestCompactionRequest')
+        oprot.writeStructBegin('GetLatestCompactionInfoRequest')
         if self.dbname is not None:
             oprot.writeFieldBegin('dbname', TType.STRING, 1)
             oprot.writeString(self.dbname.encode('utf-8') if sys.version_info[0] == 2 else self.dbname)
@@ -15373,7 +15373,7 @@ class LatestCompactionInfo(object):
         return not (self == other)
 
 
-class GetLatestCompactionResponse(object):
+class GetLatestCompactionInfoResponse(object):
     """
     Attributes:
      - dbname
@@ -15427,7 +15427,7 @@ class GetLatestCompactionResponse(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('GetLatestCompactionResponse')
+        oprot.writeStructBegin('GetLatestCompactionInfoResponse')
         if self.dbname is not None:
             oprot.writeFieldBegin('dbname', TType.STRING, 1)
             oprot.writeString(self.dbname.encode('utf-8') if sys.version_info[0] == 2 else self.dbname)
@@ -28784,8 +28784,8 @@ ShowCompactResponse.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'compacts', (TType.STRUCT, [ShowCompactResponseElement, None], False), None, ),  # 1
 )
-all_structs.append(GetLatestCompactionRequest)
-GetLatestCompactionRequest.thrift_spec = (
+all_structs.append(GetLatestCompactionInfoRequest)
+GetLatestCompactionInfoRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'dbname', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
@@ -28798,8 +28798,8 @@ LatestCompactionInfo.thrift_spec = (
     (2, TType.STRING, 'partitionname', 'UTF8', None, ),  # 2
     (3, TType.I32, 'type', None, None, ),  # 3
 )
-all_structs.append(GetLatestCompactionResponse)
-GetLatestCompactionResponse.thrift_spec = (
+all_structs.append(GetLatestCompactionInfoResponse)
+GetLatestCompactionInfoResponse.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'dbname', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2

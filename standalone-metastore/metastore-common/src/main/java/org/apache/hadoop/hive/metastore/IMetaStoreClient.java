@@ -3469,12 +3469,14 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
-   * Get one latest record of completed compaction by given table/partition.
+   * Get one latest record of succeeded compaction for a table/partition.
+   * Note that specific partition names should be supplied with the request for a partitioned table.
    * @param request info on which compaction to retrieve
-   * @return one completed compaction record or null
+   * @return one single compaction record for a non partitioned table or one latest record for each
+   * partition specified by the request.
    * @throws TException
    */
-  GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest request)
+  GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest request)
     throws TException;
 
   /**

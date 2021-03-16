@@ -12389,41 +12389,41 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function get_latest_compaction(\metastore\GetLatestCompactionRequest $rqst)
+    public function get_latest_compaction_info(\metastore\GetLatestCompactionInfoRequest $rqst)
     {
-        $this->send_get_latest_compaction($rqst);
-        return $this->recv_get_latest_compaction();
+        $this->send_get_latest_compaction_info($rqst);
+        return $this->recv_get_latest_compaction_info();
     }
 
-    public function send_get_latest_compaction(\metastore\GetLatestCompactionRequest $rqst)
+    public function send_get_latest_compaction_info(\metastore\GetLatestCompactionInfoRequest $rqst)
     {
-        $args = new \metastore\ThriftHiveMetastore_get_latest_compaction_args();
+        $args = new \metastore\ThriftHiveMetastore_get_latest_compaction_info_args();
         $args->rqst = $rqst;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
                 $this->output_,
-                'get_latest_compaction',
+                'get_latest_compaction_info',
                 TMessageType::CALL,
                 $args,
                 $this->seqid_,
                 $this->output_->isStrictWrite()
             );
         } else {
-            $this->output_->writeMessageBegin('get_latest_compaction', TMessageType::CALL, $this->seqid_);
+            $this->output_->writeMessageBegin('get_latest_compaction_info', TMessageType::CALL, $this->seqid_);
             $args->write($this->output_);
             $this->output_->writeMessageEnd();
             $this->output_->getTransport()->flush();
         }
     }
 
-    public function recv_get_latest_compaction()
+    public function recv_get_latest_compaction_info()
     {
         $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
         if ($bin_accel) {
             $result = thrift_protocol_read_binary(
                 $this->input_,
-                '\metastore\ThriftHiveMetastore_get_latest_compaction_result',
+                '\metastore\ThriftHiveMetastore_get_latest_compaction_info_result',
                 $this->input_->isStrictRead()
             );
         } else {
@@ -12438,14 +12438,14 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
                 $this->input_->readMessageEnd();
                 throw $x;
             }
-            $result = new \metastore\ThriftHiveMetastore_get_latest_compaction_result();
+            $result = new \metastore\ThriftHiveMetastore_get_latest_compaction_info_result();
             $result->read($this->input_);
             $this->input_->readMessageEnd();
         }
         if ($result->success !== null) {
             return $result->success;
         }
-        throw new \Exception("get_latest_compaction failed: unknown result");
+        throw new \Exception("get_latest_compaction_info failed: unknown result");
     }
 
     public function get_next_notification(\metastore\NotificationEventRequest $rqst)

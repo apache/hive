@@ -522,11 +522,11 @@ class ShowCompactResponseElement; end
 
 class ShowCompactResponse; end
 
-class GetLatestCompactionRequest; end
+class GetLatestCompactionInfoRequest; end
 
 class LatestCompactionInfo; end
 
-class GetLatestCompactionResponse; end
+class GetLatestCompactionInfoResponse; end
 
 class AddDynamicPartitions; end
 
@@ -4412,7 +4412,7 @@ class ShowCompactResponse
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetLatestCompactionRequest
+class GetLatestCompactionInfoRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
   TABLENAME = 2
@@ -4459,7 +4459,7 @@ class LatestCompactionInfo
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetLatestCompactionResponse
+class GetLatestCompactionInfoResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
   TABLENAME = 2

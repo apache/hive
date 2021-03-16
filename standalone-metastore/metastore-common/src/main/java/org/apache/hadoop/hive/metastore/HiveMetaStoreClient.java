@@ -3902,8 +3902,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public GetLatestCompactionResponse getLatestCompaction(GetLatestCompactionRequest request) throws TException {
-    GetLatestCompactionResponse response = client.get_latest_compaction(request);
+  public GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest request)
+      throws TException {
+    GetLatestCompactionInfoResponse response = client.get_latest_compaction_info(request);
     return FilterUtils.filterLatestCompactionIfEnabled(isClientFilterEnabled, filterHook,
         getDefaultCatalog(conf), response);
   }

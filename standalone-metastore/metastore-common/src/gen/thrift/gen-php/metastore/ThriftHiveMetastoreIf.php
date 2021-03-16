@@ -1453,10 +1453,10 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function set_hadoop_jobid($jobId, $cq_id);
     /**
-     * @param \metastore\GetLatestCompactionRequest $rqst
-     * @return \metastore\GetLatestCompactionResponse
+     * @param \metastore\GetLatestCompactionInfoRequest $rqst
+     * @return \metastore\GetLatestCompactionInfoResponse
      */
-    public function get_latest_compaction(\metastore\GetLatestCompactionRequest $rqst);
+    public function get_latest_compaction_info(\metastore\GetLatestCompactionInfoRequest $rqst);
     /**
      * @param \metastore\NotificationEventRequest $rqst
      * @return \metastore\NotificationEventResponse

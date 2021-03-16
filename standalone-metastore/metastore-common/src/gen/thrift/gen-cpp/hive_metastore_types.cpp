@@ -26471,30 +26471,30 @@ void ShowCompactResponse::printTo(std::ostream& out) const {
 }
 
 
-GetLatestCompactionRequest::~GetLatestCompactionRequest() noexcept {
+GetLatestCompactionInfoRequest::~GetLatestCompactionInfoRequest() noexcept {
 }
 
 
-void GetLatestCompactionRequest::__set_dbname(const std::string& val) {
+void GetLatestCompactionInfoRequest::__set_dbname(const std::string& val) {
   this->dbname = val;
 }
 
-void GetLatestCompactionRequest::__set_tablename(const std::string& val) {
+void GetLatestCompactionInfoRequest::__set_tablename(const std::string& val) {
   this->tablename = val;
 }
 
-void GetLatestCompactionRequest::__set_partitionnames(const std::vector<std::string> & val) {
+void GetLatestCompactionInfoRequest::__set_partitionnames(const std::vector<std::string> & val) {
   this->partitionnames = val;
 __isset.partitionnames = true;
 }
-std::ostream& operator<<(std::ostream& out, const GetLatestCompactionRequest& obj)
+std::ostream& operator<<(std::ostream& out, const GetLatestCompactionInfoRequest& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t GetLatestCompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GetLatestCompactionInfoRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -26569,10 +26569,10 @@ uint32_t GetLatestCompactionRequest::read(::apache::thrift::protocol::TProtocol*
   return xfer;
 }
 
-uint32_t GetLatestCompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GetLatestCompactionInfoRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GetLatestCompactionRequest");
+  xfer += oprot->writeStructBegin("GetLatestCompactionInfoRequest");
 
   xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->dbname);
@@ -26600,7 +26600,7 @@ uint32_t GetLatestCompactionRequest::write(::apache::thrift::protocol::TProtocol
   return xfer;
 }
 
-void swap(GetLatestCompactionRequest &a, GetLatestCompactionRequest &b) {
+void swap(GetLatestCompactionInfoRequest &a, GetLatestCompactionInfoRequest &b) {
   using ::std::swap;
   swap(a.dbname, b.dbname);
   swap(a.tablename, b.tablename);
@@ -26608,22 +26608,22 @@ void swap(GetLatestCompactionRequest &a, GetLatestCompactionRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetLatestCompactionRequest::GetLatestCompactionRequest(const GetLatestCompactionRequest& other958) {
+GetLatestCompactionInfoRequest::GetLatestCompactionInfoRequest(const GetLatestCompactionInfoRequest& other958) {
   dbname = other958.dbname;
   tablename = other958.tablename;
   partitionnames = other958.partitionnames;
   __isset = other958.__isset;
 }
-GetLatestCompactionRequest& GetLatestCompactionRequest::operator=(const GetLatestCompactionRequest& other959) {
+GetLatestCompactionInfoRequest& GetLatestCompactionInfoRequest::operator=(const GetLatestCompactionInfoRequest& other959) {
   dbname = other959.dbname;
   tablename = other959.tablename;
   partitionnames = other959.partitionnames;
   __isset = other959.__isset;
   return *this;
 }
-void GetLatestCompactionRequest::printTo(std::ostream& out) const {
+void GetLatestCompactionInfoRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "GetLatestCompactionRequest(";
+  out << "GetLatestCompactionInfoRequest(";
   out << "dbname=" << to_string(dbname);
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "partitionnames="; (__isset.partitionnames ? (out << to_string(partitionnames)) : (out << "<null>"));
@@ -26773,30 +26773,30 @@ void LatestCompactionInfo::printTo(std::ostream& out) const {
 }
 
 
-GetLatestCompactionResponse::~GetLatestCompactionResponse() noexcept {
+GetLatestCompactionInfoResponse::~GetLatestCompactionInfoResponse() noexcept {
 }
 
 
-void GetLatestCompactionResponse::__set_dbname(const std::string& val) {
+void GetLatestCompactionInfoResponse::__set_dbname(const std::string& val) {
   this->dbname = val;
 }
 
-void GetLatestCompactionResponse::__set_tablename(const std::string& val) {
+void GetLatestCompactionInfoResponse::__set_tablename(const std::string& val) {
   this->tablename = val;
 }
 
-void GetLatestCompactionResponse::__set_compactions(const std::vector<LatestCompactionInfo> & val) {
+void GetLatestCompactionInfoResponse::__set_compactions(const std::vector<LatestCompactionInfo> & val) {
   this->compactions = val;
 __isset.compactions = true;
 }
-std::ostream& operator<<(std::ostream& out, const GetLatestCompactionResponse& obj)
+std::ostream& operator<<(std::ostream& out, const GetLatestCompactionInfoResponse& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t GetLatestCompactionResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t GetLatestCompactionInfoResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -26871,10 +26871,10 @@ uint32_t GetLatestCompactionResponse::read(::apache::thrift::protocol::TProtocol
   return xfer;
 }
 
-uint32_t GetLatestCompactionResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GetLatestCompactionInfoResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GetLatestCompactionResponse");
+  xfer += oprot->writeStructBegin("GetLatestCompactionInfoResponse");
 
   xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->dbname);
@@ -26902,7 +26902,7 @@ uint32_t GetLatestCompactionResponse::write(::apache::thrift::protocol::TProtoco
   return xfer;
 }
 
-void swap(GetLatestCompactionResponse &a, GetLatestCompactionResponse &b) {
+void swap(GetLatestCompactionInfoResponse &a, GetLatestCompactionInfoResponse &b) {
   using ::std::swap;
   swap(a.dbname, b.dbname);
   swap(a.tablename, b.tablename);
@@ -26910,22 +26910,22 @@ void swap(GetLatestCompactionResponse &a, GetLatestCompactionResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetLatestCompactionResponse::GetLatestCompactionResponse(const GetLatestCompactionResponse& other969) {
+GetLatestCompactionInfoResponse::GetLatestCompactionInfoResponse(const GetLatestCompactionInfoResponse& other969) {
   dbname = other969.dbname;
   tablename = other969.tablename;
   compactions = other969.compactions;
   __isset = other969.__isset;
 }
-GetLatestCompactionResponse& GetLatestCompactionResponse::operator=(const GetLatestCompactionResponse& other970) {
+GetLatestCompactionInfoResponse& GetLatestCompactionInfoResponse::operator=(const GetLatestCompactionInfoResponse& other970) {
   dbname = other970.dbname;
   tablename = other970.tablename;
   compactions = other970.compactions;
   __isset = other970.__isset;
   return *this;
 }
-void GetLatestCompactionResponse::printTo(std::ostream& out) const {
+void GetLatestCompactionInfoResponse::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "GetLatestCompactionResponse(";
+  out << "GetLatestCompactionInfoResponse(";
   out << "dbname=" << to_string(dbname);
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "compactions="; (__isset.compactions ? (out << to_string(compactions)) : (out << "<null>"));
