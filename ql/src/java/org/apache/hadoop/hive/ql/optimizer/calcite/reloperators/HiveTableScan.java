@@ -160,12 +160,9 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   @Override public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
-      .itemIf("htColumns", this.neededColIndxsFrmReloptHT,
-        this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("insideView", this.isInsideView(),
-        this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(),
-        this.useQBIdInDigest && pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("fetchDeleted", this.fetchDeletedRows,
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);

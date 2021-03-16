@@ -162,7 +162,7 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], $f1=[CAST(2010):INTEGER], $f10=[$1])
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
   HiveAggregate(group=[{0}], agg#0=[sum($2)])
     HiveFilter(condition=[=(2010, $1)])
       HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
@@ -180,7 +180,7 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], $f1=[CAST(2010):INTEGER], $f10=[$1])
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
   HiveAggregate(group=[{0}], agg#0=[sum($2)])
     HiveFilter(condition=[=(2010, $1)])
       HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
