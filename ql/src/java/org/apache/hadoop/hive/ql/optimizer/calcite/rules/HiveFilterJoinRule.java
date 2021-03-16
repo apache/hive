@@ -384,7 +384,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     final List<RexNode> filtersToRemove = new ArrayList<>();
     for (RexNode filter : filters) {
       final InputFinder inputFinder = InputFinder.analyze(filter);
-      final ImmutableBitSet inputBits = inputFinder.inputBitSet.build();
+      final ImmutableBitSet inputBits = inputFinder.build();
 
       // REVIEW - are there any expressions that need special handling
       // and therefore cannot be pushed?
