@@ -132,7 +132,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "tooManyAborts:" + tooManyAborts + "," +
       "hasOldAbort:" + hasOldAbort + "," +
       "highestWriteId:" + highestWriteId + "," +
-      "errorMessage:" + errorMessage;
+      "errorMessage:" + errorMessage + "," +
+      "workerId: " + workerId + "," +
+      "initiatorId: " + initiatorId;
   }
 
   @Override
