@@ -60,9 +60,18 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
 
+    List<String> expextedPlan = Arrays.asList(
+        "CBO PLAN:",
+        "HiveProject(a=[$0], b=[$1], c=[$2])",
+        "  HiveFilter(condition=[OR(IS NULL($0), >($0, 0))])",
+        "    HiveTableScan(table=[[default, t1]], table:alias=[t1])",
+        ""
+    );
+    List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
+    Assert.assertEquals(expextedPlan, result);
     executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
 
-    List<String> result = execSelectAndDumpData("select * from " + MV1 , driver, "");
+    result = execSelectAndDumpData("select * from " + MV1 , driver, "");
     Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
 
     result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
