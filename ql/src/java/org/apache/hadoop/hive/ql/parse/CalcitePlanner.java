@@ -2456,6 +2456,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // to try to replace INSERT OVERWRITE by INSERT or MERGE
       if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
+          // in case of rebuild this list should contain exactly one element
+          HiveRelOptMaterialization materialization = materializations.get(0);
+          if (materialization.isSourceTablesCompacted() || materialization.isSourceTablesUpdateDeleteModified()) {
+            return calcitePreMVRewritingPlan;
+          }
           // First we need to check if it is valid to convert to MERGE/INSERT INTO.
           // If we succeed, we modify the plan and afterwards the AST.
           // MV should be an acid table.

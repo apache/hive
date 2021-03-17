@@ -325,15 +325,6 @@ public class HiveMaterializedViewUtils {
     return value;
   }
 
-  public static HiveRelOptMaterialization copyMaterializationToNewCluster(
-      RelOptCluster optCluster, HiveRelOptMaterialization materialization) {
-    final RelNode viewScan = materialization.tableRel;
-    final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-            optCluster, viewScan);
-    return new HiveRelOptMaterialization(newViewScan, materialization.queryRel, null,
-            materialization.qualifiedTableName, materialization.getScope());
-  }
-
   /**
    * Method that will recreate the plan rooted at node using the cluster given
    * as a parameter.
