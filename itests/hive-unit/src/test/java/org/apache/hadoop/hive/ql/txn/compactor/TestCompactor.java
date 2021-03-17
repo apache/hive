@@ -2329,6 +2329,20 @@ public class TestCompactor {
   }
 
   /**
+   * Execute Hive CLI statement and ignore any exception thrown.
+   *
+   * @param cmd arbitrary statement to execute
+   */
+  static void executeStatementOnDriverSiletnly(String cmd, IDriver driver) {
+    try {
+      executeStatementOnDriver(cmd, driver);
+    }
+    catch (Exception ignore) {
+
+    }
+  }
+
+  /**
    * Execute Hive CLI statement
    *
    * @param cmd arbitrary statement to execute

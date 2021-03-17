@@ -26,54 +26,62 @@ import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriverSiletnly;
 
 public class TestMaterializedViewRebuild extends CompactorOnTezTest {
+
+  private static final String TABLE1 = "t1";
+  private static final String MV1 = "mat1";
+  
+  @Override
+  public void setup() throws Exception {
+    super.setup();
+
+    executeStatementOnDriver("create table " + TABLE1 + "(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + TABLE1 + "(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
+    executeStatementOnDriver("create materialized view " + MV1 + " stored as orc TBLPROPERTIES ('transactional'='true') as " +
+        "select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver);
+  }
+
+  @Override
+  public void tearDown() {
+    executeStatementOnDriverSiletnly("drop materialized view " + MV1, driver);
+    executeStatementOnDriverSiletnly("drop table " + TABLE1 , driver);
+
+    super.tearDown();
+  }
+
   @Test
   public void testIncrementalMVRebuild() throws Exception {
-    System.out.println("hive.metastore.warehouse.dir:\n" + conf.get("hive.metastore.warehouse.dir"));
 
+    executeStatementOnDriver("delete from " + TABLE1 + " where a = 1", driver);
 
-    executeStatementOnDriver("create table t1(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("insert into t1(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
-    executeStatementOnDriver("create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as " +
-        "select a,b,c from t1 where a > 0 or a is null", driver);
-
-    executeStatementOnDriver("delete from t1 where a = 1", driver);
-
-    CompactorTestUtil.runCompaction(conf, "default", "t1", CompactionType.MAJOR, true);
+    CompactorTestUtil.runCompaction(conf, "default",  TABLE1 , CompactionType.MAJOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
 
-    executeStatementOnDriver("alter materialized view mat1 rebuild", driver);
+    executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
 
-    List<String> result = execSelectAndDumpData("select * from mat1", driver, "");
+    List<String> result = execSelectAndDumpData("select * from " + MV1 , driver, "");
     Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
 
-    result = execSelectAndDumpData("explain cbo select a,b,c from t1 where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])", ""), result);
+    result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
   @Test
   public void testIncrementalMVRebuildIfCleanUpHasNotFinished() throws Exception {
-    System.out.println("hive.metastore.warehouse.dir:\n" + conf.get("hive.metastore.warehouse.dir"));
+    executeStatementOnDriver("delete from " + TABLE1 + " where a = 1", driver);
 
+    CompactorTestUtil.runCompaction(conf, "default",  TABLE1 , CompactionType.MAJOR, true);
 
-    executeStatementOnDriver("create table t1(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("insert into t1(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
-    executeStatementOnDriver("create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as " +
-        "select a,b,c from t1 where a > 0 or a is null", driver);
+    executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
 
-    executeStatementOnDriver("delete from t1 where a = 1", driver);
-
-    CompactorTestUtil.runCompaction(conf, "default", "t1", CompactionType.MAJOR, true);
-
-    executeStatementOnDriver("alter materialized view mat1 rebuild", driver);
-
-    List<String> result = execSelectAndDumpData("select * from mat1", driver, "");
+    List<String> result = execSelectAndDumpData("select * from " + MV1 , driver, "");
     Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
 
-    result = execSelectAndDumpData("explain cbo select a,b,c from t1 where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])", ""), result);
+    result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
 }
