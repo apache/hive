@@ -70,61 +70,14 @@ import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
-import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
+
+
 @SuppressWarnings("deprecation")
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
-
-  @Test
-  public void testIncrementalMVRebuild() throws Exception {
-    System.out.println("hive.metastore.warehouse.dir:\n" + conf.get("hive.metastore.warehouse.dir"));
-
-
-    executeStatementOnDriver("create table t1(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("insert into t1(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
-    executeStatementOnDriver("create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as " +
-            "select a,b,c from t1 where a > 0 or a is null", driver);
-
-    executeStatementOnDriver("delete from t1 where a = 1", driver);
-
-    CompactorTestUtil.runCompaction(conf, "default", "t1", CompactionType.MAJOR, true);
-    CompactorTestUtil.runCleaner(conf);
-    verifySuccessfulCompaction(1);
-
-    executeStatementOnDriver("alter materialized view mat1 rebuild", driver);
-
-    List<String> result = execSelectAndDumpData("select * from mat1", driver, "");
-    Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
-
-    result = execSelectAndDumpData("explain cbo select a,b,c from t1 where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])", ""), result);
-  }
-
-  @Test
-  public void testIncrementalMVRebuildIfCleanUpHasNotFinished() throws Exception {
-    System.out.println("hive.metastore.warehouse.dir:\n" + conf.get("hive.metastore.warehouse.dir"));
-
-
-    executeStatementOnDriver("create table t1(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("insert into t1(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
-    executeStatementOnDriver("create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as " +
-            "select a,b,c from t1 where a > 0 or a is null", driver);
-
-    executeStatementOnDriver("delete from t1 where a = 1", driver);
-
-    CompactorTestUtil.runCompaction(conf, "default", "t1", CompactionType.MAJOR, true);
-
-    executeStatementOnDriver("alter materialized view mat1 rebuild", driver);
-
-    List<String> result = execSelectAndDumpData("select * from mat1", driver, "");
-    Assert.assertEquals(Arrays.asList("2\ttwo\t2.2", "NULL\tNULL\tNULL"), result);
-
-    result = execSelectAndDumpData("explain cbo select a,b,c from t1 where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])", ""), result);
-  }
-
 
   @Test
   public void testMajorCompactionNotPartitionedWithoutBuckets() throws Exception {
@@ -1755,21 +1708,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   @Test public void testVectorizationOff() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     testMinorCompactionAfterMajor();
-  }
-
-  /**
-   * Verify that the expected number of transactions have run, and their state is "succeeded".
-   *
-   * @param expectedSuccessfulCompactions number of compactions already run
-   * @throws MetaException
-   */
-  private void verifySuccessfulCompaction(int expectedSuccessfulCompactions) throws MetaException {
-    List<ShowCompactResponseElement> compacts =
-        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
-    Assert.assertEquals("Completed compaction queue must contain " + expectedSuccessfulCompactions + " element(s)",
-        expectedSuccessfulCompactions, compacts.size());
-    compacts.forEach(
-        c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
   }
 
   /**
