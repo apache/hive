@@ -429,7 +429,8 @@ public class TestDbTxnManager {
 
   /**
    * Same as testHeartbeater, but testing cleanup of replication txns (TxnType.REPL_CREATED)
-   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 1 minute for testing purposes
+   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 1 minute and hive.repl.event.db.listener.timetolive
+   * is set to 0 for testing purposes (the sum of these is the actual timeout)
    */
   @Test
   public void testHeartbeaterReplicationTxn() throws Exception {
@@ -504,8 +505,8 @@ public class TestDbTxnManager {
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, 30, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 1, TimeUnit.MINUTES);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, 0, TimeUnit.SECONDS);
     houseKeeperService.setConf(conf);
   }
 
