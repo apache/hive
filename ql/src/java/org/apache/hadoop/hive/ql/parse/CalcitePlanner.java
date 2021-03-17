@@ -2365,8 +2365,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
         materializations = materializations.stream().
-                map(materialization -> materialization.copyToNewCluster(optCluster)).
-                collect(Collectors.toList());
+            map(materialization -> materialization.copyToNewCluster(optCluster)).
+            collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
       }
@@ -2457,7 +2457,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
           // in case of rebuild this list should contain exactly one element
           HiveRelOptMaterialization materialization = materializations.get(0);
-          if (materialization.isSourceTablesCompacted() || materialization.isSourceTablesUpdateDeleteModified()) {
+          if (materialization.isSourceTablesCompacted()) {
             return calcitePreMVRewritingPlan;
           }
           // First we need to check if it is valid to convert to MERGE/INSERT INTO.
@@ -2466,25 +2466,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
           MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
           visitor.go(basePlan);
           if (visitor.isRewritingAllowed()) {
-            // Trigger rewriting to remove UNION branch with MV
             program = new HepProgramBuilder();
-            if (visitor.isContainsAggregate()) {
+            if (materialization.isSourceTablesUpdateDeleteModified()) {
+              if (visitor.isContainsAggregate()) {
+                return calcitePreMVRewritingPlan;
+              }
+              CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveAggregateIncrementalRewritingRule.INSTANCE);
-              mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
-            } else if (!materializations.get(0).isSourceTablesCompacted()) {
-              if (!materializations.get(0).isSourceTablesUpdateDeleteModified()) {
+                  HiveJoinIncrementalRewritingRule.INSTANCE);
+              mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
+              basePlan = new HiveDeletedRowPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
+                  .propagate(basePlan);
+              return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+            } else {
+              // Trigger rewriting to remove UNION branch with MV
+              if (visitor.isContainsAggregate()) {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                        HiveNoAggregateIncrementalRewritingRule.INSTANCE);
-                mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
+                    HiveAggregateIncrementalRewritingRule.INSTANCE);
+                mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
               } else {
-                CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                        HiveJoinIncrementalRewritingRule.INSTANCE);
-                mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
-                basePlan = new HiveDeletedRowPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
-                        .propagate(basePlan);
-                return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+                    HiveNoAggregateIncrementalRewritingRule.INSTANCE);
+                mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
               }
             }
             basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
