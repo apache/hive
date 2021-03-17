@@ -967,13 +967,13 @@ STAGE PLANS:
                 TableScan
                   alias: c/b/o_t1
                   filterExpr: (dt = '2014') (type: boolean)
-                  Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 3942 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: '2014' (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: '2014' (type: string)
-                    Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 3942 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: '2014' (type: string)
                     outputColumnNames: _col0
@@ -997,13 +997,13 @@ STAGE PLANS:
                 TableScan
                   alias: //cbo_t2
                   filterExpr: (dt = '2014') (type: boolean)
-                  Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 3942 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: '2014' (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: '2014' (type: string)
-                    Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 3942 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1082,16 +1082,16 @@ STAGE PLANS:
                 TableScan
                   alias: c/b/o_t1
                   filterExpr: (key is not null and (dt = '10') and (c_boolean = true)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 458 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 556 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key is not null and (dt = '10') and (c_boolean = true)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 458 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 556 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 458 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 556 Basic stats: COMPLETE Column stats: PARTIAL
                       value expressions: value (type: string)
             Execution mode: vectorized, llap
             LLAP IO: unknown

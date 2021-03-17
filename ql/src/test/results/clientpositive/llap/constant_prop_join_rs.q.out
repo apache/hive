@@ -228,13 +228,13 @@ STAGE PLANS:
                 TableScan
                   alias: t2
                   filterExpr: (c21 = 'test1') (type: boolean)
-                  Statistics: Num rows: 475011 Data size: 684263810 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 475011 Data size: 729389855 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: c21 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: c21 (type: string)
-                    Statistics: Num rows: 475011 Data size: 684263810 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 475011 Data size: 729389855 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
         Reducer 2 
             Execution mode: llap

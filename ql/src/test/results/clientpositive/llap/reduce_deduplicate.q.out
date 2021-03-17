@@ -308,12 +308,12 @@ STAGE PLANS:
                 TableScan
                   alias: complex_tbl_2
                   filterExpr: (ds = '2010-03-29') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (ds = '2010-03-29') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: aet (type: string), aes (type: string)
                       outputColumnNames: _col0, _col1
