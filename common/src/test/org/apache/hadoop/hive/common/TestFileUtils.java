@@ -30,11 +30,13 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -263,5 +265,38 @@ public class TestFileUtils {
       Assert.assertTrue(e.getMessage().
               equalsIgnoreCase("Distcp is called with doAsUser and delete source set as true"));
     }
+  }
+
+  @Test
+  public void testEqualsFileSystem() throws IOException {
+    FileSystem mockFs1 = mock(FileSystem.class);
+    FileSystem mockFs2 = mock(FileSystem.class);
+    Path path1 = new Path("viewfs://ns/path1");
+    Path path2 = new Path("viewfs://ns/path2");
+
+    when(mockFs1.resolvePath(path1))
+            .thenReturn(new Path("hdfs://ns1/path1"));
+    when(mockFs2.resolvePath(path2))
+            .thenReturn(new Path("hdfs://ns1/path2"));
+
+    Assert.assertTrue(FileUtils.equalsFileSystem(mockFs1, path1, mockFs2, path2));
+
+    when(mockFs1.resolvePath(path1))
+            .thenReturn(new Path("hdfs://ns1/path1"));
+    when(mockFs2.resolvePath(path2))
+            .thenReturn(new Path("hdfs://ns2/path2"));
+
+    Assert.assertFalse(FileUtils.equalsFileSystem(mockFs1, path1, mockFs2, path2));
+
+    // Test local paths
+    path1 = new Path("file:/tmp/path1");
+    path2 = new Path("file:/tmp/path2");
+    FileSystem localFS = mock(FileSystem.class);
+    when(localFS.resolvePath(path1)).thenReturn(path1);
+    when(localFS.resolvePath(path2)).thenReturn(path2);
+
+    Assert.assertTrue(FileUtils.equalsFileSystem(localFS, path1, localFS, path2));
+
+
   }
 }

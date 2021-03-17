@@ -53,6 +53,8 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.viewfs.ViewFileSystem;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -758,18 +760,33 @@ public final class FileUtils {
   }
 
   /**
-   * @param fs1
-   * @param fs2
+   * Check if path1 and path2 are on the same file system
+   * @param fs1   file system
+   * @param path1 path on file system fs1
+   * @param fs2   file system
+   * @param path2 path on file system fs2
    * @return return true if both file system arguments point to same file system
    */
-  public static boolean equalsFileSystem(FileSystem fs1, FileSystem fs2) {
+  public static boolean equalsFileSystem(FileSystem fs1, Path path1,
+                                         FileSystem fs2, Path path2)
+          throws IOException {
     //When file system cache is disabled, you get different FileSystem objects
     // for same file system, so '==' can't be used in such cases
     //FileSystem api doesn't have a .equals() function implemented, so using
     //the uri for comparison. FileSystem already uses uri+Configuration for
     //equality in its CACHE .
     //Once equality has been added in HDFS-9159, we should make use of it
-    return fs1.getUri().equals(fs2.getUri());
+    URI resolvedPath1 =
+            (fs1 instanceof DistributedFileSystem || fs1 instanceof ViewFileSystem) ?
+                    fs1.resolvePath(path1).toUri() : fs1.getUri();
+    URI resolvedPath2 =
+            (fs2 instanceof DistributedFileSystem || fs2 instanceof ViewFileSystem) ?
+                    fs2.resolvePath(path2).toUri() : fs2.getUri();
+
+    return org.apache.commons.lang3.StringUtils.
+            equalsIgnoreCase(resolvedPath1.getScheme(), resolvedPath2.getScheme()) &&
+           org.apache.commons.lang3.StringUtils.
+            equalsIgnoreCase(resolvedPath1.getAuthority(), resolvedPath2.getAuthority());
   }
 
   /**

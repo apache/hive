@@ -265,10 +265,17 @@ public class HiveAlterHandler implements AlterHandler {
             // check that destination does not exist otherwise we will be
             // overwriting data
             // check that src and dest are on the same file system
-            if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
-              throw new InvalidOperationException("table new location " + destPath
-                      + " is on a different file system than the old location "
-                      + srcPath + ". This operation is not supported");
+            try {
+              if (!FileUtils.equalsFileSystem(srcFs, srcPath, destFs, destPath)) {
+                throw new InvalidOperationException("table new location " + destPath
+                        + " is on a different file system than the old location "
+                        + srcPath + ". This operation is not supported");
+              }
+            } catch(IOException e) {
+              LOG.error("Failed to check if " + srcPath + "," + destPath
+                      + "are on same file system", e);
+              throw new InvalidOperationException("Alter Table operation for " + dbname + "." + name +
+                      " failed due to: '" + getSimpleMessage(e) +"'");
             }
 
             try {
@@ -655,10 +662,17 @@ public class HiveAlterHandler implements AlterHandler {
           srcFs = wh.getFs(srcPath);
           destFs = wh.getFs(destPath);
           // check that src and dest are on the same file system
-          if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
-            throw new InvalidOperationException("New table location " + destPath
-              + " is on a different file system than the old location "
-              + srcPath + ". This operation is not supported.");
+          try {
+            if (!FileUtils.equalsFileSystem(srcFs, srcPath, destFs, destPath)) {
+              throw new InvalidOperationException("New table location " + destPath
+                      + " is on a different file system than the old location "
+                      + srcPath + ". This operation is not supported.");
+            }
+          } catch(IOException e) {
+            LOG.error("Failed to check if " + srcPath + "," + destPath
+                    + "are on same file system", e);
+            throw new InvalidOperationException("Alter partition operation for " + dbname + "." + name +
+                    " failed due to: '" + getSimpleMessage(e) +"'");
           }
 
           try {

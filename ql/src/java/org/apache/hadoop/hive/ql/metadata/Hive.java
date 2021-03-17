@@ -2475,7 +2475,7 @@ public class Hive {
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
           FileSystem loadPathFS = loadPath.getFileSystem(getConf());
-          if (FileUtils.equalsFileSystem(oldPartPathFS,loadPathFS)) {
+          if (FileUtils.equalsFileSystem(oldPartPathFS, oldPartPath,loadPathFS, loadPath)) {
             newPartPath = oldPartPath;
           }
         }
@@ -4857,8 +4857,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
   static private boolean needToCopy(final HiveConf conf, Path srcf, Path destf, FileSystem srcFs,
                                       FileSystem destFs, String configuredOwner, boolean isManaged) throws HiveException {
     //Check if different FileSystems
-    if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
-      return true;
+    try {
+      if (!FileUtils.equalsFileSystem(srcFs, srcf, destFs, destf)) {
+        return true;
+      }
+    } catch(IOException e) {
+      throw new HiveException(e);
     }
 
     if (isManaged && !configuredOwner.isEmpty() && srcFs instanceof DistributedFileSystem) {
