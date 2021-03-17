@@ -32,18 +32,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -54,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -673,31 +661,35 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
     e.toReuse.clear();
 
-    // For pools which have queued requests, move the "delayed moves" now
-    for (String poolName : poolsToRedistribute) {
-      PoolState pool = pools.get(poolName);
-      if (pool == null) return;
-      int queueSize = pool.queue.size();
-      if (queueSize > 0)
-      {
-        int i = 0;
-        while (i < queueSize && pool.delayedMoveSessionsQueue.size() > 0) {
-          MoveSession moveSession = pool.delayedMoveSessionsQueue.pollFirst();
-          pool.delayedMoveSessionsSet.remove(moveSession);
-          WmTezSession srcSession = moveSession.srcSession;
-          if (pool.sessions.contains(srcSession)) {
-            LOG.info("Processing delayed move {} for pool {} in wm main thread as the pool has queued requests",
-                moveSession, poolName);
-            i++;
-            handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents,
-                true);
-          } else
-            continue;
+    // 9. If delayed move is set to true, for pools which have queued requests, process the "delayed moves" now.
+    // Incoming requests have more claim upon the pool than the delayed moves
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) {
+      for (String poolName : poolsToRedistribute) {
+        PoolState pool = pools.get(poolName);
+        if (pool == null)
+          return;
+        int queueSize = pool.queue.size();
+        if (queueSize > 0) {
+          int i = 0;
+          Iterator<MoveSession> itr = pool.delayedMoveSessions.iterator();
+          while (i < queueSize && itr.hasNext()) {
+            MoveSession moveSession = itr.next();
+            itr.remove();
+            WmTezSession srcSession = moveSession.srcSession;
+            if (pool.sessions.contains(srcSession)) {
+              LOG.info("Processing delayed move {} for pool {} in wm main thread as the pool has queued requests",
+                  moveSession, poolName);
+              i++;
+              handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents,
+                  true);
+            } else
+              continue;
+          }
         }
       }
     }
 
-    // 9. Resolve all the kill query requests in flight. Nothing below can affect them.
+    // 10. Resolve all the kill query requests in flight. Nothing below can affect them.
     Iterator<KillQueryContext> iter = killQueryInProgress.values().iterator();
     while (iter.hasNext()) {
       KillQueryContext ctx = iter.next();
@@ -739,14 +731,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       }
     }
 
-    // 10. If there was a cluster state change, make sure we redistribute all the pools.
+    // 11. If there was a cluster state change, make sure we redistribute all the pools.
     if (e.hasClusterStateChanged) {
       LOG.info("Processing a cluster state change");
       poolsToRedistribute.addAll(pools.keySet());
       e.hasClusterStateChanged = false;
     }
 
-    // 11. Finally, for all the pools that have changes, promote queued queries and rebalance.
+    // 12. Finally, for all the pools that have changes, promote queued queries and rebalance.
     for (String poolName : poolsToRedistribute) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Processing changes for pool " + poolName + ": " + pools.get(poolName));
@@ -754,19 +746,19 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       processPoolChangesOnMasterThread(poolName, hasRequeues, syncWork);
     }
 
-    // 12. Save state for future iterations.
+    // 13. Save state for future iterations.
     for (KillQueryContext killCtx : syncWork.toKillQuery.values()) {
       if (killQueryInProgress.put(killCtx.session, killCtx) != null) {
         LOG.error("One query killed several times - internal error {}", killCtx.session);
       }
     }
 
-    // 13. To record move events, we need to cluster fraction updates that happens at step 11.
+    // 14. To record move events, we need to cluster fraction updates that happens at step 12.
     for (Map.Entry<WmTezSession, WmEvent> entry : recordMoveEvents.entrySet()) {
       entry.getValue().endEvent(entry.getKey());
     }
 
-    // 14. Give our final state to UI/API requests if any.
+    // 15. Give our final state to UI/API requests if any.
     if (e.dumpStateFuture != null) {
       List<String> result = new ArrayList<>();
       result.add("RESOURCE PLAN " + rpName + "; default pool " + defaultPool);
@@ -777,7 +769,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       e.dumpStateFuture = null;
     }
 
-    // 15. Notify tests and global async ops.
+    // 16. Notify tests and global async ops.
     for (SettableFuture<Boolean> testEvent : e.testEvents) {
       LOG.info("Triggering test event " + System.identityHashCode(testEvent));
       testEvent.set(null);
@@ -870,9 +862,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           if (srcPoolName != null) {
             PoolState srcPool = pools.get(srcPoolName);
             if (srcPool != null) {
-              if (srcPool.delayedMoveSessionsSet.add(moveSession)) {
-                srcPool.delayedMoveSessionsQueue.addLast(moveSession);
-              }
+              srcPool.delayedMoveSessions.add(moveSession);
             }
           }
           moveSession.future.set(true);
@@ -1816,8 +1806,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // Note: the list is expected to be a few items; if it's longer we may want an IHM.
     private final LinkedList<WmTezSession> sessions = new LinkedList<>();
     private final LinkedList<GetRequest> queue = new LinkedList<>();
-    private final LinkedList<MoveSession> delayedMoveSessionsQueue = new LinkedList<>();
-    private final HashSet<MoveSession> delayedMoveSessionsSet = new HashSet<>();
+    private final LinkedHashSet<MoveSession> delayedMoveSessions = new LinkedHashSet<>();
     private final WmPoolMetrics metrics;
 
     private final String fullName;
