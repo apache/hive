@@ -60,7 +60,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   public void testInitiatorPerfMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
-    int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
+    Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).set(0);
     long initiatorCycles = Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount();
     Table t = newTable("default", "ime", true);
     List<LockComponent> components = new ArrayList<>();
@@ -99,7 +99,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     runAcidMetricService();
 
-    Assert.assertEquals(originalValue + 10,
+    Assert.assertEquals(10,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
   }
 
@@ -141,13 +141,13 @@ public class TestCompactionMetrics  extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(10, compacts.size());
+    Assert.assertEquals(initiatorCycles,
+        Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
 
     runAcidMetricService();
 
     Assert.assertEquals(originalValue,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
-    Assert.assertEquals(initiatorCycles,
-        Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
   }
 
   @Test
