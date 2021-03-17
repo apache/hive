@@ -302,7 +302,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // (End user) Transaction timeout, in milliseconds.
   private long timeout;
   private long replicationTxnTimeout;
-  // Timeout for opening a transaction
 
   private int maxBatchSize;
   private String identifierQuoteString; // quotes to use for quoting tables, where necessary
@@ -378,7 +377,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
     timeout = MetastoreConf.getTimeVar(conf, ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    replicationTxnTimeout = MetastoreConf.getTimeVar(conf, ConfVars.REPL_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    replicationTxnTimeout = MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL, TimeUnit.MILLISECONDS) +
+            MetastoreConf.getTimeVar(conf, ConfVars.REPL_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     retryInterval = MetastoreConf.getTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL,
         TimeUnit.MILLISECONDS);
     retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
