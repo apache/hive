@@ -1774,7 +1774,7 @@ class MetaStoreDirectSql {
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
       try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-       Object qResult = executeWithArray(query,
+        Object qResult = executeWithArray(query,
             prepareParams(catName, dbName, tableName, partNames, colNames,
                 engine), queryText);
         if (qResult == null) {
@@ -1812,7 +1812,7 @@ class MetaStoreDirectSql {
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
       try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-       Object qResult = executeWithArray(query,
+        Object qResult = executeWithArray(query,
             prepareParams(catName, dbName, tableName, partNames, colNames,
                 engine), queryText);
         end = doTrace ? System.nanoTime() : 0;
@@ -1852,7 +1852,7 @@ class MetaStoreDirectSql {
         start = doTrace ? System.nanoTime() : 0;
 
         try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-         Object qResult = executeWithArray(query,
+          Object qResult = executeWithArray(query,
               prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
           if (qResult == null) {
             query.closeAll();
@@ -1971,7 +1971,7 @@ class MetaStoreDirectSql {
               }
               start = doTrace ? System.nanoTime() : 0;
               try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-               Object qResult = executeWithArray(query,
+                Object qResult = executeWithArray(query,
                     prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
                 if (qResult == null) {
                   query.closeAll();
@@ -2005,7 +2005,7 @@ class MetaStoreDirectSql {
                   + " group by \"COLUMN_NAME\"";
               start = doTrace ? System.nanoTime() : 0;
               try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-               Object qResult = executeWithArray(query,
+                Object qResult = executeWithArray(query,
                     prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
                 if (qResult == null) {
                   query.closeAll();
