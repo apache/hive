@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
@@ -454,6 +453,4 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return false;
   }
-
-
 }

@@ -16,7 +16,23 @@
  * limitations under the License.
  */
 
+package org.apache.hive.jdbc.saml;
+
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.saml.IJdbcBrowserClient.HiveJdbcBrowserException;
+
 /**
- * Package info.
+ * Factory class to instantiate the {@link IJdbcBrowserClient}. This is mostly used for
+ * testing purposes so that test can instantiate a test browser client which can do
+ * browser interaction programmatically.
  */
-package org.apache.hadoop.hive.druid;
+public interface IJdbcBrowserClientFactory {
+
+  /**
+   * Create a {@link IJdbcBrowserClient} from a the given {@link JdbcConnectionParams}
+   * @throws HiveJdbcBrowserException In case of any error to instantiate the browser
+   * client.
+   */
+  IJdbcBrowserClient create(JdbcConnectionParams connectionParams)
+      throws HiveJdbcBrowserException;
+}

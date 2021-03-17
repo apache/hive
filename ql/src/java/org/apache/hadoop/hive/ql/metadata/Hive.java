@@ -2868,7 +2868,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             newFiles = partitionDetails.newFiles;
           } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPartition == null) {
             // Otherwise only collect them, if we are going to fire write notifications
-            newFiles = new ArrayList<>();
+            newFiles = Collections.synchronizedList(new ArrayList<>());
           }
           // load the partition
           Partition partition = loadPartitionInternal(entry.getKey(), tbl,

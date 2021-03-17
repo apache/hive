@@ -172,25 +172,25 @@ STAGE PLANS:
                     Select Operator
                       expressions: ca_address_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6666667 Data size: 800000040 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6666667 Data size: 53333336 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 6666667 Data size: 800000040 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6666667 Data size: 53333336 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 6666667 Data size: 800000040 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6666667 Data size: 53333336 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 6666667 Data size: 800000040 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6666667 Data size: 53333336 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 14 
@@ -275,13 +275,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: d_date_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: bigint)
                         outputColumnNames: _col0
@@ -303,7 +303,7 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: bigint)
                         outputColumnNames: _col0
@@ -325,7 +325,7 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: bigint)
                         outputColumnNames: _col0

@@ -16,8 +16,15 @@
  * limitations under the License.
  */
 
-/**
- * package info.
- */
+package org.apache.hive.service.auth.saml;
 
-package org.apache.hadoop.hive.ql.io;
+/**
+ * Exception used in SAML auth workflow to determine if a given request needs
+ * to be redirected to the external identity provider.
+ */
+public class HttpSamlRedirectException extends HttpSamlAuthenticationException {
+
+  public HttpSamlRedirectException(String msg) {
+    super(msg);
+  }
+}

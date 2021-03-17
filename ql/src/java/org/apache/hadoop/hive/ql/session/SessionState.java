@@ -1838,6 +1838,7 @@ public class SessionState implements ISessionAuthState{
       txnMgr.closeTxnManager();
     }
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
+    Utilities.restoreSessionSpecifiedClassLoader(getClass().getClassLoader());
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);

@@ -16,8 +16,15 @@
  * limitations under the License.
  */
 
-/**
- * package info.
- */
+package org.apache.hive.service.auth.saml;
 
-package org.apache.hadoop.hive;
+/**
+ * Exception which is thrown when the groups of a user do not match with the
+ * allowed list of groups.
+ */
+public class HttpSamlNoGroupsMatchedException extends HttpSamlAuthenticationException {
+
+  public HttpSamlNoGroupsMatchedException(String s) {
+    super(s);
+  }
+}

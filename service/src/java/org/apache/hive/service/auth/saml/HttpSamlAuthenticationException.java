@@ -16,7 +16,24 @@
  * limitations under the License.
  */
 
+package org.apache.hive.service.auth.saml;
+
+import org.apache.hive.service.auth.HttpAuthenticationException;
+
 /**
- * package info.
+ * Exception classes to be used to throw errors in the SAML authentication flow.
  */
-package org.apache.hadoop.hive.druid.serde;
+public class HttpSamlAuthenticationException extends HttpAuthenticationException {
+
+  public HttpSamlAuthenticationException(Throwable cause) {
+    super(cause);
+  }
+
+  public HttpSamlAuthenticationException(String msg) {
+    super(msg);
+  }
+
+  public HttpSamlAuthenticationException(String msg, Throwable cause) {
+    super(msg, cause);
+  }
+}

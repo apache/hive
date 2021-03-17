@@ -16,8 +16,25 @@
  * limitations under the License.
  */
 
-/**
- * package info.
- */
+package org.apache.hive.service.auth.saml;
 
-package org.apache.hadoop.hive.druid.io;
+/**
+ * Wrapper class to store the RelayState of the SAML authentication flow.
+ */
+public class HiveSamlRelayStateInfo {
+  private final int port;
+  private final String clientIdentifier;
+
+  HiveSamlRelayStateInfo(int port, String clientIdentifier) {
+    this.port = port;
+    this.clientIdentifier = clientIdentifier;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public String getClientIdentifier() {
+    return clientIdentifier;
+  }
+}
