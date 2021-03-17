@@ -1764,7 +1764,6 @@ class MetaStoreDirectSql {
     long end = 0;
 
     boolean doTrace = LOG.isDebugEnabled();
-    Object qResult = null;
     ForwardQueryResult<?> fqr = null;
     // Check if the status of all the columns of all the partitions exists
     // Extrapolation is not needed.
@@ -1775,7 +1774,7 @@ class MetaStoreDirectSql {
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
       try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-        qResult = executeWithArray(query,
+       Object qResult = executeWithArray(query,
             prepareParams(catName, dbName, tableName, partNames, colNames,
                 engine), queryText);
         if (qResult == null) {
@@ -1813,7 +1812,7 @@ class MetaStoreDirectSql {
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
       try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-        qResult = executeWithArray(query,
+       Object qResult = executeWithArray(query,
             prepareParams(catName, dbName, tableName, partNames, colNames,
                 engine), queryText);
         end = doTrace ? System.nanoTime() : 0;
@@ -1853,7 +1852,7 @@ class MetaStoreDirectSql {
         start = doTrace ? System.nanoTime() : 0;
 
         try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-          qResult = executeWithArray(query,
+         Object qResult = executeWithArray(query,
               prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
           if (qResult == null) {
             query.closeAll();
@@ -1890,7 +1889,7 @@ class MetaStoreDirectSql {
         try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
           List<String> extraColumnNames = new ArrayList<String>();
           extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
-          qResult = executeWithArray(query,
+          Object qResult = executeWithArray(query,
               prepareParams(catName, dbName, tableName, partNames,
                   extraColumnNames, engine), queryText);
           if (qResult == null) {
@@ -1971,8 +1970,8 @@ class MetaStoreDirectSql {
                     + " order by cast(\"" + colStatName + "\" as decimal)";
               }
               start = doTrace ? System.nanoTime() : 0;
-              try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-                qResult = executeWithArray(query,
+              try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+               Object qResult = executeWithArray(query,
                     prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
                 if (qResult == null) {
                   query.closeAll();
@@ -2006,7 +2005,7 @@ class MetaStoreDirectSql {
                   + " group by \"COLUMN_NAME\"";
               start = doTrace ? System.nanoTime() : 0;
               try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-                qResult = executeWithArray(query,
+               Object qResult = executeWithArray(query,
                     prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
                 if (qResult == null) {
                   query.closeAll();
