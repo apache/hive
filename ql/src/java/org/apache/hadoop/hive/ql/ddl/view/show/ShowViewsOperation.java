@@ -29,7 +29,8 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
+import org.apache.hadoop.hive.ql.ddl.table.info.show.tables.ShowTablesFormatter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 
@@ -57,8 +58,9 @@ public class ShowViewsOperation extends DDLOperation<ShowViewsDesc> {
     Collections.sort(viewNames);
     LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", viewNames.size());
 
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      context.getFormatter().showTables(os, viewNames);
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      ShowTablesFormatter formatter = ShowTablesFormatter.getFormatter(context.getConf());
+      formatter.showTables(os, viewNames);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + desc.getDbName());
     }

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -47,13 +48,16 @@ import org.apache.hive.hplsql.executor.QueryException;
 import org.apache.hive.hplsql.executor.QueryExecutor;
 import org.apache.hive.hplsql.executor.QueryResult;
 import org.apache.hive.hplsql.functions.BuiltinFunctions;
-import org.apache.hive.hplsql.functions.Function;
+import org.apache.hive.hplsql.functions.FunctionRegistry;
 import org.apache.hive.hplsql.functions.FunctionDatetime;
 import org.apache.hive.hplsql.functions.FunctionMisc;
 import org.apache.hive.hplsql.functions.FunctionOra;
 import org.apache.hive.hplsql.functions.FunctionString;
-import org.apache.hive.hplsql.functions.HmsFunction;
-import org.apache.hive.hplsql.functions.InMemoryFunction;
+import org.apache.hive.hplsql.functions.HmsFunctionRegistry;
+import org.apache.hive.hplsql.functions.InMemoryFunctionRegistry;
+import org.apache.hive.hplsql.packages.HmsPackageRegistry;
+import org.apache.hive.hplsql.packages.InMemoryPackageRegistry;
+import org.apache.hive.hplsql.packages.PackageRegistry;
 
 /**
  * HPL/SQL script executor
@@ -70,11 +74,13 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   Exec exec;
   ParseTree tree = null;
   private IMetaStoreClient msc;
-  Function function;
+  FunctionRegistry functions;
   private BuiltinFunctions builtinFunctions;
   private ResultListener resultListener = ResultListener.NONE;
   QueryExecutor queryExecutor;
   private HplSqlSessionState hplSqlSession;
+  private PackageRegistry packageRegistry = new InMemoryPackageRegistry();
+  private boolean packageLoading = false;
 
   public enum OnError {EXCEPTION, SETERROR, STOP}
 
@@ -328,7 +334,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   public Var findVariable(String name) {
     Var var;
-    String name1 = name;
+    String name1 = name.toUpperCase();
     String name1a = null;
     String name2 = null;
     Scope cur = exec.currentScope;
@@ -336,8 +342,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     Package packCallContext = exec.getPackageCallContext();
     ArrayList<String> qualified = exec.meta.splitIdentifier(name);
     if (qualified != null) {
-      name1 = qualified.get(0);
-      name2 = qualified.get(1);
+      name1 = qualified.get(0).toUpperCase();
+      name2 = qualified.get(1).toUpperCase();
       pack = findPackage(name1);
       if (pack != null) {        
         var = pack.findVariable(name2);
@@ -404,6 +410,24 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Find the package by name
    */
   Package findPackage(String name) {
+    Package pkg = packages.get(name.toUpperCase());
+    if (pkg != null) {
+      return pkg;
+    }
+    Optional<String> source = exec.packageRegistry.getPackage(name);
+    if (source.isPresent()) {
+      HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(source.get()));
+      CommonTokenStream tokens = new CommonTokenStream(lexer);
+      HplsqlParser parser = new HplsqlParser(tokens);
+      exec.packageLoading = true;
+      try {
+        visit(parser.program());
+      } finally {
+        exec.packageLoading = false;
+      }
+    } else {
+      return null;
+    }
     return packages.get(name.toUpperCase());
   }
   
@@ -751,7 +775,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       initRoutines = true;
       visit(tree);
       initRoutines = false;
-      exec.function.exec(execMain, null);
+      exec.functions.exec(execMain.toUpperCase(), null);
     }
     else {
       visit(tree);
@@ -790,9 +814,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     new FunctionString(this, queryExecutor).register(builtinFunctions);
     new FunctionOra(this, queryExecutor).register(builtinFunctions);
     if (msc != null) {
-      function = new HmsFunction(this, msc, builtinFunctions, hplSqlSession);
+      functions = new HmsFunctionRegistry(this, msc, builtinFunctions, hplSqlSession);
+      packageRegistry = new HmsPackageRegistry(msc, hplSqlSession);
     } else {
-      function = new InMemoryFunction(this, builtinFunctions);
+      functions = new InMemoryFunctionRegistry(this, builtinFunctions);
     }
     addVariable(new Var(ERRORCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLCODE, Var.Type.BIGINT, 0L));
@@ -1414,7 +1439,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitCreate_function_stmt(HplsqlParser.Create_function_stmtContext ctx) {
-    exec.function.addUserFunction(ctx);
+    exec.functions.addUserFunction(ctx);
     addLocalUdf(ctx);
     return 0; 
   }
@@ -1425,11 +1450,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCreate_package_stmt(HplsqlParser.Create_package_stmtContext ctx) { 
     String name = ctx.ident(0).getText().toUpperCase();
-    exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
-    exec.packages.put(name, exec.currentPackageDecl);
-    trace(ctx, "CREATE PACKAGE");
-    exec.currentPackageDecl.createSpecification(ctx);
-    exec.currentPackageDecl = null;
+    if (exec.packageLoading) {
+      exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
+      exec.packages.put(name, exec.currentPackageDecl);
+      exec.currentPackageDecl.createSpecification(ctx);
+      exec.currentPackageDecl = null;
+    } else {
+      trace(ctx, "CREATE PACKAGE");
+      exec.packages.remove(name);
+      exec.packageRegistry.createPackageHeader(name, getFormattedText(ctx), ctx.T_REPLACE() != null);
+    }
     return 0; 
   }
 
@@ -1437,18 +1467,23 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * CREATE PACKAGE body statement
    */
   @Override 
-  public Integer visitCreate_package_body_stmt(HplsqlParser.Create_package_body_stmtContext ctx) { 
+  public Integer visitCreate_package_body_stmt(HplsqlParser.Create_package_body_stmtContext ctx) {
     String name = ctx.ident(0).getText().toUpperCase();
-    exec.currentPackageDecl = exec.packages.get(name);
-    if (exec.currentPackageDecl == null) {
-      exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
-      exec.currentPackageDecl.setAllMembersPublic(true);
-      exec.packages.put(name, exec.currentPackageDecl);
+    if (exec.packageLoading) {
+      exec.currentPackageDecl = exec.packages.get(name);
+      if (exec.currentPackageDecl == null) {
+        exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
+        exec.currentPackageDecl.setAllMembersPublic(true);
+        exec.packages.put(name, exec.currentPackageDecl);
+      }
+      exec.currentPackageDecl.createBody(ctx);
+      exec.currentPackageDecl = null;
+    } else {
+      trace(ctx, "CREATE PACKAGE BODY");
+      exec.packages.remove(name);
+      exec.packageRegistry.createPackageBody(name,  getFormattedText(ctx), ctx.T_REPLACE() != null);
     }
-    trace(ctx, "CREATE PACKAGE BODY");
-    exec.currentPackageDecl.createBody(ctx);
-    exec.currentPackageDecl = null;
-    return 0; 
+    return 0;
   }
 
   /**
@@ -1456,11 +1491,30 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitCreate_procedure_stmt(HplsqlParser.Create_procedure_stmtContext ctx) {
-    exec.function.addUserProcedure(ctx);
+    exec.functions.addUserProcedure(ctx);
     addLocalUdf(ctx);                      // Add procedures as they can be invoked by functions
     return 0; 
   }
-  
+
+  public void dropProcedure(HplsqlParser.Drop_stmtContext ctx, String name, boolean checkIfExists) {
+    if (checkIfExists && !functions.exists(name)) {
+      trace(ctx, name + " DOES NOT EXIST");
+      return;
+    }
+    functions.remove(name);
+    trace(ctx, name + " DROPPED");
+  }
+
+  public void dropPackage(HplsqlParser.Drop_stmtContext ctx, String name, boolean checkIfExists) {
+    if (checkIfExists && !packageRegistry.getPackage(name).isPresent()) {
+      trace(ctx, name + " DOES NOT EXIST");
+      return;
+    }
+    packages.remove(name);
+    packageRegistry.dropPackage(name);
+    trace(ctx, name + " DROPPED");
+  }
+
   /**
    * CREATE INDEX statement
    */
@@ -1633,11 +1687,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitExpr_func(HplsqlParser.Expr_funcContext ctx) {
-    String name = ctx.ident().getText();  
+    String name = ctx.ident().getText();
     if (exec.buildSql) {
       exec.execSql(name, ctx.expr_func_params());
-    }
-    else {
+    } else {
+      name = name.toUpperCase();
       Package packCallContext = exec.getPackageCallContext();
       ArrayList<String> qualified = exec.meta.splitIdentifier(name);
       boolean executed = false;
@@ -1651,7 +1705,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
         executed = packCallContext.execFunc(name, ctx.expr_func_params());
       }
       if (!executed) {        
-        exec.function.exec(name, ctx.expr_func_params());
+        exec.functions.exec(name, ctx.expr_func_params());
       }
     }
     return 0;
@@ -1685,7 +1739,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * For example converts: select fn(col) from table to select hplsql('fn(:1)', col) from table
    */
   private boolean execUserSql(HplsqlParser.Expr_func_paramsContext ctx, String name) {
-    if (!function.exists(name)) {
+    if (!functions.exists(name)) {
       return false;
     }
     StringBuilder sql = new StringBuilder();
@@ -1826,7 +1880,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitCall_stmt(HplsqlParser.Call_stmtContext ctx) {
-    String name = ctx.ident().getText();
+    String name = ctx.ident().getText().toUpperCase();
     Package packCallContext = exec.getPackageCallContext();
     ArrayList<String> qualified = exec.meta.splitIdentifier(name);
     exec.inCallStmt = true;    
@@ -1841,7 +1895,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       executed = packCallContext.execProc(name, ctx.expr_func_params(), false /*trace error if not exists*/);
     }
     if (!executed) {
-      exec.function.exec(name, ctx.expr_func_params());
+      exec.functions.exec(name, ctx.expr_func_params());
     }
     exec.inCallStmt = false;
     return 0;
@@ -2212,7 +2266,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       }
     }
     else {
-      if (!exec.buildSql && !exec.inCallStmt && exec.function.exec(ident, null)) {
+      if (!exec.buildSql && !exec.inCallStmt && exec.functions.exec(ident.toUpperCase(), null)) {
         return 0;
       } else {
         exec.stackPush(new Var(Var.Type.IDENT, ident));

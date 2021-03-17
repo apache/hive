@@ -188,7 +188,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // On a replica this alter table will be executed only if old and new both the databases are
       // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = HiveMetaStore.HMSHandler.isDbReplicationTarget(olddb);
+      isReplicated = HMSHandler.isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
@@ -247,7 +247,7 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          String oldtRelativePath = wh.getDatabasePath(olddb).toUri()
+          String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
               .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
                   && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
@@ -256,8 +256,8 @@ public class HiveAlterHandler implements AlterHandler {
 
             // get new location
             Database db = msdb.getDatabase(catName, newDbName);
-            assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
-            Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
+            assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+            Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
             destPath = new Path(databasePath, newTblName);
             destFs = wh.getFs(destPath);
 
@@ -363,7 +363,7 @@ public class HiveAlterHandler implements AlterHandler {
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
-          assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
+          assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,7 +139,8 @@ public final class ReplExternalTables {
      * table if the table is partitioned and the partition location is outside the table.
      * It returns list of all the external table locations.
      */
-    void dataLocationDump(Table table, FileList fileList, HiveConf conf)
+    void dataLocationDump(Table table, FileList fileList,
+        Path dbLoc, boolean isTableLevelReplication, HiveConf conf)
             throws InterruptedException, IOException, HiveException {
       if (!shouldWrite()) {
         return;
@@ -148,10 +150,13 @@ public final class ReplExternalTables {
             "only External tables can be writen via this writer, provided table is " + table
                 .getTableType());
       }
-      Path fullyQualifiedDataLocation =
-          PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
-      write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
+      Path fullyQualifiedDataLocation = PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
+      if (isTableLevelReplication || !FileUtils
+          .isPathWithinSubtree(table.getDataLocation(), dbLoc)) {
+        write(lineFor(table.getTableName(), fullyQualifiedDataLocation,
+            hiveConf));
+        dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
+      }
       if (table.isPartitioned()) {
         List<Partition> partitions;
         try {
@@ -170,6 +175,15 @@ public final class ReplExternalTables {
               partition.getDataLocation(), table.getDataLocation()
           );
           if (partitionLocOutsideTableLoc) {
+            // check if the entire db location is getting copied, then the
+            // partition isn't inside the db location, if so we can skip
+            // copying this separately.
+            if (!isTableLevelReplication && FileUtils
+                .isPathWithinSubtree(partition.getDataLocation(), dbLoc)) {
+              partitionLocOutsideTableLoc = false;
+            }
+          }
+          if (partitionLocOutsideTableLoc) {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
             write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
@@ -179,10 +193,34 @@ public final class ReplExternalTables {
       }
     }
 
+    void dbLocationDump(String dbName, Path dbLocation, FileList fileList,
+        HiveConf conf) throws Exception {
+      Path fullyQualifiedDataLocation = PathBuilder
+          .fullyQualifiedHDFSUri(dbLocation, FileSystem.get(hiveConf));
+      write(lineFor(dbName, fullyQualifiedDataLocation, hiveConf));
+      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
+    }
+
     private void dirLocationToCopy(FileList fileList, Path sourcePath, HiveConf conf)
             throws HiveException {
       Path basePath = getExternalTableBaseDir(conf);
       Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
+      //Here, when src and target are HA clusters with same NS, then sourcePath would have the correct host
+      //whereas the targetPath would have an host that refers to the target cluster. This is fine for
+      //data-copy running during dump as the correct logical locations would be used. But if data-copy runs during
+      //load, then the remote location needs to point to the src cluster from where the data would be copied and
+      //the common original NS would suffice for targetPath.
+      if(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE) &&
+              hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET)) {
+        String remoteNS = hiveConf.get(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname);
+        if (StringUtils.isEmpty(remoteNS)) {
+          throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE
+                  .format("Configuration 'hive.repl.ha.datapath.replace.remote.nameservice.name' is not valid "
+                          + remoteNS == null ? "null" : remoteNS, ReplUtils.REPL_HIVE_SERVICE));
+        }
+        targetPath = new Path(Utils.replaceHost(targetPath.toString(), sourcePath.toUri().getHost()));
+        sourcePath = new Path(Utils.replaceHost(sourcePath.toString(), remoteNS));
+      }
       fileList.add(new DirCopyWork(sourcePath, targetPath).convertToString());
     }
 

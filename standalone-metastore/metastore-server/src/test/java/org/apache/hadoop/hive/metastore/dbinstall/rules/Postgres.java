@@ -21,10 +21,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JUnit TestRule for Postgres.
  */
 public class Postgres extends DatabaseRule {
+  private static final Logger LOG = LoggerFactory.getLogger(Postgres.class);
+
   @Override
   public String getDockerImageName() {
     return "postgres:9.3";
@@ -56,22 +61,23 @@ public class Postgres extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/" + HIVE_DB;
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/" + HIVE_DB;
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/postgres";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/postgres";
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    if (logOutput.contains("PostgreSQL init process complete; ready for start up")) {
+  public boolean isContainerReady(ProcessResults pr) {
+    if (pr.stdout.contains("PostgreSQL init process complete; ready for start up")) {
       try (Socket socket = new Socket()) {
-        socket.connect(new InetSocketAddress("localhost", 5432), 1000);
+        socket.connect(new InetSocketAddress(getContainerHostAddress(), 5432), 1000);
         return true;
       } catch (IOException e) {
+        LOG.info("cant connect to postgres; {}", e.getMessage());
         return false;
       }
     }

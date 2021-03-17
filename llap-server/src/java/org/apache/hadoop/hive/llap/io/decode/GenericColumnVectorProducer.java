@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -66,10 +67,11 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
   private final FixedSizedObjectPool<IoTrace> tracePool;
+  private final ExecutorService encodeExecutor;
 
   public GenericColumnVectorProducer(SerDeLowLevelCacheImpl serdeCache,
       BufferUsageManager bufferManager, Configuration conf, LlapDaemonCacheMetrics cacheMetrics,
-      LlapDaemonIOMetrics ioMetrics, FixedSizedObjectPool<IoTrace> tracePool) {
+      LlapDaemonIOMetrics ioMetrics, FixedSizedObjectPool<IoTrace> tracePool, ExecutorService encodeExecutor) {
     LlapIoImpl.LOG.info("Initializing ORC column vector producer");
     this.cache = serdeCache;
     this.bufferManager = bufferManager;
@@ -77,6 +79,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     this.cacheMetrics = cacheMetrics;
     this.ioMetrics = ioMetrics;
     this.tracePool = tracePool;
+    this.encodeExecutor = encodeExecutor;
   }
 
   @Override
@@ -97,7 +100,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     // TODO: add tracing to serde reader
     SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache, bufferManager, conf,
         split, includes.getPhysicalColumnIds(), edc, job, reporter, sourceInputFormat,
-        sourceSerDe, counters, fm.getSchema(), parts);
+        sourceSerDe, counters, fm.getSchema(), parts, encodeExecutor);
     edc.init(reader, reader, new IoTrace(0, false));
     return edc;
   }

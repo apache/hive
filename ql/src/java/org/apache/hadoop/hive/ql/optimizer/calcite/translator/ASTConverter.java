@@ -740,6 +740,10 @@ public class ASTConverter {
 
       // 1. Translate the UDAF
       final ASTNode wUDAFAst = visitCall(over);
+      if (over.ignoreNulls()) {
+        ASTNode trueLiteral = ASTBuilder.createAST(HiveParser.KW_TRUE, "true");
+        wUDAFAst.addChild(trueLiteral);
+      }
 
       // 2. Add TOK_WINDOW as child of UDAF
       ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");
@@ -786,8 +790,10 @@ public class ASTConverter {
         break;
       case CAST:
         assert(call.getOperands().size() == 1);
-        if(call.getType().isStruct()) {
-          // cast for struct types can be ignored safely because explicit casting on struct
+        if (call.getType().isStruct() ||
+            SqlTypeName.MAP.equals(call.getType().getSqlTypeName()) ||
+            SqlTypeName.ARRAY.equals(call.getType().getSqlTypeName())) {
+          // cast for complex types can be ignored safely because explicit casting on such
           // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
           return call.getOperands().get(0).accept(this);
         }

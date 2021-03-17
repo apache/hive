@@ -25,7 +25,8 @@ public class HiveAuthConstants {
     LDAP("LDAP"),
     KERBEROS("KERBEROS"),
     CUSTOM("CUSTOM"),
-    PAM("PAM");
+    PAM("PAM"),
+    SAML("SAML");
 
     private final String authType;
 

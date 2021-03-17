@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -251,6 +250,20 @@ class DriverTxnHandler {
       //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
       //so this makes (file name -> data) mapping stable
       acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
+
+      // If the direct insert is on, sort the FSOs by moveTaskId as well because the dir is the same for all except the union use cases.
+      boolean isDirectInsertOn = false;
+      for (FileSinkDesc acidSink : acidSinks) {
+        if (acidSink.isDirectInsert()) {
+          isDirectInsertOn = true;
+          break;
+        }
+      }
+      if (isDirectInsertOn) {
+        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getMoveTaskId().compareTo(fsd2.getMoveTaskId()));
+      }
+
+      int maxStmtId = -1;
       for (FileSinkDesc acidSink : acidSinks) {
         TableDesc tableInfo = acidSink.getTableInfo();
         TableName tableName = HiveTableName.of(tableInfo.getTableName());
@@ -264,11 +277,17 @@ class DriverTxnHandler {
          * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
          */
         acidSink.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
+        maxStmtId = Math.max(acidSink.getStatementId(), maxStmtId);
         String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
         if (acidSink.getInsertOverwrite() && acidSink.getDirName().toString().contains(unionAllSubdir) &&
             acidSink.isFullAcidTable()) {
           throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
               " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
+        }
+      }
+      if (HiveConf.getBoolVar(driverContext.getConf(), ConfVars.HIVE_EXTEND_BUCKET_ID_RANGE)) {
+        for (FileSinkDesc each : acidSinks) {
+          each.setMaxStmtId(maxStmtId);
         }
       }
     }
@@ -514,11 +533,15 @@ class DriverTxnHandler {
     release(!hiveLocks.isEmpty());
   }
 
-  void destroy() {
+  void destroy(String queryIdFromDriver) {
+    // We need cleanup transactions, even if we did not acquired locks yet
+    // However TxnManager is bound to session, so wee need to check if it is already handling a new query
     boolean isTxnOpen =
         driverContext != null &&
         driverContext.getTxnManager() != null &&
-        driverContext.getTxnManager().isTxnOpen();
+        driverContext.getTxnManager().isTxnOpen() &&
+        org.apache.commons.lang3.StringUtils.equals(queryIdFromDriver, driverContext.getTxnManager().getQueryid());
+
     release(!hiveLocks.isEmpty() || isTxnOpen);
   }
 

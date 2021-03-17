@@ -752,6 +752,8 @@ class GetAllFunctionsResponse;
 
 class ClientCapabilities;
 
+class GetProjectionsSpec;
+
 class GetTableRequest;
 
 class GetTableResult;
@@ -908,8 +910,6 @@ class AlterTableRequest;
 
 class AlterTableResponse;
 
-class GetProjectionsSpec;
-
 class GetPartitionsFilterSpec;
 
 class GetPartitionsResponse;
@@ -953,6 +953,16 @@ class StoredProcedureRequest;
 class ListStoredProcedureRequest;
 
 class StoredProcedure;
+
+class AddPackageRequest;
+
+class GetPackageRequest;
+
+class DropPackageRequest;
+
+class ListPackageRequest;
+
+class Package;
 
 class MetaException;
 
@@ -7163,13 +7173,15 @@ void swap(PartitionValuesResponse &a, PartitionValuesResponse &b);
 std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse& obj);
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false), getFileMetadata(false), id(true) {}
   bool names :1;
   bool get_col_stats :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
   bool engine :1;
   bool validWriteIdList :1;
+  bool getFileMetadata :1;
+  bool id :1;
 } _GetPartitionsByNamesRequest__isset;
 
 class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
@@ -7177,7 +7189,7 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine(), validWriteIdList() {
+  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine(), validWriteIdList(), getFileMetadata(0), id(-1LL) {
   }
 
   virtual ~GetPartitionsByNamesRequest() noexcept;
@@ -7189,6 +7201,8 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
   std::string processorIdentifier;
   std::string engine;
   std::string validWriteIdList;
+  bool getFileMetadata;
+  int64_t id;
 
   _GetPartitionsByNamesRequest__isset __isset;
 
@@ -7207,6 +7221,10 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
   void __set_engine(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_getFileMetadata(const bool val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const GetPartitionsByNamesRequest & rhs) const
   {
@@ -7237,6 +7255,14 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.getFileMetadata != rhs.__isset.getFileMetadata)
+      return false;
+    else if (__isset.getFileMetadata && !(getFileMetadata == rhs.getFileMetadata))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }
@@ -11254,6 +11280,60 @@ class ClientCapabilities : public virtual ::apache::thrift::TBase {
 void swap(ClientCapabilities &a, ClientCapabilities &b);
 
 std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj);
+
+typedef struct _GetProjectionsSpec__isset {
+  _GetProjectionsSpec__isset() : fieldList(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
+  bool fieldList :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
+} _GetProjectionsSpec__isset;
+
+class GetProjectionsSpec : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetProjectionsSpec(const GetProjectionsSpec&);
+  GetProjectionsSpec& operator=(const GetProjectionsSpec&);
+  GetProjectionsSpec() : includeParamKeyPattern(), excludeParamKeyPattern() {
+  }
+
+  virtual ~GetProjectionsSpec() noexcept;
+  std::vector<std::string>  fieldList;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
+
+  _GetProjectionsSpec__isset __isset;
+
+  void __set_fieldList(const std::vector<std::string> & val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
+
+  bool operator == (const GetProjectionsSpec & rhs) const
+  {
+    if (!(fieldList == rhs.fieldList))
+      return false;
+    if (!(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (!(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
+      return false;
+    return true;
+  }
+  bool operator != (const GetProjectionsSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetProjectionsSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetProjectionsSpec &a, GetProjectionsSpec &b);
+
+std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj);
 
 typedef struct _GetTableRequest__isset {
   _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false), id(true) {}
@@ -15527,60 +15607,6 @@ void swap(AlterTableResponse &a, AlterTableResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj);
 
-typedef struct _GetProjectionsSpec__isset {
-  _GetProjectionsSpec__isset() : fieldList(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
-  bool fieldList :1;
-  bool includeParamKeyPattern :1;
-  bool excludeParamKeyPattern :1;
-} _GetProjectionsSpec__isset;
-
-class GetProjectionsSpec : public virtual ::apache::thrift::TBase {
- public:
-
-  GetProjectionsSpec(const GetProjectionsSpec&);
-  GetProjectionsSpec& operator=(const GetProjectionsSpec&);
-  GetProjectionsSpec() : includeParamKeyPattern(), excludeParamKeyPattern() {
-  }
-
-  virtual ~GetProjectionsSpec() noexcept;
-  std::vector<std::string>  fieldList;
-  std::string includeParamKeyPattern;
-  std::string excludeParamKeyPattern;
-
-  _GetProjectionsSpec__isset __isset;
-
-  void __set_fieldList(const std::vector<std::string> & val);
-
-  void __set_includeParamKeyPattern(const std::string& val);
-
-  void __set_excludeParamKeyPattern(const std::string& val);
-
-  bool operator == (const GetProjectionsSpec & rhs) const
-  {
-    if (!(fieldList == rhs.fieldList))
-      return false;
-    if (!(includeParamKeyPattern == rhs.includeParamKeyPattern))
-      return false;
-    if (!(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
-      return false;
-    return true;
-  }
-  bool operator != (const GetProjectionsSpec &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const GetProjectionsSpec & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(GetProjectionsSpec &a, GetProjectionsSpec &b);
-
-std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj);
-
 typedef struct _GetPartitionsFilterSpec__isset {
   _GetPartitionsFilterSpec__isset() : filterMode(false), filters(false) {}
   bool filterMode :1;
@@ -16871,6 +16897,291 @@ class StoredProcedure : public virtual ::apache::thrift::TBase {
 void swap(StoredProcedure &a, StoredProcedure &b);
 
 std::ostream& operator<<(std::ostream& out, const StoredProcedure& obj);
+
+typedef struct _AddPackageRequest__isset {
+  _AddPackageRequest__isset() : catName(false), dbName(false), packageName(false), ownerName(false), header(false), body(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool packageName :1;
+  bool ownerName :1;
+  bool header :1;
+  bool body :1;
+} _AddPackageRequest__isset;
+
+class AddPackageRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  AddPackageRequest(const AddPackageRequest&);
+  AddPackageRequest& operator=(const AddPackageRequest&);
+  AddPackageRequest() : catName(), dbName(), packageName(), ownerName(), header(), body() {
+  }
+
+  virtual ~AddPackageRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+  std::string ownerName;
+  std::string header;
+  std::string body;
+
+  _AddPackageRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_header(const std::string& val);
+
+  void __set_body(const std::string& val);
+
+  bool operator == (const AddPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(header == rhs.header))
+      return false;
+    if (!(body == rhs.body))
+      return false;
+    return true;
+  }
+  bool operator != (const AddPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddPackageRequest &a, AddPackageRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const AddPackageRequest& obj);
+
+
+class GetPackageRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetPackageRequest(const GetPackageRequest&);
+  GetPackageRequest& operator=(const GetPackageRequest&);
+  GetPackageRequest() : catName(), dbName(), packageName() {
+  }
+
+  virtual ~GetPackageRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  bool operator == (const GetPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetPackageRequest &a, GetPackageRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetPackageRequest& obj);
+
+
+class DropPackageRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  DropPackageRequest(const DropPackageRequest&);
+  DropPackageRequest& operator=(const DropPackageRequest&);
+  DropPackageRequest() : catName(), dbName(), packageName() {
+  }
+
+  virtual ~DropPackageRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  bool operator == (const DropPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    return true;
+  }
+  bool operator != (const DropPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DropPackageRequest &a, DropPackageRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const DropPackageRequest& obj);
+
+typedef struct _ListPackageRequest__isset {
+  _ListPackageRequest__isset() : dbName(false) {}
+  bool dbName :1;
+} _ListPackageRequest__isset;
+
+class ListPackageRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  ListPackageRequest(const ListPackageRequest&);
+  ListPackageRequest& operator=(const ListPackageRequest&);
+  ListPackageRequest() : catName(), dbName() {
+  }
+
+  virtual ~ListPackageRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+
+  _ListPackageRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  bool operator == (const ListPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    return true;
+  }
+  bool operator != (const ListPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ListPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ListPackageRequest &a, ListPackageRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const ListPackageRequest& obj);
+
+typedef struct _Package__isset {
+  _Package__isset() : catName(false), dbName(false), packageName(false), ownerName(false), header(false), body(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool packageName :1;
+  bool ownerName :1;
+  bool header :1;
+  bool body :1;
+} _Package__isset;
+
+class Package : public virtual ::apache::thrift::TBase {
+ public:
+
+  Package(const Package&);
+  Package& operator=(const Package&);
+  Package() : catName(), dbName(), packageName(), ownerName(), header(), body() {
+  }
+
+  virtual ~Package() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+  std::string ownerName;
+  std::string header;
+  std::string body;
+
+  _Package__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_header(const std::string& val);
+
+  void __set_body(const std::string& val);
+
+  bool operator == (const Package & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(header == rhs.header))
+      return false;
+    if (!(body == rhs.body))
+      return false;
+    return true;
+  }
+  bool operator != (const Package &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Package & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Package &a, Package &b);
+
+std::ostream& operator<<(std::ostream& out, const Package& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
 import java.io.IOException;
@@ -1236,6 +1237,12 @@ public final class PlanUtils {
           clone = new HashMap<>(properties);
         }
         clone.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
+      }
+      if (properties.containsKey(TABLE_IS_CTAS)) {
+        if (clone == null) {
+          clone = new HashMap<>(properties);
+        }
+        clone.remove(TABLE_IS_CTAS);
       }
       if (clone != null) {
         return clone;

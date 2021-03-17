@@ -1,17 +1,17 @@
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
-with q1 as (select * from src where key= '5')
-select a.key
+with q1(srcKey, srcValue) as (select * from src where key= '5')
+select a.srcKey
 from q1 a join q1 b
-on a.key=b.key
+on a.srcKey=b.srcKey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-with q1 as (select * from src where key= '5')
-select a.key
+with q1(srcKey, srcValue) as (select * from src where key= '5')
+select a.srcKey
 from q1 a join q1 b
-on a.key=b.key
+on a.srcKey=b.srcKey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -32,14 +32,14 @@ Stage-0
             Conds:(Inner)
           <-Map 1 [XPROD_EDGE] vectorized, llap
             XPROD_EDGE [RS_16]
-              Select Operator [SEL_15] (rows=2 width=85)
+              Select Operator [SEL_15] (rows=2 width=8)
                 Filter Operator [FIL_14] (rows=2 width=87)
                   predicate:(key = '5')
                   TableScan [TS_0] (rows=500 width=87)
                     default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
           <-Map 3 [XPROD_EDGE] vectorized, llap
             XPROD_EDGE [RS_19]
-              Select Operator [SEL_18] (rows=2 width=85)
+              Select Operator [SEL_18] (rows=2 width=8)
                 Filter Operator [FIL_17] (rows=2 width=87)
                   predicate:(key = '5')
                   TableScan [TS_3] (rows=500 width=87)

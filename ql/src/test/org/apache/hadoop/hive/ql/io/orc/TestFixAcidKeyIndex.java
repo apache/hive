@@ -17,14 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -35,21 +31,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.orc.OrcFile.WriterContext;
-import org.apache.orc.impl.AcidStats;
-import org.apache.orc.impl.OrcAcidUtils;
-import org.apache.orc.impl.WriterImpl;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.*;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertTrue;
 
 public class TestFixAcidKeyIndex {
   public final static Logger LOG = LoggerFactory.getLogger(TestFixAcidKeyIndex.class);
@@ -243,6 +233,12 @@ public class TestFixAcidKeyIndex {
     checkInvalidKeyIndex(testFilePath);
     // Try fixing, this should result in new fixed file.
     fixInvalidIndex(testFilePath);
+
+    // Multiple stripes
+    createTestAcidFile(testFilePath, 12000, new FaultyKeyIndexBuilder());
+    checkInvalidKeyIndex(testFilePath);
+    // Try fixing, this should result in new fixed file.
+    fixInvalidIndex(testFilePath);
   }
 
   @Test
@@ -302,6 +298,28 @@ public class TestFixAcidKeyIndex {
       }
 
       super.preStripeWrite(context);
+    }
+  }
+
+  /**
+   * Another bad version of KeyIndexBuilder which builds an invalid acid key index
+   * by inserting wrong values.
+   */
+  static class FaultyKeyIndexBuilder extends TestKeyIndexBuilder {
+
+    public FaultyKeyIndexBuilder() {
+      super("FaultyKeyIndexBuilder");
+    }
+
+    @Override
+    public void preStripeWrite(WriterContext context) throws IOException {
+      this.lastRowId = lastRowId - 5;
+      super.preStripeWrite(context);
+    }
+
+    @Override
+    void stopWritingKeyIndex() {
+      //NOOP
     }
   }
 }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -327,7 +328,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo,
             selRS.getSignature().get(0).getTabAlias(), true, true);
         selRS.getSignature().add(ci);
-        fsParent.getSchema().getSignature().add(ci);
+        rsOp.getSchema().getSignature().add(ci);
       }
       // Create SelectDesc
       SelectDesc selConf = new SelectDesc(descs, colNames);
@@ -594,6 +595,7 @@ public class SortedDynPartitionOptimizer extends Transform {
               FunctionRegistry.getFunctionInfo("bucket_number").getGenericUDF(), new ArrayList<>());
           keyCols.add(bucketNumColUDF);
           colExprMap.put(Utilities.ReduceField.KEY + "." +BUCKET_NUMBER_COL_NAME, bucketNumColUDF);
+
         } else {
           keyCols.add(allCols.get(idx).clone());
         }
@@ -627,6 +629,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // map _col0 to KEY._col0, etc
       Map<String, String> nameMapping = new HashMap<>();
       ArrayList<String> keyColNames = Lists.newArrayList();
+      Set<String> computedFields = new HashSet<>();
       for (ExprNodeDesc keyCol : keyCols) {
         String keyColName = keyCol.getExprString();
         keyColNames.add(keyColName);
@@ -638,6 +641,9 @@ public class SortedDynPartitionOptimizer extends Transform {
         String colName = valCol.getExprString();
         valColNames.add(colName);
         colExprMap.put(Utilities.ReduceField.VALUE + "." + colName, valCol);
+        if (nameMapping.containsKey(colName)) {
+          computedFields.add(nameMapping.get(colName));
+        }
         nameMapping.put(colName, Utilities.ReduceField.VALUE + "." + colName);
       }
 
@@ -658,6 +664,7 @@ public class SortedDynPartitionOptimizer extends Transform {
           valueTable, writeType);
       rsConf.setBucketCols(bucketColumns);
       rsConf.setNumBuckets(numBuckets);
+      rsConf.getComputedFields().addAll(computedFields);
 
       ArrayList<ColumnInfo> signature = new ArrayList<>();
       for (int index = 0; index < parent.getSchema().getSignature().size(); index++) {
@@ -667,6 +674,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       }
       ReduceSinkOperator op = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
           rsConf, new RowSchema(signature), parent);
+      rsConf.addComputedField(Utilities.ReduceField.KEY + "." + BUCKET_NUMBER_COL_NAME);
       op.setColumnExprMap(colExprMap);
       return op;
     }

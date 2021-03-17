@@ -30,11 +30,13 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHive
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 
+@Ignore("HIVE-22944: Kryo 5 upgrade conflicts with Spark, which is not supported anymore")
 public class TestSparkInvalidFileFormat {
 
   @Test

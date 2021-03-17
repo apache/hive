@@ -96,6 +96,7 @@ abstract class AbstractSparkClient implements SparkClient {
   private final Rpc driverRpc;
   private final ClientProtocol protocol;
   protected volatile boolean isAlive;
+  private File sparkTmpProperties;
 
   protected AbstractSparkClient(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf,
                   String sessionid) throws IOException {
@@ -184,6 +185,10 @@ abstract class AbstractSparkClient implements SparkClient {
       }
     }
 
+    if (sparkTmpProperties != null && sparkTmpProperties.exists()){
+      sparkTmpProperties.delete();
+    }
+
     try {
       driverFuture.get(DEFAULT_SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS);
     } catch (ExecutionException e) {
@@ -260,7 +265,7 @@ abstract class AbstractSparkClient implements SparkClient {
     if (!properties.setReadable(false) || !properties.setReadable(true, true)) {
       throw new IOException("Cannot change permissions of job properties file.");
     }
-    properties.deleteOnExit();
+    sparkTmpProperties = properties;
 
     Properties allProps = new Properties();
     // first load the defaults from spark-defaults.conf if available

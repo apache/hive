@@ -84,7 +84,7 @@ public class AlterViewAsAnalyzer extends AbstractCreateViewAnalyzer {
 
     if (oldView == null) {
       String viewNotExistErrorMsg = "The following view does not exist: " + desc.getViewName();
-      throw new SemanticException( ErrorMsg.ALTER_VIEW_AS_SELECT_NOT_EXIST.getMsg(viewNotExistErrorMsg));
+      throw new SemanticException(ErrorMsg.ALTER_VIEW_AS_SELECT_NOT_EXIST.getMsg(viewNotExistErrorMsg));
     }
 
     validateReplaceWithPartitions(desc.getViewName(), oldView, null);

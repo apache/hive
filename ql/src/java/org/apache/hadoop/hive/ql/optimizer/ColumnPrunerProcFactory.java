@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -157,6 +158,7 @@ public final class ColumnPrunerProcFactory {
         List<FieldNode> neededCols = cppCtx.genColLists(gbOp);
         String groupingColumn = conf.getOutputColumnNames().get(groupingSetPosition);
         if (lookupColumn(neededCols, groupingColumn) == null) {
+          conf.addComputedField(groupingColumn);
           conf.getOutputColumnNames().remove(groupingSetPosition);
           if (gbOp.getSchema() != null) {
             gbOp.getSchema().getSignature().remove(groupingSetPosition);
@@ -831,6 +833,7 @@ public final class ColumnPrunerProcFactory {
         }
         op.getSchema().setSignature(rs_newsignature);
         conf.setColList(newColList);
+        conf.getColumnExprMap().keySet().retainAll(colNames);
         conf.setOutputColumnNames(newOutputColumnNames);
         handleChildren(op, toColumnNames(cols), cppCtx);
       }
@@ -1053,6 +1056,11 @@ public final class ColumnPrunerProcFactory {
       for(ColumnInfo i : oldRS.getSignature()) {
         if (lookupColumn(cols, i.getInternalName()) != null) {
           rs.add(i);
+        } else {
+          Map<String, ExprNodeDesc> columnExprMap = op.getColumnExprMap();
+          if (columnExprMap != null) {
+            columnExprMap.remove(i.getInternalName());
+          }
         }
       }
       op.getSchema().setSignature(rs);

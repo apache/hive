@@ -283,7 +283,7 @@ public class OperationManager extends AbstractService {
    */
   public void cancelOperation(OperationHandle opHandle, String errMsg) throws HiveSQLException {
     Operation operation = getOperation(opHandle);
-    OperationState opState = operation.getStatus().getState();
+    OperationState opState = operation.getState();
     if (opState.isTerminal()) {
       // Cancel should be a no-op in either cases
       LOG.debug(opHandle + ": Operation is already aborted in state - " + opState);

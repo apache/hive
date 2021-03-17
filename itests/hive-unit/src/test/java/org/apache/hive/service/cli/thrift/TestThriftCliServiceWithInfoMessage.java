@@ -45,7 +45,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test operation's drilldown link is presented on TStatus when enabled.
@@ -110,7 +113,7 @@ public class TestThriftCliServiceWithInfoMessage {
       assertTrue(status.getStatusCode() == TStatusCode.SUCCESS_WITH_INFO_STATUS);
       assertNotNull(status.getInfoMessages());
       assertTrue(status.getInfoMessages().size() > 0);
-      Pattern pattern = Pattern.compile("http://.*:(\\d+)/query_page\\?operationId=(.+)$");
+      Pattern pattern = Pattern.compile("http://.*:(\\d+)/query_page\\.html\\?operationId=(.+)$");
       Matcher matcher = pattern.matcher(status.getInfoMessages().get(0));
       assertTrue(matcher.find());
       assertEquals(webuiPort + "", matcher.group(1));

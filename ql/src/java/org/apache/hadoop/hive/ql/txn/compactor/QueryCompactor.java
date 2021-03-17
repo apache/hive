@@ -28,12 +28,13 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import java.util.List;
 abstract class QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
-  private static final String TMPDIR = "_tmp";
 
   /**
    * Start a query based compaction.
@@ -59,7 +59,7 @@ abstract class QueryCompactor {
    * @throws IOException compaction cannot be finished.
    */
   abstract void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidUtils.Directory dir) throws IOException,
+      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException,
       HiveException;
 
   /**
@@ -94,6 +94,10 @@ abstract class QueryCompactor {
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
       throws IOException {
+    String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
+    }
     Util.disableLlapCaching(conf);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
@@ -186,7 +190,7 @@ abstract class QueryCompactor {
      * @return Path of new base/delta/delete delta directory
      */
     static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
-        boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidUtils.Directory directory) {
+        boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
       long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
       long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
@@ -210,7 +214,7 @@ abstract class QueryCompactor {
      * @param directory holds information about the deltas we are compacting
      * @return the smallest min write id found in deltas and delete deltas
      */
-    private static long getMinWriteID(AcidUtils.Directory directory) {
+    private static long getMinWriteID(AcidDirectory directory) {
       long minWriteID = Long.MAX_VALUE;
       for (AcidUtils.ParsedDelta delta : directory.getCurrentDirectories()) {
         minWriteID = Math.min(delta.getMinWriteId(), minWriteID);
@@ -255,7 +259,7 @@ abstract class QueryCompactor {
     /**
      * Remove the delta directories of aborted transactions.
      */
-    static void removeFilesForMmTable(HiveConf conf, AcidUtils.Directory dir) throws IOException {
+    static void removeFilesForMmTable(HiveConf conf, AcidDirectory dir) throws IOException {
       List<Path> filesToDelete = dir.getAbortedDirectories();
       if (filesToDelete.size() < 1) {
         return;

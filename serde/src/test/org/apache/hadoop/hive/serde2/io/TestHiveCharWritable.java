@@ -24,6 +24,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.io.Text;
 
 public class TestHiveCharWritable {
   @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
@@ -153,5 +154,48 @@ public class TestHiveCharWritable {
     assertFalse(hcw2.equals(hcw1));
     assertFalse(0 == hcw1.compareTo(hcw2));
     assertFalse(0 == hcw2.compareTo(hcw1));
+  }
+
+  @Test
+  public void testStrippedValue() {
+    // stripped end
+    HiveCharWritable hcw = new HiveCharWritable();
+    HiveChar hc = new HiveChar("abcd", 8);
+    hcw.set(hc);
+    assertEquals(4, hcw.getCharacterLength());
+    assertEquals("abcd    ", hcw.toString());
+    assertEquals(new Text("abcd    "), hcw.getTextValue());
+    assertEquals(new Text("abcd"), hcw.getStrippedValue());
+    assertEquals("abcd", hcw.getStrippedValue().toString());
+
+    // stripped end, untouched start
+    hcw = new HiveCharWritable();
+    hc = new HiveChar("  abcd  ", 8);
+    hcw.set(hc);
+    assertEquals(6, hcw.getCharacterLength()); //stripped 2 trailing whitespace
+    assertEquals("  abcd  ", hcw.toString());
+    assertEquals(new Text("  abcd  "), hcw.getTextValue());
+    assertEquals(new Text("  abcd"), hcw.getStrippedValue());
+    assertEquals("  abcd", hcw.getStrippedValue().toString());
+
+    // empty
+    hcw = new HiveCharWritable();
+    hc = new HiveChar("   ", 8);
+    hcw.set(hc);
+    assertEquals(0, hcw.getCharacterLength());
+    assertEquals("        ", hcw.toString());
+    assertEquals(new Text("        "), hcw.getTextValue());
+    assertEquals(new Text(""), hcw.getStrippedValue());
+    assertEquals("", hcw.getStrippedValue().toString());
+
+    // truncated
+    hcw = new HiveCharWritable();
+    hc = new HiveChar("abcdefghij", 8); // will be truncated to 8 chars
+    hcw.set(hc);
+    assertEquals(8, hcw.getCharacterLength()); // truncated
+    assertEquals("abcdefgh", hcw.toString());
+    assertEquals(new Text("abcdefgh"), hcw.getTextValue());
+    assertEquals(new Text("abcdefgh"), hcw.getStrippedValue());
+    assertEquals("abcdefgh", hcw.getStrippedValue().toString());
   }
 }

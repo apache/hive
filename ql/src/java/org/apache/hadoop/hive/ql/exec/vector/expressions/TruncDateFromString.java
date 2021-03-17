@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * Vectorized implementation of trunc(date, fmt) function for string input
@@ -54,7 +55,7 @@ public class TruncDateFromString extends TruncDateFromTimestamp {
 
     String dateString =
         new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
-    if (dateParser.parseDate(dateString, date)) {
+    if (DateParser.parseDate(dateString, date)) {
       processDate(outV, i, date);
     } else {
       outV.isNull[i] = true;

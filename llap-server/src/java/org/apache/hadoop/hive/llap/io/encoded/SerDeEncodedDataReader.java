@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -89,7 +90,6 @@ import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.Ref;
-import org.apache.orc.CompressionCodec;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile.EncodingStrategy;
@@ -103,6 +103,8 @@ import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.MemoryManager;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.StreamName;
+import org.apache.orc.impl.writer.StreamOptions;
+import org.apache.orc.impl.writer.WriterEncryptionVariant;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.TezCounters;
 
@@ -172,6 +174,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final boolean[] writerIncludes;
   private FileReaderYieldReturn currentFileRead = null;
   private final boolean isReadCacheOnly;
+  private final ExecutorService encodeExecutor;
 
   /**
    * Data from cache currently being processed. We store it here so that we could decref
@@ -181,12 +184,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private FileData cachedData;
   private List<VectorDeserializeOrcWriter> asyncWriters = new ArrayList<>();
 
-  public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache,
-      BufferUsageManager bufferManager, Configuration daemonConf, FileSplit split,
-      List<Integer> columnIds, OrcEncodedDataConsumer consumer, JobConf jobConf, Reporter reporter,
-      InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
-      QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
-          throws IOException {
+  public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache, BufferUsageManager bufferManager,
+      Configuration daemonConf, FileSplit split, List<Integer> columnIds, OrcEncodedDataConsumer consumer,
+      JobConf jobConf, Reporter reporter, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts,
+      ExecutorService encodeExecutor) throws IOException {
     assert cache != null;
     this.cache = cache;
     this.bufferManager = bufferManager;
@@ -241,6 +243,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         new Reader.Options(jobConf).include(writerIncludes));
     consumer.setSchemaEvolution(evolution);
     isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
+    this.encodeExecutor = encodeExecutor;
   }
 
   private static int determineAllocSize(BufferUsageManager bufferManager, Configuration conf) {
@@ -356,7 +359,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final Map<StreamName, OutputReceiver> streams = new HashMap<>();
     private final Map<Integer, List<CacheOutputReceiver>> colStreams = new HashMap<>();
     private final boolean doesSourceHaveIncludes;
+    private final StreamOptions options;
     private final AtomicBoolean isStopped;
+    // Make sure buffer size is less than 2^(3*8 - 1)
+    private static final int ORC_MAX_BUFFER_BYTES = (1 << 23) -1;
 
     public CacheWriter(BufferUsageManager bufferManager, List<Integer> columnIds,
         boolean[] writerIncludes, boolean doesSourceHaveIncludes,
@@ -368,6 +374,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       this.columnIds = columnIds;
       this.bufferFactory = bufferFactory;
       this.isStopped = isStopped;
+      // TODO: HIVE-24721: Align with llap.max.alloc
+      int orcAllocSize = Math.min(bufferManager.getAllocator().getMaxAllocation(), ORC_MAX_BUFFER_BYTES);
+      this.options = new StreamOptions(orcAllocSize);
       startStripe();
     }
 
@@ -477,15 +486,17 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
-    public void writeIndex(StreamName name, OrcProto.RowIndex.Builder index,
-        CompressionCodec codec) throws IOException {
+    public void writeIndex(StreamName name, OrcProto.RowIndex.Builder index) throws IOException {
       // TODO: right now we treat each slice as a stripe with a single RG and never bother
       //       with indexes. In phase 4, we need to add indexing and filtering.
     }
 
     @Override
-    public void writeBloomFilter(StreamName name, OrcProto.BloomFilterIndex.Builder bloom,
-        CompressionCodec codec) throws IOException {
+    public void writeBloomFilter(StreamName name, OrcProto.BloomFilterIndex.Builder bloom) throws IOException {
+    }
+
+    @Override
+    public void writeStatistics(StreamName streamName, OrcProto.ColumnStatistics.Builder builder) throws IOException {
     }
 
     @Override
@@ -534,7 +545,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
               buffers == null ? new ArrayList<MemoryBuffer>() : new ArrayList<>(buffers)));
           receiver.clear();
         }
-        if (doesSourceHaveIncludes) {
+        if (doesSourceHaveIncludes && colIx > 0) {
           int newColIx = getSparseOrcIndexFromDenseDest(colIx);
           if (LlapIoImpl.LOG.isTraceEnabled()) {
             LlapIoImpl.LOG.trace("Mapping the ORC writer column " + colIx + " to " + newColIx);
@@ -568,8 +579,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       throw new UnsupportedOperationException(); // Only used in ACID writer.
     }
 
-    public void setCurrentStripeOffsets(long currentKnownTornStart,
-        long firstStartOffset, long lastStartOffset, long currentFileOffset) {
+    public void setCurrentStripeOffsets(long currentKnownTornStart, long firstStartOffset, long lastStartOffset, long currentFileOffset) {
       currentStripe.knownTornStart = currentKnownTornStart;
       currentStripe.firstRowStart = firstStartOffset;
       currentStripe.lastRowStart = lastStartOffset;
@@ -577,12 +587,12 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
-    public CompressionCodec getCompressionCodec() {
-      return null;
+    public StreamOptions getStreamOptions() {
+      return this.options;
     }
 
     @Override
-    public long getFileBytes(int column) {
+    public long getFileBytes(int column, WriterEncryptionVariant writerEncryptionVariant) {
       long size = 0L;
       List<CacheOutputReceiver> l = this.colStreams.get(column);
       if (l == null) {
@@ -1452,7 +1462,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // fileread writes to the writer, which writes to orcWriter, which writes to cacheWriter
       EncodingWriter writer = VectorDeserializeOrcWriter.create(
           sourceInputFormat, sourceSerDe, parts, daemonConf, jobConf, split.getPath(), originalOi,
-          splitColumnIds, splitIncludes, allocSize);
+          splitColumnIds, splitIncludes, allocSize, encodeExecutor);
       // TODO: move this into ctor? EW would need to create CacheWriter then
       List<Integer> cwColIds = writer.isOnlyWritingIncludedColumns() ? splitColumnIds : columnIds;
       writer.init(new CacheWriter(bufferManager, cwColIds, splitIncludes,

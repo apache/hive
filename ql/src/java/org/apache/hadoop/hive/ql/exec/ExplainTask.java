@@ -498,7 +498,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return (0);
     }
     catch (Exception e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to execute", e);
       setException(e);
       return (1);
     }
@@ -1338,7 +1338,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
       if (conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
         JSONObject jsonPlan = task.getJSONPlan(
-            null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
+            null, rootTasks, sem.getFetchTask(), true,
+            conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_INCLUDE_EXTENDED), true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
             jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=

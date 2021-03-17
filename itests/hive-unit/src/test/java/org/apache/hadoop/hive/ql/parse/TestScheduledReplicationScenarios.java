@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.test.GenericTestUtils;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Assert;
@@ -53,10 +54,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
+@org.junit.Ignore("HIVE-24766")
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
   private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 5 minutes
 
@@ -241,6 +246,72 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .verifyResults(new String[]{"1", "2", "3", "4"});
     } finally {
       primary.run("drop scheduled query s1_t2");
+      replica.run("drop scheduled query s2_t2");
+    }
+  }
+
+  @Test
+  public void testSetPolicyId() throws Throwable {
+    String withClause =
+        " WITH('" + HiveConf.ConfVars.HIVE_IN_TEST + "' = 'true'" + ",'"
+            + HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME + "' = 'cluster0'"
+            + ",'" + HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME
+            + "' = 'cluster1')";
+
+    // Create a table with some data at source DB.
+    primary.run("use " + primaryDbName).run("create table t2 (id int)")
+        .run("insert into t2 values(1)").run("insert into t2 values(2)");
+
+    // Remove the SOURCE_OF_REPLICATION property from the database.
+    primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES ( '"
+        + SOURCE_OF_REPLICATION + "' = '')");
+
+    // Schedule Dump & Load and verify the data is replicated properly.
+    try (ScheduledQueryExecutionService schqS = ScheduledQueryExecutionService
+        .startScheduledQueryExecutorService(primary.hiveConf)) {
+      int next = -1;
+      ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
+      primary.run("create scheduled query s1_t2 every 5 seconds as repl dump "
+          + primaryDbName + withClause);
+      replica.run("create scheduled query s2_t2 every 5 seconds as repl load "
+          + primaryDbName + " INTO " + replicatedDbName + withClause);
+      Path dumpRoot =
+          new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
+              Base64.getEncoder().encodeToString(primaryDbName.toLowerCase()
+                  .getBytes(StandardCharsets.UTF_8.name())));
+      FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
+      next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
+      Path ackPath = new Path(dumpRoot,
+          String.valueOf(next) + File.separator + ReplUtils.REPL_HIVE_BASE_DIR
+              + File.separator + ReplAck.LOAD_ACKNOWLEDGEMENT.toString());
+      waitForAck(fs, ackPath, DEFAULT_PROBE_TIMEOUT);
+      replica.run("use " + replicatedDbName).run("show tables like 't2'")
+          .verifyResult("t2").run("select id from t2 order by id")
+          .verifyResults(new String[] {"1", "2"});
+
+      // Check the database got the SOURCE_OF_REPLICATION property set.
+      primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
+      String result = primary.getOutput().get(0);
+      assertTrue(result, result.contains("repl.source.for=s1_t2"));
+
+      // Test the new policy id is appended
+      primary.run("drop scheduled query s1_t2");
+      fs.delete(new Path(dumpRoot, String.valueOf(next)), true);
+      primary.run(
+          "create scheduled query s1_t2_new every 5 seconds as repl " + "dump "
+              + primaryDbName + withClause);
+
+      GenericTestUtils.waitFor(() -> {
+        try {
+          primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
+          return primary.getOutput().get(0)
+              .contains("repl.source.for=s1_t2, s1_t2_new");
+        } catch (Throwable e) {
+          return false;
+        }
+      }, 100, 10000);
+    } finally {
+      primary.run("drop scheduled query s1_t2_new");
       replica.run("drop scheduled query s2_t2");
     }
   }

@@ -78,6 +78,7 @@ TOK_SERDE;
 TOK_SERDENAME;
 TOK_SERDEPROPS;
 TOK_EXPLIST;
+TOK_ALIAS;
 TOK_ALIASLIST;
 TOK_GROUPBY;
 TOK_ROLLUP_GROUPBY;
@@ -469,6 +470,8 @@ TOK_SCHEDULE;
 TOK_EVERY;
 TOK_PARAMETER;
 TOK_PARAMETER_IDX;
+TOK_RESPECT_NULLS;
+TOK_IGNORE_NULLS;
 }
 
 
@@ -663,6 +666,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_AST", "AST");
     xlateMap.put("KW_TRANSACTIONAL", "TRANSACTIONAL");
     xlateMap.put("KW_MANAGED", "MANAGED");
+    xlateMap.put("KW_LEADING", "LEADING");
+    xlateMap.put("KW_TRAILING", "TRAILING");
+    xlateMap.put("KW_BOTH", "BOTH");
+
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -2427,8 +2434,8 @@ withClause
 
 cteStatement
    :
-   identifier KW_AS LPAREN queryStatementExpression RPAREN
-   -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+   identifier (LPAREN colAliases=columnNameList RPAREN)? KW_AS LPAREN queryStatementExpression RPAREN
+   -> ^(TOK_SUBQUERY queryStatementExpression identifier $colAliases?)
 ;
 
 fromStatement
@@ -2468,13 +2475,8 @@ regularBody
    :
    i=insertClause
    (
-   s=selectStatement
-     {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
-     |
-     valuesClause
-      -> ^(TOK_QUERY
-            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause))))
-          )
+   s=selectStatement {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);}
+   -> {$s.tree}
    )
    |
    selectStatement
@@ -2492,6 +2494,8 @@ atomSelectStatement
                      $s $w? $g? $h? $win?))
    |
    LPAREN! selectStatement RPAREN!
+   |
+   valuesSource
    ;
 
 selectStatement

@@ -1361,6 +1361,23 @@ CREATE TABLE "STORED_PROCS" (
 CREATE UNIQUE INDEX "UNIQUESTOREDPROC" ON "STORED_PROCS" ("NAME", "DB_ID");
 ALTER TABLE "STORED_PROCS" ADD CONSTRAINT "STOREDPROC_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID");
 
+
+-- Create stored procedure packages
+CREATE TABLE "PACKAGES" (
+  "PKG_ID" BIGINT NOT NULL,
+  "CREATE_TIME" int NOT NULL,
+  "DB_ID" BIGINT NOT NULL,
+  "NAME" nvarchar(256) NOT NULL,
+  "OWNER_NAME" nvarchar(128) NOT NULL,
+  "HEADER" NTEXT NOT NULL,
+  "BODY" NTEXT NOT NULL,
+  PRIMARY KEY ("PKG_ID")
+);
+
+CREATE UNIQUE INDEX "UNIQUEPKG" ON "PACKAGES" ("NAME", "DB_ID");
+ALTER TABLE "PACKAGES" ADD CONSTRAINT "PACKAGES_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID");
+
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
