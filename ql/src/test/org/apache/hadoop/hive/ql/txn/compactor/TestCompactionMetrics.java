@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -92,7 +93,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(initiatorCycles + 1,
         Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
 
-    // The metrics will appear after the next AcidMetricsService run
     runAcidMetricService();
 
     Assert.assertEquals(originalValue + 10,
@@ -138,7 +138,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(10, compacts.size());
 
-    // The metrics will appear after the next AcidMetricsService run
     runAcidMetricService();
 
     Assert.assertEquals(originalValue,
@@ -345,6 +344,44 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     // Check that the age is older than 10s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() > 10);
+  }
+
+  @Test
+  public void testDBMetrics() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    Metrics.initialize(conf);
+
+    Table t = newTable("default", "dcamc", false);
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
+
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
+    comp.setTablename(t.getTableName());
+    comp.setOperationType(DataOperationType.UPDATE);
+
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId(t.getDbName(), t.getTableName(), txnid);
+    Assert.assertEquals(25, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    runAcidMetricService();
+
+    Assert.assertEquals(25,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").intValue());
+
+    txnHandler.cleanTxnToWriteIdTable();
+    runAcidMetricService();
+
+    // As there are no open or aborted txns in the system, then max(TXNS.txn_id) would be min_uncommitted_txnid
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
