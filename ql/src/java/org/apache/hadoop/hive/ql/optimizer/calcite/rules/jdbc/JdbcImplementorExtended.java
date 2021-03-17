@@ -35,6 +35,7 @@ public class JdbcImplementorExtended extends JdbcImplementor {
     if (e instanceof HiveSortExchange) {
       throw new UnsupportedOperationException("Need to implement " + e.getClass().getName());
     } else {
+      // else call super method
       return super.visit(e);
     }
   }
