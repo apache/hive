@@ -39,12 +39,30 @@ public class TestNullTreatment {
   }
 
   @Test
+  public void testParseRespectNullsInFunctionParameterList() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "select last_value(b respect nulls) over(partition by a) from t1", null).getTree();
+
+    Assert.assertEquals(String.format(EXPECTED_RESULT_BASE, "TOK_RESPECT_NULLS"),
+        ((ASTNode)tree.getChild(0)).dump());
+  }
+
+  @Test
   public void testParseIgnoreNulls() throws Exception {
     ASTNode tree = parseDriver.parse(
             "select last_value(b) ignore nulls over(partition by a) from t1", null).getTree();
 
     Assert.assertEquals(String.format(EXPECTED_RESULT_BASE, "TOK_IGNORE_NULLS"),
             ((ASTNode)tree.getChild(0)).dump());
+  }
+
+  @Test
+  public void testParseIgnoreNullsInFunctionParameterList() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "select last_value(b ignore nulls) over(partition by a) from t1", null).getTree();
+
+    Assert.assertEquals(String.format(EXPECTED_RESULT_BASE, "TOK_IGNORE_NULLS"),
+        ((ASTNode)tree.getChild(0)).dump());
   }
 
   private final static String EXPECTED_RESULT_BASE = "\n" +
