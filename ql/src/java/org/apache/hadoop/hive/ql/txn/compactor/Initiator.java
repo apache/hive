@@ -85,8 +85,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private long checkInterval;
   private long prevStart = -1;
   private ExecutorService compactionExecutor;
-  private String hostName;
-  private String runtimeVersion;
 
   @Override
   public void run() {
@@ -246,8 +244,6 @@ public class Initiator extends MetaStoreCompactorThread {
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
-    this.hostName = ServerUtils.hostname();
-    this.runtimeVersion = getRuntimeVersion();
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -515,10 +511,5 @@ public class Initiator extends MetaStoreCompactorThread {
     name.append("-");
     name.append(threadId);
     return name.toString();
-  }
-
-  @VisibleForTesting
-  protected String getRuntimeVersion() {
-    return Initiator.class.getPackage().getImplementationVersion();
   }
 }

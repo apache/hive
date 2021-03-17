@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -52,8 +51,6 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +74,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
-  private String runtimeVersion;
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   // don't go through Initiator for user initiated compactions)
@@ -143,19 +139,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
-
-    StringBuilder name = new StringBuilder(ServerUtils.hostname());
-    name.append("-");
-    name.append(getId());
-    this.workerName = name.toString();
-    setName(name.toString());
-    this.runtimeVersion = getRuntimeVersion();
+    this.workerName = getWorkerId();
+    setName(workerName);
   }
 
-  @VisibleForTesting
-  protected String getRuntimeVersion() {
-    return Worker.class.getPackage().getImplementationVersion();
-  }
 
   static final class StatsUpdater {
     static final private Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
@@ -643,6 +630,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
     return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
         && ci.partName == null;
+  }
+
+  private String getWorkerId() {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(getId());
+    return name.toString();
   }
 
   /**

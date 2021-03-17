@@ -78,7 +78,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("State");
     os.write(Utilities.tabCode);
-    os.writeBytes("Worker hostname");
+    os.writeBytes("Worker host");
     os.write(Utilities.tabCode);
     os.writeBytes("Worker");
     os.write(Utilities.tabCode);
@@ -92,7 +92,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("Error message");
     os.write(Utilities.tabCode);
-    os.writeBytes("Initiator hostname");
+    os.writeBytes("Initiator host");
     os.write(Utilities.tabCode);
     os.writeBytes("Initiator");
     os.write(Utilities.newLineCode);
@@ -138,15 +138,14 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     if (id == null) {
       return NO_VAL;
     }
-    String[] parts = id.split("-");
-    return String.join("-", Arrays.copyOfRange(parts, 0, parts.length - 1));
+    int lastDash = id.lastIndexOf('-');
+    return id.substring(0, lastDash > -1 ? lastDash : id.length());
   }
 
   private String getThreadIdFromId(String id) {
     if (id == null) {
       return NO_VAL;
     }
-    String[] parts = id.split("-");
-    return parts[parts.length - 1];
+    return id.substring(id.lastIndexOf('-') + 1);
   }
 }
