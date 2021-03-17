@@ -24977,10 +24977,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1038
-            filterExpr: (ds_ts is not null and test_hive_23 is not null and test_hive_26 is not null and test_hive_27 is not null and test_hive_28 is not null and test_hive_30 is not null and test_hive_71 is not null and test_hive_72 is not null and test_hive_73 is not null and UDFToDouble(test_hive_74) is not null and test_hive_75 is not null and test_hive_76 is not null and UDFToDouble(test_hive_77) is not null and test_hive_78 is not null and test_hive_80 is not null and test_hive_81 is not null and test_hive_82 is not null and test_hive_83 is not null and test_hive_84 is not null and UDFToDouble(test_hive_85) is not null and test_hive_86 is not null and UDFToDouble(test_hive_87) is not null and test_hive_88 is not null and test_hive_89 is not null and UDFToDouble(test_hive_90) is not null and test_hive_91 is not null and UDFToDouble(test_hive_92) is not null and test_hive_93 is not null and test_hive_94 is not null and test_hive_95 is not null and test_hive_96 is not null and test_hive_99 is not null and test_hive_101 is not null and test_hive_102 is not null and test_hive_103 is not null and test_hive_105 is not null and UDFToDouble(test_hive_106) is not null and test_hive_107 is not null and test_hive_108 is not null and test_hive_109 is not null and test_hive_110 is not null and test_hive_111 is not null and test_hive_112 is not null and test_hive_113 is not null and test_hive_114 is not null and test_hive_115 is not null) (type: boolean)
+            filterExpr: (test_hive_23 is not null and test_hive_26 is not null and test_hive_27 is not null and test_hive_28 is not null and test_hive_30 is not null and test_hive_71 is not null and test_hive_72 is not null and test_hive_73 is not null and UDFToDouble(test_hive_74) is not null and test_hive_75 is not null and test_hive_76 is not null and UDFToDouble(test_hive_77) is not null and test_hive_78 is not null and test_hive_80 is not null and test_hive_81 is not null and test_hive_82 is not null and test_hive_83 is not null and test_hive_84 is not null and UDFToDouble(test_hive_85) is not null and test_hive_86 is not null and UDFToDouble(test_hive_87) is not null and test_hive_88 is not null and test_hive_89 is not null and UDFToDouble(test_hive_90) is not null and test_hive_91 is not null and UDFToDouble(test_hive_92) is not null and test_hive_93 is not null and test_hive_94 is not null and test_hive_95 is not null and test_hive_96 is not null and test_hive_99 is not null and test_hive_101 is not null and test_hive_102 is not null and test_hive_103 is not null and test_hive_105 is not null and UDFToDouble(test_hive_106) is not null and test_hive_107 is not null and test_hive_108 is not null and test_hive_109 is not null and test_hive_110 is not null and test_hive_111 is not null and test_hive_112 is not null and test_hive_113 is not null and test_hive_114 is not null and test_hive_115 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 16200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_23 is not null and test_hive_26 is not null and test_hive_27 is not null and test_hive_28 is not null and test_hive_30 is not null and test_hive_71 is not null and test_hive_72 is not null and test_hive_73 is not null and UDFToDouble(test_hive_74) is not null and test_hive_75 is not null and test_hive_76 is not null and UDFToDouble(test_hive_77) is not null and test_hive_78 is not null and test_hive_80 is not null and test_hive_81 is not null and test_hive_82 is not null and test_hive_83 is not null and test_hive_84 is not null and UDFToDouble(test_hive_85) is not null and test_hive_86 is not null and UDFToDouble(test_hive_87) is not null and test_hive_88 is not null and test_hive_89 is not null and UDFToDouble(test_hive_90) is not null and test_hive_91 is not null and UDFToDouble(test_hive_92) is not null and test_hive_93 is not null and test_hive_94 is not null and test_hive_95 is not null and test_hive_96 is not null and test_hive_99 is not null and test_hive_101 is not null and test_hive_102 is not null and test_hive_103 is not null and test_hive_105 is not null and UDFToDouble(test_hive_106) is not null and test_hive_107 is not null and test_hive_108 is not null and test_hive_109 is not null and test_hive_110 is not null and test_hive_111 is not null and test_hive_112 is not null and test_hive_113 is not null and test_hive_114 is not null and test_hive_115 is not null) (type: boolean)
+              predicate: (test_hive_23 is not null and test_hive_26 is not null and test_hive_27 is not null and test_hive_28 is not null and test_hive_30 is not null and test_hive_71 is not null and test_hive_72 is not null and test_hive_73 is not null and UDFToDouble(test_hive_74) is not null and test_hive_75 is not null and test_hive_76 is not null and UDFToDouble(test_hive_77) is not null and test_hive_78 is not null and test_hive_80 is not null and test_hive_81 is not null and test_hive_82 is not null and test_hive_83 is not null and test_hive_84 is not null and UDFToDouble(test_hive_85) is not null and test_hive_86 is not null and UDFToDouble(test_hive_87) is not null and test_hive_88 is not null and test_hive_89 is not null and UDFToDouble(test_hive_90) is not null and test_hive_91 is not null and UDFToDouble(test_hive_92) is not null and test_hive_93 is not null and test_hive_94 is not null and test_hive_95 is not null and test_hive_96 is not null and test_hive_99 is not null and test_hive_101 is not null and test_hive_102 is not null and test_hive_103 is not null and test_hive_105 is not null and UDFToDouble(test_hive_106) is not null and test_hive_107 is not null and test_hive_108 is not null and test_hive_109 is not null and test_hive_110 is not null and test_hive_111 is not null and test_hive_112 is not null and test_hive_113 is not null and test_hive_114 is not null and test_hive_115 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 16200 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(test_hive_1018) (type: int), UDFToInteger(test_hive_1004) (type: int), UDFToInteger(test_hive_1025) (type: int), test_hive_23 (type: string), test_hive_27 (type: string), test_hive_29 (type: string), test_hive_30 (type: string), test_hive_97 (type: string), test_hive_96 (type: string), test_hive_98 (type: string), test_hive_101 (type: string), test_hive_102 (type: string), test_hive_109 (type: string), test_hive_111 (type: string), test_hive_112 (type: string), test_hive_113 (type: string), test_hive_114 (type: string), test_hive_115 (type: string), test_hive_78 (type: string), test_hive_79 (type: string), test_hive_24 (type: string), test_hive_26 (type: string), test_hive_110 (type: string), test_hive_77 (type: string), test_hive_87 (type: string), test_hive_92 (type: string), test_hive_90 (type: string), test_hive_74 (type: string), test_hive_85 (type: string), test_hive_81 (type: string), test_hive_82 (type: string), test_hive_106 (type: string), test_hive_107 (type: string), test_hive_108 (type: string), test_hive_75 (type: string), test_hive_86 (type: string), test_hive_76 (type: string), test_hive_89 (type: string), test_hive_88 (type: string), test_hive_91 (type: string), test_hive_71 (type: string), test_hive_72 (type: string), test_hive_73 (type: string), test_hive_80 (type: string), test_hive_103 (type: string), test_hive_104 (type: string), test_hive_1002 (type: string), test_hive_1003 (type: string), CAST( from_unixtime(to_unix_timestamp(test_hive_25,'yyyymmdd'), 'yyyy-mm-dd') AS TIMESTAMP) (type: timestamp), test_hive_28 (type: string), test_hive_93 (type: string), test_hive_94 (type: string), test_hive_95 (type: string), test_hive_99 (type: string), test_hive_105 (type: string), test_hive_83 (type: string), test_hive_84 (type: string), test_hive_100 (type: string), UDFToInteger(test_hive_1023) (type: int), UDFToInteger(test_hive_1024) (type: int), UDFToInteger(test_hive_1010) (type: int), UDFToInteger(test_hive_1010_a_d) (type: int), UDFToInteger(test_hive_1010_a_g) (type: int), UDFToDouble(test_hive_1026) (type: double), UDFToDouble(test_hive_1000) (type: double), UDFToDouble(test_hive_1001) (type: double), UDFToInteger(test_hive_1030) (type: int), UDFToInteger(test_hive_1030_1) (type: int), UDFToInteger(test_hive_1030_2) (type: int), UDFToInteger(test_hive_1030_3) (type: int), UDFToDouble(test_hive_1021) (type: double), UDFToDouble(test_hive_1020) (type: double), UDFToInteger(test_hive_1022) (type: int), UDFToInteger(test_hive_1019) (type: int), UDFToDouble(test_hive_1027) (type: double), UDFToDouble(test_hive_1028) (type: double), UDFToDouble(test_hive_1029) (type: double), UDFToInteger(test_hive_1005) (type: int), UDFToInteger(test_hive_1005_a_d) (type: int), UDFToInteger(test_hive_1005_psr) (type: int), UDFToInteger(test_hive_1005_psr_a_d) (type: int), UDFToInteger(test_hive_1005_psr_e) (type: int), UDFToInteger(test_hive_1013) (type: int), UDFToInteger(test_hive_1013_a_d) (type: int), UDFToInteger(test_hive_1013_psr) (type: int), UDFToInteger(test_hive_1013_psr_a_d) (type: int), UDFToInteger(test_hive_1013_psr_e) (type: int), CAST( from_unixtime(to_unix_timestamp(test_hive_1034,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') AS TIMESTAMP) (type: timestamp), ds_ts (type: bigint)
@@ -25009,10 +25009,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1565
-            filterExpr: (ds_ts is not null and test_hive_422 is not null) (type: boolean)
+            filterExpr: (test_hive_422 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_422 is not null) (type: boolean)
+              predicate: (test_hive_422 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_422 (type: string), test_hive_1560 (type: string), ds_ts (type: bigint)
@@ -25041,10 +25041,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1723
-            filterExpr: (ds_ts is not null and test_hive_434 is not null) (type: boolean)
+            filterExpr: (test_hive_434 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_434 is not null) (type: boolean)
+              predicate: (test_hive_434 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_434 (type: string), test_hive_1716 (type: string), ds_ts (type: bigint)
@@ -25073,10 +25073,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1279
-            filterExpr: (ds_ts is not null and test_hive_308 is not null) (type: boolean)
+            filterExpr: (test_hive_308 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_308 is not null) (type: boolean)
+              predicate: (test_hive_308 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_308 (type: string), test_hive_1274 (type: string), ds_ts (type: bigint)
@@ -25105,10 +25105,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1965
-            filterExpr: (ds_ts is not null and test_hive_453 is not null) (type: boolean)
+            filterExpr: (test_hive_453 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_453 is not null) (type: boolean)
+              predicate: (test_hive_453 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_453 (type: string), test_hive_1960 (type: string), ds_ts (type: bigint)
@@ -25137,10 +25137,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1953
-            filterExpr: (ds_ts is not null and test_hive_452 is not null) (type: boolean)
+            filterExpr: (test_hive_452 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_452 is not null) (type: boolean)
+              predicate: (test_hive_452 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_452 (type: string), test_hive_1948 (type: string), ds_ts (type: bigint)
@@ -25169,10 +25169,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1117
-            filterExpr: (ds_ts is not null and test_hive_272 is not null) (type: boolean)
+            filterExpr: (test_hive_272 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_272 is not null) (type: boolean)
+              predicate: (test_hive_272 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_272 (type: string), test_hive_1110 (type: string), ds_ts (type: bigint)
@@ -25201,10 +25201,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1131
-            filterExpr: (ds_ts is not null and test_hive_273 is not null) (type: boolean)
+            filterExpr: (test_hive_273 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_273 is not null) (type: boolean)
+              predicate: (test_hive_273 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_273 (type: string), test_hive_1124 (type: string), ds_ts (type: bigint)
@@ -25233,10 +25233,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1145
-            filterExpr: (ds_ts is not null and test_hive_274 is not null) (type: boolean)
+            filterExpr: (test_hive_274 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_274 is not null) (type: boolean)
+              predicate: (test_hive_274 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_274 (type: string), test_hive_1138 (type: string), ds_ts (type: bigint)
@@ -25265,10 +25265,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1161
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_275 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_275 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_275 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_275 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_275 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1154 (type: string), ds_ts (type: bigint)
@@ -25297,10 +25297,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1175
-            filterExpr: (ds_ts is not null and test_hive_276 is not null) (type: boolean)
+            filterExpr: (test_hive_276 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_276 is not null) (type: boolean)
+              predicate: (test_hive_276 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_276 (type: string), test_hive_1168 (type: string), ds_ts (type: bigint)
@@ -25329,10 +25329,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1189
-            filterExpr: (ds_ts is not null and test_hive_277 is not null) (type: boolean)
+            filterExpr: (test_hive_277 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_277 is not null) (type: boolean)
+              predicate: (test_hive_277 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_277 (type: string), test_hive_1182 (type: string), ds_ts (type: bigint)
@@ -25361,10 +25361,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1205
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_278 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_278 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_278 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_278 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_278 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1198 (type: string), ds_ts (type: bigint)
@@ -25393,10 +25393,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1267
-            filterExpr: (ds_ts is not null and test_hive_306 is not null) (type: boolean)
+            filterExpr: (test_hive_306 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_306 is not null) (type: boolean)
+              predicate: (test_hive_306 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_306 (type: string), test_hive_1260 (type: string), ds_ts (type: bigint)
@@ -25425,10 +25425,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1315
-            filterExpr: (ds_ts is not null and test_hive_334 is not null) (type: boolean)
+            filterExpr: (test_hive_334 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_334 is not null) (type: boolean)
+              predicate: (test_hive_334 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_334 (type: string), test_hive_1309 (type: string), ds_ts (type: bigint)
@@ -25457,10 +25457,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1347
-            filterExpr: (ds_ts is not null and test_hive_336 is not null) (type: boolean)
+            filterExpr: (test_hive_336 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_336 is not null) (type: boolean)
+              predicate: (test_hive_336 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_336 (type: string), test_hive_1340 (type: string), ds_ts (type: bigint)
@@ -25489,10 +25489,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1363
-            filterExpr: (ds_ts is not null and test_hive_337 is not null) (type: boolean)
+            filterExpr: (test_hive_337 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_337 is not null) (type: boolean)
+              predicate: (test_hive_337 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_337 (type: string), test_hive_1356 (type: string), ds_ts (type: bigint)
@@ -25521,10 +25521,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1979
-            filterExpr: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+            filterExpr: (test_hive_454 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+              predicate: (test_hive_454 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_454 (type: string), test_hive_1972 (type: string), ds_ts (type: bigint)
@@ -25553,10 +25553,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1979
-            filterExpr: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+            filterExpr: (test_hive_454 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+              predicate: (test_hive_454 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_454 (type: string), test_hive_1972 (type: string), ds_ts (type: bigint)
@@ -25585,10 +25585,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1436
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_413 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_413 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_413 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_413 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_413 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1429 (type: string), ds_ts (type: bigint)
@@ -25617,10 +25617,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1450
-            filterExpr: (ds_ts is not null and test_hive_414 is not null) (type: boolean)
+            filterExpr: (test_hive_414 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_414 is not null) (type: boolean)
+              predicate: (test_hive_414 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_414 (type: string), test_hive_1443 (type: string), ds_ts (type: bigint)
@@ -25649,10 +25649,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1466
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_415 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_415 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_415 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_415 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_415 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1459 (type: string), ds_ts (type: bigint)
@@ -25681,10 +25681,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1480
-            filterExpr: (ds_ts is not null and test_hive_416 is not null) (type: boolean)
+            filterExpr: (test_hive_416 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_416 is not null) (type: boolean)
+              predicate: (test_hive_416 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_416 (type: string), test_hive_1473 (type: string), ds_ts (type: bigint)
@@ -25713,10 +25713,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1494
-            filterExpr: (ds_ts is not null and test_hive_417 is not null) (type: boolean)
+            filterExpr: (test_hive_417 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_417 is not null) (type: boolean)
+              predicate: (test_hive_417 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_417 (type: string), test_hive_1487 (type: string), ds_ts (type: bigint)
@@ -25745,10 +25745,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1510
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_418 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_418 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_418 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_418 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_418 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1503 (type: string), ds_ts (type: bigint)
@@ -25777,10 +25777,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1524
-            filterExpr: (ds_ts is not null and test_hive_419 is not null) (type: boolean)
+            filterExpr: (test_hive_419 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_419 is not null) (type: boolean)
+              predicate: (test_hive_419 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_419 (type: string), test_hive_1517 (type: string), ds_ts (type: bigint)
@@ -25809,10 +25809,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1540
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_420 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_420 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_420 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_420 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_420 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1533 (type: string), ds_ts (type: bigint)
@@ -25841,10 +25841,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1553
-            filterExpr: (ds_ts is not null and test_hive_421 is not null) (type: boolean)
+            filterExpr: (test_hive_421 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_421 is not null) (type: boolean)
+              predicate: (test_hive_421 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_421 (type: string), test_hive_1547 (type: string), ds_ts (type: bigint)
@@ -25873,10 +25873,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1229
-            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            filterExpr: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              predicate: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
@@ -25905,10 +25905,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1229
-            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            filterExpr: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              predicate: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
@@ -25937,10 +25937,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1617
-            filterExpr: (ds_ts is not null and test_hive_426 is not null) (type: boolean)
+            filterExpr: (test_hive_426 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_426 is not null) (type: boolean)
+              predicate: (test_hive_426 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_426 (type: string), test_hive_1610 (type: string), ds_ts (type: bigint)
@@ -25969,10 +25969,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1785
-            filterExpr: (ds_ts is not null and test_hive_440 is not null) (type: boolean)
+            filterExpr: (test_hive_440 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_440 is not null) (type: boolean)
+              predicate: (test_hive_440 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_440 (type: string), test_hive_1778 (type: string), ds_ts (type: bigint)
@@ -26001,10 +26001,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1979
-            filterExpr: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+            filterExpr: (test_hive_454 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+              predicate: (test_hive_454 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_454 (type: string), test_hive_1972 (type: string), ds_ts (type: bigint)
@@ -26033,10 +26033,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1799
-            filterExpr: (ds_ts is not null and test_hive_441 is not null) (type: boolean)
+            filterExpr: (test_hive_441 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_441 is not null) (type: boolean)
+              predicate: (test_hive_441 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_441 (type: string), test_hive_1792 (type: string), ds_ts (type: bigint)
@@ -26065,10 +26065,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1813
-            filterExpr: (ds_ts is not null and test_hive_442 is not null) (type: boolean)
+            filterExpr: (test_hive_442 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_442 is not null) (type: boolean)
+              predicate: (test_hive_442 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_442 (type: string), test_hive_1806 (type: string), ds_ts (type: bigint)
@@ -26097,10 +26097,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1840
-            filterExpr: (ds_ts is not null and test_hive_444 is not null) (type: boolean)
+            filterExpr: (test_hive_444 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_444 is not null) (type: boolean)
+              predicate: (test_hive_444 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_444 (type: string), test_hive_1834 (type: string), ds_ts (type: bigint)
@@ -26129,10 +26129,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1852
-            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_445 AS decimal(10,0))) is not null) (type: boolean)
+            filterExpr: (UDFToDouble(CAST( test_hive_445 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_445 AS decimal(10,0))) is not null) (type: boolean)
+              predicate: (UDFToDouble(CAST( test_hive_445 AS decimal(10,0))) is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( test_hive_445 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1847 (type: string), ds_ts (type: bigint)
@@ -26161,10 +26161,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1864
-            filterExpr: (ds_ts is not null and test_hive_446 is not null) (type: boolean)
+            filterExpr: (test_hive_446 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_446 is not null) (type: boolean)
+              predicate: (test_hive_446 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_446 (type: string), test_hive_1859 (type: string), ds_ts (type: bigint)
@@ -26193,10 +26193,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1876
-            filterExpr: (ds_ts is not null and test_hive_447 is not null) (type: boolean)
+            filterExpr: (test_hive_447 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_447 is not null) (type: boolean)
+              predicate: (test_hive_447 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_447 (type: string), test_hive_1871 (type: string), ds_ts (type: bigint)
@@ -26225,10 +26225,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1229
-            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            filterExpr: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              predicate: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
@@ -26257,10 +26257,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1229
-            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            filterExpr: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              predicate: (test_hive_280 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
@@ -26289,10 +26289,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1900
-            filterExpr: (ds_ts is not null and test_hive_449 is not null) (type: boolean)
+            filterExpr: (test_hive_449 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_449 is not null) (type: boolean)
+              predicate: (test_hive_449 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_449 (type: string), test_hive_1895 (type: string), ds_ts (type: bigint)
@@ -26321,10 +26321,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1913
-            filterExpr: (ds_ts is not null and test_hive_450 is not null) (type: boolean)
+            filterExpr: (test_hive_450 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_450 is not null) (type: boolean)
+              predicate: (test_hive_450 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_450 (type: string), test_hive_1907 (type: string), ds_ts (type: bigint)
@@ -26353,10 +26353,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_1941
-            filterExpr: (ds_ts is not null and test_hive_451 is not null) (type: boolean)
+            filterExpr: (test_hive_451 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_451 is not null) (type: boolean)
+              predicate: (test_hive_451 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_451 (type: string), test_hive_1935 (type: string), ds_ts (type: bigint)
@@ -26385,10 +26385,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_2016
-            filterExpr: (ds_ts is not null and test_hive_457 is not null) (type: boolean)
+            filterExpr: (test_hive_457 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_457 is not null) (type: boolean)
+              predicate: (test_hive_457 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_457 (type: string), test_hive_2010 (type: string), ds_ts (type: bigint)
@@ -26417,10 +26417,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_hive_2030
-            filterExpr: (ds_ts is not null and test_hive_458 is not null) (type: boolean)
+            filterExpr: (test_hive_458 is not null and ds_ts is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ds_ts is not null and test_hive_458 is not null) (type: boolean)
+              predicate: (test_hive_458 is not null and ds_ts is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: test_hive_458 (type: string), test_hive_2023 (type: string), ds_ts (type: bigint)

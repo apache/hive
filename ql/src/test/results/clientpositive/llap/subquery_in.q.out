@@ -2699,10 +2699,12 @@ STAGE PLANS:
                     predicate: (key = '90') (type: boolean)
                     Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0, _col1
@@ -2929,10 +2931,12 @@ STAGE PLANS:
                     predicate: (key = '90') (type: boolean)
                     Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0, _col1

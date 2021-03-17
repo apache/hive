@@ -715,20 +715,23 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ds:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: []
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: ConstantVectorExpression(val 1) -> 4:boolean
                     Statistics: Num rows: 10 Data size: 150 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConstantVectorExpression(val 1) -> 4:boolean
+                          keyExpressions: col 4:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.9
                       mode: hash
                       outputColumnNames: _col0

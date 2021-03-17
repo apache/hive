@@ -28,9 +28,11 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
@@ -51,9 +53,11 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
@@ -132,9 +136,11 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
@@ -197,9 +203,11 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
@@ -338,9 +346,11 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
@@ -361,9 +371,11 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0

@@ -193,20 +193,23 @@ STAGE PLANS:
                     predicate: (ssn = 100) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: []
+                          projectedOutputColumnNums: [5]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 5:boolean
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: ConstantVectorExpression(val 1) -> 5:boolean
+                            keyExpressions: col 5:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0

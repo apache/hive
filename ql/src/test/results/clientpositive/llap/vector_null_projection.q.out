@@ -159,20 +159,23 @@ STAGE PLANS:
                         projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: []
+                          projectedOutputColumnNums: [2]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 2:boolean
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: ConstantVectorExpression(val 1) -> 2:boolean
+                            keyExpressions: col 2:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
@@ -212,20 +215,23 @@ STAGE PLANS:
                         projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: []
+                          projectedOutputColumnNums: [2]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 2:boolean
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: ConstantVectorExpression(val 1) -> 2:boolean
+                            keyExpressions: col 2:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0

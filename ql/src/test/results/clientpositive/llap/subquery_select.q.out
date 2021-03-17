@@ -820,9 +820,11 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.96153843
                       mode: hash
                       outputColumnNames: _col0
@@ -1097,9 +1099,11 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.96153843
                       mode: hash
                       outputColumnNames: _col0

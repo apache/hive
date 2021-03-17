@@ -1233,9 +1233,11 @@ STAGE PLANS:
                   alias: tnull
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
@@ -1420,9 +1422,11 @@ STAGE PLANS:
                   alias: tempty
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -1581,9 +1585,11 @@ STAGE PLANS:
                   alias: tempty
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4211,9 +4217,11 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: string)
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4651,9 +4659,11 @@ STAGE PLANS:
                   alias: tempty
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4845,9 +4855,11 @@ STAGE PLANS:
                   alias: tempty
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -5287,9 +5299,11 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: string)
                   Select Operator
+                    expressions: true (type: boolean)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      keys: true (type: boolean)
+                      keys: _col0 (type: boolean)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0

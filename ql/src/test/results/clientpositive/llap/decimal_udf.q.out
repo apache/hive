@@ -2113,11 +2113,11 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: decimal(20,10))
-                    outputColumnNames: _col0
+                    expressions: key (type: decimal(20,10)), 3 (type: int)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: histogram_numeric(_col0, 3)
+                      aggregations: histogram_numeric(_col0, _col1)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0

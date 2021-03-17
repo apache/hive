@@ -484,10 +484,12 @@ STAGE PLANS:
                     predicate: (x = 484) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
-                        keys: true (type: boolean)
+                        keys: _col0 (type: boolean)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1

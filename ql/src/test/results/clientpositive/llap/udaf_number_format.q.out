@@ -34,9 +34,11 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    expressions: 'a' (type: string), null (type: double), null (type: double)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum('a'), count(), sum(null), sum(null)
+                      aggregations: sum(_col0), count(), sum(_col2), sum(_col1)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
