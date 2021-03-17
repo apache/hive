@@ -93,4 +93,32 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
+  @Test
+  public void testIncrementalMVRebuildWhenSourceTableMinorCompacted() throws Exception {
+
+    executeStatementOnDriver("delete from " + TABLE1 + " where a = 1", driver);
+    executeStatementOnDriver("delete from " + TABLE1 + " where a is null", driver);
+
+    CompactorTestUtil.runCompaction(conf, "default",  TABLE1 , CompactionType.MINOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
+
+    List<String> expextedPlan = Arrays.asList(
+        "CBO PLAN:",
+        "HiveProject(a=[$0], b=[$1], c=[$2])",
+        "  HiveFilter(condition=[AND(OR(>($0, 0), IS NULL($0)), <(1, $5.writeid))])",
+        "    HiveTableScan(table=[[default, t1]], table:alias=[t1])",
+        ""
+    );
+    List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
+    Assert.assertEquals(expextedPlan, result);
+    executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
+
+    result = execSelectAndDumpData("select * from " + MV1 , driver, "");
+    Assert.assertEquals(Arrays.asList("2\ttwo\t2.2"), result);
+
+    result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+  }
+
 }

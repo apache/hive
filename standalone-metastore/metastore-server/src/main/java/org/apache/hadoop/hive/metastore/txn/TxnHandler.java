@@ -2396,8 +2396,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     StringBuilder queryCompactionQueue = new StringBuilder();
     // compose a query that select transactions containing an update...
     queryUpdateDelete.append("SELECT \"CTC_UPDATE_DELETE\" FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_UPDATE_DELETE\" ='Y' AND (");
-    queryCompletedCompactions.append("SELECT 1 FROM \"COMPLETED_COMPACTIONS\" WHERE (");
-    queryCompactionQueue.append("SELECT 1 FROM \"COMPACTION_QUEUE\" WHERE (");
+    queryCompletedCompactions.append("SELECT 1 FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_TYPE\"=? AND (");
+    queryCompactionQueue.append("SELECT 1 FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TYPE\"=? AND (");
     int i = 0;
     for (String fullyQualifiedName : creationMetadata.getTablesUsed()) {
       ValidWriteIdList tblValidWriteIdList =
@@ -2463,9 +2463,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // Execute query
     queryCompletedCompactions.append(" UNION ");
     queryCompletedCompactions.append(queryCompactionQueue.toString());
-    List<String> paramsTwice = new ArrayList<>(params);
-    paramsTwice.addAll(params);
-    boolean hasCompaction = executeBoolean(queryCompletedCompactions.toString(), paramsTwice,
+    List<String> paramsCompaction = new ArrayList<>();
+    paramsCompaction.add(Character.toString(MAJOR_TYPE));
+    paramsCompaction.addAll(params);
+    paramsCompaction.add(Character.toString(MAJOR_TYPE));
+    paramsCompaction.addAll(params);
+    boolean hasCompaction = executeBoolean(queryCompletedCompactions.toString(), paramsCompaction,
             "Unable to retrieve materialization invalidation information: compactions");
 
     return new Materialization(hasUpdateDelete, hasCompaction);
