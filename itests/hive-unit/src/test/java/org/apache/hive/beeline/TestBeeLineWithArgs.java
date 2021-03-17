@@ -55,7 +55,6 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -769,7 +768,6 @@ import org.junit.Test;
    * Test Beeline could show the query progress for time-consuming query.
    * @throws Throwable
    */
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT =
@@ -797,7 +795,6 @@ import org.junit.Test;
    *
    * @throws Throwable
    */
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgressParallel() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
@@ -1156,7 +1153,6 @@ import org.junit.Test;
   }
 
   @Test
-  @Ignore("HIVE-23398")
   public void testRowsAffected() throws Throwable {
     final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int);\n "
       + "insert into new_table values (1);\n";
