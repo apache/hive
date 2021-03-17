@@ -507,6 +507,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     if (func.equals("inline")) {
       return new InlineFunctionResolver(helper, inputs);
     }
+
     return new ImpalaFunctionResolverImpl(helper, func, inputs);
   }
 
@@ -555,12 +556,9 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
         return new StructFunctionResolver(helper, op, inputs);
       case PLUS:
       case MINUS:
-        if (inputs.size() == 2 &&
-            (SqlTypeName.INTERVAL_TYPES.contains(inputs.get(0).getType().getSqlTypeName()) ||
-            SqlTypeName.INTERVAL_TYPES.contains(inputs.get(1).getType().getSqlTypeName()))) {
-          return new TimeIntervalOpFunctionResolver(helper, op, inputs);
-        }
-        return new ArithmeticFunctionResolver(helper, op, inputs);
+        return TimeIntervalOpFunctionResolver.rexNodesHaveTimeIntervalOp(inputs)
+            ? new TimeIntervalOpFunctionResolver(helper, func, op.getKind(), inputs)
+            : new ArithmeticFunctionResolver(helper, op, inputs);
       case TIMES:
       case DIVIDE:
         return new ArithmeticFunctionResolver(helper, op, inputs);

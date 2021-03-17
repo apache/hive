@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlSpecialOperator;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,9 +40,9 @@ import java.util.List;
  */
 public class TimeIntervalOpFunctionResolver extends ImpalaFunctionResolverImpl {
 
-  TimeIntervalOpFunctionResolver(FunctionHelper helper, SqlOperator op,
-      List<RexNode> inputNodes) {
-    super(helper, op, reorderArgs(inputNodes));
+  TimeIntervalOpFunctionResolver(FunctionHelper helper, String funcName,
+      SqlKind kind, List<RexNode> inputNodes) {
+    super(helper, createSpecialOperator(funcName, kind), funcName, reorderArgs(inputNodes));
     Preconditions.checkState(argTypes.size() == 2);
   }
 
@@ -87,14 +88,33 @@ public class TimeIntervalOpFunctionResolver extends ImpalaFunctionResolverImpl {
         : inputNodes;
   }
 
-  public static String getFunctionName(SqlKind kind, List<RelDataType> types) {
+  /**
+   * create a special operator which consists of the Impala function name
+   * (either "+", "-", or "date_*"), and an SqlKind ("+" or "-").
+   */
+  private static SqlOperator createSpecialOperator(String funcName, SqlKind kind) {
+    return new SqlSpecialOperator(funcName, kind);
+  }
+
+  public static String getFunctionName(String funcName, SqlKind kind, List<RelDataType> types) {
+    // If it's the date_add or date_sub function and the second argument is an interval type,
+    // then we have to change the function name because the RelDataType passed in will be in
+    // the form of months or milliseconds.  If the second argument is an INT type column
+    // (e.g. date_add(timestamp_col, int_col)), the date_add or date_sub function name can
+    // be used as/is.
+    if (funcName.startsWith("date_") &&
+        SqlTypeName.INT_TYPES.contains(types.get(1).getSqlTypeName())) {
+      return funcName;
+    }
     String opType = kind == SqlKind.PLUS ? "add" : "sub";
     // We only need to support months* and milliseconds*. Days intervals and anything less all
     // get translated into milliseconds within calcite.  Months and years both get translated into
     // months.
     for (RelDataType type : types) {
       if (SqlTypeName.YEAR_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
-        return "months_" + opType;
+        // Use the months_*_interval function.  The months_add and months_add_interval
+        // function differ slightly when leap years are involved.
+        return "months_" + opType + "_interval";
       }
       if (SqlTypeName.DAY_INTERVAL_TYPES.contains(type.getSqlTypeName())) {
         return "milliseconds_" + opType;
@@ -103,9 +123,43 @@ public class TimeIntervalOpFunctionResolver extends ImpalaFunctionResolverImpl {
     throw new RuntimeException("Unable to resolve time interval type for " + kind);
   }
 
-  public static boolean isTimeIntervalOp(List<RelDataType> argTypes) {
-    return argTypes.size() == 2 &&
-        (SqlTypeName.INTERVAL_TYPES.contains(argTypes.get(0).getSqlTypeName()) ||
-        SqlTypeName.INTERVAL_TYPES.contains(argTypes.get(1).getSqlTypeName()));
+  /**
+   * Checks to see if the given RexNode inputs would cause a timestamp interval operation.
+   * This should be called with the arguments to a + or - operation. Some examples
+   * of operations needing a timesamp interval operation are: +(TIMESTAMP, INT),
+   * +(INT, TIMESTAMP), and +(STRING, YEAR_TO_MONTH_INTERVAL).
+   */
+  public static boolean rexNodesHaveTimeIntervalOp(List<RexNode> inputs) {
+    if (inputs.size() != 2) {
+      return false;
+    }
+    for (RexNode input : inputs) {
+      if (isTimeIntervalOp(input.getType().getSqlTypeName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks to see if the given RelDataType inputs would cause a timestamp interval operation.
+   * This should be called with the arguments to a + or - operation. Some examples
+   * of operations needing a timesamp interval operation are: +(TIMESTAMP, INT),
+   * +(INT, TIMESTAMP), and +(STRING, YEAR_TO_MONTH_INTERVAL).
+   */
+  public static boolean argTypesHaveTimeIntervalOp(List<RelDataType> argTypes) {
+    if (argTypes.size() != 2) {
+      return false;
+    }
+    for (RelDataType argType : argTypes) {
+      if (isTimeIntervalOp(argType.getSqlTypeName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean isTimeIntervalOp(SqlTypeName type) {
+    return SqlTypeName.INTERVAL_TYPES.contains(type) || SqlTypeName.DATETIME_TYPES.contains(type);
   }
 }

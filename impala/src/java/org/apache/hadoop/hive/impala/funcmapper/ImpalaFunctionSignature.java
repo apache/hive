@@ -265,8 +265,9 @@ public class ImpalaFunctionSignature {
   }
 
   private static ImpalaFunctionSignature createTimeIntervalOpSignature(
-      SqlKind kind, List<RelDataType> argTypes) {
-    String funcName = TimeIntervalOpFunctionResolver.getFunctionName(kind, argTypes);
+      String funcName, SqlKind kind, List<RelDataType> argTypes) {
+    String timeOpFuncName =
+        TimeIntervalOpFunctionResolver.getFunctionName(funcName, kind, argTypes);
     boolean isNullable = ImpalaTypeConverter.areAnyTypesNullable(argTypes);
     // The time interval operations will always take timestamp and bigint as their two
     // arguments.  If the first operand is of type "date", it will be cast into a timestamp.
@@ -275,7 +276,7 @@ public class ImpalaFunctionSignature {
         ImpalaTypeConverter.getRelDataTypesForArgs(timeArgTypes);
     Type timeRetType = Type.TIMESTAMP;
     RelDataType timeRetRelDataType = ImpalaTypeConverter.getRelDataType(timeRetType, isNullable);
-    return new ImpalaFunctionSignature(funcName, timeArgRelDataTypes, timeRetRelDataType);
+    return new ImpalaFunctionSignature(timeOpFuncName, timeArgRelDataTypes, timeRetRelDataType);
   }
 
   // Create the Impala Function Signature for STRING_ONLY_FUNCTIONS, the functions that
@@ -407,8 +408,8 @@ public class ImpalaFunctionSignature {
           break;
         case PLUS:
         case MINUS:
-          ifs = TimeIntervalOpFunctionResolver.isTimeIntervalOp(argTypes)
-              ? createTimeIntervalOpSignature(kind, argTypes)
+          ifs = TimeIntervalOpFunctionResolver.argTypesHaveTimeIntervalOp(argTypes)
+              ? createTimeIntervalOpSignature(lowerCaseFunc, kind, argTypes)
               : new ImpalaFunctionSignature(lowerCaseFunc, argTypes, returnType);
           break;
         default:

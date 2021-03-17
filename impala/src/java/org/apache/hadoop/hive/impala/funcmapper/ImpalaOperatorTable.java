@@ -50,6 +50,8 @@ public class ImpalaOperatorTable {
     map.put("-", ImpalaArithmeticOperators.MINUS);
     map.put("*", ImpalaArithmeticOperators.MULTIPLY);
     map.put("/", ImpalaArithmeticOperators.DIVIDE);
+    map.put("DATE_ADD", ImpalaArithmeticOperators.PLUS);
+    map.put("DATE_SUB", ImpalaArithmeticOperators.MINUS);
 
     map.put("BETWEEN", HiveBetween.INSTANCE);
     // Calcite uses "||" as the concat name, we just need to
