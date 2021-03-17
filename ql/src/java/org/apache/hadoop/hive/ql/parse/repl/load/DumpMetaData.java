@@ -38,7 +38,7 @@ import java.util.List;
 public class DumpMetaData {
   // wrapper class for reading and writing metadata about a dump
   // responsible for _dumpmetadata files
-  private static final String DUMP_METADATA = "_dumpmetadata";
+  public static final String DUMP_METADATA = "_dumpmetadata";
   private static final Logger LOG = LoggerFactory.getLogger(DumpMetaData.class);
 
   private DumpType dumpType;
@@ -130,7 +130,8 @@ public class DumpMetaData {
           lineContents[2].equals(Utilities.nullStringOutput) ? null :  Long.valueOf(lineContents[2]),
           lineContents[3].equals(Utilities.nullStringOutput) ? null : new Path(lineContents[3]),
           lineContents[4].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[4]),
-          Boolean.valueOf(lineContents[6]));
+          (lineContents.length < 7 || lineContents[6].equals(Utilities.nullStringOutput)) ?
+                        Boolean.valueOf(false) : Boolean.valueOf(lineContents[6]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
       } else {
         throw new IOException(
@@ -203,7 +204,7 @@ public class DumpMetaData {
     }
   }
 
-  private List<String> prepareReplScopeValues() {
+  public List<String> prepareReplScopeValues() {
     assert(replScope != null);
 
     List<String> values = new ArrayList<>();
