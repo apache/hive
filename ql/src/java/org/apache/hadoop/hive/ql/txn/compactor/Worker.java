@@ -22,9 +22,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -143,7 +145,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }  }
 
-  private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
+  @VisibleForTesting
+  public void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
     Table currentTable = resolveTable(ci);
     if (originalTable.getId() != currentTable.getId()) {
       throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
@@ -550,7 +553,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           LOG.info("Will compact id: " + ci.id + " via MR job");
           runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir, su);
         }
-
         heartbeater.cancel();
 
         verifyTableIdHasNotChanged(ci, t1);
@@ -561,8 +563,27 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
       } catch (Exception e) {
         LOG.error("Caught exception while trying to compact " + ci +
-            ".  Marking failed to avoid repeated failures", e);
+            ". Marking failed to avoid repeated failures", e);
+        final CompactionType ctype = ci.type;
         markFailed(ci, e);
+
+        if (runJobAsSelf(ci.runAs)) {
+          cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
+        } else {
+          LOG.info("Cleaning as user " + ci.runAs);
+          UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
+              UserGroupInformation.getLoginUser());
+
+          ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+            cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
+            return null;
+          });
+          try {
+            FileSystem.closeAllForUGI(ugi);
+          } catch (IOException ex) {
+            LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
+          }
+        }
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
@@ -582,6 +603,28 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     return true;
   }
 
+  private void cleanupResultDirs(StorageDescriptor sd, ValidWriteIdList writeIds, CompactionType ctype, AcidDirectory dir) {
+    // result directory for compactor to write new files
+    Path resultDir = QueryCompactor.Util.getCompactionResultDir(sd, writeIds, conf,
+        ctype == CompactionType.MAJOR, false, false, dir);
+    LOG.info("Deleting result directories created by the compactor:\n");
+    try {
+      FileSystem fs = resultDir.getFileSystem(conf);
+      LOG.info(resultDir.toString());
+      fs.delete(resultDir, true);
+
+      if (ctype == CompactionType.MINOR) {
+        Path deleteDeltaDir = QueryCompactor.Util.getCompactionResultDir(sd, writeIds, conf,
+            false, true, false, dir);
+
+        LOG.info(deleteDeltaDir.toString());
+        fs.delete(deleteDeltaDir, true);
+      }
+    } catch (IOException ex) {
+      LOG.error("Caught exception while cleaning result directories:", ex);
+    }
+  }
+
   private void failCompactionIfSetForTest() {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
@@ -590,7 +633,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   private void runCompactionViaMrJob(CompactionInfo ci, Table t, Partition p, StorageDescriptor sd,
       ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidDirectory dir, StatsUpdater su)
-      throws IOException, HiveException, InterruptedException {
+      throws IOException, InterruptedException {
     final CompactorMR mr = new CompactorMR();
     if (runJobAsSelf(ci.runAs)) {
       mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
