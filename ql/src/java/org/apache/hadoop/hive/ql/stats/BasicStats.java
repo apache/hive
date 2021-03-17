@@ -216,7 +216,12 @@ public class BasicStats {
 
     private long getFileSizeForPath(Path path) throws IOException {
       FileSystem fs = path.getFileSystem(conf);
-      return fs.getContentSummary(path).getLength();
+      RemoteIterator<LocatedFileStatus> it = fs.listFiles(path, true);
+      long size = 0;
+      while (it.hasNext()) {
+        size += it.next().getLen();
+      }
+      return size;
     }
 
   }
