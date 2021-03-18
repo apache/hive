@@ -91,4 +91,19 @@ public class TezConfigurationFactory {
     copyInto(jc, conf, sourceFilter);
     return jc;
   }
+
+  /**
+   * Looks up a config option from tez-site.xml and Hive configuration
+   * combined
+   *
+   * @param targetConf configuration object that given key will be
+   *                   copied into
+   * @param configKey key to copy
+   */
+  public static void copyFromDefaultTezConfig(Configuration targetConf, String configKey) {
+    String configVal = defaultConf.get(configKey);
+    if (configVal != null) {
+      targetConf.set(configKey, configVal);
+    }
+  }
 }

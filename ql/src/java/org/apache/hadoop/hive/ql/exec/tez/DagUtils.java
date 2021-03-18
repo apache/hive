@@ -1463,6 +1463,8 @@ public class DagUtils {
         TezConfigurationFactory
             .wrapWithJobConf(hiveConf, skipAMConf ? findDefaults.negate() : null);
 
+    TezConfigurationFactory.copyFromDefaultTezConfig(conf, TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB);
+
     if (conf.get("mapred.output.committer.class") == null) {
       conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
     }
