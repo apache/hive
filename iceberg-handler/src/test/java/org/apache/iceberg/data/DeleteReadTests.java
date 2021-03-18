@@ -19,6 +19,9 @@
 
 package org.apache.iceberg.data;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.Files;
@@ -39,10 +42,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 public abstract class DeleteReadTests {
   // Schema passed to create tables

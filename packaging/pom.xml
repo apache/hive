@@ -230,7 +230,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>iceberg-handler</artifactId>
+      <artifactId>hive-iceberg-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

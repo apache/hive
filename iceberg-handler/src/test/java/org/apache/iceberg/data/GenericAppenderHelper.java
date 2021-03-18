@@ -19,6 +19,9 @@
 
 package org.apache.iceberg.data;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -30,10 +33,6 @@ import org.apache.iceberg.io.FileAppender;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Helper for appending {@link DataFile} to a table or appending {@link Record}s to a table.

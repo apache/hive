@@ -19,6 +19,10 @@
 
 package org.apache.iceberg.data;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.DeleteFile;
@@ -34,11 +38,6 @@ import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 public class FileHelpers {
   private FileHelpers() {

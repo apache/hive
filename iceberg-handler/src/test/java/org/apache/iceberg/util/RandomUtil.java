@@ -19,13 +19,12 @@
 
 package org.apache.iceberg.util;
 
-import org.apache.iceberg.types.Type;
-import org.apache.iceberg.types.Types;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Random;
+import org.apache.iceberg.types.Type;
+import org.apache.iceberg.types.Types;
 
 public class RandomUtil {
 

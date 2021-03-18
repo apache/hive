@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>iceberg-handler</artifactId>
+    <artifactId>hive-iceberg-handler</artifactId>
     <packaging>jar</packaging>
     <name>Hive Iceberg Handler</name>
 
@@ -18,6 +18,7 @@
         <hive.path.to.root>..</hive.path.to.root>
         <iceberg.avro.version>1.9.2</iceberg.avro.version>
         <iceberg.kryo.version>4.0.2</iceberg.kryo.version>
+        <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
         <shade.relocation.package.prefix>org.apache.hive.iceberg</shade.relocation.package.prefix>
     </properties>
 
@@ -166,6 +167,34 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${iceberg.checkstyle.plugin.version}</version>
+                <configuration>
+                    <propertyExpansion>config_loc=${basedir}/checkstyle/</propertyExpansion>
+                    <configLocation>${basedir}/checkstyle/checkstyle.xml</configLocation>
+                    <suppressionsLocation>${basedir}/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>shaded-build</id>
@@ -210,12 +239,20 @@
                                             <shadedPattern>${shade.relocation.package.prefix}.org.apache.parquet</shadedPattern>
                                         </relocation>
                                         <relocation>
+                                            <pattern>shaded.parquet</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.shaded.parquet</shadedPattern>
+                                        </relocation>
+                                        <relocation>
                                             <pattern>com.google</pattern>
                                             <shadedPattern>${shade.relocation.package.prefix}.com.google</shadedPattern>
                                         </relocation>
                                         <relocation>
                                             <pattern>com.fasterxml</pattern>
                                             <shadedPattern>${shade.relocation.package.prefix}.com.fasterxml</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.github.benmanes</pattern>
+                                            <shadedPattern>${shade.relocation.package.prefix}.com.github.benmanes</shadedPattern>
                                         </relocation>
                                     </relocations>
                                     <artifactSet>

@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
+import java.time.LocalDate;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -27,8 +28,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspect
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.time.LocalDate;
 
 public class TestIcebergDateObjectInspectorHive3 {
 
