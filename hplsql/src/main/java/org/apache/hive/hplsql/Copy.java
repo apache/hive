@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hive.hplsql.executor.QueryExecutor;
 import org.apache.hive.hplsql.executor.QueryResult;
 
@@ -178,9 +179,9 @@ public class Copy {
     else {
       filename = ctx.copy_target().getText();
     }
-    byte[] del = delimiter.getBytes();
-    byte[] rowdel = "\n".getBytes();
-    byte[] nullstr = "NULL".getBytes();
+    byte[] del = DFSUtil.string2Bytes(delimiter);
+    byte[] rowdel = DFSUtil.string2Bytes("\n");
+    byte[] nullstr = DFSUtil.string2Bytes("NULL");
     int cols = query.columnCount();
     int rows = 0;
     long bytes = 0;
@@ -233,7 +234,7 @@ public class Copy {
             if (sqlInsert) {
               col = Utils.quoteString(col);
             }
-            byte[] b = col.getBytes();
+            byte[] b = DFSUtil.string2Bytes(col);
             out.write(b);
             bytes += b.length;
           }

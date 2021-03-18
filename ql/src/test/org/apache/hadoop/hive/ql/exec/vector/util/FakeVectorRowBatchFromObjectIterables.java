@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hdfs.DFSUtil;
 
 /**
  * Test helper class that creates vectorized execution batches from arbitrary type iterables.
@@ -123,7 +124,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
               Object value) {
             BytesColumnVector bcv = (BytesColumnVector) columnVector;
             String s = (String) value;
-            byte[] bytes = s.getBytes();
+            byte[] bytes = DFSUtil.string2Bytes(s);
             bcv.vector[row] = bytes;
             bcv.start[row] = 0;
             bcv.length[row] = bytes.length;
