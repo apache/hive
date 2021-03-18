@@ -10762,6 +10762,11 @@ void Table::__set_id(const int64_t val) {
   this->id = val;
 __isset.id = true;
 }
+
+void Table::__set_txnId(const int64_t val) {
+  this->txnId = val;
+__isset.txnId = true;
+}
 std::ostream& operator<<(std::ostream& out, const Table& obj)
 {
   obj.printTo(out);
@@ -11043,6 +11048,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 26:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->txnId);
+          this->__isset.txnId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11206,6 +11219,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI64(this->id);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.txnId) {
+    xfer += oprot->writeFieldBegin("txnId", ::apache::thrift::protocol::T_I64, 26);
+    xfer += oprot->writeI64(this->txnId);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11238,6 +11256,7 @@ void swap(Table &a, Table &b) {
   swap(a.requiredReadCapabilities, b.requiredReadCapabilities);
   swap(a.requiredWriteCapabilities, b.requiredWriteCapabilities);
   swap(a.id, b.id);
+  swap(a.txnId, b.txnId);
   swap(a.__isset, b.__isset);
 }
 
@@ -11267,6 +11286,7 @@ Table::Table(const Table& other357) {
   requiredReadCapabilities = other357.requiredReadCapabilities;
   requiredWriteCapabilities = other357.requiredWriteCapabilities;
   id = other357.id;
+  txnId = other357.txnId;
   __isset = other357.__isset;
 }
 Table& Table::operator=(const Table& other358) {
@@ -11295,6 +11315,7 @@ Table& Table::operator=(const Table& other358) {
   requiredReadCapabilities = other358.requiredReadCapabilities;
   requiredWriteCapabilities = other358.requiredWriteCapabilities;
   id = other358.id;
+  txnId = other358.txnId;
   __isset = other358.__isset;
   return *this;
 }
@@ -11326,6 +11347,7 @@ void Table::printTo(std::ostream& out) const {
   out << ", " << "requiredReadCapabilities="; (__isset.requiredReadCapabilities ? (out << to_string(requiredReadCapabilities)) : (out << "<null>"));
   out << ", " << "requiredWriteCapabilities="; (__isset.requiredWriteCapabilities ? (out << to_string(requiredWriteCapabilities)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
+  out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
   out << ")";
 }
 

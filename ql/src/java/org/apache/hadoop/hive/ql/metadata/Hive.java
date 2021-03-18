@@ -1230,6 +1230,12 @@ public class Hive {
           principalPrivs.setRolePrivileges(grants.getRoleGrants());
           tTbl.setPrivileges(principalPrivs);
         }
+        boolean nonBlockingDropTable = HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_NON_BLOCKING_DROP_TABLE)
+          && AcidUtils.isTransactionalTable(tbl);
+
+        if (nonBlockingDropTable) {
+          tTbl.setTxnId(ss.getTxnMgr().getCurrentTxnId());
+        }
       }
       // Set table snapshot to api.Table to make it persistent. A transactional table being
       // replicated may have a valid write Id copied from the source. Use that instead of
@@ -1237,7 +1243,7 @@ public class Hive {
       if (tTbl.getWriteId() <= 0) {
         TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
         if (tableSnapshot != null) {
-          tbl.getTTable().setWriteId(tableSnapshot.getWriteId());
+          tTbl.setWriteId(tableSnapshot.getWriteId());
         }
       }
 

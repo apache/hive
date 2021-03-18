@@ -3002,6 +3002,9 @@ public class HiveConf extends Configuration {
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
 
+    HIVE_TXN_NON_BLOCKING_DROP_TABLE("hive.txn.nonblocking.droptable.enabled", false,
+      "Enables non-blocking DROP TABLE operation"),
+
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT
      */
