@@ -18,36 +18,24 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
-import com.google.protobuf.ByteString;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
 import org.apache.hadoop.hive.llap.cache.PathCache;
-import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
-import org.apache.hadoop.hive.llap.io.encoded.LlapOrcCacheLoader;
-import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -453,11 +441,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
-  public LlapDaemonProtocolProtos.CacheEntryList fetchCachedMetadata() {
+  public LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo() {
     GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
     LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
         pathCache, tracePool, realCachePolicy);
-    return serializer.fetchMetadata();
+    return serializer.fetchCachedContentInfo();
   }
 
   @Override

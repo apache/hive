@@ -76,7 +76,7 @@ final class LlapCacheMetadataSerializer {
 
   }
 
-  public LlapDaemonProtocolProtos.CacheEntryList fetchMetadata() {
+  public LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo() {
     List<LlapCacheableBuffer> buffers = cachePolicy.getHotBuffers();
     List<LlapDaemonProtocolProtos.CacheEntry> entries = encodeAndConvertHotBuffers(buffers);
     return LlapDaemonProtocolProtos.CacheEntryList.newBuilder().addAllEntries(entries).build();
@@ -113,7 +113,7 @@ final class LlapCacheMetadataSerializer {
     return lookupMap;
   }
 
-  private LlapDaemonProtocolProtos.CacheEntry.Builder lookupOrCreateCacheEntryFromDataBuffer(
+  private static LlapDaemonProtocolProtos.CacheEntry.Builder lookupOrCreateCacheEntryFromDataBuffer(
       Map<Object, LlapDaemonProtocolProtos.CacheEntry.Builder> lookupMap, LlapDataBuffer db, Object fileKey,
       String path) throws IOException {
     LlapDaemonProtocolProtos.CacheEntry.Builder builder = lookupMap.get(fileKey);
@@ -128,7 +128,7 @@ final class LlapCacheMetadataSerializer {
     return builder;
   }
 
-  private LlapDaemonProtocolProtos.CacheTag.Builder encodeCacheTag(CacheTag cacheTag) {
+  private static LlapDaemonProtocolProtos.CacheTag.Builder encodeCacheTag(CacheTag cacheTag) {
     LlapDaemonProtocolProtos.CacheTag.Builder ctb =
         LlapDaemonProtocolProtos.CacheTag.newBuilder().setTableName(cacheTag.getTableName());
     if (cacheTag instanceof CacheTag.PartitionCacheTag) {
@@ -160,20 +160,20 @@ final class LlapCacheMetadataSerializer {
     }
   }
 
-  private DiskRangeList decodeRanges(List<LlapDaemonProtocolProtos.CacheEntryRange> ranges) {
+  private static DiskRangeList decodeRanges(List<LlapDaemonProtocolProtos.CacheEntryRange> ranges) {
     DiskRangeList.CreateHelper helper = new DiskRangeList.CreateHelper();
     ranges.stream().sorted(Comparator.comparing(LlapDaemonProtocolProtos.CacheEntryRange::getStart))
         .forEach(r -> helper.addOrMerge(r.getStart(), r.getEnd(), false, false));
     return helper.get();
   }
 
-  private CacheTag decodeCacheTag(LlapDaemonProtocolProtos.CacheTag ct) {
+  private static CacheTag decodeCacheTag(LlapDaemonProtocolProtos.CacheTag ct) {
     return ct.getPartitionDescCount() == 0 ? CacheTag.build(ct.getTableName()) : CacheTag
         .build(ct.getTableName(), ct.getPartitionDescList());
   }
 
   @VisibleForTesting
-  ByteString encodeFileKey(Object fileKey) throws IOException {
+  static ByteString encodeFileKey(Object fileKey) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     if (fileKey instanceof SyntheticFileId) {
@@ -185,8 +185,14 @@ final class LlapCacheMetadataSerializer {
     return ByteString.copyFrom(baos.toByteArray());
   }
 
+  /**
+   *  If the underlying filesystem supports it, the file key can be a unique file/inode ID represented by a long,
+   *  otherwise its a combination of the path hash, the modification time and the length of the file.
+   *
+   *  @see org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader#determineFileId
+   */
   @VisibleForTesting
-  Object decodeFileKey(ByteString encodedFileKey) throws IOException {
+  static Object decodeFileKey(ByteString encodedFileKey) throws IOException {
     byte[] bytes = encodedFileKey.toByteArray();
     DataInput in = new DataInputStream(new ByteArrayInputStream(bytes));
     Object fileKey;

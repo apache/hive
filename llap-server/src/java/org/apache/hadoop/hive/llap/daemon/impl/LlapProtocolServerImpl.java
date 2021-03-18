@@ -375,8 +375,13 @@ public class LlapProtocolServerImpl extends AbstractService
   @Override
   public GetCacheContentResponseProto getCacheContent(RpcController controller,
       GetCacheContentRequestProto request) {
-    CacheEntryList entries = LlapProxy.getIo().fetchCachedMetadata();
-    return GetCacheContentResponseProto.newBuilder().setResult(entries).build();
+    GetCacheContentResponseProto.Builder responseProtoBuilder = GetCacheContentResponseProto.newBuilder();
+    LlapIo<?> llapIo = LlapProxy.getIo();
+    if (llapIo != null) {
+      CacheEntryList entries = llapIo.fetchCachedContentInfo();
+      responseProtoBuilder.setResult(entries);
+    }
+    return responseProtoBuilder.build();
   }
 
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {

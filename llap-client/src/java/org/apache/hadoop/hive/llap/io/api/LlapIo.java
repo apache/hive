@@ -91,7 +91,7 @@ public interface LlapIo<T> {
   /**
    * Extract and return the cache content metadata.
    */
-  LlapDaemonProtocolProtos.CacheEntryList fetchCachedMetadata();
+  LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo();
 
   /**
    * Load the actual data into the cache based on the provided metadata.

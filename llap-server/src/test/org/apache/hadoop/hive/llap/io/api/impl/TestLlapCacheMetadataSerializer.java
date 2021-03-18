@@ -80,7 +80,7 @@ public class TestLlapCacheMetadataSerializer {
     LlapDaemonProtocolProtos.CacheEntryList dummyMetadata = createDummyMetadata();
     serializer.loadData(dummyMetadata);
 
-    LlapDaemonProtocolProtos.CacheEntryList cachedMetadata = serializer.fetchMetadata();
+    LlapDaemonProtocolProtos.CacheEntryList cachedMetadata = serializer.fetchCachedContentInfo();
 
     assertEquals(dummyMetadata, cachedMetadata);
   }
