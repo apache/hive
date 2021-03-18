@@ -19,14 +19,18 @@
 package org.apache.hadoop.hive.impala.funcmapper;
 
 import com.google.common.base.Preconditions;
+import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlIntervalQualifier;
+import org.apache.calcite.sql.parser.SqlParserPos;;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -74,23 +78,25 @@ public class InternalIntervalFunctionResolver extends ImpalaFunctionResolverImpl
     int intervalType = RexLiteral.intValue(inputs.get(0));
     switch (intervalType) {
       case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
-        return factory.createIntervalYearConstantExpr(
-	    Integer.toString(RexLiteral.intValue(inputs.get(1))));
+        BigDecimal totalMonths =
+            BigDecimal.valueOf(12L*RexLiteral.intValue(inputs.get(1)));
+        return rexBuilder.makeIntervalLiteral(totalMonths,
+            new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1, 1)));
       case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
         return factory.createIntervalMonthConstantExpr(
-	   Integer.toString(RexLiteral.intValue(inputs.get(1))));
+            Integer.toString(RexLiteral.intValue(inputs.get(1))));
       case HiveParser.TOK_INTERVAL_DAY_LITERAL:
         return factory.createIntervalDayConstantExpr(
-	    Integer.toString(RexLiteral.intValue(inputs.get(1))));
+            Integer.toString(RexLiteral.intValue(inputs.get(1))));
       case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
         return factory.createIntervalHourConstantExpr(
-	    Integer.toString(RexLiteral.intValue(inputs.get(1))));
+            Integer.toString(RexLiteral.intValue(inputs.get(1))));
       case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
         return factory.createIntervalMinuteConstantExpr(
-	    Integer.toString(RexLiteral.intValue(inputs.get(1))));
+            Integer.toString(RexLiteral.intValue(inputs.get(1))));
       case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
         return factory.createIntervalSecondConstantExpr(
-	    Integer.toString(RexLiteral.intValue(inputs.get(1))));
+            Integer.toString(RexLiteral.intValue(inputs.get(1))));
       default:
         throw new RuntimeException("Unknown interval type: " + intervalType);
     }
