@@ -19,6 +19,9 @@
         <iceberg.avro.version>1.9.2</iceberg.avro.version>
         <iceberg.kryo.version>4.0.2</iceberg.kryo.version>
         <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
+        <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
+        <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
+        <google.errorprone.version>2.5.1</google.errorprone.version>
         <shade.relocation.package.prefix>org.apache.hive.iceberg</shade.relocation.package.prefix>
     </properties>
 
@@ -171,6 +174,55 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <showWarnings>true</showWarnings>
+                    <compilerArgs>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:BanSerializableRead:WARN</arg>
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${google.errorprone.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.maven.plugin.version}</version>
+                <configuration>
+                    <java>
+                        <removeUnusedImports />
+                        <importOrder>
+                            <!-- normal imports, static imports -->
+                            <order>,\# </order>
+                        </importOrder>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                        <indent>
+                            <spaces>true</spaces>
+                            <spacesPerTab>2</spacesPerTab>
+                        </indent>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${iceberg.checkstyle.plugin.version}</version>
                 <configuration>
@@ -196,6 +248,26 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <fork>true</fork>
+                            <compilerArgs combine.children="append">
+                                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>shaded-build</id>
             <activation>

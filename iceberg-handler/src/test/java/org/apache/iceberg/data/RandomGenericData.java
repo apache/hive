@@ -42,7 +42,6 @@ import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.RandomUtil;
 
-
 import static java.time.temporal.ChronoUnit.MICROS;
 
 public class RandomGenericData {
