@@ -894,7 +894,9 @@ public class CompactorMR {
           AcidOutputFormat<WritableComparable, V> aof =
           instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-      deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+      Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+      cleanupTmpLocationOnTaskRetry(options, rootDir);
+      deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
 
     }
   }
