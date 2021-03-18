@@ -4639,6 +4639,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_partitions_with_specs(request);
   }
 
+  @Deprecated
+  @Override
+  public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
+    return client.find_next_compact(workerId, null);
+  }
+
   @Override
   public OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException {
     return client.find_next_compact(workerId, workerVersion);
