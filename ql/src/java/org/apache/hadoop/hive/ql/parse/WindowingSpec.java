@@ -446,7 +446,7 @@ public class WindowingSpec {
     private String sourceId;
     private PartitioningSpec partitioning;
     private WindowFrameSpec windowFrame;
-    private boolean ignoreNulls;
+    private boolean respectNulls;
 
     public String getSourceId() {
       return sourceId;
@@ -505,12 +505,12 @@ public class WindowingSpec {
           windowFrame == null ? "" : windowFrame);
     }
 
-    public void setIgnoreNulls(boolean ignoreNulls) {
-      this.ignoreNulls = ignoreNulls;
+    public void setRespectNulls(boolean respectNulls) {
+      this.respectNulls = respectNulls;
     }
 
-    public boolean ignoreNulls() {
-      return ignoreNulls;
+    public boolean respectNulls() {
+      return respectNulls;
     }
   };
 

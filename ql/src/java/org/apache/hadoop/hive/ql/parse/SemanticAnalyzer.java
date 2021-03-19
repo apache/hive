@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -14366,7 +14367,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if ( wsNode != null ) {
-      wfSpec.setWindowSpec(processWindowSpec(wsNode));
+      WindowFunctionInfo functionInfo = FunctionRegistry.getWindowFunctionInfo(wfSpec.name);
+      if (functionInfo == null) {
+        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(wfSpec.name));
+      }
+      wfSpec.setWindowSpec(processWindowSpec(functionInfo, wsNode));
     }
 
     return wfSpec;
@@ -14404,13 +14409,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           "Duplicate definition of window " + nameNode.getText() +
               " is not allowed"));
     }
-    WindowSpec ws = processWindowSpec(wsNode);
+    WindowFunctionInfo functionInfo = FunctionRegistry.getWindowFunctionInfo(nameNode.getText());
+    if (functionInfo == null) {
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(nameNode.getText()));
+    }
+    WindowSpec ws = processWindowSpec(functionInfo, wsNode);
     spec.addWindowSpec(nameNode.getText(), ws);
   }
 
-  private WindowSpec processWindowSpec(ASTNode node) throws SemanticException {
+  private WindowSpec processWindowSpec(WindowFunctionInfo functionInfo, ASTNode node) throws SemanticException {
     boolean hasSrcId = false, hasPartSpec = false, hasWF = false;
-    boolean ignoreNulls = false;
+    boolean respectNulls = true;
     int srcIdIdx = -1, partIdx = -1, wfIdx = -1;
 
     for(int i=0; i < node.getChildCount(); i++)
@@ -14429,10 +14438,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         hasWF = true; wfIdx = i;
         break;
       case HiveParser.TOK_RESPECT_NULLS:
-        ignoreNulls = false;
+        if (!functionInfo.isSupportsNullTreatment()) {
+          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
+        }
+        respectNulls = true;
         break;
       case HiveParser.TOK_IGNORE_NULLS:
-        ignoreNulls = true;
+        if (!functionInfo.isSupportsNullTreatment()) {
+          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
+        }
+        respectNulls = false;
         break;
       }
     }
@@ -14456,7 +14471,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ws.setWindowFrame(wfSpec);
     }
 
-    ws.setIgnoreNulls(ignoreNulls);
+    ws.setRespectNulls(respectNulls);
 
     return ws;
   }
