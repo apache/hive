@@ -669,10 +669,12 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         if (pool == null)
           return;
         int queueSize = pool.queue.size();
-        if (queueSize > 0) {
+        int remainingCapacity = pool.queryParallelism - pool.getTotalActiveSessions();
+        int delayedMovesToProcess = queueSize > remainingCapacity ? queueSize - remainingCapacity : 0;
+        if (delayedMovesToProcess > 0 && pool.delayedMoveSessions.size() > 0) {
           int i = 0;
           Iterator<MoveSession> itr = pool.delayedMoveSessions.iterator();
-          while (i < queueSize && itr.hasNext()) {
+          while (i < delayedMovesToProcess && itr.hasNext()) {
             MoveSession moveSession = itr.next();
             itr.remove();
             WmTezSession srcSession = moveSession.srcSession;
@@ -826,8 +828,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     final WmThreadSyncWork syncWork,
     final HashSet<String> poolsToRedistribute,
     final Map<WmTezSession, GetRequest> toReuse,
-    final Map<WmTezSession, WmEvent> recordMoveEvents,
-      final boolean moveImmediately) {
+    final Map<WmTezSession, WmEvent> recordMoveEvents, final boolean moveImmediately) {
     String destPoolName = moveSession.destPool;
     LOG.info("Handling move session event: {}, move immediately: {}", moveSession, moveImmediately);
     if (validMove(moveSession.srcSession, destPoolName)) {
