@@ -1853,7 +1853,7 @@ public class ObjectStore implements RawStore, Configurable {
       db = normalizeIdentifier(db);
       catName = normalizeIdentifier(catName);
 
-      List<String> lowered_tbl_names;
+      List<String> lowered_tbl_names = new ArrayList<>();
       if(tbl_names != null) {
         lowered_tbl_names = new ArrayList<>(tbl_names.size());
         for (String t : tbl_names) {
