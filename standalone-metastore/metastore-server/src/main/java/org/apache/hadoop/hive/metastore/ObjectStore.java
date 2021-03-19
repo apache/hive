@@ -1853,8 +1853,9 @@ public class ObjectStore implements RawStore, Configurable {
       db = normalizeIdentifier(db);
       catName = normalizeIdentifier(catName);
 
-      List<String> lowered_tbl_names = new ArrayList<>(tbl_names.size());
+      List<String> lowered_tbl_names;
       if(tbl_names != null) {
+        lowered_tbl_names = new ArrayList<>(tbl_names.size());
         for (String t : tbl_names) {
           lowered_tbl_names.add(normalizeIdentifier(t));
         }
@@ -1862,7 +1863,10 @@ public class ObjectStore implements RawStore, Configurable {
 
       query = pm.newQuery(MTable.class);
 
-      if(tablePattern == null) {
+      if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null) {
+        query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName) && tableName.matches(tablePattern)");
+        query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names, java.lang.String tablePattern");
+      }else if(tablePattern == null) {
         query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
         query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
       }else{
