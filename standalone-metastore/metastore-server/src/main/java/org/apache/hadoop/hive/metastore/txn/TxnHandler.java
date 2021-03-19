@@ -2374,18 +2374,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // Get the valid write id list for the tables in current state
     final List<TableValidWriteIds> currentTblValidWriteIdsList = new ArrayList<>();
     Connection dbConn = null;
-      for (String fullTableName : creationMetadata.getTablesUsed()) {
-        try {
-          dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-          currentTblValidWriteIdsList.add(getValidWriteIdsForTable(dbConn, fullTableName, currentValidTxnList));
-        } catch (SQLException ex) {
-          String errorMsg = "Unable to query Valid writeIds of table " + fullTableName;
-          LOG.warn(errorMsg, ex);
-          throw new MetaException(errorMsg + " " + StringUtils.stringifyException(ex));
-        } finally {
-          closeDbConn(dbConn);
-        }
+    for (String fullTableName : creationMetadata.getTablesUsed()) {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        currentTblValidWriteIdsList.add(getValidWriteIdsForTable(dbConn, fullTableName, currentValidTxnList));
+      } catch (SQLException ex) {
+        String errorMsg = "Unable to query Valid writeIds of table " + fullTableName;
+        LOG.warn(errorMsg, ex);
+        throw new MetaException(errorMsg + " " + StringUtils.stringifyException(ex));
+      } finally {
+        closeDbConn(dbConn);
       }
+    }
     final ValidTxnWriteIdList currentValidReaderWriteIdList = TxnCommonUtils.createValidTxnWriteIdList(
             currentValidTxnList.getHighWatermark(), currentTblValidWriteIdsList);
 
