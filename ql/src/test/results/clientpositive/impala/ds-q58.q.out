@@ -153,7 +153,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaProjectRel(item_id=[$0], ss_item_rev=[$5], ss_dev=[*(/($5, /(+(+($5, $1), $9), 3:DECIMAL(3, 0))), 100:DECIMAL(3, 0))], cs_item_rev=[$1], cs_dev=[*(/($1, /(+(+($5, $1), $9), 3:DECIMAL(3, 0))), 100:DECIMAL(3, 0))], ws_item_rev=[$9], ws_dev=[*(/($9, /(+(+($5, $1), $9), 3:DECIMAL(3, 0))), 100:DECIMAL(3, 0))], average=[/(+(+($5, $1), $9), 3:DECIMAL(3, 0))])
     ImpalaJoinRel(condition=[AND(=($0, $8), BETWEEN(false, $5, $10, $11), BETWEEN(false, $1, $10, $11), BETWEEN(false, $9, $6, $7), BETWEEN(false, $9, $2, $3))], joinType=[inner])
       ImpalaJoinRel(condition=[AND(=($4, $0), BETWEEN(false, $5, $2, $3), BETWEEN(false, $1, $6, $7))], joinType=[inner])
-        ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(2, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
+        ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
           ImpalaAggregateRel(group=[{4}], agg#0=[sum($2)])
             ImpalaJoinRel(condition=[=($6, $7)], joinType=[semi])
               ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
@@ -173,7 +173,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($2, _UTF-16LE'1998-02-21'), IS NOT NULL($4))])
                   ImpalaCardinalityCheckRel
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[=($2, _UTF-16LE'1998-02-21')])
-        ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(2, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
+        ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
           ImpalaAggregateRel(group=[{4}], agg#0=[sum($1)])
             ImpalaJoinRel(condition=[=($6, $7)], joinType=[semi])
               ImpalaJoinRel(condition=[=($2, $5)], joinType=[inner])
@@ -193,7 +193,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($2, _UTF-16LE'1998-02-21'), IS NOT NULL($4))])
                   ImpalaCardinalityCheckRel
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[=($2, _UTF-16LE'1998-02-21')])
-      ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(2, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
+      ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
         ImpalaAggregateRel(group=[{4}], agg#0=[sum($2)])
           ImpalaJoinRel(condition=[=($6, $7)], joinType=[semi])
             ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
@@ -403,7 +403,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   41:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_item.i_item_id = default.impala_tpcds_item_1.i_item_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  other join predicates: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=13,26,40 row-size=84B cardinality=0
   |  in pipelines: 50(GETNEXT), 67(OPEN)
@@ -416,7 +416,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   27:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_item.i_item_id = default.impala_tpcds_item_0.i_item_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
+  |  other join predicates: sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=13,26 row-size=56B cardinality=0
   |  in pipelines: 50(GETNEXT), 58(OPEN)

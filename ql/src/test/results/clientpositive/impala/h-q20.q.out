@@ -110,7 +110,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC])
                 ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL(CAST($2):DECIMAL(10, 0)))])
               ImpalaProjectPassthroughRel(p_partkey=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[AND(LIKE($1, _UTF-16LE'forest%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
-          ImpalaProjectPassthroughRel(l_partkey=[$0], l_suppkey=[$1], *=[*(0.5:DECIMAL(2, 1), $2)])
+          ImpalaProjectPassthroughRel(l_partkey=[$0], l_suppkey=[$1], *=[*(0.5:DECIMAL(1, 1), $2)])
             ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($4)], condition=[IS NOT NULL($2)])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1994-01-01'), <($10, _UTF-16LE'1995-01-01'), IS NOT NULL($1), IS NOT NULL($2))])
 
@@ -303,7 +303,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
   09:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpch_partsupp.ps_partkey = default.impala_tpch_lineitem.l_partkey, default.impala_tpch_partsupp.ps_suppkey = default.impala_tpch_lineitem.l_suppkey
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: casttodecimal(default.impala_tpch_partsupp.ps_availqty) > multiply(CAST(0.5 AS DECIMAL(2,1)), sum(default.impala_tpch_lineitem.l_quantity))
+  |  other join predicates: casttodecimal(default.impala_tpch_partsupp.ps_availqty) > multiply(CAST(0.5 AS DECIMAL(1,1)), sum(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=4,10 row-size=52B cardinality=0
   |  in pipelines: 04(GETNEXT), 15(OPEN)

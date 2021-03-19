@@ -250,9 +250,16 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     }
 
     RexBuilder rexBuilder = factory.getRexBuilder();
-    return bd == null 
-        ? rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DECIMAL))
-        : rexBuilder.makeExactLiteral(bd);
+    if (bd == null) {
+      return rexBuilder.makeNullLiteral(
+          rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DECIMAL));
+    }
+
+    int scale = bd.scale();
+    // precision can never be less than scale, same logic as in FastHiveDecimalImpl
+    int precision = bd.precision() < scale ? scale : bd.precision();
+    return rexBuilder.makeExactLiteral(bd,
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.DECIMAL, precision, scale));
   }
 
   /**

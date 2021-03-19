@@ -90,7 +90,7 @@ ImpalaSortRel(sort0=[$1], dir0=[DESC])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_nation]], condition=[AND(=($1, _UTF-16LE'GERMANY'), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1], *=[*($3, CAST($2):DECIMAL(10, 0))])
             ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[IS NOT NULL($1)])
-      ImpalaProjectPassthroughRel(_o__c0=[*($0, 0.0001:DECIMAL(5, 4))])
+      ImpalaProjectPassthroughRel(_o__c0=[*($0, 0.0001:DECIMAL(4, 4))])
         ImpalaAggregateRel(group=[{}], agg#0=[sum($4)], condition=[IS NOT NULL($0)])
           ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
             ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
@@ -206,7 +206,7 @@ Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservati
   |  in pipelines: 18(GETNEXT)
   |
   13:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) > multiply(sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))), CAST(0.0001 AS DECIMAL(5,4)))
+  |  join predicates: sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty))) > multiply(sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))), CAST(0.0001 AS DECIMAL(4,4)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=13,6 row-size=40B cardinality=1
   |  in pipelines: 18(GETNEXT), 22(OPEN)

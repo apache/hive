@@ -82,7 +82,7 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($1))])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1186, +(1186, 11)), IS NOT NULL($0))])
-          ImpalaProjectPassthroughRel($f0=[$0], *=[*(0.1:DECIMAL(2, 1), /($1, CAST($2):DECIMAL(19, 0)))])
+          ImpalaProjectPassthroughRel($f0=[$0], *=[*(0.1:DECIMAL(1, 1), /($1, CAST($2):DECIMAL(19, 0)))])
             ImpalaAggregateRel(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)], condition=[IS NOT NULL(CAST($2):DECIMAL(19, 0))])
               ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)])
                 ImpalaJoinRel(condition=[=($3, $4)], joinType=[inner])
@@ -229,7 +229,7 @@ Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reserva
   12:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store_sales_0.ss_store_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: sum(default.impala_tpcds_store_sales.ss_sales_price) <= multiply(CAST(0.1 AS DECIMAL(2,1)), divide(sum(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(count(sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
+  |  other join predicates: sum(default.impala_tpcds_store_sales.ss_sales_price) <= multiply(CAST(0.1 AS DECIMAL(1,1)), divide(sum(sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(count(sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=4,9 row-size=56B cardinality=0
   |  in pipelines: 20(GETNEXT), 25(OPEN)
