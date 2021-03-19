@@ -103,13 +103,6 @@ public class CreateDatabaseDesc implements DDLDesc, Serializable {
   @Explain(displayName="database type")
   public DatabaseType getDatabaseType() {
     return dbType;
-    /*
-    if (dbType == DatabaseType.NATIVE)
-      return "NATIVE";
-    else
-      return "REMOTE";
-
-     */
   }
 
   @Explain(displayName="connector name")

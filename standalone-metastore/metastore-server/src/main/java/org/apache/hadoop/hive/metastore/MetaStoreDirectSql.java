@@ -434,7 +434,7 @@ class MetaStoreDirectSql {
       }
       db.setManagedLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[8]));
       String dbType = MetastoreDirectSqlUtils.extractSqlString(dbline[9]);
-      if (dbType != null && dbType.equalsIgnoreCase("REMOTE")) {
+      if (dbType != null && dbType.equalsIgnoreCase(DatabaseType.REMOTE.name())) {
         db.setType(DatabaseType.REMOTE);
         db.setConnector_name(MetastoreDirectSqlUtils.extractSqlString(dbline[10]));
         db.setRemote_dbname(MetastoreDirectSqlUtils.extractSqlString(dbline[11]));
