@@ -805,6 +805,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       db.setCatalogName(DEFAULT_CATALOG_NAME);
       long time = System.currentTimeMillis() / 1000;
       db.setCreateTime((int) time);
+      db.setType(DatabaseType.NATIVE);
       ms.createDatabase(db);
       LOG.info("Successfully created a default database with name: "+DEFAULT_DATABASE_NAME);
     }
@@ -2110,7 +2111,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getAllDataConnectors();
+      ret = getMS().getAllDataConnectorNames();
       ret = FilterUtils.filterDataConnectorsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (MetaException e) {
       ex = e;

@@ -265,7 +265,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<String> getAllDataConnectors() throws MetaException {
+  public List<String> getAllDataConnectorNames() throws MetaException {
     return Collections.emptyList();
   }
 

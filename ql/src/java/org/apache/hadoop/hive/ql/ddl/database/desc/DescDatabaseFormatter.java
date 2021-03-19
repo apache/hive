@@ -71,10 +71,10 @@ abstract class DescDatabaseFormatter {
       if (ownerType != null) {
         builder.put("ownerType", ownerType.name());
       }
-      if (null != connectorName) {
+      if (connectorName != null) {
         builder.put("connector_name", connectorName);
       }
-      if (null != remoteDbName) {
+      if (remoteDbName != null) {
         builder.put("remote_dbname", remoteDbName);
       }
       if (MapUtils.isNotEmpty(params)) {

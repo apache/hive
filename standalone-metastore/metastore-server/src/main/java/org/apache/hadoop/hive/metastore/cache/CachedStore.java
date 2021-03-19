@@ -1191,8 +1191,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getAllDataConnectors() throws MetaException {
-      return rawStore.getAllDataConnectors();
+  public List<String> getAllDataConnectorNames() throws MetaException {
+      return rawStore.getAllDataConnectorNames();
   }
   
   @Override public boolean createType(Type type) {

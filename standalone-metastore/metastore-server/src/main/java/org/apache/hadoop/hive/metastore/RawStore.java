@@ -251,7 +251,7 @@ public interface RawStore extends Configurable {
 
   /**
    * Create a dataconnector.
-   * @param db dataconnector to create.
+   * @param dataConnector dataconnector to create.
    * @throws InvalidObjectException not sure it actually ever throws this.
    * @throws MetaException if something goes wrong, usually in writing it to the dataconnector.
    */
@@ -293,7 +293,7 @@ public interface RawStore extends Configurable {
    * @return list of names of all dataconnectors
    * @throws MetaException something went wrong, usually with the database.
    */
-  List<String> getAllDataConnectors() throws MetaException;
+  List<String> getAllDataConnectorNames() throws MetaException;
 
   boolean createType(Type type);
 

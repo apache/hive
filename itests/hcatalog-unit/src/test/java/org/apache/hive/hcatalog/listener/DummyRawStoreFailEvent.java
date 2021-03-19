@@ -246,8 +246,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getAllDataConnectors() throws MetaException {
-    return objectStore.getAllDataConnectors();
+  public List<String> getAllDataConnectorNames() throws MetaException {
+    return objectStore.getAllDataConnectorNames();
   }
 
   @Override

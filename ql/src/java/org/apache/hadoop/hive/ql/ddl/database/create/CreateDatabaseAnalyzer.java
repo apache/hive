@@ -49,7 +49,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
     String comment = null;
     String locationUri = null;
     String managedLocationUri = null;
-    String type = "NATIVE";
+    String type = DatabaseType.NATIVE.name();
     String connectorName = null;
     Map<String, String> props = null;
 
@@ -74,12 +74,10 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         outputs.add(toWriteEntity(managedLocationUri));
         break;
       case HiveParser.TOK_DATACONNECTOR:
-        type = "REMOTE";
-        // locationUri = "REMOTE_DATABASE"; // TODO
+        type = DatabaseType.REMOTE.name();
         ASTNode nextNode = (ASTNode) root.getChild(i);
         connectorName = ((ASTNode)nextNode).getChild(0).getText();
         outputs.add(toWriteEntity(connectorName));
-        // outputs.remove(toWriteEntity(locationUri));
         if (managedLocationUri != null) {
           outputs.remove(toWriteEntity(managedLocationUri));
           managedLocationUri = null;
@@ -92,7 +90,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
     CreateDatabaseDesc desc = null;
     Database database = new Database(databaseName, comment, locationUri, props);
-    if (type.equalsIgnoreCase("NATIVE")) {
+    if (type.equalsIgnoreCase(DatabaseType.NATIVE.name())) {
       desc = new CreateDatabaseDesc(databaseName, comment, locationUri, managedLocationUri, ifNotExists, props);
       database.setType(DatabaseType.NATIVE);
       // database = new Database(databaseName, comment, locationUri, props);

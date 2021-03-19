@@ -786,9 +786,9 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setDataConnectorName(db.getConnector_name());
     mdb.setRemoteDatabaseName(db.getRemote_dbname());
     if (db.getType() == null) {
-      mdb.setType("NATIVE");
+      mdb.setType(DatabaseType.NATIVE.name());
     } else {
-      mdb.setType(db.getType().toString());
+      mdb.setType(db.getType().name());
     }
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
@@ -885,7 +885,7 @@ public class ObjectStore implements RawStore, Configurable {
     String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
-    if (mdb.getType().equalsIgnoreCase("NATIVE")) {
+    if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
       db.setType(DatabaseType.NATIVE);
       db.setLocationUri(mdb.getLocationUri());
       db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
@@ -1095,7 +1095,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getAllDataConnectors() throws MetaException {
+  public List<String> getAllDataConnectorNames() throws MetaException {
     boolean commited = false;
     List<String> connectors = null;
     Query query = null;
