@@ -2333,7 +2333,7 @@ public class TestCompactor {
    *
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriverSiletnly(String cmd, IDriver driver) {
+  static void executeStatementOnDriverSilently(String cmd, IDriver driver) {
     try {
       executeStatementOnDriver(cmd, driver);
     }

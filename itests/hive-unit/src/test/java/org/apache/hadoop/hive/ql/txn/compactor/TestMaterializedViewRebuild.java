@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
-import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriverSiletnly;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriverSilently;
 
 public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
@@ -71,8 +71,8 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
   @Override
   public void tearDown() {
-    executeStatementOnDriverSiletnly("drop materialized view " + MV1, driver);
-    executeStatementOnDriverSiletnly("drop table " + TABLE1 , driver);
+    executeStatementOnDriverSilently("drop materialized view " + MV1, driver);
+    executeStatementOnDriverSilently("drop table " + TABLE1 , driver);
 
     super.tearDown();
   }
