@@ -245,6 +245,15 @@ show create table view18;
 create or replace view view18 as select "should replace";
 show create table view18;
 
+-- create a partitioned view
+DROP VIEW IF EXISTS view19;
+create view view19 partitioned on (key) as select value, key from src;
+show create table view19;
+
+-- create or replace partitioned view
+create or replace view view19 partitioned on (key) as select value, key from src;
+show create table view19;
+
 DROP VIEW view1;
 DROP VIEW view2;
 DROP VIEW view3;
@@ -263,6 +272,7 @@ DROP VIEW view15;
 DROP VIEW view16;
 DROP VIEW view17;
 DROP VIEW view18;
+DROP VIEW view19;
 DROP TEMPORARY FUNCTION test_translate;
 DROP TEMPORARY FUNCTION test_max;
 DROP TEMPORARY FUNCTION test_explode;

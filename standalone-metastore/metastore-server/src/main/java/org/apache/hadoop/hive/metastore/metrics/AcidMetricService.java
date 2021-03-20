@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.MetricsInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -75,10 +76,17 @@ public class AcidMetricService  implements MetastoreTaskThread {
   }
 
   private void collectMetrics() throws MetaException {
-
     ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
     updateMetricsFromShowCompact(currentCompactions);
+    updateDBMetrics();
+  }
 
+  private void updateDBMetrics() throws MetaException {
+    MetricsInfo metrics = txnHandler.getMetricsInfo();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").set(
+        metrics.getTxnToWriteIdRowCount());
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").set(
+        metrics.getCompletedTxnsRowCount());
   }
 
   @VisibleForTesting
