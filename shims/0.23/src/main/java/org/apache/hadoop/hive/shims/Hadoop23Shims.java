@@ -1160,19 +1160,22 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-       DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-               .withSyncFolder(true)
-               .withDeleteMissing(true)
-               .preserve(FileAttribute.BLOCKSIZE)
-               .preserve(FileAttribute.XATTR)
-               .build();
+    DistCpOptions.Builder options = new DistCpOptions.Builder(srcPaths, dst)
+            .withSyncFolder(true)
+            .withDeleteMissing(true)
+            .preserve(FileAttribute.BLOCKSIZE);
+
+    String fsScheme = dst.getFileSystem(conf).getScheme();
+    if (!fsScheme.matches("abfs|s3a")) {
+      options.preserve(FileAttribute.XATTR);
+    }
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
 
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
-      DistCp distcp = new DistCp(conf, options);
+      DistCp distcp = new DistCp(conf, options.build());
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
