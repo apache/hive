@@ -106,22 +106,21 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("CREATE FUNCTION " + primaryDbName
             + ".testFunctionTwo as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax'");
 
+    //only testFunctionOne should be replicated, functions created without 'using' clause not supported
     WarehouseInstance.Tuple incrementalDump =
         primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
-        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
-                                      replicatedDbName + ".testFunctionTwo" });
+        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne"});
 
     // Test the idempotent behavior of CREATE FUNCTION
     replica.load(replicatedDbName, primaryDbName)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
-        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
-                                      replicatedDbName + ".testFunctionTwo" });
+        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne"});
   }
 
   @Test
