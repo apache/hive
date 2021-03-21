@@ -3057,7 +3057,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   @Test
   public void testValidTxnList() throws Exception {
-    long readTxnId = txnMgr.openTxn(ctx, "u0", TxnType.READ_ONLY);
+    long readTxnId = txnMgr.openTxn(ctx, "u0", TxnType.READ_ONLY, null);
     HiveTxnManager txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnManager1.openTxn(ctx, "u0");
     //Excludes open read only txns by default
@@ -3071,7 +3071,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnManager1.commitTxn();
     txnMgr.commitTxn();
 
-    long replTxnId = txnMgr.openTxn(ctx, "u0", TxnType.REPL_CREATED);
+    long replTxnId = txnMgr.openTxn(ctx, "u0", TxnType.REPL_CREATED, null);
     txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnManager1.openTxn(ctx, "u0");
     //Excludes open read only txns by default

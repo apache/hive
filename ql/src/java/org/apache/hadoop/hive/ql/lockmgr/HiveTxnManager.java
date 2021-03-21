@@ -60,7 +60,7 @@ public interface HiveTxnManager {
   * @return The new transaction id
   * @throws LockException if a transaction is already open.
   */
-  long openTxn(Context ctx, String user, TxnType txnType) throws LockException;
+  long openTxn(Context ctx, String user, TxnType txnType, String dbNameUnderReplication) throws LockException;
 
   /**
    * Open a new transaction in target cluster.

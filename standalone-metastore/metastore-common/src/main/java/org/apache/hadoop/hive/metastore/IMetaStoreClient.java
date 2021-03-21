@@ -3103,6 +3103,8 @@ public interface IMetaStoreClient {
    */
   long openTxn(String user, TxnType txnType) throws TException;
 
+  long openTxn(String user, TxnType txnType, String dbNameUnderReplication) throws TException;
+
   /**
    * Initiate a transaction at the target cluster.
    * @param replPolicy The replication policy to uniquely identify the source cluster.
@@ -3150,6 +3152,8 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   void rollbackTxn(long txnid) throws NoSuchTxnException, TException;
+
+  void rollbackTxn(long txnid, String dbNameUnderReplication) throws NoSuchTxnException, TException;
 
   /**
    * Rollback a transaction.  This will also unlock any locks associated with

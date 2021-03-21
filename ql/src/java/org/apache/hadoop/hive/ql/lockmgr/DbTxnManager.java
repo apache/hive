@@ -124,6 +124,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    */
   private int numStatements = 0;
 
+  private String dbNameUnderReplication = null;
+
   /**
    * if {@code true} it means current transaction is started via START TRANSACTION which means it cannot
    * include any Operations which cannot be rolled back (drop partition; write to  non-acid table).
@@ -223,7 +225,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+  public long openTxn(Context ctx, String user, TxnType txnType, String dbNameUnderReplication) throws LockException {
+    this.dbNameUnderReplication = dbNameUnderReplication;
     return openTxn(ctx, user, txnType, 0);
   }
 
@@ -240,7 +243,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("Transaction already opened. " + JavaUtils.txnIdToString(txnId));
     }
     try {
-      txnId = getMS().openTxn(user, txnType);
+      txnId = getMS().openTxn(user, txnType, this.dbNameUnderReplication);
       stmtId = 0;
       numStatements = 0;
       tableWriteIds.clear();
@@ -525,6 +528,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
       CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
       commitTxnRequest.setExclWriteEnabled(conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+      if (dbNameUnderReplication != null) {
+        commitTxnRequest.setReplPolicy(this.dbNameUnderReplication);
+      }
       getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
@@ -570,7 +576,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
       // Re-checking as txn could have been closed, in the meantime, by a competing thread.
       if (isTxnOpen()) {
-        getMS().rollbackTxn(txnId);
+        getMS().rollbackTxn(txnId, dbNameUnderReplication);
       } else {
         LOG.warn("Transaction is already closed.");
       }

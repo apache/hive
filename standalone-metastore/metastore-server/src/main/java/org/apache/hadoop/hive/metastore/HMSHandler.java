@@ -8315,7 +8315,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
     OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
     List<Long> txnIds = response.getTxn_ids();
-    if (txnIds != null && listeners != null && !listeners.isEmpty()) {
+    boolean isReplDumpOrLoadOperation = rqst.isSetReplPolicy()
+            && (!rqst.isSetTxn_type() || (rqst.isSetTxn_type() && rqst.getTxn_type() != TxnType.REPL_CREATED));
+    if (txnIds != null && listeners != null && !listeners.isEmpty() && !isReplDumpOrLoadOperation) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.OPEN_TXN,
           new OpenTxnEvent(txnIds, this));
     }
@@ -8325,7 +8327,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void abort_txn(AbortTxnRequest rqst) throws TException {
     getTxnHandler().abortTxn(rqst);
-    if (listeners != null && !listeners.isEmpty()) {
+    boolean isReplDumpOrLoadOperation = rqst.isSetReplPolicy()
+            && (!rqst.isSetTxn_type() || (rqst.isSetTxn_type() && rqst.getTxn_type() != TxnType.REPL_CREATED));
+    if (listeners != null && !listeners.isEmpty() && !isReplDumpOrLoadOperation) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
           new AbortTxnEvent(rqst.getTxnid(), this));
     }
@@ -8350,7 +8354,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void commit_txn(CommitTxnRequest rqst) throws TException {
     // in replication flow, the write notification log table will be updated here.
-    if (rqst.isSetWriteEventInfos()) {
+    boolean isReplReplayOperation = rqst.isSetReplPolicy() && rqst.isSetTxn_type() &&
+                                    rqst.getTxn_type() == TxnType.REPL_CREATED;
+    boolean isReplDumpOrLoadOperation = rqst.isSetReplPolicy()
+            && (!rqst.isSetTxn_type() || (rqst.isSetTxn_type() && rqst.getTxn_type() != TxnType.REPL_CREATED));
+    if (rqst.isSetWriteEventInfos() && isReplReplayOperation) {
       long targetTxnId = getTxnHandler().getTargetTxnId(rqst.getReplPolicy(), rqst.getTxnid());
       if (targetTxnId < 0) {
         //looks like a retry
@@ -8400,8 +8408,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     getTxnHandler().commitTxn(rqst);
     if (listeners != null && !listeners.isEmpty()) {
-      MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
-          new CommitTxnEvent(rqst.getTxnid(), this));
+      if (!isReplDumpOrLoadOperation) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
+                new CommitTxnEvent(rqst.getTxnid(), this));
+      }
       Optional<CompactionInfo> compactionInfo = getTxnHandler().getCompactionByTxnId(rqst.getTxnid());
       if (compactionInfo.isPresent()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_COMPACTION,

@@ -56,7 +56,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   private HiveLockManagerCtx lockManagerCtx;
 
   @Override
-  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+  public long openTxn(Context ctx, String user, TxnType txnType, String dbNameUnderReplication) throws LockException {
     // No-op
     return 0L;
   }

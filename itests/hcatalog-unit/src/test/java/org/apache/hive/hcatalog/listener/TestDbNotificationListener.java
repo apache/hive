@@ -65,6 +65,8 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -1061,6 +1063,32 @@ public class TestDbNotificationListener {
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
     testEventCounts(defaultDbName, firstEventId, null, null, 3);
+  }
+
+  @Test
+  public void testReplEvents() throws Exception {
+    String dbNameUnderReplication = this.getClass().toString();
+    long txnId = msClient.openTxn("me", TxnType.DEFAULT, dbNameUnderReplication);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());   //Asserts that Repl Dump/Load OpenTxn is not captured in Notification log.
+
+    CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
+    commitTxnRequest.setReplPolicy(dbNameUnderReplication);
+    msClient.commitTxn(commitTxnRequest);
+
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());   //Asserts that Repl Dump/Load CommitTxn is not captured in Notification log.
+
+    txnId = msClient.openTxn("me", TxnType.DEFAULT, dbNameUnderReplication);
+
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());   //Asserts that Repl Dump/Load OpenTxn is not captured in Notification log.
+
+    msClient.rollbackTxn(txnId, dbNameUnderReplication);
+
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());   //Asserts that Repl Dump/Load AbortTxn is not captured in Notification log.
   }
 
   @Test

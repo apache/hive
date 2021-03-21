@@ -245,7 +245,7 @@ public class Driver implements IDriver {
             driverContext.getTxnManager().rollbackTxn();
 
             String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
-            driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
+            driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType(), null);
             lockAndRespond();
           }
           driverContext.setRetrial(true);

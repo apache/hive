@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
@@ -265,7 +266,10 @@ public class Compiler {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
         !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
-      driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
+      boolean isReplDumpOrLoadOp = driverContext.getQueryState().getHiveOperation().equals(HiveOperation.REPLDUMP)
+              || driverContext.getQueryState().getHiveOperation().equals(HiveOperation.REPLLOAD);
+      String dbNameUnderReplication = (isReplDumpOrLoadOp) ? PlanUtils.stripQuotes(tree.getChild(0).getText()) : null;
+      driverContext.getTxnManager().openTxn(context, userFromUGI, txnType, dbNameUnderReplication);
     }
   }
 
