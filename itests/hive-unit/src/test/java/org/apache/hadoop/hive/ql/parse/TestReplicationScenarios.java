@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
@@ -62,10 +63,13 @@ import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionD
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
@@ -106,6 +110,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
+import static org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData.DUMP_METADATA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -2160,6 +2165,65 @@ public class TestReplicationScenarios {
     loadAndVerify(replDbName, dbName, incrDump.lastReplId);
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=3", ptnData2, driverMirror);
 
+    verifySetupSteps = verifySetupOriginal;
+  }
+
+  @Test
+  public void testDumpMetadataBackwardCompatibility() throws IOException, SemanticException {
+    boolean verifySetupOriginal = verifySetupSteps;
+    verifySetupSteps = true;
+    String nameOfTest = testName.getMethodName();
+    String dbName = createDB(nameOfTest, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    //ensure bootstrap load runs with earlier format of dumpmetadata
+    Tuple bootstrapDump = replDumpDb(dbName);
+    deleteNewMetadataFields(bootstrapDump);
+    loadAndVerify(replDbName, dbName, bootstrapDump.lastReplId);
+
+    String[] unptnData = new String[] {"eleven", "twelve"};
+    String[] ptnData1 = new String[] {"thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[] {"fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[] {};
+
+    String unptnLocn = new Path(TEST_PATH, nameOfTest + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, nameOfTest + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, nameOfTest + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptnLocn, unptnData);
+    createTestDataFile(ptnLocn1, ptnData1);
+    createTestDataFile(ptnLocn2, ptnData2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptnLocn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptnData, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptnData, driver);
+
+    //ensure first incremental load runs with earlier format of dumpmetadata
+    Tuple incDump = replDumpDb(dbName);
+    deleteNewMetadataFields(incDump);
+    loadAndVerify(replDbName, dbName, incDump.lastReplId);
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptnData, driverMirror);
+    verifyRun("SELECT * from " + replDbName + ".unptned_late", unptnData, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn1 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptnData1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
+
+    //verify 2nd incremental load
+    incDump = replDumpDb(dbName);
+    deleteNewMetadataFields(incDump);
+    loadAndVerify(replDbName, dbName, incDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
     verifySetupSteps = verifySetupOriginal;
   }
 
@@ -4494,5 +4558,34 @@ public class TestReplicationScenarios {
       }
     }
     return null;
+  }
+
+  private void deleteNewMetadataFields(Tuple dump) throws SemanticException {
+    Path dumpHiveDir = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    DumpMetaData dmd = new DumpMetaData(dumpHiveDir, hconf);
+    Path dumpMetaPath = new Path(dumpHiveDir, DUMP_METADATA);
+
+    List<List<String>> listValues = new ArrayList<>();
+    DumpType dumpType = dmd.getDumpType();
+    Long eventFrom = dmd.getEventFrom();
+    Long eventTo = dmd.getEventTo();
+    String cmRoot = "testCmRoot";
+    String payload = dmd.getPayload();
+    Long dumpExecutionId = dmd.getDumpExecutionId();
+    ReplScope replScope = dmd.getReplScope();
+    listValues.add(
+        Arrays.asList(
+            dumpType.toString(),
+            eventFrom.toString(),
+            eventTo.toString(),
+            cmRoot,
+            dumpExecutionId.toString(),
+            payload)
+    );
+    if (replScope != null) {
+      listValues.add(dmd.prepareReplScopeValues());
+    }
+    org.apache.hadoop.hive.ql.parse.repl.dump
+        .Utils.writeOutput(listValues, dumpMetaPath, hconf, true);
   }
 }
