@@ -429,7 +429,7 @@ public class TestDbTxnManager {
 
   /**
    * Same as testHeartbeater, but testing cleanup of replication txns (TxnType.REPL_CREATED)
-   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 1 minute and hive.repl.event.db.listener.timetolive
+   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 30s and hive.repl.event.db.listener.timetolive
    * is set to 0 for testing purposes (the sum of these is the actual timeout)
    */
   @Test
@@ -438,7 +438,7 @@ public class TestDbTxnManager {
   };
 
   /**
-   * @param txnType e.g. TxnType.DEFAULT or TxnType.REPL_CREATED. There's a similar but different mechanism for
+   * @param txnType e.g. TxnType.DEFAULT or TxnType.REPL_CREATED. There's a different timeout for
    *                cleaning replication txns vs. non-replication txns
    */
   private void testHeartbeater(TxnType txnType, MetastoreConf.ConfVars timeThresholdConfVar) throws Exception {

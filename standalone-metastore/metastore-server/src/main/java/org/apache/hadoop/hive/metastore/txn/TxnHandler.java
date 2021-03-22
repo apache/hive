@@ -5091,7 +5091,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           " AND (" +
                 "\"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue() +
                 " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + timeout +
-             ") OR (" +
+             " OR " +
                 " \"TXN_TYPE\" = " + TxnType.REPL_CREATED.getValue() +
                 " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + replicationTxnTimeout +
              ")";
