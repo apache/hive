@@ -3185,7 +3185,7 @@ public interface IMetaStoreClient {
    * @return transaction identifiers
    * @throws TException
    */
-  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException;
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException;
 
   /**
    * Initiate a batch of transactions.  It is not guaranteed that the
@@ -3235,7 +3235,7 @@ public interface IMetaStoreClient {
    * deleted.
    * @throws TException
    */
-  void replRollbackTxn(long srcTxnid, String replPolicy) throws NoSuchTxnException, TException;
+  void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException;
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with

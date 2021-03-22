@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -175,7 +176,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     long currentLoadNotificationID = fetchNotificationIDFromDump(new Path(bootstrapDump.dumpLocation));
     long currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
     assertTrue(currentLoadNotificationID > previousLoadNotificationID);
-    assertTrue(currentNotificationID > currentLoadNotificationID);
+    assertTrue(currentNotificationID >= currentLoadNotificationID);
     previousLoadNotificationID = currentLoadNotificationID;
     WarehouseInstance.Tuple incrementalDump1 = primary.run("insert into t1 values (1)")
             .dump(primaryDbName);
@@ -184,7 +185,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     currentLoadNotificationID = fetchNotificationIDFromDump(new Path(incrementalDump1.dumpLocation));
     currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
     assertTrue(currentLoadNotificationID > previousLoadNotificationID);
-    assertTrue(currentNotificationID > currentLoadNotificationID);
+    assertTrue(currentNotificationID >= currentLoadNotificationID);
   }
 
   private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception {
@@ -809,7 +810,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 22);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 16);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -1600,6 +1601,34 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testReplOperationsNotCapturedInNotificationLog() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+            .verifyResults(new String[] {});
+
+    primary.run("use " + primaryDbName)
+           .run("insert into t1 values (1)");
+
+    long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+    WarehouseInstance.Tuple incrementalDump1 = primary.dump(primaryDbName);
+    long currentEventId = primary.getCurrentNotificationEventId().getEventId();
+    assertTrue (lastEventId == currentEventId);
+
+    lastEventId = replica.getCurrentNotificationEventId().getEventId();
+
+    replica.load(replicatedDbName, primaryDbName)
+            .verifyResults(new String[] {});
+
+    currentEventId =  replica.getCurrentNotificationEventId().getEventId();
+    long eventIdFromLoadMetadata = fetchNotificationIDFromDump(new Path(incrementalDump1.dumpLocation));
+    assertTrue (currentEventId >= lastEventId + getNoOfEventsDumped(incrementalDump1.dumpLocation));
+    assertTrue (eventIdFromLoadMetadata == currentEventId);
+  }
+
+  @Test
   public void testHdfsMaxDirItemsLimitDuringIncremental() throws Throwable {
 
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
@@ -1630,8 +1659,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t2 values (100)")
             .dump(primaryDbName, dumpClause);
 
-    int eventCount = Integer.parseInt(incrementalDump1.lastReplicationId)
-            - Integer.parseInt(bootstrapDump.lastReplicationId);
+    int eventCount = getNoOfEventsDumped(incrementalDump1.dumpLocation);
     assertEquals(eventCount, 5);
 
     replica.load(replicatedDbName, primaryDbName)
@@ -1645,13 +1673,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpClause);
 
-    eventCount = Integer.parseInt(incrementalDump2.lastReplicationId)
-            - Integer.parseInt(incrementalDump1.lastReplicationId);
-    assertTrue(eventCount > 5);
+    eventCount = getNoOfEventsDumped(incrementalDump2.dumpLocation);
+    assertTrue(eventCount > 5 && eventCount < 1000);
 
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
             .verifyResults(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
+  }
+
+  private int getNoOfEventsDumped(String dumpLocation) throws Throwable {
+    IncrementalLoadEventsIterator itr = new IncrementalLoadEventsIterator(
+            dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR, conf);
+    return itr.getNumEvents();
   }
 
   @Test
