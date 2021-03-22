@@ -107,6 +107,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
+  private final boolean useLowLevelCache;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
@@ -124,7 +125,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
-    boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
+    useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
     LOG.info("Initializing LLAP IO in {} mode", useLowLevelCache ? LlapIoImpl.MODE_CACHE : "none");
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
@@ -442,17 +443,26 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
   @Override
   public LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo() {
-    GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
-    LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
-        pathCache, tracePool, realCachePolicy);
-    return serializer.fetchCachedContentInfo();
+    if (useLowLevelCache) {
+      GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+      LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+          pathCache, tracePool, realCachePolicy);
+      return serializer.fetchCachedContentInfo();
+    } else {
+      LOG.warn("Low level cache is disabled.");
+      return LlapDaemonProtocolProtos.CacheEntryList.getDefaultInstance();
+    }
   }
 
   @Override
   public void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata) {
-    GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
-    LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
-        pathCache, tracePool, realCachePolicy);
-    serializer.loadData(metadata);
+    if (useLowLevelCache) {
+      GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+      LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+          pathCache, tracePool, realCachePolicy);
+      serializer.loadData(metadata);
+    } else {
+      LOG.warn("Cannot load data into the cache. Low level cache is disabled.");
+    }
   }
 }
