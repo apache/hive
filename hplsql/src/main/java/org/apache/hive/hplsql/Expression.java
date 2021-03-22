@@ -368,7 +368,7 @@ public class Expression {
     } else if (v1.type == Type.TIMESTAMP && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).timestampChange((Timestamp)v1.value, true /*add*/), v1.scale));
     } else {
-      exec.signal(Signal.Type.UNSUPPORTED_OPERATION, "Unsupported data types in addition operator");
+      unsupported(ctx, v1, v2, "+");
     }
   }
 
@@ -405,7 +405,7 @@ public class Expression {
     } else if (v1.type == Type.TIMESTAMP && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).timestampChange((Timestamp)v1.value, false /*subtract*/), v1.scale));
     } else {
-      exec.signal(Signal.Type.UNSUPPORTED_OPERATION, "Unsupported data types in subtraction operator");
+      unsupported(ctx, v1, v2, "-");
     }
   }
   
@@ -436,7 +436,7 @@ public class Expression {
     } else if (v1.type == Type.DOUBLE && v2.type == Type.BIGINT) {
       exec.stackPush(new Var(((double) v1.value) * (long)v2.value));
     } else {
-      exec.signal(Signal.Type.UNSUPPORTED_OPERATION, "Unsupported data types in multiplication operator");
+      unsupported(ctx, v1, v2, "*");
     }
   }
 
@@ -467,10 +467,16 @@ public class Expression {
     } else if (v1.type == Type.DOUBLE && v2.type == Type.BIGINT) {
       exec.stackPush(new Var(((double) v1.value) / (long)v2.value));
     } else {
-      exec.signal(Signal.Type.UNSUPPORTED_OPERATION, "Unsupported data types in division operator");
+      unsupported(ctx, v1, v2, "/");
     }
   }
-  
+
+  private void unsupported(HplsqlParser.ExprContext ctx, Var op1, Var op2, String operator) {
+    String msg = String.format("Unsupported data types in '%s' operator (%s%s%s)", operator, op1.type, operator, op2.type);
+    if (ctx != null) msg = "Ln:" + ctx.getStart().getLine() + " " + msg;
+    exec.signal(Signal.Type.UNSUPPORTED_OPERATION, msg);
+  }
+
   /**
    * Add or subtract the specified number of days from DATE
    */

@@ -414,6 +414,11 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testArity2() throws Exception {
+    run("arity2");
+  }
+
+  @Test
   public void testTypeCheck() throws Exception {
     run("type_check");
   }
@@ -463,11 +468,11 @@ public class TestHplsqlLocal {
     Exec exec = new Exec();
     String[] args = { "-f", "src/test/queries/local/" + testFile + ".sql", "-trace" };
     exec.run(args);
-    String sout = getTestOutput(out.toString()).trim();
-    String serr = getTestOutput(err.toString()).trim();
-    String output = (sout + (serr.isEmpty() ? "" : "\n" + serr)).trim();
+    String sout = getTestOutput(out.toString());
+    String serr = getTestOutput(err.toString());
+    String output = (sout + (serr.isEmpty() ? "" : serr));
     FileUtils.writeStringToFile(new java.io.File("target/tmp/log/" + testFile + ".out.txt"), output);
-    String t = FileUtils.readFileToString(new java.io.File("src/test/results/local/" + testFile + ".out.txt"), "utf-8").trim();
+    String t = FileUtils.readFileToString(new java.io.File("src/test/results/local/" + testFile + ".out.txt"), "utf-8");
     System.setOut(null);
     Assert.assertEquals(t, output);
   }

@@ -1,6 +1,7 @@
 declare a BIGINT = 3;
 declare b DECIMAL = 4;
 declare c DOUBLE = 5;
+declare s STRING = 'abc';
 
 -- add
 a + a;
@@ -14,6 +15,7 @@ b + c;
 c + c;
 c + a;
 c + b;
+s + s;
 
 -- sub
 a - a;
@@ -53,3 +55,7 @@ b / c;
 c / c;
 c / a;
 c / b;
+
+-- error
+
+'apple' / 3;

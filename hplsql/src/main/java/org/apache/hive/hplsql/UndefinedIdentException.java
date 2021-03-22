@@ -20,8 +20,8 @@ package org.apache.hive.hplsql;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-public class UndefinedException extends HplValidationException {
-  public UndefinedException(ParserRuleContext ctx, String ident) {
+public class UndefinedIdentException extends HplValidationException {
+  public UndefinedIdentException(ParserRuleContext ctx, String ident) {
     super(ctx, "identifier '" + ident + "' must be declared.");
   }
 }

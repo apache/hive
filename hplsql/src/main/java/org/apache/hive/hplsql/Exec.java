@@ -501,10 +501,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     signal(Signal.Type.SQLEXCEPTION, query.errorText(), query.exception());
   }
 
-  public void signalHplsql(HplValidationException exception) {
-    signal(Signal.Type.VALIDATION, exception.getMessage(), exception);
-  }
-
   public void signal(Exception exception) {
     setSqlCode(exception);
     signal(Signal.Type.SQLEXCEPTION, exception.getMessage(), exception);
@@ -856,6 +852,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 
   private HplsqlParser newParser(CommonTokenStream tokens) {
     HplsqlParser parser = new HplsqlParser(tokens);
+    // the default listener logs into stdout, overwrite it with a custom listener that uses beeline console
     parser.removeErrorListeners();
     parser.addErrorListener(new SyntaxErrorReporter(console));
     return parser;
@@ -994,6 +991,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
         error(((HplValidationException)sig.exception).getCtx(), sig.exception.getMessage());
       } else if (sig.type == Signal.Type.SQLEXCEPTION) {
         console.printError("Unhandled exception in HPL/SQL");
+      } else if (sig.type == Signal.Type.UNSUPPORTED_OPERATION) {
+        console.printError(sig.value == null ? "Unsupported operation" : sig.value);
       } else if (sig.exception != null) {
         sig.exception.printStackTrace(); 
       } else if (sig.value != null) {
@@ -1724,7 +1723,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       }
       if (!executed) {        
         if (!exec.functions.exec(name, ctx.expr_func_params())) {
-          throw new UndefinedException(ctx, name);
+          throw new UndefinedIdentException(ctx, name);
         }
       }
     }
@@ -2284,13 +2283,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       }
     } else {
       if (exec.buildSql || exec.inCallStmt) {
-        if (!exec.functions.exec(ident, null)) {
-          exec.stackPush(new Var(Var.Type.IDENT, ident));
-        }
+        exec.stackPush(new Var(Var.Type.IDENT, ident));
       } else {
         ident = ident.toUpperCase();
         if (!exec.functions.exec(ident, null)) {
-          throw new UndefinedException(ctx, ident);
+          throw new UndefinedIdentException(ctx, ident);
         }
       }
     }
