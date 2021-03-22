@@ -14371,10 +14371,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (functionInfo == null) {
         throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(wfSpec.name));
       }
-      wfSpec.setWindowSpec(processWindowSpec(functionInfo, wsNode));
+      wfSpec.setRespectNulls(processRespectIgnoreNulls(functionInfo, wsNode));
+      wfSpec.setWindowSpec(processWindowSpec(wsNode));
     }
 
     return wfSpec;
+  }
+
+  private boolean processRespectIgnoreNulls(WindowFunctionInfo functionInfo, ASTNode node)
+      throws SemanticException {
+
+    for(int i=0; i < node.getChildCount(); i++) {
+      int type = node.getChild(i).getType();
+      switch(type) {
+      case HiveParser.TOK_RESPECT_NULLS:
+        if (!functionInfo.isSupportsNullTreatment()) {
+          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
+        }
+        return true;
+      case HiveParser.TOK_IGNORE_NULLS:
+        if (!functionInfo.isSupportsNullTreatment()) {
+          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
+        }
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private boolean containsLeadLagUDF(ASTNode expressionTree) {
@@ -14409,17 +14432,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           "Duplicate definition of window " + nameNode.getText() +
               " is not allowed"));
     }
-    WindowFunctionInfo functionInfo = FunctionRegistry.getWindowFunctionInfo(nameNode.getText());
-    if (functionInfo == null) {
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(nameNode.getText()));
-    }
-    WindowSpec ws = processWindowSpec(functionInfo, wsNode);
+    WindowSpec ws = processWindowSpec(wsNode);
     spec.addWindowSpec(nameNode.getText(), ws);
   }
 
-  private WindowSpec processWindowSpec(WindowFunctionInfo functionInfo, ASTNode node) throws SemanticException {
+  private WindowSpec processWindowSpec(ASTNode node) throws SemanticException {
     boolean hasSrcId = false, hasPartSpec = false, hasWF = false;
-    boolean respectNulls = true;
     int srcIdIdx = -1, partIdx = -1, wfIdx = -1;
 
     for(int i=0; i < node.getChildCount(); i++)
@@ -14436,18 +14454,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_WINDOWRANGE:
       case HiveParser.TOK_WINDOWVALUES:
         hasWF = true; wfIdx = i;
-        break;
-      case HiveParser.TOK_RESPECT_NULLS:
-        if (!functionInfo.isSupportsNullTreatment()) {
-          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
-        }
-        respectNulls = true;
-        break;
-      case HiveParser.TOK_IGNORE_NULLS:
-        if (!functionInfo.isSupportsNullTreatment()) {
-          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
-        }
-        respectNulls = false;
         break;
       }
     }
@@ -14470,8 +14476,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       WindowFrameSpec wfSpec = processWindowFrame(wfNode);
       ws.setWindowFrame(wfSpec);
     }
-
-    ws.setRespectNulls(respectNulls);
 
     return ws;
   }

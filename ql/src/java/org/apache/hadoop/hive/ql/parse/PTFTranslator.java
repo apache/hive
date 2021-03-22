@@ -353,7 +353,7 @@ public class PTFTranslator {
     def.setExpressionTreeString(spec.getExpression().toStringTree());
     def.setStar(spec.isStar());
     def.setPivotResult(wFnInfo.isPivotResult());
-    def.setRespectNulls(spec.windowSpec.respectNulls());
+    def.setRespectNulls(spec.isRespectNulls());
     ShapeDetails inpShape = wdwTFnDef.getRawInputShape();
 
     /*
