@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -51,12 +54,13 @@ public class TestCompactionMetrics  extends CompactorTest {
   private static final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
   private static final String INITIATOR_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_INITIATOR_CYCLE;
   private static final String CLEANER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_CLEANER_CYCLE;
+  private static final String WORKER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_WORKER_CYCLE;
 
   @Test
-  public void testInitiatorMetricsEnabled() throws Exception {
+  public void testInitiatorPerfMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
-    int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
+    Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).set(0);
     long initiatorCycles = Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount();
     Table t = newTable("default", "ime", true);
     List<LockComponent> components = new ArrayList<>();
@@ -95,12 +99,12 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     runAcidMetricService();
 
-    Assert.assertEquals(originalValue + 10,
+    Assert.assertEquals(10,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
   }
 
   @Test
-  public void testInitiatorMetricsDisabled() throws Exception {
+  public void testInitiatorPerfMetricsDisabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
     Metrics.initialize(conf);
     int originalValue = Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue();
@@ -137,17 +141,17 @@ public class TestCompactionMetrics  extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(10, compacts.size());
+    Assert.assertEquals(initiatorCycles,
+        Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
 
     runAcidMetricService();
 
     Assert.assertEquals(originalValue,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
-    Assert.assertEquals(initiatorCycles,
-        Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount());
   }
 
   @Test
-  public void testCleanerMetricsEnabled() throws Exception {
+  public void testCleanerPerfMetricsEnabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
 
@@ -209,7 +213,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void testCleanerMetricsDisabled() throws Exception {
+  public void testCleanerPerfMetricsDisabled() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, false);
     Metrics.initialize(conf);
 
@@ -239,6 +243,52 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(cleanerCyclesMinor, Objects.requireNonNull(
         Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MAJOR)).getCount());
+  }
+
+  @Test
+  public void testWorkerPerfMetrics() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    MetricsFactory.close();
+    MetricsFactory.init(conf);
+
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
+    Table t = newTable("default", "mapwb", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mapwb", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mapwb", CompactionType.MINOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
+        WORKER_CYCLE_KEY + "_" + CompactionType.MINOR, 1);
+
+    rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
+        WORKER_CYCLE_KEY + "_" + CompactionType.MAJOR, 1);
   }
 
   @Test

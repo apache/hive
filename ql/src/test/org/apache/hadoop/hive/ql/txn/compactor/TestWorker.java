@@ -59,9 +59,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -73,8 +73,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Need to change some of these to have better test coverage.
  */
 public class TestWorker extends CompactorTest {
-  static final private String CLASS_NAME = TestWorker.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  private static final String CLASS_NAME = TestWorker.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   @Test
   public void nothing() throws Exception {
@@ -1117,34 +1118,23 @@ public class TestWorker extends CompactorTest {
   private void runTimeoutTest(long timeout, boolean runForever, boolean swallowInterrupt) throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     HiveConf timeoutConf = new HiveConf(conf);
-    TimeoutWorker timeoutWorker;
-
     timeoutConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, timeout, TimeUnit.MILLISECONDS);
-    timeoutWorker = getTimeoutWorker(timeoutConf, executor, runForever, swallowInterrupt);
 
-    // Wait until at least 1st loop is finished
-    while (!timeoutWorker.looped.get()) {
-      Thread.sleep(10L);
-    }
-
-    timeoutWorker.looped.set(false);
-
-    // Wait until the 2nd loop is finished
-    while (!timeoutWorker.looped.get()) {
-      Thread.sleep(10L);
-    }
-
+    TimeoutWorker timeoutWorker = getTimeoutWorker(timeoutConf, executor,
+        runForever, swallowInterrupt, new CountDownLatch(2));
+    // Wait until the 2nd cycle is finished
+    timeoutWorker.looped.await();
     timeoutWorker.stop.set(true);
     executor.shutdownNow();
   }
 
   private TimeoutWorker getTimeoutWorker(HiveConf conf, ExecutorService executor, boolean runForever,
-      boolean swallowInterrupt) throws Exception {
-    TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt);
+      boolean swallowInterrupt, CountDownLatch looped) throws Exception {
+    TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt, looped);
     timeoutWorker.setThreadId((int)timeoutWorker.getId());
     timeoutWorker.setConf(conf);
     timeoutWorker.init(new AtomicBoolean(false));
-    executor.submit(() -> timeoutWorker.run());
+    executor.submit(timeoutWorker);
     return timeoutWorker;
   }
 
@@ -1156,29 +1146,33 @@ public class TestWorker extends CompactorTest {
   private static final class TimeoutWorker extends Worker {
     private boolean runForever;
     private boolean swallowInterrupt;
-    private AtomicBoolean looped;
+    private CountDownLatch looped;
 
-    private TimeoutWorker(boolean runForever, boolean swallowInterrupt) {
+    private TimeoutWorker(boolean runForever, boolean swallowInterrupt, CountDownLatch looped) {
       this.runForever = runForever;
       this.swallowInterrupt = swallowInterrupt;
-      this.looped = new AtomicBoolean(false);
+      this.looped = looped;
     }
 
-    protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
-      looped.set(true);
+    @Override
+    protected Boolean findNextCompactionAndExecute(boolean computeStats) {
       if (runForever) {
         while (!stop.get()) {
           try {
-            looped.set(true);
             Thread.sleep(Long.MAX_VALUE);
           } catch (InterruptedException ie) {
             if (!swallowInterrupt) {
-              throw ie;
+              break;
             }
-            Thread.sleep(Long.MAX_VALUE);
+            try {
+              Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException e) {
+            }
           }
+          looped.countDown();
         }
       }
+      looped.countDown();
       return true;
     }
   }
