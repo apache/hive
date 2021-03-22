@@ -404,10 +404,15 @@ public class TestCompactionMetrics  extends CompactorTest {
     Table t = newTable("default", "dcamc", false);
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
 
+    // create an open txn record
+    long start = System.currentTimeMillis() - 1000L;
+    openTxn();
+    Thread.sleep(1000);
+
+    // create and commit txn with non-empty txn_components
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
     comp.setOperationType(DataOperationType.UPDATE);
-
     long txnid = openTxn();
 
     LockRequest req = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
@@ -420,16 +425,21 @@ public class TestCompactionMetrics  extends CompactorTest {
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     runAcidMetricService();
+    long diff = (System.currentTimeMillis() - start) / 1000;
 
     Assert.assertEquals(25,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "open_txn").intValue());
+
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
 
     txnHandler.cleanTxnToWriteIdTable();
     runAcidMetricService();
 
-    // As there are no open or aborted txns in the system, then max(TXNS.txn_id) would be min_uncommitted_txnid
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
   }
