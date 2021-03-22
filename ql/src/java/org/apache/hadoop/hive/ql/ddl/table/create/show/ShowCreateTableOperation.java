@@ -232,8 +232,9 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
       return "";
     }
     List<String> partitionCols = new ArrayList<String>();
-    for(String col:table.getPartColNames())
-      partitionCols.add('`' + col +'`');
+    for(String col:table.getPartColNames()) {
+      partitionCols.add('`' + col + '`');
+    }
     return " PARTITIONED ON (" + StringUtils.join(partitionCols, ", ") + ")";
   }
 

@@ -129,14 +129,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
     Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
     Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='false'");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
 
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -144,13 +145,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
             .verifyResults(new String[] { "MyName"});
 
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
+
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc2 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName)
+            primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -158,6 +161,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     replicatedDbName + ".idFunc2" })
             .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
             .verifyResults(new String[] { "YourName"});
+
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
+    assertFunctionJarsOnTarget("idFunc2", Arrays.asList("identity_udf2.jar"));
   }
 
   @Test
@@ -167,13 +173,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
-    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClasuse);
-    replica.load(replicatedDbName, primaryDbName, withClasuse)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -181,13 +187,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
             .verifyResults(new String[] { "MyName"});
 
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc2 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName, withClasuse);
-    replica.load(replicatedDbName, primaryDbName, withClasuse)
+            primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -195,6 +202,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     replicatedDbName + ".idFunc2" })
             .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
             .verifyResults(new String[] { "YourName"});
+
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
+    assertFunctionJarsOnTarget("idFunc2", Arrays.asList("identity_udf2.jar"));
   }
 
   @Test
@@ -326,29 +336,36 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   public void testCreateFunctionWithFunctionBinaryJarsOnHDFS() throws Throwable {
     Dependencies dependencies = dependencies("ivy://io.github.myui:hivemall:0.4.0-2", primary);
     String jarSubString = dependencies.toJarSubSql();
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='false'");
 
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
         + "using " + jarSubString);
 
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResult(replicatedDbName + ".anotherFunction");
+    assertFunctionJarsOnTarget("anotherFunction", dependencies.jarNames());
+  }
 
-    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
-        new Path(
-            replica.functionsRoot + "/" + replicatedDbName.toLowerCase() + "/anotherfunction/*/*")
-        , path -> path.toString().endsWith("jar"));
-    List<String> expectedDependenciesNames = dependencies.jarNames();
-    assertThat(fileStatuses.length, is(equalTo(expectedDependenciesNames.size())));
-    List<String> jars = Arrays.stream(fileStatuses).map(f -> {
-      String[] splits = f.getPath().toString().split("/");
-      return splits[splits.length - 1];
-    }).collect(Collectors.toList());
+  @Test
+  public void testBootstrapFunctionOnHDFSLazyCopy() throws Throwable {
+    Dependencies dependencies = dependencies("ivy://io.github.myui:hivemall:0.4.0-2", primary);
+    String jarSubString = dependencies.toJarSubSql();
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
-    assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
+            + "using " + jarSubString);
+
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResult(replicatedDbName + ".anotherFunction");
+    assertFunctionJarsOnTarget("anotherFunction", dependencies.jarNames());
   }
 
   @Test
@@ -370,19 +387,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
             .verifyResult(replicatedDbName + ".anotherFunction");
-
-    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
-            new Path(
-                    replica.functionsRoot + "/" + replicatedDbName.toLowerCase() + "/anotherfunction/*/*")
-            , path -> path.toString().endsWith("jar"));
-    List<String> expectedDependenciesNames = dependencies.jarNames();
-    assertThat(fileStatuses.length, is(equalTo(expectedDependenciesNames.size())));
-    List<String> jars = Arrays.stream(fileStatuses).map(f -> {
-        String[] splits = f.getPath().toString().split("/");
-        return splits[splits.length - 1];
-    }).collect(Collectors.toList());
-
-    assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
+    assertFunctionJarsOnTarget("anotherFunction", dependencies.jarNames());
   }
 
   static class Dependencies {
@@ -2271,5 +2276,24 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"
             + NS_REMOTE + "'");
     return withClause;
+  }
+
+  private void assertFunctionJarsOnTarget(String functionName, List<String> expectedJars) throws IOException {
+    //correct location of jars on target is functionRoot/dbName/funcName/nanoTs/jarFile
+    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem()
+        .globStatus(new Path(replica.functionsRoot + "/" +
+            replicatedDbName.toLowerCase() + "/" + functionName.toLowerCase() + "/*/*")
+        );
+    assertEquals(fileStatuses.length, expectedJars.size());
+    List<String> jars = new ArrayList<>();
+    for (FileStatus fileStatus : fileStatuses) {
+      jars.add(fileStatus.getPath().getName());
+    }
+    assertThat(jars, containsInAnyOrder(expectedJars.toArray()));
+
+    //confirm no jars created as directories
+    for (FileStatus jarStatus : fileStatuses) {
+      assert(!jarStatus.isDirectory());
+    }
   }
 }
