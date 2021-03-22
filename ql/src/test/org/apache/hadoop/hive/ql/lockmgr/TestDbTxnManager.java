@@ -505,7 +505,7 @@ public class TestDbTxnManager {
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 1, TimeUnit.MINUTES);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, 0, TimeUnit.SECONDS);
     houseKeeperService.setConf(conf);
   }

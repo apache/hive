@@ -5069,11 +5069,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.Idempotent
   public void performTimeOuts() {
-    performTimeOutsInternal(false);
-    performTimeOutsInternal(true); // replication timeouts
-  }
-
-  private void performTimeOutsInternal(boolean replication) {
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -5093,10 +5088,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       while(true) {
         stmt = dbConn.createStatement();
         String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
-            " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" +
-            (replication ? replicationTxnTimeout : timeout) +
-            " AND \"TXN_TYPE\" " +
-                (replication ? "=" : "!= ") + TxnType.REPL_CREATED.getValue();
+          " AND (" +
+                "\"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue() +
+                " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + timeout +
+             ") OR (" +
+                " \"TXN_TYPE\" = " + TxnType.REPL_CREATED.getValue() +
+                " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + replicationTxnTimeout +
+             ")";
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
