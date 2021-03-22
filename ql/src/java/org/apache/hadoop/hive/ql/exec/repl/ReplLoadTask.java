@@ -376,7 +376,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (dataCopyAtLoad) {
       if (work.getExternalTableDataCopyItr() == null) {
         Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILE_LIST_EXTERNAL);
-        try(FileList fileList = new FileList(extTableBackingFile, 0, conf)) {
+        try(FileList fileList = new FileList(extTableBackingFile, conf)) {
           work.setExternalTableDataCopyItr(fileList);
         }
       }

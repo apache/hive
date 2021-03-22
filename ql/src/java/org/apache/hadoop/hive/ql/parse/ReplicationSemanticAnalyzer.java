@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collections;
 
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;

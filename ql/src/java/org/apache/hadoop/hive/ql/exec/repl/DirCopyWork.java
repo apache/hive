@@ -30,8 +30,9 @@ import java.io.Serializable;
         Explain.Level.DEFAULT,
         Explain.Level.EXTENDED })
 public class DirCopyWork implements Serializable, StringConvertibleObject {
-  private static final String URI_SEPARATOR = "#";
+  public static final String URI_SEPARATOR = "#";
   private static final long serialVersionUID = 1L;
+  private String tableName;
   private Path fullyQualifiedSourcePath;
   private Path fullyQualifiedTargetPath;
   private String dumpDirectory;
@@ -42,7 +43,8 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
     this.dumpDirectory = dumpDirectory;
   }
 
-  public DirCopyWork(Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
+  public DirCopyWork(String tableName, Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
+    this.tableName = tableName;
     this.fullyQualifiedSourcePath = fullyQualifiedSourcePath;
     this.fullyQualifiedTargetPath = fullyQualifiedTargetPath;
   }
@@ -75,7 +77,9 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
     StringBuilder objInStr = new StringBuilder();
     objInStr.append(fullyQualifiedSourcePath)
             .append(URI_SEPARATOR)
-            .append(fullyQualifiedTargetPath);
+            .append(fullyQualifiedTargetPath)
+            .append(URI_SEPARATOR)
+            .append(tableName);
     return objInStr.toString();
   }
 
