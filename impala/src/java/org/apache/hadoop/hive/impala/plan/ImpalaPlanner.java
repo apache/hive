@@ -29,9 +29,10 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ResultMethod;
+import org.apache.hadoop.hive.impala.ImpalaEventSequence;
+import org.apache.hadoop.hive.impala.node.ImpalaUnionNode;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
-import org.apache.hadoop.hive.impala.ImpalaEventSequence;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -356,13 +357,9 @@ public class ImpalaPlanner {
             getQB().getMetaData().getDestTypeForAlias(dest) == QBMetaData.DEST_LOCAL_FILE));
   }
 
-  private List<Expr> mapResultExprs(List<Expr> resultExprs, String dest,
-      List<String> targetTableSchema) throws SemanticException, AnalysisException {
-    org.apache.hadoop.hive.ql.metadata.Table target =
-        getQB().getMetaData().getDestTableForAlias(dest);
-    Partition partition = (target == null) ?
-        getQB().getMetaData().getDestPartitionForAlias(dest) : null;
-
+  private List<Expr> mapResultExprsWithSchema(List<Expr> resultExprs, String dest,
+      List<String> targetTableSchema, org.apache.hadoop.hive.ql.metadata.Table target,
+      Partition partition) throws SemanticException, AnalysisException {
     if (targetTableSchema.size() != resultExprs.size()) {
       throw new SemanticException(
           "Expected " + targetTableSchema.size() + " columns for " + dest +
@@ -416,10 +413,74 @@ public class ImpalaPlanner {
           null);
 
       mappedResultExprs.add(exp);
-      colListPos++;
     }
     return mappedResultExprs;
   }
+
+  private List<Expr> mapResultExprs(List<Expr> resultExprs,
+      org.apache.hadoop.hive.ql.metadata.Table qlTable, Partition partition,
+      FeTable targetTable) throws AnalysisException {
+    // We need to update 'resultExprs' only if the query corresponds to an INSERT
+    // via VALUES() statement for a non-partitioned table where all the column names are
+    // not explicitly provided. For an INSERT via VALUES() statement,
+    // "stmtType_ == TStmtType.DML" evaluates to true and at least one of 'qlTable' and
+    // 'partition' is non-null. Recall that both of them would be null for
+    // a CREATE MATERIALIZED VIEW with specified partitions or a CREATE TABLE AS SELECT.
+    if (!(stmtType_ == TStmtType.DML) || (qlTable == null && partition == null)) {
+      return resultExprs;
+    }
+    Preconditions.checkState(targetTable != null);
+
+    List<FieldSchema> targetTableCols = qlTable != null ?
+        qlTable.getCols() : partition.getCols();
+    // Insertion of well-formed values into a partitioned table has already been
+    // supported before CDPD-20967. Thus, we do not handle insertion into a partitioned
+    // table here. This includes the case when we specify the partition to insert the row
+    // and the case when we do not specify the partition to insert the row. In the former
+    // case, 'qlTable' would be null and in the latter case, the size of 'resultExprs'
+    // would be larger than the size of 'targetTableCols' if the values in the VALUES
+    // clause are well-formed.
+    if (qlTable == null || resultExprs.size() != targetTableCols.size()) {
+      return resultExprs;
+    }
+    // Mismatched data types would be caught in different places under different
+    // scenarios. For instance, if we insert a value into a DATE column but the value
+    // could not be cast to DATE, then this would be caught at
+    // GenericUDFToDate#initialize(). On the other hand, if we insert a value into a
+    // column that might result in loss of precision, then it would be caught when we
+    // call StatementBase#checkTypeCompatibility().
+    int colListPos = 0;
+    List<Expr> updatedResultExprs = new ArrayList<>();
+    for (FieldSchema fs : targetTableCols) {
+      Expr exp;
+      exp = StatementBase.checkTypeCompatibility(qlTable.getCompleteName(),
+          targetTable.getColumn(fs.getName()), resultExprs.get(colListPos++),
+          ctx_.getQueryOptions().isDecimal_v2(),null);
+      updatedResultExprs.add(exp);
+    }
+    return updatedResultExprs;
+  }
+
+  private List<Expr> getResultExprs(String dest, List<String> targetTableSchema,
+      FeTable targetTable) throws SemanticException, AnalysisException {
+    List<Expr> resultExprs;
+    org.apache.hadoop.hive.ql.metadata.Table target =
+        getQB().getMetaData().getDestTableForAlias(dest);
+    Partition partition = (target == null) ?
+        getQB().getMetaData().getDestPartitionForAlias(dest) : null;
+    // This case corresponds to an INSERT statement where each column name in an inserted
+    // row is explicitly provided.
+    if (targetTableSchema != null) {
+      resultExprs = mapResultExprsWithSchema(ctx_.getResultExprs(), dest,
+          targetTableSchema, target, partition);
+      return resultExprs;
+    } else {
+      resultExprs = mapResultExprs(ctx_.getResultExprs(), target, partition,
+          targetTable);
+    }
+    return resultExprs;
+  }
+
   /**
    * Create one or more plan fragments corresponding to the supplied single node physical plan.
    * This function calls Impala's DistributedPlanner to create the plan fragments and does
@@ -447,7 +508,6 @@ public class ImpalaPlanner {
     }
 
     PlanFragment rootFragment = fragments.get(fragments.size() - 1);
-
     // Create runtime filters.
     if (ctx_.getQueryOptions().getRuntime_filter_mode() != TRuntimeFilterMode.OFF) {
       RuntimeFilterGenerator.generateRuntimeFilters(ctx_, rootFragment.getPlanRoot());
@@ -462,9 +522,8 @@ public class ImpalaPlanner {
     Preconditions.checkState(getQB().getParseInfo().getClauseNames().size() == 1);
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
     List<String> targetTableSchema = getQB().getParseInfo().getDestSchemaForClause(dest);
-    List<Expr> resultExprs = (targetTableSchema != null ) ?
-        mapResultExprs(ctx_.getResultExprs(), dest, targetTableSchema) :
-        ctx_.getResultExprs();
+
+    List<Expr> resultExprs = getResultExprs(dest, targetTableSchema, targetTable);
 
     if (targetTable != null) {
       int numStaticColumns = 0;
