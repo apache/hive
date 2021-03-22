@@ -186,6 +186,10 @@ public class ReplDumpWork implements Serializable {
     return resultValues;
   }
 
+  public boolean isBootstrap() {
+    return this.isBootstrap;
+  }
+
   public void setResultValues(List<String> resultValues) {
     this.resultValues = resultValues;
   }

@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
@@ -117,7 +116,10 @@ import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_REPL_FAILOVER;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_FAILOVER_DUMP_OPEN_TXN_TIMEOUT;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.FAILOVER_READY_MARKER;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 
@@ -203,7 +205,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
           initiateDataCopyTasks();
         } else {
-          LOG.info("Previous Dump is not yet loaded");
+          FileSystem fs = previousValidHiveDumpPath.getFileSystem(conf);
+          boolean isPreviousDumpLoaded = fs.exists(new Path(previousValidHiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
+          boolean isMarkedFailoverReady = fs.exists(new Path(previousValidHiveDumpPath, FAILOVER_READY_MARKER.toString()));
+          if (isPreviousDumpLoaded && isMarkedFailoverReady) {
+            LOG.info("Previous Dump has been loaded and is failover Ready: Skipping current Dump.");
+          } else {
+            LOG.info("Previous Dump is not yet loaded");
+          }
         }
       }
     } catch (RuntimeException e) {
@@ -303,6 +312,24 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
 
   private void finishRemainingTasks() throws SemanticException {
+    if (!work.isBootstrap() && conf.getBoolVar(HIVE_REPL_FAILOVER)) {
+      long failoverTimeoutInMs = HiveConf.getTimeVar(conf,
+              REPL_FAILOVER_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+      long failoverWaitUntilTime = System.currentTimeMillis() + failoverTimeoutInMs;
+      try {
+        if (isFailoverReadyState(failoverWaitUntilTime)) {
+          Path failoverMarker = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
+                  + FAILOVER_READY_MARKER.toString());
+          Utils.create(failoverMarker, conf);
+          LOG.info("Dump marked as failover ready.");
+        }
+        else{
+          LOG.info("Cannot proceed with failover as there are pending open transactions.");
+        }
+      } catch (LockException e) {
+        throw new SemanticException(e);
+      }
+    }
     Path dumpAckFile = new Path(work.getCurrentDumpPath(),
             ReplUtils.REPL_HIVE_BASE_DIR + File.separator
                     + ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
@@ -414,7 +441,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return true;
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
-      return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
+      return fs.exists(new Path(previousDumpPath, LOAD_ACKNOWLEDGEMENT.toString()))
+              && !fs.exists(new Path(previousDumpPath, FAILOVER_READY_MARKER.toString()));
     }
   }
 
@@ -532,6 +560,37 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
 
     return true;
+  }
+
+  boolean isFailoverReadyState(long waitUntilTime) throws LockException {
+    List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
+    ValidTxnList validTxnList = getTxnMgr().getValidTxns(excludedTxns);
+
+    do {
+      List<Long> openTxnListForAllDbs = getOpenTxns(validTxnList);
+      if (openTxnListForAllDbs.isEmpty()) {
+        return true;
+      }
+      //check if all transactions that are open are inserted into the hive locks table. If not wait and check again.
+      //Transactions table don't contain the db information. DB information is present only in the hive locks table.
+      //Transactions are inserted into the hive locks table after compilation. We need to make sure all transactions
+      //that are open have a entry in hive locks which can give us the db information and then we only wait for open
+      //transactions for the db under replication and not for all open transactions.
+      List<Long> txnsNotPresentInHiveLocks = getTxnsNotPresentInHiveLocksTable(openTxnListForAllDbs);
+      if (txnsNotPresentInHiveLocks.isEmpty() && getOpenTxns(validTxnList, work.dbNameOrPattern).isEmpty()) {
+        //If all open txns have been inserted in the hive locks table, we just need to check for the db under replication
+        // If there are no txns which are open for the given db under replication, we can proceed with failover.
+        return true;
+      }
+      // Wait for 5 minutes and check again.
+      try {
+        Thread.sleep(getSleepTime());
+      } catch (InterruptedException e) {
+        LOG.info("REPL DUMP thread sleep interrupted", e);
+      }
+      validTxnList = getTxnMgr().getValidTxns(excludedTxns);
+    } while (System.currentTimeMillis() < waitUntilTime);
+    return false;
   }
 
   private Long incrementalDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot, Hive hiveDb) throws Exception {
