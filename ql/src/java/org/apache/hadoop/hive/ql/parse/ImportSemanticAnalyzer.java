@@ -1383,9 +1383,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
       } else {
-        if (table != null && table.getTableType() != TableType.EXTERNAL_TABLE && table.getSd().getLocation() != null) {
-          tblDesc.setLocation(table.getSd().getLocation());
-        }
         x.getLOG().debug("table non-partitioned");
         if (!replicationSpec.isMetadataOnly()) {
           // repl-imports are replace-into unless the event is insert-into
