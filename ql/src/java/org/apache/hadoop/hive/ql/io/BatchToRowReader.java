@@ -124,6 +124,11 @@ public abstract class BatchToRowReader<StructType, UnionType>
     this.included = included;
   }
 
+  /**
+   * Wrapper class to map a virtual column to a handler defined by subclasses of {@link BatchToRowReader}.
+   * The handler should be a set operation which sets the value of the virtual column value
+   * in the current row.
+   */
   public static class VirtualColumnHandler {
     private final VirtualColumn virtualColumn;
     private final Consumer<Object> handler;
