@@ -569,7 +569,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     for (Map.Entry<WmTezSession, Boolean> entry : e.killQueryResults.entrySet()) {
       WmTezSession killQuerySession = entry.getKey();
       boolean killResult = entry.getValue();
-      LOG.debug("Processing KillQuery {} for {}", killResult ? "success" : "failure", killQuerySession);
+      LOG.debug("Processing KillQuery {} for {}",
+          killResult ? "success" : "failure", killQuerySession);
       // Note: do not cancel any user actions here; user actions actually interact with kills.
       KillQueryContext killCtx = killQueryInProgress.get(killQuerySession);
       if (killCtx == null) {
@@ -586,7 +587,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         LOG.warn("The session was both destroyed and returned by the user; destroying");
       }
       LOG.info("Destroying {}", sessionToDestroy);
-      RemoveSessionResult rr = handleReturnedInUseSessionOnMasterThread(e, sessionToDestroy, poolsToRedistribute, false);
+      RemoveSessionResult rr = handleReturnedInUseSessionOnMasterThread(
+          e, sessionToDestroy, poolsToRedistribute, false);
       if (rr == RemoveSessionResult.OK || rr == RemoveSessionResult.NOT_FOUND) {
         // Restart even if there's an internal error.
         syncWork.toRestartInUse.add(sessionToDestroy);
@@ -595,9 +597,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     e.toDestroy.clear();
 
     // 3. Now handle actual returns. Sessions may be returned to the pool or may trigger expires.
-    for (WmTezSession sessionToReturn : e.toReturn) {
+    for (WmTezSession sessionToReturn: e.toReturn) {
       LOG.info("Returning {}", sessionToReturn);
-      RemoveSessionResult rr = handleReturnedInUseSessionOnMasterThread(e, sessionToReturn, poolsToRedistribute, true);
+      RemoveSessionResult rr = handleReturnedInUseSessionOnMasterThread(
+          e, sessionToReturn, poolsToRedistribute, true);
       switch (rr) {
       case OK:
         WmEvent wmEvent = new WmEvent(WmEvent.EventType.RETURN);
@@ -616,8 +619,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         break;
       case IGNORE:
         break;
-      default:
-        throw new AssertionError("Unknown state " + rr);
+      default: throw new AssertionError("Unknown state " + rr);
       }
     }
     e.toReturn.clear();
