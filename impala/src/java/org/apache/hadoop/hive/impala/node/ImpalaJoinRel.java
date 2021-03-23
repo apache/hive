@@ -68,8 +68,10 @@ import org.apache.impala.planner.JoinNode;
 import org.apache.impala.planner.PlanNode;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ImpalaJoinRel extends ImpalaPlanRel {
 
@@ -194,8 +196,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       ImpalaPlanRel leftInputRel, PlanNode leftInputNode, ImpalaPlanRel rightInputRel,
       PlanNode rightInputNode, JoinOperator joinOp) throws HiveException, ImpalaException {
     Map<Integer, Expr> exprMap = Maps.newHashMap();
-    List<Expr> lhs = Lists.newArrayList();
-    List<Expr> rhs = Lists.newArrayList();
+    List<Expr> lhs1 = Lists.newArrayList();
+    List<Expr> rhs1 = Lists.newArrayList();
     PlanNode candidateInputNode = null;
     for (Map.Entry<Integer, Expr> e : leftInputRel.getOutputExprsMap().entrySet()) {
       Expr expr = e.getValue();
@@ -204,8 +206,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
         Expr expr2 = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr,
             leftInputNode.getTupleIds());
         if (!Expr.IS_NON_NULL_LITERAL.apply(expr)) {
-          lhs.add(expr);
-          rhs.add(expr2);
+          lhs1.add(expr);
+          rhs1.add(expr2);
           candidateInputNode = leftInputNode;
         }
         exprMap.put(e.getKey(), expr2);
@@ -214,17 +216,18 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       }
     }
 
-    if (candidateInputNode != null && lhs.size() > 0) {
-      ExprSubstitutionMap newSmap = new ExprSubstitutionMap(lhs, rhs);
+    if (candidateInputNode != null && lhs1.size() > 0) {
+      ExprSubstitutionMap newSmap = new ExprSubstitutionMap(lhs1, rhs1);
       ExprSubstitutionMap candidateSmap =
           ExprSubstitutionMap.compose(candidateInputNode.getOutputSmap(), newSmap,
               ctx.getRootAnalyzer());
       // See method comments about why we are populating the input smap
       candidateInputNode.setOutputSmap(candidateSmap);
     }
-    lhs.clear();
-    rhs.clear();
+
     candidateInputNode = null;
+    List<Expr> lhs2 = Lists.newArrayList();
+    List<Expr> rhs2 = Lists.newArrayList();
 
     // For (left) semi joins don't project the right input's output exprs
     if (!(join instanceof HiveSemiJoin)) {
@@ -237,8 +240,10 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
           Expr expr2 = createIfTupleIsNullPredicate(ctx.getRootAnalyzer(), expr,
               rightInputNode.getTupleIds());
           if (!Expr.IS_NON_NULL_LITERAL.apply(expr)) {
-            lhs.add(expr);
-            rhs.add(expr2);
+            if (!lhs1.contains(expr)) {
+              lhs2.add(expr);
+              rhs2.add(expr2);
+            }
             candidateInputNode = rightInputNode;
           }
           exprMap.put(newKey, expr2);
@@ -248,8 +253,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       }
     }
 
-    if (candidateInputNode != null && lhs.size() > 0) {
-      ExprSubstitutionMap newSmap = new ExprSubstitutionMap(lhs, rhs);
+    if (candidateInputNode != null && lhs2.size() > 0) {
+      ExprSubstitutionMap newSmap = new ExprSubstitutionMap(lhs2, rhs2);
       ExprSubstitutionMap candidateSmap =
           ExprSubstitutionMap.compose(candidateInputNode.getOutputSmap(), newSmap,
               ctx.getRootAnalyzer());
