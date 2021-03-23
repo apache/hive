@@ -371,6 +371,7 @@ public class WindowingSpec {
     String name;
     boolean isStar;
     boolean isDistinct;
+    boolean respectNulls;
     ArrayList<ASTNode> args;
     WindowSpec windowSpec;
 
@@ -409,6 +410,15 @@ public class WindowingSpec {
     public void setWindowSpec(WindowSpec windowSpec) {
       this.windowSpec = windowSpec;
     }
+
+    public boolean isRespectNulls() {
+      return respectNulls;
+    }
+
+    public void setRespectNulls(boolean respectNulls) {
+      this.respectNulls = respectNulls;
+    }
+
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
@@ -439,6 +449,10 @@ public class WindowingSpec {
       }
 
       buf.append(")");
+
+      if (!respectNulls) {
+        buf.append(" ignore nulls ");
+      }
 
       if ( windowSpec != null )
       {
@@ -471,7 +485,6 @@ public class WindowingSpec {
     private String sourceId;
     private PartitioningSpec partitioning;
     private WindowFrameSpec windowFrame;
-    private boolean ignoreNulls;
 
     public String getSourceId() {
       return sourceId;
@@ -528,14 +541,6 @@ public class WindowingSpec {
           sourceId == null ? "" : "Name='" + sourceId + "'",
           partitioning == null ? "" : partitioning,
           windowFrame == null ? "" : windowFrame);
-    }
-
-    public void setIgnoreNulls(boolean ignoreNulls) {
-      this.ignoreNulls = ignoreNulls;
-    }
-
-    public boolean ignoreNulls() {
-      return ignoreNulls;
     }
   };
 

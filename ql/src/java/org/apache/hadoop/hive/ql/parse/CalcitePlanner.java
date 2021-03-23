@@ -4690,7 +4690,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 6. Translate Window spec
         RowResolver inputRR = relToHiveRR.get(srcRel);
-        WindowSpec wndSpec = ((WindowFunctionSpec) wExpSpec).getWindowSpec();
+        WindowFunctionSpec wndFuncSpec = (WindowFunctionSpec) wExpSpec;
+        WindowSpec wndSpec = wndFuncSpec.getWindowSpec();
         List<RexNode> partitionKeys = getPartitionKeys(wndSpec.getPartition(), inputRR);
         List<RexFieldCollation> orderKeys = getOrderKeys(wndSpec.getOrder(), inputRR);
         RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().getStart());
@@ -4699,7 +4700,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         w = cluster.getRexBuilder().makeOver(calciteAggFnRetType, calciteAggFn, calciteAggFnArgs,
             partitionKeys, ImmutableList.<RexFieldCollation> copyOf(orderKeys), lowerBound,
-            upperBound, isRows, true, false, hiveAggInfo.isDistinct(), wndSpec.ignoreNulls());
+            upperBound, isRows, true, false, hiveAggInfo.isDistinct(), !wndFuncSpec.isRespectNulls());
       } else {
         // TODO: Convert to Semantic Exception
         throw new RuntimeException("Unsupported window Spec");

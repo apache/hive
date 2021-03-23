@@ -356,6 +356,7 @@ public class PTFTranslator {
     def.setExpressionTreeString(spec.getExpression().toStringTree());
     def.setStar(spec.isStar());
     def.setPivotResult(wFnInfo.isPivotResult());
+    def.setRespectNulls(spec.isRespectNulls());
     ShapeDetails inpShape = wdwTFnDef.getRawInputShape();
 
     /*
@@ -585,7 +586,7 @@ public class PTFTranslator {
 
     GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericWindowingEvaluator(def.getName(),
         argOIs,
-        def.isDistinct(), def.isStar());
+        def.isDistinct(), def.isStar(), def.respectNulls());
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
     def.setWFnEval(wFnEval);
     def.setOI(OI);
