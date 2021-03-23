@@ -47,8 +47,6 @@
         <exclude>co.cask.tephra:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
-        <exclude>org.hibernate:hibernate-entitymanager</exclude>
-        <exclude>org.hibernate.javax.persistence:hibernate-jpa-2.1-api</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
