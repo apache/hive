@@ -38,7 +38,7 @@ import java.util.Map;
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {
   public static final Logger LOG = LoggerFactory.getLogger(OrcFileStripeMergeRecordReader.class);
-  private final Reader reader;
+  private Reader reader;
   private final Path path;
   protected Iterator<StripeInformation> iter;
   protected List<OrcProto.StripeStatistics> stripeStatistics;
@@ -51,11 +51,13 @@ public class OrcFileStripeMergeRecordReader implements
     // if the combined split has only part of the file split, the entire file will be handled by the mapper that
     // owns the start of file split.
     skipFile = start > 0; // skip the file if start is not 0
-    FileSystem fs = path.getFileSystem(conf);
-    this.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
-    this.iter = reader.getStripes().iterator();
-    this.stripeIdx = 0;
-    this.stripeStatistics = ((ReaderImpl) reader).getOrcProtoStripeStatistics();
+    if (!skipFile) {
+      FileSystem fs = path.getFileSystem(conf);
+      this.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
+      this.iter = reader.getStripes().iterator();
+      this.stripeIdx = 0;
+      this.stripeStatistics = ((ReaderImpl) reader).getOrcProtoStripeStatistics();
+    }
     LOG.info("Processing file {}. skipFile: {}", path, skipFile);
   }
 
