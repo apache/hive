@@ -1161,7 +1161,7 @@ public class TestWorkloadManager {
     // [A: 1, B: 1]
     future = wm.applyMoveSessionAsync(sessionA2, "B");
     assertNotNull(future.get());
-    assertTrue(future.get());
+    assertFalse(future.get());
     wm.addTestEvent().get();
     allSessionProviders = wm.getAllSessionTriggerProviders();
     assertEquals(1, allSessionProviders.get("A").getSessions().size());
