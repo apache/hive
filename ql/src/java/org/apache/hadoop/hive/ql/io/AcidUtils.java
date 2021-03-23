@@ -1937,6 +1937,11 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
+  public static void setAcidOperationalProperties(
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
+    setAcidOperationalProperties(conf, isTxnTable, properties, false);
+  }
+
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
