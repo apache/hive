@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -1949,11 +1950,11 @@ public class AcidUtils {
       if (properties != null) {
         HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
       }
-      HiveConf.setBoolVar(conf, ConfVars.HIVE_ACID_FETCH_DELETED_ROWS, fetchDeletedRows);
+      conf.setBoolean(Constants.ACID_FETCH_DELETED_ROWS, fetchDeletedRows);
     } else {
       conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
       conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
-      conf.unset(ConfVars.HIVE_ACID_FETCH_DELETED_ROWS.varname);
+      conf.unset(Constants.ACID_FETCH_DELETED_ROWS);
     }
   }
 
