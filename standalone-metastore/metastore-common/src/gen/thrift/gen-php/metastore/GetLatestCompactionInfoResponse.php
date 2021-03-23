@@ -22,18 +22,8 @@ class GetLatestCompactionInfoResponse
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'dbname',
-            'isRequired' => true,
-            'type' => TType::STRING,
-        ),
-        2 => array(
-            'var' => 'tablename',
-            'isRequired' => true,
-            'type' => TType::STRING,
-        ),
-        3 => array(
             'var' => 'compactions',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::LST,
             'etype' => TType::STRUCT,
             'elem' => array(
@@ -44,14 +34,6 @@ class GetLatestCompactionInfoResponse
     );
 
     /**
-     * @var string
-     */
-    public $dbname = null;
-    /**
-     * @var string
-     */
-    public $tablename = null;
-    /**
      * @var \metastore\LatestCompactionInfo[]
      */
     public $compactions = null;
@@ -59,12 +41,6 @@ class GetLatestCompactionInfoResponse
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['dbname'])) {
-                $this->dbname = $vals['dbname'];
-            }
-            if (isset($vals['tablename'])) {
-                $this->tablename = $vals['tablename'];
-            }
             if (isset($vals['compactions'])) {
                 $this->compactions = $vals['compactions'];
             }
@@ -91,20 +67,6 @@ class GetLatestCompactionInfoResponse
             }
             switch ($fid) {
                 case 1:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->dbname);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 2:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->tablename);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 3:
                     if ($ftype == TType::LST) {
                         $this->compactions = array();
                         $_size738 = 0;
@@ -135,21 +97,11 @@ class GetLatestCompactionInfoResponse
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('GetLatestCompactionInfoResponse');
-        if ($this->dbname !== null) {
-            $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
-            $xfer += $output->writeString($this->dbname);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->tablename !== null) {
-            $xfer += $output->writeFieldBegin('tablename', TType::STRING, 2);
-            $xfer += $output->writeString($this->tablename);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->compactions !== null) {
             if (!is_array($this->compactions)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('compactions', TType::LST, 3);
+            $xfer += $output->writeFieldBegin('compactions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->compactions));
             foreach ($this->compactions as $iter744) {
                 $xfer += $iter744->write($output);

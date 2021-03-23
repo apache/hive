@@ -26777,17 +26777,8 @@ GetLatestCompactionInfoResponse::~GetLatestCompactionInfoResponse() noexcept {
 }
 
 
-void GetLatestCompactionInfoResponse::__set_dbname(const std::string& val) {
-  this->dbname = val;
-}
-
-void GetLatestCompactionInfoResponse::__set_tablename(const std::string& val) {
-  this->tablename = val;
-}
-
 void GetLatestCompactionInfoResponse::__set_compactions(const std::vector<LatestCompactionInfo> & val) {
   this->compactions = val;
-__isset.compactions = true;
 }
 std::ostream& operator<<(std::ostream& out, const GetLatestCompactionInfoResponse& obj)
 {
@@ -26808,8 +26799,7 @@ uint32_t GetLatestCompactionInfoResponse::read(::apache::thrift::protocol::TProt
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_dbname = false;
-  bool isset_tablename = false;
+  bool isset_compactions = false;
 
   while (true)
   {
@@ -26820,22 +26810,6 @@ uint32_t GetLatestCompactionInfoResponse::read(::apache::thrift::protocol::TProt
     switch (fid)
     {
       case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dbname);
-          isset_dbname = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->tablename);
-          isset_tablename = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->compactions.clear();
@@ -26850,7 +26824,7 @@ uint32_t GetLatestCompactionInfoResponse::read(::apache::thrift::protocol::TProt
             }
             xfer += iprot->readListEnd();
           }
-          this->__isset.compactions = true;
+          isset_compactions = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -26864,9 +26838,7 @@ uint32_t GetLatestCompactionInfoResponse::read(::apache::thrift::protocol::TProt
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_dbname)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_tablename)
+  if (!isset_compactions)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -26876,27 +26848,18 @@ uint32_t GetLatestCompactionInfoResponse::write(::apache::thrift::protocol::TPro
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("GetLatestCompactionInfoResponse");
 
-  xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->dbname);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->tablename);
-  xfer += oprot->writeFieldEnd();
-
-  if (this->__isset.compactions) {
-    xfer += oprot->writeFieldBegin("compactions", ::apache::thrift::protocol::T_LIST, 3);
+  xfer += oprot->writeFieldBegin("compactions", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compactions.size()));
+    std::vector<LatestCompactionInfo> ::const_iterator _iter968;
+    for (_iter968 = this->compactions.begin(); _iter968 != this->compactions.end(); ++_iter968)
     {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compactions.size()));
-      std::vector<LatestCompactionInfo> ::const_iterator _iter968;
-      for (_iter968 = this->compactions.begin(); _iter968 != this->compactions.end(); ++_iter968)
-      {
-        xfer += (*_iter968).write(oprot);
-      }
-      xfer += oprot->writeListEnd();
+      xfer += (*_iter968).write(oprot);
     }
-    xfer += oprot->writeFieldEnd();
+    xfer += oprot->writeListEnd();
   }
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -26904,31 +26867,20 @@ uint32_t GetLatestCompactionInfoResponse::write(::apache::thrift::protocol::TPro
 
 void swap(GetLatestCompactionInfoResponse &a, GetLatestCompactionInfoResponse &b) {
   using ::std::swap;
-  swap(a.dbname, b.dbname);
-  swap(a.tablename, b.tablename);
   swap(a.compactions, b.compactions);
-  swap(a.__isset, b.__isset);
 }
 
 GetLatestCompactionInfoResponse::GetLatestCompactionInfoResponse(const GetLatestCompactionInfoResponse& other969) {
-  dbname = other969.dbname;
-  tablename = other969.tablename;
   compactions = other969.compactions;
-  __isset = other969.__isset;
 }
 GetLatestCompactionInfoResponse& GetLatestCompactionInfoResponse::operator=(const GetLatestCompactionInfoResponse& other970) {
-  dbname = other970.dbname;
-  tablename = other970.tablename;
   compactions = other970.compactions;
-  __isset = other970.__isset;
   return *this;
 }
 void GetLatestCompactionInfoResponse::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "GetLatestCompactionInfoResponse(";
-  out << "dbname=" << to_string(dbname);
-  out << ", " << "tablename=" << to_string(tablename);
-  out << ", " << "compactions="; (__isset.compactions ? (out << to_string(compactions)) : (out << "<null>"));
+  out << "compactions=" << to_string(compactions);
   out << ")";
 }
 

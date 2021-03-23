@@ -15376,16 +15376,12 @@ class LatestCompactionInfo(object):
 class GetLatestCompactionInfoResponse(object):
     """
     Attributes:
-     - dbname
-     - tablename
      - compactions
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, compactions=None,):
-        self.dbname = dbname
-        self.tablename = tablename
+    def __init__(self, compactions=None,):
         self.compactions = compactions
 
     def read(self, iprot):
@@ -15398,16 +15394,6 @@ class GetLatestCompactionInfoResponse(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.STRING:
-                    self.dbname = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.tablename = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
                 if ftype == TType.LIST:
                     self.compactions = []
                     (_etype738, _size735) = iprot.readListBegin()
@@ -15428,16 +15414,8 @@ class GetLatestCompactionInfoResponse(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('GetLatestCompactionInfoResponse')
-        if self.dbname is not None:
-            oprot.writeFieldBegin('dbname', TType.STRING, 1)
-            oprot.writeString(self.dbname.encode('utf-8') if sys.version_info[0] == 2 else self.dbname)
-            oprot.writeFieldEnd()
-        if self.tablename is not None:
-            oprot.writeFieldBegin('tablename', TType.STRING, 2)
-            oprot.writeString(self.tablename.encode('utf-8') if sys.version_info[0] == 2 else self.tablename)
-            oprot.writeFieldEnd()
         if self.compactions is not None:
-            oprot.writeFieldBegin('compactions', TType.LIST, 3)
+            oprot.writeFieldBegin('compactions', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.compactions))
             for iter741 in self.compactions:
                 iter741.write(oprot)
@@ -15447,10 +15425,8 @@ class GetLatestCompactionInfoResponse(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbname is None:
-            raise TProtocolException(message='Required field dbname is unset!')
-        if self.tablename is None:
-            raise TProtocolException(message='Required field tablename is unset!')
+        if self.compactions is None:
+            raise TProtocolException(message='Required field compactions is unset!')
         return
 
     def __repr__(self):
@@ -28801,9 +28777,7 @@ LatestCompactionInfo.thrift_spec = (
 all_structs.append(GetLatestCompactionInfoResponse)
 GetLatestCompactionInfoResponse.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'dbname', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
-    (3, TType.LIST, 'compactions', (TType.STRUCT, [LatestCompactionInfo, None], False), None, ),  # 3
+    (1, TType.LIST, 'compactions', (TType.STRUCT, [LatestCompactionInfo, None], False), None, ),  # 1
 )
 all_structs.append(AddDynamicPartitions)
 AddDynamicPartitions.thrift_spec = (

@@ -24,8 +24,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CATALOG_DB_S
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoResponse;
-import org.apache.hadoop.hive.metastore.api.LatestCompactionInfo;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -37,11 +35,8 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Utilities common to Filtering operations.
@@ -446,36 +441,5 @@ public class FilterUtils {
     } else {
       return compactions;
     }
-  }
-
-  public static GetLatestCompactionInfoResponse filterLatestCompactionIfEnabled(
-      boolean isFilterEnabled, MetaStoreFilterHook filterHook,
-      String catName, GetLatestCompactionInfoResponse response
-  ) throws MetaException {
-    if (isFilterEnabled && response.getCompactionsSize() > 0) {
-      List<LatestCompactionInfo> compactions = response.getCompactions();
-      if (compactions.get(0).getPartitionname() == null) {
-        // non partitioned table
-        List<String> tableNames = new ArrayList<>();
-        tableNames.add(response.getTablename());
-        tableNames = filterHook.filterTableNames(catName, response.getDbname(), tableNames);
-        if (tableNames.isEmpty()) {
-          response.unsetCompactions();
-        }
-      } else {
-        // partitioned table
-        List<String> partitionNames = compactions.stream()
-            .map(LatestCompactionInfo::getPartitionname)
-            .collect(Collectors.toList());
-        partitionNames = filterHook.filterPartitionNames(
-            catName, response.getDbname(), response.getTablename(), partitionNames);
-        Set<String> partitionNameSet = new HashSet<>(partitionNames);
-        compactions = compactions.stream()
-            .filter(lci -> partitionNameSet.contains(lci.getPartitionname()))
-            .collect(Collectors.toList());
-        response.setCompactions(compactions);
-      }
-    }
-    return response;
   }
 }

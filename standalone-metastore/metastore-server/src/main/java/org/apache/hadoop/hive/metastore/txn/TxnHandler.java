@@ -3590,12 +3590,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  /**
+   * We assume this is only called by metadata cache server to know if there are new base/delta files should be read.
+   * The query filters compactions by state and only returns SUCCEEDED or READY_FOR_CLEANING compactions because
+   */
   @RetrySemantics.ReadOnly
   public GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest rqst)
       throws MetaException {
     GetLatestCompactionInfoResponse response = new GetLatestCompactionInfoResponse();
-    response.setDbname(rqst.getDbname());
-    response.setTablename(rqst.getTablename());
     Connection dbConn = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
@@ -3604,7 +3606,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
 
         List<String> params = new ArrayList<>();
-        // This query combines the result sets of succeeded compactions and readyToClean compactions
+        // This query combines the result sets of SUCCEEDED compactions and READY_FOR_CLEANING compactions
+        // We also sort the result by CC_ID in descending order so that we can keep only the latest record
+        // according to the order in result set
         StringBuilder sb = new StringBuilder()
             .append("SELECT * FROM (")
             .append("   SELECT")

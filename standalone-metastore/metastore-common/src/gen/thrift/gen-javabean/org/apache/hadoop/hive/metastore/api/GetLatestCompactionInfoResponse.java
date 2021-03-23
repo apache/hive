@@ -11,22 +11,16 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class GetLatestCompactionInfoResponse implements org.apache.thrift.TBase<GetLatestCompactionInfoResponse, GetLatestCompactionInfoResponse._Fields>, java.io.Serializable, Cloneable, Comparable<GetLatestCompactionInfoResponse> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetLatestCompactionInfoResponse");
 
-  private static final org.apache.thrift.protocol.TField DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbname", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField COMPACTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("compactions", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField COMPACTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("compactions", org.apache.thrift.protocol.TType.LIST, (short)1);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetLatestCompactionInfoResponseStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetLatestCompactionInfoResponseTupleSchemeFactory();
 
-  private @org.apache.thrift.annotation.Nullable java.lang.String dbname; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String tablename; // required
-  private @org.apache.thrift.annotation.Nullable java.util.List<LatestCompactionInfo> compactions; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.List<LatestCompactionInfo> compactions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    DBNAME((short)1, "dbname"),
-    TABLENAME((short)2, "tablename"),
-    COMPACTIONS((short)3, "compactions");
+    COMPACTIONS((short)1, "compactions");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -42,11 +36,7 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // DBNAME
-          return DBNAME;
-        case 2: // TABLENAME
-          return TABLENAME;
-        case 3: // COMPACTIONS
+        case 1: // COMPACTIONS
           return COMPACTIONS;
         default:
           return null;
@@ -89,15 +79,10 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.COMPACTIONS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.COMPACTIONS, new org.apache.thrift.meta_data.FieldMetaData("compactions", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.COMPACTIONS, new org.apache.thrift.meta_data.FieldMetaData("compactions", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LatestCompactionInfo.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -108,24 +93,16 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public GetLatestCompactionInfoResponse(
-    java.lang.String dbname,
-    java.lang.String tablename)
+    java.util.List<LatestCompactionInfo> compactions)
   {
     this();
-    this.dbname = dbname;
-    this.tablename = tablename;
+    this.compactions = compactions;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public GetLatestCompactionInfoResponse(GetLatestCompactionInfoResponse other) {
-    if (other.isSetDbname()) {
-      this.dbname = other.dbname;
-    }
-    if (other.isSetTablename()) {
-      this.tablename = other.tablename;
-    }
     if (other.isSetCompactions()) {
       java.util.List<LatestCompactionInfo> __this__compactions = new java.util.ArrayList<LatestCompactionInfo>(other.compactions.size());
       for (LatestCompactionInfo other_element : other.compactions) {
@@ -141,57 +118,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
-    this.dbname = null;
-    this.tablename = null;
     this.compactions = null;
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getDbname() {
-    return this.dbname;
-  }
-
-  public void setDbname(@org.apache.thrift.annotation.Nullable java.lang.String dbname) {
-    this.dbname = dbname;
-  }
-
-  public void unsetDbname() {
-    this.dbname = null;
-  }
-
-  /** Returns true if field dbname is set (has been assigned a value) and false otherwise */
-  public boolean isSetDbname() {
-    return this.dbname != null;
-  }
-
-  public void setDbnameIsSet(boolean value) {
-    if (!value) {
-      this.dbname = null;
-    }
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getTablename() {
-    return this.tablename;
-  }
-
-  public void setTablename(@org.apache.thrift.annotation.Nullable java.lang.String tablename) {
-    this.tablename = tablename;
-  }
-
-  public void unsetTablename() {
-    this.tablename = null;
-  }
-
-  /** Returns true if field tablename is set (has been assigned a value) and false otherwise */
-  public boolean isSetTablename() {
-    return this.tablename != null;
-  }
-
-  public void setTablenameIsSet(boolean value) {
-    if (!value) {
-      this.tablename = null;
-    }
   }
 
   public int getCompactionsSize() {
@@ -236,22 +163,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case DBNAME:
-      if (value == null) {
-        unsetDbname();
-      } else {
-        setDbname((java.lang.String)value);
-      }
-      break;
-
-    case TABLENAME:
-      if (value == null) {
-        unsetTablename();
-      } else {
-        setTablename((java.lang.String)value);
-      }
-      break;
-
     case COMPACTIONS:
       if (value == null) {
         unsetCompactions();
@@ -266,12 +177,6 @@ package org.apache.hadoop.hive.metastore.api;
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case DBNAME:
-      return getDbname();
-
-    case TABLENAME:
-      return getTablename();
-
     case COMPACTIONS:
       return getCompactions();
 
@@ -286,10 +191,6 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
-    case DBNAME:
-      return isSetDbname();
-    case TABLENAME:
-      return isSetTablename();
     case COMPACTIONS:
       return isSetCompactions();
     }
@@ -311,24 +212,6 @@ package org.apache.hadoop.hive.metastore.api;
     if (this == that)
       return true;
 
-    boolean this_present_dbname = true && this.isSetDbname();
-    boolean that_present_dbname = true && that.isSetDbname();
-    if (this_present_dbname || that_present_dbname) {
-      if (!(this_present_dbname && that_present_dbname))
-        return false;
-      if (!this.dbname.equals(that.dbname))
-        return false;
-    }
-
-    boolean this_present_tablename = true && this.isSetTablename();
-    boolean that_present_tablename = true && that.isSetTablename();
-    if (this_present_tablename || that_present_tablename) {
-      if (!(this_present_tablename && that_present_tablename))
-        return false;
-      if (!this.tablename.equals(that.tablename))
-        return false;
-    }
-
     boolean this_present_compactions = true && this.isSetCompactions();
     boolean that_present_compactions = true && that.isSetCompactions();
     if (this_present_compactions || that_present_compactions) {
@@ -345,14 +228,6 @@ package org.apache.hadoop.hive.metastore.api;
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetDbname()) ? 131071 : 524287);
-    if (isSetDbname())
-      hashCode = hashCode * 8191 + dbname.hashCode();
-
-    hashCode = hashCode * 8191 + ((isSetTablename()) ? 131071 : 524287);
-    if (isSetTablename())
-      hashCode = hashCode * 8191 + tablename.hashCode();
-
     hashCode = hashCode * 8191 + ((isSetCompactions()) ? 131071 : 524287);
     if (isSetCompactions())
       hashCode = hashCode * 8191 + compactions.hashCode();
@@ -368,26 +243,6 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.valueOf(isSetDbname()).compareTo(other.isSetDbname());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetDbname()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbname, other.dbname);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.valueOf(isSetTablename()).compareTo(other.isSetTablename());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTablename()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tablename, other.tablename);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = java.lang.Boolean.valueOf(isSetCompactions()).compareTo(other.isSetCompactions());
     if (lastComparison != 0) {
       return lastComparison;
@@ -419,43 +274,21 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("GetLatestCompactionInfoResponse(");
     boolean first = true;
 
-    sb.append("dbname:");
-    if (this.dbname == null) {
+    sb.append("compactions:");
+    if (this.compactions == null) {
       sb.append("null");
     } else {
-      sb.append(this.dbname);
+      sb.append(this.compactions);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("tablename:");
-    if (this.tablename == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.tablename);
-    }
-    first = false;
-    if (isSetCompactions()) {
-      if (!first) sb.append(", ");
-      sb.append("compactions:");
-      if (this.compactions == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.compactions);
-      }
-      first = false;
-    }
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetDbname()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbname' is unset! Struct:" + toString());
-    }
-
-    if (!isSetTablename()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'tablename' is unset! Struct:" + toString());
+    if (!isSetCompactions()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'compactions' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -495,23 +328,7 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
-          case 1: // DBNAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.dbname = iprot.readString();
-              struct.setDbnameIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // TABLENAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.tablename = iprot.readString();
-              struct.setTablenameIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // COMPACTIONS
+          case 1: // COMPACTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list836 = iprot.readListBegin();
@@ -543,29 +360,17 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.dbname != null) {
-        oprot.writeFieldBegin(DBNAME_FIELD_DESC);
-        oprot.writeString(struct.dbname);
-        oprot.writeFieldEnd();
-      }
-      if (struct.tablename != null) {
-        oprot.writeFieldBegin(TABLENAME_FIELD_DESC);
-        oprot.writeString(struct.tablename);
-        oprot.writeFieldEnd();
-      }
       if (struct.compactions != null) {
-        if (struct.isSetCompactions()) {
-          oprot.writeFieldBegin(COMPACTIONS_FIELD_DESC);
+        oprot.writeFieldBegin(COMPACTIONS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compactions.size()));
+          for (LatestCompactionInfo _iter839 : struct.compactions)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compactions.size()));
-            for (LatestCompactionInfo _iter839 : struct.compactions)
-            {
-              _iter839.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter839.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -584,20 +389,11 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetLatestCompactionInfoResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.dbname);
-      oprot.writeString(struct.tablename);
-      java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetCompactions()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetCompactions()) {
+      {
+        oprot.writeI32(struct.compactions.size());
+        for (LatestCompactionInfo _iter840 : struct.compactions)
         {
-          oprot.writeI32(struct.compactions.size());
-          for (LatestCompactionInfo _iter840 : struct.compactions)
-          {
-            _iter840.write(oprot);
-          }
+          _iter840.write(oprot);
         }
       }
     }
@@ -605,25 +401,18 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetLatestCompactionInfoResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.dbname = iprot.readString();
-      struct.setDbnameIsSet(true);
-      struct.tablename = iprot.readString();
-      struct.setTablenameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
+      {
+        org.apache.thrift.protocol.TList _list841 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.compactions = new java.util.ArrayList<LatestCompactionInfo>(_list841.size);
+        @org.apache.thrift.annotation.Nullable LatestCompactionInfo _elem842;
+        for (int _i843 = 0; _i843 < _list841.size; ++_i843)
         {
-          org.apache.thrift.protocol.TList _list841 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.compactions = new java.util.ArrayList<LatestCompactionInfo>(_list841.size);
-          @org.apache.thrift.annotation.Nullable LatestCompactionInfo _elem842;
-          for (int _i843 = 0; _i843 < _list841.size; ++_i843)
-          {
-            _elem842 = new LatestCompactionInfo();
-            _elem842.read(iprot);
-            struct.compactions.add(_elem842);
-          }
+          _elem842 = new LatestCompactionInfo();
+          _elem842.read(iprot);
+          struct.compactions.add(_elem842);
         }
-        struct.setCompactionsIsSet(true);
       }
+      struct.setCompactionsIsSet(true);
     }
   }
 

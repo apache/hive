@@ -8460,6 +8460,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetLatestCompactionInfoResponse get_latest_compaction_info(GetLatestCompactionInfoRequest rqst)
       throws MetaException {
+    if (rqst.getDbname() == null || rqst.getTablename() == null) {
+      throw new MetaException("Database name and table name cannot be null.");
+    }
     return getTxnHandler().getLatestCompactionInfo(rqst);
   }
 

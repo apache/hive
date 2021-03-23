@@ -3469,10 +3469,13 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
-   * Get one latest record of succeeded compaction for a table/partition.
-   * Note that specific partition names should be supplied with the request for a partitioned table.
+   * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
+   * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
+   * Is is assumed to be done by the caller.
+   * Note that partition names should be supplied with the request for a partitioned table; otherwise,
+   * no records will be returned.
    * @param request info on which compaction to retrieve
-   * @return one single compaction record for a non partitioned table or one latest record for each
+   * @return one latest compaction record for a non partitioned table or one latest record for each
    * partition specified by the request.
    * @throws TException
    */

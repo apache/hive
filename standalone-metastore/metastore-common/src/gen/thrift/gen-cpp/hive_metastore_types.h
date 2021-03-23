@@ -10013,41 +10013,23 @@ void swap(LatestCompactionInfo &a, LatestCompactionInfo &b);
 
 std::ostream& operator<<(std::ostream& out, const LatestCompactionInfo& obj);
 
-typedef struct _GetLatestCompactionInfoResponse__isset {
-  _GetLatestCompactionInfoResponse__isset() : compactions(false) {}
-  bool compactions :1;
-} _GetLatestCompactionInfoResponse__isset;
 
 class GetLatestCompactionInfoResponse : public virtual ::apache::thrift::TBase {
  public:
 
   GetLatestCompactionInfoResponse(const GetLatestCompactionInfoResponse&);
   GetLatestCompactionInfoResponse& operator=(const GetLatestCompactionInfoResponse&);
-  GetLatestCompactionInfoResponse() : dbname(), tablename() {
+  GetLatestCompactionInfoResponse() {
   }
 
   virtual ~GetLatestCompactionInfoResponse() noexcept;
-  std::string dbname;
-  std::string tablename;
   std::vector<LatestCompactionInfo>  compactions;
-
-  _GetLatestCompactionInfoResponse__isset __isset;
-
-  void __set_dbname(const std::string& val);
-
-  void __set_tablename(const std::string& val);
 
   void __set_compactions(const std::vector<LatestCompactionInfo> & val);
 
   bool operator == (const GetLatestCompactionInfoResponse & rhs) const
   {
-    if (!(dbname == rhs.dbname))
-      return false;
-    if (!(tablename == rhs.tablename))
-      return false;
-    if (__isset.compactions != rhs.__isset.compactions)
-      return false;
-    else if (__isset.compactions && !(compactions == rhs.compactions))
+    if (!(compactions == rhs.compactions))
       return false;
     return true;
   }

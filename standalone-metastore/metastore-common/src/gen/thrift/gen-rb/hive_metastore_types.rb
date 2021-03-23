@@ -4461,21 +4461,16 @@ end
 
 class GetLatestCompactionInfoResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TABLENAME = 2
-  COMPACTIONS = 3
+  COMPACTIONS = 1
 
   FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
-    COMPACTIONS => {:type => ::Thrift::Types::LIST, :name => 'compactions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LatestCompactionInfo}, :optional => true}
+    COMPACTIONS => {:type => ::Thrift::Types::LIST, :name => 'compactions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LatestCompactionInfo}}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactions is unset!') unless @compactions
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -1262,9 +1262,7 @@ struct LatestCompactionInfo {
 }
 
 struct GetLatestCompactionInfoResponse {
-    1: required string dbname,
-    2: required string tablename,
-    3: optional list<LatestCompactionInfo> compactions,
+    1: required list<LatestCompactionInfo> compactions,
 }
 
 struct AddDynamicPartitions {

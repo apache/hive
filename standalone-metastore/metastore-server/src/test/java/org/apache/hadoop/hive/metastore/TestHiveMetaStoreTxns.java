@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LatestCompactionInfo;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
@@ -417,14 +418,23 @@ public class TestHiveMetaStoreTxns {
     client.markCleaned(optionalCi.getCi());
 
     GetLatestCompactionInfoRequest rqst = new GetLatestCompactionInfoRequest();
+
+    // Test invalid inputs
+    final String invalidTblName = "invalid";
     rqst.setDbname(dbName);
-    rqst.setTablename(tblName);
+    Assert.assertThrows(MetaException.class, () -> client.getLatestCompactionInfo(rqst));
+    rqst.setTablename(invalidTblName);
     GetLatestCompactionInfoResponse response = client.getLatestCompactionInfo(rqst);
 
     Assert.assertNotNull(response);
+    Assert.assertEquals(0, response.getCompactionsSize());
+
+    // Test normal inputs
+    rqst.setTablename(tblName);
+    response = client.getLatestCompactionInfo(rqst);
+
+    Assert.assertNotNull(response);
     Assert.assertEquals(1, response.getCompactionsSize());
-    Assert.assertEquals(dbName, response.getDbname());
-    Assert.assertEquals(tblName, response.getTablename());
     LatestCompactionInfo lci = response.getCompactions().get(0);
     Assert.assertEquals(1, lci.getId());
     Assert.assertNull(lci.getPartitionname());
