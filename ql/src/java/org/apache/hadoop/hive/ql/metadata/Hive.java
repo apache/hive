@@ -1821,7 +1821,8 @@ public class Hive {
               // We will not try partial rewriting if there were update/delete operations on source tables
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                   materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
-              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified()) {
+              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
+                  invalidationInfo.isSetSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
                 // registry, since it is up-to-date
                 result = false;
