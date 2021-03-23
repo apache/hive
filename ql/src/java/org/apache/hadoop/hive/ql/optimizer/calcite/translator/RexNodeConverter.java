@@ -687,22 +687,7 @@ public class RexNodeConverter {
             + " is not a valid decimal", UnsupportedFeature.Invalid_decimal);
         // TODO: return createNullLiteral(literal);
       }
-      BigDecimal bd = (BigDecimal) value;
-
-      int precision = bd.unscaledValue().abs().toString().length();
-      int scale = bd.scale();
-      RelDataType relType;
-
-      if (precision > scale) {
-        // bd is greater than or equal to 1
-        relType =
-            typeFactory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
-      } else {
-        // bd is less than 1
-        relType =
-            typeFactory.createSqlType(SqlTypeName.DECIMAL, scale + 1, scale);
-      }
-      calciteLiteral = rexBuilder.makeExactLiteral(bd, relType);
+      calciteLiteral = rexBuilder.makeExactLiteral((BigDecimal) value, calciteDataType);
       break;
     case FLOAT:
       calciteLiteral = rexBuilder.makeApproxLiteral(

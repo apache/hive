@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
@@ -40,6 +42,8 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  *
@@ -102,15 +106,12 @@ public class LineageInfo implements SemanticNodeProcessor {
    * parses given query and gets the lineage info.
    *
    * @param query
-   * @throws ParseException
    */
-  public void getLineageInfo(String query) throws ParseException,
-      SemanticException {
-
+  public void getLineageInfo(String query, Context ctx) throws Exception {
     /*
      * Get the AST tree
      */
-    ASTNode tree = ParseUtils.parse(query, null);
+    ASTNode tree = ParseUtils.parse(query, ctx );
 
     while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
       tree = (ASTNode) tree.getChild(0);
@@ -138,14 +139,14 @@ public class LineageInfo implements SemanticNodeProcessor {
     ogw.startWalking(topNodes, null);
   }
 
-  public static void main(String[] args) throws IOException, ParseException,
-      SemanticException {
+  public static void main(String[] args) throws Exception {
 
     String query = args[0];
 
     LineageInfo lep = new LineageInfo();
 
-    lep.getLineageInfo(query);
+    Context ctx=new Context(new HiveConf());
+    lep.getLineageInfo(query, ctx);
 
     for (String tab : lep.getInputTableList()) {
       System.out.println("InputTable=" + tab);

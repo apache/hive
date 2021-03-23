@@ -31,6 +31,7 @@ select cast(t as double) from decimal_2_n1;
 select cast(t as string) from decimal_2_n1;
 
 select cast(3.14 as decimal(4,2)) from decimal_2_n1;
+select cast(3.14 as decimal(5,4)) from decimal_2_n1;
 select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2_n1;
 select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2_n1;
 select cast(true as decimal) from decimal_2_n1;

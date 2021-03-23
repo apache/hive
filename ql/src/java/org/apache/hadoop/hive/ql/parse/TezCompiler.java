@@ -43,6 +43,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -89,6 +90,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
+import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SemiJoinReductionMerge;
@@ -125,7 +127,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -143,8 +144,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,8 +239,9 @@ public class TezCompiler extends TaskCompiler {
     semijoinRemovalBasedTransformations(procCtx, inputs, outputs);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if(procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
+      new ParallelEdgeFixer().transform(procCtx.parseContext);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
 
@@ -1524,15 +1525,14 @@ public class TezCompiler extends TaskCompiler {
         }
       }
     }
-    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE)) {
+    if (LlapHiveUtils.isLlapMode(procCtx.conf) && procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE)) {
       if (probeDecodeMJoins.size() > 0) {
         // When multiple MJ, select one based on a policy
         for (Map.Entry<TableScanOperator, List<MapJoinOperator>> probeTsMap : probeDecodeMJoins.entrySet()){
           TableScanOperator.ProbeDecodeContext tsCntx = null;
           // Currently supporting: LowestRatio policy
           // TODO: Add more policies and make the selection a conf property
-          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue(),
-                  procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST));
+          tsCntx = selectLowestRatioProbeDecodeMapJoin(probeTsMap.getKey(), probeTsMap.getValue());
           if (tsCntx != null) {
             LOG.debug("ProbeDecode MJ for TS {}  with CacheKey {} MJ Pos {} ColName {} with Ratio {}",
                     probeTsMap.getKey().getName(), tsCntx.getMjSmallTableCacheKey(), tsCntx.getMjSmallTablePos(),
@@ -1546,7 +1546,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static TableScanOperator.ProbeDecodeContext selectLowestRatioProbeDecodeMapJoin(TableScanOperator tsOp,
-      List<MapJoinOperator> mjOps, boolean inTestMode){
+      List<MapJoinOperator> mjOps) throws SemanticException {
     MapJoinOperator selectedMJOp = null;
     double selectedMJOpRatio = 0;
     for (MapJoinOperator currMJOp : mjOps) {
@@ -1588,13 +1588,17 @@ public class TezCompiler extends TaskCompiler {
 
       List<ExprNodeDesc> keyDesc = selectedMJOp.getConf().getKeys().get(posBigTable);
       ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
-      String realTSColName = OperatorUtils.findTableColNameOf(selectedMJOp, keyCol.getColumn());
-      if (realTSColName != null) {
+      ExprNodeColumnDesc originTSColExpr = OperatorUtils.findTableOriginColExpr(keyCol, selectedMJOp, tsOp);
+      if (originTSColExpr == null) {
+        LOG.warn("ProbeDecode could not find origTSCol for mjCol: {} with MJ Schema: {}",
+            keyCol, selectedMJOp.getSchema());
+      } else if (!TypeInfoUtils.doPrimitiveCategoriesMatch(keyCol.getTypeInfo(), originTSColExpr.getTypeInfo())) {
+        // src Col -> HT key Col needs explicit or implicit (Casting) conversion
+        // as a result we cannot perform direct lookups on the HT
+        LOG.warn("ProbeDecode origTSCol {} type missmatch mjCol {}", originTSColExpr, keyCol);
+      } else {
         tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
-                realTSColName, selectedMJOpRatio);
-      } else if (inTestMode){
-        throw new RuntimeException("ProbeDecode could not find TSColName for ColKey: " + keyCol + " with MJ Schema: " +
-                selectedMJOp.getSchema());
+            originTSColExpr.getColumn(), selectedMJOpRatio);
       }
     }
     return tsProbeDecodeCtx;
@@ -1613,32 +1617,34 @@ public class TezCompiler extends TaskCompiler {
 
     // Single Key MJ at this point
     List<ExprNodeDesc> tsKeyDesc = mjOp.getConf().getKeys().get(mjBigTablePos);
-    ExprNodeColumnDesc tsKeyCol = (ExprNodeColumnDesc) tsKeyDesc.get(0);
-
     List<ExprNodeDesc> mjKeyDesc = mjOp.getConf().getKeys().get(mjSmallTablePos);
-    ExprNodeColumnDesc mjKeyCol = (ExprNodeColumnDesc) mjKeyDesc.get(0);
+    if (mjKeyDesc.get(0) instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc tsKeyCol = (ExprNodeColumnDesc) tsKeyDesc.get(0);
+      ExprNodeColumnDesc mjKeyCol = (ExprNodeColumnDesc) mjKeyDesc.get(0);
 
-    ColStatistics mjStats = mjOp.getStatistics().getColumnStatisticsFromColName(mjKeyCol.getColumn());
-    ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
+      ColStatistics mjStats = mjOp.getStatistics().getColumnStatisticsFromColName(mjKeyCol.getColumn());
+      ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
 
-    if (canUseNDV(mjStats)) {
-      mjKeyCardinality = mjStats.getCountDistint();
-    }
-    if (canUseNDV(tsStats)) {
-      tsKeyCardinality = tsStats.getCountDistint();
+      if (canUseNDV(mjStats)) {
+        mjKeyCardinality = mjStats.getCountDistint();
+      }
+      if (canUseNDV(tsStats)) {
+        tsKeyCardinality = tsStats.getCountDistint();
+      }
     }
     return mjKeyCardinality / (double) tsKeyCardinality;
   }
 
-  // Valid MapJoin with a single Key of Number type (Long/Int/Short)
+  /**
+   * Returns true for a MapJoin operator that can be used for ProbeDecode.
+   * MapJoin should be a single Key join, where the bigTable keyCol is only a ExprNodeColumnDesc
+   * @param mapJoinOp
+   * @return true for a valid MapJoin
+   */
   private static boolean isValidProbeDecodeMapJoin(MapJoinOperator mapJoinOp) {
     Map<Byte, List<ExprNodeDesc>> keyExprs = mapJoinOp.getConf().getKeys();
     List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get( (byte) mapJoinOp.getConf().getPosBigTable());
-    return (bigTableKeyExprs.size() == 1)
-        && !(((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
-        equals(PrimitiveObjectInspector.PrimitiveCategory.STRING) ||
-        ((PrimitiveTypeInfo) bigTableKeyExprs.get(0).getTypeInfo()).getPrimitiveCategory().
-            equals(PrimitiveObjectInspector.PrimitiveCategory.BYTE));
+    return (bigTableKeyExprs.size() == 1) && (bigTableKeyExprs.get(0) instanceof ExprNodeColumnDesc);
   }
 
   private static boolean canUseNDV(ColStatistics colStats) {
@@ -1909,7 +1915,7 @@ public class TezCompiler extends TaskCompiler {
         List<ExprNodeDesc> targetColumns = rti.getTargetColumns();
         // In semijoin branches the SEL operator has the following forms:
         // SEL[c1] - single column semijoin reduction
-        // SEL[c1, c2,..., ck, hash(c1, c2,...,ck)] - multi column semijoin reduction
+        // SEL[c1, c2,..., ck, hash(hash(hash(c1, c2),...),ck)] - multi column semijoin reduction
         // The source columns in the above cases are c1, c2,...,ck.
         // We need to exclude the hash(...) expression, if it is present.
         List<ExprNodeDesc> sourceColumns = sel.getConf().getColList().subList(0, targetColumns.size());
@@ -1934,12 +1940,10 @@ public class TezCompiler extends TaskCompiler {
           if (filterStats != null) {
             ImmutableSet.Builder<String> colNames = ImmutableSet.builder();
             for (ExprNodeDesc tsExpr : targetColumns) {
-              // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
-              if (tsExpr instanceof ExprNodeFieldDesc) {
-                LOG.debug("Unwrapped column expression from ExprNodeFieldDesc");
-                tsExpr = ((ExprNodeFieldDesc) tsExpr).getDesc();
+              Set<ExprNodeColumnDesc> allReferencedColumns = ExprNodeDescUtils.findAllColumnDescs(tsExpr);
+              for (ExprNodeColumnDesc col : allReferencedColumns) {
+                colNames.add(col.getColumn());
               }
-              colNames.add(ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn());
             }
             // We check whether there was already another SJ over this TS that was selected
             // in previous iteration

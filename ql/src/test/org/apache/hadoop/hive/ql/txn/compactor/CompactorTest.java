@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -52,9 +53,10 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -83,7 +85,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -94,12 +95,15 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
+
 /**
  * Super class for all of the compactor test modules.
  */
 public abstract class CompactorTest {
   static final private String CLASS_NAME = CompactorTest.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  public static final String WORKER_VERSION = "4.0.0";
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;
@@ -111,9 +115,9 @@ public abstract class CompactorTest {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.cleanDb(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.prepDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
@@ -124,15 +128,22 @@ public abstract class CompactorTest {
   }
 
   protected void startInitiator() throws Exception {
-    startThread('i', true);
+    startThread(CompactorThreadType.INITIATOR, true);
   }
 
   protected void startWorker() throws Exception {
-    startThread('w', true);
+    startThread(CompactorThreadType.WORKER, true);
   }
 
   protected void startCleaner() throws Exception {
-    startThread('c', true);
+    startThread(CompactorThreadType.CLEANER, true);
+  }
+
+  protected void runAcidMetricService() throws Exception {
+    TestTxnDbUtil.setConfValues(conf);
+    AcidMetricService t = new AcidMetricService();
+    t.setConf(conf);
+    t.run();
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
@@ -201,7 +212,7 @@ public abstract class CompactorTest {
   }
 
   protected long openTxn(TxnType txnType) throws MetaException {
-    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), Worker.hostname());
+    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), ServerUtils.hostname());
     rqst.setTxn_type(txnType);
     List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
@@ -308,13 +319,13 @@ public abstract class CompactorTest {
   }
 
   // I can't do this with @Before because I want to be able to control when the thread starts
-  private void startThread(char type, boolean stopAfterOne) throws Exception {
-    TxnDbUtil.setConfValues(conf);
+  private void startThread(CompactorThreadType type, boolean stopAfterOne) throws Exception {
+    TestTxnDbUtil.setConfValues(conf);
     CompactorThread t;
     switch (type) {
-      case 'i': t = new Initiator(); break;
-      case 'w': t = new Worker(); break;
-      case 'c': t = new Cleaner(); break;
+      case INITIATOR: t = new Initiator(); break;
+      case WORKER: t = new Worker(); break;
+      case CLEANER: t = new Cleaner(); break;
       default: throw new RuntimeException("Huh? Unknown thread type.");
     }
     t.setThreadId((int) t.getId());
@@ -393,7 +404,7 @@ public abstract class CompactorTest {
     @Override
     public RawReader<Text> getRawReader(Configuration conf, boolean collapseEvents, int bucket,
                                         ValidWriteIdList validWriteIdList,
-                                        Path baseDirectory, Path[] deltaDirectory, Map<String, String> deltaToAttemptId) throws IOException {
+                                        Path baseDirectory, Path[] deltaDirectory, Map<String, Integer> deltaToAttemptId) throws IOException {
 
       List<Path> filesToRead = new ArrayList<Path>();
       if (baseDirectory != null) {
@@ -605,7 +616,7 @@ public abstract class CompactorTest {
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    CompactionInfo ci = txnHandler.findNextToCompact("fred", WORKER_VERSION);
     ci.runAs = System.getProperty("user.name");
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci

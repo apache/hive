@@ -21,8 +21,13 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclEntryScope;
+import org.apache.hadoop.fs.permission.AclEntryType;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -44,11 +49,9 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.TestReplicationScenarios;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
 import org.junit.Assert;
@@ -71,8 +74,8 @@ import java.util.Base64;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -122,11 +125,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into table t2 partition(country='france') values ('paris')")
         .dump(primaryDbName, withClause);
 
-    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
-    Path metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
-            EximUtil.METADATA_PATH_NAME);
+    // the _file_list_external only should be created if external tables are to be replicated not otherwise
+    Path replHiveBasePath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(primary.miniDFSCluster.getFileSystem()
-        .exists(new Path(metadataPath + relativeExtInfoPath(primaryDbName))));
+        .exists(new Path(replHiveBasePath, EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("repl status " + replicatedDbName)
@@ -144,11 +146,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into table t3 values (20)")
         .dump(primaryDbName, withClause);
 
-    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
-    metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
-            EximUtil.METADATA_PATH_NAME);
+    // _file_list_external only should be created if external tables are to be replicated not otherwise
+    replHiveBasePath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(primary.miniDFSCluster.getFileSystem()
-        .exists(new Path(metadataPath + relativeExtInfoPath(null))));
+            .exists(new Path(replHiveBasePath, EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
@@ -171,8 +172,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into table t2 partition(country='france') values ('paris')")
         .dump(primaryDbName);
 
-    // verify that the external table info is written correctly for bootstrap
-    assertExternalFileInfo(Arrays.asList("t1", "t2"), tuple.dumpLocation, primaryDbName, false);
+    // verify that the external table filelist is written correctly for bootstrap
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t2"), tuple.dumpLocation, primary);
 
 
 
@@ -203,8 +204,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("create external table t4 as select id from t3")
         .dump(primaryDbName);
 
-    // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(Arrays.asList("t1", "t2", "t3", "t4"), tuple.dumpLocation, true);
+    // verify that the external table list is written correctly for incremental
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t2", "t3", "t4"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
@@ -221,8 +222,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("drop table t1")
         .dump(primaryDbName);
 
-    // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(Arrays.asList("t2", "t3", "t4"), tuple.dumpLocation, true);
+    // verify that the external table list is written correctly for incremental
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t2", "t3", "t4"), tuple.dumpLocation, primary);
   }
 
   @Test
@@ -240,8 +241,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("insert into table t2 partition(country='france') values ('paris')")
             .dump(primaryDbName, lazyCopyClause);
 
-    // verify that the external table info is written correctly for bootstrap
-    assertExternalFileInfo(Arrays.asList("t1", "t2"), tuple.dumpLocation, primaryDbName, false);
+    // verify that the external table list is written correctly for bootstrap
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t2"), tuple.dumpLocation, primary);
 
 
 
@@ -272,8 +273,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("create external table t4 as select id from t3")
             .dump(primaryDbName, lazyCopyClause);
 
-    // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(Arrays.asList("t1", "t2", "t3", "t4"), tuple.dumpLocation, true);
+    // verify that the external table list is written correctly for incremental
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t1", "t2", "t3", "t4"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, lazyCopyClause)
             .run("use " + replicatedDbName)
@@ -338,6 +339,73 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("select i From a")
             .verifyResults(Collections.emptyList());
     assertTablePartitionLocation(primaryDbName + ".a", replicatedDbName + ".a");
+  }
+
+  @Test
+  public void testExternalTableLocationACLPreserved() throws Throwable {
+
+    // Create data file with data for external table.
+    Path externalTableLocation = new Path(
+        "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    Path externalFileLoc = new Path(externalTableLocation, "file1.txt");
+    try (FSDataOutputStream outputStream = fs.create(externalFileLoc)) {
+      outputStream.write("1,2\n".getBytes());
+      outputStream.write("13,21\n".getBytes());
+    }
+
+    // Set some ACL's on the table directory and the data file.
+    List<AclEntry> aclEntries = new ArrayList<>();
+    AclEntry aeUser =
+        new AclEntry.Builder().setName("user").setScope(AclEntryScope.ACCESS)
+            .setType(AclEntryType.USER).setPermission(FsAction.ALL).build();
+    AclEntry aeGroup =
+        new AclEntry.Builder().setName("group").setScope(AclEntryScope.ACCESS)
+            .setType(AclEntryType.GROUP).setPermission(FsAction.ALL).build();
+    AclEntry aeOther = new AclEntry.Builder().setScope(AclEntryScope.ACCESS)
+        .setType(AclEntryType.OTHER).setPermission(FsAction.ALL).build();
+
+    aclEntries.add(aeUser);
+    aclEntries.add(aeGroup);
+    aclEntries.add(aeOther);
+
+    fs.modifyAclEntries(externalTableLocation, aclEntries);
+    fs.modifyAclEntries(externalFileLoc, aclEntries);
+
+    // Run bootstrap with distcp options to preserve ACL.
+    List<String> withClause = Arrays
+        .asList("'distcp.options.update'=''", "'distcp.options.puga'=''",
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
+                + "'='true'");
+
+    primary.run("use " + primaryDbName).run(
+        "create external table a (i int, j int) "
+            + "row format delimited fields terminated by ',' " + "location '"
+            + externalTableLocation.toUri() + "'")
+        .dump(primaryDbName, withClause);
+
+    // Verify load is success and has the appropriate data.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName).run("select i From a")
+        .verifyResults(new String[] {"1", "13"}).run("select j from a")
+        .verifyResults(new String[] {"2", "21"});
+
+    // Verify the ACL's of the destination table directory and data file are
+    // same as that of source.
+    Hive hiveForReplica = Hive.get(replica.hiveConf);
+    org.apache.hadoop.hive.ql.metadata.Table replicaTable =
+        hiveForReplica.getTable(replicatedDbName + ".a");
+    Path dataLocation = replicaTable.getDataLocation();
+
+    assertEquals("ACL entries are not same for the data file.",
+        fs.getAclStatus(externalFileLoc).getEntries().size(),
+        fs.getAclStatus(new Path(dataLocation, "file1.txt")).getEntries()
+            .size());
+    assertEquals("ACL entries are not same for the table directory.",
+        fs.getAclStatus(externalTableLocation).getEntries().size(),
+        fs.getAclStatus(dataLocation).getEntries().size());
   }
 
   /**
@@ -442,7 +510,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into t2 partition(country='india') values ('bangalore')")
         .dump(primaryDbName, withClause);
 
-    assertExternalFileInfo(Collections.singletonList("t2"), tuple.dumpLocation, primaryDbName, false);
+    ReplicationTestUtils.assertExternalFileList(Collections.singletonList("t2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
@@ -465,7 +533,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("insert into t2 partition(country='australia') values ('sydney')")
         .dump(primaryDbName, withClause);
 
-    assertExternalFileInfo(Collections.singletonList("t2"), tuple.dumpLocation, true);
+    ReplicationTestUtils.assertExternalFileList(Collections.singletonList("t2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
@@ -553,7 +621,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       .run("insert into t2 partition(country='australia') values ('sydney')")
       .dump(primaryDbName, withClause);
 
-    assertExternalFileInfo(Collections.singletonList("t2"), tuple.dumpLocation, primaryDbName, false);
+    ReplicationTestUtils.assertExternalFileList(Collections.singletonList("t2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName, withClause)
       .run("use " + replicatedDbName)
@@ -581,7 +649,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("insert into table t2 values (4)")
             .dump(primaryDbName, withClause);
 
-    assertExternalFileInfo(Arrays.asList(new String[]{"t1", "t2"}), tuple.dumpLocation, primaryDbName, false);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList(new String[]{"t1", "t2"}), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
@@ -604,8 +672,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("insert into table t3 values (8)")
             .dump(primaryDbName, withClause);
 
-    // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(Arrays.asList("t2", "t3"), incrementalDump1.dumpLocation, true);
+    // verify that the external table list is written correctly for incremental
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t2", "t3"), incrementalDump1.dumpLocation, primary);
 
     FileSystem fs = primary.miniDFSCluster.getFileSystem();
     Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
@@ -639,7 +707,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     WarehouseInstance.Tuple incrementalDump2 = primary.dump(primaryDbName, withClause);
     assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
     assertTrue(fs.getFileStatus(metaDir).getModificationTime() > oldMetadirModTime);
-    assertExternalFileInfo(Arrays.asList("t2", "t3"), incrementalDump2.dumpLocation, true);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t2", "t3"), incrementalDump2.dumpLocation, primary);
     //first event meta is not rewritten
     for (Map.Entry<Path, Long> entry: firstEventModTimeMap.entrySet()) {
       assertEquals((long)entry.getValue(), fs.getFileStatus(entry.getKey()).getModificationTime());
@@ -674,7 +742,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("alter table t1 add partition(country='us')")
         .dump(primaryDbName);
 
-    assertExternalFileInfo(Collections.singletonList("t1"), tuple.dumpLocation, true);
+    ReplicationTestUtils.assertExternalFileList(Collections.singletonList("t1"), tuple.dumpLocation, primary);
 
     // Add new data externally, to a partition, but under the partition level top directory
     // Also, it is added after dumping the events so data should not be seen at target after REPL LOAD.
@@ -718,9 +786,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       outputStream.write("chennai\n".getBytes());
     }
 
-    // Repl load with zero events but external tables location info should present.
+    // Repl load with zero events but external tables file list should present.
     tuple = primary.dump(primaryDbName);
-    assertExternalFileInfo(Collections.singletonList("t1"), tuple.dumpLocation, true);
+    ReplicationTestUtils.assertExternalFileList(Collections.singletonList("t1"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -770,11 +838,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("insert into table t2 partition(country='france') values ('paris')")
             .dump(primaryDbName, dumpWithClause);
 
-    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
-    Path metadataPath = new Path(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
-            EximUtil.METADATA_PATH_NAME);
+    // the _file_list_external only should be created if external tables are to be replicated not otherwise
+    Path replHiveBasePath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertFalse(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(metadataPath + relativeExtInfoPath(null))));
+            .exists(new Path(replHiveBasePath, EximUtil.FILE_LIST_EXTERNAL)));
 
     replica.load(replicatedDbName, primaryDbName)
             .status(replicatedDbName)
@@ -796,13 +863,13 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("create table t4 as select * from t3")
             .dump(primaryDbName, dumpWithClause);
 
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external should be created as external tables are to be replicated.
     Path hivePath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(hivePath + relativeExtInfoPath(null))));
+            .exists(new Path(hivePath, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // verify that the external table info is written correctly for incremental
-    assertExternalFileInfo(Arrays.asList("t2", "t3"), tuple.dumpLocation, true);
+    // verify that the external table list is written correctly for incremental
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("t2", "t3"), tuple.dumpLocation, primary);
 
     // _bootstrap directory should be created as bootstrap enabled on external tables.
     String hiveDumpLocation = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
@@ -1019,7 +1086,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     }
 
     // Only table t2 should exist in the data location list file.
-    assertExternalFileInfo(Collections.singletonList("t2"), tupleInc.dumpLocation, true);
+    ReplicationTestUtils.assertExternalFileList(Collections.singletonList("t2"), tupleInc.dumpLocation, primary);
 
     // The newly inserted data "2" should be missing in table "t1". But, table t2 should exist and have
     // inserted data.
@@ -1306,29 +1373,237 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     primary.run("drop database if exists " + sparkDbName + " cascade");
   }
 
-  private void assertExternalFileInfo(List<String> expected, String dumplocation,
-                                      boolean isIncremental) throws IOException {
-    assertExternalFileInfo(expected, dumplocation, null, isIncremental);
-  }
-  private void assertExternalFileInfo(List<String> expected, String dumplocation, String dbName,
-                                      boolean isIncremental)
-      throws IOException {
-    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path metadataPath = new Path(hivePath, EximUtil.METADATA_PATH_NAME);
-    Path externalTableInfoFile;
-    if (isIncremental) {
-      externalTableInfoFile = new Path(hivePath + relativeExtInfoPath(dbName));
-    } else {
-      externalTableInfoFile = new Path(metadataPath + relativeExtInfoPath(dbName));
-    }
-    ReplicationTestUtils.assertExternalFileInfo(primary, expected, externalTableInfoFile);
+  @Test
+  public void testDatabaseLevelCopyLazy() throws Throwable {
+    testDatabaseLevelCopy(true);
   }
 
-  private String relativeExtInfoPath(String dbName) {
-    if (dbName == null) {
-      return File.separator + FILE_NAME;
-    } else {
-      return File.separator + dbName.toLowerCase() + File.separator + FILE_NAME;
-    }
+  @Test
+  public void testDatabaseLevelCopyAtSource() throws Throwable {
+    testDatabaseLevelCopy(false);
+  }
+
+  public void testDatabaseLevelCopy(boolean runCopyTasksOnTarget)
+      throws Throwable {
+    Path externalTableLocation =
+        new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    Path externalTablePartitionLocation =
+        new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "part/");
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='true'",
+        "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
+            + "'='" + runCopyTasksOnTarget + "'");
+
+    // Create a table within the warehouse location, one outside and one with
+    // a partition outside the default location.
+    WarehouseInstance.Tuple tuple =
+        primary.run("use " + primaryDbName)
+            .run("create external table a (i int, j int) "
+                + "row format delimited fields terminated by ',' "
+                + "location '" + externalTableLocation.toUri() + "'")
+            .run("insert into a values(1,2)")
+            .run("create external table b (id int)")
+            .run("insert into b values(5)")
+            .run("create external table c (place string) partitioned by (country "
+                + "string)")
+            .run("insert into table c partition(country='india') values "
+                + "('bangalore')")
+            .run("ALTER TABLE c ADD PARTITION (country='france') LOCATION '"
+                + externalTablePartitionLocation.toString() + "'")
+            .run("insert into c partition(country='france') values('paris')")
+            .dump(primaryDbName, withClause);
+
+    Database primaryDb = primary.getDatabase(primaryDbName);
+
+    // Confirm the a table is outside the db location.
+    Table aTable = primary.getTable(primaryDbName, "a");
+    assertFalse(FileUtils
+        .isPathWithinSubtree(new Path(aTable.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    //Confirm the b table is inside the db location.
+    Table bTable = primary.getTable(primaryDbName, "b");
+    assertTrue(FileUtils
+        .isPathWithinSubtree(new Path(bTable.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    //Confirm the c table is inside the db location.
+    Table cTable = primary.getTable(primaryDbName, "c");
+    assertTrue(FileUtils
+        .isPathWithinSubtree(new Path(cTable.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    // Confirm the partition of c table is outside db location.
+    String partitionBtableLocation =
+        primary.getAllPartitions(primaryDbName, "c").get(0).getSd()
+            .getLocation();
+    assertFalse(FileUtils.isPathWithinSubtree(new Path(partitionBtableLocation),
+        new Path(primaryDb.getLocationUri())));
+
+    // Do a load and verify all the data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select i from a where j=2")
+        .verifyResult("1")
+        .run("select id from b")
+        .verifyResult("5")
+        .run("select place from c where country='india'")
+        .verifyResult("bangalore")
+        .run("select place from c where country='france'")
+        .verifyResult("paris");
+
+    // Check the task copied post bootstrap, It should have the database loc,
+    // the table 'a' since that is outside of the default location, and the
+    // 'c', since its partition is out of the default location.
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList(primaryDbName.toLowerCase(), "a", "c"), tuple.dumpLocation, primary);
+
+    // Add more data to tables and do a incremental run and create another
+    // tables one inside and other outside default location.
+
+    externalTableLocation = new Path(
+        "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "newout/");
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+    tuple =
+        primary.run("use " + primaryDbName)
+            .run("insert into a values(3,4)")
+            .run("insert into b values(6)")
+            .run("insert into table c partition(country='india') values "
+                + "('delhi')")
+            .run("insert into c partition(country='france') values('lyon')")
+            .run("create external table newin (id int)")
+            .run("insert into newin values(1)")
+            .run("create external table newout(id int) row format delimited "
+                + "fields terminated by ',' location '" + externalTableLocation
+                .toUri() + "'")
+            .run("insert into newout values(2)")
+            .dump(primaryDbName, withClause);
+
+
+    // Check whether table newin is inside the database location.
+    Table tableNewin = primary.getTable(primaryDbName,"newin");
+    assertTrue(FileUtils
+        .isPathWithinSubtree(new Path(tableNewin.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    // Check whether table newout is outside database location,
+    Table tableNewout = primary.getTable(primaryDbName,"newout");
+    assertFalse(FileUtils
+        .isPathWithinSubtree(new Path(tableNewout.getSd().getLocation()),
+            new Path(primaryDb.getLocationUri())));
+
+    // Do an incremental load and check if all the old and new data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select i from a where j=4")
+        .verifyResult("3")
+        .run("select id from b")
+        .verifyResults(new String[]{"5", "6"})
+        .run("select place from c where country='india'")
+        .verifyResults(new String[]{"bangalore", "delhi"})
+        .run("select place from c where country='france'")
+        .verifyResults(new String[]{"paris", "lyon"})
+        .run("select id from newin")
+        .verifyResult("1")
+        .run("select id from newout")
+        .verifyResult("2");
+
+    // New table in the warehouse shouldn't be there but the table created
+    // outside should be there, apart from the ones in the previous run.
+
+    ReplicationTestUtils.assertExternalFileList(
+        Arrays.asList(primaryDbName.toLowerCase(), "a", "c", "newout"), tuple.dumpLocation, primary);
+  }
+
+  @Test
+  public void testDatabaseLevelCopyDisabled() throws Throwable {
+    Path externalTableLocation =
+        new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    Path externalTablePartitionLocation =
+        new Path("/" + testName.getMethodName() + "/" + primaryDbName + "/" + "part/");
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='false'");
+
+    // Create a table within the warehouse location, one outside and one with
+    // a partition outside the default location.
+    WarehouseInstance.Tuple tuple =
+        primary.run("use " + primaryDbName)
+            .run("create external table a (i int, j int) "
+                + "row format delimited fields terminated by ',' "
+                + "location '" + externalTableLocation.toUri() + "'")
+            .run("insert into a values(1,2)")
+            .run("create external table b (id int)")
+            .run("insert into b values(5)")
+            .run("create external table c (place string) partitioned by (country "
+                + "string)")
+            .run("insert into table c partition(country='india') values "
+                + "('bangalore')")
+            .run("ALTER TABLE c ADD PARTITION (country='france') LOCATION '"
+                + externalTablePartitionLocation.toString() + "'")
+            .run("insert into c partition(country='france') values('paris')")
+            .dump(primaryDbName, withClause);
+
+    // Do a load and verify all the data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select i from a where j=2")
+        .verifyResult("1")
+        .run("select id from b")
+        .verifyResult("5")
+        .run("select place from c where country='india'")
+        .verifyResult("bangalore")
+        .run("select place from c where country='france'")
+        .verifyResult("paris");
+
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a", "b", "c"), tuple.dumpLocation, primary);
+
+    // Add more data to tables and do a incremental run and create another
+    // tables one inside and other outside default location.
+
+    externalTableLocation = new Path(
+        "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "newout/");
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+    tuple =
+        primary.run("use " + primaryDbName)
+            .run("insert into a values(3,4)")
+            .run("insert into b values(6)")
+            .run("insert into table c partition(country='india') values "
+                + "('delhi')")
+            .run("insert into c partition(country='france') values('lyon')")
+            .run("create external table newin (id int)")
+            .run("insert into newin values(1)")
+            .run("create external table newout(id int) row format delimited "
+                + "fields terminated by ',' location '" + externalTableLocation
+                .toUri() + "'")
+            .run("insert into newout values(2)")
+            .dump(primaryDbName, withClause);
+
+    // Do an incremental load and check if all the old and new data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select i from a where j=4")
+        .verifyResult("3")
+        .run("select id from b")
+        .verifyResults(new String[]{"5", "6"})
+        .run("select place from c where country='india'")
+        .verifyResults(new String[]{"bangalore", "delhi"})
+        .run("select place from c where country='france'")
+        .verifyResults(new String[]{"paris", "lyon"})
+        .run("select id from newin")
+        .verifyResult("1")
+        .run("select id from newout")
+        .verifyResult("2");
+
+    ReplicationTestUtils.assertExternalFileList(Arrays
+            .asList("a", "b", "c", "newin", "newout"), tuple.dumpLocation, primary);
   }
 }

@@ -188,6 +188,20 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public boolean skipAuthorization() {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      return true;
+    }
+    SessionState ss = SessionState.get();
+    if (ss != null && ss.isHiveServerQuery()) {
+      String authUser = SessionState.getUserFromAuthenticator();
+      Set<String> servUsers = new HashSet<>(ss.getConf().getStringCollection(
+          HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname));
+      if (servUsers.contains(authUser)) {
+        console.logInfo("Skip authorization as the current user: " + authUser +
+            " is configured in " + HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname);
+        return true;
+      }
+    }
     return false;
   }
 

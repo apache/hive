@@ -82,7 +82,7 @@ public class TestNullScanTaskDispatcher {
   private Map aliasToWork = new HashMap();
 
   @Before
-  public void setup() throws IOException {
+  public void setup() {
     hiveConf = new HiveConf();
     hiveConf.set("fs.mock.impl", MockFileSystem.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, true);
@@ -133,6 +133,11 @@ public class TestNullScanTaskDispatcher {
   @Test
   public void testNumberOfListStatusCalls5() throws IOException, SemanticException {
     verifyNumberOfReads(0, 10, 10, 0);
+  }
+
+  @Test
+  public void testNumberOfListStatusCalls_whenExternalLookupRunsInCaller() throws IOException, SemanticException {
+    verifyNumberOfReads(1, 0, 0, 1);
   }
 
   @Test

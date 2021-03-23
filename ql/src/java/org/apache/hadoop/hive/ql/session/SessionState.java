@@ -270,6 +270,8 @@ public class SessionState implements ISessionAuthState{
 
   private SparkSession sparkSession;
 
+  private final Map<Class, Object> dynamicVars = new HashMap<>();
+
   /**
    * Gets information about HDFS encryption
    */
@@ -1836,6 +1838,7 @@ public class SessionState implements ISessionAuthState{
       txnMgr.closeTxnManager();
     }
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
+    Utilities.restoreSessionSpecifiedClassLoader(getClass().getClassLoader());
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);
@@ -1875,6 +1878,7 @@ public class SessionState implements ISessionAuthState{
     // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
     // cleared up, we would have to retain this to avoid mem leak.
     clearReflectionUtilsCache();
+    dynamicVars.clear();
   }
 
   private void clearReflectionUtilsCache() {
@@ -2040,6 +2044,15 @@ public class SessionState implements ISessionAuthState{
 
   public void setSparkSession(SparkSession sparkSession) {
     this.sparkSession = sparkSession;
+  }
+
+  public void addDynamicVar(Object object) {
+    dynamicVars.put(object.getClass(), object);
+  }
+
+  public <T> T getDynamicVar(Class<T> clazz) {
+    Object value = dynamicVars.get(clazz);
+    return value == null ? null : clazz.cast(value);
   }
 
   /**

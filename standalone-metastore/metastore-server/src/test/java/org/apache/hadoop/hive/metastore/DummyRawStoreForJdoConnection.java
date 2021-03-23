@@ -20,10 +20,15 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -348,6 +353,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
+          GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
 
     return Collections.emptyList();
@@ -406,7 +418,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException {
     return Collections.emptyList();
   }
@@ -1370,4 +1382,22 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return Collections.emptyList();
   }
 
+  @Override
+  public void addPackage(AddPackageRequest request) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) {
+    return null;
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public void dropPackage(DropPackageRequest request) {
+  }
 }

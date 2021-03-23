@@ -55,7 +55,7 @@ public class NoHashCodeKryoSerializer extends KryoSerializer {
       output.write(object.getBytes(), 0, object.getLength());
     }
 
-    public HiveKey read(Kryo kryo, Input input, Class<HiveKey> type) {
+    public HiveKey read(Kryo kryo, Input input, Class<? extends HiveKey> type) {
       int len = input.readVarInt(true);
       byte[] bytes = new byte[len];
       input.readBytes(bytes);

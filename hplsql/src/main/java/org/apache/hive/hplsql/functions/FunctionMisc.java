@@ -18,17 +18,21 @@
 
 package org.apache.hive.hplsql.functions;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.Conn;
+import org.apache.hive.hplsql.Exec;
+import org.apache.hive.hplsql.HplsqlParser;
+import org.apache.hive.hplsql.Var;
+import org.apache.hive.hplsql.executor.QueryException;
+import org.apache.hive.hplsql.executor.QueryExecutor;
+import org.apache.hive.hplsql.executor.QueryResult;
 
 public class FunctionMisc extends BuiltinFunctions {
-  public FunctionMisc(Exec e) {
-    super(e);
+  public FunctionMisc(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 
@@ -227,23 +231,22 @@ public class FunctionMisc extends BuiltinFunctions {
       evalNull();
       return;
     }
-    Query query = exec.executeQuery(ctx, sql.toString(), exec.conf.defaultConnection);
+    QueryResult query = queryExecutor.executeQuery(sql.toString(), ctx);
     if (query.error()) {
-      evalNullClose(query, exec.conf.defaultConnection);
+      evalNullClose(query);
       return;
     }
     int result = 0;
-    ResultSet rs = query.getResultSet();
     try {
-      while (rs.next()) {
+      while (query.next()) {
         result++;
       }
-    } catch (SQLException e) {
-      evalNullClose(query, exec.conf.defaultConnection);
+    } catch (Exception e) {
+      evalNullClose(query);
       return;
     }
     evalInt(result);
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    query.close();
   }
 
   public void modulo(HplsqlParser.Expr_func_paramsContext ctx) {
@@ -267,22 +270,21 @@ public class FunctionMisc extends BuiltinFunctions {
     String tabname = evalPop(ctx.func_param(0).expr()).toString();
     ArrayList<String> keys = null;
     if (cnt > 1) {
-      keys = new ArrayList<String>();
+      keys = new ArrayList<>();
       for (int i = 1; i < cnt; i++) {
         keys.add(evalPop(ctx.func_param(i).expr()).toString().toUpperCase());
       }
     }    
     String sql = "SHOW PARTITIONS " + tabname;
-    Query query = exec.executeQuery(ctx, sql, exec.conf.defaultConnection);
+    QueryResult query = queryExecutor.executeQuery(sql, ctx);
     if (query.error()) {
-      exec.closeQuery(query, exec.conf.defaultConnection);
+      query.close();
       return;
     }
-    ResultSet rs = query.getResultSet();
-    Map<String, Integer> group = new HashMap<String, Integer>();
+    Map<String, Integer> group = new HashMap<>();
     try {
-      while (rs.next()) {
-        String part = rs.getString(1);
+      while (query.next()) {
+        String part = query.column(0, String.class);
         String[] parts = part.split("/");
         String key = parts[0];
         if (cnt > 1) {
@@ -303,8 +305,8 @@ public class FunctionMisc extends BuiltinFunctions {
         }
         group.put(key, count + 1);        
       }
-    } catch (SQLException e) {
-      exec.closeQuery(query, exec.conf.defaultConnection);
+    } catch (QueryException e) {
+      query.close();
       return;
     }
     if (cnt == 1) {
@@ -312,9 +314,9 @@ public class FunctionMisc extends BuiltinFunctions {
     }
     else {
       for (Map.Entry<String, Integer> i : group.entrySet()) {
-        System.out.println(i.getKey() + '\t' + i.getValue());
+        console.printLine(i.getKey() + '\t' + i.getValue());
       }
     }
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    query.close();
   }
 }

@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,8 @@ final class QueryCompactorFactory {
    * @param compactionInfo provides insight about the type of compaction, must be not null.
    * @return {@link QueryCompactor} or null.
    */
-  static QueryCompactor getQueryCompactor(Table table, HiveConf configuration, CompactionInfo compactionInfo) {
+  static QueryCompactor getQueryCompactor(Table table, HiveConf configuration, CompactionInfo compactionInfo)
+      throws HiveException {
     if (!AcidUtils.isInsertOnlyTable(table.getParameters())
         && HiveConf.getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
       if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
@@ -66,9 +68,11 @@ final class QueryCompactorFactory {
         return new MinorQueryCompactor();
       }
     }
-
-    if (AcidUtils.isInsertOnlyTable(table.getParameters()) && HiveConf
-        .getBoolVar(configuration, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
+    if (AcidUtils.isInsertOnlyTable(table.getParameters())) {
+      if (!configuration.getBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
+        throw new HiveException(
+            "Insert only compaction is disabled. Set hive.compactor.compact.insert.only to true to enable it.");
+      }
       if (compactionInfo.isMajorCompaction()) {
         return new MmMajorQueryCompactor();
       } else {

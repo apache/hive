@@ -20,19 +20,17 @@ package org.apache.hive.hplsql;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+
+import org.apache.hive.hplsql.executor.QueryResult;
 
 /**
  * Variable or the result of expression 
  */
 public class Var {
-
-	// Data types
+  // Data types
 	public enum Type {BOOL, CURSOR, DATE, DECIMAL, DERIVED_TYPE, DERIVED_ROWTYPE, DOUBLE, FILE, IDENT, BIGINT, INTERVAL, ROW, 
 	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL};
 	public static final String DERIVED_TYPE = "DERIVED%TYPE";
@@ -258,44 +256,35 @@ public class Var {
       this.value = value;
 	  }
   }
-	
-	/**
-   * Set the new value from the result set
-   */
-  public Var setValue(ResultSet rs, ResultSetMetaData rsm, int idx) throws SQLException {
-    int type = rsm.getColumnType(idx);
+
+  public Var setValue(QueryResult queryResult, int idx) {
+    int type = queryResult.jdbcType(idx);
     if (type == java.sql.Types.CHAR || type == java.sql.Types.VARCHAR) {
-      cast(new Var(rs.getString(idx)));
-    }
-    else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
-        type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
-      cast(new Var(Long.valueOf(rs.getLong(idx))));
-    }
-    else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
-      cast(new Var(rs.getBigDecimal(idx)));
-    }
-    else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
-      cast(new Var(Double.valueOf(rs.getDouble(idx))));
+      cast(new Var(queryResult.column(idx, String.class)));
+    } else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
+            type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
+      cast(new Var(Long.valueOf(queryResult.column(idx, Long.class))));
+    } else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
+      cast(new Var(queryResult.column(idx, BigDecimal.class)));
+    } else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
+      cast(new Var(Double.valueOf(queryResult.column(idx, Double.class))));
     }
     return this;
   }
-  
-  /**
-   * Set ROW values from the result set
-   */
-  public Var setValues(ResultSet rs, ResultSetMetaData rsm) throws SQLException {
+
+  public Var setValues(QueryResult queryResult) {
     Row row = (Row)this.value;
-    int idx = 1;
+    int idx = 0;
     for (Column column : row.getColumns()) {
       Var var = new Var(column.getName(), column.getType(), (Integer) null, null, null);
-      var.setValue(rs, rsm, idx);
+      var.setValue(queryResult, idx);
       column.setValue(var);
       idx++;
     }
     return this;
   }
-	
-	/**
+
+  /**
 	 * Set the data type from string representation
 	 */
 	void setType(String type) {

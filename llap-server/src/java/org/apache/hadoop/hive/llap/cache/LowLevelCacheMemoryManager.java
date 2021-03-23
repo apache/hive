@@ -167,7 +167,11 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   }
 
   public void notifyProactiveEvictionMark() {
-    // TODO: forward this signal to the cache policy if it supports proactive eviction
+    if (evictor != null) {
+      if (evictor instanceof ProactiveEvictingCachePolicy) {
+        ((ProactiveEvictingCachePolicy) evictor).notifyProactiveEvictionMark();
+      }
+    }
   }
 
   @VisibleForTesting

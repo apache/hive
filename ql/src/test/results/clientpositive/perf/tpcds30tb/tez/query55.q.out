@@ -1,0 +1,168 @@
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_48_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:1.6322683759956066E-4
+                  Statistics: Num rows: 82510879939 Data size: 10343396725952 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ss_item_sk (type: bigint), ss_ext_sales_price (type: decimal(7,2)), ss_sold_date_sk (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 82510879939 Data size: 10343396725952 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col2 (type: bigint)
+                        1 _col0 (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 1400767848 Data size: 11206142896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col0 (type: bigint)
+                        outputColumnNames: _col1, _col5, _col6
+                        input vertices:
+                          1 Map 5
+                        Statistics: Num rows: 13467990 Data size: 1400671032 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: sum(_col1)
+                          keys: _col5 (type: int), _col6 (type: char(50))
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 26652 Data size: 5756832 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int), _col1 (type: char(50))
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: int), _col1 (type: char(50))
+                            Statistics: Num rows: 26652 Data size: 5756832 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col2 (type: decimal(17,2))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: ((d_year = 2001) and (d_moy = 12)) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((d_year = 2001) and (d_moy = 12)) (type: boolean)
+                    Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: d_date_sk (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: bigint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: bigint)
+                          minReductionHashAggr: 0.4
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: ss_sold_date_sk (bigint)
+                            Target Input: store_sales
+                            Partition key expr: ss_sold_date_sk
+                            Statistics: Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 1
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: item
+                  filterExpr: (i_manager_id = 36) (type: boolean)
+                  Statistics: Num rows: 462000 Data size: 53582956 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (i_manager_id = 36) (type: boolean)
+                    Statistics: Num rows: 4442 Data size: 515192 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i_item_sk (type: bigint), i_brand_id (type: int), i_brand (type: char(50))
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 4442 Data size: 497464 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 4442 Data size: 497464 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int), _col2 (type: char(50))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: char(50))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4442 Data size: 959472 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -+
+                  keys: _col2 (type: decimal(17,2)), _col0 (type: int)
+                  null sort order: az
+                  Statistics: Num rows: 4442 Data size: 959472 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 100
+                  Select Operator
+                    expressions: _col1 (type: char(50)), _col2 (type: decimal(17,2)), _col0 (type: int)
+                    outputColumnNames: _col1, _col2, _col3
+                    Statistics: Num rows: 4442 Data size: 959472 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: decimal(17,2)), _col3 (type: int)
+                      null sort order: az
+                      sort order: -+
+                      Statistics: Num rows: 4442 Data size: 959472 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: char(50))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: int), VALUE._col0 (type: char(50)), KEY.reducesinkkey0 (type: decimal(17,2))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4442 Data size: 959472 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 21600 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 100 Data size: 21600 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

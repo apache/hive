@@ -148,6 +148,12 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-spark-client</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.esotericsoftware</groupId>
+          <artifactId>kryo-shaded</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -156,7 +162,11 @@
     <!-- inter-project -->
     <dependency>
       <groupId>com.esotericsoftware</groupId>
-      <artifactId>kryo-shaded</artifactId>
+      <artifactId>kryo</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.esotericsoftware</groupId>
+        <artifactId>reflectasm</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -177,6 +187,10 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.commons</groupId>
+       <artifactId>commons-collections4</artifactId>
     </dependency>
     <dependency>
        <groupId>org.apache.commons</groupId>
@@ -1056,11 +1070,13 @@
                   <include>org.apache.hive:hive-standalone-metastore-common</include>
                   <include>org.apache.hive:hive-standalone-metastore-server</include>
                   <include>org.apache.hive:hive-service-rpc</include>
-                  <include>com.esotericsoftware:kryo-shaded</include>
+                  <include>com.esotericsoftware:kryo</include>
+                  <include>com.esotericsoftware:reflectasm</include>
                   <include>com.esotericsoftware:minlog</include>
                   <include>org.objenesis:objenesis</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
+                  <include>org.apache.thrift:libfb303</include>
                   <include>org.datanucleus:javax.jdo</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
@@ -1097,14 +1113,6 @@
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:avatica</include>
-                  <include>io.netty:*</include>
-                   <!-- some netty-based classes are included in arrow jars with original
-                  io.netty package name (e.g. io.netty.buffer.ArrowBuf in arrow-memory)
-                  so we should include them in the shaded jars in order to make shade plugin
-                  be triggered on them, but we should not relocate arrow (this is why arrow
-                  is not included in relocations)
-                  -->
-                  <include>org.apache.arrow:*</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1139,10 +1147,6 @@
                 <relocation>
                   <pattern>org.apache.datasketches</pattern>
                   <shadedPattern>org.apache.hive.org.apache.datasketches</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>io.netty</pattern>
-                  <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

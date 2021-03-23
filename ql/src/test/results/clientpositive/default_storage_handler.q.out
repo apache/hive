@@ -1,0 +1,209 @@
+PREHOOK: query: CREATE EXTERNAL TABLE test_tbl_with_default(a string, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tbl_with_default
+POSTHOOK: query: CREATE EXTERNAL TABLE test_tbl_with_default(a string, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tbl_with_default
+PREHOOK: query: DESCRIBE FORMATTED test_tbl_with_default
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tbl_with_default
+POSTHOOK: query: DESCRIBE FORMATTED test_tbl_with_default
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tbl_with_default
+# col_name            	data_type           	comment             
+facility            	string              	from deserializer   
+severity            	string              	from deserializer   
+version             	string              	from deserializer   
+ts                  	timestamp           	from deserializer   
+hostname            	string              	from deserializer   
+app_name            	string              	from deserializer   
+proc_id             	string              	from deserializer   
+msg_id              	string              	from deserializer   
+structured_data     	map<string,string>  	from deserializer   
+msg                 	binary              	from deserializer   
+unmatched           	binary              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"app_name\":\"true\",\"facility\":\"true\",\"hostname\":\"true\",\"msg\":\"true\",\"msg_id\":\"true\",\"proc_id\":\"true\",\"severity\":\"true\",\"structured_data\":\"true\",\"ts\":\"true\",\"unmatched\":\"true\",\"version\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.log.syslog.SyslogSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE EXTERNAL TABLE test_tbl_with_default_orc(a string, b int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tbl_with_default_orc
+POSTHOOK: query: CREATE EXTERNAL TABLE test_tbl_with_default_orc(a string, b int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tbl_with_default_orc
+PREHOOK: query: DESCRIBE FORMATTED test_tbl_with_default_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tbl_with_default_orc
+POSTHOOK: query: DESCRIBE FORMATTED test_tbl_with_default_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tbl_with_default_orc
+# col_name            	data_type           	comment             
+facility            	string              	from deserializer   
+severity            	string              	from deserializer   
+version             	string              	from deserializer   
+ts                  	timestamp           	from deserializer   
+hostname            	string              	from deserializer   
+app_name            	string              	from deserializer   
+proc_id             	string              	from deserializer   
+msg_id              	string              	from deserializer   
+structured_data     	map<string,string>  	from deserializer   
+msg                 	binary              	from deserializer   
+unmatched           	binary              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"app_name\":\"true\",\"facility\":\"true\",\"hostname\":\"true\",\"msg\":\"true\",\"msg_id\":\"true\",\"proc_id\":\"true\",\"severity\":\"true\",\"structured_data\":\"true\",\"ts\":\"true\",\"unmatched\":\"true\",\"version\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.log.syslog.SyslogSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE EXTERNAL TABLE test_tbl_overridden(DB_ID bigint, NAME STRING)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tbl_overridden
+POSTHOOK: query: CREATE EXTERNAL TABLE test_tbl_overridden(DB_ID bigint, NAME STRING)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tbl_overridden
+PREHOOK: query: DESCRIBE FORMATTED test_tbl_overridden
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tbl_overridden
+POSTHOOK: query: DESCRIBE FORMATTED test_tbl_overridden
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tbl_overridden
+# col_name            	data_type           	comment             
+db_id               	bigint              	from deserializer   
+name                	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"db_id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	hive.sql.database.type	METASTORE           
+	hive.sql.query      	SELECT DB_ID, NAME FROM DBS
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hive.storage.jdbc.JdbcStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hive.storage.jdbc.JdbcSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE EXTERNAL TABLE test_tbl_no_default(a string, b int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_tbl_no_default
+POSTHOOK: query: CREATE EXTERNAL TABLE test_tbl_no_default(a string, b int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_tbl_no_default
+PREHOOK: query: DESCRIBE FORMATTED test_tbl_no_default
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_tbl_no_default
+POSTHOOK: query: DESCRIBE FORMATTED test_tbl_no_default
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_tbl_no_default
+# col_name            	data_type           	comment             
+a                   	string              	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

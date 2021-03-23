@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,7 +34,12 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
+import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
+import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -54,6 +60,10 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testMmMinorCompactionNotPartitionedWithoutBuckets() throws Exception {
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, CUSTOM_COMPACTION_QUEUE);
+    String tmpFolder = folder.newFolder().getAbsolutePath();
+    conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
+
     String dbName = "default";
     String tableName = "testMmMinorCompaction";
     // Create test table
@@ -72,8 +82,14 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
             .asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000",
                 "delta_0000003_0000003_0000"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+
+    if (isTez(conf)) {
+      conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    }
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
     // Verify delta directories after compaction
@@ -88,6 +104,16 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Clean up
     testDataProvider.dropTable(tableName);
+
+    if (isTez(conf)) {
+      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+      while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+        event = reader.readEvent();
+      }
+      Assert.assertNotNull(event);
+      Assert.assertEquals(event.getQueue(), CUSTOM_COMPACTION_QUEUE);
+    }
   }
 
   @Test public void testMmMinorCompactionNotPartitionedWithBuckets() throws Exception {
@@ -609,5 +635,10 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
    */
   private static void rollbackAllTxns(boolean val, IDriver driver) {
     driver.getConf().setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, val);
+  }
+
+  private boolean isTez(HiveConf conf){
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase(
+        ExecutionMode.TEZ.name());
   }
 }

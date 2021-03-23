@@ -21,7 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -40,13 +40,15 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -103,6 +105,7 @@ public class Initiator extends MetaStoreCompactorThread {
       // much easier.  The stop value is only for testing anyway and not used when called from
       // HiveMetaStore.
       do {
+        PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
         long startedAt = -1;
         TxnStore.MutexAPI.LockHandle handle = null;
 
@@ -110,6 +113,9 @@ public class Initiator extends MetaStoreCompactorThread {
         // don't doom the entire thread.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+          if (metricsEnabled) {
+            perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
+          }
           startedAt = System.currentTimeMillis();
 
           long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
@@ -117,10 +123,6 @@ public class Initiator extends MetaStoreCompactorThread {
 
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          if (metricsEnabled) {
-            // Update compaction metrics based on showCompactions result
-            updateCompactionMetrics(currentCompactions);
-          }
 
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
               abortedTimeThreshold, compactionInterval)
@@ -170,8 +172,11 @@ public class Initiator extends MetaStoreCompactorThread {
               StringUtils.stringifyException(t));
         }
         finally {
-          if(handle != null) {
+          if (handle != null) {
             handle.releaseLocks();
+          }
+          if (metricsEnabled) {
+            perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
         }
 
@@ -202,8 +207,10 @@ public class Initiator extends MetaStoreCompactorThread {
         requestCompaction(ci, runAs, type);
       }
     } catch (Throwable ex) {
-      LOG.error("Caught exception while trying to determine if we should compact {}. " +
-          "Marking failed to avoid repeated failures, {}", ci, ex);
+      String errorMessage = "Caught exception while trying to determine if we should compact " + ci + ". Marking "
+          + "failed to avoid repeated failures, " + ex;
+      LOG.error(errorMessage);
+      ci.errorMessage = errorMessage;
       txnHandler.markFailed(ci);
     }
   }
@@ -240,7 +247,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
-    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(Worker.hostname());
+    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
     txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
@@ -318,34 +325,20 @@ public class Initiator extends MetaStoreCompactorThread {
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
-    Path base = dir.getBaseDirectory();
+    AcidDirectory dir = AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
     long baseSize = 0;
-    FileStatus stat = null;
-    if (base != null) {
-      stat = fs.getFileStatus(base);
-      if (!stat.isDirectory()) {
-        LOG.error("Was assuming base " + base.toString() + " is directory, but it's a file!");
-        return null;
+    if (dir.getBase() != null) {
+      baseSize = sumDirSize(fs, dir.getBase());
+    } else {
+      for (HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
+        baseSize += origStat.getFileStatus().getLen();
       }
-      baseSize = sumDirSize(fs, base);
-    }
-
-    List<HdfsFileStatusWithId> originals = dir.getOriginalFiles();
-    for (HdfsFileStatusWithId origStat : originals) {
-      baseSize += origStat.getFileStatus().getLen();
     }
 
     long deltaSize = 0;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     for (AcidUtils.ParsedDelta delta : deltas) {
-      stat = fs.getFileStatus(delta.getPath());
-      if (!stat.isDirectory()) {
-        LOG.error("Was assuming delta " + delta.getPath().toString() + " is a directory, " +
-            "but it's a file!");
-        return null;
-      }
-      deltaSize += sumDirSize(fs, delta.getPath());
+      deltaSize += sumDirSize(fs, delta);
     }
 
     if (baseSize == 0 && deltaSize > 0) {
@@ -407,12 +400,11 @@ public class Initiator extends MetaStoreCompactorThread {
     return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
-  private long sumDirSize(FileSystem fs, Path dir) throws IOException {
-    long size = 0;
-    FileStatus[] buckets = fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
-    for (int i = 0; i < buckets.length; i++) {
-      size += buckets[i].getLen();
-    }
+  private long sumDirSize(FileSystem fs, ParsedDirectory dir) throws IOException {
+    long size = dir.getFiles(fs, Ref.from(false)).stream()
+        .map(HdfsFileStatusWithId::getFileStatus)
+        .mapToLong(FileStatus::getLen)
+        .sum();
     return size;
   }
 
@@ -420,6 +412,8 @@ public class Initiator extends MetaStoreCompactorThread {
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
+    rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
+    rqst.setInitiatorVersion(this.runtimeVersion);
     LOG.info("Requesting compaction: " + rqst);
     CompactionResponse resp = txnHandler.compact(rqst);
     if(resp.isAccepted()) {
@@ -481,6 +475,12 @@ public class Initiator extends MetaStoreCompactorThread {
             "=true so we will not compact it.");
         return false;
       }
+      if (AcidUtils.isInsertOnlyTable(t.getParameters()) && !HiveConf
+          .getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
+        LOG.info("Table " + tableName(t) + " is insert only and " + HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM.varname
+            + "=false so we will not compact it.");
+        return false;
+      }
       if (isDynPartIngest(t, ci)) {
         return false;
       }
@@ -506,41 +506,10 @@ public class Initiator extends MetaStoreCompactorThread {
     return true;
   }
 
-  @VisibleForTesting
-  protected static void updateCompactionMetrics(ShowCompactResponse showCompactResponse) {
-    Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
-    long oldestEnqueueTime = Long.MAX_VALUE;
-
-    // Get the last compaction for each db/table/partition
-    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
-      String key = element.getDbname() + "/" + element.getTablename() +
-          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
-      // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
-      lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
-      if (TxnStore.INITIATED_RESPONSE.equals(element.getState()) && oldestEnqueueTime > element.getEnqueueTime()) {
-        oldestEnqueueTime = element.getEnqueueTime();
-      }
-    }
-
-    // Get the current count for each state
-    Map<String, Long> counts = lastElements.values().stream()
-        .collect(Collectors.groupingBy(e -> e.getState(), Collectors.counting()));
-
-    // Update metrics
-    for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
-      String key = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
-      Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
-      if (count != null) {
-        Metrics.getOrCreateGauge(key).set(count.intValue());
-      } else {
-        Metrics.getOrCreateGauge(key).set(0);
-      }
-    }
-    if (oldestEnqueueTime == Long.MAX_VALUE) {
-      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
-    } else {
-      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
-          .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
-    }
+  private String getInitiatorId(long threadId) {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(threadId);
+    return name.toString();
   }
 }

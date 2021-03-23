@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -233,7 +232,7 @@ public class TestArrowColumnarBatchSerDe {
     Properties schemaProperties = new Properties();
     schemaProperties.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
     schemaProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
-    SerDeUtils.initializeSerDe(serDe, conf, schemaProperties, null);
+    serDe.initialize(conf, schemaProperties, null);
     return (StructObjectInspector) TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
         TypeInfoFactory.getStructTypeInfo(fieldNameList, typeInfoList));
   }

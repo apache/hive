@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -77,18 +78,17 @@ public class DynamicPartitionPruner {
 
   private static final Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruner.class);
 
-  private final InputInitializerContext context;
-  private final MapWork work;
-  private final JobConf jobConf;
+  private InputInitializerContext context;
+  private MapWork work;
 
-
-  private final Map<String, List<SourceInfo>> sourceInfoMap =
-      new HashMap<String, List<SourceInfo>>();
+  private final Map<String, List<SourceInfo>> sourceInfoMap = new HashMap<>();
 
   private final BytesWritable writable = new BytesWritable();
 
   /* Keeps track of all events that need to be processed - irrespective of the source */
-  private final BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
+  private final BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<String> finishedVertices = new LinkedBlockingQueue<>();
+  private static final Object VERTEX_FINISH_TOKEN = new Object();
 
   /* Keeps track of vertices from which events are expected */
   private final Set<String> sourcesWaitingForEvents = new HashSet<String>();
@@ -99,37 +99,19 @@ public class DynamicPartitionPruner {
 
   private int sourceInfoCount = 0;
 
-  private final Object endOfEvents = new Object();
-
   private int totalEventCount = 0;
 
-  public DynamicPartitionPruner(InputInitializerContext context, MapWork work, JobConf jobConf) throws
-      SerDeException {
-    this.context = context;
-    this.work = work;
-    this.jobConf = jobConf;
-    synchronized (this) {
-      initialize();
+  public void prune() throws SerDeException, IOException, InterruptedException, HiveException {
+    if (sourcesWaitingForEvents.isEmpty()) {
+      return;
     }
-  }
 
-  public void prune()
-      throws SerDeException, IOException,
-      InterruptedException, HiveException {
-
-    synchronized(sourcesWaitingForEvents) {
-
-      if (sourcesWaitingForEvents.isEmpty()) {
-        return;
-      }
-
-      Set<VertexState> states = Collections.singleton(VertexState.SUCCEEDED);
-      for (String source : sourcesWaitingForEvents) {
-        // we need to get state transition updates for the vertices that will send
-        // events to us. once we have received all events and a vertex has succeeded,
-        // we can move to do the pruning.
-        context.registerForVertexStateUpdates(source, states);
-      }
+    Set<VertexState> states = Collections.singleton(VertexState.SUCCEEDED);
+    for (String source : sourcesWaitingForEvents) {
+      // we need to get state transition updates for the vertices that will send
+      // events to us. once we have received all events and a vertex has succeeded,
+      // we can move to do the pruning.
+      context.registerForVertexStateUpdates(source, states);
     }
 
     LOG.info("Waiting for events (" + sourceInfoCount + " sources) ...");
@@ -140,17 +122,15 @@ public class DynamicPartitionPruner {
     LOG.info("Ok to proceed.");
   }
 
-  public BlockingQueue<Object> getQueue() {
-    return queue;
-  }
-
   private void clear() {
     sourceInfoMap.clear();
     sourceInfoCount = 0;
   }
 
-  private void initialize() throws SerDeException {
+  public void initialize(InputInitializerContext context, MapWork work, JobConf jobConf) throws SerDeException {
     this.clear();
+    this.context = context;
+    this.work = work;
     Map<String, SourceInfo> columnMap = new HashMap<String, SourceInfo>();
     // sources represent vertex names
     Set<String> sources = work.getEventSourceTableDescMap().keySet();
@@ -353,8 +333,10 @@ public class DynamicPartitionPruner {
       this.columnType = columnType;
       this.mustKeepOnePartition = jobConf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false);
 
-      deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
-      deserializer.initialize(jobConf, table.getProperties());
+      AbstractSerDe serDe = ReflectionUtils.newInstance(table.getSerDeClass(), null);
+      serDe.initialize(jobConf, table.getProperties(), null);
+
+      this.deserializer = serDe;
 
       ObjectInspector inspector = deserializer.getObjectInspector();
       LOG.debug("Type of obj insp: " + inspector.getTypeName());
@@ -378,17 +360,26 @@ public class DynamicPartitionPruner {
     while (true) {
       Object element = queue.take();
 
-      if (element == endOfEvents) {
-        // we're done processing events
-        break;
+      if (element == VERTEX_FINISH_TOKEN) {
+        String updatedSource = finishedVertices.poll();
+        calculateFinishCondition(updatedSource);
+        if (checkForSourceCompletion(updatedSource)) {
+          break;
+        }
+      } else {
+        InputInitializerEvent event = (InputInitializerEvent) element;
+        numEventsSeenPerSource.computeIfAbsent(event.getSourceVertexName(), vn -> new MutableInt(0))
+            .increment();
+
+        totalEventCount++;
+        LOG.info("Input event: " + event.getTargetInputName() + ", " + event.getTargetVertexName()
+            + ", " + (event.getUserPayload().limit() - event.getUserPayload().position()));
+        processPayload(event.getUserPayload(), event.getSourceVertexName());
+        eventCount += 1;
+        if (checkForSourceCompletion(event.getSourceVertexName())) {
+          break;
+        }
       }
-
-      InputInitializerEvent event = (InputInitializerEvent) element;
-
-      LOG.info("Input event: " + event.getTargetInputName() + ", " + event.getTargetVertexName()
-          + ", " + (event.getUserPayload().limit() - event.getUserPayload().position()));
-      processPayload(event.getUserPayload(), event.getSourceVertexName());
-      eventCount += 1;
     }
     LOG.info("Received events: " + eventCount);
   }
@@ -480,54 +471,47 @@ public class DynamicPartitionPruner {
   }
 
   public void addEvent(InputInitializerEvent event) {
-    synchronized(sourcesWaitingForEvents) {
-      if (sourcesWaitingForEvents.contains(event.getSourceVertexName())) {
-        ++totalEventCount;
-        numEventsSeenPerSource.get(event.getSourceVertexName()).increment();
-        if(!queue.offer(event)) {
-          throw new IllegalStateException("Queue full");
-        }
-        checkForSourceCompletion(event.getSourceVertexName());
-      }
+    if(!queue.offer(event)) {
+      throw new IllegalStateException("Queue full");
     }
+  }
+
+  private void calculateFinishCondition(String sourceName) {
+    // Get a deterministic count of number of tasks for the vertex.
+    MutableInt prevVal = numExpectedEventsPerSource.get(sourceName);
+    int prevValInt = prevVal.intValue();
+    Preconditions.checkState(prevValInt < 0,
+        "Invalid value for numExpectedEvents for source: " + sourceName + ", oldVal=" + prevValInt);
+    prevVal.setValue((-1) * prevValInt * context.getVertexNumTasks(sourceName));
   }
 
   public void processVertex(String name) {
     LOG.info("Vertex succeeded: " + name);
-    synchronized(sourcesWaitingForEvents) {
-      // Get a deterministic count of number of tasks for the vertex.
-      MutableInt prevVal = numExpectedEventsPerSource.get(name);
-      int prevValInt = prevVal.intValue();
-      Preconditions.checkState(prevValInt < 0,
-          "Invalid value for numExpectedEvents for source: " + name + ", oldVal=" + prevValInt);
-      prevVal.setValue((-1) * prevValInt * context.getVertexNumTasks(name));
-      checkForSourceCompletion(name);
-    }
+    finishedVertices.add(name);
+    queue.offer(VERTEX_FINISH_TOKEN);
   }
 
-  private void checkForSourceCompletion(String name) {
+  private boolean checkForSourceCompletion(String name) {
     int expectedEvents = numExpectedEventsPerSource.get(name).getValue();
     if (expectedEvents < 0) {
       // Expected events not updated yet - vertex SUCCESS notification not received.
-      return;
-    } else {
-      int processedEvents = numEventsSeenPerSource.get(name).getValue();
-      if (processedEvents == expectedEvents) {
-        sourcesWaitingForEvents.remove(name);
-        if (sourcesWaitingForEvents.isEmpty()) {
-          // we've got what we need; mark the queue
-          if(!queue.offer(endOfEvents)) {
-            throw new IllegalStateException("Queue full");
-          }
-        } else {
-          LOG.info("Waiting for " + sourcesWaitingForEvents.size() + " sources.");
-        }
-      } else if (processedEvents > expectedEvents) {
-        throw new IllegalStateException(
-            "Received too many events for " + name + ", Expected=" + expectedEvents +
-                ", Received=" + processedEvents);
-      }
-      return;
+      return false;
     }
+
+    int processedEvents = numEventsSeenPerSource.get(name).getValue();
+    if (processedEvents == expectedEvents) {
+      sourcesWaitingForEvents.remove(name);
+      if (sourcesWaitingForEvents.isEmpty()) {
+        return true;
+      } else {
+        LOG.info("Waiting for " + sourcesWaitingForEvents.size() + " sources.");
+        return false;
+      }
+    } else if (processedEvents > expectedEvents) {
+      throw new IllegalStateException(
+          "Received too many events for " + name + ", Expected=" + expectedEvents +
+              ", Received=" + processedEvents);
+    }
+    return false;
   }
 }

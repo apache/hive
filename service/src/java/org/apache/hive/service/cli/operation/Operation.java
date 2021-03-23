@@ -57,6 +57,7 @@ import com.google.common.collect.Sets;
 
 public abstract class Operation {
   protected final HiveSession parentSession;
+  protected boolean embedded;
   private volatile OperationState state = OperationState.INITIALIZED;
   private volatile MetricsScope currentStateScope;
   private final OperationHandle opHandle;
@@ -67,7 +68,6 @@ public abstract class Operation {
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
-  private ScheduledExecutorService scheduledExecutorService;
 
   private long operationTimeout;
   private volatile long lastAccessTime;
@@ -88,21 +88,26 @@ public abstract class Operation {
   }
 
   protected Operation(HiveSession parentSession,
-      Map<String, String> confOverlay, OperationType opType) {
+                      Map<String, String> confOverlay, OperationType opType) {
+    this(parentSession, confOverlay, opType, false);
+  }
+
+  protected Operation(HiveSession parentSession,
+      Map<String, String> confOverlay, OperationType opType, boolean embedded) {
     this.parentSession = parentSession;
+    this.embedded = embedded;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
     opTerminateMonitorLatch = new CountDownLatch(1);
     beginTime = System.currentTimeMillis();
     lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
-    scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     currentStateScope = updateOperationStateMetrics(null, MetricsConstant.OPERATION_PREFIX,
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
     queryState = new QueryState.Builder()
                      .withConfOverlay(confOverlay)
-                     .withGenerateNewQueryId(true)
+                     .withGenerateNewQueryId(!embedded)
                      .withHiveConf(parentSession.getHiveConf())
                      .build();
   }
@@ -237,8 +242,10 @@ public abstract class Operation {
    */
   protected void beforeRun() {
     ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
-    createOperationLog();
-    LogUtils.registerLoggingContext(queryState.getConf());
+    if (!embedded) {
+      createOperationLog();
+      LogUtils.registerLoggingContext(queryState.getConf());
+    }
 
     log.info(
         "[opType={}, queryId={}, startTime={}, sessionId={}, createTime={}, userName={}, ipAddress={}]",
@@ -256,7 +263,9 @@ public abstract class Operation {
    * Clean up resources, which was set up in beforeRun().
    */
   protected void afterRun() {
-    LogUtils.unregisterLoggingContext();
+    if (!embedded) {
+      LogUtils.unregisterLoggingContext();
+    }
     // Reset back to session context after the query is done
     ShimLoader.getHadoopShims().setHadoopSessionContext(parentSession.getSessionState().getSessionId());
   }
@@ -313,8 +322,10 @@ public abstract class Operation {
             + "Perhaps the operation has already terminated.");
       } else {
         if (operationLogCleanupDelayMs > 0) {
+          ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
           scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
             TimeUnit.MILLISECONDS);
+          scheduledExecutorService.shutdown();
         } else {
           log.info("Closing operation log {} without delay", operationLog);
           operationLog.close();

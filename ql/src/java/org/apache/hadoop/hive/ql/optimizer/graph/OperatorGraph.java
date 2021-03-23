@@ -20,20 +20,24 @@
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import com.google.common.collect.Sets;
 
 /**
@@ -53,11 +57,11 @@ public class OperatorGraph {
 
   DagGraph<Operator<?>, OpEdge> g;
 
-  enum EdgeType {
-    FLOW, SEMIJOIN, DPP, TEST,
+  public enum EdgeType {
+    FLOW, SEMIJOIN, DPP, TEST, BROADCAST
   }
 
-  static class OpEdge {
+  public static class OpEdge {
 
     private final EdgeType et;
     private final int index;
@@ -71,8 +75,17 @@ public class OperatorGraph {
       this.index = index;
     }
 
+    public EdgeType getEdgeType() {
+      return et;
+    }
+
   }
 
+  public static interface OperatorEdgePredicate {
+
+    boolean accept(Operator<?> s, Operator<?> t, OpEdge opEdge);
+
+  }
 
   Map<Operator<?>, Cluster> nodeCluster = new HashMap<>();
 
@@ -80,18 +93,56 @@ public class OperatorGraph {
 
     Set<Operator<?>> members = new LinkedHashSet<>();
 
-    public void merge(Cluster o) {
+    protected void merge(Cluster o) {
+      if (o == this) {
+        return;
+      }
       for (Operator<?> node : o.members) {
         add(node);
       }
       o.members.clear();
     }
 
-    public void add(Operator<?> curr) {
+    protected void add(Operator<?> curr) {
       nodeCluster.put(curr, this);
       members.add(curr);
     }
 
+    public Set<Cluster> parentClusters(OperatorEdgePredicate traverseEdge) {
+      Set<Cluster> ret = new HashSet<Cluster>();
+      for (Operator<?> operator : members) {
+        for (Operator<? extends OperatorDesc> p : operator.getParentOperators()) {
+          if (members.contains(p)) {
+            continue;
+          }
+          Optional<OpEdge> e = g.getEdge(p, operator);
+          if (traverseEdge.accept(p, operator, e.get())) {
+            ret.add(nodeCluster.get(p));
+          }
+        }
+      }
+      return ret;
+    }
+
+    public Set<Cluster> childClusters(OperatorEdgePredicate traverseEdge) {
+      Set<Cluster> ret = new HashSet<Cluster>();
+      for (Operator<?> operator : members) {
+        for (Operator<? extends OperatorDesc> p : operator.getChildOperators()) {
+          if (members.contains(p)) {
+            continue;
+          }
+          Optional<OpEdge> e = g.getEdge(operator, p);
+          if (traverseEdge.accept(operator, p, e.get())) {
+            ret.add(nodeCluster.get(p));
+          }
+        }
+      }
+      return ret;
+    }
+
+    public Set<Operator<?>> getMembers() {
+      return Collections.unmodifiableSet(members);
+    }
   }
 
 
@@ -118,7 +169,11 @@ public class OperatorGraph {
       List<Operator<?>> parents = curr.getParentOperators();
       for (int i = 0; i < parents.size(); i++) {
         Operator<?> p = parents.get(i);
-        g.putEdgeValue(p, curr, new OpEdge(EdgeType.FLOW, i));
+        if (curr instanceof MapJoinOperator && p instanceof ReduceSinkOperator) {
+          g.putEdgeValue(p, curr, new OpEdge(EdgeType.BROADCAST, i));
+        } else {
+          g.putEdgeValue(p, curr, new OpEdge(EdgeType.FLOW, i));
+        }
         if (p instanceof ReduceSinkOperator) {
           // ignore cluster of parent RS
           continue;
@@ -187,4 +242,22 @@ public class OperatorGraph {
     return this;
 
   }
+
+  public Cluster clusterOf(Operator<?> op1) {
+    return nodeCluster.get(op1);
+  }
+
+  public Set<Cluster> getClusters() {
+    return new HashSet<>(nodeCluster.values());
+  }
+
+  public Operator<?> findOperator(String name) {
+    for (Operator<?> o : g.nodes()) {
+      if (name.equals(o.toString())) {
+        return o;
+      }
+    }
+    return null;
+  }
+
 }

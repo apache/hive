@@ -1,0 +1,9 @@
+PREHOOK: query: create table tbl (chrcol char(5), deccol decimal(4,1))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
+POSTHOOK: query: create table tbl (chrcol char(5), deccol decimal(4,1))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl
+FAILED: SemanticException [Error 10014]: Line 2:24 Wrong arguments 'chrcol': Unsafe compares between different types are disabled for safety reasons. If you know what you are doing, please set hive.strict.checks.type.safety to false and make sure that hive.mapred.mode is not set to 'strict' to proceed. Note that you may get errors or incorrect results if you make a mistake while using some of the unsafe features.

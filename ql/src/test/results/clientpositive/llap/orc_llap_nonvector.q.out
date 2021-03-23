@@ -1348,7 +1348,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap_nonvector_2
-                  Statistics: Num rows: 12288 Data size: 4468070 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 4468180 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 10
                     Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE

@@ -94,16 +94,16 @@ public class Utils {
     return modifiedURI;
   }
 
-  private static String replaceHost(String originalURIStr, String newHost) throws SemanticException {
+  public static String replaceHost(String originalURIStr, String newHost) throws SemanticException {
     if (StringUtils.isEmpty(originalURIStr)) {
       return originalURIStr;
     }
-    URI origUri = URI.create(originalURIStr);
     try {
-      return new URI(origUri.getScheme(),
+      URI origUri = new Path(originalURIStr).toUri();
+      return new Path(new URI(origUri.getScheme(),
               origUri.getUserInfo(), newHost, origUri.getPort(),
               origUri.getPath(), origUri.getQuery(),
-              origUri.getFragment()).toString();
+              origUri.getFragment())).toString();
     } catch (URISyntaxException ex) {
       throw new SemanticException(ex);
     }

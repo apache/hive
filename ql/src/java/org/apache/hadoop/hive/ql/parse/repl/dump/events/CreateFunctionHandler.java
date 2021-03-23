@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
@@ -51,6 +52,12 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
 
   @Override
   public void handle(Context withinContext) throws Exception {
+    Function functionObj = eventMessage.getFunctionObj();
+    if (functionObj.getResourceUris() == null || functionObj.getResourceUris().isEmpty()) {
+      LOG.info("Not replicating function: " + functionObj.getFunctionName() + " as it seems to have been created "
+              + "without USING clause");
+      return;
+    }
     LOG.info("Processing#{} CREATE_FUNCTION message : {}", fromEventId(), eventMessageAsJSON);
     Path metadataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
@@ -58,7 +65,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
     boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     List<DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
     try (JsonWriter jsonWriter = new JsonWriter(fileSystem, metadataPath)) {
-      FunctionSerializer serializer = new FunctionSerializer(eventMessage.getFunctionObj(),
+      FunctionSerializer serializer = new FunctionSerializer(functionObj,
               dataPath, copyAtLoad, withinContext.hiveConf);
       serializer.writeTo(jsonWriter, withinContext.replicationSpec);
       functionBinaryCopyPaths.addAll(serializer.getFunctionBinaryCopyPaths());

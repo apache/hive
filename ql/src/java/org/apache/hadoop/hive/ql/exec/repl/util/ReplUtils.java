@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Base64;
 
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 
 public class ReplUtils {
@@ -84,6 +87,10 @@ public class ReplUtils {
   // write id allocated in the current execution context which will be passed through config to be used by different
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
+  public static final String REPL_IS_CUSTOM_DB_LOC = "hive.repl.is.custom.db.loc";
+
+  public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
 
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
@@ -448,5 +455,20 @@ public class ReplUtils {
       }
     }
     return null;
+  }
+
+  public static String getDistCpCustomName(HiveConf conf) {
+    String userChosenName = conf.get(JobContext.JOB_NAME);
+    if (StringUtils.isEmpty(userChosenName)) {
+      String policyName = conf.get(SCHEDULED_QUERY_SCHEDULENAME, "POLICY_NAME");
+      String policyId =
+          conf.get(SCHEDULED_QUERY_EXECUTIONID, "QUERY_EXECUTION_ID");
+      userChosenName = "Repl#" + policyName + "#" + policyId;
+      LOG.info("Using {} as job name for map-reduce jobs.", userChosenName);
+    } else {
+      LOG.info("Job Name is explicitly configured as {}, not using "
+          + "replication job custom name.", userChosenName);
+    }
+    return userChosenName;
   }
 }

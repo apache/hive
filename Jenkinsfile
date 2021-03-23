@@ -94,7 +94,7 @@ OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePl
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
-if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
+if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt"; sed -i '/\\/ITest/d' $PWD/inclusions.txt;fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
@@ -171,8 +171,21 @@ def saveWS() {
 def loadWS() {
   sh '''#!/bin/bash -e
     rsync -rltDq --stats rsync://rsync/data/$LOCKED_RESOURCE archive.tar
-    tar -xf archive.tar'''
+    time tar -xf archive.tar
+    rm archive.tar
+'''
 }
+
+def saveFile(name) {
+  sh """#!/bin/bash -e
+    rsync -rltDq --stats ${name} rsync://rsync/data/$LOCKED_RESOURCE.${name}"""
+}
+
+def loadFile(name) {
+  sh """#!/bin/bash -e
+    rsync -rltDq --stats rsync://rsync/data/$LOCKED_RESOURCE.${name} ${name}"""
+}
+
 
 jobWrappers {
 
@@ -207,56 +220,100 @@ jobWrappers {
     }
   }
 
-  stage('Testing') {
-    def branches = [:]
-    for (def d in ['derby','postgres']) {
-      def dbType=d
-      def splitName = "init@$dbType"
-      branches[splitName] = {
-        executorNode {
-          stage('Prepare') {
-              loadWS();
-          }
-          stage('init-metastore') {
-             withEnv(["dbType=$dbType"]) {
-               sh '''#!/bin/bash -e
+  def branches = [:]
+  for (def d in ['derby','postgres','mysql']) {
+    def dbType=d
+    def splitName = "init@$dbType"
+    branches[splitName] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+        }
+        stage('init-metastore') {
+           withEnv(["dbType=$dbType"]) {
+             sh '''#!/bin/bash -e
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
 ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
+export DBNAME=metastore
 reinit_metastore $dbType
+time docker rm -f dev_$dbType || true
 '''
-            }
           }
-        }
-      }
-    }
-    for (int i = 0; i < splits.size(); i++) {
-      def num = i
-      def split = splits[num]
-      def splitName=String.format("split-%02d",num+1)
-      branches[splitName] = {
-        executorNode {
-          stage('Prepare') {
-              loadWS();
-              writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
-              writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
-              sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
-          }
-          try {
-            stage('Test') {
-              buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
-            }
-          } finally {
-            stage('Archive') {
+          stage('verify') {
+            try {
+              sh """#!/bin/bash -e
+mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B -Ditest.jdbc.jars=`find /apps/lib/ -type f | paste -s -d:`
+"""
+            } finally {
               junit '**/TEST-*.xml'
             }
           }
         }
       }
     }
-    parallel branches
+  }
+  for (int i = 0; i < splits.size(); i++) {
+    def num = i
+    def split = splits[num]
+    def splitName=String.format("split-%02d",num+1)
+    branches[splitName] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+            writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
+            writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
+            sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
+        }
+        try {
+          stage('Test') {
+            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+          }
+        } finally {
+          stage('PostProcess') {
+            try {
+              sh """#!/bin/bash -e
+                # removes all stdout and err for passed tests
+                xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
+                # remove all output.txt files
+                find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
+              """
+            } finally {
+              def fn="${splitName}.tgz"
+              sh """#!/bin/bash -e
+              tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
+              saveFile(fn)
+              junit '**/TEST-*.xml'
+            }
+          }
+        }
+      }
+    }
+  }
+  try {
+    stage('Testing') {
+      parallel branches
+    }
+  } finally {
+    stage('Archive') {
+      executorNode {
+        for (int i = 0; i < splits.size(); i++) {
+          def num = i
+          def splitName=String.format("split-%02d",num+1)
+          def fn="${splitName}.tgz"
+          loadFile(fn)
+          sh("""#!/bin/bash -e
+              mkdir ${splitName}
+              tar xzf ${fn} -C ${splitName}
+              unlink ${fn}""")
+        }
+        sh("""#!/bin/bash -e
+        tar czf test-results.tgz split*""")
+        archiveArtifacts artifacts: "**/test-results.tgz"
+      }
+    }
   }
 }

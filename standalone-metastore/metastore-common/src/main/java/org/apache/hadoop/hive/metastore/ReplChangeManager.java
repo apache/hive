@@ -244,7 +244,12 @@ public class ReplChangeManager {
       }
     } else {
       String fileCheckSum = checksumFor(path, fs);
-      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, getCmRoot(path).toString());
+      Path cmRootPath = getCmRoot(path);
+      String cmRoot = null;
+      if (cmRootPath != null) {
+        cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+      }
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmRoot);
 
       // set timestamp before moving to cmroot, so we can
       // avoid race condition CM remove the file before setting
@@ -514,7 +519,7 @@ public class ReplChangeManager {
           }
         }
       } catch (IOException e) {
-        LOG.error("Exception when clearing cmroot:" + StringUtils.stringifyException(e));
+        LOG.error("Exception when clearing cmroot", e);
       }
     }
   }
@@ -610,7 +615,7 @@ public class ReplChangeManager {
     try {
       retriable.run();
     } catch (Exception e) {
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new IOException("Failed to createCmRoot", e);
     }
   }
 

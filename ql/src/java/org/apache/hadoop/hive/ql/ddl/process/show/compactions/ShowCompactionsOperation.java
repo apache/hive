@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,7 +47,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     ShowCompactResponse rsp = context.getDb().showCompactions();
 
     // Write the results into the file
-    try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       // Write a header for cliDriver
       if (!sessionState.isHiveServerQuery()) {
         writeHeader(os);
@@ -77,7 +78,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes("State");
     os.write(Utilities.tabCode);
-    os.writeBytes("Hostname");
+    os.writeBytes("Worker host");
     os.write(Utilities.tabCode);
     os.writeBytes("Worker");
     os.write(Utilities.tabCode);
@@ -90,6 +91,10 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes("HadoopJobId");
     os.write(Utilities.tabCode);
     os.writeBytes("Error message");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Initiator host");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Initiator");
     os.write(Utilities.newLineCode);
   }
 
@@ -109,10 +114,9 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     os.writeBytes(e.getState());
     os.write(Utilities.tabCode);
-    String wid = e.getWorkerid();
-    os.writeBytes(wid == null ? NO_VAL : wid.split("-")[0]);
+    os.writeBytes(getHostFromId(e.getWorkerid()));
     os.write(Utilities.tabCode);
-    os.writeBytes(wid == null ? NO_VAL : wid.split("-")[1]);
+    os.writeBytes(getThreadIdFromId(e.getWorkerid()));
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetEnqueueTime() ? Long.toString(e.getEnqueueTime()) : NO_VAL);
     os.write(Utilities.tabCode);
@@ -124,6 +128,24 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     String error = e.getErrorMessage();
     os.writeBytes(error == null ? NO_VAL : error);
+    os.writeBytes(getHostFromId(e.getInitiatorId()));
+    os.write(Utilities.tabCode);
+    os.writeBytes(getThreadIdFromId(e.getInitiatorId()));
     os.write(Utilities.newLineCode);
+  }
+
+  private String getHostFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    int lastDash = id.lastIndexOf('-');
+    return id.substring(0, lastDash > -1 ? lastDash : id.length());
+  }
+
+  private String getThreadIdFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    return id.substring(id.lastIndexOf('-') + 1);
   }
 }

@@ -86,13 +86,13 @@ public class HiveSplitGenerator extends InputInitializer {
   private static final Logger LOG = LoggerFactory.getLogger(HiveSplitGenerator.class);
 
   private final DynamicPartitionPruner pruner;
-  private final Configuration conf;
-  private final JobConf jobConf;
-  private final MRInputUserPayloadProto userPayloadProto;
-  private final MapWork work;
+  private Configuration conf;
+  private JobConf jobConf;
+  private MRInputUserPayloadProto userPayloadProto;
+  private MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
-  private final SplitLocationProvider splitLocationProvider;
-  private final Optional<Integer> numSplits;
+  private SplitLocationProvider splitLocationProvider;
+  private Optional<Integer> numSplits;
 
   private boolean generateSingleSplit;
 
@@ -128,11 +128,14 @@ public class HiveSplitGenerator extends InputInitializer {
     this.numSplits = Optional.ofNullable(numSplits);
   }
 
-  public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
-      SerDeException {
+  public HiveSplitGenerator(InputInitializerContext initializerContext) {
     super(initializerContext);
-
     Preconditions.checkNotNull(initializerContext);
+    pruner = new DynamicPartitionPruner();
+    this.numSplits = Optional.empty();
+  }
+
+  private void prepare(InputInitializerContext initializerContext) throws IOException, SerDeException {
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
@@ -148,18 +151,16 @@ public class HiveSplitGenerator extends InputInitializer {
     this.splitLocationProvider =
         Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
     LOG.info("SplitLocationProvider: " + splitLocationProvider);
-
-    // Events can start coming in the moment the InputInitializer is created. The pruner
-    // must be setup and initialized here so that it sets up it's structures to start accepting events.
-    // Setting it up in initialize leads to a window where events may come in before the pruner is
-    // initialized, which may cause it to drop events.
-    pruner = new DynamicPartitionPruner(initializerContext, work, jobConf);
-    this.numSplits = Optional.empty();
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public List<Event> initialize() throws Exception {
+    if (getContext() != null) {
+      // called from Tez AM.
+      prepare(getContext());
+    }
+
     // Setup the map work for this thread. Pruning modified the work instance to potentially remove
     // partitions. The same work instance must be used when generating splits.
     Utilities.setMapWork(jobConf, work);
@@ -169,6 +170,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
       // perform dynamic partition pruning
       if (pruner != null) {
+        pruner.initialize(getContext(), work, jobConf);
         pruner.prune();
       }
 
@@ -385,6 +387,8 @@ public class HiveSplitGenerator extends InputInitializer {
 
   @Override
   public void onVertexStateUpdated(VertexStateUpdate stateUpdate) {
+    // pruner registers for vertex state updates after it is ready to handle them
+    // so we do not worry about events coming before pruner was initialized
     pruner.processVertex(stateUpdate.getVertexName());
   }
 

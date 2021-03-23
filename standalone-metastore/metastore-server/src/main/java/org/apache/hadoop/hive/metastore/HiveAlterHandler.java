@@ -188,7 +188,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // On a replica this alter table will be executed only if old and new both the databases are
       // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = HiveMetaStore.HMSHandler.isDbReplicationTarget(olddb);
+      isReplicated = HMSHandler.isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
@@ -247,7 +247,7 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          String oldtRelativePath = wh.getDatabasePath(olddb).toUri()
+          String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
               .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
                   && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
@@ -256,8 +256,8 @@ public class HiveAlterHandler implements AlterHandler {
 
             // get new location
             Database db = msdb.getDatabase(catName, newDbName);
-            assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
-            Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
+            assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+            Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
             destPath = new Path(databasePath, newTblName);
             destFs = wh.getFs(destPath);
 
@@ -346,7 +346,7 @@ public class HiveAlterHandler implements AlterHandler {
                   partBatch, newt.getWriteId(), writeIdList);
             }
           }
-
+          Deadline.checkTimeout();
           for (Entry<Partition, ColumnStatistics> partColStats : columnStatsNeedUpdated.entries()) {
             ColumnStatistics newPartColStats = partColStats.getValue();
             newPartColStats.getStatsDesc().setDbName(newDbName);
@@ -363,7 +363,7 @@ public class HiveAlterHandler implements AlterHandler {
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
-          assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
+          assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }
@@ -389,6 +389,7 @@ public class HiveAlterHandler implements AlterHandler {
                 List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
                     part.getValues(), oldCols, oldt, part, null, null);
                 assert (colStats.isEmpty());
+                Deadline.checkTimeout();
                 if (cascade) {
                   msdb.alterPartition(
                     catName, dbname, name, part.getValues(), part, writeIdList);
@@ -562,6 +563,7 @@ public class HiveAlterHandler implements AlterHandler {
           updateOrGetPartitionColumnStats(msdb, catName, dbname, name, new_part.getValues(),
               oldPart.getSd().getCols(), tbl, new_part, null, null);
         }
+        Deadline.checkTimeout();
         msdb.alterPartition(
             catName, dbname, name, new_part.getValues(), new_part, validWriteIds);
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
@@ -1062,8 +1064,8 @@ public class HiveAlterHandler implements AlterHandler {
           }
         }
       }
-
       if (doAlterTable) {
+        Deadline.checkTimeout();
         // Change to new table and append stats for the new table
         msdb.alterTable(catName, dbName, tableName, newTable, validWriteIds);
         if (updateColumnStats) {
@@ -1131,6 +1133,7 @@ public class HiveAlterHandler implements AlterHandler {
                 break;
               }
             }
+            Deadline.checkTimeout();
             if (found) {
               if (rename) {
                 if (updateColumnStats) {

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -76,6 +77,14 @@ public class TestDatabases extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
+    HiveMetaStoreClient.setProcessorIdentifier("UnitTest@TestDatabases");
+    HiveMetaStoreClient.setProcessorCapabilities(new String[] {
+        "HIVEFULLACIDREAD",
+        "EXTWRITE",
+        "EXTREAD",
+        "HIVEBUCKET2"
+    } );
+
     // Get new client
     client = metaStore.getClient();
 
@@ -468,7 +477,7 @@ public class TestDatabases extends MetaStoreClientTest {
             .setName(originalDatabase.getName())
             .setOwnerType(PrincipalType.GROUP)
             .setOwnerName("owner2")
-            .setLocation(metaStore.getWarehouseRoot() + "/database_location_2")
+            .setLocation(metaStore.getExternalWarehouseRoot() + "/database_location_2")
             .setDescription("dummy description 2")
             .addParam("param_key_1", "param_value_1_2")
             .addParam("param_key_2_3", "param_value_2_3")
@@ -665,7 +674,7 @@ public class TestDatabases extends MetaStoreClientTest {
                .setName("dummy")
                .setOwnerType(PrincipalType.ROLE)
                .setOwnerName("owner")
-               .setLocation(metaStore.getWarehouseRoot() + "/database_location")
+               .setLocation(metaStore.getExternalWarehouseRoot() + "/database_location")
                .setDescription("dummy description")
                .addParam("param_key_1", "param_value_1")
                .addParam("param_key_2", "param_value_2")

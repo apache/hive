@@ -84,7 +84,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: []
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 0, 1
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
@@ -233,7 +233,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: []
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 0, 1
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -69,7 +68,7 @@ public class GenericUDTFGetSQLSchema extends GenericUDTF {
     List<FieldSchema> fieldSchemas = null;
     try {
       fieldSchemas = ParseUtils.parseQueryAndGetSchema(conf, query);
-    } catch (IOException | ParseException e) {
+    } catch (ParseException e) {
       throw new HiveException(e);
     }
 

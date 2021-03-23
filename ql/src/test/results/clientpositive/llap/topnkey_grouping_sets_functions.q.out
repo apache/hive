@@ -79,7 +79,7 @@ STAGE PLANS:
                       aggregations: sum(c)
                       keys: a (type: int), b (type: int), 0L (type: bigint)
                       grouping sets: 0, 1, 2, 3
-                      minReductionHashAggr: 0.15384614
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 26 Data size: 568 Basic stats: COMPLETE Column stats: COMPLETE
@@ -208,7 +208,7 @@ STAGE PLANS:
                       aggregations: min(c)
                       keys: a (type: int), b (type: int), 0L (type: bigint)
                       grouping sets: 0, 1, 2, 3
-                      minReductionHashAggr: 0.15384614
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
@@ -337,7 +337,7 @@ STAGE PLANS:
                       aggregations: max(c)
                       keys: a (type: int), b (type: int), 0L (type: bigint)
                       grouping sets: 0, 1, 2, 3
-                      minReductionHashAggr: 0.15384614
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE

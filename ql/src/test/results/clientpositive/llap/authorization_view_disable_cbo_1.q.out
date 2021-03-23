@@ -250,15 +250,15 @@ POSTHOOK: Input: default@v2_n8
 POSTHOOK: Input: default@v_n10
 #### A masked pattern was here ####
 val_0
+val_10
 val_100
+val_103
 val_104
+val_105
 val_11
 val_111
 val_113
-val_116
-val_119
-val_125
-val_133
+val_114
 PREHOOK: query: select key from v_n10 cluster by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test_n9
@@ -293,13 +293,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test_n9
 POSTHOOK: Input: default@v_n10
 #### A masked pattern was here ####
+0
+0
+0
+0
+0
+0
 10
 10
 100
 100
-100
-100
-103
-103
-103
-103

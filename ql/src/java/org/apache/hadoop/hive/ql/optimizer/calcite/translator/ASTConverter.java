@@ -755,6 +755,10 @@ public class ASTConverter {
       if (wRangeAst != null) {
         wSpec.addChild(wRangeAst);
       }
+      if (over.ignoreNulls()) {
+        ASTNode ignoreNulls = ASTBuilder.createAST(HiveParser.TOK_IGNORE_NULLS, "TOK_IGNORE_NULLS");
+        wSpec.addChild(ignoreNulls);
+      }
 
       return wUDAFAst;
     }
@@ -786,8 +790,10 @@ public class ASTConverter {
         break;
       case CAST:
         assert(call.getOperands().size() == 1);
-        if(call.getType().isStruct()) {
-          // cast for struct types can be ignored safely because explicit casting on struct
+        if (call.getType().isStruct() ||
+            SqlTypeName.MAP.equals(call.getType().getSqlTypeName()) ||
+            SqlTypeName.ARRAY.equals(call.getType().getSqlTypeName())) {
+          // cast for complex types can be ignored safely because explicit casting on such
           // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
           return call.getOperands().get(0).accept(this);
         }

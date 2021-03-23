@@ -63,7 +63,7 @@ public class ScheduledQueryExecutionsMaintTask implements MetastoreTaskThread {
       if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
         return;
       }
-      RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
+      RawStore ms = HMSHandler.getMSForConf(conf);
 
       int timeoutSecs = (int) MetastoreConf.getTimeVar(conf,
           MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT, TimeUnit.SECONDS);

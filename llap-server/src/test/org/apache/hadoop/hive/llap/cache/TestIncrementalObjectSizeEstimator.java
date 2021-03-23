@@ -28,30 +28,26 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.ql.io.orc.encoded.LlapDataReader;
 import org.apache.orc.CompressionCodec;
-import org.apache.orc.DataReader;
 import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.orc.impl.OrcIndex;
 import org.apache.orc.StripeInformation;
-import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.orc.OrcProto;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.google.protobuf.CodedOutputStream;
 
 public class TestIncrementalObjectSizeEstimator {
   private static final Logger LOG = LoggerFactory.getLogger(TestIncrementalObjectSizeEstimator.class);
 
-  private static class DummyMetadataReader implements DataReader {
+  private static class DummyMetadataReader implements LlapDataReader {
     public boolean doStreamStep = false;
     public boolean isEmpty;
 
@@ -153,7 +149,7 @@ public class TestIncrementalObjectSizeEstimator {
     }
 
     @Override
-    public DataReader clone() {
+    public LlapDataReader clone() {
       return null;
     }
 

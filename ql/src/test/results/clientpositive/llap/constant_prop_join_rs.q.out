@@ -209,10 +209,10 @@ STAGE PLANS:
                       value expressions: c11 (type: int), c12 (type: int), 'test1' (type: string)
                     Select Operator
                       expressions: c10 (type: int)
-                      outputColumnNames: _col0
+                      outputColumnNames: c10
                       Statistics: Num rows: 1187500 Data size: 2578537511 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1187500)
+                        aggregations: min(c10), max(c10), bloom_filter(c10, expectedEntries=1187500)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2

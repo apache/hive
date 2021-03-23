@@ -62,18 +62,19 @@ public class Mssql extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:sqlserver://localhost:1433;DatabaseName=" + HIVE_DB + ";";
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + HIVE_DB + ";";
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:sqlserver://localhost:1433";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:sqlserver://" + hostAddress + ":1433";
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains(
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout
+        .contains(
         "Recovery is complete. This is an informational message only. No user action is required.");
   }
 

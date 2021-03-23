@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +50,6 @@ import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ Utils.class, ReplDumpTask.class})
@@ -125,9 +125,6 @@ public class TestReplDumpTask {
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
     when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
     when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
-    when(conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE)).thenReturn(10000);
-
-    whenNew(Writer.class).withAnyArguments().thenReturn(mock(Writer.class));
     whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
 
     ReplDumpTask task = new StubReplDumpTask() {
@@ -147,13 +144,13 @@ public class TestReplDumpTask {
     };
 
     task.initialize(queryState, null, null, null);
-    ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
-        null, "", "");
+    ReplDumpWork replDumpWork = new ReplDumpWork(replScope, "", "");
     replDumpWork.setMetricCollector(metricCollector);
     task.setWork(replDumpWork);
 
     try {
-      task.bootStrapDump(new Path("mock"), null, mock(Path.class), hive);
+      task.bootStrapDump(new Path("mock"), new DumpMetaData(new Path("mock"), conf),
+        mock(Path.class), hive);
     } finally {
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));
     }

@@ -68,7 +68,8 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
     }
 
     Table table = getTable(tableName);
-    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(root, table, conf, false);
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(root, table, conf,
+        false);
     byte[] filterExp = null;
     if (partitionSpecs != null & !partitionSpecs.isEmpty()) {
       // expression proxy class needs to be PartitionExpressionForMetastore since we intend to use the

@@ -24,8 +24,9 @@ import java.io.IOException;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 
 /**
  * Operation process of validating a resource plan.
@@ -43,8 +44,8 @@ public class AlterResourcePlanValidateOperation extends DDLOperation<AlterResour
   @Override
   public int execute() throws HiveException, IOException {
     WMValidateResourcePlanResponse result = context.getDb().validateResourcePlan(desc.getResourcePlanName());
-    try (DataOutputStream out = DDLUtils.getOutputStream(desc.getResFile(), context)) {
-      context.getFormatter().showErrors(out, result);
+    try (DataOutputStream out = ShowUtils.getOutputStream(desc.getResFile(), context)) {
+      MetaDataFormatUtils.getFormatter(context.getConf()).showErrors(out, result);
     } catch (IOException e) {
       throw new HiveException(e);
     }

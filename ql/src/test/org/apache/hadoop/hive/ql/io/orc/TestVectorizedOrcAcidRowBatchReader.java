@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.Columniz
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.SortMergedDeleteEventRegistry;
 
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -62,8 +65,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-
-import com.google.common.collect.Lists;
 
 /**
  * This class tests the VectorizedOrcAcidRowBatchReader by creating an actual split and a set
@@ -471,7 +472,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
           " leaf-4 = (LESS_THAN_EQUALS bucket 536936448)," +
           " leaf-5 = (LESS_THAN_EQUALS rowId 2)," +
           " expr = (and (not leaf-0) (not leaf-1) " +
-          "(not leaf-2) leaf-3 leaf-4 leaf-5)", sarg.toString());
+          "(not leaf-2) leaf-3 leaf-4 leaf-5)",
+          ((SearchArgumentImpl) sarg).toOldString());
     }
     else {
       assertEquals(new OrcRawRecordMerger.KeyInterval(null, null), keyInterval);
@@ -1089,9 +1091,9 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
         context, () -> fs, root, false, null);
-    OrcInputFormat.AcidDirInfo adi = gen.call();
+    Directory adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        null, context, adi.getFs(), adi.getPath(), adi.getFiles(), adi.getDeleteDeltas(),
         null, null, true);
 
   }
@@ -1146,7 +1148,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
   private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) throws IOException {
     String tableDir = "";//hdfs://localhost:59316/base/warehouse/acid_test/";
     AcidOutputFormat.Options ao = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(tableDir + splitPath), conf);
-    AcidUtils.ParsedDelta parsedDelta = AcidUtils.parsedDelta(new Path(tableDir + deleteDeltaPath), false);
+    ParsedDeltaLight parsedDelta = ParsedDeltaLight.parse(new Path(tableDir + deleteDeltaPath));
     AcidInputFormat.DeltaMetaData deltaMetaData =
         new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(), parsedDelta.getMaxWriteId(), new ArrayList<>(),
             parsedDelta.getVisibilityTxnId(), new ArrayList<>());

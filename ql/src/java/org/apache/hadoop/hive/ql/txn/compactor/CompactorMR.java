@@ -54,11 +54,10 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -80,7 +79,6 @@ import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.security.TokenCache;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.parquet.Strings;
 import org.apache.thrift.TException;
@@ -216,25 +214,7 @@ public class CompactorMR {
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
-           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir)
-      throws IOException, HiveException {
-
-    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
-      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
-    }
-
-    /*
-     Try to run compaction via HiveQL queries.
-     Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
-     todo Find a more generic approach to collecting files in the same logical bucket to compact within the same task
-     (currently we're using Tez split grouping).
-     */
-    QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
-    if (queryCompactor != null) {
-      LOG.info("Will compact with  " + queryCompactor.getClass().getName());
-      queryCompactor.runCompaction(conf, t, p, sd, writeIds, ci);
-      return;
-    }
+           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, AcidDirectory dir) throws IOException {
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
 
@@ -421,7 +401,7 @@ public class CompactorMR {
     private int bucketNum;
     private Path base;
     private Path[] deltas;
-    private Map<String, String> deltasToAttemptId;
+    private Map<String, Integer> deltasToAttemptId;
 
     public CompactorInputSplit() {
     }
@@ -438,7 +418,7 @@ public class CompactorMR {
      * @throws IOException
      */
     CompactorInputSplit(Configuration hadoopConf, int bucket, List<Path> files, Path base,
-                               Path[] deltas, Map<String, String> deltasToAttemptId)
+                               Path[] deltas, Map<String, Integer> deltasToAttemptId)
         throws IOException {
       bucketNum = bucket;
       this.base = base;
@@ -484,11 +464,11 @@ public class CompactorMR {
       } else {
         dataOutput.writeInt(base.toString().length());
         dataOutput.writeBytes(base.toString());
-        String attemptId = deltasToAttemptId.get(base.toString());
+        Integer attemptId = deltasToAttemptId.get(base.getName());
         if (attemptId == null) {
           dataOutput.writeInt(0);
         } else {
-          dataOutput.writeInt(attemptId.length());
+          dataOutput.writeInt(attemptId.toString().length());
           dataOutput.writeBytes(attemptId.toString());
         }
       }
@@ -496,11 +476,11 @@ public class CompactorMR {
       for (int i = 0; i < deltas.length; i++) {
         dataOutput.writeInt(deltas[i].toString().length());
         dataOutput.writeBytes(deltas[i].toString());
-        String attemptId = deltasToAttemptId.get(deltas[i].toString());
+        Integer attemptId = deltasToAttemptId.get(deltas[i].getName());
         if (attemptId == null) {
           dataOutput.writeInt(0);
         } else {
-          dataOutput.writeInt(attemptId.length());
+          dataOutput.writeInt(attemptId.toString().length());
           dataOutput.writeBytes(attemptId.toString());
         }
       }
@@ -528,7 +508,7 @@ public class CompactorMR {
       LOG.debug("Read bucket number of " + bucketNum);
       len = dataInput.readInt();
       LOG.debug("Read base path length of " + len);
-      String baseAttemptId = null;
+      Integer baseAttemptId = null;
       if (len > 0) {
         buf = new byte[len];
         dataInput.readFully(buf);
@@ -537,28 +517,33 @@ public class CompactorMR {
         if (len > 0) {
           buf = new byte[len];
           dataInput.readFully(buf);
-          baseAttemptId = new String(buf);
+          String baseAttemptIdString = new String(buf);
+          baseAttemptId = Integer.valueOf(baseAttemptIdString);
         }
       }
       numElements = dataInput.readInt();
-      deltas = new Path[numElements];
       deltasToAttemptId = new HashMap<>();
+      deltas = new Path[numElements];
       for (int i = 0; i < numElements; i++) {
         len = dataInput.readInt();
         buf = new byte[len];
         dataInput.readFully(buf);
         deltas[i] = new Path(new String(buf));
         len = dataInput.readInt();
-        String attemptId = null;
+        Integer attemptId = null;
         if (len > 0) {
           buf = new byte[len];
           dataInput.readFully(buf);
-          attemptId = new String(buf);
+          String attemptIdString = new String(buf);
+          attemptId = Integer.valueOf(attemptIdString);
         }
-        deltasToAttemptId.put(deltas[i].toString(), attemptId);
+        deltasToAttemptId.put(deltas[i].getName(), attemptId);
+        if (baseAttemptId != null) {
+          deltasToAttemptId.put(base.getName(), Integer.valueOf(baseAttemptId));
+        }
       }
       if (baseAttemptId != null) {
-        deltasToAttemptId.put(base.toString(), baseAttemptId);
+        deltasToAttemptId.put(base.toString(), Integer.valueOf(baseAttemptId));
       }
     }
 
@@ -583,7 +568,7 @@ public class CompactorMR {
       return deltas;
     }
 
-    Map<String, String> getDeltasToAttemptId() {
+    Map<String, Integer> getDeltasToAttemptId() {
       return deltasToAttemptId;
     }
 
@@ -701,12 +686,12 @@ public class CompactorMR {
         throw new IllegalArgumentException(msg);
       }
       int bucketNum = -1;
-      String attemptId = null;
+      Integer attemptId = null;
       if (matcher.groupCount() > 0) {
         bucketNum = Integer.parseInt(matcher.group(1));
-        attemptId = matcher.group(2) != null ? matcher.group(2).substring(1) : null;
+        attemptId = matcher.group(2) != null ? Integer.valueOf(matcher.group(2).substring(1)) : null;
       } else {
-        bucketNum = Integer.parseInt(matcher.group());
+        bucketNum = Integer.valueOf(matcher.group());
       }
 
       BucketTracker bt = splitToBucketMap.get(bucketNum);
@@ -717,7 +702,7 @@ public class CompactorMR {
       LOG.debug("Adding " + file.toString() + " to list of files for splits");
       bt.buckets.add(file);
       bt.sawBase |= sawBase;
-      bt.deltasToAttemptId.put(file.getParent().toString(), attemptId);
+      bt.deltasToAttemptId.put(file.getParent().getName(), attemptId);
     }
 
     private static class BucketTracker {
@@ -729,7 +714,7 @@ public class CompactorMR {
 
       boolean sawBase;
       List<Path> buckets;
-      Map<String, String> deltasToAttemptId;
+      Map<String, Integer> deltasToAttemptId;
     }
   }
 
@@ -909,7 +894,9 @@ public class CompactorMR {
           AcidOutputFormat<WritableComparable, V> aof =
           instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-      deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+      Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+      cleanupTmpLocationOnTaskRetry(options, rootDir);
+      deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
 
     }
   }
@@ -962,14 +949,8 @@ public class CompactorMR {
         LOG.error(s);
         throw new IOException(s);
       }
-    } catch (ClassNotFoundException e) {
-      LOG.error("Unable to instantiate class, " + StringUtils.stringifyException(e));
-      throw new IOException(e);
-    } catch (InstantiationException e) {
-      LOG.error("Unable to instantiate class, " + StringUtils.stringifyException(e));
-      throw new IOException(e);
-    } catch (IllegalAccessException e) {
-      LOG.error("Unable to instantiate class, " + StringUtils.stringifyException(e));
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      LOG.error("Unable to instantiate class", e);
       throw new IOException(e);
     }
     return t;

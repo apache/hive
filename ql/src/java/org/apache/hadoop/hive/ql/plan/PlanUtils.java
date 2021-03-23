@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
 import java.io.IOException;
@@ -75,6 +76,7 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
@@ -578,7 +580,7 @@ public final class PlanUtils {
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.ESCAPE_CHAR, "\\",
-        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+        serdeConstants.SERIALIZATION_LIB, LazyBinarySerDe2.class.getName()));
   }
 
   /**
@@ -1235,6 +1237,12 @@ public final class PlanUtils {
           clone = new HashMap<>(properties);
         }
         clone.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
+      }
+      if (properties.containsKey(TABLE_IS_CTAS)) {
+        if (clone == null) {
+          clone = new HashMap<>(properties);
+        }
+        clone.remove(TABLE_IS_CTAS);
       }
       if (clone != null) {
         return clone;

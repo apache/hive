@@ -77,7 +77,7 @@ public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements 
     }
     catch (Exception e) {
       setException(e);
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to execute", e);
       return (1);
     }
     finally {

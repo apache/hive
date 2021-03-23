@@ -27,6 +27,7 @@ import com.google.common.math.DoubleMath;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -676,6 +677,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           }
           wmEvent.endEvent(ctx.session);
         }
+
+        // Running query metrics needs to be updated for the pool
+        updatePoolMetricsAfterKillTrigger(poolsToRedistribute, ctx);
         break;
       }
       case RESTART_REQUIRED: {
@@ -686,6 +690,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         //       "in use". That is because all the user ops above like return, reopen, etc.
         //       don't actually return/reopen/... when kill query is in progress.
         syncWork.toRestartInUse.add(ctx.session);
+
+        // Running query metrics needs to be updated for the pool
+        updatePoolMetricsAfterKillTrigger(poolsToRedistribute, ctx);
         break;
       }
       default: throw new AssertionError("Unknown state " + kr);
@@ -740,6 +747,19 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (e.applyRpFuture != null) {
       e.applyRpFuture.set(true);
       e.applyRpFuture = null;
+    }
+  }
+
+  private void updatePoolMetricsAfterKillTrigger(HashSet<String> poolsToRedistribute, KillQueryContext ctx) {
+    String poolName = ctx.getPoolName();
+    if (StringUtils.isNotBlank(poolName)) {
+      poolsToRedistribute.add(poolName);
+      PoolState pool = pools.get(poolName);
+      if ((pool != null) && (pool.metrics != null)) {
+          LOG.debug(String.format("Removing 1 query from pool %s, Current numRunningQueries: %s", pool.fullName,
+              pool.metrics.numRunningQueries.value()));
+          pool.metrics.removeRunningQueries(1);
+      }
     }
   }
 
@@ -1102,7 +1122,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private void failOnFutureFailure(ListenableFuture<?> future) {
-    Futures.addCallback(future, FATAL_ERROR_CALLBACK);
+    Futures.addCallback(future, FATAL_ERROR_CALLBACK, MoreExecutors.directExecutor());
   }
 
   private void queueGetRequestOnMasterThread(
@@ -1936,7 +1956,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     public void start() throws Exception {
       ListenableFuture<WmTezSession> getFuture = tezAmPool.getSessionAsync();
-      Futures.addCallback(getFuture, this);
+      Futures.addCallback(getFuture, this, MoreExecutors.directExecutor());
     }
 
     @Override
@@ -1990,7 +2010,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       case GETTING: {
         ListenableFuture<WmTezSession> waitFuture = session.waitForAmRegistryAsync(
             amRegistryTimeoutMs, timeoutPool);
-        Futures.addCallback(waitFuture, this);
+        Futures.addCallback(waitFuture, this, MoreExecutors.directExecutor());
         break;
       }
       case WAITING_FOR_REGISTRY: {
@@ -2156,6 +2176,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
    */
   static final class KillQueryContext {
     private SettableFuture<Boolean> killSessionFuture;
+    private String poolName;
     private final String reason;
     private final WmTezSession session;
     // Note: all the fields are only modified by master thread.
@@ -2202,6 +2223,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       return KillQueryResult.OK;
     }
 
+    String getPoolName() {
+      return poolName;
+    }
+
+    void setPoolName(String poolName) {
+      this.poolName = poolName;
+    }
+
     @Override
     public String toString() {
       return "KillQueryContext [isUserDone=" + isUserDone + ", isKillDone=" + isKillDone
@@ -2224,13 +2253,19 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     KillQueryContext killQueryContext, Map<WmTezSession, GetRequest> toReuse) {
 
     WmTezSession toKill = killQueryContext.session;
+    String poolName = toKill.getPoolName();
+
+    boolean validPoolName = StringUtils.isNotBlank(poolName);
+
+    if (validPoolName) {
+      killQueryContext.setPoolName(poolName);
+    }
     toKillQuery.put(toKill, killQueryContext);
 
     // The way this works is, a session in WM pool will move back to tez AM pool on a kill and will get
     // reassigned back to WM pool on GetRequest based on user pool mapping. Only if we remove the session from active
     // sessions list of its WM pool will the queue'd GetRequest be processed
-    String poolName = toKill.getPoolName();
-    if (poolName != null) {
+    if (validPoolName) {
       PoolState poolState = pools.get(poolName);
       if (poolState != null) {
         poolState.getSessions().remove(toKill);

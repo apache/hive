@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -137,6 +138,8 @@ public class TezTask extends Task<TezWork> {
     Context ctx = null;
     Ref<TezSessionState> sessionRef = Ref.from(null);
 
+    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
       ctx = context;
@@ -145,7 +148,6 @@ public class TezTask extends Task<TezWork> {
         cleanContext = true;
         // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
         // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
-        String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
         WmContext wmContext = new WmContext(System.currentTimeMillis(), queryId);
         ctx.setWmContext(wmContext);
       }
@@ -236,6 +238,10 @@ public class TezTask extends Task<TezWork> {
           throw new HiveException("Operation cancelled");
         }
 
+        // Log all the info required to find the various logs for this query
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
+            this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
+
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
         rc = monitor.monitorExecution();
@@ -253,7 +259,7 @@ public class TezTask extends Task<TezWork> {
           counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
-          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
+          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
           counters = null;
         }
       } finally {
@@ -416,7 +422,7 @@ public class TezTask extends Task<TezWork> {
     // the name of the dag is what is displayed in the AM/Job UI
     String dagName = utils.createDagName(conf, queryPlan);
 
-    LOG.info("Dag name: " + dagName);
+    LOG.info("Dag name: {}", dagName);
     DAG dag = DAG.create(dagName);
 
     // set some info for the query
@@ -427,9 +433,8 @@ public class TezTask extends Task<TezWork> {
     String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
     dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("DagInfo: " + dagInfo);
-    }
+    LOG.debug("DagInfo: {}", dagInfo);
+
     dag.setDAGInfo(dagInfo);
 
     dag.setCredentials(conf.getCredentials());
@@ -545,11 +550,9 @@ public class TezTask extends Task<TezWork> {
     String modifyStr = Utilities.getAclStringWithHiveModification(conf,
             TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}",
-          queryId, viewStr, modifyStr);
-    }
-    // set permissions for current user on DAG
+    LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}", queryId, viewStr, modifyStr);
+
+      // set permissions for current user on DAG
     DAGAccessControls ac = new DAGAccessControls(viewStr, modifyStr);
     dag.setAccessControls(ac);
   }
@@ -749,13 +752,11 @@ public class TezTask extends Task<TezWork> {
     }
 
     public String getDagIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getDagIdentifierString();
     }
 
     public String getSessionIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getSessionIdentifierString();
     }
 
 

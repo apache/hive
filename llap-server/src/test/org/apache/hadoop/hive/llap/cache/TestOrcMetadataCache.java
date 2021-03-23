@@ -81,11 +81,6 @@ public class TestOrcMetadataCache {
       return 0;
     }
 
-    @Override
-    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-      return 0;
-    }
-
     public void verifyEquals(int i) {
       assertEquals(i, lockCount);
       assertEquals(i, unlockCount);
@@ -248,7 +243,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
 
     Path path = new Path("../data/files/alltypesorc");
@@ -269,7 +264,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
 
     Path path = new Path("../data/files/alltypesorc");
@@ -293,7 +288,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
 
     Path path = new Path("../data/files/alltypesorc");
@@ -361,7 +356,7 @@ public class TestOrcMetadataCache {
     assertEquals(INVALIDATE_OK, table1Buffers2.getMultipleLlapBuffers()[1].invalidate());
 
     // table1Buffers1:27 (allocated as 32) + table1Buffers2[0]:64 (also allocated as 64)
-    assertEquals(96, cache.markBuffersForProactiveEviction(predicate));
+    assertEquals(96, cache.markBuffersForProactiveEviction(predicate, false));
 
     // Single buffer for file1 should be marked as per predicate
     assertTrue(table1Buffers1.getSingleLlapBuffer().isMarkedForEviction());

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -58,12 +59,12 @@ public class TestAcidTxnCleanerService {
     underTest.setConf(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.setOpenTxnTimeOutMillis(100);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.prepDb(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 
   @Test
@@ -185,10 +186,10 @@ public class TestAcidTxnCleanerService {
   }
 
   private long getTxnCount() throws Exception {
-    return TxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXNS\"");
+    return TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"TXNS\"");
   }
 
   private long getMaxTxnId() throws Exception {
-    return TxnDbUtil.countQueryAgent(conf, "SELECT MAX(\"TXN_ID\") FROM \"TXNS\"");
+    return TestTxnDbUtil.countQueryAgent(conf, "SELECT MAX(\"TXN_ID\") FROM \"TXNS\"");
   }
 }

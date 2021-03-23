@@ -65,7 +65,7 @@ public class TestObjectStoreStatementVerify {
 
     final ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(conf);
-    HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
     return objectStore;
   }
 

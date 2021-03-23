@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -341,8 +341,8 @@ public class BaseReplicationScenariosAcidTables {
     OpenTxnsResponse otResp = txnHandler.openTxns(new OpenTxnRequest(numTxns, "u1", "localhost"));
     List<Long> txns = otResp.getTxn_ids();
     String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(numTxns - 1);
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-            numTxns, TxnDbUtil.countQueryAgent(primaryConf,
+    Assert.assertEquals(TestTxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            numTxns, TestTxnDbUtil.countQueryAgent(primaryConf,
                     "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
     return txns;
   }
@@ -376,9 +376,9 @@ public class BaseReplicationScenariosAcidTables {
   void verifyWriteIdsForTables(Map<String, Long> tables, HiveConf conf, String dbName)
           throws Throwable {
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
-      Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_TO_WRITE_ID"),
+      Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_TO_WRITE_ID"),
                           entry.getValue().longValue(),
-                          TxnDbUtil.countQueryAgent(conf,
+                          TestTxnDbUtil.countQueryAgent(conf,
           "select count(*) from TXN_TO_WRITE_ID where t2w_database = '"
                     + dbName.toLowerCase()
                     + "' and t2w_table = '" + entry.getKey() + "'"));
@@ -388,22 +388,22 @@ public class BaseReplicationScenariosAcidTables {
   void verifyAllOpenTxnsAborted(List<Long> txns, HiveConf primaryConf) throws Throwable {
     int numTxns = txns.size();
     String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(numTxns - 1);
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-            0, TxnDbUtil.countQueryAgent(primaryConf,
+    Assert.assertEquals(TestTxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            0, TestTxnDbUtil.countQueryAgent(primaryConf,
                     "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-            numTxns, TxnDbUtil.countQueryAgent(primaryConf,
+    Assert.assertEquals(TestTxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            numTxns, TestTxnDbUtil.countQueryAgent(primaryConf,
                     "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
   }
 
   void verifyAllOpenTxnsNotAborted(List<Long> txns, HiveConf primaryConf) throws Throwable {
     int numTxns = txns.size();
     String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(numTxns - 1);
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-      numTxns, TxnDbUtil.countQueryAgent(primaryConf,
+    Assert.assertEquals(TestTxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+      numTxns, TestTxnDbUtil.countQueryAgent(primaryConf,
         "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-      0, TxnDbUtil.countQueryAgent(primaryConf,
+    Assert.assertEquals(TestTxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+      0, TestTxnDbUtil.countQueryAgent(primaryConf,
         "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
   }
 
@@ -411,7 +411,7 @@ public class BaseReplicationScenariosAcidTables {
     // Verify the next write id
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       String[] nextWriteId =
-              TxnDbUtil.queryToString(conf,
+              TestTxnDbUtil.queryToString(conf,
                       "select nwi_next from NEXT_WRITE_ID where  nwi_database = '"
                               + dbName.toLowerCase() + "' and nwi_table = '"
                               + entry.getKey() + "'").split("\n");
@@ -422,9 +422,9 @@ public class BaseReplicationScenariosAcidTables {
   void verifyCompactionQueue(Map<String, Long> tables, String dbName, HiveConf conf)
           throws Throwable {
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
-      Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
+      Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
                           entry.getValue().longValue(),
-                          TxnDbUtil.countQueryAgent(conf,
+                          TestTxnDbUtil.countQueryAgent(conf,
                     "select count(*) from COMPACTION_QUEUE where cq_database = '" + dbName
                             + "' and cq_table = '" + entry.getKey() + "'"));
     }

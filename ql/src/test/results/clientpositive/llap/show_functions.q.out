@@ -72,7 +72,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -173,6 +174,8 @@ e
 elt
 encode
 enforce_constraint
+exception_in_vertex_udaf
+exception_in_vertex_udf
 exp
 explode
 extract_union
@@ -427,7 +430,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -584,7 +588,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -685,6 +690,8 @@ e
 elt
 encode
 enforce_constraint
+exception_in_vertex_udaf
+exception_in_vertex_udf
 exp
 explode
 extract_union

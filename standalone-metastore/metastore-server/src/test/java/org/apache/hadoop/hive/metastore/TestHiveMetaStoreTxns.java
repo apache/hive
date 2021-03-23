@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.thrift.TException;
@@ -216,7 +216,7 @@ public class TestHiveMetaStoreTxns {
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("mytable")
-        .setPartitionName("mypartition")
+        .setPartitionName("MyPartition=MyValue")
         .setExclusive()
         .setOperationType(DataOperationType.NO_TXN)
         .build());
@@ -255,7 +255,7 @@ public class TestHiveMetaStoreTxns {
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("mytable")
-        .setPartitionName("mypartition")
+        .setPartitionName("MyPartition=MyValue")
         .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
@@ -396,8 +396,8 @@ public class TestHiveMetaStoreTxns {
   public static void setUpDB() throws Exception {
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -412,6 +412,6 @@ public class TestHiveMetaStoreTxns {
   @After
   public void tearDown() throws Exception {
     conn.close();
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 }

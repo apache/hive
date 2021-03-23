@@ -28,6 +28,7 @@ public class WindowFunctionInfo extends FunctionInfo {
   private final boolean pivotResult;
   private final boolean impliesOrder;
   private final boolean orderedAggregate;
+  private final boolean supportsNullTreatment;
 
   public WindowFunctionInfo(FunctionType functionType, String functionName,
       GenericUDAFResolver resolver, FunctionResource[] resources) {
@@ -38,6 +39,7 @@ public class WindowFunctionInfo extends FunctionInfo {
     pivotResult = def == null ? false : def.pivotResult();
     impliesOrder = def == null ? false : def.impliesOrder();
     orderedAggregate = def == null ? false : def.orderedAggregate();
+    supportsNullTreatment = def == null ? false : def.supportsNullTreatment();
   }
 
   public boolean isSupportsWindow() {
@@ -67,5 +69,9 @@ public class WindowFunctionInfo extends FunctionInfo {
    */
   public boolean isOrderedAggregate() {
     return orderedAggregate;
+  }
+
+  public boolean isSupportsNullTreatment() {
+    return supportsNullTreatment;
   }
 }

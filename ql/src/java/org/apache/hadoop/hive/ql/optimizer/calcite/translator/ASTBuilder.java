@@ -247,6 +247,8 @@ public class ASTBuilder {
     case INTERVAL_SECOND:
     case INTERVAL_YEAR:
     case INTERVAL_YEAR_MONTH:
+    case MAP:
+    case ARRAY:
     case ROW:
       if (literal.getValue() == null) {
         return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
