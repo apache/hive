@@ -471,6 +471,7 @@ public enum ErrorMsg {
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
   OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
   WITH_COL_LIST_NUM_OVERFLOW(10425, "WITH-clause query {0} returns {1} columns, but {2} labels were specified. The number of column labels must be smaller or equal to the number of expressions returned by the query.", true),
+  NULL_TREATMENT_NOT_SUPPORTED(10426, "Function {0} does not support null treatment.", true),
 
   //========================== 20000 range starts here ========================//
 
