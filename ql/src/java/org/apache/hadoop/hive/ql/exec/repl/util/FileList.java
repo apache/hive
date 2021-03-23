@@ -18,158 +18,224 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Callable;
 
-
-/**
- * A file backed list of Strings which is in-memory till the threshold.
- */
 public class FileList implements AutoCloseable, Iterator<String> {
   private static final Logger LOG = LoggerFactory.getLogger(FileList.class);
-  private static int fileListStreamerID = 0;
-  private static final String  FILE_LIST_STREAMER_PREFIX = "file-list-streamer-";
-
-  private LinkedBlockingQueue<String> cache;
-  private volatile boolean thresholdHit = false;
-  private int thresholdPoint;
-  private float thresholdFactor = 0.9f;
-  private Path backingFile;
-  private FileListStreamer fileListStreamer;
-  private String nextElement;
-  private boolean noMoreElement;
+  private final Path backingFile;
+  private String nextElement = null;
+  private String lastReadElement = null;
   private HiveConf conf;
+  private volatile boolean abortOperation = false;
+  private volatile boolean retryMode;
   private BufferedReader backingFileReader;
+  private volatile FSDataOutputStream backingFileWriter;
 
-
-  public FileList(Path backingFile, int cacheSize, HiveConf conf) {
+  public FileList(Path backingFile, HiveConf conf) {
     this.backingFile = backingFile;
     this.conf = conf;
-    if (cacheSize > 0) {
-      // Cache size must be > 0 for this list to be used for the write operation.
-      this.cache = new LinkedBlockingQueue<>(cacheSize);
-      fileListStreamer = new FileListStreamer(cache, backingFile, conf);
-      thresholdPoint = getThreshold(cacheSize);
-      LOG.debug("File list backed by {} can be used for write operation.", backingFile);
+    this.retryMode = false;
+  }
+
+  public void add(String entry) throws IOException {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY)) {
+      writeWithRetry(entry);
     } else {
-      thresholdHit = true;
+      writeEntry(entry);
     }
   }
 
-  @VisibleForTesting
-  FileList(Path backingFile, FileListStreamer fileListStreamer, LinkedBlockingQueue<String> cache, HiveConf conf) {
-    this.backingFile = backingFile;
-    this.fileListStreamer = fileListStreamer;
-    this.cache = cache;
-    this.conf = conf;
-    thresholdPoint = getThreshold(cache.remainingCapacity());
-  }
-
-  /**
-   * Only add operation is safe for concurrent operations.
-   */
-  public void add(String entry) throws SemanticException {
-    if (thresholdHit && !fileListStreamer.isAlive()) {
-      throw new SemanticException("List is not getting saved anymore to file " + backingFile.toString());
+  private synchronized void writeEntry(String entry) throws IOException {
+    //retry only during creating the file, no retry during writes
+    if (backingFileWriter == null) {
+      try {
+        Retryable retryable = buildRetryable();
+        retryable.executeCallable((Callable<Void>) () -> {
+          if (this.abortOperation) {
+            LOG.debug("Aborting write operation for entry {} to file {}.", entry, backingFile);
+            return null;
+          }
+          backingFileWriter = getWriterCreateMode();
+          return null;
+        });
+      } catch (Exception e) {
+        this.abortOperation = true;
+        throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
+      }
+    }
+    if (this.abortOperation) {
+      LOG.debug("Aborting write operation for entry {} to file {}.", entry, backingFile);
+      return;
     }
     try {
-      cache.put(entry);
-    } catch (InterruptedException e) {
-      throw new SemanticException(e);
+      backingFileWriter.writeBytes(getEntryWithNewline(entry));
+      LOG.info("Writing entry {} to file list backed by {}", entry, backingFile);
+    } catch (IOException e) {
+      this.abortOperation = true;
+      LOG.error("Writing entry {} to file list {} failed.", entry, backingFile, e);
+      throw e;
     }
-    if (!thresholdHit && cache.size() >= thresholdPoint) {
-      initStoreToFile(cache.size());
+  }
+
+  private synchronized void writeWithRetry(String entry) throws IOException {
+    Retryable retryable = buildRetryable();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
+        if (this.abortOperation) {
+          LOG.debug("Aborting write operation for entry {} to file {}.", entry, backingFile);
+          return null;
+        }
+        try {
+          if (backingFileWriter == null) {
+            backingFileWriter = initWriter();
+          }
+          backingFileWriter.writeBytes(getEntryWithNewline(entry));
+          backingFileWriter.hflush();
+          LOG.info("Writing entry {} to file list backed by {}", entry, backingFile);
+        } catch (IOException e) {
+          LOG.error("Writing entry {} to file list {} failed, attempting retry.", entry, backingFile, e);
+          this.retryMode = true;
+          close();
+          throw e;
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      this.abortOperation = true;
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
+    }
+  }
+
+  Retryable buildRetryable() {
+    return Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(IOException.class).build();
+  }
+
+  // Return the entry ensuring it ends with newline.
+  private String getEntryWithNewline(String entry) {
+    return new StringWriter()
+            .append(entry)
+            .append(System.lineSeparator())
+            .toString();
+  }
+
+  FSDataOutputStream initWriter() throws IOException {
+    if(shouldAppend()) {
+      return getWriterAppendMode(); // append in retry-mode if file has been created already
+    }
+    else {
+      return getWriterCreateMode();
+    }
+  }
+
+  private boolean shouldAppend() throws IOException {
+    return backingFile.getFileSystem(conf).exists(backingFile) && this.retryMode;
+  }
+
+  FSDataOutputStream getWriterCreateMode() throws IOException {
+    try {
+      return backingFile.getFileSystem(conf).create(backingFile);
+    } catch (IOException e) {
+      LOG.error("Error creating file {}", backingFile, e);
+      throw e;
+    }
+  }
+
+  FSDataOutputStream getWriterAppendMode() throws IOException {
+    try {
+      return backingFile.getFileSystem(conf).append(backingFile);
+    } catch (IOException e) {
+      LOG.error("Error opening file {} in append mode", backingFile, e);
+      throw e;
     }
   }
 
   @Override
   public boolean hasNext() {
-    if (!thresholdHit) {
-      return (cache != null && !cache.isEmpty());
-    }
-    if (nextElement != null) {
+    /*
+    We assume that every add operation either adds an entry completely or doesn't add at all.
+    If this assumption changes then in the following check we should check for incomplete entries.
+    We remove duplicate entries assuming they are only written consecutively.
+    */
+    if (nextElement != null && !nextElement.equals(lastReadElement)) {
       return true;
+    } else {
+      try {
+        do {
+          nextElement = readNextLine();
+          if(nextElement != null && !nextElement.equals(lastReadElement)) {
+            return true;
+          }
+        } while (nextElement != null);
+        return false;
+      } catch (IOException e) {
+        nextElement = null;
+        lastReadElement = null;
+        backingFileReader = null;
+        throw new UncheckedIOException(e);
+      }
     }
-    if (noMoreElement) {
-      return false;
-    }
-    nextElement = readNextLine();
-    if (nextElement == null) {
-      noMoreElement = true;
-    }
-    return !noMoreElement;
   }
 
   @Override
   public String next() {
-    if (!hasNext()) {
+    if ((nextElement == null || nextElement.equals(lastReadElement)) && !hasNext()) {
       throw new NoSuchElementException("No more element in the list backed by " + backingFile);
     }
-    String retVal = nextElement;
+    lastReadElement = nextElement;
     nextElement = null;
-    return thresholdHit ? retVal : cache.poll();
+    return lastReadElement;
   }
 
-  private synchronized void initStoreToFile(int cacheSize) {
-    if (!thresholdHit) {
-      fileListStreamer.setName(getNextID());
-      fileListStreamer.setDaemon(true);
-      fileListStreamer.start();
-      thresholdHit = true;
-      LOG.info("Started streaming the list elements to file: {}, cache size {}", backingFile, cacheSize);
-    }
-  }
-
-  private String readNextLine() {
-    String nextElement = null;
-    try {
+  private String readNextLine() throws IOException {
+    try{
+      String nextElement;
       if (backingFileReader == null) {
-        FileSystem fs = FileSystem.get(backingFile.toUri(), conf);
-        if (fs.exists(backingFile)) {
-          backingFileReader = new BufferedReader(new InputStreamReader(fs.open(backingFile)));
+        FileSystem fs = backingFile.getFileSystem(conf);
+        if (!fs.exists(backingFile)) {
+          return null;
         }
+        backingFileReader = new BufferedReader(new InputStreamReader(fs.open(backingFile)));
       }
-      nextElement = (backingFileReader == null) ? null : backingFileReader.readLine();
+      nextElement = backingFileReader.readLine();
+      return nextElement;
     } catch (IOException e) {
-      LOG.error("Unable to read list from backing file " + backingFile, e);
+      LOG.error("Exception while reading file {}.", backingFile, e);
+      close();
+      throw e;
     }
-    return nextElement;
   }
 
   @Override
   public void close() throws IOException {
-    if (thresholdHit && fileListStreamer != null) {
-      fileListStreamer.close();
+    try {
+      if (backingFileReader != null) {
+        backingFileReader.close();
+      }
+      if (backingFileWriter != null) {
+        backingFileWriter.close();
+      }
+      LOG.info("Completed close for File List backed by:{}", backingFile);
+    } finally {
+      backingFileReader = null;
+      backingFileWriter = null;
     }
-    if (backingFileReader != null) {
-      backingFileReader.close();
-    }
-    LOG.info("Completed close for File List backed by:{}, thresholdHit:{} ", backingFile, thresholdHit);
-  }
-
-  private static String getNextID() {
-    if (Integer.MAX_VALUE == fileListStreamerID) {
-      //reset the counter
-      fileListStreamerID = 0;
-    }
-    fileListStreamerID++;
-    return FILE_LIST_STREAMER_PREFIX  + fileListStreamerID;
-  }
-
-  public int getThreshold(int cacheSize) {
-    boolean copyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
-    return copyAtLoad ? 0 : (int)(cacheSize * thresholdFactor);
   }
 }

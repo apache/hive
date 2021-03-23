@@ -755,6 +755,10 @@ public class ASTConverter {
       if (wRangeAst != null) {
         wSpec.addChild(wRangeAst);
       }
+      if (over.ignoreNulls()) {
+        ASTNode ignoreNulls = ASTBuilder.createAST(HiveParser.TOK_IGNORE_NULLS, "TOK_IGNORE_NULLS");
+        wSpec.addChild(ignoreNulls);
+      }
 
       return wUDAFAst;
     }
