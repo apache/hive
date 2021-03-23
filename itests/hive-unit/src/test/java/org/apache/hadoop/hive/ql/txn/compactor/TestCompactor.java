@@ -2337,8 +2337,8 @@ public class TestCompactor {
     try {
       executeStatementOnDriver(cmd, driver);
     }
-    catch (Exception ignore) {
-
+    catch (Exception ex) {
+      LOG.warn("Error while executing query: " + cmd, ex);
     }
   }
 
