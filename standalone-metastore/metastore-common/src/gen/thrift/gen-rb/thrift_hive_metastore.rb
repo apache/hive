@@ -3083,13 +3083,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def find_next_compact(workerId)
-      send_find_next_compact(workerId)
+    def find_next_compact(workerId, workerVersion)
+      send_find_next_compact(workerId, workerVersion)
       return recv_find_next_compact()
     end
 
-    def send_find_next_compact(workerId)
-      send_message('find_next_compact', Find_next_compact_args, :workerId => workerId)
+    def send_find_next_compact(workerId, workerVersion)
+      send_message('find_next_compact', Find_next_compact_args, :workerId => workerId, :workerVersion => workerVersion)
     end
 
     def recv_find_next_compact()
@@ -6584,7 +6584,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Find_next_compact_args)
       result = Find_next_compact_result.new()
       begin
-        result.success = @handler.find_next_compact(args.workerId)
+        result.success = @handler.find_next_compact(args.workerId, args.workerVersion)
       rescue ::MetaException => o1
         result.o1 = o1
       end
@@ -14284,9 +14284,11 @@ module ThriftHiveMetastore
   class Find_next_compact_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     WORKERID = 1
+    WORKERVERSION = 2
 
     FIELDS = {
-      WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'}
+      WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'},
+      WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion'}
     }
 
     def struct_fields; FIELDS; end

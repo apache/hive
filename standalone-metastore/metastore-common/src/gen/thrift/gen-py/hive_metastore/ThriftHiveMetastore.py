@@ -1624,10 +1624,11 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def find_next_compact(self, workerId):
+    def find_next_compact(self, workerId, workerVersion):
         """
         Parameters:
          - workerId
+         - workerVersion
 
         """
         pass
@@ -8994,19 +8995,21 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def find_next_compact(self, workerId):
+    def find_next_compact(self, workerId, workerVersion):
         """
         Parameters:
          - workerId
+         - workerVersion
 
         """
-        self.send_find_next_compact(workerId)
+        self.send_find_next_compact(workerId, workerVersion)
         return self.recv_find_next_compact()
 
-    def send_find_next_compact(self, workerId):
+    def send_find_next_compact(self, workerId, workerVersion):
         self._oprot.writeMessageBegin('find_next_compact', TMessageType.CALL, self._seqid)
         args = find_next_compact_args()
         args.workerId = workerId
+        args.workerVersion = workerVersion
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -17028,7 +17031,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = find_next_compact_result()
         try:
-            result.success = self._handler.find_next_compact(args.workerId)
+            result.success = self._handler.find_next_compact(args.workerId, args.workerVersion)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -48441,12 +48444,14 @@ class find_next_compact_args(object):
     """
     Attributes:
      - workerId
+     - workerVersion
 
     """
 
 
-    def __init__(self, workerId=None,):
+    def __init__(self, workerId=None, workerVersion=None,):
         self.workerId = workerId
+        self.workerVersion = workerVersion
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -48462,6 +48467,11 @@ class find_next_compact_args(object):
                     self.workerId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.workerVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -48475,6 +48485,10 @@ class find_next_compact_args(object):
         if self.workerId is not None:
             oprot.writeFieldBegin('workerId', TType.STRING, 1)
             oprot.writeString(self.workerId.encode('utf-8') if sys.version_info[0] == 2 else self.workerId)
+            oprot.writeFieldEnd()
+        if self.workerVersion is not None:
+            oprot.writeFieldBegin('workerVersion', TType.STRING, 2)
+            oprot.writeString(self.workerVersion.encode('utf-8') if sys.version_info[0] == 2 else self.workerVersion)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -48496,6 +48510,7 @@ all_structs.append(find_next_compact_args)
 find_next_compact_args.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'workerId', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'workerVersion', 'UTF8', None, ),  # 2
 )
 
 

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -970,6 +973,39 @@ public class TestWorker extends CompactorTest {
   @Override
   boolean useHive130DeltaDirName() {
     return false;
+  }
+
+  @Test
+  public void testWorkerAndInitiatorVersion() throws Exception {
+    LOG.debug("Starting minorTableWithBase");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mtwb", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
+    String initiatorVersion = "4.0.0";
+    rqst.setInitiatorVersion(initiatorVersion);
+    txnHandler.compact(rqst);
+
+    Worker worker = Mockito.spy(new Worker());
+    worker.setThreadId((int) t.getId());
+    worker.setConf(conf);
+    String workerVersion = "4.0.0-SNAPSHOT";
+    doReturn(workerVersion).when(worker).getRuntimeVersion();
+    worker.init(new AtomicBoolean(true));
+    worker.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+    Assert.assertEquals(initiatorVersion, compacts.get(0).getInitiatorVersion());
+    Assert.assertEquals(workerVersion, compacts.get(0).getWorkerVersion());
+
   }
 
   @Test
