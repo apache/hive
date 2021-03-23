@@ -161,7 +161,8 @@ public class ImpalaSessionManager {
 
         createMembershipCache(session);
       }
-      FeSupport.loadLibrary(true);
+      FeSupport.setExternalFE();
+      FeSupport.loadLibrary();
     } catch(Exception e) {
       throw new HiveException(e);
     }

@@ -137,7 +137,6 @@ public class ImpalaPlanner {
       // input has higher estimated cardinality. Do this through Impala's method
       // since we are using Impala's cardinality estimates in the physical planning.
       invertJoins(planNodeRoot, ctx_.isSingleNodeExec(), ctx_.getRootAnalyzer());
-      Planner.checkParallelPlanEligibility(ctx_);
       SingleNodePlanner.validatePlan(ctx_, planNodeRoot);
 
       List<PlanFragment> fragments = createPlanFragments(planNodeRoot, destination,
@@ -520,7 +519,7 @@ public class ImpalaPlanner {
       Preconditions.checkState(sink instanceof HdfsTableSink, "Currently only HDFS table sinks are supported");
       Preconditions.checkNotNull(destination, "Invalid destination for Impala sink");
       HdfsTableSink s = (HdfsTableSink) sink;
-      s.setExternalStagingDir(destination.toString());
+      s.setExternalOutputDir(destination.toString());
       // This is how deep into a partition that FENG has precreated in destination.
       // Table Partitioning - (year, month, day)
       // I.E. hdfs://localhost/warehouse/test.db/test_table/year=2020/month=2
@@ -528,7 +527,7 @@ public class ImpalaPlanner {
       // (This ends up acting as a hint for Impala TableSink not to create the same partition directories in
       // the staging directory we setup). HS2 seems to always create the static portion of partition specs for
       // DML.
-      s.setExternalStagingPartitionDepth(numStaticColumns);
+      s.setExternalOutputPartitionDepth(numStaticColumns);
       rootFragment.setSink(sink);
     } else {
       // create the data sink
