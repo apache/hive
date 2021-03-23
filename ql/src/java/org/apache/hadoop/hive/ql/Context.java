@@ -185,8 +185,6 @@ public class Context {
    */
   private boolean scheduledQuery;
 
-  private final Set<String> fetchDeletedRowsScans = new HashSet<>();
-
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -1299,13 +1297,5 @@ public class Context {
 
   public void setScheduledQuery(boolean scheduledQuery) {
     this.scheduledQuery = scheduledQuery;
-  }
-
-  public void fetchDeletedRows(Collection<String> tableName) {
-    fetchDeletedRowsScans.addAll(tableName);
-  }
-
-  public Set<String> getFetchDeletedRowsScans() {
-    return fetchDeletedRowsScans;
   }
 }
