@@ -192,7 +192,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
 
     List<org.apache.hadoop.hive.ql.metadata.Partition> outPartitions = new ArrayList<>();
     if (!partitionsToAdd.isEmpty()) {
-      LOG.info("Calling AddPartition for {}", partitionsToAdd);
+      LOG.debug("Calling AddPartition for {}", partitionsToAdd);
       for (Partition outPartition : context.getDb()
           .addPartitions(partitionsToAdd, desc.isIfNotExists(), true)) {
         outPartitions.add(
@@ -202,7 +202,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     }
     // In case of replication, statistics is obtained from the source, so do not update those on replica.
     if (!partitionsToAlter.isEmpty()) {
-      LOG.info("Calling AlterPartition for {}", partitionsToAlter);
+      LOG.debug("Calling AlterPartition for {}", partitionsToAlter);
       EnvironmentContext ec = new EnvironmentContext();
       ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS,
           StatsSetupConst.TRUE);
