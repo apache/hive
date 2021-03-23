@@ -195,8 +195,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       String columnName = c.getInternalName();
       if (ALLOWED_VIRTUAL_COLUMNS.containsKey(columnName)) {
         virtualColumnList.add(ALLOWED_VIRTUAL_COLUMNS.get(columnName));
-      } else {
-        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      } else if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) {
+        continue;
       }
       colNames.add(columnName);
       colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(c.getTypeName()));
