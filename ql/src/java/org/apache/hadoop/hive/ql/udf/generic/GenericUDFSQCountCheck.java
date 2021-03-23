@@ -50,7 +50,7 @@ public class GenericUDFSQCountCheck extends GenericUDF {
     converters[0] = ObjectInspectorConverters.getConverter(arguments[0],
             PrimitiveObjectInspectorFactory.writableLongObjectInspector);
 
-    return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+    return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
   }
 
   @Override
