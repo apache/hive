@@ -4209,6 +4209,8 @@ class CompactionRequest
   TYPE = 4
   RUNAS = 5
   PROPERTIES = 6
+  INITIATORID = 7
+  INITIATORVERSION = 8
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4216,7 +4218,9 @@ class CompactionRequest
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType},
     RUNAS => {:type => ::Thrift::Types::STRING, :name => 'runas', :optional => true},
-    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
+    INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4355,6 +4359,9 @@ class ShowCompactResponseElement
   ID = 13
   ERRORMESSAGE = 14
   ENQUEUETIME = 15
+  WORKERVERSION = 16
+  INITIATORID = 17
+  INITIATORVERSION = 18
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4371,7 +4378,10 @@ class ShowCompactResponseElement
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
-    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
+    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
+    INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -370,10 +370,11 @@ public interface TxnStore extends Configurable {
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
    * @param workerId id of the worker calling this, will be recorded in the db
+   * @param workerVersion runtime version of the worker calling this
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
   @RetrySemantics.ReadOnly
-  CompactionInfo findNextToCompact(String workerId) throws MetaException;
+  CompactionInfo findNextToCompact(String workerId, String workerVersion) throws MetaException;
 
   /**
    * This will mark an entry in the queue as compacted

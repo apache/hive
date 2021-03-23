@@ -53,8 +53,6 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
@@ -78,20 +76,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
-
-  /**
-   * Get the hostname that this worker is run on.  Made static and public so that other classes
-   * can use the same method to know what host their worker threads are running on.
-   * @return hostname
-   */
-  public static String hostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
-  }
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   // don't go through Initiator for user initiated compactions)
@@ -157,13 +141,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
-
-    StringBuilder name = new StringBuilder(hostname());
-    name.append("-");
-    name.append(getId());
-    this.workerName = name.toString();
-    setName(name.toString());
+    this.workerName = getWorkerId();
+    setName(workerName);
   }
+
 
   static final class StatsUpdater {
     static final private Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
@@ -408,7 +389,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           return false;
         }
       }
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
+      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName, runtimeVersion));
       LOG.debug("Processing compaction request " + ci);
 
       if (ci == null) {
@@ -658,6 +639,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
     return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
         && ci.partName == null;
+  }
+
+  private String getWorkerId() {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(getId());
+    return name.toString();
   }
 
   /**
