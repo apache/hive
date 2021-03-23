@@ -24,8 +24,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -36,8 +38,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -279,9 +279,24 @@ public class HiveAlterHandler implements AlterHandler {
                         " already exists : " + destPath);
               }
               // check that src exists and also checks permissions necessary, rename src to dest
-              if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath,
-                      ReplChangeManager.shouldEnableCm(olddb, oldt))) {
-                dataWasMoved = true;
+              if (srcFs.exists(srcPath)) {
+                if(BlobStorageUtils.isBlobStoragePath(conf, srcPath) && MetastoreConf.getBoolVar(handler.getConf(),
+                    MetastoreConf.ConfVars.METASTORE_BLOBSTORE_OPTIMIZATIONS_ENABLED)) {
+                  RemoteIterator<FileStatus> subDirs = srcFs.listStatusIterator(srcPath);
+                  while (subDirs.hasNext()) {
+                    FileStatus fStatus = subDirs.next();
+                    Path newSrcPath = fStatus.getPath();
+                    String dirName = newSrcPath.getName();
+                    Path newDestPath = new Path(destPath, dirName);
+                    if (!dirName.startsWith("_tmp")) {
+                      if (wh.renameDir(newSrcPath, newDestPath, ReplChangeManager.shouldEnableCm(olddb, oldt))) {
+                        dataWasMoved = true;
+                      }
+                    }
+                  }
+                } else if (wh.renameDir(srcPath, destPath, ReplChangeManager.shouldEnableCm(olddb, oldt))) {
+                  dataWasMoved = true;
+                }
               }
             } catch (IOException | MetaException e) {
               LOG.error("Alter Table operation for " + dbname + "." + name + " failed.", e);

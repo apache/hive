@@ -707,6 +707,12 @@ public class MetastoreConf {
                 "          (Use with property metastore.custom.authentication.class)\n" +
                 "  CONFIG: username and password is specified in the config" +
                 "  NOSASL:  Raw transport"),
+    METASTORE_BLOBSTORE_OPTIMIZATIONS_ENABLED("metastore.blobstore.optimizations.enabled",
+        "hive.blobstore.optimizations.enabled", true,
+        "This parameter enables a number of optimizations when running on blobstores:\n" +
+            "(1) If hive.blobstore.use.blobstore.as.scratchdir is false, force the last Hive job to write to the blobstore.\n" +
+            "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
+            "See HIVE-15121 for details."),
     METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
             "",
