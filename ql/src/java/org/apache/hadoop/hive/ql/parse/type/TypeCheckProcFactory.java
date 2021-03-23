@@ -281,7 +281,7 @@ public class TypeCheckProcFactory<T> {
       }
 
       ASTNode node = (ASTNode)nd;
-      String indexStr = ((ASTNode)(node)).getText();
+      String indexStr = (node).getText();
       int index = Integer.parseInt(indexStr);
       return exprFactory.createDynamicParamExpr(index);
     }
