@@ -49,6 +49,6 @@ public class AlterTableSetSerdeDesc extends AbstractAlterTableDesc {
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 }

@@ -49,6 +49,6 @@ public class AlterTableIntoBucketsDesc extends AbstractAlterTableDesc {
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 }

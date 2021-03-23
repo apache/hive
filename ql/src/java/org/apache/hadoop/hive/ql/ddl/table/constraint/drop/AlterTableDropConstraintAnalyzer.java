@@ -26,8 +26,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -47,12 +45,6 @@ public class AlterTableDropConstraintAnalyzer extends AbstractAlterTableAnalyzer
     String constraintName = unescapeIdentifier(command.getChild(0).getText());
 
     AlterTableDropConstraintDesc desc = new AlterTableDropConstraintDesc(tableName, null, constraintName);
-
-    Table tbl = getTable(tableName);
-    if(AcidUtils.isTransactionalTable(tbl)) {
-      setAcidDdlDesc(desc);
-    }
-
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

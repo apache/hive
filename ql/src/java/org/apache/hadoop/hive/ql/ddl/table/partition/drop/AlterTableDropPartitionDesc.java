@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... DROP PARTITION ... commands.
  */
 @Explain(displayName = "Drop Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializable {
+public class AlterTableDropPartitionDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   /**
@@ -65,7 +65,6 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
   private final ArrayList<PartitionDesc> partSpecs;
   private final boolean ifPurge;
   private final ReplicationSpec replicationSpec;
-  private Long writeId;
 
   public AlterTableDropPartitionDesc(TableName tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
       boolean ifPurge, ReplicationSpec replicationSpec) {
@@ -101,20 +100,4 @@ public class AlterTableDropPartitionDesc implements DDLDescWithWriteId, Serializ
   public ReplicationSpec getReplicationSpec() {
     return replicationSpec;
   }
-
-  @Override
-  public void setWriteId(long writeId) {
-    this.writeId = writeId;
-  }
-
-  @Override
-  public String getFullTableName() {
-    return getTableName();
-  }
-
-  @Override
-  public boolean mayNeedWriteId() {
-    return true;
-  }
-
 }

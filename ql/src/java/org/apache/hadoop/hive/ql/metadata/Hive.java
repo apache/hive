@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -137,10 +136,6 @@ import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -153,9 +148,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -1474,24 +1466,6 @@ public class Hive {
     }
 
     return new Table(tTable);
-  }
-
-  /**
-   * Get ValidWriteIdList for the current transaction.
-   * This fetches the ValidWriteIdList from the metastore for a given table if txnManager has an open transaction.
-   *
-   * @param dbName
-   * @param tableName
-   * @return
-   * @throws LockException
-   */
-  private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
-    ValidWriteIdList validWriteIdList = null;
-    long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
-    if (txnId > 0) {
-      validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
-    }
-    return validWriteIdList;
   }
 
   /**
@@ -3677,7 +3651,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-   public List<String> getPartitionNames(String tblName, short max) throws HiveException {
+  public List<String> getPartitionNames(String tblName, short max) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return getPartitionNames(names[0], names[1], max);
   }
@@ -3707,17 +3681,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
     try {
-      GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
-      req.setTblName(tblName);
-      req.setDbName(dbName);
-      req.setPartValues(pvals);
-      req.setMaxParts(max);
-      if (AcidUtils.isTransactionalTable(t)) {
-        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
-        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-      }
-      GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
-      names = res.getNames();
+      names = getMSC().listPartitionNames(dbName, tblName, pvals, max);
     } catch (NoSuchObjectException nsoe) {
       // this means no partition exists for the given partition spec
       // key value pairs - thrift cannot handle null return values, hence
@@ -3741,19 +3705,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
       try {
-        GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
-        req.setTblName(tbl.getTableName());
-        req.setDbName(tbl.getDbName());
-        req.setUserName(getUserName());
-        req.setMaxParts((short) -1);
-        req.setGroupNames(getGroupNames());
-        if (AcidUtils.isTransactionalTable(tbl)) {
-          ValidWriteIdList validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        }
-        GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
-        tParts = res.getPartitions();
-
+        tParts = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
+            (short) -1, getUserName(), getGroupNames());
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
@@ -3981,7 +3934,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl The table containing the partitions.
    * @param expr A serialized expression for partition predicates.
    * @param conf Hive config.
-   * @param partitions the resulting list of partitions
+   * @param result the resulting list of partitions
    * @return whether the resulting list contains partitions which may or may not match the expr
    */
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
@@ -3993,9 +3946,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
         tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
-    result.addAll(convertFromMetastore(tbl, msParts));    
+    result.addAll(convertFromMetastore(tbl, msParts));
     return hasUnknownParts;
-
   }
 
   /**

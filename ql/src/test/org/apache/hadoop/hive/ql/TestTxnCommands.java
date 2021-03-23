@@ -380,58 +380,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
 
   @Test
-  public void testAddAndDropConstraintAdvancingWriteIds() throws Exception {
-
-    String tableName = "constraints_table";
-    hiveConf.setBoolean("hive.stats.autogather", true);
-    hiveConf.setBoolean("hive.stats.column.autogather", true);
-    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
-    Hive.closeCurrent();
-    runStatementOnDriver("drop table if exists " + tableName);
-    runStatementOnDriver(String.format("create table %s (a int, b string) stored as orc " +
-      "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
-      tableName));
-    runStatementOnDriver(String.format("insert into %s (a) values (0)", tableName));
-    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    String validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    LOG.info("ValidWriteIds before add constraint::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:1:9223372036854775807::", validWriteIds);
-    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT a_PK PRIMARY KEY (`a`) DISABLE NOVALIDATE", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    LOG.info("ValidWriteIds after add constraint primary key::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:2:9223372036854775807::", validWriteIds);
-    runStatementOnDriver(String.format("alter table %s CHANGE COLUMN b b STRING NOT NULL", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    LOG.info("ValidWriteIds after add constraint not null::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:3:9223372036854775807::", validWriteIds);
-    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT check1 CHECK (a <= 25)", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    LOG.info("ValidWriteIds after add constraint check::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:4:9223372036854775807::", validWriteIds);
-    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT unique1 UNIQUE (a, b) DISABLE", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    LOG.info("ValidWriteIds after add constraint unique::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds);
-    LOG.info("ValidWriteIds before drop constraint::"+ validWriteIds);
-    runStatementOnDriver(String.format("alter table %s DROP CONSTRAINT a_PK", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    Assert.assertEquals("default.constraints_table:6:9223372036854775807::", validWriteIds);
-    LOG.info("ValidWriteIds after drop constraint primary key::"+ validWriteIds);
-    runStatementOnDriver(String.format("alter table %s DROP CONSTRAINT check1", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    Assert.assertEquals("default.constraints_table:7:9223372036854775807::", validWriteIds);
-    LOG.info("ValidWriteIds after drop constraint check::"+ validWriteIds);
-    runStatementOnDriver(String.format("alter table %s DROP CONSTRAINT unique1", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    Assert.assertEquals("default.constraints_table:8:9223372036854775807::", validWriteIds);
-    LOG.info("ValidWriteIds after drop constraint unique::"+ validWriteIds);
-    runStatementOnDriver(String.format("alter table %s CHANGE COLUMN b b STRING", tableName));
-    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
-    Assert.assertEquals("default.constraints_table:9:9223372036854775807::", validWriteIds);
-
- }
-
-  @Test
   public void testParallelInsertAnalyzeStats() throws Exception {
     String tableName = "mm_table";
     List<ColumnStatisticsObj> stats;

@@ -813,12 +813,12 @@ STAGE PLANS:
         TableScan
           alias: alterdynamic_part_table_temp
           filterExpr: ((partcol1 = 1) and (partcol2 = '1')) (type: boolean)
-          Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table_temp where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')

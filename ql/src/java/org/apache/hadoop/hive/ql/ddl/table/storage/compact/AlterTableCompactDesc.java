@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,13 +30,12 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * commands.
  */
 @Explain(displayName = "Compact", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableCompactDesc implements DDLDescWithWriteId {
+public class AlterTableCompactDesc implements DDLDesc {
   private final String tableName;
   private final Map<String, String> partitionSpec;
   private final String compactionType;
   private final boolean isBlocking;
   private final Map<String, String> properties;
-  private Long writeId;
 
   public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
       boolean isBlocking, Map<String, String> properties) {
@@ -71,20 +70,5 @@ public class AlterTableCompactDesc implements DDLDescWithWriteId {
   @Explain(displayName = "properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getProperties() {
     return properties;
-  }
-
-  @Override
-  public void setWriteId(long writeId) {
-    this.writeId = writeId;
-  }
-
-  @Override
-  public String getFullTableName() {
-    return tableName;
-  }
-
-  @Override
-  public boolean mayNeedWriteId() {
-    return true;
   }
 }
