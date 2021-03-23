@@ -283,7 +283,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final String SELECT_METRICS_INFO_QUERY =
       "SELECT * FROM (SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\") \"TTWID\" CROSS JOIN (" +
       "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\") \"CTC\" CROSS JOIN (" +
-      "SELECT COUNT(*), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\"";
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\"";
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -3603,7 +3603,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           metrics.setTxnToWriteIdCount(rs.getInt(1));
           metrics.setCompletedTxnsCount(rs.getInt(2));
           metrics.setOpenTxnsCount(rs.getInt(3));
-          metrics.setOldestOpenTxnAge(rs.getInt(4));
+          metrics.setOldestOpenTxnId(rs.getInt(4));
+          metrics.setOldestOpenTxnAge(rs.getInt(5));
         }
         return metrics;
       } catch (SQLException e) {

@@ -404,11 +404,6 @@ public class TestCompactionMetrics  extends CompactorTest {
     Table t = newTable("default", "dcamc", false);
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
 
-    // create an open txn record
-    long start = System.currentTimeMillis() - 1000L;
-    openTxn();
-    Thread.sleep(1000);
-
     // create and commit txn with non-empty txn_components
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
@@ -424,6 +419,11 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(25, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
+    // create an open txn record
+    long start = System.currentTimeMillis() - 1000L;
+    txnid = openTxn();
+    Thread.sleep(1000);
+
     runAcidMetricService();
     long diff = (System.currentTimeMillis() - start) / 1000;
 
@@ -436,6 +436,8 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue(), txnid);
 
     txnHandler.cleanTxnToWriteIdTable();
     runAcidMetricService();

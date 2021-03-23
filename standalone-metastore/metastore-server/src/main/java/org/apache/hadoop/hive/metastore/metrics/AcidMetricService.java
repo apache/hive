@@ -89,6 +89,8 @@ public class AcidMetricService  implements MetastoreTaskThread {
         metrics.getCompletedTxnsCount());
     Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "open_txn").set(
         metrics.getOpenTxnsCount());
+    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID ).set(
+      metrics.getOldestOpenTxnId());
     Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE ).set(
         metrics.getOldestOpenTxnAge());
   }

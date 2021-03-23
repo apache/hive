@@ -25,6 +25,7 @@ public class MetricsInfo {
   private int txnToWriteIdCount;
   private int completedTxnsCount;
   private int openTxnsCount;
+  private int oldestOpenTxnId;
   private int oldestOpenTxnAge;
 
   public int getTxnToWriteIdCount() {
@@ -49,6 +50,14 @@ public class MetricsInfo {
 
   public void setOpenTxnsCount(int openTxnsCount) {
     this.openTxnsCount = openTxnsCount;
+  }
+
+  public int getOldestOpenTxnId() {
+    return oldestOpenTxnId;
+  }
+
+  public void setOldestOpenTxnId(int oldestOpenTxnId) {
+    this.oldestOpenTxnId = oldestOpenTxnId;
   }
 
   public int getOldestOpenTxnAge() {
