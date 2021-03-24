@@ -34,7 +34,7 @@ single_block_stmt :                                      // Single BEGIN END blo
 block_end :
        {!_input.LT(2).getText().equalsIgnoreCase("TRANSACTION")}? T_END 
      ;
-     
+
 proc_block :
        begin_end_block
      | stmt+ T_GO?
@@ -168,7 +168,7 @@ break_stmt :
 call_stmt :
        T_CALL ident (T_OPEN_P expr_func_params? T_CLOSE_P | expr_func_params)?
      ;
-     
+
 declare_stmt :          // Declaration statement
        T_DECLARE declare_stmt_item (T_COMMA declare_stmt_item)*
      ;
@@ -177,31 +177,31 @@ declare_block :         // Declaration block
        T_DECLARE declare_stmt_item T_SEMICOLON (declare_stmt_item T_SEMICOLON)*
      ;
 
-declare_block_inplace : 
+declare_block_inplace :
        declare_stmt_item T_SEMICOLON (declare_stmt_item T_SEMICOLON)*
      ;
-     
+
 declare_stmt_item :
        declare_cursor_item
-     | declare_condition_item  
+     | declare_condition_item
      | declare_handler_item
-     | declare_var_item 
+     | declare_var_item
      | declare_temporary_table_item
      ;
 
 declare_var_item :
-       ident (T_COMMA ident)* T_AS? dtype dtype_len? dtype_attr* dtype_default? 
-     | ident T_CONSTANT T_AS? dtype dtype_len? dtype_default 
+       ident (T_COMMA ident)* T_AS? dtype dtype_len? dtype_attr* dtype_default?
+     | ident T_CONSTANT T_AS? dtype dtype_len? dtype_default
      ;
 
-declare_condition_item :    // Condition declaration 
+declare_condition_item :    // Condition declaration
        ident T_CONDITION
      ;
-     
-declare_cursor_item :      // Cursor declaration 
+
+declare_cursor_item :      // Cursor declaration
        (T_CURSOR ident | ident T_CURSOR) (cursor_with_return | cursor_without_return)? (T_IS | T_AS | T_FOR) (select_stmt | expr )
      ;
-     
+
 cursor_with_return :
        T_WITH T_RETURN T_ONLY? (T_TO (T_CALLER | T_CLIENT))?
      ;
@@ -360,7 +360,7 @@ alter_table_add_constraint_item :
      | T_FOREIGN T_KEY T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P T_REFERENCES table_name T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P create_table_fk_action*
      | T_DEFAULT expr T_FOR ident
      ;
-     
+
 dtype :                  // Data types
        T_CHAR
      | T_CHARACTER
@@ -401,18 +401,18 @@ dtype :                  // Data types
      | T_XML
      | ident ('%' (T_TYPE | T_ROWTYPE))?             // User-defined or derived data type
      ;
-     
+
 dtype_len :             // Data type length or size specification
        T_OPEN_P (L_INT | T_MAX) (T_CHAR | T_BYTE)? (T_COMMA L_INT)? T_CLOSE_P
      ;
-     
+
 dtype_attr :
        T_NOT? T_NULL
      | T_CHARACTER T_SET ident
      | T_NOT? (T_CASESPECIFIC | T_CS)
      ;
 
-dtype_default :         
+dtype_default :
        T_COLON? T_EQUAL expr
      | T_WITH? T_DEFAULT expr?
      ;
@@ -463,7 +463,7 @@ package_body_item :
     ;
     
 create_procedure_stmt : 
-      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? (T_PROCEDURE | T_PROC) ident create_routine_params? create_routine_options? (T_AS | T_IS)? declare_block_inplace? label? proc_block (ident T_SEMICOLON)? 
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? (T_PROCEDURE | T_PROC) ident create_routine_params? create_routine_options? (T_AS | T_IS)? declare_block_inplace? label? proc_block (ident T_SEMICOLON)?
     ;
 
 create_routine_params :
@@ -589,7 +589,7 @@ leave_stmt :
      ;
      
 map_object_stmt :
-       T_MAP T_OBJECT expr (T_TO expr)? (T_AT expr)?
+       T_MAP T_OBJECT ident (T_TO ident)? (T_AT ident)?
      ;
      
 open_stmt :             // OPEN cursor statement
@@ -668,8 +668,8 @@ index_storage_clause :
 index_mssql_storage_clause :
       T_WITH T_OPEN_P ident T_EQUAL ident (T_COMMA ident T_EQUAL ident)* T_CLOSE_P create_table_options_mssql_item*
     ;
-     
-print_stmt :            // PRINT statement 
+
+print_stmt :            // PRINT statement
        T_PRINT expr
      | T_PRINT T_OPEN_P expr T_CLOSE_P
      ;
@@ -1004,10 +1004,8 @@ bool_expr_binary_operator :
 
 expr :
        expr interval_item
-     | expr T_MUL expr 
-     | expr T_DIV expr  
-     | expr T_ADD expr  
-     | expr T_SUB expr   
+     | expr (T_MUL | T_DIV) expr
+     | expr (T_ADD | T_SUB) expr
      | T_OPEN_P select_stmt T_CLOSE_P 
      | T_OPEN_P expr T_CLOSE_P 
      | expr_interval 
@@ -1209,7 +1207,7 @@ bool_literal :                            // Boolean literal
 null_const :                              // NULL constant
        T_NULL
      ;
-     
+
 non_reserved_words :                      // Tokens that are not reserved words and can be used as identifiers
        T_ACTION 
      | T_ACTIVITY_COUNT
@@ -1243,7 +1241,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CASE   
      | T_CASESPECIFIC
      | T_CAST
-     | T_CHAR  
+     | T_CHAR
      | T_CHARACTER 
      | T_CHARSET     
      | T_CLIENT     
@@ -1258,11 +1256,11 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CONSTANT     
      | T_COPY
      | T_COMMIT
-     | T_CONCAT 
+     | T_CONCAT
      | T_CONDITION
      | T_CONSTRAINT
      | T_CONTINUE
-     | T_COUNT   
+     | T_COUNT
      | T_COUNT_BIG   
      | T_CREATE
      | T_CREATION
@@ -1277,7 +1275,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CURSOR  
      | T_DATA
      | T_DATABASE
-     | T_DATE   
+     | T_DATE
      | T_DATETIME     
      | T_DAY
      | T_DAYS
