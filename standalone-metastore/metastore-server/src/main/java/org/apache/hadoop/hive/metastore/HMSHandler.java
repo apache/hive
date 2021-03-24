@@ -8463,7 +8463,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (rqst.getDbname() == null || rqst.getTablename() == null) {
       throw new MetaException("Database name and table name cannot be null.");
     }
-    return getTxnHandler().getLatestCompactionInfo(rqst);
+    GetLatestCompactionInfoResponse response = getTxnHandler().getLatestCompactionInfo(rqst);
+    return FilterUtils.filterLatestCompactionInfoIfEnabled(isServerFilterEnabled, filterHook, getDefaultCatalog(conf),
+        rqst.getDbname(), rqst.getTablename(), response);
   }
 
   @Override
