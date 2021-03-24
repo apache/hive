@@ -1827,13 +1827,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param \metastore\StoredProcedureRequest $request
      * @return \metastore\StoredProcedure
      * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
      */
     public function get_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**
      * @param \metastore\StoredProcedureRequest $request
      * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
      */
     public function drop_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**

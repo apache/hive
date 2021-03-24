@@ -11237,8 +11237,6 @@ class Client(fb303.FacebookService.Client, Iface):
             return result.success
         if result.o1 is not None:
             raise result.o1
-        if result.o2 is not None:
-            raise result.o2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_stored_procedure failed: unknown result")
 
     def drop_stored_procedure(self, request):
@@ -11271,8 +11269,6 @@ class Client(fb303.FacebookService.Client, Iface):
         iprot.readMessageEnd()
         if result.o1 is not None:
             raise result.o1
-        if result.o2 is not None:
-            raise result.o2
         return
 
     def get_all_stored_procedures(self, request):
@@ -18816,9 +18812,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         except MetaException as o1:
             msg_type = TMessageType.REPLY
             result.o1 = o1
-        except NoSuchObjectException as o2:
-            msg_type = TMessageType.REPLY
-            result.o2 = o2
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -18845,9 +18838,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         except MetaException as o1:
             msg_type = TMessageType.REPLY
             result.o1 = o1
-        except NoSuchObjectException as o2:
-            msg_type = TMessageType.REPLY
-            result.o2 = o2
         except TApplicationException as ex:
             logging.exception('TApplication exception in handler')
             msg_type = TMessageType.EXCEPTION
@@ -57626,15 +57616,13 @@ class get_stored_procedure_result(object):
     Attributes:
      - success
      - o1
-     - o2
 
     """
 
 
-    def __init__(self, success=None, o1=None, o2=None,):
+    def __init__(self, success=None, o1=None,):
         self.success = success
         self.o1 = o1
-        self.o2 = o2
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -57657,12 +57645,6 @@ class get_stored_procedure_result(object):
                     self.o1.read(iprot)
                 else:
                     iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRUCT:
-                    self.o2 = NoSuchObjectException()
-                    self.o2.read(iprot)
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -57680,10 +57662,6 @@ class get_stored_procedure_result(object):
         if self.o1 is not None:
             oprot.writeFieldBegin('o1', TType.STRUCT, 1)
             self.o1.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o2 is not None:
-            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-            self.o2.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -57705,7 +57683,6 @@ all_structs.append(get_stored_procedure_result)
 get_stored_procedure_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [StoredProcedure, None], None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
-    (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
 )
 
 
@@ -57776,14 +57753,12 @@ class drop_stored_procedure_result(object):
     """
     Attributes:
      - o1
-     - o2
 
     """
 
 
-    def __init__(self, o1=None, o2=None,):
+    def __init__(self, o1=None,):
         self.o1 = o1
-        self.o2 = o2
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -57800,12 +57775,6 @@ class drop_stored_procedure_result(object):
                     self.o1.read(iprot)
                 else:
                     iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRUCT:
-                    self.o2 = NoSuchObjectException()
-                    self.o2.read(iprot)
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -57819,10 +57788,6 @@ class drop_stored_procedure_result(object):
         if self.o1 is not None:
             oprot.writeFieldBegin('o1', TType.STRUCT, 1)
             self.o1.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o2 is not None:
-            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-            self.o2.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -57844,7 +57809,6 @@ all_structs.append(drop_stored_procedure_result)
 drop_stored_procedure_result.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
-    (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
 )
 
 

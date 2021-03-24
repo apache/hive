@@ -31163,10 +31163,9 @@ class ThriftHiveMetastore_get_stored_procedure_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_stored_procedure_result__isset {
-  _ThriftHiveMetastore_get_stored_procedure_result__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_stored_procedure_result__isset() : success(false), o1(false) {}
   bool success :1;
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_get_stored_procedure_result__isset;
 
 class ThriftHiveMetastore_get_stored_procedure_result {
@@ -31180,7 +31179,6 @@ class ThriftHiveMetastore_get_stored_procedure_result {
   virtual ~ThriftHiveMetastore_get_stored_procedure_result() noexcept;
   StoredProcedure success;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_get_stored_procedure_result__isset __isset;
 
@@ -31188,15 +31186,11 @@ class ThriftHiveMetastore_get_stored_procedure_result {
 
   void __set_o1(const MetaException& val);
 
-  void __set_o2(const NoSuchObjectException& val);
-
   bool operator == (const ThriftHiveMetastore_get_stored_procedure_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     if (!(o1 == rhs.o1))
-      return false;
-    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -31212,10 +31206,9 @@ class ThriftHiveMetastore_get_stored_procedure_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_stored_procedure_presult__isset {
-  _ThriftHiveMetastore_get_stored_procedure_presult__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_stored_procedure_presult__isset() : success(false), o1(false) {}
   bool success :1;
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_get_stored_procedure_presult__isset;
 
 class ThriftHiveMetastore_get_stored_procedure_presult {
@@ -31225,7 +31218,6 @@ class ThriftHiveMetastore_get_stored_procedure_presult {
   virtual ~ThriftHiveMetastore_get_stored_procedure_presult() noexcept;
   StoredProcedure* success;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_get_stored_procedure_presult__isset __isset;
 
@@ -31283,9 +31275,8 @@ class ThriftHiveMetastore_drop_stored_procedure_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_result__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false), o2(false) {}
+  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false) {}
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_drop_stored_procedure_result__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_result {
@@ -31298,19 +31289,14 @@ class ThriftHiveMetastore_drop_stored_procedure_result {
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_result() noexcept;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_drop_stored_procedure_result__isset __isset;
 
   void __set_o1(const MetaException& val);
 
-  void __set_o2(const NoSuchObjectException& val);
-
   bool operator == (const ThriftHiveMetastore_drop_stored_procedure_result & rhs) const
   {
     if (!(o1 == rhs.o1))
-      return false;
-    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -31326,9 +31312,8 @@ class ThriftHiveMetastore_drop_stored_procedure_result {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_presult__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false), o2(false) {}
+  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false) {}
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_drop_stored_procedure_presult__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_presult {
@@ -31337,7 +31322,6 @@ class ThriftHiveMetastore_drop_stored_procedure_presult {
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_presult() noexcept;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_drop_stored_procedure_presult__isset __isset;
 

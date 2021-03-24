@@ -260,8 +260,11 @@ public class Stmt {
     }
     if (ctx.T_IF() != null) {
       sql.append(exec.getText(ctx, ctx.T_IF().getSymbol(), ctx.T_EXISTS().getSymbol()) + " "); 
-    }    
+    }
+    boolean oldBuildSql = exec.buildSql;
+    exec.buildSql = true;
     sql.append(evalPop(ctx.expr()).toString());
+    exec.buildSql = oldBuildSql;
     int cnt = ctx.create_database_option().size();
     for (int i = 0; i < cnt; i++) {
       HplsqlParser.Create_database_optionContext option = ctx.create_database_option(i);
