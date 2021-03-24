@@ -75,6 +75,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for the KuduPredicateHandler implementation.
  */
+@org.junit.Ignore("CDPD-22800")
 public class TestKuduPredicateHandler {
 
   private static final String TABLE_NAME = "default.TestKuduPredicateHandler";

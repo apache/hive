@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * CliDriver that runs the negative Kudu Qtests.
  */
+@org.junit.Ignore("CDPD-22800")
 @RunWith(Parameterized.class)
 public class TestKuduNegativeCliDriver {
 

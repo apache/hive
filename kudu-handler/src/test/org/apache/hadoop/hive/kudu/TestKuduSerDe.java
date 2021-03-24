@@ -54,6 +54,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests for the KuduSerDe implementation.
  */
+@org.junit.Ignore("CDPD-22800")
 public class TestKuduSerDe {
 
   private static final String TABLE_NAME = "default.TestKuduSerDe";

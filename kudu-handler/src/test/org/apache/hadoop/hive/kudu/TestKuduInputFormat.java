@@ -72,6 +72,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests for the KuduInputFormat implementation.
  */
+@org.junit.Ignore("CDPD-22800")
 public class TestKuduInputFormat {
 
   private static final String TABLE_NAME = "default.TestKuduInputFormat";
