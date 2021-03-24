@@ -145,7 +145,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -250,7 +250,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double)
@@ -274,7 +274,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -375,7 +375,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
-FROM (SELECT `tw_code`, RANK() OVER (PARTITION BY 0 ORDER BY `tw_value` ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS `rank_window_0`
+FROM (SELECT `tw_code`, RANK() OVER (PARTITION BY 0 ORDER BY `tw_value` RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS `rank_window_0`
 FROM `default`.`topnkey_windowing`) AS `t`
 WHERE `rank_window_0` <= 3
 STAGE DEPENDENCIES:
@@ -478,7 +478,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -562,7 +562,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
-FROM (SELECT `tw_code`, RANK() OVER (PARTITION BY 0 ORDER BY `tw_value` ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS `rank_window_0`
+FROM (SELECT `tw_code`, RANK() OVER (PARTITION BY 0 ORDER BY `tw_value` RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS `rank_window_0`
 FROM `default`.`topnkey_windowing`) AS `t`
 WHERE `rank_window_0` <= 3
 STAGE DEPENDENCIES:
@@ -640,7 +640,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /topnkey_windowing [topnkey_windowing]
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -665,7 +665,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -802,7 +802,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double)
@@ -826,7 +826,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator

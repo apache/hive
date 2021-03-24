@@ -82,7 +82,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
@@ -106,7 +106,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -174,7 +174,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
@@ -198,7 +198,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -419,7 +419,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 12288 Data size: 72724 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
