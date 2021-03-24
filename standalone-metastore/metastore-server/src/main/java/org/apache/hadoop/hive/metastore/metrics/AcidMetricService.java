@@ -84,9 +84,15 @@ public class AcidMetricService  implements MetastoreTaskThread {
   private void updateDBMetrics() throws MetaException {
     MetricsInfo metrics = txnHandler.getMetricsInfo();
     Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").set(
-        metrics.getTxnToWriteIdRowCount());
+        metrics.getTxnToWriteIdCount());
     Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").set(
-        metrics.getCompletedTxnsRowCount());
+        metrics.getCompletedTxnsCount());
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "open_txn").set(
+        metrics.getOpenTxnsCount());
+    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID ).set(
+      metrics.getOldestOpenTxnId());
+    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE ).set(
+        metrics.getOldestOpenTxnAge());
   }
 
   @VisibleForTesting
