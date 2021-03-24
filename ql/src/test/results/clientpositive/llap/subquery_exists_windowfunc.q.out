@@ -232,8 +232,7 @@ PREHOOK: query: explain cbo
 select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
-   from alltypesagg a where t.id = a.int_col
-)
+   from alltypesagg a where t.id = a.int_col)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
@@ -242,8 +241,7 @@ POSTHOOK: query: explain cbo
 select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
-   from alltypesagg a where t.id = a.int_col
-)
+   from alltypesagg a where t.id = a.int_col)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
@@ -260,8 +258,7 @@ PREHOOK: query: explain
 select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
-   from alltypesagg a where t.id = a.int_col
-)
+   from alltypesagg a where t.id = a.int_col)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
@@ -270,8 +267,7 @@ POSTHOOK: query: explain
 select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
-   from alltypesagg a where t.id = a.int_col
-)
+   from alltypesagg a where t.id = a.int_col)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
@@ -361,8 +357,7 @@ STAGE PLANS:
 PREHOOK: query: select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
-   from alltypesagg a where t.id = a.int_col
-)
+   from alltypesagg a where t.id = a.int_col)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
@@ -370,8 +365,7 @@ PREHOOK: Input: default@alltypestiny
 POSTHOOK: query: select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
-   from alltypesagg a where t.id = a.int_col
-)
+   from alltypesagg a where t.id = a.int_col)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
