@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -74,7 +75,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -85,6 +85,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -94,7 +100,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
@@ -145,7 +150,7 @@ public class TestReplicationScenarios {
 
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
-  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
 
   private boolean verifySetupSteps = false;
@@ -4327,6 +4332,40 @@ public class TestReplicationScenarios {
     System.out.print(result);
     assertTrue(result.get(0),
         result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
+  }
+
+  @Test
+  public void testAddPartition() throws Throwable{
+    // Get the logger at the root level.
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
+    // Create a String Appender to capture log output
+
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+    String testName = "testAddPartition";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("insert into table " + dbName + ".ptned partition(b='2') values "
+        + "('delhi')", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    appender.reset();
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+    // Check the add partition calls get triggered.
+    assertTrue(appender.getOutput().contains("Calling AddPartition for [Partition(values:[1]"));
+    // Check the alter partition call doesn't get triggered
+    assertFalse(appender.getOutput().contains("Calling AlterPartition for "));
   }
 
   private static String createDB(String name, IDriver myDriver) {
