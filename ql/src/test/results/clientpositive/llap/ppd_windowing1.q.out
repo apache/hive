@@ -60,7 +60,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -142,7 +142,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -224,7 +224,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -306,7 +306,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -388,7 +388,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: (UDFToInteger(_col0) + 2) (type: int), sum_window_0 (type: double)
@@ -470,7 +470,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -552,7 +552,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -634,7 +634,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -716,7 +716,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -798,7 +798,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: (UDFToInteger(_col0) + 2) (type: int), sum_window_0 (type: double)
@@ -881,7 +881,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string)
@@ -919,7 +919,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1002,7 +1002,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string)
@@ -1040,7 +1040,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1123,7 +1123,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string)
@@ -1161,7 +1161,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1244,7 +1244,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string)
@@ -1282,7 +1282,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 15770 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: (UDFToInteger(_col1) + 2) (type: int), _col0 (type: double), sum_window_1 (type: double)
@@ -1365,7 +1365,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
@@ -1403,7 +1403,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1486,7 +1486,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
@@ -1524,7 +1524,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1607,7 +1607,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
@@ -1645,7 +1645,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1728,7 +1728,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
@@ -1766,7 +1766,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: (UDFToInteger(_col1) + 2) (type: int), _col0 (type: double), sum_window_1 (type: double)
@@ -1845,7 +1845,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
@@ -1883,7 +1883,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: double), avg_window_1 (type: double)
@@ -1965,7 +1965,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -2047,7 +2047,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -2128,7 +2128,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
@@ -2210,7 +2210,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
@@ -2292,7 +2292,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)

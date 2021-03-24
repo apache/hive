@@ -236,7 +236,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: int)
@@ -260,7 +260,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator

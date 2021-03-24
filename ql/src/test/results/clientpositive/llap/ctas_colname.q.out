@@ -245,7 +245,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -269,7 +269,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -493,7 +493,7 @@ STAGE PLANS:
                               arguments: _col0, 1
                               name: lead
                               window function: GenericUDAFLeadEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit

@@ -258,7 +258,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: cume_dist
                               window function: GenericUDAFCumeDistEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator

@@ -616,7 +616,7 @@ STAGE PLANS:
                               alias: Row_number_window_0
                               name: Row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -744,7 +744,7 @@ STAGE PLANS:
                               alias: Row_number_window_0
                               name: Row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
