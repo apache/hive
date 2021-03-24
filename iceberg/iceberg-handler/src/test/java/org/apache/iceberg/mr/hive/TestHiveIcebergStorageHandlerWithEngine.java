@@ -23,14 +23,17 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
@@ -38,9 +41,11 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -95,6 +100,11 @@ public class TestHiveIcebergStorageHandlerWithEngine {
                   Types.TimestampType.withoutZone(), Types.StringType.get(), Types.BinaryType.get(),
                   Types.DecimalType.of(3, 1), Types.UUIDType.get(), Types.FixedType.ofLength(5),
                   Types.TimeType.get());
+  private static final Map<String, String> STATS_MAPPING = ImmutableMap.of(
+      StatsSetupConst.NUM_FILES, SnapshotSummary.TOTAL_DATA_FILES_PROP,
+      StatsSetupConst.ROW_COUNT, SnapshotSummary.TOTAL_RECORDS_PROP
+      // TODO: add TOTAL_SIZE -> TOTAL_FILE_SIZE_PROP mapping after iceberg 0.12 is released
+  );
 
   @Parameters(name = "fileFormat={0}, engine={1}, catalog={2}")
   public static Collection<Object[]> parameters() {
@@ -180,6 +190,37 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[] {"Trudy", 2L}, descRows.get(0));
     Assert.assertArrayEquals(new Object[] {"Bob", 1L}, descRows.get(1));
     Assert.assertArrayEquals(new Object[] {"Alice", 0L}, descRows.get(2));
+  }
+
+  @Test
+  public void testAnalyzeTableComputeStatistics() throws IOException, TException, InterruptedException {
+    String dbName = "default";
+    String tableName = "customers";
+    Table table = testTables
+        .createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ANALYZE TABLE " + dbName + "." + tableName + " COMPUTE STATISTICS");
+    validateBasicStats(table, dbName, tableName);
+  }
+
+  @Test
+  public void testAnalyzeTableComputeStatisticsForColumns() throws IOException, TException, InterruptedException {
+    String dbName = "default";
+    String tableName = "orders";
+    Table table = testTables.createTable(shell, tableName, ORDER_SCHEMA, fileFormat, ORDER_RECORDS);
+    shell.executeStatement("ANALYZE TABLE " + dbName + "." + tableName + " COMPUTE STATISTICS FOR COLUMNS");
+    validateBasicStats(table, dbName, tableName);
+  }
+
+  @Test
+  public void testAnalyzeTableComputeStatisticsEmptyTable() throws IOException, TException, InterruptedException {
+    String dbName = "default";
+    String tableName = "customers";
+    Table table = testTables
+        .createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+            new ArrayList<>());
+    shell.executeStatement("ANALYZE TABLE " + dbName + "." + tableName + " COMPUTE STATISTICS");
+    validateBasicStats(table, dbName, tableName);
   }
 
   @Test
@@ -897,5 +938,22 @@ public class TestHiveIcebergStorageHandlerWithEngine {
       throw new RuntimeException("Unsupported type in complex query build.");
     }
     return query;
+  }
+
+  private void validateBasicStats(Table icebergTable, String dbName, String tableName)
+      throws TException, InterruptedException {
+    Map<String, String> hmsParams = shell.metastore().getTable(dbName, tableName).getParameters();
+    Map<String, String> summary = new HashMap<>();
+    if (icebergTable.currentSnapshot() == null) {
+      for (String key : STATS_MAPPING.values()) {
+        summary.put(key, "0");
+      }
+    } else {
+      summary = icebergTable.currentSnapshot().summary();
+    }
+
+    for (Map.Entry<String, String> entry : STATS_MAPPING.entrySet()) {
+      Assert.assertEquals(summary.get(entry.getValue()), hmsParams.get(entry.getKey()));
+    }
   }
 }

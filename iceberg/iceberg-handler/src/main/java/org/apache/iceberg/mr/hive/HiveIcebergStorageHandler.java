@@ -21,9 +21,12 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -38,6 +41,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -155,6 +159,37 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
     return predicate;
+  }
+
+  @Override
+  public boolean canProvideBasicStatistics() {
+    return true;
+  }
+
+  @Override
+  public Map<String, String> getBasicStatistics(TableDesc tableDesc) {
+    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
+    Map<String, String> stats = new HashMap<>();
+    if (table.currentSnapshot() != null) {
+      Map<String, String> summary = table.currentSnapshot().summary();
+      if (summary != null) {
+        if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
+          stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
+        }
+        if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
+          stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+        }
+        // TODO: add TOTAL_SIZE when iceberg 0.12 is released
+        if (summary.containsKey("total-files-size")) {
+          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get("total-files-size"));
+        }
+      }
+    } else {
+      stats.put(StatsSetupConst.NUM_FILES, "0");
+      stats.put(StatsSetupConst.ROW_COUNT, "0");
+      stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+    }
+    return stats;
   }
 
   /**

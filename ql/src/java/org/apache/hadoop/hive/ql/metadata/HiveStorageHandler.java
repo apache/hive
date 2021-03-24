@@ -197,4 +197,22 @@ public interface HiveStorageHandler extends Configurable {
   default Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc, Map<String, String> initialProps) {
     return initialProps;
   }
+
+  /**
+   * Return some basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
+   * implementation.
+   * @param tableDesc a valid table description, used to load the table
+   * @return map of basic statistics, can be null
+   */
+  default Map<String, String> getBasicStatistics(TableDesc tableDesc) {
+    return null;
+  }
+
+  /**
+   * Check if the storage handler can provide basic statistics.
+   * @return true if the storage handler can supply the basic statistics
+   */
+  default boolean canProvideBasicStatistics() {
+    return false;
+  }
 }
