@@ -281,8 +281,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final String SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID =
       "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
   private static final String SELECT_METRICS_INFO_QUERY =
-      "SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\" UNION ALL SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\"";
-
+      "SELECT * FROM (SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\") \"TTWID\" CROSS JOIN (" +
+      "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\") \"CTC\" CROSS JOIN (" +
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\"";
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -3650,15 +3651,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       MetricsInfo metrics = new MetricsInfo();
+      String s = String.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
 
-        ResultSet rs = stmt.executeQuery(SELECT_METRICS_INFO_QUERY);
-        rs.next();
-        metrics.setTxnToWriteIdRowCount(rs.getInt(1));
-        rs.next();
-        metrics.setCompletedTxnsRowCount(rs.getInt(1));
+        ResultSet rs = stmt.executeQuery(s);
+        if (rs.next()) {
+          metrics.setTxnToWriteIdCount(rs.getInt(1));
+          metrics.setCompletedTxnsCount(rs.getInt(2));
+          metrics.setOpenTxnsCount(rs.getInt(3));
+          metrics.setOldestOpenTxnId(rs.getInt(4));
+          metrics.setOldestOpenTxnAge(rs.getInt(5));
+        }
         return metrics;
       } catch (SQLException e) {
         LOG.error("Unable to getMetricsInfo", e);
