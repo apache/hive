@@ -101,6 +101,7 @@ import com.google.common.collect.Lists;
  * Compaction related unit tests.
  */
 @SuppressWarnings("deprecation")
+@org.junit.Ignore("hive-test-kube")
 public class TestCompactor {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestCompactor.class);

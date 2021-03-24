@@ -557,6 +557,7 @@ public class QTestUtil {
             new File(conf.get("test.data.set.files"));
 
     conf.setVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_DIRECTORY, "/tmp/hive/_resultscache_" + ProcessUtils.getPid());
+    dispatcher.register("disabled", new QTestDisabledHandler());
     dispatcher.register("dataset", new FakeDatasetHandler());
     dispatcher.register("replace", replaceHandler);
     dispatcher.register("sysdb", new QTestSysDbHandler());
@@ -565,7 +566,6 @@ public class QTestUtil {
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
-    dispatcher.register("disabled", new QTestDisabledHandler());
 
     String scriptsDir = getScriptsDir();
 

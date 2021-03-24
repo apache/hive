@@ -16,54 +16,29 @@
  * limitations under the License.
  */
 
-properties([
-    // max 5 build/branch/day
-    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
-    // do not run multiple testruns on the same branch
-    disableConcurrentBuilds(),
-    parameters([
-        string(name: 'SPLIT', defaultValue: '40', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '-q', description: 'additional maven opts'),
-    ])
-])
+if(env.GERRIT_CHANGE_NUMBER != null) {
+    currentBuild.displayName = "#${BUILD_NUMBER} [${GERRIT_BRANCH}] ${GERRIT_PATCHSET_UPLOADER_NAME}"
+    currentBuild.description = "${GERRIT_CHANGE_SUBJECT}"
 
-this.prHead = null;
-def checkPrHead() {
-  if(env.CHANGE_ID) {
-    println("checkPrHead - prHead:" + prHead)
-    println("checkPrHead - prHead2:" + pullRequest.head)
-    if (prHead == null) {
-      prHead = pullRequest.head;
+    def response = httpRequest "https://gerrit.sjc.cloudera.com/changes/${GERRIT_CHANGE_NUMBER}/revisions/${GERRIT_PATCHSET_REVISION}/related"
+    def nParts=response.content.split("${GERRIT_PATCHSET_REVISION}").length
+    if(nParts>2) {
+      currentBuild.result = 'NOT_BUILT'
+      println('Non tip changeset detected - skipping build!')
+      return
     } else {
-      if(prHead != pullRequest.head) {
-        currentBuild.result = 'ABORTED'
-        error('Found new changes on PR; aborting current build')
-      }
+      println("The current patchset is a TIP ${GERRIT_PATCHSET_REVISION}!")
     }
-  }
-}
-checkPrHead()
-
-def setPrLabel(String prLabel) {
-  if (env.CHANGE_ID) {
-   def mapping=[
-    "SUCCESS":"tests passed",
-    "UNSTABLE":"tests unstable",
-    "FAILURE":"tests failed",
-    "PENDING":"tests pending",
-   ]
-   def newLabels = []
-   for( String l : pullRequest.labels )
-     newLabels.add(l)
-   for( String l : mapping.keySet() )
-     newLabels.remove(mapping[l])
-   newLabels.add(mapping[prLabel])
-   echo ('' +newLabels)
-   pullRequest.labels=newLabels
-  }
 }
 
-setPrLabel("PENDING");
+properties([
+    // disableConcurrentBuilds(),
+    parameters([
+        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
+        string(name: 'OPTS', defaultValue: '-q', description: 'additional maven opts'),
+    ]),
+    buildDiscarder(logRotator(daysToKeepStr: '33'))
+])
 
 def executorNode(run) {
   hdbPodTemplate {
@@ -82,6 +57,9 @@ def buildHive(args,wrapper="") {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
 ls -l
+echo "@state"
+git branch
+git status
 set
 sysctl net.core.somaxconn
 set -x
@@ -100,6 +78,8 @@ OPTS+=" -Dmaven.wagon.http.retryHandler.class=standard"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 #OPTS+=" -Dsurefire.rerunFailingTestsCount=1"
 git config extra.mavenOpts "$OPTS"
+
+
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
@@ -113,7 +93,6 @@ df -h
 
 def hdbPodTemplate(closure) {
   podTemplate(
-//    workspaceVolume: dynamicPVC(requestsSize: "16Gi", storageClassName: "ceph-hdd"),
   containers: [
     containerTemplate(name: 'hdb', image: 'docker-sandbox.infra.cloudera.com/hive/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
@@ -174,13 +153,11 @@ def jobWrappers(closure) {
     lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
-        checkPrHead()
         closure()
       }
     }
     finalLabel=currentBuild.currentResult
   } finally {
-    setPrLabel(finalLabel)
   }
 }
 
@@ -217,16 +194,31 @@ jobWrappers {
     container('hdb') {
       stage('Checkout') {
         checkout scm
+        if( env.GERRIT_PATCHSET_REVISION != null ) {
+          println "@gerrit patchset"
+          checkout scm
+          sh '''#!/bin/bash -e
+echo "@ prepare branch"
+git config user.email "you@example.com"
+git config user.name "Your Name"
+git status
+echo "@ on patch branch only"
+git log --oneline gerrit/target..gerrit/patch
+echo "@ on target branch only"
+git log --oneline gerrit/patch..gerrit/target
+echo "@ prepare branch"
+git merge gerrit/patch
+git merge gerrit/target
+echo "@ merged"
+'''
+        }
       }
       stage('Prepare sources') {
         sh '''#!/bin/bash -e
-		cat `which cdpd-patcher.bash`
 
-http_proxy=http://sustwork.bdp.cloudera.com:3128   cdpd-patcher.bash hive
+http_proxy=http://sustwork.bdp.cloudera.com:3128 cdpd-patcher hive
         '''
       }
-      //buildName "${env.BUILD_ID${env.CHANGE_AUTHOR}"
-      //buildDescription "${env.CHANGE_TITLE}"
       if(false)
       stage('Prechecks') {
         def spotbugsProjects = [
@@ -242,7 +234,6 @@ http_proxy=http://sustwork.bdp.cloudera.com:3128   cdpd-patcher.bash hive
         buildHive("org.apache.maven.plugins:maven-dependency-plugin:get -Dartifact=org.apache.maven.plugins:maven-antrun-plugin:1.8","retry 3")
       }
 
-      checkPrHead()
       stage('Upload') {
         saveWS()
         sh '''#!/bin/bash -e

@@ -114,6 +114,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+
+@org.junit.Ignore("CDPD-2012")
 public class TestStreaming {
   private static final Logger LOG = LoggerFactory.getLogger(TestStreaming.class);
 

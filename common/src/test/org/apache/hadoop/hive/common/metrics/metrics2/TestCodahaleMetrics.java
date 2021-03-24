@@ -155,7 +155,12 @@ public class TestCodahaleMetrics {
   public void testFileReporting() throws Exception {
     int runs = 5;
     String  counterName = "count2";
-    for (int i = 0; i < runs; i++) {
+
+    // on the first write the metrics writer should initialize stuff
+    MetricsFactory.getInstance().incrementCounter(counterName);
+    sleep(5 * REPORT_INTERVAL_MS);
+
+    for (int i = 1; i <= runs; i++) {
       MetricsFactory.getInstance().incrementCounter(counterName);
       sleep(REPORT_INTERVAL_MS + REPORT_INTERVAL_MS / 2);
       Assert.assertEquals(i + 1, getCounterValue(counterName));

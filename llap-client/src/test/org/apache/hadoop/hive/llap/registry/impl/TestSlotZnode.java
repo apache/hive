@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.*;
 
 /** See SlotZNode; some tests (and the setup) are c/p-ed or modified from Curator. */
+@Ignore("HIVE-23564")
 public class TestSlotZnode {
   private static final String DIR = "/test";
   private static final String PATH = ZKPaths.makePath(DIR, "/foo");

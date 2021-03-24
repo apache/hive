@@ -114,6 +114,7 @@ import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT;
 
 
+@org.junit.Ignore("CDPD-2012")
 public class TestStreaming {
   private static final Logger LOG = LoggerFactory.getLogger(TestStreaming.class);
 
