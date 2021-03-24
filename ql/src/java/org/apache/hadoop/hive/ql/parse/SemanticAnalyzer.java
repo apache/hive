@@ -11473,6 +11473,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
+      Map<String, String> tblProperties = tab.getParameters();
+      tsDesc.setFetchDeletedRows(tblProperties != null &&
+          Boolean.parseBoolean(tblProperties.get(Constants.ACID_FETCH_DELETED_ROWS)));
+
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {
         tsDesc.setRowLimit(sample.getRowCount());

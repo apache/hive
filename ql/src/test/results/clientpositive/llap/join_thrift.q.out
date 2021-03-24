@@ -86,10 +86,10 @@ STAGE PLANS:
                 keys:
                   0 aint (type: int)
                   1 aint (type: int)
-                outputColumnNames: _col0, _col17
+                outputColumnNames: _col0, _col18
                 Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col17 (type: array<struct<myint:int,mystring:string,underscore_int:int>>)
+                  expressions: _col0 (type: int), _col18 (type: array<struct<myint:int,mystring:string,underscore_int:int>>)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
