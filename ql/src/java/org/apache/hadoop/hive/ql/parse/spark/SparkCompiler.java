@@ -107,11 +107,10 @@ public class SparkCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs) throws SemanticException {
+  protected void optimizeOperatorPlan(ParseContext pCtx) throws SemanticException {
     PERF_LOGGER.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
 
-    OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs);
+    OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx);
 
     // Run Spark Dynamic Partition Pruning
     runDynamicPartitionPruning(procCtx);
