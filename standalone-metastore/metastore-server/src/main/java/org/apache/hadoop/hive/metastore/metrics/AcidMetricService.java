@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -107,7 +108,7 @@ public class AcidMetricService  implements MetastoreTaskThread {
 
     // Get the current count for each state
     Map<String, Long> counts = lastElements.values().stream()
-        .collect(Collectors.groupingBy(e -> e.getState(), Collectors.counting()));
+        .collect(Collectors.groupingBy(ShowCompactResponseElement::getState, Collectors.counting()));
 
     // Update metrics
     for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
@@ -125,6 +126,30 @@ public class AcidMetricService  implements MetastoreTaskThread {
       Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
           .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
     }
+
+    long initiatorsCount = lastElements.values().stream()
+        .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "initiators").set((int) initiatorsCount);
+    long workersCount = lastElements.values().stream()
+        .map(e -> getHostFromId(e.getWorkerid())).distinct().filter(e -> !NO_VAL.equals(e)).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "workers").set((int) workersCount);
+
+    long initiatorVersionsCount = lastElements.values().stream()
+        .map(ShowCompactResponseElement::getInitiatorVersion).distinct().filter(Objects::nonNull).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "initiator_versions").set((int) initiatorVersionsCount);
+    long workerVersionsCount = lastElements.values().stream()
+        .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "worker_versions").set((int) workerVersionsCount);
+  }
+
+  private static final String NO_VAL = " --- ";
+
+  private static String getHostFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    int lastDash = id.lastIndexOf('-');
+    return id.substring(0, lastDash > -1 ? lastDash : id.length());
   }
 
   @Override
