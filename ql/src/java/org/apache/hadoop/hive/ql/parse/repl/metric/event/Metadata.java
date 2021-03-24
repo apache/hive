@@ -32,6 +32,7 @@ public class Metadata {
   private ReplicationType replicationType;
   private String stagingDir;
   private long lastReplId;
+  private boolean isFailoverReady;
 
   public Metadata() {
 
@@ -42,12 +43,14 @@ public class Metadata {
     this.replicationType = metadata.replicationType;
     this.stagingDir = metadata.stagingDir;
     this.lastReplId = metadata.lastReplId;
+    this.isFailoverReady = metadata.isFailoverReady;
   }
 
   public Metadata(String dbName, ReplicationType replicationType, String stagingDir) {
     this.dbName = dbName;
     this.replicationType = replicationType;
     this.stagingDir = stagingDir;
+    this.isFailoverReady = false;
   }
 
   public long getLastReplId() {
@@ -68,5 +71,9 @@ public class Metadata {
 
   public void setLastReplId(long lastReplId) {
     this.lastReplId = lastReplId;
+  }
+
+  public void setFailoverReady(boolean isFailoverReady) {
+    this.isFailoverReady = isFailoverReady;
   }
 }

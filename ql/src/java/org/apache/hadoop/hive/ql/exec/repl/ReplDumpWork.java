@@ -57,6 +57,7 @@ public class ReplDumpWork implements Serializable {
   Long eventTo;
   Long eventFrom;
   private boolean isBootstrap;
+  private boolean isIncremental = false;
   private static String testInjectDumpDir = null;
   private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
@@ -104,6 +105,14 @@ public class ReplDumpWork implements Serializable {
 
   void setOldReplScope(ReplScope replScope) {
     oldReplScope = replScope;
+  }
+
+  void setIncremental(boolean isIncremental) {
+    this.isIncremental = isIncremental;
+  }
+
+  boolean isIncremental() {
+    return this.isIncremental;
   }
 
   int maxEventLimit() throws Exception {
@@ -184,10 +193,6 @@ public class ReplDumpWork implements Serializable {
 
   public List<String> getResultValues() {
     return resultValues;
-  }
-
-  public boolean isBootstrap() {
-    return this.isBootstrap;
   }
 
   public void setResultValues(List<String> resultValues) {

@@ -110,7 +110,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.in.repl.test", "true");
         put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
         put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
-        put(HiveConf.ConfVars.HIVE_REPL_FAILOVER.varname,"false");
+        put(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START.varname,"false");
       }};
 
     acidEnableConf.putAll(overrides);
@@ -357,12 +357,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testFailoverWithNoOpenTxns() throws Throwable {
     WarehouseInstance.Tuple dumpData = null;
 
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
     dumpData = primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
                     "\"transactional_properties\"=\"insert_only\")")
-            .dump(primaryDbName);
+            .dump(primaryDbName, failoverConfigs);
+
+    //This dump is not failover ready as target db can be used for replication only after first incremental load.
+    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, FAILOVER_READY_MARKER.toString())));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -371,15 +377,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("repl status " + replicatedDbName)
             .verifyResult(dumpData.lastReplicationId);
 
-    List<String> failoverConfigs = Arrays.asList(
-            "'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER + "'='true'");
     dumpData = primary.run("insert into t1 values(1)")
             .run("insert into t2 partition(name='Bob') values(11)")
             .run("insert into t2 partition(name='Carl') values(10)")
             .dump(primaryDbName, failoverConfigs);
 
-    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
-    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FAILOVER_READY_MARKER.toString())));
 
@@ -395,6 +399,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[]{"10", "11"});
 
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+
+    try{
+      primary.dump(primaryDbName);  //can not dump the db since previous dump is failover Ready.
+      fail();
+    } catch (Exception e){
+      assertTrue (true);
+    }
   }
 
   @Test
@@ -402,13 +413,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     HiveConf primaryConf = primary.getConf();
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
     WarehouseInstance.Tuple dumpData = null;
-
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
     dumpData = primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
                     "\"transactional_properties\"=\"insert_only\")")
-            .dump(primaryDbName);
+            .dump(primaryDbName, failoverConfigs);
+
+    //This dump is not failover ready as target db can be used for replication only after first incremental load.
+    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, FAILOVER_READY_MARKER.toString())));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -429,16 +445,15 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName + "_extra",
             tablesInSecDb, txnHandler, txns, primaryConf);
 
-    //Since transactions belong to different db it won't wait. So, This won't cause any issue with failover.
-    List<String> failoverConfigs = Arrays.asList(
-            "'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER + "'='true'");
+    //Since transactions belong to different db. So, This won't cause any issue with failover.
+
     dumpData = primary.run("insert into t1 values(1)")
             .run("insert into t2 partition(name='Bob') values(11)")
             .run("insert into t2 partition(name='Carl') values(10)")
             .dump(primaryDbName, failoverConfigs);
 
-    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
-    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FAILOVER_READY_MARKER.toString())));
 
@@ -467,13 +482,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     HiveConf primaryConf = primary.getConf();
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
     WarehouseInstance.Tuple dumpData = null;
-
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
     dumpData = primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
                     "\"transactional_properties\"=\"insert_only\")")
-            .dump(primaryDbName);
+            .dump(primaryDbName, failoverConfigs);
+
+    //This dump is not failover ready as target db can be used for replication only after first incremental load.
+    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, FAILOVER_READY_MARKER.toString())));
 
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
@@ -494,17 +514,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName,
             tablesInPrimaryDb, txnHandler, txns, primaryConf);
 
-    //Since transactions belong to different db it won't wait. So, This won't cause any issue with failover.
-    List<String> failoverConfigs = Arrays.asList(
-            "'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_FAILOVER_DUMP_OPEN_TXN_TIMEOUT + "'='30s'");
+    //Since transactions belong to db under replication. So, this is not a failover Ready state.
     dumpData = primary.run("insert into t1 values(1)")
             .run("insert into t2 partition(name='Bob') values(11)")
             .run("insert into t2 partition(name='Carl') values(10)")
             .dump(primaryDbName, failoverConfigs);
 
-    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
-    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     //This dump is not failover ready as we have open transactions pending wrt Primary database.
     assertFalse(fs.exists(new Path(dumpPath, FAILOVER_READY_MARKER.toString())));

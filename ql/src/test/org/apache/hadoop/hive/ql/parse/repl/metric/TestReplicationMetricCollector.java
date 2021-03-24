@@ -199,6 +199,41 @@ public class TestReplicationMetricCollector {
   }
 
   @Test
+  public void testFailoverReadyDumpMetrics() throws Exception {
+    ReplicationMetricCollector incrDumpMetricCollector = new IncrementalDumpMetricCollector("db",
+            "staging", conf);
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
+    incrDumpMetricCollector.reportStageStart("dump", metricMap);
+    incrDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.TABLES.name(), 1);
+    List<ReplicationMetric> actualMetrics = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, actualMetrics.size());
+
+    incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, true);
+    incrDumpMetricCollector.reportEnd(Status.SUCCESS);
+    actualMetrics = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, actualMetrics.size());
+
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "staging");
+    expectedMetadata.setLastReplId(10);
+    expectedMetadata.setFailoverReady(true);
+    Progress expectedProgress = new Progress();
+    expectedProgress.setStatus(Status.SUCCESS);
+    Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);
+    dumpStage.setEndTime(0);
+    Metric expectedTableMetric = new Metric(ReplUtils.MetricName.TABLES.name(), 10);
+    expectedTableMetric.setCurrentCount(1);
+    dumpStage.addMetric(expectedTableMetric);
+    expectedProgress.addStage(dumpStage);
+    ReplicationMetric expectedMetric = new ReplicationMetric(1, "repl", 0,
+            expectedMetadata);
+    expectedMetric.setProgress(expectedProgress);
+    checkSuccess(actualMetrics.get(0), expectedMetric, "dump",
+            Arrays.asList(ReplUtils.MetricName.TABLES.name()));
+  }
+
+  @Test
   public void testSuccessBootstrapLoadMetrics() throws Exception {
     ReplicationMetricCollector bootstrapLoadMetricCollector = new BootstrapLoadMetricCollector("db",
         "staging", 1, conf);

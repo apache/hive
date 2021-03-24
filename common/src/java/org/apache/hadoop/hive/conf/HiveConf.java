@@ -506,8 +506,9 @@ public class HiveConf extends Configuration {
         "HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. " +
         "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
         "with ${hive.scratch.dir.permission}."),
-    HIVE_REPL_FAILOVER("hive.repl.failover.start",false,
-            "Indicates if user wants to trigger failover for reverse replication."),
+    HIVE_REPL_FAILOVER_START("hive.repl.failover.start",false,
+            "A replication policy level config to indicate if user wants to initiate fail-over" +
+                      "to replicate the database in reverse direction."),
     REPLDIR("hive.repl.rootdir","/user/${system:user.name}/repl/",
         "HDFS root dir for all replication dumps."),
     REPLCMENABLED("hive.repl.cm.enabled", false,
@@ -574,11 +575,6 @@ public class HiveConf extends Configuration {
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "
             + "If these open transactions are not closed within the timeout value, then REPL DUMP will "
             + "forcefully abort those transactions and continue with bootstrap dump."),
-    REPL_FAILOVER_DUMP_OPEN_TXN_TIMEOUT("hive.repl.failover.dump.open.txn.timeout", "1h",
-            new TimeValidator(TimeUnit.HOURS),
-            "Indicates the timeout for all transactions which are opened before triggering failover. "
-                    + "If these open transactions are not closed within the timeout value, then Repl Dump will not " +
-                    "mark this state as failover_ready."),
     REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT("hive.repl.bootstrap.dump.abort.write.txn.after.timeout",
       true,
       "Indicates whether to abort write transactions belonging to the db under replication while doing a" +
