@@ -53,7 +53,7 @@ ImpalaSortRel(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL(CAST($8):BIGINT), IS NOT NULL($2), IS NOT NULL($9))])
           ImpalaProjectPassthroughRel(r_reason_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_reason]], condition=[AND(=($2, _UTF-16LE'reason 66'), IS NOT NULL($0))])
-        ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_sales_price=[$12], CAST=[CAST($9):BIGINT], *=[*(CAST($9):DECIMAL(10, 0), $12)])
+        ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_sales_price=[$12], CAST=[CAST($9):BIGINT], CAST5=[CAST(*(CAST($9):DECIMAL(10, 0), $12)):DECIMAL(27, 2)])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8))])
 
 HMS CALL get_table_req FOR impala_tpcds_store_sales
@@ -112,11 +112,11 @@ STAGE PLANS:
 F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
+  |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE casttodecimal(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price)) END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   11:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
+     order by: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE casttodecimal(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price)) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
      limit: 100
      mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=20B cardinality=0
@@ -127,13 +127,13 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:TOP-N [LIMIT=100]
-  |  order by: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
+  |  order by: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE casttodecimal(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price)) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=6 row-size=20B cardinality=0
   |  in pipelines: 06(GETNEXT), 10(OPEN)
   |
   10:AGGREGATE [FINALIZE]
-  |  output: sum:merge(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
+  |  output: sum:merge(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE casttodecimal(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price)) END)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=20B cardinality=0
@@ -149,7 +149,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=09, HASH(default.impala_tpcds_store_sales.ss_customer_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:AGGREGATE [STREAMING]
-  |  output: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
+  |  output: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE casttodecimal(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price)) END)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=20B cardinality=0

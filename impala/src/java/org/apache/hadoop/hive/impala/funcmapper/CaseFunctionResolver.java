@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.impala.funcmapper;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -29,6 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.impala.catalog.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +68,20 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
     // this into a "case-when" function.  So we can't find a matching signature
     // directly as we do in the base class.
     return getFunctionWithCasts();
+  }
+
+  /**
+   * Get return type for case function.  Use the default getRetType except for decimals.
+   * In the case of decimals, return the datatype compatible across all the inputs.
+   */
+  @Override
+  public RelDataType getRetType(ImpalaFunctionSignature funcSig, List<RexNode> operands) {
+    RelDataType relDataType = funcSig.getRetType();
+    if (funcSig.getRetType().getSqlTypeName() != SqlTypeName.DECIMAL) {
+      return super.getRetType(funcSig, operands);
+    }
+    RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+    return getCommonDecimalType(typeFactory, operands);
   }
 
   @Override
@@ -154,5 +171,29 @@ public class CaseFunctionResolver extends ImpalaFunctionResolverImpl {
     RelDataType retType = helper.getReturnType(functionInfo, equalsInputs);
     List<RexNode> convertedInputs = helper.convertInputs(functionInfo, equalsInputs, retType);
     return helper.getExpression("=", functionInfo, convertedInputs, retType);
+  }
+
+  @Override
+  protected boolean needsCommonDecimalType(List<RelDataType> castTypes) {
+    Preconditions.checkState(castTypes.size() > 1);
+    // The first parameter in the THEN clause has to be a decimal
+    return castTypes.get(1).getSqlTypeName() == SqlTypeName.DECIMAL;
+  }
+
+  /**
+   * Return inputs that can be upcast to a Decimal type. The inputs for the
+   * case statement are only the values in the THEN clause or the ELSE clause.
+   */
+  @Override
+  protected List<RexNode> getCommonDecimalInputs(List<RexNode> inputs) {
+    List<RexNode> decimalInputs = new ArrayList<>();
+    for (int i = 1; i < inputs.size(); i += 2) {
+      decimalInputs.add(inputs.get(i));
+    }
+
+    if ((inputs.size() % 2) == 1) {
+      decimalInputs.add(inputs.get(inputs.size() - 1));
+    }
+    return decimalInputs;
   }
 }

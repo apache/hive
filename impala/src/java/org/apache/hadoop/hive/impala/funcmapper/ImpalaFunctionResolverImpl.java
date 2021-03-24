@@ -368,7 +368,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   /**
    * getCommonDecimalTypeIfNeeded returns a common decimal RelDataType across all the
-   * decimal input parameters.  IT is only required for functions that need a common
+   * decimal input parameters.  It is only required for functions that need a common
    * data type.
    */
   private RelDataType getCommonDecimalTypeIfNeeded(RelDataTypeFactory typeFactory,
@@ -376,10 +376,20 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     if (!needsCommonDecimalType(castTypes)) {
       return null;
     }
+    return getCommonDecimalType(typeFactory, inputs);
+  }
 
+  /**
+   * getCommonDecimalType returns a common decimal RelDataType across all the
+   * decimal input parameters.
+   */
+  protected RelDataType getCommonDecimalType(RelDataTypeFactory typeFactory,
+      List<RexNode> inputs) {
     ScalarType commonScalarType = null;
-    for (RexNode input : inputs) {
+    boolean isNullable = false;
+    for (RexNode input : getCommonDecimalInputs(inputs)) {
       RelDataType dt = input.getType();
+      isNullable |= dt.isNullable();
       ScalarType impalaType = (ScalarType) ImpalaTypeConverter.createImpalaType(dt);
       // get minimum resolution decimal (e.g. tinyint returns dec(3,0))
       ScalarType decimalType = impalaType.getMinResolutionDecimal();
@@ -391,10 +401,17 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
           ? decimalType
           : TypesUtil.getDecimalAssignmentCompatibleType(commonScalarType, decimalType, false);
     }
-    return commonScalarType == null
-        ? null
-        : typeFactory.createSqlType(SqlTypeName.DECIMAL, commonScalarType.decimalPrecision(),
-            commonScalarType.decimalScale());
+    if (commonScalarType == null) {
+      return null;
+    }
+
+    RelDataType retType = typeFactory.createSqlType(SqlTypeName.DECIMAL,
+        commonScalarType.decimalPrecision(), commonScalarType.decimalScale());
+    return typeFactory.createTypeWithNullability(retType, isNullable);
+  }
+
+  protected List<RexNode> getCommonDecimalInputs(List<RexNode> inputs) {
+    return inputs;
   }
 
   private RelDataType getCastedDecimalDataType(RelDataTypeFactory dtFactory,

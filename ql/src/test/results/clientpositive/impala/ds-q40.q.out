@@ -74,7 +74,7 @@ POSTHOOK: Input: default@impala_tpcds_warehouse
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
-    ImpalaProjectPassthroughRel($f0=[$9], $f1=[$11], $f2=[CASE($13, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(3, 0))], $f3=[CASE($14, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(3, 0))])
+    ImpalaProjectPassthroughRel($f0=[$9], $f1=[$11], $f2=[CASE($13, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(8, 2))], $f3=[CASE($14, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(8, 2))])
       ImpalaJoinRel(condition=[=($0, $12)], joinType=[inner])
         ImpalaJoinRel(condition=[=($10, $2)], joinType=[inner])
           ImpalaJoinRel(condition=[=($1, $8)], joinType=[inner])
@@ -211,7 +211,7 @@ Per-Host Resources: mem-estimate=135.84MB mem-reservation=41.75MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=15, HASH(default.impala_tpcds_warehouse.w_state,default.impala_tpcds_item.i_item_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE [STREAMING]
-  |  output: sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) < casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, CAST(0 AS DECIMAL(3,0)))) ELSE CAST(0 AS DECIMAL(3,0)) END), sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) >= casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, CAST(0 AS DECIMAL(3,0)))) ELSE CAST(0 AS DECIMAL(3,0)) END)
+  |  output: sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) < casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, CAST(0 AS DECIMAL(3,0)))) ELSE CAST(0 AS DECIMAL(8,2)) END), sum(CASE WHEN casttodate(default.impala_tpcds_date_dim.d_date) >= casttodate('2000-03-18') THEN subtract(default.impala_tpcds_catalog_sales.cs_sales_price, coalesce(default.impala_tpcds_catalog_returns.cr_refunded_cash, CAST(0 AS DECIMAL(3,0)))) ELSE CAST(0 AS DECIMAL(8,2)) END)
   |  group by: default.impala_tpcds_warehouse.w_state, default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=56B cardinality=0
@@ -424,7 +424,7 @@ POSTHOOK: Input: default@impala_tpcds_warehouse
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
-    ImpalaProjectPassthroughRel($f0=[$9], $f1=[$11], $f2=[CASE($13, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(3, 0))], $f3=[CASE($14, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(3, 0))])
+    ImpalaProjectPassthroughRel($f0=[$9], $f1=[$11], $f2=[CASE($13, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(8, 2))], $f3=[CASE($14, -($4, COALESCE($7, 0:DECIMAL(3, 0))), 0:DECIMAL(8, 2))])
       ImpalaJoinRel(condition=[=($0, $12)], joinType=[inner])
         ImpalaJoinRel(condition=[=($10, $2)], joinType=[inner])
           ImpalaJoinRel(condition=[=($1, $8)], joinType=[inner])
