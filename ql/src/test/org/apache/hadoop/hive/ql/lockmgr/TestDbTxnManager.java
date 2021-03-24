@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -423,6 +424,23 @@ public class TestDbTxnManager {
 
   @Test
   public void testHeartbeater() throws Exception {
+    testHeartbeater(TxnType.DEFAULT, MetastoreConf.ConfVars.TXN_TIMEOUT);
+  }
+
+  /**
+   * Same as testHeartbeater, but testing cleanup of replication txns (TxnType.REPL_CREATED)
+   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 30s for testing purposes.
+   */
+  @Test
+  public void testHeartbeaterReplicationTxn() throws Exception {
+    testHeartbeater(TxnType.REPL_CREATED, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT);
+  };
+
+  /**
+   * @param txnType e.g. TxnType.DEFAULT or TxnType.REPL_CREATED. There's a different timeout for
+   *                cleaning replication txns vs. non-replication txns
+   */
+  private void testHeartbeater(TxnType txnType, MetastoreConf.ConfVars timeThresholdConfVar) throws Exception {
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
 
     addTableInput();
@@ -430,7 +448,7 @@ public class TestDbTxnManager {
     QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
 
     // Case 1: If there's no delay for the heartbeat, txn should be able to commit
-    txnMgr.openTxn(ctx, "fred");
+    txnMgr.openTxn(ctx, "fred", txnType);
     txnMgr.acquireLocks(qp, ctx, "fred"); // heartbeat started..
     runReaper();
     try {
@@ -443,9 +461,9 @@ public class TestDbTxnManager {
 
     // Case 2: If there's delay for the heartbeat, but the delay is within the reaper's tolerance,
     //         then txt should be able to commit
-    // Start the heartbeat after a delay, which is shorter than  the HIVE_TXN_TIMEOUT
-    ((DbTxnManager) txnMgr).openTxn(ctx, "tom", TxnType.DEFAULT,
-        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2);
+    // Start the heartbeat after a delay, which is shorter than the timeout threshold (e.g. TXN_TIMEOUT)
+    ((DbTxnManager) txnMgr).openTxn(ctx, "tom", txnType,
+            MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS) / 2);
     txnMgr.acquireLocks(qp, ctx, "tom");
     runReaper();
     try {
@@ -459,11 +477,11 @@ public class TestDbTxnManager {
     // Case 3: If there's delay for the heartbeat, and the delay is long enough to trigger the reaper,
     //         then the txn will time out and be aborted.
     //         Here we just don't send the heartbeat at all - an infinite delay.
-    // Start the heartbeat after a delay, which exceeds the HIVE_TXN_TIMEOUT
-    ((DbTxnManager) txnMgr).openTxn(ctx, "jerry", TxnType.DEFAULT,
-        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
+    // Start the heartbeat after a delay, which exceeds the timeout threshold (e.g. TXN_TIMEOUT)
+    ((DbTxnManager) txnMgr).openTxn(ctx, "jerry", txnType,
+        MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS) * 2);
     txnMgr.acquireLocks(qp, ctx, "jerry");
-    Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
+    Thread.sleep(MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS));
     runReaper();
     try {
       txnMgr.commitTxn();
@@ -486,6 +504,7 @@ public class TestDbTxnManager {
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
     houseKeeperService.setConf(conf);
   }
 
