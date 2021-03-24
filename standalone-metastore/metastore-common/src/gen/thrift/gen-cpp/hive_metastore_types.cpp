@@ -25040,6 +25040,16 @@ void CompactionRequest::__set_properties(const std::map<std::string, std::string
   this->properties = val;
 __isset.properties = true;
 }
+
+void CompactionRequest::__set_initiatorId(const std::string& val) {
+  this->initiatorId = val;
+__isset.initiatorId = true;
+}
+
+void CompactionRequest::__set_initiatorVersion(const std::string& val) {
+  this->initiatorVersion = val;
+__isset.initiatorVersion = true;
+}
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 {
   obj.printTo(out);
@@ -25136,6 +25146,22 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->initiatorId);
+          this->__isset.initiatorId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->initiatorVersion);
+          this->__isset.initiatorVersion = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -25195,6 +25221,16 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.initiatorId) {
+    xfer += oprot->writeFieldBegin("initiatorId", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->initiatorId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.initiatorVersion) {
+    xfer += oprot->writeFieldBegin("initiatorVersion", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->initiatorVersion);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -25208,6 +25244,8 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
   swap(a.type, b.type);
   swap(a.runas, b.runas);
   swap(a.properties, b.properties);
+  swap(a.initiatorId, b.initiatorId);
+  swap(a.initiatorVersion, b.initiatorVersion);
   swap(a.__isset, b.__isset);
 }
 
@@ -25218,6 +25256,8 @@ CompactionRequest::CompactionRequest(const CompactionRequest& other930) {
   type = other930.type;
   runas = other930.runas;
   properties = other930.properties;
+  initiatorId = other930.initiatorId;
+  initiatorVersion = other930.initiatorVersion;
   __isset = other930.__isset;
 }
 CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other931) {
@@ -25227,6 +25267,8 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other93
   type = other931.type;
   runas = other931.runas;
   properties = other931.properties;
+  initiatorId = other931.initiatorId;
+  initiatorVersion = other931.initiatorVersion;
   __isset = other931.__isset;
   return *this;
 }
@@ -25239,6 +25281,8 @@ void CompactionRequest::printTo(std::ostream& out) const {
   out << ", " << "type=" << to_string(type);
   out << ", " << "runas="; (__isset.runas ? (out << to_string(runas)) : (out << "<null>"));
   out << ", " << "properties="; (__isset.properties ? (out << to_string(properties)) : (out << "<null>"));
+  out << ", " << "initiatorId="; (__isset.initiatorId ? (out << to_string(initiatorId)) : (out << "<null>"));
+  out << ", " << "initiatorVersion="; (__isset.initiatorVersion ? (out << to_string(initiatorVersion)) : (out << "<null>"));
   out << ")";
 }
 
@@ -26025,6 +26069,21 @@ void ShowCompactResponseElement::__set_enqueueTime(const int64_t val) {
   this->enqueueTime = val;
 __isset.enqueueTime = true;
 }
+
+void ShowCompactResponseElement::__set_workerVersion(const std::string& val) {
+  this->workerVersion = val;
+__isset.workerVersion = true;
+}
+
+void ShowCompactResponseElement::__set_initiatorId(const std::string& val) {
+  this->initiatorId = val;
+__isset.initiatorId = true;
+}
+
+void ShowCompactResponseElement::__set_initiatorVersion(const std::string& val) {
+  this->initiatorVersion = val;
+__isset.initiatorVersion = true;
+}
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponseElement& obj)
 {
   obj.printTo(out);
@@ -26179,6 +26238,30 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->workerVersion);
+          this->__isset.workerVersion = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 17:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->initiatorId);
+          this->__isset.initiatorId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 18:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->initiatorVersion);
+          this->__isset.initiatorVersion = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -26275,6 +26358,21 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeI64(this->enqueueTime);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.workerVersion) {
+    xfer += oprot->writeFieldBegin("workerVersion", ::apache::thrift::protocol::T_STRING, 16);
+    xfer += oprot->writeString(this->workerVersion);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.initiatorId) {
+    xfer += oprot->writeFieldBegin("initiatorId", ::apache::thrift::protocol::T_STRING, 17);
+    xfer += oprot->writeString(this->initiatorId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.initiatorVersion) {
+    xfer += oprot->writeFieldBegin("initiatorVersion", ::apache::thrift::protocol::T_STRING, 18);
+    xfer += oprot->writeString(this->initiatorVersion);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -26297,6 +26395,9 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.id, b.id);
   swap(a.errorMessage, b.errorMessage);
   swap(a.enqueueTime, b.enqueueTime);
+  swap(a.workerVersion, b.workerVersion);
+  swap(a.initiatorId, b.initiatorId);
+  swap(a.initiatorVersion, b.initiatorVersion);
   swap(a.__isset, b.__isset);
 }
 
@@ -26316,6 +26417,9 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   id = other942.id;
   errorMessage = other942.errorMessage;
   enqueueTime = other942.enqueueTime;
+  workerVersion = other942.workerVersion;
+  initiatorId = other942.initiatorId;
+  initiatorVersion = other942.initiatorVersion;
   __isset = other942.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other943) {
@@ -26334,6 +26438,9 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   id = other943.id;
   errorMessage = other943.errorMessage;
   enqueueTime = other943.enqueueTime;
+  workerVersion = other943.workerVersion;
+  initiatorId = other943.initiatorId;
+  initiatorVersion = other943.initiatorVersion;
   __isset = other943.__isset;
   return *this;
 }
@@ -26355,6 +26462,9 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
   out << ", " << "enqueueTime="; (__isset.enqueueTime ? (out << to_string(enqueueTime)) : (out << "<null>"));
+  out << ", " << "workerVersion="; (__isset.workerVersion ? (out << to_string(workerVersion)) : (out << "<null>"));
+  out << ", " << "initiatorId="; (__isset.initiatorId ? (out << to_string(initiatorId)) : (out << "<null>"));
+  out << ", " << "initiatorVersion="; (__isset.initiatorVersion ? (out << to_string(initiatorVersion)) : (out << "<null>"));
   out << ")";
 }
 
@@ -32816,6 +32926,10 @@ Materialization::~Materialization() noexcept {
 void Materialization::__set_sourceTablesUpdateDeleteModified(const bool val) {
   this->sourceTablesUpdateDeleteModified = val;
 }
+
+void Materialization::__set_sourceTablesCompacted(const bool val) {
+  this->sourceTablesCompacted = val;
+}
 std::ostream& operator<<(std::ostream& out, const Materialization& obj)
 {
   obj.printTo(out);
@@ -32836,6 +32950,7 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
   using ::apache::thrift::protocol::TProtocolException;
 
   bool isset_sourceTablesUpdateDeleteModified = false;
+  bool isset_sourceTablesCompacted = false;
 
   while (true)
   {
@@ -32853,6 +32968,14 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->sourceTablesCompacted);
+          isset_sourceTablesCompacted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -32863,6 +32986,8 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
   xfer += iprot->readStructEnd();
 
   if (!isset_sourceTablesUpdateDeleteModified)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_sourceTablesCompacted)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -32876,6 +33001,10 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeBool(this->sourceTablesUpdateDeleteModified);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("sourceTablesCompacted", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->sourceTablesCompacted);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -32884,19 +33013,23 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
 void swap(Materialization &a, Materialization &b) {
   using ::std::swap;
   swap(a.sourceTablesUpdateDeleteModified, b.sourceTablesUpdateDeleteModified);
+  swap(a.sourceTablesCompacted, b.sourceTablesCompacted);
 }
 
 Materialization::Materialization(const Materialization& other1229) {
   sourceTablesUpdateDeleteModified = other1229.sourceTablesUpdateDeleteModified;
+  sourceTablesCompacted = other1229.sourceTablesCompacted;
 }
 Materialization& Materialization::operator=(const Materialization& other1230) {
   sourceTablesUpdateDeleteModified = other1230.sourceTablesUpdateDeleteModified;
+  sourceTablesCompacted = other1230.sourceTablesCompacted;
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "Materialization(";
   out << "sourceTablesUpdateDeleteModified=" << to_string(sourceTablesUpdateDeleteModified);
+  out << ", " << "sourceTablesCompacted=" << to_string(sourceTablesCompacted);
   out << ")";
 }
 

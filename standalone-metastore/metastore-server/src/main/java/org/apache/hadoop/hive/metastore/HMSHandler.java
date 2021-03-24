@@ -8426,9 +8426,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public OptionalCompactionInfoStruct find_next_compact(String workerId) throws MetaException{
+  public OptionalCompactionInfoStruct find_next_compact(String workerId, String workerVersion) throws MetaException{
     return CompactionInfo.compactionInfoToOptionalStruct(
-        getTxnHandler().findNextToCompact(workerId));
+        getTxnHandler().findNextToCompact(workerId, workerVersion));
   }
 
   @Override
@@ -10231,15 +10231,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
+  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException {
     startFunction("get_stored_procedure");
     Exception ex = null;
     try {
-      StoredProcedure result = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
-      if (result == null) {
-        throw new NoSuchObjectException("StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
-      }
-      return result;
+      return getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
     } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;
@@ -10250,7 +10246,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
+  public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException {
     startFunction("drop_stored_procedure");
     Exception ex = null;
     try {

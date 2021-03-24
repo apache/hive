@@ -418,7 +418,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (source.isPresent()) {
       HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(source.get()));
       CommonTokenStream tokens = new CommonTokenStream(lexer);
-      HplsqlParser parser = new HplsqlParser(tokens);
+      HplsqlParser parser = newParser(tokens);
       exec.packageLoading = true;
       try {
         visit(parser.program());
@@ -754,7 +754,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (init(args) != 0) {
       return 1;
     }
-    Var result = run();
+    Var result = null;
+    try {
+      result = run();
+    } catch (HplValidationException e) {
+      signal(Signal.Type.VALIDATION, e.getMessage(), e);
+    }
     if (result != null) {
       console.printLine(result.toString());
     }
@@ -835,7 +840,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(input));
     CommonTokenStream tokens = new CommonTokenStream(lexer);
-    HplsqlParser parser = new HplsqlParser(tokens);
+    HplsqlParser parser = newParser(tokens);
     tree = parser.program();
     if (trace) {
       console.printError("Configuration file: " + conf.getLocation());
@@ -843,6 +848,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     includeRcFile();    
     return 0;
+  }
+
+  private HplsqlParser newParser(CommonTokenStream tokens) {
+    HplsqlParser parser = new HplsqlParser(tokens);
+    // the default listener logs into stdout, overwrite it with a custom listener that uses beeline console
+    parser.removeErrorListeners();
+    parser.addErrorListener(new SyntaxErrorReporter(console));
+    return parser;
   }
 
   /**
@@ -921,7 +934,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     InputStream input = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
     HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(input));
     CommonTokenStream tokens = new CommonTokenStream(lexer);
-    HplsqlParser parser = new HplsqlParser(tokens);
+    HplsqlParser parser = newParser(tokens);
     ParseTree tree = parser.program(); 
     visit(tree);    
   }
@@ -948,12 +961,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Var eval(String source) {
     HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(source));
     CommonTokenStream tokens = new CommonTokenStream(lexer);
-    HplsqlParser parser = new HplsqlParser(tokens);
+    HplsqlParser parser = newParser(tokens);
     HplsqlParser.ProgramContext program = parser.program();
     visit(program);
     return !exec.stack.isEmpty() ? exec.stackPop() : null;
   }
-  
+
   /**
    * Free resources before exit
    */
@@ -974,14 +987,18 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   void printExceptions() {
     while (!signals.empty()) {
       Signal sig = signals.pop();
-      if (sig.type == Signal.Type.SQLEXCEPTION) {
+      if (sig.type == Signal.Type.VALIDATION) {
+        error(((HplValidationException)sig.exception).getCtx(), sig.exception.getMessage());
+      } else if (sig.type == Signal.Type.SQLEXCEPTION) {
         console.printError("Unhandled exception in HPL/SQL");
-      }
-      if (sig.exception != null) {
+      } else if (sig.type == Signal.Type.UNSUPPORTED_OPERATION) {
+        console.printError(sig.value == null ? "Unsupported operation" : sig.value);
+      } else if (sig.exception != null) {
         sig.exception.printStackTrace(); 
-      }
-      else if (sig.value != null) {
+      } else if (sig.value != null) {
         console.printError(sig.value);
+      } else {
+        trace(null, "Signal: " + sig.type);
       }
     }
   } 
@@ -1705,7 +1722,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
         executed = packCallContext.execFunc(name, ctx.expr_func_params());
       }
       if (!executed) {        
-        exec.functions.exec(name, ctx.expr_func_params());
+        if (!exec.functions.exec(name, ctx.expr_func_params())) {
+          throw new UndefinedIdentException(ctx, name);
+        }
       }
     }
     return 0;
@@ -1994,19 +2013,19 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitMap_object_stmt(HplsqlParser.Map_object_stmtContext ctx) {
-    String source = evalPop(ctx.expr(0)).toString();
+    String source = ctx.ident(0).getText();
     String target = null;
     String conn = null;
     if (ctx.T_TO() != null) {
-      target = evalPop(ctx.expr(1)).toString();
+      target = ctx.ident(1).getText();
       exec.objectMap.put(source.toUpperCase(), target);  
     }
     if (ctx.T_AT() != null) {
       if (ctx.T_TO() == null) {
-        conn = evalPop(ctx.expr(1)).toString();
+        conn = ctx.ident(1).getText();
       }
       else {
-        conn = evalPop(ctx.expr(2)).toString();
+        conn = ctx.ident(2).getText();
       }
       exec.objectConnMap.put(source.toUpperCase(), conn);      
     }
@@ -2256,24 +2275,24 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
           Var var1 = new Var(var);
           var1.negate();
           exec.stackPush(var1);
-        }
-        else {
+        } else {
           exec.stackPush(var);
         }
-      }
-      else {
+      } else {
         exec.stackPush(new Var(ident, Var.Type.STRING, var.toSqlString()));
       }
-    }
-    else {
-      if (!exec.buildSql && !exec.inCallStmt && exec.functions.exec(ident.toUpperCase(), null)) {
-        return 0;
-      } else {
+    } else {
+      if (exec.buildSql || exec.inCallStmt) {
         exec.stackPush(new Var(Var.Type.IDENT, ident));
+      } else {
+        ident = ident.toUpperCase();
+        if (!exec.functions.exec(ident, null)) {
+          throw new UndefinedIdentException(ctx, ident);
+        }
       }
     }
     return 0;
-  }  
+  }
   
   /** 
    * Single quoted string literal 

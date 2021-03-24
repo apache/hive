@@ -159,54 +159,47 @@ public class Var {
 	 * Cast a new value to the variable 
 	 */
 	public Var cast(Var val) {
-	  if (constant) {
-	    return this;
-	  }
-	  else if (val == null || val.value == null) {
-	    value = null;
-	  }
- 	  else if (type == Type.DERIVED_TYPE) {
- 	    type = val.type;
- 	    value = val.value;
- 	  }
-	  else if (type == val.type && type == Type.STRING) {
-	    cast((String)val.value);
-	  }
-	  else if (type == val.type) {
-	    value = val.value;
-	  }
-	  else if (type == Type.STRING) {
-	    cast(val.toString());
-	  }
-	  else if (type == Type.BIGINT) {
-	    if (val.type == Type.STRING) {
-	      value = Long.parseLong((String)val.value);
-	    }
-    }
-	  else if (type == Type.DECIMAL) {
-	    if (val.type == Type.STRING) {
-        value = new BigDecimal((String)val.value);
+	  try {
+      if (constant) {
+        return this;
+      } else if (val == null || val.value == null) {
+        value = null;
+      } else if (type == Type.DERIVED_TYPE) {
+        type = val.type;
+        value = val.value;
+      } else if (type == val.type && type == Type.STRING) {
+        cast((String) val.value);
+      } else if (type == val.type) {
+        value = val.value;
+      } else if (type == Type.STRING) {
+        cast(val.toString());
+      } else if (type == Type.BIGINT) {
+        if (val.type == Type.STRING) {
+          value = Long.parseLong((String) val.value);
+        } else if (val.type == Type.DECIMAL) {
+          value = ((BigDecimal)val.value).longValue();
+        }
+      } else if (type == Type.DECIMAL) {
+        if (val.type == Type.STRING) {
+          value = new BigDecimal((String) val.value);
+        } else if (val.type == Type.BIGINT) {
+          value = BigDecimal.valueOf(val.longValue());
+        } else if (val.type == Type.DOUBLE) {
+          value = BigDecimal.valueOf(val.doubleValue());
+        }
+      } else if (type == Type.DOUBLE) {
+        if (val.type == Type.STRING) {
+          value = Double.valueOf((String) val.value);
+        } else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
+          value = Double.valueOf(val.doubleValue());
+        }
+      } else if (type == Type.DATE) {
+        value = Utils.toDate(val.toString());
+      } else if (type == Type.TIMESTAMP) {
+        value = Utils.toTimestamp(val.toString());
       }
-	    else if (val.type == Type.BIGINT) {
-	      value = BigDecimal.valueOf(val.longValue());
-	    }
-	    else if (val.type == Type.DOUBLE) {
-	      value = BigDecimal.valueOf(val.doubleValue());
-	    }
-	  }
-	  else if (type == Type.DOUBLE) {
-	    if (val.type == Type.STRING) {
-        value = Double.valueOf((String) val.value);
-      }
-	    else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
-        value = Double.valueOf(val.doubleValue());
-      }
-	  }
-	  else if (type == Type.DATE) {
-	    value = Utils.toDate(val.toString());
-    }
-    else if (type == Type.TIMESTAMP) {
-      value = Utils.toTimestamp(val.toString());
+    } catch (NumberFormatException e) {
+      throw new TypeException(null, type, val.type, val.value);
     }
 	  return this;
 	}

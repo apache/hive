@@ -1418,10 +1418,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function add_dynamic_partitions(\metastore\AddDynamicPartitions $rqst);
     /**
      * @param string $workerId
+     * @param string $workerVersion
      * @return \metastore\OptionalCompactionInfoStruct
      * @throws \metastore\MetaException
      */
-    public function find_next_compact($workerId);
+    public function find_next_compact($workerId, $workerVersion);
     /**
      * @param \metastore\CompactionInfoStruct $cr
      * @param int $txn_id
@@ -1831,13 +1832,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param \metastore\StoredProcedureRequest $request
      * @return \metastore\StoredProcedure
      * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
      */
     public function get_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**
      * @param \metastore\StoredProcedureRequest $request
      * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
      */
     public function drop_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**

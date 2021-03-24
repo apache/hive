@@ -59,6 +59,16 @@ class CompactionRequest
                 'type' => TType::STRING,
                 ),
         ),
+        7 => array(
+            'var' => 'initiatorId',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        8 => array(
+            'var' => 'initiatorVersion',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -85,6 +95,14 @@ class CompactionRequest
      * @var array
      */
     public $properties = null;
+    /**
+     * @var string
+     */
+    public $initiatorId = null;
+    /**
+     * @var string
+     */
+    public $initiatorVersion = null;
 
     public function __construct($vals = null)
     {
@@ -106,6 +124,12 @@ class CompactionRequest
             }
             if (isset($vals['properties'])) {
                 $this->properties = $vals['properties'];
+            }
+            if (isset($vals['initiatorId'])) {
+                $this->initiatorId = $vals['initiatorId'];
+            }
+            if (isset($vals['initiatorVersion'])) {
+                $this->initiatorVersion = $vals['initiatorVersion'];
             }
         }
     }
@@ -183,6 +207,20 @@ class CompactionRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->initiatorId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->initiatorVersion);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -233,6 +271,16 @@ class CompactionRequest
                 $xfer += $output->writeString($viter723);
             }
             $output->writeMapEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->initiatorId !== null) {
+            $xfer += $output->writeFieldBegin('initiatorId', TType::STRING, 7);
+            $xfer += $output->writeString($this->initiatorId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->initiatorVersion !== null) {
+            $xfer += $output->writeFieldBegin('initiatorVersion', TType::STRING, 8);
+            $xfer += $output->writeString($this->initiatorVersion);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

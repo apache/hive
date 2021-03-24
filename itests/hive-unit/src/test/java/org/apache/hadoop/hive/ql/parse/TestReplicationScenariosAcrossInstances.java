@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -69,7 +70,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_HIVE_BASE_DIR;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -130,14 +131,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
     Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
     Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='false'");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
 
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -145,13 +147,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
             .verifyResults(new String[] { "MyName"});
 
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc2 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName)
+            primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -159,6 +162,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     replicatedDbName + ".idFunc2" })
             .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
             .verifyResults(new String[] { "YourName"});
+
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
+    assertFunctionJarsOnTarget("idFunc2", Arrays.asList("identity_udf2.jar"));
   }
 
   @Test
@@ -168,13 +174,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
-    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClasuse);
-    replica.load(replicatedDbName, primaryDbName, withClasuse)
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -182,13 +188,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("SELECT " + replicatedDbName + ".idFunc1('MyName')")
             .verifyResults(new String[] { "MyName"});
 
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
+
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc2 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf2HdfsPath.toString() + "'");
 
     WarehouseInstance.Tuple incrementalDump =
-            primary.dump(primaryDbName, withClasuse);
-    replica.load(replicatedDbName, primaryDbName, withClasuse)
+            primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
@@ -196,6 +204,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     replicatedDbName + ".idFunc2" })
             .run("SELECT " + replicatedDbName + ".idFunc2('YourName')")
             .verifyResults(new String[] { "YourName"});
+
+    assertFunctionJarsOnTarget("idFunc1", Arrays.asList("identity_udf1.jar"));
+    assertFunctionJarsOnTarget("idFunc2", Arrays.asList("identity_udf2.jar"));
   }
 
   @Test
@@ -327,29 +338,36 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   public void testCreateFunctionWithFunctionBinaryJarsOnHDFS() throws Throwable {
     Dependencies dependencies = dependencies("ivy://io.github.myui:hivemall:0.4.0-2", primary);
     String jarSubString = dependencies.toJarSubSql();
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='false'");
 
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
         + "using " + jarSubString);
 
-    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName);
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResult(replicatedDbName + ".anotherFunction");
+    assertFunctionJarsOnTarget("anotherFunction", dependencies.jarNames());
+  }
 
-    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
-        new Path(
-            replica.functionsRoot + "/" + replicatedDbName.toLowerCase() + "/anotherfunction/*/*")
-        , path -> path.toString().endsWith("jar"));
-    List<String> expectedDependenciesNames = dependencies.jarNames();
-    assertThat(fileStatuses.length, is(equalTo(expectedDependenciesNames.size())));
-    List<String> jars = Arrays.stream(fileStatuses).map(f -> {
-      String[] splits = f.getPath().toString().split("/");
-      return splits[splits.length - 1];
-    }).collect(Collectors.toList());
+  @Test
+  public void testBootstrapFunctionOnHDFSLazyCopy() throws Throwable {
+    Dependencies dependencies = dependencies("ivy://io.github.myui:hivemall:0.4.0-2", primary);
+    String jarSubString = dependencies.toJarSubSql();
+    List<String> withClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
-    assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
+            + "using " + jarSubString);
+
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResult(replicatedDbName + ".anotherFunction");
+    assertFunctionJarsOnTarget("anotherFunction", dependencies.jarNames());
   }
 
   @Test
@@ -371,19 +389,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName)
             .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
             .verifyResult(replicatedDbName + ".anotherFunction");
-
-    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
-            new Path(
-                    replica.functionsRoot + "/" + replicatedDbName.toLowerCase() + "/anotherfunction/*/*")
-            , path -> path.toString().endsWith("jar"));
-    List<String> expectedDependenciesNames = dependencies.jarNames();
-    assertThat(fileStatuses.length, is(equalTo(expectedDependenciesNames.size())));
-    List<String> jars = Arrays.stream(fileStatuses).map(f -> {
-        String[] splits = f.getPath().toString().split("/");
-        return splits[splits.length - 1];
-    }).collect(Collectors.toList());
-
-    assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
+    assertFunctionJarsOnTarget("anotherFunction", dependencies.jarNames());
   }
 
   static class Dependencies {
@@ -1690,7 +1696,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
-    assertExternalFileInfo(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, false, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     //SecurityException expected from DirCopyTask
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1772,7 +1778,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
-    assertExternalFileInfo(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, true, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     //SecurityException expected from DirCopyTask
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1825,6 +1831,62 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
                     "load_time=2012-02-21 07%3A08%3A09.124"})
             .dump(primaryDbName, clause);
 
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"acid_table", "table1", "ext_table1", "ext_table2"})
+            .run("select * from ext_table1")
+            .verifyResults(new String[]{"3", "4"})
+            .run("select value from ext_table2")
+            .verifyResults(new String[]{"2", "3"});
+  }
+
+  @Test
+  public void testReplWithRetryDisabledIterators() throws Throwable {
+    List<String> clause = new ArrayList<>();
+    //NS replacement parameters has no effect when data is also copied to staging
+    clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
+    clause.add("'" + HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY + "'='false'");
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, clause);
+    ReplicationTestUtils.assertFalseExternalFileList(primary, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("insert into table1 values (3)")
+            .dump(primaryDbName, clause);
+    ReplicationTestUtils.assertFalseExternalFileList(primary, tuple.dumpLocation);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[]{"1", "2", "3"});
+
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='false'");
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
+            .run("create external table  ext_table2 (key int, value int) partitioned by (load_time timestamp)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.123') values(1,2)")
+            .run("insert into ext_table2 partition(load_time = '2012-02-21 07:08:09.124') values(1,3)")
+            .run("show partitions ext_table2")
+            .verifyResults(new String[]{
+                    "load_time=2012-02-21 07%3A08%3A09.123",
+                    "load_time=2012-02-21 07%3A08%3A09.124"})
+            .dump(primaryDbName, clause);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("ext_table1", "ext_table2"), tuple.dumpLocation, primary);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -2221,20 +2283,22 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     return withClause;
   }
 
-  /*
-   * Method used from TestReplicationScenariosExclusiveReplica
-   */
-  private void assertExternalFileInfo(List<String> expected, String dumplocation, boolean isIncremental,
-                                      WarehouseInstance warehouseInstance)
-          throws IOException {
-    Path hivePath = new Path(dumplocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    Path metadataPath = new Path(hivePath, EximUtil.METADATA_PATH_NAME);
-    Path externalTableInfoFile;
-    if (isIncremental) {
-      externalTableInfoFile = new Path(hivePath, FILE_NAME);
-    } else {
-      externalTableInfoFile = new Path(metadataPath, primaryDbName.toLowerCase() + File.separator + FILE_NAME);
+  private void assertFunctionJarsOnTarget(String functionName, List<String> expectedJars) throws IOException {
+    //correct location of jars on target is functionRoot/dbName/funcName/nanoTs/jarFile
+    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem()
+            .globStatus(new Path(replica.functionsRoot + "/" +
+                    replicatedDbName.toLowerCase() + "/" + functionName.toLowerCase() + "/*/*")
+            );
+    assertEquals(fileStatuses.length, expectedJars.size());
+    List<String> jars = new ArrayList<>();
+    for (FileStatus fileStatus : fileStatuses) {
+      jars.add(fileStatus.getPath().getName());
     }
-    ReplicationTestUtils.assertExternalFileInfo(warehouseInstance, expected, externalTableInfoFile);
+    assertThat(jars, containsInAnyOrder(expectedJars.toArray()));
+
+    //confirm no jars created as directories
+    for (FileStatus jarStatus : fileStatuses) {
+      assert(!jarStatus.isDirectory());
+    }
   }
 }
