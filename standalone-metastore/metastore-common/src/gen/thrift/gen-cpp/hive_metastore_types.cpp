@@ -32416,6 +32416,14 @@ uint32_t TableMeta::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->sourceTablesCompacted);
+          isset_sourceTablesCompacted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -32512,6 +32520,10 @@ Materialization::~Materialization() noexcept {
 void Materialization::__set_sourceTablesUpdateDeleteModified(const bool val) {
   this->sourceTablesUpdateDeleteModified = val;
 }
+
+void Materialization::__set_sourceTablesCompacted(const bool val) {
+  this->sourceTablesCompacted = val;
+}
 std::ostream& operator<<(std::ostream& out, const Materialization& obj)
 {
   obj.printTo(out);
@@ -32532,6 +32544,7 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
   using ::apache::thrift::protocol::TProtocolException;
 
   bool isset_sourceTablesUpdateDeleteModified = false;
+  bool isset_sourceTablesCompacted = false;
 
   while (true)
   {
@@ -32560,6 +32573,8 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   if (!isset_sourceTablesUpdateDeleteModified)
     throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_sourceTablesCompacted)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -32572,6 +32587,10 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeBool(this->sourceTablesUpdateDeleteModified);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("sourceTablesCompacted", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->sourceTablesCompacted);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -32580,19 +32599,23 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
 void swap(Materialization &a, Materialization &b) {
   using ::std::swap;
   swap(a.sourceTablesUpdateDeleteModified, b.sourceTablesUpdateDeleteModified);
+  swap(a.sourceTablesCompacted, b.sourceTablesCompacted);
 }
 
 Materialization::Materialization(const Materialization& other1210) {
   sourceTablesUpdateDeleteModified = other1210.sourceTablesUpdateDeleteModified;
+  sourceTablesCompacted = other1210.sourceTablesCompacted;
 }
 Materialization& Materialization::operator=(const Materialization& other1211) {
   sourceTablesUpdateDeleteModified = other1211.sourceTablesUpdateDeleteModified;
+  sourceTablesCompacted = other1211.sourceTablesCompacted;
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "Materialization(";
   out << "sourceTablesUpdateDeleteModified=" << to_string(sourceTablesUpdateDeleteModified);
+  out << ", " << "sourceTablesCompacted=" << to_string(sourceTablesCompacted);
   out << ")";
 }
 
