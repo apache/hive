@@ -400,7 +400,7 @@ STAGE PLANS:
                   Statistics: Num rows: 7836 Data size: 1943328 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2))
         Reducer 16 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(17,2)), VALUE._col4 (type: decimal(17,2))
@@ -424,7 +424,7 @@ STAGE PLANS:
                               arguments: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4)))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 7836 Data size: 1943328 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -439,7 +439,7 @@ STAGE PLANS:
                       Statistics: Num rows: 7836 Data size: 1943328 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2))
         Reducer 17 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: decimal(17,2)), VALUE._col5 (type: decimal(17,2))
@@ -462,7 +462,7 @@ STAGE PLANS:
                               arguments: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4)))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 7836 Data size: 1974672 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -578,7 +578,7 @@ STAGE PLANS:
                   Statistics: Num rows: 7891 Data size: 1956968 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2))
         Reducer 24 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(17,2)), VALUE._col4 (type: decimal(17,2))
@@ -602,7 +602,7 @@ STAGE PLANS:
                               arguments: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4)))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 7891 Data size: 1956968 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -617,7 +617,7 @@ STAGE PLANS:
                       Statistics: Num rows: 7891 Data size: 1956968 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2))
         Reducer 25 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: decimal(17,2)), VALUE._col5 (type: decimal(17,2))
@@ -640,7 +640,7 @@ STAGE PLANS:
                               arguments: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4)))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 7891 Data size: 1988532 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -698,7 +698,7 @@ STAGE PLANS:
                   Statistics: Num rows: 7891 Data size: 1956968 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2))
         Reducer 4 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(17,2)), VALUE._col4 (type: decimal(17,2))
@@ -722,7 +722,7 @@ STAGE PLANS:
                               arguments: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4)))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 7891 Data size: 1956968 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -737,7 +737,7 @@ STAGE PLANS:
                       Statistics: Num rows: 7891 Data size: 1956968 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2))
         Reducer 5 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: decimal(17,2)), VALUE._col5 (type: decimal(17,2))
@@ -760,7 +760,7 @@ STAGE PLANS:
                               arguments: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4)))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 7891 Data size: 1988532 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
