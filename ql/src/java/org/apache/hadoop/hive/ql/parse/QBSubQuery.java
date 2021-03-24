@@ -604,13 +604,13 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
 
     /*
-     * Restriction.14.h :: Correlated Sub Queries cannot contain Windowing clauses.
+     * Restriction.14.h :: Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses.
      */
     if (operator.getType() != SubQueryType.EXISTS && operator.getType() != SubQueryType.NOT_EXISTS &&
         hasWindowing && hasCorrelation) {
       throw new CalciteSubquerySemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
-          subQueryAST, "Correlated Sub Queries cannot contain Windowing clauses."));
+          subQueryAST, "Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses."));
     }
 
     /*
