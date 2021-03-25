@@ -1098,7 +1098,7 @@ public final class Utilities {
     }
   }
 
-  private static void moveFile(FileSystem fs, FileStatus file, Path dst) throws IOException,
+  private static void moveFileOrDir(FileSystem fs, FileStatus file, Path dst) throws IOException,
       HiveException {
     Path srcFilePath = file.getPath();
     String fileName = srcFilePath.getName();
@@ -1106,32 +1106,61 @@ public final class Utilities {
     if (file.isDir()) {
       renameOrMoveFiles(fs, srcFilePath, dstFilePath);
     } else {
-      if (fs.exists(dstFilePath)) {
-        int suffix = 0;
-        do {
-          suffix++;
-          dstFilePath = new Path(dst, fileName + "_" + suffix);
-        } while (fs.exists(dstFilePath));
-      }
-
-      if (!fs.rename(srcFilePath, dstFilePath)) {
-        throw new HiveException("Unable to move: " + srcFilePath + " to: " + dst);
-      }
+      moveFile(fs, srcFilePath, dst, fileName);
     }
   }
 
   /**
    * Rename src to dst, or in the case dst already exists, move files in src to dst. If there is an
-   * existing file with the same name, the new file's name will be appended with "_1", "_2", etc.
-   *
+   * existing file with the same name, the new file's name will be generated based on the file name.
+   * If the file name confirms to hive managed file NNNNNN_Y(_copy_YY) then it will create NNNNN_Y_copy_XX
+   * else it will append _1, _2, ....
    * @param fs
    *          the FileSystem where src and dst are on.
-   * @param src
-   *          the src directory
-   * @param dst
+   * @param srcFile
+   *          the src file
+   * @param destDir
    *          the target directory
-   * @throws IOException
+   * @param destFileName
+   *          the target filename
+   * @return The final path the file was moved to.
+   * @throws IOException, HiveException
    */
+  public static Path moveFile(FileSystem fs, Path srcFile, Path destDir, String destFileName)
+      throws IOException, HiveException {
+    Path dstFilePath = new Path(destDir, destFileName);
+    if (fs.exists(dstFilePath)) {
+      ParsedOutputFileName parsedFileName = ParsedOutputFileName.parse(destFileName);
+      int suffix = 0;
+      do {
+        suffix++;
+        if (parsedFileName.matches()) {
+          dstFilePath = new Path(destDir, parsedFileName.makeFilenameWithCopyIndex(suffix));
+        } else {
+          dstFilePath = new Path(destDir, destFileName + "_" + suffix);
+        }
+      } while (fs.exists(dstFilePath));
+    }
+    if (!fs.rename(srcFile, dstFilePath)) {
+      throw new HiveException("Unable to move: " + srcFile + " to: " + dstFilePath);
+    }
+    return dstFilePath;
+  }
+
+    /**
+     * Rename src to dst, or in the case dst already exists, move files in src to dst. If there is an
+     * existing file with the same name, the new file's name will be generated based on the file name.
+     * If the file name confirms to hive managed file NNNNNN_Y(_copy_YY) then it will create NNNNN_Y_copy_XX
+     * else it will append _1, _2, ....
+     *
+     * @param fs
+     *          the FileSystem where src and dst are on.
+     * @param src
+     *          the src directory
+     * @param dst
+     *          the target directory
+     * @throws IOException
+     */
   public static void renameOrMoveFiles(FileSystem fs, Path src, Path dst) throws IOException,
       HiveException {
     if (!fs.exists(dst)) {
@@ -1142,7 +1171,7 @@ public final class Utilities {
       // move file by file
       FileStatus[] files = fs.listStatus(src);
       for (FileStatus file : files) {
-        Utilities.moveFile(fs, file, dst);
+        Utilities.moveFileOrDir(fs, file, dst);
       }
     }
   }
@@ -1180,7 +1209,7 @@ public final class Utilities {
           @Override
           public Void call() throws HiveException {
             try {
-              Utilities.moveFile(fs, file, dst);
+              Utilities.moveFileOrDir(fs, file, dst);
             } catch (Exception e) {
               throw new HiveException(e);
             }
@@ -1194,39 +1223,7 @@ public final class Utilities {
     }
   }
 
-  /**
-   * The first group will contain the task id. The second group is the optional extension. The file
-   * name looks like: "0_0" or "0_0.gz". There may be a leading prefix (tmp_). Since getTaskId() can
-   * return an integer only - this should match a pure integer as well. {1,6} is used to limit
-   * matching for attempts #'s 0-999999.
-   */
-  private static final Pattern FILE_NAME_TO_TASK_ID_REGEX =
-      Pattern.compile("^.*?([0-9]+)(_[0-9]{1,6})?(\\..*)?$");
-
-  /**
-   * Some jobs like "INSERT INTO" jobs create copies of files like 0000001_0_copy_2.
-   * For such files,
-   * Group 1: 00000001 [taskId]
-   * Group 3: 0        [task attempId]
-   * Group 4: _copy_2  [copy suffix]
-   * Group 6: copy     [copy keyword]
-   * Group 8: 2        [copy file index]
-   */
   public static final String COPY_KEYWORD = "_copy_"; // copy keyword
-  private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX =
-      Pattern.compile("^.*?"+ // any prefix
-                      "([0-9]+)"+ // taskId
-                      "(_)"+ // separator
-                      "([0-9]{1,6})?"+ // attemptId (limited to 6 digits)
-                      "((_)(\\Bcopy\\B)(_)" +
-                      "([0-9]{1,6})$)?"+ // copy file index
-                      "(\\..*)?$"); // any suffix/file extension
-
-  /**
-   * This retruns prefix part + taskID for bucket join for partitioned table
-   */
-  private static final Pattern FILE_NAME_PREFIXED_TASK_ID_REGEX =
-      Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,6})?(\\..*)?$");
 
   /**
    * This breaks a prefixed bucket number into the prefix and the taskID
@@ -1247,7 +1244,7 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
-    return getTaskIdFromFilename(filename, FILE_NAME_TO_TASK_ID_REGEX);
+    return getIdFromFilename(filename, false, false);
   }
 
   /**
@@ -1258,33 +1255,38 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   private static String getPrefixedTaskIdFromFilename(String filename) {
-    return getTaskIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
-  }
-
-  private static String getTaskIdFromFilename(String filename, Pattern pattern) {
-    return getIdFromFilename(filename, pattern, 1);
+    return getIdFromFilename(filename, true, false);
   }
 
   private static int getAttemptIdFromFilename(String filename) {
-    String attemptStr = getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX, 3);
-    return Integer.parseInt(attemptStr.substring(1));
+    return Integer.parseInt(getIdFromFilename(filename, true, true));
   }
 
-  private static String getIdFromFilename(String filename, Pattern pattern, int group) {
-    String taskId = filename;
-    int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
+  private static String getIdFromFilename(String filepath, boolean isPrefixed, boolean isTaskAttempt) {
+    String filename = filepath;
+    int dirEnd = filepath.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
-      taskId = filename.substring(dirEnd + 1);
+      filename = filepath.substring(dirEnd + 1);
     }
 
-    Matcher m = pattern.matcher(taskId);
-    if (!m.matches()) {
-      LOG.warn("Unable to get task id from file name: {}. Using last component {}"
-          + " as task id.", filename, taskId);
+    ParsedOutputFileName parsedOutputFileName = ParsedOutputFileName.parse(filename);
+    String taskId;
+    if (parsedOutputFileName.matches()) {
+      if (isTaskAttempt) {
+        taskId = parsedOutputFileName.getAttemptId();
+      } else {
+        taskId = isPrefixed ? parsedOutputFileName.getPrefixedTaskId() : parsedOutputFileName.getTaskId();
+      }
     } else {
-      taskId = m.group(group);
+      taskId = filename;
+      LOG.warn("Unable to get task id from file name: {}. Using last component {}"
+          + " as task id.", filepath, taskId);
     }
-    LOG.debug("TaskId for {} = {}", filename, taskId);
+    if (isTaskAttempt) {
+      LOG.debug("TaskAttemptId for {} = {}", filepath, taskId);
+    } else {
+      LOG.debug("TaskId for {} = {}", filepath, taskId);
+    }
     return taskId;
   }
 
@@ -1570,7 +1572,7 @@ public final class Utilities {
           public Void call() throws HiveException {
             try {
               LOG.debug("Moving from {} to {} ", fileStatus.getPath(), dst);
-              Utilities.moveFile(fs, fileStatus, dst);
+              Utilities.moveFileOrDir(fs, fileStatus, dst);
             } catch (Exception e) {
               throw new HiveException(e);
             }
@@ -2029,27 +2031,18 @@ public final class Utilities {
     return toRetain;
   }
 
-  public static boolean isCopyFile(String filename) {
-    String taskId = filename;
-    String copyFileSuffix = null;
-    int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
+  public static boolean isCopyFile(String filepath) {
+    String filename = filepath;
+    int dirEnd = filepath.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
-      taskId = filename.substring(dirEnd + 1);
+      filename = filepath.substring(dirEnd + 1);
     }
-    Matcher m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(taskId);
-    if (!m.matches()) {
-      LOG.warn("Unable to verify if file name {} has _copy_ suffix.", filename);
-    } else {
-      taskId = m.group(1);
-      copyFileSuffix = m.group(4);
+    ParsedOutputFileName parsedFileName = ParsedOutputFileName.parse(filename);
+    if (!parsedFileName.matches()) {
+      LOG.warn("Unable to verify if file name {} has _copy_ suffix.", filepath);
     }
-
-    LOG.debug("Filename: {} TaskId: {} CopySuffix: {}", filename, taskId, copyFileSuffix);
-    if (taskId != null && copyFileSuffix != null) {
-      return true;
-    }
-
-    return false;
+    LOG.debug("ParsedFilename: {}", parsedFileName);
+    return parsedFileName.isCopyFile();
   }
 
   public static String getBucketFileNameFromPathSubString(String bucketName) {
