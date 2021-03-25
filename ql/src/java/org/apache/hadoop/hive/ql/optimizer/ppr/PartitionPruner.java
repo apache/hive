@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -51,11 +52,21 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -68,7 +79,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+
+import com.google.common.collect.Sets;
 
 /**
  * The transformation step that does partition pruning.
@@ -418,24 +430,62 @@ public class PartitionPruner extends Transform {
     return expr;
   }
 
+  interface Filter {
+    boolean isSupported(ExprNodeGenericFuncDesc fn);
+  }
   /**
    * @param expr Expression.
    * @return True iff expr contains any non-native user-defined functions.
    */
-  static private boolean hasUserFunctions(ExprNodeDesc expr) {
+  static private boolean hasUserFunctions(ExprNodeDesc expr, Filter supportedFn) {
     if (!(expr instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    if (!FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc) expr)) {
+    if (!supportedFn.isSupported((ExprNodeGenericFuncDesc) expr)) {
       return true;
     }
     for (ExprNodeDesc child : expr.getChildren()) {
-      if (hasUserFunctions(child)) {
+      if (hasUserFunctions(child, supportedFn)) {
         return true;
       }
     }
     return false;
   }
+
+  /**
+   * List of supported UDFs by the metastore Filter.g language
+   */
+  private static final Set<Class<?>> METASTORE_FILTER_UDFS = Sets.newHashSet(
+        GenericUDFOPAnd.class,
+        GenericUDFOPOr.class,
+        GenericUDFBetween.class,
+        GenericUDFIn.class,
+        GenericUDFOPEqual.class,
+        GenericUDFOPEqualOrGreaterThan.class,
+        GenericUDFOPEqualOrLessThan.class,
+        GenericUDFOPGreaterThan.class,
+        GenericUDFOPLessThan.class,
+        GenericUDFOPNotEqual.class
+      );
+
+  public  static boolean metastoreFilterFunctions(ExprNodeGenericFuncDesc fnExpr) {
+    GenericUDF udf = fnExpr.getGenericUDF();
+    if (udf == null) {
+      return false;
+    }
+
+    Class<?> clazz = udf.getClass();
+    if (udf instanceof GenericUDFBridge) {
+      clazz = ((GenericUDFBridge)udf).getUdfClass();
+    }
+    return METASTORE_FILTER_UDFS.contains(clazz);
+  }
+
+  private static boolean metastoreUsesPlainObjectStore(HiveConf conf) {
+    String storeImpl = conf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL);
+    return "org.apache.hadoop.hive.metastore.ObjectStore".equals(storeImpl);
+  }
+
 
   private static PrunedPartitionList getPartitionsFromServer(Table tab, final String key, final ExprNodeGenericFuncDesc compactExpr,
       HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
@@ -443,7 +493,12 @@ public class PartitionPruner extends Transform {
 
       // Finally, check the filter for non-built-in UDFs. If these are present, we cannot
       // do filtering on the server, and have to fall back to client path.
-      boolean doEvalClientSide = hasUserFunctions(compactExpr);
+      boolean doEvalClientSide = false;
+      if (metastoreUsesPlainObjectStore(conf)) {
+        doEvalClientSide = hasUserFunctions(compactExpr, FunctionRegistry::isBuiltInFuncExpr);
+      } else {
+        doEvalClientSide = hasUserFunctions(compactExpr, PartitionPruner::metastoreFilterFunctions);
+      }
 
       // Now filter.
       List<Partition> partitions = new ArrayList<Partition>();

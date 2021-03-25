@@ -127,7 +127,7 @@ public class OperatorGraph {
     public Set<Cluster> childClusters(OperatorEdgePredicate traverseEdge) {
       Set<Cluster> ret = new HashSet<Cluster>();
       for (Operator<?> operator : members) {
-        for (Operator<? extends OperatorDesc> p : operator.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> p : g.successors(operator)) {
           if (members.contains(p)) {
             continue;
           }
@@ -143,6 +143,7 @@ public class OperatorGraph {
     public Set<Operator<?>> getMembers() {
       return Collections.unmodifiableSet(members);
     }
+
   }
 
 
