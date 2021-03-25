@@ -1,0 +1,65 @@
+PREHOOK: query: DROP TABLE src_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE src_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE src_table (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_table
+POSTHOOK: query: CREATE TABLE src_table (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE src_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE src_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_table
+PREHOOK: query: select assert_true(count(*) = 100) from src_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_table
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(count(*) = 100) from src_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select count(*) from src_table where key in (355.8)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src_table where key in (355.8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from src_table where key in (1.0, 0.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src_table where key in (1.0, 0.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_table
+#### A masked pattern was here ####
+100
+PREHOOK: query: select count(*) from src_table where key not in (355.8)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src_table where key not in (355.8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_table
+#### A masked pattern was here ####
+100
+PREHOOK: query: select count(*) from src_table where key not in (1.0, 0.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src_table where key not in (1.0, 0.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_table
+#### A masked pattern was here ####
+0
