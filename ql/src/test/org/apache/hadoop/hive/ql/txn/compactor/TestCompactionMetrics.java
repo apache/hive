@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -42,10 +43,14 @@ import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -401,7 +406,9 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
 
-    Table t = newTable("default", "dcamc", false);
+    String dbName = "default";
+     String tblName = "dcamc";
+    Table t = newTable(dbName, tblName, false);
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
 
     // create and commit txn with non-empty txn_components
@@ -444,6 +451,39 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
+
+    start = System.currentTimeMillis() - 1000L;
+    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(27L, 29L)));
+    Thread.sleep(1000);
+    runAcidMetricService();
+    diff = (System.currentTimeMillis() - start) / 1000;
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE_IN_SEC).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE_IN_SEC).intValue() >= 1);
+
+    Assert.assertEquals(27L, Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
+
+    Assert.assertEquals(2, Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS_IN_TXNS).intValue());
+  }
+
+  @Test
+  public void testTxnHandlerCounters() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    // re-initialize with metrics enabled
+    ms = new HiveMetaStoreClient(conf);
+    txnHandler = TxnUtils.getTxnStore(conf);
+
+    String dbName = "default";
+    String tblName = "txnhandlercounters";
+
+    Table t = newTable(dbName, tblName, false);
+
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Arrays.asList(2L, 3L)));
+    Assert.assertEquals(2, Metrics.getOrCreateCounter(MetricsConstants.NUM_ABORTED_WRITE_TXNS).getCount());
+    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.NUM_COMMITTED_TXNS).getCount());
+
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Collections.singletonList(4L)));
+    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.NUM_ABORTED_WRITE_TXNS).getCount());
+    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.NUM_COMMITTED_TXNS).getCount());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,

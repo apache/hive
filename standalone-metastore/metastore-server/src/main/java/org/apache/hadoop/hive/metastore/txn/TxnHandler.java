@@ -155,6 +155,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Counter;
 import com.google.common.base.Splitter;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -283,7 +284,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final String SELECT_METRICS_INFO_QUERY =
       "SELECT * FROM (SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\") \"TTWID\" CROSS JOIN (" +
       "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\") \"CTC\" CROSS JOIN (" +
-      "SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\"";
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\" " +
+      "CROSS JOIN (SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.ABORTED + ") \"A\" ";
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -1453,6 +1455,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         createCommitNotificationEvent(dbConn, txnid , txnType);
+        Metrics.getOrCreateCounter(MetricsConstants.NUM_COMMITTED_TXNS).inc();
 
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -3651,7 +3654,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       MetricsInfo metrics = new MetricsInfo();
-      String s = String.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
+      String s = String.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct), getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
@@ -3663,6 +3666,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           metrics.setOpenTxnsCount(rs.getInt(3));
           metrics.setOldestOpenTxnId(rs.getInt(4));
           metrics.setOldestOpenTxnAge(rs.getInt(5));
+          metrics.setAbortedTxnsCount(rs.getInt(6));
+          metrics.setOldestAbortedTxnId(rs.getInt(7));
+          metrics.setOldestAbortedTxnAge(rs.getInt(8));
         }
         return metrics;
       } catch (SQLException e) {
@@ -4578,6 +4584,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE ");
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
+      Metrics.getOrCreateCounter(MetricsConstants.NUM_ABORTED_WRITE_TXNS).inc(txnids.size());
       // execute all queries in the list in one batch
       if (skipCount) {
         executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
@@ -5224,6 +5231,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
+        Metrics.getOrCreateCounter(MetricsConstants.NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
       }
     } catch (SQLException ex) {
       LOG.warn("Aborting timed out transactions failed due to " + getMessage(ex), ex);
