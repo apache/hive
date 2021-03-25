@@ -163,10 +163,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDeletedRowPropagator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsPropagator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2467,14 +2468,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               if (visitor.isContainsAggregate()) {
                 return calcitePreMVRewritingPlan;
               }
-//              CalcitePlanner.this.ctx.fetchDeletedRows(tablesUsedQuery);
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveJoinIncrementalRewritingRule.INSTANCE);
+                  HiveFetchDeletedRowsRule.fetchFrom(tablesUsedQuery), HiveJoinIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
-              basePlan = new HiveDeletedRowPropagator(
-                  HiveRelFactories.HIVE_BUILDER.create(this.cluster, null),
-                  tablesUsedQuery)
-                  .propagate(basePlan);
               return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             } else {
               // Trigger rewriting to remove UNION branch with MV

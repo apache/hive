@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.optimizer.calcite;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,6 +15,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
@@ -24,6 +25,8 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -33,12 +36,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
+public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
 
   private final RelBuilder relBuilder;
   private final Set<String> tables;
 
-  public HiveDeletedRowPropagator(RelBuilder relBuilder, List<String> tables) {
+  public HiveFetchDeletedRowsPropagator(RelBuilder relBuilder, List<String> tables) {
     this.relBuilder = relBuilder;
     this.tables = new HashSet(tables);
   }
