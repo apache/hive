@@ -863,9 +863,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         if (srcPoolName != null) {
           PoolState srcPool = pools.get(srcPoolName);
           if (srcPool != null) {
-            LOG.info("Move: {} is a delayed move.Since destination pool {} is full, running in source pool "
-                + "as long as possible.", moveSession, destPoolName);
-            srcPool.delayedMoveSessions.add(moveSession);
+            if (srcPool.delayedMoveSessions.add(moveSession)) {
+              LOG.info("Move: {} is a delayed move. Since destination pool {} is full, running in source pool "
+                  + "as long as possible.", moveSession, destPoolName);
+            }
           }
         }
         moveSession.future.set(false);
