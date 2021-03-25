@@ -103,7 +103,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
-import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductHandler;
@@ -172,13 +171,6 @@ public class TezCompiler extends TaskCompiler {
 
   @Override
   protected void optimizeOperatorPlan(ParseContext pCtx) throws SemanticException {
-
-    try {
-      new OperatorGraph(pCtx).toDot(new java.io.File("/tmp/a.dot"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
     PerfLogger perfLogger = SessionState.getPerfLogger();
     // Create the context for the walker
     OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx);
@@ -245,24 +237,12 @@ public class TezCompiler extends TaskCompiler {
 
     semijoinRemovalBasedTransformations(procCtx);
 
-    try {
-      new OperatorGraph(pCtx).toDot(new java.io.File("/tmp/a0.dot"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
       new ParallelEdgeFixer().transform(procCtx.parseContext);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
-
-    try {
-      new OperatorGraph(pCtx).toDot(new java.io.File("/tmp/a1.dot"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
@@ -280,12 +260,6 @@ public class TezCompiler extends TaskCompiler {
     if (procCtx.conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       bucketingVersionSanityCheck(procCtx);
     }
-    try {
-      new OperatorGraph(pCtx).toDot(new java.io.File("/tmp/b.dot"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx) throws SemanticException {

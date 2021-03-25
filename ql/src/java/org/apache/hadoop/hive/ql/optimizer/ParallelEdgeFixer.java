@@ -117,14 +117,14 @@ public class ParallelEdgeFixer extends Transform {
     // Identify edge operators
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
         new ArrayListValuedHashMap<>();
-    for (Cluster cluster : og.getClusters()) {
-      for (Operator<?> o : cluster.getMembers()) {
-        for (Operator<? extends OperatorDesc> c : o.getChildOperators()) {
-          Cluster childCluster = og.clusterOf(c);
-          if (childCluster == cluster) {
+    for (Cluster c : og.getClusters()) {
+      for (Operator<?> o : c.getMembers()) {
+        for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
+          Cluster parentCluster = og.clusterOf(p);
+          if (parentCluster == c) {
             continue;
           }
-          edgeOperators.put(new Pair<>(cluster, childCluster), new Pair<>(o, c));
+          edgeOperators.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
         }
       }
     }
