@@ -3622,7 +3622,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
 
-      FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
+      tables = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
     } catch (MetaException | InvalidOperationException | UnknownDBException e) {
       ex = e;
       throw e;

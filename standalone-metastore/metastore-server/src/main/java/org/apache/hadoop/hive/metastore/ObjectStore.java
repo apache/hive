@@ -1862,18 +1862,23 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       query = pm.newQuery(MTable.class);
-
-      if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null) {
-        query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName) && tableName.matches(tablePattern)");
-        query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names, java.lang.String tablePattern");
-      }else if(tablePattern == null) {
-        query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
-        query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
-      }else{
-        query.setFilter("database.name == db && database.catalogName == cat && tableName.matches(tablePattern)");
-        query.declareParameters("java.lang.String db, java.lang.String cat, java.lang.String tablePattern");
+      if(tablePattern != null && tablePattern.equals("*")){
+        tablePattern = ".*";
       }
-
+      String filterCondition = "database.name == db && database.catalogName == cat";
+      String filterParameters = "java.lang.String db, java.lang.String cat";
+      if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null) {
+        filterCondition = filterCondition + " && tbl_names.contains(tableName) && tableName.matches(tablePattern)";
+        filterParameters = filterParameters + ", java.util.Collection tbl_names, java.lang.String tablePattern";
+      }else if(tablePattern == null) {
+        filterCondition = filterCondition + " && tbl_names.contains(tableName)";
+        filterParameters = filterParameters +", java.util.Collection tbl_names";
+      }else{
+        filterCondition = filterCondition + " && tableName.matches(tablePattern)";
+        filterParameters = filterParameters +", java.lang.String tablePattern";
+      }
+      query.setFilter(filterCondition);
+      query.declareParameters(filterParameters);
       List<String> projectionFields = null;
 
       // If a projection specification has been set, validate it and translate it to JDO columns.
@@ -1889,7 +1894,10 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (projectionFields == null) {
-        if(tablePattern == null) {
+        if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null){
+          mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names, tablePattern);
+        }
+        else if(tablePattern == null) {
           mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
         }else{
           mtables = (List<MTable>) query.execute(db, catName, tablePattern);
@@ -1898,7 +1906,10 @@ public class ObjectStore implements RawStore, Configurable {
         if (projectionFields.size() > 1) {
           // Execute the query to fetch the partial results.
           List<Object[]> results = new ArrayList<>();
-          if(tablePattern == null) {
+          if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null){
+            results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names, tablePattern);
+          }
+          else if(tablePattern == null) {
             results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
           }else{
             results = (List<Object[]>) query.execute(db, catName, tablePattern);
@@ -1918,7 +1929,10 @@ public class ObjectStore implements RawStore, Configurable {
         } else if (projectionFields.size() == 1) {
           // Execute the query to fetch the partial results.
           List<Object[]> results = new ArrayList<>();
-          if(tablePattern == null) {
+          if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null){
+            mtables = (List<Object[]>) query.execute(db, catName, lowered_tbl_names, tablePattern);
+          }
+          else if(tablePattern == null) {
             results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
           }else{
             results = (List<Object[]>) query.execute(db, catName, tablePattern);
