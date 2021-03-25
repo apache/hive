@@ -1593,7 +1593,7 @@ public final class FunctionRegistry {
       return false;
     }
 
-    Class clazz = udf.getClass();
+    Class<?> clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
       clazz = ((GenericUDFBridge)udf).getUdfClass();
     }
