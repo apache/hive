@@ -167,6 +167,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvid
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsRule2;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2468,8 +2469,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 return calcitePreMVRewritingPlan;
               }
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveFetchDeletedRowsRule.fetchFrom(tablesUsedQuery), HiveJoinIncrementalRewritingRule.INSTANCE);
+                  HiveJoinIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
+              basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+              basePlan = applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+
+              program = new HepProgramBuilder();
+              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                  new HiveFetchDeletedRowsRule2());
               return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             } else {
               // Trigger rewriting to remove UNION branch with MV

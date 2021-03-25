@@ -80,8 +80,8 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
             .push(union.getInput(1))
             .push(union.getInput(0))
             .join(JoinRelType.RIGHT, joinCond)
-            .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR,
-                    rowIsDeleted, rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted)))
+//            .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR,
+//                    rowIsDeleted, rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted)))
             .project(projExprs)
             .build();
     call.transformTo(newNode);
