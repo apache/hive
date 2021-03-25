@@ -1,1 +1,1 @@
-FAILED: CalciteSubquerySemanticException [Error 10249]: Line 7:8 Unsupported SubQuery Expression 'p_brand': Correlated Sub Queries cannot contain Windowing clauses.
+FAILED: CalciteSubquerySemanticException [Error 10249]: Line 7:8 Unsupported SubQuery Expression 'p_brand': Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses.
