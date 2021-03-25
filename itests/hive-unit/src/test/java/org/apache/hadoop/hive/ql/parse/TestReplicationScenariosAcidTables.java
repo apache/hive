@@ -355,10 +355,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   @Test
   public void testFailoverWithNoOpenTxns() throws Throwable {
-    WarehouseInstance.Tuple dumpData = null;
-
     List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
-    dumpData = primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple dumpData = primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
