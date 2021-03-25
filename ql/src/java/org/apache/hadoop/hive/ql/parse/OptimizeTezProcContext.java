@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
@@ -45,9 +43,6 @@ public class OptimizeTezProcContext implements NodeProcessorCtx {
 
   public final ParseContext parseContext;
   public final HiveConf conf;
-
-  public final Set<ReadEntity> inputs;
-  public final Set<WriteEntity> outputs;
 
   /* Two of the optimization rules, ConvertJoinMapJoin and RemoveDynamicPruningBySize, are put into
      stats dependent optimizations and run together in TezCompiler. There's no guarantee which one
@@ -72,13 +67,10 @@ public class OptimizeTezProcContext implements NodeProcessorCtx {
   // of traversal
   public Deque<Operator<? extends OperatorDesc>> rootOperators;
 
-  public OptimizeTezProcContext(HiveConf conf, ParseContext parseContext, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs) {
+  public OptimizeTezProcContext(HiveConf conf, ParseContext parseContext) {
 
     this.conf = conf;
     this.parseContext = parseContext;
-    this.inputs = inputs;
-    this.outputs = outputs;
     this.pruningOpsRemovedByPriorOpt = new HashSet<AppMasterEventOperator>();
   }
 
