@@ -201,10 +201,10 @@ public class PartitionPruner extends Transform {
 
     Set<String> partColsUsedInFilter = new LinkedHashSet<String>();
     // Replace virtual columns with nulls. See javadoc for details.
-    ExprNodeDesc prunerExpr1 = removeNonPartCols(prunerExpr.clone(), extractPartColNames(tab), partColsUsedInFilter);
+    prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
     // Remove all parts that are not partition columns. See javadoc for details.
-    ExprNodeDesc compactExpr = compactExpr(prunerExpr1.clone());
-    String oldFilter = prunerExpr1.getExprString(true);
+    ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
+    String oldFilter = prunerExpr.getExprString(true);
     if (compactExpr == null || isBooleanExpr(compactExpr)) {
       if (isFalseExpr(compactExpr)) {
         return new PrunedPartitionList(tab, key + compactExpr.getExprString(true),
@@ -539,7 +539,6 @@ public class PartitionPruner extends Transform {
     return partColTypeInfos;
   }
 
-
   /**
    * Prunes partition names to see if they match the prune expression.
    * @param partColumnNames name of partition columns
@@ -552,22 +551,6 @@ public class PartitionPruner extends Transform {
   public static boolean prunePartitionNames(List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos, ExprNodeGenericFuncDesc prunerExpr,
       String defaultPartitionName, List<String> partNames) throws HiveException, MetaException {
-    return prunePartitionNames(partColumnNames, partColumnTypeInfos, prunerExpr, defaultPartitionName, partNames,
-        false);
-  }
-
-  /**
-   * Prunes partition names to see if they match the prune expression.
-   * @param partColumnNames name of partition columns
-   * @param partColumnTypeInfos types of partition columns
-   * @param prunerExpr The expression to match.
-   * @param defaultPartitionName name of default partition
-   * @param partNames Partition names to filter. The list is modified in place.
-   * @return Whether the list has any partitions for which the expression may or may not match.
-   */
-  public static boolean prunePartitionNames(List<String> partColumnNames, List<PrimitiveTypeInfo> partColumnTypeInfos,
-      ExprNodeGenericFuncDesc prunerExpr, String defaultPartitionName, List<String> partNames, boolean unknownAsFalse)
-      throws HiveException, MetaException {
     // Prepare the expression to filter on the columns.
     Pair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =
         PartExprEvalUtils.prepareExpr(prunerExpr, partColumnNames, partColumnTypeInfos);
