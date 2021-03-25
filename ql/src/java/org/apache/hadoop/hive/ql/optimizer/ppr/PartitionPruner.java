@@ -462,6 +462,10 @@ public class PartitionPruner extends Transform {
           perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
         }
       }
+
+      boolean runClientSideFiltering = doEvalClientSide;
+      //      boolean expressionIsSafe = isPruningByExactFilter &&
+
       if (doEvalClientSide) {
         // Either we have user functions, or metastore is old version - filter names locally.
         hasUnknownPartitions = pruneBySequentialScan(tab, partitions, compactExpr, conf);
