@@ -43,30 +43,30 @@ public class QBSubQueryParseInfo {
       hasAggregateExprs = hasAggregateExprs | ( r == 1 | r== 2 );
     }
 
-    boolean noImplicityGby = true;
+    boolean hasExplicitGby = false;
     for(int i=0; i<insertClause.getChildCount(); i++) {
       if(insertClause.getChild(i).getType() == HiveParser.TOK_GROUPBY) {
-        noImplicityGby = false;
+        hasExplicitGby = true;
         break;
       }
     }
 
-    return new QBSubQueryParseInfo(hasAggregateExprs, noImplicityGby, buildSQOperator(subQueryOperatorAST));
+    return new QBSubQueryParseInfo(hasAggregateExprs, hasExplicitGby, buildSQOperator(subQueryOperatorAST));
   }
 
-  public QBSubQueryParseInfo(boolean hasAggregateExprs, boolean noImplicityGby, QBSubQuery.SubQueryTypeDef operator) {
+  public QBSubQueryParseInfo(boolean hasAggregateExprs, boolean hasExplicitGby, QBSubQuery.SubQueryTypeDef operator) {
     this.hasAggregateExprs = hasAggregateExprs;
-    this.noImplicityGby = noImplicityGby;
+    this.hasExplicitGby = hasExplicitGby;
     this.operator = operator;
   }
 
   private final boolean hasAggregateExprs;
-  private final boolean noImplicityGby;
+  private final boolean hasExplicitGby;
   private final QBSubQuery.SubQueryTypeDef operator;
   private RelNode subQueryRelNode;
 
   public boolean hasFullAggregate() {
-    return hasAggregateExprs && noImplicityGby;
+    return hasAggregateExprs && !hasExplicitGby;
   }
 
   public QBSubQuery.SubQueryTypeDef getOperator() {
