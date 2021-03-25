@@ -2473,4 +2473,35 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .verifyResults(new String[] { "bangalore", "paris", "sydney" })
       .verifyReplTargetProperty(replicatedDbName);
   }
+
+  @Test
+  public void testTransactionalTableReplWithSameNameAsDroppedNonTransactionalTable() throws Throwable {
+    List<String> withClauseOptions = new LinkedList<>();
+    withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname
+        + "'='" + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    primary
+        .run("use " + primaryDbName)
+        .run("create table t1 (id int)")
+        .run("insert into table t1 values (1)")
+        .dump(primaryDbName, withClauseOptions);
+
+    replica.load(replicatedDbName, primaryDbName)
+        .run("use " + replicatedDbName)
+        .run("select id from t1")
+        .verifyResults(new String[] {"1"});
+
+    primary
+        .run("use " + primaryDbName)
+        .run("drop table t1")
+        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+            "tblproperties (\"transactional\"=\"true\")")
+        .run("insert into table t1 values (2)")
+        .dump(primaryDbName, withClauseOptions);
+
+    replica.load(replicatedDbName, primaryDbName)
+        .run("use " + replicatedDbName)
+        .run("select id from t1")
+        .verifyResults(new String[] {"2"});
+  }
 }
