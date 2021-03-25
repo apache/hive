@@ -19,10 +19,14 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
@@ -72,7 +76,11 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
     List<RexNode> projects;
     List<String> projectNames;
     if (column == null) {
-      RexNode propagatedColumn = rexBuilder.makeLiteral(false);
+      RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+      RexNode propagatedColumn = rexBuilder.makeLiteral(
+          Boolean.FALSE,
+          typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BOOLEAN), true),
+          false);
       projects = new ArrayList<>(tableRowType.getFieldCount() + 1);
       projectNames = new ArrayList<>(tableRowType.getFieldCount() + 1);
       populateProjects(rexBuilder, tableRowType, projects, projectNames);
@@ -136,28 +144,50 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
             rightRowType.getFieldList().get(rightRowIsDeletedIndex).getType(),
             leftRowType.getFieldCount() + rightRowIsDeletedIndex);
 
-    List<RexNode> projects = new ArrayList<>(join.getRowType().getFieldCount() + 1);
-    List<String> projectNames = new ArrayList<>(join.getRowType().getFieldCount() + 1);
-    populateProjects(rexBuilder, leftRowType, 0, projects, projectNames);
-    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), projects, projectNames);
+    List<RexNode> projects = new ArrayList<>(leftRowType.getFieldCount() + rightRowType.getFieldCount() - 1);
+    List<String> projectNames = new ArrayList<>(leftRowType.getFieldCount() + rightRowType.getFieldCount() - 1);
+    populateProjects(rexBuilder, leftRowType, 0, leftRowType.getFieldCount() - 1, projects, projectNames);
+    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), rightRowType.getFieldCount() - 1, projects, projectNames);
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
     projectNames.add("rowIsDeleted");
+
+    RexNode newJoinCondition = new JoinConditionShifter(leftRowType.getFieldCount() - 1, relBuilder)
+        .apply(join.getCondition());
 
     return relBuilder
             .push(leftInput)
             .push(rightInput)
-            .join(join.getJoinType(), join.getCondition())
+            .join(join.getJoinType(), newJoinCondition)
             .project(projects)
             .build();
   }
 
+  private static class JoinConditionShifter extends RexShuttle {
+    private final int rightStartIndex;
+    private final RelBuilder relBuilder;
+
+    private JoinConditionShifter(int rightStartIndex, RelBuilder relBuilder) {
+      this.rightStartIndex = rightStartIndex;
+      this.relBuilder = relBuilder;
+    }
+
+    @Override
+    public RexNode visitInputRef(RexInputRef inputRef) {
+      if (inputRef.getIndex() >= rightStartIndex) {
+        RexBuilder rexBuilder = relBuilder.getRexBuilder();
+        return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + 1);
+      }
+      return inputRef;
+    }
+  }
+
   private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType,
                                 List<RexNode> projects, List<String> projectNames) {
-    populateProjects(rexBuilder, inputRowType, 0, projects, projectNames);
+    populateProjects(rexBuilder, inputRowType, 0, inputRowType.getFieldCount(), projects, projectNames);
   }
-  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, int offset,
+  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, int offset, int length,
                                 List<RexNode> projects, List<String> projectNames) {
-    for (int i = 0; i < inputRowType.getFieldCount(); ++i) {
+    for (int i = 0; i < length; ++i) {
       RelDataTypeField relDataTypeField = inputRowType.getFieldList().get(i);
       projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), offset + i));
       projectNames.add(relDataTypeField.getName());
