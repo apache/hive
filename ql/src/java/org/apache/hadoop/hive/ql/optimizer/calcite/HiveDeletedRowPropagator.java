@@ -17,7 +17,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
  */
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -61,7 +60,7 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
   }
 
   @Override
-  public RelNode visit(TableScan scan) {
+  public RelNode visit(HiveTableScan scan) {
     RelDataType tableRowType = scan.getTable().getRowType();
     RelDataTypeField column = tableRowType.getField(
             VirtualColumn.ROWISDELETED.getName(), false, false);
@@ -87,14 +86,13 @@ public class HiveDeletedRowPropagator extends HiveRelShuttleImpl {
       projectNames.add(propagatedColumnName);
     }
 
-    HiveTableScan hts = (HiveTableScan) scan;
-    RelOptHiveTable relOptHiveTable = (RelOptHiveTable) hts.getTable();
+    RelOptHiveTable relOptHiveTable = (RelOptHiveTable) scan.getTable();
     if (tables.contains(relOptHiveTable.getName())) {
-      hts = hts.withFetchDeletedRows();
+      scan = scan.withFetchDeletedRows();
     }
 
     return relBuilder
-            .push(hts)
+            .push(scan)
             .project(projects, projectNames)
             .build();
   }
