@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -455,7 +454,7 @@ public class PartitionPruner extends Transform {
   /**
    * List of supported UDFs by the metastore Filter.g language
    */
-  private static final Set<Class<?>> METASTORE_FILTER_UDFS = Sets.newHashSet(
+  private static final Set<Class<?>> SAFE_FILTER_UDFS = Sets.newHashSet(
         GenericUDFOPAnd.class,
         GenericUDFOPOr.class,
         GenericUDFBetween.class,
@@ -468,7 +467,7 @@ public class PartitionPruner extends Transform {
         GenericUDFOPNotEqual.class
       );
 
-  public  static boolean metastoreFilterFunctions(ExprNodeGenericFuncDesc fnExpr) {
+  public static boolean safeFilterFunctions(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
     if (udf == null) {
       return false;
@@ -478,14 +477,8 @@ public class PartitionPruner extends Transform {
     if (udf instanceof GenericUDFBridge) {
       clazz = ((GenericUDFBridge)udf).getUdfClass();
     }
-    return METASTORE_FILTER_UDFS.contains(clazz);
+    return SAFE_FILTER_UDFS.contains(clazz);
   }
-
-  private static boolean metastoreUsesPlainObjectStore(HiveConf conf) {
-    String storeImpl = conf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL);
-    return "org.apache.hadoop.hive.metastore.ObjectStore".equals(storeImpl);
-  }
-
 
   private static PrunedPartitionList getPartitionsFromServer(Table tab, final String key, final ExprNodeGenericFuncDesc compactExpr,
       HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
@@ -493,12 +486,7 @@ public class PartitionPruner extends Transform {
 
       // Finally, check the filter for non-built-in UDFs. If these are present, we cannot
       // do filtering on the server, and have to fall back to client path.
-      boolean doEvalClientSide = false;
-      if (metastoreUsesPlainObjectStore(conf)) {
-        doEvalClientSide = isExpressionUnsafe(compactExpr, PartitionPruner::metastoreFilterFunctions);
-      } else {
-        doEvalClientSide = isExpressionUnsafe(compactExpr, FunctionRegistry::isBuiltInFuncExpr);
-      }
+      boolean doEvalClientSide = isExpressionUnsafe(compactExpr, FunctionRegistry::isBuiltInFuncExpr);
 
       // Now filter.
       List<Partition> partitions = new ArrayList<Partition>();
@@ -518,12 +506,12 @@ public class PartitionPruner extends Transform {
         }
       }
 
-      boolean runClientSideFiltering = doEvalClientSide;
-      //      boolean expressionIsSafe = isPruningByExactFilter &&
+      boolean expressionIsSafe =
+          isPruningByExactFilter && !isExpressionUnsafe(compactExpr, PartitionPruner::safeFilterFunctions);
 
-      if (doEvalClientSide) {
+      if (doEvalClientSide || expressionIsSafe) {
         // Either we have user functions, or metastore is old version - filter names locally.
-        hasUnknownPartitions = pruneBySequentialScan(tab, partitions, compactExpr, conf);
+        hasUnknownPartitions = pruneBySequentialScan(tab, partitions, compactExpr, conf, expressionIsSafe);
       }
       // The partitions are "unknown" if the call says so due to the expression
       // evaluator returning null for a partition, or if we sent a partial expression to
@@ -554,10 +542,11 @@ public class PartitionPruner extends Transform {
    * @param partitions the resulting partitions.
    * @param prunerExpr the SQL predicate that involves partition columns.
    * @param conf Hive Configuration object, can not be NULL.
+   * @param expressionIsSafe
    * @return true iff the partition pruning expression contains non-partition columns.
    */
   static private boolean pruneBySequentialScan(Table tab, List<Partition> partitions,
-      ExprNodeGenericFuncDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
+      ExprNodeGenericFuncDesc prunerExpr, HiveConf conf, boolean expressionIsSafe) throws HiveException, MetaException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
@@ -569,7 +558,7 @@ public class PartitionPruner extends Transform {
     List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
 
     boolean hasUnknownPartitions = prunePartitionNames(
-        partCols, partColTypeInfos, prunerExpr, defaultPartitionName, partNames);
+        partCols, partColTypeInfos, prunerExpr, defaultPartitionName, partNames, expressionIsSafe);
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
@@ -610,6 +599,22 @@ public class PartitionPruner extends Transform {
   public static boolean prunePartitionNames(List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos, ExprNodeGenericFuncDesc prunerExpr,
       String defaultPartitionName, List<String> partNames) throws HiveException, MetaException {
+    return prunePartitionNames(partColumnNames, partColumnTypeInfos, prunerExpr, defaultPartitionName, partNames,
+        false);
+  }
+
+  /**
+   * Prunes partition names to see if they match the prune expression.
+   * @param partColumnNames name of partition columns
+   * @param partColumnTypeInfos types of partition columns
+   * @param prunerExpr The expression to match.
+   * @param defaultPartitionName name of default partition
+   * @param partNames Partition names to filter. The list is modified in place.
+   * @return Whether the list has any partitions for which the expression may or may not match.
+   */
+  public static boolean prunePartitionNames(List<String> partColumnNames, List<PrimitiveTypeInfo> partColumnTypeInfos,
+      ExprNodeGenericFuncDesc prunerExpr, String defaultPartitionName, List<String> partNames, boolean unknownAsFalse)
+      throws HiveException, MetaException {
     // Prepare the expression to filter on the columns.
     Pair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =
         PartExprEvalUtils.prepareExpr(prunerExpr, partColumnNames, partColumnTypeInfos);
@@ -650,7 +655,8 @@ public class PartitionPruner extends Transform {
       // Evaluate the expression tree.
       Boolean isNeeded = (Boolean)PartExprEvalUtils.evaluateExprOnPart(handle, convertedValues);
       boolean isUnknown = (isNeeded == null);
-      if (!isUnknown && !isNeeded) {
+      boolean keep = unknownAsFalse ? (isNeeded == Boolean.TRUE) : (isNeeded != Boolean.FALSE);
+      if (!keep) {
         partIter.remove();
         continue;
       }
