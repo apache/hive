@@ -95,3 +95,4 @@ public class GenericUDFSQCountCheck extends GenericUDF {
   }
 
 }
+ 
