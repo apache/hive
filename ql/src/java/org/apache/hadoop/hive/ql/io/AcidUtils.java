@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -1866,6 +1867,13 @@ public class AcidUtils {
       return false;
     }
     return isTransactionalTable(table.getTblProps());
+  }
+
+  public static boolean isTransactionalTable(ImportTableDesc tblDesc) {
+    if (tblDesc == null || tblDesc.getTblProps() == null) {
+      return false;
+    }
+    return isTransactionalTable(tblDesc.getTblProps());
   }
 
   public static boolean isTransactionalTable(Map<String, String> props) {

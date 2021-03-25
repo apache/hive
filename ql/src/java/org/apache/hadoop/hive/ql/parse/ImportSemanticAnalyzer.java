@@ -1307,7 +1307,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // different partition flag. In this case, should go with current event's table type and so
       // create the dummy table object for adding repl tasks.
       boolean isOldTableValid = true;
-      if (table.isPartitioned() != isPartitioned(tblDesc)) {
+      if (table.isPartitioned() != isPartitioned(tblDesc) ||
+          (!AcidUtils.isTransactionalTable(table) && AcidUtils.isTransactionalTable(tblDesc))) {
         table = createNewTableMetadataObject(tblDesc, true);
         isOldTableValid = false;
       }
