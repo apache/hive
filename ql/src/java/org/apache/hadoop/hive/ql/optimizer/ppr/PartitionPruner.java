@@ -437,15 +437,15 @@ public class PartitionPruner extends Transform {
    * @param expr Expression.
    * @return True iff expr contains any non-native user-defined functions.
    */
-  static private boolean hasUserFunctions(ExprNodeDesc expr, Filter supportedFn) {
+  static private boolean isExpressionUnsafe(ExprNodeDesc expr, Filter safeFnFilter) {
     if (!(expr instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    if (!supportedFn.isSupported((ExprNodeGenericFuncDesc) expr)) {
+    if (!safeFnFilter.isSupported((ExprNodeGenericFuncDesc) expr)) {
       return true;
     }
     for (ExprNodeDesc child : expr.getChildren()) {
-      if (hasUserFunctions(child, supportedFn)) {
+      if (isExpressionUnsafe(child, safeFnFilter)) {
         return true;
       }
     }
@@ -495,9 +495,9 @@ public class PartitionPruner extends Transform {
       // do filtering on the server, and have to fall back to client path.
       boolean doEvalClientSide = false;
       if (metastoreUsesPlainObjectStore(conf)) {
-        doEvalClientSide = hasUserFunctions(compactExpr, FunctionRegistry::isBuiltInFuncExpr);
+        doEvalClientSide = isExpressionUnsafe(compactExpr, PartitionPruner::metastoreFilterFunctions);
       } else {
-        doEvalClientSide = hasUserFunctions(compactExpr, PartitionPruner::metastoreFilterFunctions);
+        doEvalClientSide = isExpressionUnsafe(compactExpr, FunctionRegistry::isBuiltInFuncExpr);
       }
 
       // Now filter.
