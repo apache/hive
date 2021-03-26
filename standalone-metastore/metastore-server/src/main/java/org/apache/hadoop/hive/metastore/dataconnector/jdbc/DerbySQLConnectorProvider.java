@@ -35,7 +35,7 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
       rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
+      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
     }
     return rs;
   }

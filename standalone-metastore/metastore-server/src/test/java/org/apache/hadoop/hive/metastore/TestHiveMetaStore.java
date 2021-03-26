@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,11 +28,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +47,6 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -3538,7 +3534,7 @@ public abstract class TestHiveMetaStore {
       assertEquals("type of data connector returned is different from the type inserted", postgres_type, dConn.getType());
       assertEquals("url of the data connector returned is different from the url inserted", postgres_url, dConn.getUrl());
 
-      List<String> connectors = client.getAllDataConnectors();
+      List<String> connectors = client.getAllDataConnectorNames();
       assertEquals("Number of dataconnectors returned is not as expected", 2, connectors.size());
 
       DataConnector connector1 = new DataConnector(connector);
@@ -3566,11 +3562,11 @@ public abstract class TestHiveMetaStore {
       assertEquals("Data connector owner type not as expected", PrincipalType.ROLE, dConn.getOwnerType());
 
       client.dropDataConnector(connector_name1, false, false);
-      connectors = client.getAllDataConnectors();
+      connectors = client.getAllDataConnectorNames();
       assertEquals("Number of dataconnectors returned is not as expected", 1, connectors.size());
 
       client.dropDataConnector(connector_name2, false, false);
-      connectors = client.getAllDataConnectors();
+      connectors = client.getAllDataConnectorNames();
       assertEquals("Number of dataconnectors returned is not as expected", 0, connectors.size());
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));

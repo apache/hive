@@ -1274,7 +1274,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
-  public List<String> getAllDataConnectors() throws MetaException {
+  public List<String> getAllDataConnectorNames() throws MetaException {
     try {
       client.get_dataconnectors(); // TODO run thru filterhook
     } catch (Exception e) {

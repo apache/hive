@@ -11,7 +11,7 @@ WITH DCPROPERTIES (
 "hive.sql.dbcp.password"="hive1");
 SHOW CONNECTORS;
 
--- CREATE INE already exists
+-- CREATE IF NOT EXISTS already
 CREATE CONNECTOR IF NOT EXISTS mysql_test
 TYPE 'mysql'
 URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
@@ -21,7 +21,7 @@ WITH DCPROPERTIES (
 "hive.sql.dbcp.password"="hive1");
 SHOW CONNECTORS;
 
--- CREATE INE already exists
+-- CREATE IF NOT EXISTS already
 CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
 URL 'jdbc:derby:./target/tmp/junit_metastore_db;create=true'
@@ -34,7 +34,7 @@ WITH DCPROPERTIES (
 DROP CONNECTOR mysql_test;
 SHOW CONNECTORS;
 
--- DROP IE exists
+-- DROP IF exists
 DROP CONNECTOR IF EXISTS mysql_test;
 SHOW CONNECTORS;
 

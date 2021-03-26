@@ -42,7 +42,7 @@ public class ShowDataConnectorsOperation extends DDLOperation<ShowDataConnectors
 
   @Override
   public int execute() throws HiveException {
-    List<String> connectors = context.getDb().getAllDataConnectors();
+    List<String> connectors = context.getDb().getAllDataConnectorNames();
     if (desc.getPattern() != null) {
       LOG.debug("pattern: {}", desc.getPattern());
       Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);

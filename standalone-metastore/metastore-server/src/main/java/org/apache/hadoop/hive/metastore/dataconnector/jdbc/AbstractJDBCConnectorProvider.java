@@ -145,6 +145,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       }
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
+      throw new MetaException("Error retrieving remote table:" + sqle);
     } finally {
       try {
         if (rs != null) {
@@ -214,12 +215,13 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     }
   }
 
-  private ResultSet fetchTableViaDBMetaData(String tableName) {
+  private ResultSet fetchTableViaDBMetaData(String tableName) throws SQLException {
     ResultSet rs = null;
     try {
       rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
+      throw sqle;
     }
     return rs;
   }

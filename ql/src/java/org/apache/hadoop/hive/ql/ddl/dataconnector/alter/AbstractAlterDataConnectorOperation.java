@@ -39,11 +39,11 @@ public abstract class AbstractAlterDataConnectorOperation<T extends AbstractAlte
     String dcName = desc.getConnectorName();
     DataConnector connector = context.getDb().getDataConnector(dcName);
     if (connector == null) {
-      throw new HiveException(ErrorMsg.DATACONNECTOR_ALREADY_EXISTS, dcName);
+      throw new HiveException(ErrorMsg.DATACONNECTOR_NOT_EXISTS, dcName);
     }
 
     Map<String, String> params = connector.getParameters();
-    if ((null != desc.getReplicationSpec()) &&
+    if ((desc.getReplicationSpec() != null) &&
         !desc.getReplicationSpec().allowEventReplacementInto(params)) {
       LOG.debug("DDLTask: Alter Connector {} is skipped as connector is newer than update", dcName);
       return 0; // no replacement, the existing connector state is newer than our update.

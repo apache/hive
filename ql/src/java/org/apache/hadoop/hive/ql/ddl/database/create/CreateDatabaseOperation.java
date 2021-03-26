@@ -58,10 +58,12 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
           throw new HiveException("Managed and external locations for database cannot be the same");
         }
-      } else {
+      } else if (desc.getDatabaseType() == DatabaseType.REMOTE) {
         makeLocationQualified(database);
         database.setConnector_name(desc.getConnectorName());
         database.setRemote_dbname(desc.getRemoteDbName());
+      } else { // should never be here
+        throw new HiveException("Unsupported database type " + database.getType() + " for " + database.getName());
       }
       context.getDb().createDatabase(database, desc.getIfNotExists());
     } catch (AlreadyExistsException ex) {

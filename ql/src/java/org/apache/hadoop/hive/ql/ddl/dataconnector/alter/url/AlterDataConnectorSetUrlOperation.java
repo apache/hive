@@ -43,20 +43,15 @@ public class AlterDataConnectorSetUrlOperation extends
     try {
       String newUrl = desc.getURL();
 
-      if (newUrl.equalsIgnoreCase(connector.getUrl())) {
-        throw new HiveException("Old and New URL's for data connector cannot be the same");
+      if (StringUtils.isBlank(newUrl) || newUrl.equals(connector.getUrl())) {
+        throw new HiveException("New URL for data connector cannot be blank or the same as the current one");
       }
 
       URI newURI = new URI(newUrl);
       if (!newURI.isAbsolute() || StringUtils.isBlank(newURI.getScheme())) {
         throw new HiveException(ErrorMsg.INVALID_PATH, newUrl); // TODO make a new error message for URL
       }
-
-      if (newUrl.equals(connector.getUrl())) {
-        LOG.info("Alter Connector skipped. No change in url.");
-      } else {
-        connector.setUrl(newUrl);
-      }
+      connector.setUrl(newUrl);
       return;
     } catch (URISyntaxException e) {
       throw new HiveException(e);

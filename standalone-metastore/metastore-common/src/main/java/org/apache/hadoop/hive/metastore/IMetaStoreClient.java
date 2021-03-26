@@ -2038,7 +2038,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing RDBMS.
    * @throws TException thrift transport error
    */
-  List<String> getAllDataConnectors() throws MetaException, TException;
+  List<String> getAllDataConnectorNames() throws MetaException, TException;
 
   /**
    * Drop a partition.

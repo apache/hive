@@ -1177,7 +1177,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @throws TException thrift transport error
    */
   @Override
-  public List<String> getAllDataConnectors() throws MetaException, TException {
+  public List<String> getAllDataConnectorNames() throws MetaException, TException {
     return client.get_dataconnectors();
   }
 
