@@ -519,18 +519,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n6
-                  Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: a (type: int), c (type: decimal(10,2)), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                    outputColumnNames: _col0, _col1, _col3
-                    Statistics: Num rows: 5 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: a (type: int), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 5 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                      Statistics: Num rows: 5 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 5 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Map 5 
@@ -546,7 +546,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), ROW__IS__DELETED (type: boolean)
-                      outputColumnNames: _col0, _col7
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -554,31 +554,31 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col7 (type: boolean)
+                        value expressions: _col1 (type: boolean)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n3
-                  filterExpr: ((c > 10) and a is not null) (type: boolean)
+                  filterExpr: ((ROW__ID.writeid > 2L) and (c > 10) and a is not null) (type: boolean)
                   properties:
                     acid.fetch.deleted.rows TRUE
                   Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c > 10) and a is not null) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((ROW__ID.writeid > 2L) and (c > 10) and a is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: a (type: int), c (type: decimal(10,2)), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ROW__IS__DELETED (type: boolean)
-                      outputColumnNames: _col0, _col2, _col6, _col7
-                      Statistics: Num rows: 3 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: a (type: int), c (type: decimal(10,2)), ROW__IS__DELETED (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: decimal(10,2)), _col6 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col7 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(10,2)), _col2 (type: boolean)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -588,16 +588,16 @@ STAGE PLANS:
                 condition map:
                      Right Outer Join 0 to 1
                 keys:
-                  0 _col0 (type: int), _col1 (type: decimal(10,2))
-                  1 _col0 (type: int), _col1 (type: decimal(10,2))
-                nullSafes: [true, true]
-                outputColumnNames: _col3, _col4, _col5, _col6
-                Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                nullSafes: [true]
+                outputColumnNames: _col1, _col2, _col3, _col4
+                Statistics: Num rows: 6 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: _col6 (type: boolean)
+                  predicate: _col4 (type: boolean)
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -607,10 +607,10 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (not _col6) (type: boolean)
+                  predicate: (not _col4) (type: boolean)
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col4 (type: int), _col5 (type: decimal(10,2))
+                    expressions: _col2 (type: int), _col3 (type: decimal(10,2))
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -681,26 +681,19 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col7, _col10, _col14, _col15
-                Statistics: Num rows: 5 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col3, _col4
+                Statistics: Num rows: 2 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col10 (type: decimal(10,2)), _col14 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), (_col7 or _col15) (type: boolean)
-                  outputColumnNames: _col0, _col10, _col14, _col16
-                  Statistics: Num rows: 5 Data size: 980 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (_col14.writeid > 2L) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: int), _col10 (type: decimal(10,2)), _col16 (type: boolean)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
-                        null sort order: zz
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: boolean)
+                  expressions: _col0 (type: int), _col3 (type: decimal(10,2)), (_col1 or _col4) (type: boolean)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: decimal(10,2)), _col2 (type: boolean)
 
   Stage: Stage-3
     Dependency Collection
@@ -866,18 +859,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n6
-                  Statistics: Num rows: 6 Data size: 696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: a (type: int), c (type: decimal(10,2)), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                    outputColumnNames: _col0, _col1, _col3
-                    Statistics: Num rows: 6 Data size: 1152 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: a (type: int), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 6 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                      Statistics: Num rows: 6 Data size: 1152 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 6 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Map 5 
@@ -893,7 +886,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), ROW__IS__DELETED (type: boolean)
-                      outputColumnNames: _col0, _col7
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -901,31 +894,31 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col7 (type: boolean)
+                        value expressions: _col1 (type: boolean)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n3
-                  filterExpr: ((c > 10) and a is not null) (type: boolean)
+                  filterExpr: ((ROW__ID.writeid > 3L) and (c > 10) and a is not null) (type: boolean)
                   properties:
                     acid.fetch.deleted.rows TRUE
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c > 10) and a is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((ROW__ID.writeid > 3L) and (c > 10) and a is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: a (type: int), c (type: decimal(10,2)), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ROW__IS__DELETED (type: boolean)
-                      outputColumnNames: _col0, _col2, _col6, _col7
-                      Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: a (type: int), c (type: decimal(10,2)), ROW__IS__DELETED (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: decimal(10,2)), _col6 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col7 (type: boolean)
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(10,2)), _col2 (type: boolean)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -935,16 +928,16 @@ STAGE PLANS:
                 condition map:
                      Right Outer Join 0 to 1
                 keys:
-                  0 _col0 (type: int), _col1 (type: decimal(10,2))
-                  1 _col0 (type: int), _col1 (type: decimal(10,2))
-                nullSafes: [true, true]
-                outputColumnNames: _col3, _col4, _col5, _col6
-                Statistics: Num rows: 3 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                nullSafes: [true]
+                outputColumnNames: _col1, _col2, _col3, _col4
+                Statistics: Num rows: 10 Data size: 1960 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: _col6 (type: boolean)
+                  predicate: _col4 (type: boolean)
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -954,10 +947,10 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (not _col6) (type: boolean)
+                  predicate: (not _col4) (type: boolean)
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col4 (type: int), _col5 (type: decimal(10,2))
+                    expressions: _col2 (type: int), _col3 (type: decimal(10,2))
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -1028,26 +1021,19 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col7, _col10, _col14, _col15
-                Statistics: Num rows: 5 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col3, _col4
+                Statistics: Num rows: 3 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col10 (type: decimal(10,2)), _col14 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), (_col7 or _col15) (type: boolean)
-                  outputColumnNames: _col0, _col10, _col14, _col16
-                  Statistics: Num rows: 5 Data size: 980 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (_col14.writeid > 3L) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: int), _col10 (type: decimal(10,2)), _col16 (type: boolean)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
-                        null sort order: zz
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: boolean)
+                  expressions: _col0 (type: int), _col3 (type: decimal(10,2)), (_col1 or _col4) (type: boolean)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: decimal(10,2)), _col2 (type: boolean)
 
   Stage: Stage-3
     Dependency Collection
