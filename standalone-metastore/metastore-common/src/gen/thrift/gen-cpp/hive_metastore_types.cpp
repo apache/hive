@@ -19008,24 +19008,7 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest& other714) {
-  db_name = other714.db_name;
-  tbl_name = other714.tbl_name;
-  names = other714.names;
-  get_col_stats = other714.get_col_stats;
-  processorCapabilities = other714.processorCapabilities;
-  processorIdentifier = other714.processorIdentifier;
-  engine = other714.engine;
-  validWriteIdList = other714.validWriteIdList;
-  getFileMetadata = other714.getFileMetadata;
-  id = other714.id;
-  __isset = other714.__isset;
-}
-GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPartitionsByNamesRequest& other715) {
-=======
 GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest& other715) {
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   db_name = other715.db_name;
   tbl_name = other715.tbl_name;
   names = other715.names;
@@ -25631,27 +25614,27 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-CompactionRequest::CompactionRequest(const CompactionRequest& other930) {
-  dbname = other930.dbname;
-  tablename = other930.tablename;
-  partitionname = other930.partitionname;
-  type = other930.type;
-  runas = other930.runas;
-  properties = other930.properties;
-  initiatorId = other930.initiatorId;
-  initiatorVersion = other930.initiatorVersion;
-  __isset = other930.__isset;
+CompactionRequest::CompactionRequest(const CompactionRequest& other942) {
+  dbname = other942.dbname;
+  tablename = other942.tablename;
+  partitionname = other942.partitionname;
+  type = other942.type;
+  runas = other942.runas;
+  properties = other942.properties;
+  initiatorId = other942.initiatorId;
+  initiatorVersion = other942.initiatorVersion;
+  __isset = other942.__isset;
 }
-CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other931) {
-  dbname = other931.dbname;
-  tablename = other931.tablename;
-  partitionname = other931.partitionname;
-  type = other931.type;
-  runas = other931.runas;
-  properties = other931.properties;
-  initiatorId = other931.initiatorId;
-  initiatorVersion = other931.initiatorVersion;
-  __isset = other931.__isset;
+CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other943) {
+  dbname = other943.dbname;
+  tablename = other943.tablename;
+  partitionname = other943.partitionname;
+  type = other943.type;
+  runas = other943.runas;
+  properties = other943.properties;
+  initiatorId = other943.initiatorId;
+  initiatorVersion = other943.initiatorVersion;
+  __isset = other943.__isset;
   return *this;
 }
 void CompactionRequest::printTo(std::ostream& out) const {
@@ -26783,47 +26766,47 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.__isset, b.__isset);
 }
 
-ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other942) {
-  dbname = other942.dbname;
-  tablename = other942.tablename;
-  partitionname = other942.partitionname;
-  type = other942.type;
-  state = other942.state;
-  workerid = other942.workerid;
-  start = other942.start;
-  runAs = other942.runAs;
-  hightestTxnId = other942.hightestTxnId;
-  metaInfo = other942.metaInfo;
-  endTime = other942.endTime;
-  hadoopJobId = other942.hadoopJobId;
-  id = other942.id;
-  errorMessage = other942.errorMessage;
-  enqueueTime = other942.enqueueTime;
-  workerVersion = other942.workerVersion;
-  initiatorId = other942.initiatorId;
-  initiatorVersion = other942.initiatorVersion;
-  __isset = other942.__isset;
+ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other954) {
+  dbname = other954.dbname;
+  tablename = other954.tablename;
+  partitionname = other954.partitionname;
+  type = other954.type;
+  state = other954.state;
+  workerid = other954.workerid;
+  start = other954.start;
+  runAs = other954.runAs;
+  hightestTxnId = other954.hightestTxnId;
+  metaInfo = other954.metaInfo;
+  endTime = other954.endTime;
+  hadoopJobId = other954.hadoopJobId;
+  id = other954.id;
+  errorMessage = other954.errorMessage;
+  enqueueTime = other954.enqueueTime;
+  workerVersion = other954.workerVersion;
+  initiatorId = other954.initiatorId;
+  initiatorVersion = other954.initiatorVersion;
+  __isset = other954.__isset;
 }
-ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other943) {
-  dbname = other943.dbname;
-  tablename = other943.tablename;
-  partitionname = other943.partitionname;
-  type = other943.type;
-  state = other943.state;
-  workerid = other943.workerid;
-  start = other943.start;
-  runAs = other943.runAs;
-  hightestTxnId = other943.hightestTxnId;
-  metaInfo = other943.metaInfo;
-  endTime = other943.endTime;
-  hadoopJobId = other943.hadoopJobId;
-  id = other943.id;
-  errorMessage = other943.errorMessage;
-  enqueueTime = other943.enqueueTime;
-  workerVersion = other943.workerVersion;
-  initiatorId = other943.initiatorId;
-  initiatorVersion = other943.initiatorVersion;
-  __isset = other943.__isset;
+ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other955) {
+  dbname = other955.dbname;
+  tablename = other955.tablename;
+  partitionname = other955.partitionname;
+  type = other955.type;
+  state = other955.state;
+  workerid = other955.workerid;
+  start = other955.start;
+  runAs = other955.runAs;
+  hightestTxnId = other955.hightestTxnId;
+  metaInfo = other955.metaInfo;
+  endTime = other955.endTime;
+  hadoopJobId = other955.hadoopJobId;
+  id = other955.id;
+  errorMessage = other955.errorMessage;
+  enqueueTime = other955.enqueueTime;
+  workerVersion = other955.workerVersion;
+  initiatorId = other955.initiatorId;
+  initiatorVersion = other955.initiatorVersion;
+  __isset = other955.__isset;
   return *this;
 }
 void ShowCompactResponseElement::printTo(std::ostream& out) const {
@@ -31211,16 +31194,6 @@ uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1142;
-            ::apache::thrift::protocol::TType _etype1145;
-            xfer += iprot->readListBegin(_etype1145, _size1142);
-            this->processorCapabilities.resize(_size1142);
-            uint32_t _i1146;
-            for (_i1146 = 0; _i1146 < _size1142; ++_i1146)
-            {
-              xfer += iprot->readString(this->processorCapabilities[_i1146]);
-=======
             uint32_t _size1154;
             ::apache::thrift::protocol::TType _etype1157;
             xfer += iprot->readListBegin(_etype1157, _size1154);
@@ -31229,7 +31202,6 @@ uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1158 = 0; _i1158 < _size1154; ++_i1158)
             {
               xfer += iprot->readString(this->processorCapabilities[_i1158]);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31315,17 +31287,10 @@ uint32_t GetTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 8);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1147;
-      for (_iter1147 = this->processorCapabilities.begin(); _iter1147 != this->processorCapabilities.end(); ++_iter1147)
-      {
-        xfer += oprot->writeString((*_iter1147));
-=======
       std::vector<std::string> ::const_iterator _iter1159;
       for (_iter1159 = this->processorCapabilities.begin(); _iter1159 != this->processorCapabilities.end(); ++_iter1159)
       {
         xfer += oprot->writeString((*_iter1159));
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -31366,33 +31331,6 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetTableRequest::GetTableRequest(const GetTableRequest& other1148) {
-  dbName = other1148.dbName;
-  tblName = other1148.tblName;
-  capabilities = other1148.capabilities;
-  catName = other1148.catName;
-  validWriteIdList = other1148.validWriteIdList;
-  getColumnStats = other1148.getColumnStats;
-  processorCapabilities = other1148.processorCapabilities;
-  processorIdentifier = other1148.processorIdentifier;
-  engine = other1148.engine;
-  id = other1148.id;
-  __isset = other1148.__isset;
-}
-GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1149) {
-  dbName = other1149.dbName;
-  tblName = other1149.tblName;
-  capabilities = other1149.capabilities;
-  catName = other1149.catName;
-  validWriteIdList = other1149.validWriteIdList;
-  getColumnStats = other1149.getColumnStats;
-  processorCapabilities = other1149.processorCapabilities;
-  processorIdentifier = other1149.processorIdentifier;
-  engine = other1149.engine;
-  id = other1149.id;
-  __isset = other1149.__isset;
-=======
 GetTableRequest::GetTableRequest(const GetTableRequest& other1160) {
   dbName = other1160.dbName;
   tblName = other1160.tblName;
@@ -31418,7 +31356,6 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1161) {
   engine = other1161.engine;
   id = other1161.id;
   __isset = other1161.__isset;
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTableRequest::printTo(std::ostream& out) const {
@@ -31535,17 +31472,6 @@ void swap(GetTableResult &a, GetTableResult &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetTableResult::GetTableResult(const GetTableResult& other1150) {
-  table = other1150.table;
-  isStatsCompliant = other1150.isStatsCompliant;
-  __isset = other1150.__isset;
-}
-GetTableResult& GetTableResult::operator=(const GetTableResult& other1151) {
-  table = other1151.table;
-  isStatsCompliant = other1151.isStatsCompliant;
-  __isset = other1151.__isset;
-=======
 GetTableResult::GetTableResult(const GetTableResult& other1162) {
   table = other1162.table;
   isStatsCompliant = other1162.isStatsCompliant;
@@ -31555,7 +31481,6 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other1163) {
   table = other1163.table;
   isStatsCompliant = other1163.isStatsCompliant;
   __isset = other1163.__isset;
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTableResult::printTo(std::ostream& out) const {
@@ -31645,16 +31570,6 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblNames.clear();
-<<<<<<< HEAD
-            uint32_t _size1152;
-            ::apache::thrift::protocol::TType _etype1155;
-            xfer += iprot->readListBegin(_etype1155, _size1152);
-            this->tblNames.resize(_size1152);
-            uint32_t _i1156;
-            for (_i1156 = 0; _i1156 < _size1152; ++_i1156)
-            {
-              xfer += iprot->readString(this->tblNames[_i1156]);
-=======
             uint32_t _size1164;
             ::apache::thrift::protocol::TType _etype1167;
             xfer += iprot->readListBegin(_etype1167, _size1164);
@@ -31663,7 +31578,6 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1168 = 0; _i1168 < _size1164; ++_i1168)
             {
               xfer += iprot->readString(this->tblNames[_i1168]);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31692,16 +31606,6 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1157;
-            ::apache::thrift::protocol::TType _etype1160;
-            xfer += iprot->readListBegin(_etype1160, _size1157);
-            this->processorCapabilities.resize(_size1157);
-            uint32_t _i1161;
-            for (_i1161 = 0; _i1161 < _size1157; ++_i1161)
-            {
-              xfer += iprot->readString(this->processorCapabilities[_i1161]);
-=======
             uint32_t _size1169;
             ::apache::thrift::protocol::TType _etype1172;
             xfer += iprot->readListBegin(_etype1172, _size1169);
@@ -31710,7 +31614,6 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1173 = 0; _i1173 < _size1169; ++_i1173)
             {
               xfer += iprot->readString(this->processorCapabilities[_i1173]);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31762,17 +31665,10 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("tblNames", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tblNames.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1162;
-      for (_iter1162 = this->tblNames.begin(); _iter1162 != this->tblNames.end(); ++_iter1162)
-      {
-        xfer += oprot->writeString((*_iter1162));
-=======
       std::vector<std::string> ::const_iterator _iter1174;
       for (_iter1174 = this->tblNames.begin(); _iter1174 != this->tblNames.end(); ++_iter1174)
       {
         xfer += oprot->writeString((*_iter1174));
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -31792,17 +31688,10 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1163;
-      for (_iter1163 = this->processorCapabilities.begin(); _iter1163 != this->processorCapabilities.end(); ++_iter1163)
-      {
-        xfer += oprot->writeString((*_iter1163));
-=======
       std::vector<std::string> ::const_iterator _iter1175;
       for (_iter1175 = this->processorCapabilities.begin(); _iter1175 != this->processorCapabilities.end(); ++_iter1175)
       {
         xfer += oprot->writeString((*_iter1175));
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -31835,27 +31724,6 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1164) {
-  dbName = other1164.dbName;
-  tblNames = other1164.tblNames;
-  capabilities = other1164.capabilities;
-  catName = other1164.catName;
-  processorCapabilities = other1164.processorCapabilities;
-  processorIdentifier = other1164.processorIdentifier;
-  projectionSpec = other1164.projectionSpec;
-  __isset = other1164.__isset;
-}
-GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1165) {
-  dbName = other1165.dbName;
-  tblNames = other1165.tblNames;
-  capabilities = other1165.capabilities;
-  catName = other1165.catName;
-  processorCapabilities = other1165.processorCapabilities;
-  processorIdentifier = other1165.processorIdentifier;
-  projectionSpec = other1165.projectionSpec;
-  __isset = other1165.__isset;
-=======
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1176) {
   dbName = other1176.dbName;
   tblNames = other1176.tblNames;
@@ -31875,7 +31743,6 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1177)
   processorIdentifier = other1177.processorIdentifier;
   projectionSpec = other1177.projectionSpec;
   __isset = other1177.__isset;
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -31932,16 +31799,6 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tables.clear();
-<<<<<<< HEAD
-            uint32_t _size1166;
-            ::apache::thrift::protocol::TType _etype1169;
-            xfer += iprot->readListBegin(_etype1169, _size1166);
-            this->tables.resize(_size1166);
-            uint32_t _i1170;
-            for (_i1170 = 0; _i1170 < _size1166; ++_i1170)
-            {
-              xfer += this->tables[_i1170].read(iprot);
-=======
             uint32_t _size1178;
             ::apache::thrift::protocol::TType _etype1181;
             xfer += iprot->readListBegin(_etype1181, _size1178);
@@ -31950,7 +31807,6 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1182 = 0; _i1182 < _size1178; ++_i1182)
             {
               xfer += this->tables[_i1182].read(iprot);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31981,17 +31837,10 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tables", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tables.size()));
-<<<<<<< HEAD
-    std::vector<Table> ::const_iterator _iter1171;
-    for (_iter1171 = this->tables.begin(); _iter1171 != this->tables.end(); ++_iter1171)
-    {
-      xfer += (*_iter1171).write(oprot);
-=======
     std::vector<Table> ::const_iterator _iter1183;
     for (_iter1183 = this->tables.begin(); _iter1183 != this->tables.end(); ++_iter1183)
     {
       xfer += (*_iter1183).write(oprot);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
     }
     xfer += oprot->writeListEnd();
   }
@@ -32007,19 +31856,11 @@ void swap(GetTablesResult &a, GetTablesResult &b) {
   swap(a.tables, b.tables);
 }
 
-<<<<<<< HEAD
-GetTablesResult::GetTablesResult(const GetTablesResult& other1172) {
-  tables = other1172.tables;
-}
-GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other1173) {
-  tables = other1173.tables;
-=======
 GetTablesResult::GetTablesResult(const GetTablesResult& other1184) {
   tables = other1184.tables;
 }
 GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other1185) {
   tables = other1185.tables;
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTablesResult::printTo(std::ostream& out) const {
@@ -32140,16 +31981,6 @@ uint32_t GetTablesExtRequest::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1174;
-            ::apache::thrift::protocol::TType _etype1177;
-            xfer += iprot->readListBegin(_etype1177, _size1174);
-            this->processorCapabilities.resize(_size1174);
-            uint32_t _i1178;
-            for (_i1178 = 0; _i1178 < _size1174; ++_i1178)
-            {
-              xfer += iprot->readString(this->processorCapabilities[_i1178]);
-=======
             uint32_t _size1186;
             ::apache::thrift::protocol::TType _etype1189;
             xfer += iprot->readListBegin(_etype1189, _size1186);
@@ -32158,7 +31989,6 @@ uint32_t GetTablesExtRequest::read(::apache::thrift::protocol::TProtocol* iprot)
             for (_i1190 = 0; _i1190 < _size1186; ++_i1190)
             {
               xfer += iprot->readString(this->processorCapabilities[_i1190]);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -32225,17 +32055,10 @@ uint32_t GetTablesExtRequest::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 6);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1179;
-      for (_iter1179 = this->processorCapabilities.begin(); _iter1179 != this->processorCapabilities.end(); ++_iter1179)
-      {
-        xfer += oprot->writeString((*_iter1179));
-=======
       std::vector<std::string> ::const_iterator _iter1191;
       for (_iter1191 = this->processorCapabilities.begin(); _iter1191 != this->processorCapabilities.end(); ++_iter1191)
       {
         xfer += oprot->writeString((*_iter1191));
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -32263,27 +32086,6 @@ void swap(GetTablesExtRequest &a, GetTablesExtRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetTablesExtRequest::GetTablesExtRequest(const GetTablesExtRequest& other1180) {
-  catalog = other1180.catalog;
-  database = other1180.database;
-  tableNamePattern = other1180.tableNamePattern;
-  requestedFields = other1180.requestedFields;
-  limit = other1180.limit;
-  processorCapabilities = other1180.processorCapabilities;
-  processorIdentifier = other1180.processorIdentifier;
-  __isset = other1180.__isset;
-}
-GetTablesExtRequest& GetTablesExtRequest::operator=(const GetTablesExtRequest& other1181) {
-  catalog = other1181.catalog;
-  database = other1181.database;
-  tableNamePattern = other1181.tableNamePattern;
-  requestedFields = other1181.requestedFields;
-  limit = other1181.limit;
-  processorCapabilities = other1181.processorCapabilities;
-  processorIdentifier = other1181.processorIdentifier;
-  __isset = other1181.__isset;
-=======
 GetTablesExtRequest::GetTablesExtRequest(const GetTablesExtRequest& other1192) {
   catalog = other1192.catalog;
   database = other1192.database;
@@ -32303,7 +32105,6 @@ GetTablesExtRequest& GetTablesExtRequest::operator=(const GetTablesExtRequest& o
   processorCapabilities = other1193.processorCapabilities;
   processorIdentifier = other1193.processorIdentifier;
   __isset = other1193.__isset;
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTablesExtRequest::printTo(std::ostream& out) const {
@@ -32391,16 +32192,6 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->requiredReadCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1182;
-            ::apache::thrift::protocol::TType _etype1185;
-            xfer += iprot->readListBegin(_etype1185, _size1182);
-            this->requiredReadCapabilities.resize(_size1182);
-            uint32_t _i1186;
-            for (_i1186 = 0; _i1186 < _size1182; ++_i1186)
-            {
-              xfer += iprot->readString(this->requiredReadCapabilities[_i1186]);
-=======
             uint32_t _size1194;
             ::apache::thrift::protocol::TType _etype1197;
             xfer += iprot->readListBegin(_etype1197, _size1194);
@@ -32409,7 +32200,6 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1198 = 0; _i1198 < _size1194; ++_i1198)
             {
               xfer += iprot->readString(this->requiredReadCapabilities[_i1198]);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -32422,16 +32212,6 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->requiredWriteCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1187;
-            ::apache::thrift::protocol::TType _etype1190;
-            xfer += iprot->readListBegin(_etype1190, _size1187);
-            this->requiredWriteCapabilities.resize(_size1187);
-            uint32_t _i1191;
-            for (_i1191 = 0; _i1191 < _size1187; ++_i1191)
-            {
-              xfer += iprot->readString(this->requiredWriteCapabilities[_i1191]);
-=======
             uint32_t _size1199;
             ::apache::thrift::protocol::TType _etype1202;
             xfer += iprot->readListBegin(_etype1202, _size1199);
@@ -32440,7 +32220,6 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1203 = 0; _i1203 < _size1199; ++_i1203)
             {
               xfer += iprot->readString(this->requiredWriteCapabilities[_i1203]);
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -33002,14 +32781,6 @@ uint32_t TableMeta::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->sourceTablesCompacted);
-          isset_sourceTablesCompacted = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -33148,6 +32919,14 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->sourceTablesCompacted);
+          isset_sourceTablesCompacted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -33188,32 +32967,13 @@ void swap(Materialization &a, Materialization &b) {
   swap(a.sourceTablesCompacted, b.sourceTablesCompacted);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-Materialization::Materialization(const Materialization& other1210) {
-  sourceTablesUpdateDeleteModified = other1210.sourceTablesUpdateDeleteModified;
-  sourceTablesCompacted = other1210.sourceTablesCompacted;
-}
-Materialization& Materialization::operator=(const Materialization& other1211) {
-  sourceTablesUpdateDeleteModified = other1211.sourceTablesUpdateDeleteModified;
-<<<<<<< HEAD
-  sourceTablesCompacted = other1211.sourceTablesCompacted;
-=======
-=======
-Materialization::Materialization(const Materialization& other1214) {
-  sourceTablesUpdateDeleteModified = other1214.sourceTablesUpdateDeleteModified;
-}
-Materialization& Materialization::operator=(const Materialization& other1215) {
-  sourceTablesUpdateDeleteModified = other1215.sourceTablesUpdateDeleteModified;
->>>>>>> External metastore: clean after rebase
->>>>>>> External metastore: clean after rebase
-=======
 Materialization::Materialization(const Materialization& other1222) {
   sourceTablesUpdateDeleteModified = other1222.sourceTablesUpdateDeleteModified;
+  sourceTablesCompacted = other1222.sourceTablesCompacted;
 }
 Materialization& Materialization::operator=(const Materialization& other1223) {
   sourceTablesUpdateDeleteModified = other1223.sourceTablesUpdateDeleteModified;
->>>>>>> HIVE-24396: Build failure due to duplicate db definitions
+  sourceTablesCompacted = other1223.sourceTablesCompacted;
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
