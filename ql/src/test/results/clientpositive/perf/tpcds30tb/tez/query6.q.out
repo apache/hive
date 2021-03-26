@@ -122,7 +122,7 @@ STAGE PLANS:
                 TableScan
                   alias: d
                   filterExpr: (d_month_seq is not null and d_month_seq BETWEEN DynamicValue(RS_52_date_dim_d_month_seq_min) AND DynamicValue(RS_52_date_dim_d_month_seq_max) and in_bloom_filter(d_month_seq, DynamicValue(RS_52_date_dim_d_month_seq_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_172_container, bigKeyColName:d_month_seq, smallTablePos:1, keyRatio:0.005722186477569851
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_172_container, bigKeyColName:d_month_seq, smallTablePos:1, keyRatio:0.011800298429821079
                   Statistics: Num rows: 73049 Data size: 876588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (d_month_seq is not null and d_month_seq BETWEEN DynamicValue(RS_52_date_dim_d_month_seq_min) AND DynamicValue(RS_52_date_dim_d_month_seq_max) and in_bloom_filter(d_month_seq, DynamicValue(RS_52_date_dim_d_month_seq_bloom_filter))) (type: boolean)
@@ -140,28 +140,28 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Reducer 6
-                        Statistics: Num rows: 449 Data size: 3592 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 928 Data size: 7424 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: bigint)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: bigint)
-                          Statistics: Num rows: 449 Data size: 3592 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 928 Data size: 7424 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: bigint)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 449 Data size: 3592 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 928 Data size: 7424 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             keys: _col0 (type: bigint)
-                            minReductionHashAggr: 0.5011136
+                            minReductionHashAggr: 0.4
                             mode: hash
                             outputColumnNames: _col0
-                            Statistics: Num rows: 224 Data size: 1792 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 862 Data size: 6896 Basic stats: COMPLETE Column stats: COMPLETE
                             Dynamic Partitioning Event Operator
                               Target column: ss_sold_date_sk (bigint)
                               Target Input: s
                               Partition key expr: ss_sold_date_sk
-                              Statistics: Num rows: 224 Data size: 1792 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 862 Data size: 6896 Basic stats: COMPLETE Column stats: COMPLETE
                               Target Vertex: Map 12
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -180,16 +180,16 @@ STAGE PLANS:
                       Statistics: Num rows: 31 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: d_month_seq (type: int)
-                        minReductionHashAggr: 0.516129
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_year = 2000) and (d_moy = 2) and d_month_seq is not null) (type: boolean)
                     Statistics: Num rows: 31 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
@@ -199,16 +199,16 @@ STAGE PLANS:
                       Statistics: Num rows: 31 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: d_month_seq (type: int)
-                        minReductionHashAggr: 0.516129
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 8 
@@ -394,12 +394,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
-                    minReductionHashAggr: 0.93333334
+                    minReductionHashAggr: 0.96774197
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -432,20 +432,20 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 31 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1000000)
-                    minReductionHashAggr: 0.93333334
+                    minReductionHashAggr: 0.96774197
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE

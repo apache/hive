@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,13 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
    */
   public static final ReduceExpressionsRule JOIN_INSTANCE =
       new JoinReduceExpressionsRule(HiveJoin.class, false, HiveRelFactories.HIVE_BUILDER);
+
+  /**
+   * Singleton rule that reduces constants inside a
+   * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin}.
+   */
+  public static final ReduceExpressionsRule SEMIJOIN_INSTANCE =
+      new JoinReduceExpressionsRule(HiveSemiJoin.class, false, HiveRelFactories.HIVE_BUILDER);
 
   //~ Constructors -----------------------------------------------------------
 

@@ -129,14 +129,14 @@ window_defn
 @init { gParent.pushMsg("window_defn", state); }
 @after { gParent.popMsg(state); } 
 :
-  identifier KW_AS window_specification -> ^(TOK_WINDOWDEF identifier window_specification)
+  identifier KW_AS window_specification[null] -> ^(TOK_WINDOWDEF identifier window_specification)
 ;  
 
-window_specification 
+window_specification[CommonTree nullTreatment]
 @init { gParent.pushMsg("window_specification", state); }
 @after { gParent.popMsg(state); } 
 :
-  (identifier | ( LPAREN identifier? partitioningSpec? window_frame? RPAREN)) -> ^(TOK_WINDOWSPEC identifier? partitioningSpec? window_frame?)
+  (identifier | ( LPAREN identifier? partitioningSpec? window_frame? RPAREN)) -> ^(TOK_WINDOWSPEC identifier? partitioningSpec? window_frame? {$nullTreatment})
 ;
 
 window_frame :

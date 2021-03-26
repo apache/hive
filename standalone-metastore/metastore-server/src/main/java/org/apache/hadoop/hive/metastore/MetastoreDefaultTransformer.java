@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
@@ -583,29 +584,34 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       throw new MetaException("Database " + dbName + " for table " + table.getTableName() + " could not be found");
     }
 
-      if (TableType.MANAGED_TABLE.name().equals(tableType)) {
+    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.debug("Table is a MANAGED_TABLE");
       txnal = params.get(TABLE_IS_TRANSACTIONAL);
       txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
+      boolean ctas = Boolean.valueOf(params.getOrDefault(TABLE_IS_CTAS, "false"));
       isInsertAcid = (txn_properties != null && txn_properties.equalsIgnoreCase("insert_only"));
       if ((txnal == null || txnal.equalsIgnoreCase("FALSE")) && !isInsertAcid) { // non-ACID MANAGED TABLE
-        LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
-        newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-        params.remove(TABLE_IS_TRANSACTIONAL);
-        params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
-        params.put("EXTERNAL", "TRUE");
-        params.put(EXTERNAL_TABLE_PURGE, "TRUE");
-        params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
-        newTable.setParameters(params);
-        LOG.info("Modified table params are:" + params.toString());
+        if (ctas) {
+          LOG.info("Not Converting CTAS table " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
+        } else {
+          LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
+          newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
+          params.remove(TABLE_IS_TRANSACTIONAL);
+          params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
+          params.put("EXTERNAL", "TRUE");
+          params.put(EXTERNAL_TABLE_PURGE, "TRUE");
+          params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
+          newTable.setParameters(params);
+          LOG.info("Modified table params are:" + params.toString());
 
-        if (!table.isSetSd() || table.getSd().getLocation() == null) {
-          try {
-            Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
-            newTable.getSd().setLocation(newPath.toString());
-            LOG.info("Modified location from null to " + newPath);
-          } catch (Exception e) {
-            LOG.warn("Exception determining external table location:" + e.getMessage());
+          if (!table.isSetSd() || table.getSd().getLocation() == null) {
+            try {
+              Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
+              newTable.getSd().setLocation(newPath.toString());
+              LOG.info("Modified location from null to " + newPath);
+            } catch (Exception e) {
+              LOG.warn("Exception determining external table location:" + e.getMessage());
+            }
           }
         }
       } else { // ACID table
@@ -687,9 +693,12 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         + " on database {} locationUri={} managedLocationUri={}", db.getName(), db.getLocationUri(), db.getManagedLocationUri());
 
     if (!isTenantBasedStorage) {
+      // for legacy DBs, location could have been managed or external. So if it is pointing to managed location, set it as 
+      // managed location and return a new default external path for location
       Path locationPath = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
       Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-      if (FileUtils.isSubdirectory(whRootPath.toString(), locationPath.toString())) { // legacy path
+      LOG.debug("Comparing DB and warehouse paths warehouse={} db.getLocationUri={}", whRootPath.toString(), locationPath.toString());
+      if (FileUtils.isSubdirectory(whRootPath.toString(), locationPath.toString()) || locationPath.equals(whRootPath)) { // legacy path
         if (processorCapabilities != null && (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) ||
             processorCapabilities.contains(HIVEFULLACIDWRITE))) {
           LOG.debug("Processor has atleast one of ACID write capabilities, setting current locationUri " + db.getLocationUri() + " as managedLocationUri");
@@ -698,13 +707,6 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
         LOG.info("Database's location is a managed location, setting to a new default path based on external warehouse path:" + extWhLocation.toString());
         db.setLocationUri(extWhLocation.toString());
-      } else {
-        if (processorCapabilities != null && (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) ||
-            processorCapabilities.contains(HIVEFULLACIDWRITE))) {
-          Path mgdWhLocation = hmsHandler.getWh().getDefaultDatabasePath(db.getName(), false);
-          LOG.debug("Processor has atleast one of ACID write capabilities, setting default managed path to " + mgdWhLocation.toString());
-          db.setManagedLocationUri(mgdWhLocation.toString());
-        }
       }
     }
     LOG.info("Transformer returning database:" + db.toString());
@@ -777,8 +779,10 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     if (TableType.MANAGED_TABLE.name().equals(table.getTableType())) {
       if (db.getManagedLocationUri() != null) {
         if (tableLocation != null) {
-          throw new MetaException("Location for managed table is derived from the database's managedLocationUri, "
-              + "it cannot be specified by the user");
+          if (!FileUtils.isSubdirectory(db.getManagedLocationUri(), tableLocation)) {
+            throw new MetaException(
+                "Illegal location for managed table, it has to be within database's managed location");
+          }
         } else {
           Path path = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), false);
           table.getSd().setLocation(path.toString());

@@ -27,6 +27,7 @@ import org.apache.orc.CompressionKind;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
+import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.impl.OrcTail;
 import org.junit.Test;
 
@@ -60,7 +61,7 @@ public class TestEncodedOrcFile {
         .filesystem(() -> {
           throw new RuntimeException("Filesystem should not have been initialized");
         })
-        .orcTail(new OrcTail(tail, null));
+        .orcTail(new OrcTail(tail, new BufferChunk(0, 0), -1));
 
     // an orc reader is created, this should not cause filesystem initialization
     // because orc tail is already provided and we are not making any real reads.

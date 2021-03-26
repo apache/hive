@@ -26,18 +26,30 @@ class ThriftHiveMetastore_find_next_compact_args
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        2 => array(
+            'var' => 'workerVersion',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
      * @var string
      */
     public $workerId = null;
+    /**
+     * @var string
+     */
+    public $workerVersion = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['workerId'])) {
                 $this->workerId = $vals['workerId'];
+            }
+            if (isset($vals['workerVersion'])) {
+                $this->workerVersion = $vals['workerVersion'];
             }
         }
     }
@@ -68,6 +80,13 @@ class ThriftHiveMetastore_find_next_compact_args
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 2:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->workerVersion);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -85,6 +104,11 @@ class ThriftHiveMetastore_find_next_compact_args
         if ($this->workerId !== null) {
             $xfer += $output->writeFieldBegin('workerId', TType::STRING, 1);
             $xfer += $output->writeString($this->workerId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->workerVersion !== null) {
+            $xfer += $output->writeFieldBegin('workerVersion', TType::STRING, 2);
+            $xfer += $output->writeString($this->workerVersion);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

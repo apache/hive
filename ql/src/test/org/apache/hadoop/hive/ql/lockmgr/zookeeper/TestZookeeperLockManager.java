@@ -44,6 +44,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestZookeeperLockManager {
@@ -127,7 +128,8 @@ public class TestZookeeperLockManager {
             conf.getZKConfig().getQuorumServers());
   }
 
-  @Test
+  @Ignore("HIVE-24859")
+  @Test()
   public void testMetrics() throws Exception{
     conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM, "localhost");
     conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT, String.valueOf(server.getPort()));

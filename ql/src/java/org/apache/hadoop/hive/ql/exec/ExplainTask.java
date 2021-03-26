@@ -498,7 +498,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return (0);
     }
     catch (Exception e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed to execute", e);
       setException(e);
       return (1);
     }

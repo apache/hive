@@ -1295,7 +1295,7 @@ public final class ObjectInspectorUtils {
           ObjectInspectorOptions.JAVA);
       return oi.getTypeName();
     } catch (Throwable e) {
-      LOG.info(StringUtils.stringifyException(e));
+      LOG.info("Failed to get Type Name From Java Class", e);
       return "unknown";
     }
   }

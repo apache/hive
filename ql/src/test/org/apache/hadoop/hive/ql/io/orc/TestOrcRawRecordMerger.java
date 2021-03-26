@@ -190,13 +190,14 @@ public class TestOrcRawRecordMerger {
     long offset = 0;
     List<StripeInformation> result =
         new ArrayList<StripeInformation>(rowCounts.length);
+    int stripeCount = 0;
     for(long count: rowCounts) {
       OrcProto.StripeInformation.Builder stripe =
           OrcProto.StripeInformation.newBuilder();
       stripe.setDataLength(800).setIndexLength(100).setFooterLength(100)
           .setNumberOfRows(count).setOffset(offset);
       offset += 1000;
-      result.add(new ReaderImpl.StripeInformationImpl(stripe.build()));
+      result.add(new ReaderImpl.StripeInformationImpl(stripe.build(), stripeCount++, -1, null));
     }
     return result;
   }

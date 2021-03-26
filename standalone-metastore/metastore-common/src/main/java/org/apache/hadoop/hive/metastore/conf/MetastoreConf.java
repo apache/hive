@@ -83,6 +83,8 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String EVENT_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
+  static final String ACID_METRICS_TASK_CLASS =
+      "org.apache.hadoop.hive.metastore.metrics.AcidMetricService";
   @VisibleForTesting
   static final String METASTORE_DELEGATION_MANAGER_CLASS =
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
@@ -244,7 +246,8 @@ public class MetastoreConf {
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.CAPABILITY_CHECK,
-      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
+      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      ConfVars.EXPRESSION_PROXY_CLASS
   };
 
   static {
@@ -440,6 +443,13 @@ public class MetastoreConf {
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
+    METASTORE_ACIDMETRICS_THREAD_ON("metastore.acidmetrics.thread.on",
+        "hive.metastore.acidmetrics.thread.on", true,
+        "Whether to run acid related metrics collection on this metastore instance."),
+    METASTORE_ACIDMETRICS_CHECK_INTERVAL("metastore.acidmetrics.check.interval",
+        "hive.metastore.acidmetrics.check.interval", 300,
+        TimeUnit.SECONDS,
+        "Time in seconds between acid related metric collection runs."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -1021,6 +1031,10 @@ public class MetastoreConf {
     REPL_METRICS_MAX_AGE("metastore.repl.metrics.max.age",
       "hive.metastore.repl.metrics.max.age", 7, TimeUnit.DAYS,
       "Maximal age of a replication metrics entry before it is removed."),
+    REPL_TXN_TIMEOUT("metastore.repl.txn.timeout", "hive.repl.txn.timeout", 11, TimeUnit.DAYS,
+      "Time after which replication transactions are declared aborted if the client has not sent a " +
+              "heartbeat. If this is a target cluster, value must be greater than" +
+              "hive.repl.event.db.listener.timetolive on the source cluster (!), ideally by 1 day."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
@@ -1119,6 +1133,7 @@ public class MetastoreConf {
             + " quoted table names.\nThe default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
+            ACID_METRICS_TASK_CLASS + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
             + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
             + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",

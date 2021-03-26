@@ -101,8 +101,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
-	rawDataSize         	52600               
-	totalSize           	3229                
+	rawDataSize         	53000               
+	totalSize           	3231                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -149,8 +149,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
-	rawDataSize         	52600               
-	totalSize           	3229                
+	rawDataSize         	53000               
+	totalSize           	3231                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -237,7 +237,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3229                
+	totalSize           	3231                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -345,7 +345,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
+	rawDataSize         	22150               
 	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
@@ -386,8 +386,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2144                
+	rawDataSize         	22250               
+	totalSize           	2143                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -439,7 +439,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
+	rawDataSize         	22150               
 	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
@@ -480,8 +480,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	22050               
-	totalSize           	2144                
+	rawDataSize         	22250               
+	totalSize           	2143                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -619,7 +619,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2144                
+	totalSize           	2143                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -733,8 +733,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21955               
-	totalSize           	5390                
+	rawDataSize         	22155               
+	totalSize           	5396                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -774,8 +774,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22043               
-	totalSize           	5376                
+	rawDataSize         	22243               
+	totalSize           	5378                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -827,8 +827,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21955               
-	totalSize           	5390                
+	rawDataSize         	22155               
+	totalSize           	5396                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -868,8 +868,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	22043               
-	totalSize           	5376                
+	rawDataSize         	22243               
+	totalSize           	5378                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -972,7 +972,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21955               
-	totalSize           	5390                
+	totalSize           	5396                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1013,7 +1013,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5376                
+	totalSize           	5378                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1121,7 +1121,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
+	rawDataSize         	22150               
 	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 
@@ -1174,7 +1174,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	50                  
-	rawDataSize         	21950               
+	rawDataSize         	22150               
 	totalSize           	2131                
 #### A masked pattern was here ####
 	 	 

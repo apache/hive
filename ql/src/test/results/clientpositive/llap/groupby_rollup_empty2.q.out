@@ -116,15 +116,15 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: int)
-                          minReductionHashAggr: 0.6666666
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ss_store_sk (int)
                             Target Input: store_sales_s0
                             Partition key expr: ss_store_sk
-                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 2
             Execution mode: vectorized, llap
             LLAP IO: all inputs

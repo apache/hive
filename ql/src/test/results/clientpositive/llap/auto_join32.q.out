@@ -69,6 +69,7 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: name is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -216,6 +217,7 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: name is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -379,6 +381,7 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: name is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -543,6 +546,7 @@ STAGE PLANS:
                 TableScan
                   alias: s
                   filterExpr: ((p = 'bar') and name is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:1, keyRatio:0.0
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((p = 'bar') and name is not null) (type: boolean)

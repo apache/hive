@@ -31,9 +31,11 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
@@ -51,8 +53,6 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
@@ -76,20 +76,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
-
-  /**
-   * Get the hostname that this worker is run on.  Made static and public so that other classes
-   * can use the same method to know what host their worker threads are running on.
-   * @return hostname
-   */
-  public static String hostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
-  }
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   // don't go through Initiator for user initiated compactions)
@@ -155,13 +141,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
-
-    StringBuilder name = new StringBuilder(hostname());
-    name.append("-");
-    name.append(getId());
-    this.workerName = name.toString();
-    setName(name.toString());
+    this.workerName = getWorkerId();
+    setName(workerName);
   }
+
 
   static final class StatsUpdater {
     static final private Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
@@ -387,12 +370,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * in case of timeout.
    * @param computeStats If true then for MR compaction the stats are regenerated
    * @return Returns true, if there was compaction in the queue, and we started working on it.
-   * @throws InterruptedException is thrown when the process is interrupted because of timeout for example
    */
   @VisibleForTesting
-  protected Boolean findNextCompactionAndExecute(boolean computeStats) throws InterruptedException {
+  protected Boolean findNextCompactionAndExecute(boolean computeStats) {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
+    PerfLogger perfLogger = SessionState.getPerfLogger(false);
+    String workerMetric = null;
+
     CompactionHeartbeater heartbeater = null;
     CompactionInfo ci = null;
     try (CompactionTxn compactionTxn = new CompactionTxn()) {
@@ -404,14 +389,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           return false;
         }
       }
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
+      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName, runtimeVersion));
       LOG.debug("Processing compaction request " + ci);
 
       if (ci == null) {
         return false;
       }
-
       checkInterrupt();
+
+      workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" + ci.type;
+      perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
 
       // Find the table we will be working with.
       Table t1;
@@ -504,8 +491,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
         return false;
       }
-      AcidDirectory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
-          tblValidWriteIds, Ref.from(false), true);
+      AcidDirectory dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
         if (needsCleaning(dir, sd)) {
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
@@ -570,8 +556,36 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (heartbeater != null) {
         heartbeater.cancel();
       }
+      if (workerMetric != null) {
+        perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
+      }
     }
     return true;
+  }
+
+  /**
+   * Just AcidUtils.getAcidState, but with impersonation if needed.
+   */
+  private AcidDirectory getAcidStateForWorker(CompactionInfo ci, StorageDescriptor sd,
+          ValidCompactorWriteIdList tblValidWriteIds) throws IOException, InterruptedException {
+    if (runJobAsSelf(ci.runAs)) {
+      return AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
+              tblValidWriteIds, Ref.from(false), true);
+    }
+
+    UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+    try {
+      return ugi.doAs((PrivilegedExceptionAction<AcidDirectory>) () ->
+              AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, tblValidWriteIds,
+                      Ref.from(false), true));
+    } finally {
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+                exception);
+      }
+    }
   }
 
   private void failCompactionIfSetForTest() {
@@ -625,6 +639,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
     return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
         && ci.partName == null;
+  }
+
+  private String getWorkerId() {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(getId());
+    return name.toString();
   }
 
   /**

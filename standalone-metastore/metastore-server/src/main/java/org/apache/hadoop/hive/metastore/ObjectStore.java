@@ -53,7 +53,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -89,10 +88,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -104,6 +106,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -113,6 +116,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
@@ -193,6 +197,7 @@ import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MOrder;
+import org.apache.hadoop.hive.metastore.model.MPackage;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
@@ -3466,6 +3471,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  /**
+   * If partVals all the values are empty strings, it means we are returning
+   * all the partitions and hence we can attempt to use a directSQL equivalent API which
+   * is considerably faster.
+   * @param partVals The partitions values used to filter out the partitions.
+   * @return true if partVals is empty or if all the values in partVals is empty strings.
+   * other wise false. If user or groups is valid then returns false since the directSQL
+   * doesn't support partition privileges.
+   */
+  private boolean canTryDirectSQL(List<String> partVals) {
+    if (partVals.isEmpty()) {
+      return false;
+    }
+    for (String val : partVals) {
+      if (val != null && !val.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
@@ -3475,15 +3501,28 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       openTransaction();
+
+      MTable mtbl = getMTable(catName, db_name, tbl_name);
+      if (mtbl == null) {
+        throw new NoSuchObjectException(
+            TableName.getQualified(catName, db_name, tbl_name) + " table not found");
+      }
+      boolean getauth = null != userName && null != groupNames &&
+          "TRUE".equalsIgnoreCase(
+              mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
+      if (!getauth && canTryDirectSQL(part_vals)) {
+        LOG.info(
+            "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
+            db_name, tbl_name, Joiner.on(',').join(part_vals));
+        return getPartitions(catName, db_name, tbl_name, -1);
+      }
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
           part_vals, max_parts, null);
-      MTable mtbl = getMTable(catName, db_name, tbl_name);
       for (Object o : parts) {
         Partition part = convertToPart((MPartition) o, false);
         //set auth privileges
-        if (null != userName && null != groupNames &&
-            "TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        if (getauth) {
           String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
               .getPartitionKeys()), part.getValues());
           PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
@@ -4694,6 +4733,7 @@ public class ObjectStore implements RawStore, Configurable {
       mcm.setTxnList(newMcm.getTxnList());
       // commit the changes
       success = commitTransaction();
+      cm.setMaterializationTime(newMcm.getMaterializationTime());
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -5989,9 +6029,9 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (principalType == PrincipalType.USER) {
       // All users belong to public role implicitly, add that role
-      // TODO MS-SPLIT Change this back to HiveMetaStore.PUBLIC once HiveMetaStore has moved to
+      // TODO MS-SPLIT Change this back to HMSHandler.PUBLIC once HiveMetaStore has moved to
       // stand-alone metastore.
-      //MRole publicRole = new MRole(HiveMetaStore.PUBLIC, 0, HiveMetaStore.PUBLIC);
+      //MRole publicRole = new MRole(HMSHandler.PUBLIC, 0, HMSHandler.PUBLIC);
       MRole publicRole = new MRole("public", 0, "public");
       mRoleMember.add(new MRoleMap(principalName, principalType.toString(), publicRole, 0, null,
           null, false));
@@ -10508,10 +10548,10 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mProc);
       if (mProc == null) { // create new
         mProc = new MStoredProc();
-        populate(proc, db, mProc);
+        MStoredProc.populate(mProc, proc, db);
         pm.makePersistent(mProc);
       } else { // update existing
-        populate(proc, db, mProc);
+        MStoredProc.populate(mProc, proc, db);
       }
       committed = commitTransaction();
     } finally {
@@ -10519,15 +10559,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private static void populate(StoredProcedure proc, MDatabase mDatabase, MStoredProc result) throws MetaException {
-    result.setName(proc.getName());
-    result.setOwner(proc.getOwnerName());
-    result.setSource(proc.getSource());
-    result.setDatabase(mDatabase);
-  }
-
   @Override
-  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
     MStoredProc proc = getMStoredProcedure(catName, db, name);
     return proc == null ? null : convertToStoredProc(catName, proc);
   }
@@ -10558,6 +10591,14 @@ public class ObjectStore implements RawStore, Configurable {
     return query;
   }
 
+  private Query findPackageQuery() {
+    Query query = pm.newQuery(MPackage.class,
+            "name == packageName && database.name == db && database.catalogName == catName");
+    query.declareParameters("java.lang.String packageName, java.lang.String db, java.lang.String catName");
+    query.setUnique(true);
+    return query;
+  }
+
   private StoredProcedure convertToStoredProc(String catName, MStoredProc proc) {
     return new StoredProcedure(
             proc.getName(),
@@ -10568,7 +10609,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
     boolean success = false;
     try {
       openTransaction();
@@ -10612,6 +10653,101 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(committed, query);
     }
     return names;
+  }
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MPackage mPkg;
+    Query query = null;
+    String catName = normalizeIdentifier(request.getCatName());
+    String dbName = normalizeIdentifier(request.getDbName());
+    MDatabase db = getMDatabase(catName, dbName);
+    try {
+      openTransaction();
+      query = findPackageQuery();
+      mPkg = (MPackage) query.execute(request.getPackageName(), dbName, catName);
+      pm.retrieve(mPkg);
+      if (mPkg == null) { // create new
+        mPkg = new MPackage();
+        MPackage.populate(mPkg, db, request);
+        pm.makePersistent(mPkg);
+      } else { // update existing
+        MPackage.populate(mPkg, db, request);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) {
+    MPackage mPkg = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
+    return mPkg == null ? null : mPkg.toPackage();
+  }
+
+  public List<String> listPackages(ListPackageRequest request) {
+    boolean committed = false;
+    Query query = null;
+    final String catName = normalizeIdentifier(request.getCatName());
+    final String dbName = request.isSetDbName() ? normalizeIdentifier(request.getDbName()) : null;
+    List<String> names;
+    try {
+      openTransaction();
+      if (request.isSetDbName()) {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MPackage " +
+                "WHERE database.catalogName == catName && database.name == db");
+        query.declareParameters("java.lang.String catName, java.lang.String db");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName, dbName));
+      } else {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MPackage " +
+                "WHERE database.catalogName == catName");
+        query.declareParameters("java.lang.String catName");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName));
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return names;
+  }
+
+  public void dropPackage(DropPackageRequest request) {
+    boolean success = false;
+    try {
+      openTransaction();
+      MPackage proc = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
+      pm.retrieve(proc);
+      if (proc != null) {
+        pm.deletePersistentAll(proc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MPackage findMPackage(String catName, String db, String packageName) {
+    MPackage pkg;
+    catName = normalizeIdentifier(catName);
+    db = normalizeIdentifier(db);
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = findPackageQuery();
+      pkg = (MPackage) query.execute(packageName, db, catName);
+      pm.retrieve(pkg);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return pkg;
   }
 
   @Override

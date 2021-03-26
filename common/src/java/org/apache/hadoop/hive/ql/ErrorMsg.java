@@ -471,6 +471,7 @@ public enum ErrorMsg {
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
   OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
   WITH_COL_LIST_NUM_OVERFLOW(10425, "WITH-clause query {0} returns {1} columns, but {2} labels were specified. The number of column labels must be smaller or equal to the number of expressions returned by the query.", true),
+  NULL_TREATMENT_NOT_SUPPORTED(10426, "Function {0} does not support null treatment.", true),
 
   //========================== 20000 range starts here ========================//
 
@@ -608,8 +609,6 @@ public enum ErrorMsg {
   SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
   SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true),
   REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication."),
-  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(40004,
-                                               "Source of replication (repl.source.for) is not set in the database properties."),
   REPL_INVALID_DB_OR_TABLE_PATTERN(40005,
                                      "Invalid pattern for the DB or table name in the replication policy. "
                                      + "It should be a valid regex enclosed within single or double quotes."),

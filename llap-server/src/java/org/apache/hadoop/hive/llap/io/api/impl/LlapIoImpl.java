@@ -32,6 +32,8 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
+import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
@@ -102,8 +104,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   // TODO: later, we may have a map
   private final ColumnVectorProducer orcCvp, genericCvp;
   private final ExecutorService executor;
+  private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
+  private final boolean useLowLevelCache;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
@@ -112,13 +116,16 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
+  private PathCache pathCache;
+  private final FixedSizedObjectPool<IoTrace> tracePool;
+  private LowLevelCachePolicy realCachePolicy;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
-    boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
+    useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
     LOG.info("Initializing LLAP IO in {} mode", useLowLevelCache ? LlapIoImpl.MODE_CACHE : "none");
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
@@ -153,8 +160,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy
-          realCachePolicy =
+      realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
         HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
@@ -208,6 +214,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         debugDumpComponents.add(metadataCache);
       }
       debugDumpComponents.add(allocator);
+      pathCache = new MemoryLimitedPathCache(conf);
     } else {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
@@ -228,12 +235,22 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
-    FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
+    tracePool = IoTrace.createTracePool(conf);
+    if (isEncodeEnabled) {
+      int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
+      int encodeThreads = numThreads * encodePoolMultiplier;
+      encodeExecutor = new StatsRecordingThreadPool(encodeThreads, encodeThreads, 0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<Runnable>(),
+          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true).build());
+    } else {
+      encodeExecutor = null;
+    }
+
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
+        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
@@ -314,6 +331,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       buddyAllocatorMXBean = null;
     }
     executor.shutdownNow();
+    if (encodeExecutor != null) {
+      encodeExecutor.shutdownNow();
+    }
   }
 
 
@@ -418,6 +438,31 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       return rr;
     } catch (HiveException e) {
       throw new IOException(e);
+    }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo() {
+    if (useLowLevelCache) {
+      GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+      LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+          pathCache, tracePool, realCachePolicy);
+      return serializer.fetchCachedContentInfo();
+    } else {
+      LOG.warn("Low level cache is disabled.");
+      return LlapDaemonProtocolProtos.CacheEntryList.getDefaultInstance();
+    }
+  }
+
+  @Override
+  public void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata) {
+    if (useLowLevelCache) {
+      GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
+      LlapCacheMetadataSerializer serializer = new LlapCacheMetadataSerializer(fileMetadataCache, cache, daemonConf,
+          pathCache, tracePool, realCachePolicy);
+      serializer.loadData(metadata);
+    } else {
+      LOG.warn("Cannot load data into the cache. Low level cache is disabled.");
     }
   }
 }

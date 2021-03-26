@@ -42,7 +42,6 @@ public class VectorUDFDateAddColCol extends VectorExpression {
   protected boolean isPositive = true;
 
   private transient final Text text = new Text();
-  private transient final DateParser dateParser = new DateParser();
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
@@ -290,9 +289,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
       outputVector.isNull[index] = true;
     } else {
       text.set(inputColumnVector1.vector[index], inputColumnVector1.start[index], inputColumnVector1.length[index]);
-      Date hDate = new Date();
-      boolean parsed = dateParser.parseDate(text.toString(), hDate);
-      if (!parsed) {
+      Date hDate = DateParser.parseDate(text.toString());
+      if (hDate == null) {
         outputVector.noNulls = false;
         outputVector.isNull[index] = true;
         return;
@@ -318,9 +316,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     }
     text.set(
         inputColumnVector1.vector[0], inputColumnVector1.start[0], inputColumnVector1.length[0]);
-    Date date = new Date();
-    boolean parsed = dateParser.parseDate(text.toString(), date);
-    if (!parsed) {
+    Date date = DateParser.parseDate(text.toString());
+    if (date == null) {
       outputVector.noNulls = false;
       outputVector.isNull[0] = true;
       outputVector.isRepeating = true;

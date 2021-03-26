@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -1557,6 +1558,78 @@ public interface IMetaStoreClient {
     List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
             List<String> part_names, boolean getColStats, String engine)
             throws NoSuchObjectException, MetaException, TException;
+
+   /**
+   * Get partitions by a list of partition names.
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param getColStats if true include statistics in the Partition object
+   * @param engine engine sending the request
+   * @return list of Partition objects
+   * @param validWriteIdList valid write Ids
+   * @param tableId table id
+   * @throws NoSuchObjectException No such partitionscatName
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names, boolean getColStats,
+      String engine, String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param validWriteIdList valid write Ids
+   * @param tableId table id
+   * @return list of Partition objects
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      String validWriteIdList, Long tableId) throws TException;
+
+   /**
+     * Get partitions by a list of partition names.
+     * @param catName catalog name
+     * @param db_name database name
+     * @param tbl_name table name
+     * @param part_names list of partition names
+     * @param getColStats if true, column statistics is added to the Partition objects
+     * @param engine engine sending the request
+     * @param validWriteIdList valid write Ids
+     * @param tableId table id
+     * @return list of Partition objects
+     * @throws TException thrift transport error
+     */
+    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name, List<String> part_names,
+        boolean getColStats, String engine, String validWriteIdList, Long tableId)
+        throws TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param catName catalog name
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param validWriteIdList valid write Ids
+   * @param tableId table id
+   * @return list of Partition objects
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                       List<String> part_names, String validWriteIdList, Long tableId)
+      throws TException;
+
+    /**
+   * Get partitions by a list of partition names.
+   * @param req GetPartitionsByNamesRequest
+   * @return list of Partition objects
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException;
 
   /**
    * List partitions along with privilege information for a user or groups
@@ -4031,8 +4104,20 @@ public interface IMetaStoreClient {
    * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
    * @throws MetaException
    * @throws TException
+   * @deprecated Use findNextCompact(workerId, workerVersion) instead
    */
+  @Deprecated
   OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
+
+  /**
+   * Get the next compaction job to do.
+   * @param workerId id of the worker requesting.
+   * @param workerVersion runtime version of the Worker
+   * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
+   * @throws MetaException
+   * @throws TException
+   */
+  OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException;
 
   /**
    * Set the compaction highest write id.
@@ -4131,4 +4216,12 @@ public interface IMetaStoreClient {
   void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
 
   List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
+
+  void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException;
+
+  Package findPackage(GetPackageRequest request) throws TException;
+
+  List<String> listPackages(ListPackageRequest request) throws TException;
+
+  void dropPackage(DropPackageRequest request) throws TException;
 }

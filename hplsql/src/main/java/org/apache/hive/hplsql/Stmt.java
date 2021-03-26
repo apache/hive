@@ -260,8 +260,11 @@ public class Stmt {
     }
     if (ctx.T_IF() != null) {
       sql.append(exec.getText(ctx, ctx.T_IF().getSymbol(), ctx.T_EXISTS().getSymbol()) + " "); 
-    }    
+    }
+    boolean oldBuildSql = exec.buildSql;
+    exec.buildSql = true;
     sql.append(evalPop(ctx.expr()).toString());
+    exec.buildSql = oldBuildSql;
     int cnt = ctx.create_database_option().size();
     for (int i = 0; i < cnt; i++) {
       HplsqlParser.Create_database_optionContext option = ctx.create_database_option(i);
@@ -383,8 +386,11 @@ public class Stmt {
         sql += "IF EXISTS ";
       }
       sql += evalPop(ctx.table_name()).toString();
-    }
-    else if (ctx.T_DATABASE() != null || ctx.T_SCHEMA() != null) {
+    } else if (ctx.T_PACKAGE() != null) {
+      exec.dropPackage(ctx, ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
+    } else if (ctx.T_PROCEDURE() != null || ctx.T_FUNCTION() != null) {
+      exec.dropProcedure(ctx, ctx.ident().getText().toUpperCase(), ctx.T_EXISTS() != null);
+    } else if (ctx.T_DATABASE() != null || ctx.T_SCHEMA() != null) {
       sql = "DROP DATABASE ";
       if (ctx.T_EXISTS() != null) {
         sql += "IF EXISTS ";
@@ -1045,8 +1051,8 @@ public class Stmt {
    * EXEC to execute a stored procedure
    */
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
-    String name = evalPop(ctx.expr()).toString();
-    if (exec.function.exec(name, ctx.expr_func_params())) {
+    String name = evalPop(ctx.expr()).toString().toUpperCase();
+    if (exec.functions.exec(name, ctx.expr_func_params())) {
       return true;
     }
     return false;

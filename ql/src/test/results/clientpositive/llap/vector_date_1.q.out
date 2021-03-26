@@ -126,7 +126,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0, 1, 5, 6, 7, 8, 11, 12, 13]
                         selectExpressions: ScalarNullOrCol(col 4:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 4:boolean) -> 5:boolean, LongColNotEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColLessEqualLongColumn(col 0:date, col 1:date) -> 7:boolean, LongColLessLongColumn(col 0:date, col 1:date) -> 8:boolean, ScalarNullOrCol(col 10:boolean, val 0:boolean)(children: IsNotNull(col 1:date) -> 10:boolean) -> 11:boolean, LongColGreaterEqualLongColumn(col 1:date, col 0:date) -> 12:boolean, LongColGreaterLongColumn(col 1:date, col 0:date) -> 13:boolean
-                    Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
                       null sort order: z
@@ -137,7 +137,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 1:date, 5:boolean, 6:boolean, 7:boolean, 8:boolean, 11:boolean, 12:boolean, 13:boolean
-                      Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -296,7 +296,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0, 1, 5, 6, 7, 8, 11, 12, 13]
                         selectExpressions: ScalarNullAndCol(col 4:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 4:boolean) -> 5:boolean, LongColEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColGreaterEqualLongColumn(col 0:date, col 1:date) -> 7:boolean, LongColGreaterLongColumn(col 0:date, col 1:date) -> 8:boolean, ScalarNullAndCol(col 10:boolean, val 0:boolean)(children: IsNull(col 1:date) -> 10:boolean) -> 11:boolean, LongColLessEqualLongColumn(col 1:date, col 0:date) -> 12:boolean, LongColLessLongColumn(col 1:date, col 0:date) -> 13:boolean
-                    Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
                       null sort order: z
@@ -307,7 +307,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 1:date, 5:boolean, 6:boolean, 7:boolean, 8:boolean, 11:boolean, 12:boolean, 13:boolean
-                      Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -466,7 +466,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0, 3, 4, 5, 6, 7]
                         selectExpressions: DateColNotEqualDateScalar(col 0:date, date 1970-01-01) -> 3:boolean, DateColGreaterEqualDateScalar(col 0:date, date 1970-01-01) -> 4:boolean, DateColGreaterDateScalar(col 0:date, date 1970-01-01) -> 5:boolean, DateColLessEqualDateScalar(col 0:date, date 2100-01-01) -> 6:boolean, DateColLessDateScalar(col 0:date, date 2100-01-01) -> 7:boolean
-                    Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
                       null sort order: z
@@ -477,7 +477,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 3:boolean, 4:boolean, 5:boolean, 6:boolean, 7:boolean
-                      Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -636,7 +636,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0, 3, 4, 5, 6, 7]
                         selectExpressions: DateColEqualDateScalar(col 0:date, date 1970-01-01) -> 3:boolean, DateColLessEqualDateScalar(col 0:date, date 1970-01-01) -> 4:boolean, DateColLessDateScalar(col 0:date, date 1970-01-01) -> 5:boolean, DateColGreaterEqualDateScalar(col 0:date, date 2100-01-01) -> 6:boolean, DateColGreaterDateScalar(col 0:date, date 2100-01-01) -> 7:boolean
-                    Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
                       null sort order: z
@@ -647,7 +647,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 3:boolean, 4:boolean, 5:boolean, 6:boolean, 7:boolean
-                      Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

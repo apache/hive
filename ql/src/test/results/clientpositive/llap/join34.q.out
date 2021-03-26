@@ -64,6 +64,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_40_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.092
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator

@@ -44,12 +44,14 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
@@ -85,6 +87,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,8 +113,11 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 
@@ -170,6 +176,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+          // Set distCp custom name corresponding to the replication policy.
+          String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+          conf.set(JobContext.JOB_NAME, mapRedCustomName);
           work.setCurrentDumpPath(currentDumpPath);
           work.setMetricCollector(initMetricCollection(isBootstrap, hiveDumpRoot));
           if (shouldDumpAtlasMetadata()) {
@@ -260,7 +269,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void initiateDataCopyTasks() throws SemanticException {
+  private void initiateDataCopyTasks() throws SemanticException, IOException {
     TaskTracker taskTracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
     if (childTasks == null) {
       childTasks = new ArrayList<>();
@@ -280,8 +289,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Path atlasDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_ATLAS_BASE_DIR);
     Path prevAtlasDumpDir = prevHiveDumpDir == null ? null
                             : new Path(prevHiveDumpDir.getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
+    Path tableListLoc = null;
+    if (!work.replScope.includeAllTables()) {
+      Path tableListDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+      tableListLoc = new Path(tableListDir, work.dbNameOrPattern.toLowerCase());
+    }
     AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir,
-        work.getMetricCollector());
+           tableListLoc, work.getMetricCollector());
     Task<?> atlasDumpTask = TaskFactory.get(atlasDumpWork, conf);
     childTasks = new ArrayList<>();
     childTasks.add(atlasDumpTask);
@@ -309,6 +323,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void deleteAllPreviousDumpMeta(Path currentDumpPath) {
     try {
       Path dumpRoot = getDumpRoot(currentDumpPath);
+      if(dumpRoot == null) {
+        return;
+      }
       FileSystem fs = dumpRoot.getFileSystem(conf);
       if (fs.exists(dumpRoot)) {
         FileStatus[] statuses = fs.listStatus(dumpRoot,
@@ -430,7 +447,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    */
   private boolean shouldDumpExternalTableLocation() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-            && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) &&
+            && (!conf.getBoolVar(REPL_DUMP_METADATA_ONLY) &&
             !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE));
   }
 
@@ -620,9 +637,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dmd.setReplScope(work.replScope);
       dmd.write(true);
     }
-    int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
-    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
-         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
+    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST);
+         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL)) {
       // Examine all the tables if required.
       if (shouldExamineTablesToDump() || (tableList != null)) {
         // If required wait more for any transactions open at the time of starting the ACID bootstrap.
@@ -644,31 +660,46 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         Path dbRootMetadata = new Path(metadataPath, dbName);
         Path dbRootData = new Path(bootstrapRoot, EximUtil.DATA_PATH_NAME + File.separator + dbName);
         boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
-        try (Writer writer = new Writer(dumpRoot, conf)) {
-          for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
-            try {
-              Table table = hiveDb.getTable(dbName, tableName);
+        ReplExternalTables externalTablesWriter = new ReplExternalTables(conf);
+        Path dbPath = null;
+        boolean isSingleCopyTaskForExternalTables =
+            conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK)
+                && work.replScope.includeAllTables();
+        boolean isExternalTablePresent = false;
+        for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
+          try {
+            Table table = hiveDb.getTable(dbName, tableName);
 
-              // Dump external table locations if required.
-              if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
-                      && shouldDumpExternalTableLocation()) {
-                writer.dataLocationDump(table, extTableFileList, conf);
-              }
-
-              // Dump the table to be bootstrapped if required.
-              if (shouldBootstrapDumpTable(table)) {
-                HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-                dumpTable(dbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
-                        hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
-              }
-              if (tableList != null && isTableSatifiesConfig(table)) {
-                tableList.add(tableName);
-              }
-            } catch (InvalidTableException te) {
-              // Repl dump shouldn't fail if the table is dropped/renamed while dumping it.
-              // Just log a debug message and skip it.
-              LOG.debug(te.getMessage());
+            // Dump external table locations if required.
+            if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
+                    && shouldDumpExternalTableLocation()) {
+              dbPath = new Path(hiveDb.getDatabase(dbName).getLocationUri());
+              externalTablesWriter.dataLocationDump(table, extTableFileList, dbPath,
+                  !isSingleCopyTaskForExternalTables, conf);
+              isExternalTablePresent=true;
             }
+            
+            // Dump the table to be bootstrapped if required.
+            if (shouldBootstrapDumpTable(table)) {
+              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
+              dumpTable(dbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
+                      hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
+            }
+            if (tableList != null && isTableSatifiesConfig(table)) {
+              tableList.add(tableName);
+            }
+          } catch (InvalidTableException te) {
+            // Repl dump shouldn't fail if the table is dropped/renamed while dumping it.
+            // Just log a debug message and skip it.
+            LOG.debug(te.getMessage());
+          }
+          // if it is not a table level replication, add a single task for
+          // the database default location for external tables...
+          if (isExternalTablePresent && shouldDumpExternalTableLocation()
+              && isSingleCopyTaskForExternalTables) {
+            // Using the lower case of the database name, to keep it
+            // consistent with the name used during bootstrap.
+            externalTablesWriter.dbLocationDump(dbName.toLowerCase(), dbPath, extTableFileList, conf);
           }
         }
         dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
@@ -798,7 +829,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) {
     ReplicationSpec rspec =
         getNewReplicationSpec(eventId.toString(), eventId.toString(), conf.getBoolean(
-            HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, false));
+            REPL_DUMP_METADATA_ONLY.varname, false));
     rspec.setReplSpecType(ReplicationSpec.Type.INCREMENTAL_DUMP);
     return rspec;
   }
@@ -859,9 +890,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       metadataPath.getFileSystem(conf).delete(metadataPath, true);
     }
     List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
-    int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
-    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
-         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, cacheSize)) {
+    try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST);
+         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL)) {
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
         LOG.debug("Dumping db: " + dbName);
         // TODO : Currently we don't support separate table list for each database.
@@ -873,6 +903,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           throw new HiveException("Replication dump not allowed for replicated database" +
                   " with first incremental dump pending : " + dbName);
         }
+
+        if (db != null && !HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
+          if (!ReplChangeManager.isSourceOfReplication(db)) {
+            // Check if the schedule name is available else set the query value
+            // as default.
+            String value = conf.get(SCHEDULED_QUERY_SCHEDULENAME,
+                "default_" + getQueryState().getQueryString());
+            updateReplSourceFor(hiveDb, dbName, db, value);
+          } else {
+            // If a schedule name is available and that isn't part of the
+            // existing conf, append the schedule name to the conf.
+            String scheduleQuery = conf.get(SCHEDULED_QUERY_SCHEDULENAME);
+            if (!StringUtils.isEmpty(scheduleQuery)) {
+              if (!getReplPolicyIdString(db).contains(scheduleQuery)) {
+                updateReplSourceFor(hiveDb, dbName, db,
+                    getReplPolicyIdString(db) + ", " + scheduleQuery);
+              }
+            }
+          }
+        }
+
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
         int estimatedNumFunctions = hiveDb.getFunctions(dbName, "*").size();
         replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
@@ -890,7 +941,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
         String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
         Exception caught = null;
-        try (Writer writer = new Writer(dbRoot, conf)) {
+        try {
+          ReplExternalTables externalTablesWriter = new ReplExternalTables(conf);
+          boolean isSingleTaskForExternalDb =
+              conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK)
+                  && work.replScope.includeAllTables();
+          boolean isExternalTablePresent = false;
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             Table table = null;
             try {
@@ -908,7 +964,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               if (shouldDumpExternalTableLocation()
                       && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
                 LOG.debug("Adding table {} to external tables list", tblName);
-                writer.dataLocationDump(tableTuple.object, extTableFileList, conf);
+                externalTablesWriter.dataLocationDump(tableTuple.object, extTableFileList,
+                    new Path(db.getLocationUri()), !isSingleTaskForExternalDb, conf);
+                isExternalTablePresent = true;
               }
               dumpTable(dbName, tblName, validTxnList, dbRoot, dbDataRoot,
                       bootDumpBeginReplId,
@@ -922,6 +980,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             if (tableList != null && isTableSatifiesConfig(table)) {
               tableList.add(tblName);
             }
+          }
+
+          // if it is not a table level replication, add a single task for
+          // the database default location for external tables.
+          if (isExternalTablePresent && shouldDumpExternalTableLocation()
+              && isSingleTaskForExternalDb) {
+            externalTablesWriter.dbLocationDump(dbName, new Path(db.getLocationUri()), extTableFileList, conf);
           }
           dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
         } catch (Exception e) {
@@ -961,9 +1026,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private FileList createTableFileList(Path dumpRoot, String fileName, int cacheSize) {
+  private void updateReplSourceFor(Hive hiveDb, String dbName, Database db,
+      String value) throws HiveException {
+    Map<String, String> params = db.getParameters();
+    if (params != null) {
+      params.put("repl.source.for", value);
+      db.setParameters(params);
+    } else {
+      db.setParameters(Collections.singletonMap("repl.source.for", value));
+    }
+    hiveDb.alterDatabase(dbName, db);
+  }
+
+  private FileList createTableFileList(Path dumpRoot, String fileName) {
     Path backingFile = new Path(dumpRoot, fileName);
-    return new FileList(backingFile, cacheSize, conf);
+    return new FileList(backingFile, conf);
   }
 
 
@@ -1020,7 +1097,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     FileSystem fs = dbRoot.getFileSystem(conf);
     Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
     HiveWrapper.Tuple<Database> database = new HiveWrapper(hiveDb, dbName, lastReplId).database();
-    EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec);
+    EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec, context.getConf());
     return dbRoot;
   }
 

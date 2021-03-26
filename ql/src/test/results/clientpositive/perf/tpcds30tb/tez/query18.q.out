@@ -120,15 +120,15 @@ STAGE PLANS:
                         Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.5013624
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: cs_sold_date_sk (bigint)
                             Target Input: catalog_sales
                             Partition key expr: cs_sold_date_sk
-                            Statistics: Num rows: 183 Data size: 1464 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 367 Data size: 2936 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -283,8 +283,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: decimal(12,2)), KEY.reducesinkkey0 (type: bigint)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: decimal(12,2))
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions: _col0 (type: bigint)
                   null sort order: z

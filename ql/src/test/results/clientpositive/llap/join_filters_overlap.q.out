@@ -315,14 +315,14 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a_n4
-                  filterExpr: (((value = 50) and key is not null) or ((value = 60) and key is not null)) (type: boolean)
+                  filterExpr: ((value = 50) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -342,25 +342,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
-                        value expressions: _col1 (type: int)
-                        auto parallelism: true
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: ((value = 60) and key is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: int), 60 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        bucketingVersion: 2
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        numBuckets: -1
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        tag: 1
                         value expressions: _col1 (type: int)
                         auto parallelism: true
             Execution mode: vectorized, llap
@@ -423,6 +404,25 @@ STAGE PLANS:
                       tag: 1
                       value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: true
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((value = 60) and key is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), 60 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        value expressions: _col1 (type: int)
+                        auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
@@ -593,14 +593,14 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a_n4
-                  filterExpr: (((value = 50) and key is not null) or ((value = 60) and key is not null)) (type: boolean)
+                  filterExpr: ((value = 50) and key is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -620,25 +620,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
-                        value expressions: _col1 (type: int)
-                        auto parallelism: true
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: ((value = 60) and key is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: int), 60 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        bucketingVersion: 2
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        numBuckets: -1
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        tag: 1
                         value expressions: _col1 (type: int)
                         auto parallelism: true
             Execution mode: vectorized, llap
@@ -701,6 +682,25 @@ STAGE PLANS:
                       tag: 1
                       value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
                       auto parallelism: true
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((value = 60) and key is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), 60 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        numBuckets: -1
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        value expressions: _col1 (type: int)
+                        auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:

@@ -79,7 +79,6 @@ import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.security.TokenCache;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.parquet.Strings;
 import org.apache.thrift.TException;
@@ -895,7 +894,9 @@ public class CompactorMR {
           AcidOutputFormat<WritableComparable, V> aof =
           instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-      deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+      Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+      cleanupTmpLocationOnTaskRetry(options, rootDir);
+      deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
 
     }
   }
@@ -948,14 +949,8 @@ public class CompactorMR {
         LOG.error(s);
         throw new IOException(s);
       }
-    } catch (ClassNotFoundException e) {
-      LOG.error("Unable to instantiate class, " + StringUtils.stringifyException(e));
-      throw new IOException(e);
-    } catch (InstantiationException e) {
-      LOG.error("Unable to instantiate class, " + StringUtils.stringifyException(e));
-      throw new IOException(e);
-    } catch (IllegalAccessException e) {
-      LOG.error("Unable to instantiate class, " + StringUtils.stringifyException(e));
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      LOG.error("Unable to instantiate class", e);
       throw new IOException(e);
     }
     return t;

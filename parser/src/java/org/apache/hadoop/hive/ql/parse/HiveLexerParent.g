@@ -376,6 +376,8 @@ KW_PKFK_JOIN: 'PKFK_JOIN';
 KW_LEADING: 'LEADING';
 KW_TRAILING: 'TRAILING';
 KW_TRIM: 'TRIM';
+KW_IGNORE: 'IGNORE';
+KW_RESPECT: 'RESPECT';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

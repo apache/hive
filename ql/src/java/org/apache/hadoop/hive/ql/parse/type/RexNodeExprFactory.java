@@ -25,10 +25,13 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -69,6 +72,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRexExprList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
@@ -936,7 +940,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     // subqueryToRelNode might be null if subquery expression anywhere other than
     //  as expected in filter (where/having). We should throw an appropriate error
     // message
-    Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
+    Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode = ctx.getSubqueryToRelNode();
     if (subqueryToRelNode == null) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
           " Currently SubQuery expressions are only allowed as " +
@@ -944,11 +948,14 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
 
     ASTNode subqueryOp = (ASTNode) expr.getChild(0);
-    RelNode subqueryRel = subqueryToRelNode.get(expr);
+    RelNode subqueryRel = subqueryToRelNode.get(expr).getSubQueryRelNode();
     // For now because subquery is only supported in filter
     // we will create subquery expression of boolean type
     switch (subqueryType) {
       case EXISTS: {
+        if (subqueryToRelNode.get(expr).hasFullAggregate()) {
+          return createConstantExpr(TypeInfoFactory.booleanTypeInfo, true);
+        }
         return RexSubQuery.exists(subqueryRel);
       }
       case IN: {
@@ -998,6 +1005,18 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   @Override
   protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
     return functionHelper.getFunctionInfo(funcName);
+  }
+
+  @Override
+  protected RexNode replaceFieldNamesInStruct(RexNode expr, List<String> newFieldNames) {
+    if (newFieldNames.isEmpty()) {
+      return expr;
+    }
+
+    RexCall structCall = (RexCall) expr;
+    List<RelDataType> newTypes = structCall.operands.stream().map(RexNode::getType).collect(Collectors.toList());
+    RelDataType newType = rexBuilder.getTypeFactory().createStructType(newTypes, newFieldNames);
+    return rexBuilder.makeCall(newType, structCall.op, structCall.operands);
   }
 
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
@@ -1065,5 +1084,4 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   public static NlsString makeHiveUnicodeString(String text) {
     return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
-
 }

@@ -778,6 +778,16 @@ class ListStoredProcedureRequest; end
 
 class StoredProcedure; end
 
+class AddPackageRequest; end
+
+class GetPackageRequest; end
+
+class DropPackageRequest; end
+
+class ListPackageRequest; end
+
+class Package; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -3282,6 +3292,8 @@ class GetPartitionsByNamesRequest
   PROCESSORIDENTIFIER = 6
   ENGINE = 7
   VALIDWRITEIDLIST = 8
+  GETFILEMETADATA = 9
+  ID = 10
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
@@ -3291,7 +3303,9 @@ class GetPartitionsByNamesRequest
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
     ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    GETFILEMETADATA => {:type => ::Thrift::Types::BOOL, :name => 'getFileMetadata', :optional => true},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4195,6 +4209,8 @@ class CompactionRequest
   TYPE = 4
   RUNAS = 5
   PROPERTIES = 6
+  INITIATORID = 7
+  INITIATORVERSION = 8
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4202,7 +4218,9 @@ class CompactionRequest
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType},
     RUNAS => {:type => ::Thrift::Types::STRING, :name => 'runas', :optional => true},
-    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
+    INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4341,6 +4359,9 @@ class ShowCompactResponseElement
   ID = 13
   ERRORMESSAGE = 14
   ENQUEUETIME = 15
+  WORKERVERSION = 16
+  INITIATORID = 17
+  INITIATORVERSION = 18
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4357,7 +4378,10 @@ class ShowCompactResponseElement
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
-    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true}
+    ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
+    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
+    INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5240,15 +5264,18 @@ end
 class Materialization
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SOURCETABLESUPDATEDELETEMODIFIED = 1
+  SOURCETABLESCOMPACTED = 2
 
   FIELDS = {
-    SOURCETABLESUPDATEDELETEMODIFIED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesUpdateDeleteModified'}
+    SOURCETABLESUPDATEDELETEMODIFIED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesUpdateDeleteModified'},
+    SOURCETABLESCOMPACTED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesCompacted'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sourceTablesUpdateDeleteModified is unset!') if @sourceTablesUpdateDeleteModified.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sourceTablesCompacted is unset!') if @sourceTablesCompacted.nil?
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -7119,6 +7146,123 @@ class StoredProcedure
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
     SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AddPackageRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PACKAGENAME = 3
+  OWNERNAME = 4
+  HEADER = 5
+  BODY = 6
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PACKAGENAME => {:type => ::Thrift::Types::STRING, :name => 'packageName'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    HEADER => {:type => ::Thrift::Types::STRING, :name => 'header'},
+    BODY => {:type => ::Thrift::Types::STRING, :name => 'body'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetPackageRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PACKAGENAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PACKAGENAME => {:type => ::Thrift::Types::STRING, :name => 'packageName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field packageName is unset!') unless @packageName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DropPackageRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PACKAGENAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PACKAGENAME => {:type => ::Thrift::Types::STRING, :name => 'packageName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field packageName is unset!') unless @packageName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ListPackageRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Package
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PACKAGENAME = 3
+  OWNERNAME = 4
+  HEADER = 5
+  BODY = 6
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PACKAGENAME => {:type => ::Thrift::Types::STRING, :name => 'packageName'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    HEADER => {:type => ::Thrift::Types::STRING, :name => 'header'},
+    BODY => {:type => ::Thrift::Types::STRING, :name => 'body'}
   }
 
   def struct_fields; FIELDS; end

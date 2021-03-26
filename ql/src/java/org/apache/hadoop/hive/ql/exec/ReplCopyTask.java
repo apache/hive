@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.util.StringUtils;
 
 import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
 
@@ -160,7 +159,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
       return 0;
     } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.error("Failed to execute", e);
       setException(e);
       return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
               getName(), conf);

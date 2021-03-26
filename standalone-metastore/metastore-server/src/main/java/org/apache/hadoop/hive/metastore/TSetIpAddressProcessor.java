@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.thrift.TException;
