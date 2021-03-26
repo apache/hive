@@ -167,7 +167,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvid
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsRule2;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2463,22 +2462,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
           MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
           visitor.go(basePlan);
           if (visitor.isRewritingAllowed()) {
-            program = new HepProgramBuilder();
             if (materialization.isSourceTablesUpdateDeleteModified()) {
               if (visitor.isContainsAggregate()) {
                 return calcitePreMVRewritingPlan;
               }
+
+              program = new HepProgramBuilder();
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveJoinIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-              basePlan = applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
-
-              program = new HepProgramBuilder();
-              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  new HiveFetchDeletedRowsRule2());
-              return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             } else {
+              program = new HepProgramBuilder();
               // Trigger rewriting to remove UNION branch with MV
               if (visitor.isContainsAggregate()) {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
@@ -2489,8 +2484,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     HiveNoAggregateIncrementalRewritingRule.INSTANCE);
                 mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
               }
+              basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             }
-            basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
           }
         }
       } else if (useMaterializedViewsRegistry) {
@@ -2523,6 +2518,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+      } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_REBUILD) {
+        program = new HepProgramBuilder();
+        generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, new HiveFetchDeletedRowsRule());
+        basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
       }
 
       return basePlan;

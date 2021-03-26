@@ -43,37 +43,13 @@ import java.util.Set;
 public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
 
   private final RelBuilder relBuilder;
-//  private final Set<String> tables;
 
-  public HiveFetchDeletedRowsPropagator(RelBuilder relBuilder, List<String> tables) {
+  public HiveFetchDeletedRowsPropagator(RelBuilder relBuilder) {
     this.relBuilder = relBuilder;
-//    this.tables = new HashSet(tables);
   }
 
   public RelNode propagate(RelNode relNode) {
     return relNode.accept(this);
-//    RelNode newPlan = relNode.accept(this);
-//
-//    RelDataType rowType = newPlan.getRowType();
-//    List<RexNode> projects = new ArrayList<>(rowType.getFieldCount());
-//    List<String> projectNames = new ArrayList<>(rowType.getFieldCount());
-//    populateProjects(relBuilder.getRexBuilder(), rowType, projects, projectNames);
-//    projects.remove(projects.size() - 1);
-//    projectNames.remove(projectNames.size() - 1);
-//
-//    RexBuilder rexBuilder = relBuilder.getRexBuilder();
-//
-////    RelDataTypeField rowIsDeletedType = rowType.getFieldList().get(rowType.getFieldCount() - 1);
-////    RexNode rowIsDeleted = rexBuilder.makeInputRef(
-////        rowIsDeletedType.getType(), rowType.getFieldCount() - 1);
-////    RexNode rowIsNotDeleted = rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted);
-////    RexNode filterCondition = rexBuilder.makeCall(SqlStdOperatorTable.OR, rowIsDeleted, rowIsNotDeleted);
-//
-//    return relBuilder
-//        .push(newPlan)
-////        .filter(filterCondition)
-//        .project(projects, projectNames)
-//        .build();
   }
 
   @Override
@@ -106,11 +82,6 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
       String propagatedColumnName = projectNames.remove(column.getIndex());
       projectNames.add(propagatedColumnName);
     }
-
-//    RelOptHiveTable relOptHiveTable = (RelOptHiveTable) scan.getTable();
-//    if (tables.contains(relOptHiveTable.getName())) {
-//      scan = scan.withFetchDeletedRows();
-//    }
 
     return relBuilder
             .push(scan.withFetchDeletedRows())
