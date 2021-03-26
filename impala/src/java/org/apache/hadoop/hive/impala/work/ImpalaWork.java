@@ -119,6 +119,7 @@ public class ImpalaWork extends EngineWork implements Serializable {
     }
 
     private void submitExplain() {
+      Preconditions.checkState(plan.getIsExplain());
       // Send plan to backend by executing this task. The configuration
       // should already be set properly to avoid executing the query
       // and rather register this as an EXPLAIN query

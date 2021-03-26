@@ -95,10 +95,10 @@ public class ImpalaCompiler extends TaskCompiler {
             MoveWork moveWork = moveTask == null ? null : (MoveWork) moveTask.getWork();
             ImpalaCompiledPlan impalaCompiledPlan = getFinalizedCompiledPlan(pCtx, moveWork);
             Preconditions.checkNotNull(impalaCompiledPlan, "Impala compiled plan cannot be null");
-            boolean submitToBackend = !conf.getBoolVar(ConfVars.HIVE_IN_TEST);
+            boolean submitExplainToBackend = !conf.getBoolVar(ConfVars.HIVE_IN_TEST) && impalaCompiledPlan.getIsExplain();
             // This is the common path for a planned query
             work = ImpalaWork.createPlannedWork(impalaCompiledPlan, pCtx.getQueryState(),
-                pCtx.getFetchTask(), requestedFetchSize, submitToBackend, pCtx.getContext());
+                pCtx.getFetchTask(), requestedFetchSize, submitExplainToBackend, pCtx.getContext());
         }
 
         Task<ImpalaWork> task = TaskFactory.get(work);
