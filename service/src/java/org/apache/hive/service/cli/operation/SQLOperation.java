@@ -32,10 +32,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -60,6 +59,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.SchedulerThreadPool;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -93,7 +93,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private volatile MetricsScope currentSQLStateScope;
   private final QueryInfo queryInfo;
   private final long queryTimeout;
-  private ScheduledExecutorService timeoutExecutor;
+  private ScheduledFuture<?> queryTimeoutTask;
   private final boolean runAsync;
   private final long operationLogCleanupDelayMs;
   private final ArrayList<Object> convey = new ArrayList<>();
@@ -173,8 +173,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       // Start the timer thread for canceling the query when query timeout is reached
       // queryTimeout == 0 means no timeout
       if (queryTimeout > 0L) {
-        timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
-        timeoutExecutor.schedule(() -> {
+        Runnable timeoutTask = () -> {
           try {
             final String queryId = queryState.getQueryId();
             log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
@@ -182,8 +181,8 @@ public class SQLOperation extends ExecuteStatementOperation {
           } catch (HiveSQLException e) {
             log.error("Error cancelling the query after timeout: {} seconds", queryTimeout, e);
           }
-          return null;
-        }, queryTimeout, TimeUnit.SECONDS);
+        };
+        queryTimeoutTask = SchedulerThreadPool.getInstance().schedule(timeoutTask, queryTimeout, TimeUnit.SECONDS);
       }
 
       queryInfo.setQueryDisplay(driver.getQueryDisplay());
@@ -415,9 +414,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       ss.deleteTmpErrOutputFile();
     }
 
-    // Shutdown the timeout thread if any, while closing this operation
-    if ((timeoutExecutor != null) && (state != OperationState.TIMEDOUT) && (state.isTerminal())) {
-      timeoutExecutor.shutdownNow();
+    // Cancel the timeout thread if any, while closing this operation
+    if (queryTimeoutTask != null) {
+      queryTimeoutTask.cancel(true);
     }
   }
 
