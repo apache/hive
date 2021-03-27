@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TaskQueue {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Driver.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TaskQueue.class.getName());
   private static final SessionState.LogHelper CONSOLE = new SessionState.LogHelper(LOG);
 
   private static final int SLEEP_TIME = 2000;
