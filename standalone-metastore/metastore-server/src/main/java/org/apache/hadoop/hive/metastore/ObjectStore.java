@@ -10560,7 +10560,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
     MStoredProc proc = getMStoredProcedure(catName, db, name);
     return proc == null ? null : convertToStoredProc(catName, proc);
   }
@@ -10609,7 +10609,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
     boolean success = false;
     try {
       openTransaction();

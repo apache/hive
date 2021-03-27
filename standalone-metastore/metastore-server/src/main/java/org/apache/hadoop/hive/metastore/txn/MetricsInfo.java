@@ -22,22 +22,49 @@ package org.apache.hadoop.hive.metastore.txn;
  */
 public class MetricsInfo {
 
-  private int txnToWriteIdRowCount;
-  private int completedTxnsRowCount;
+  private int txnToWriteIdCount;
+  private int completedTxnsCount;
+  private int openTxnsCount;
+  private int oldestOpenTxnId;
+  private int oldestOpenTxnAge;
 
-  public int getTxnToWriteIdRowCount() {
-    return txnToWriteIdRowCount;
+  public int getTxnToWriteIdCount() {
+    return txnToWriteIdCount;
   }
 
-  public void setTxnToWriteIdRowCount(int txnToWriteIdRowCount) {
-    this.txnToWriteIdRowCount = txnToWriteIdRowCount;
+  public void setTxnToWriteIdCount(int txnToWriteIdCount) {
+    this.txnToWriteIdCount = txnToWriteIdCount;
   }
 
-  public int getCompletedTxnsRowCount() {
-    return completedTxnsRowCount;
+  public int getCompletedTxnsCount() {
+    return completedTxnsCount;
   }
 
-  public void setCompletedTxnsRowCount(int completedTxnsRowCount) {
-    this.completedTxnsRowCount = completedTxnsRowCount;
+  public void setCompletedTxnsCount(int completedTxnsCount) {
+    this.completedTxnsCount = completedTxnsCount;
+  }
+
+  public int getOpenTxnsCount() {
+    return openTxnsCount;
+  }
+
+  public void setOpenTxnsCount(int openTxnsCount) {
+    this.openTxnsCount = openTxnsCount;
+  }
+
+  public int getOldestOpenTxnId() {
+    return oldestOpenTxnId;
+  }
+
+  public void setOldestOpenTxnId(int oldestOpenTxnId) {
+    this.oldestOpenTxnId = oldestOpenTxnId;
+  }
+
+  public int getOldestOpenTxnAge() {
+    return oldestOpenTxnAge;
+  }
+
+  public void setOldestOpenTxnAge(int oldestOpenTxnAge) {
+    this.oldestOpenTxnAge = oldestOpenTxnAge;
   }
 }

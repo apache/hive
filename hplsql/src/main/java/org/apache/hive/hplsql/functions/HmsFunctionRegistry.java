@@ -128,13 +128,13 @@ public class HmsFunctionRegistry implements FunctionRegistry {
   private void callWithParameters(HplsqlParser.Expr_func_paramsContext ctx, ParserRuleContext procCtx, HashMap<String, Var> out, ArrayList<Var> actualParams) {
     if (procCtx instanceof HplsqlParser.Create_function_stmtContext) {
       HplsqlParser.Create_function_stmtContext func = (HplsqlParser.Create_function_stmtContext) procCtx;
-      setCallParameters(ctx, actualParams, func.create_routine_params(), null, exec);
+      setCallParameters(func.ident().getText(), ctx, actualParams, func.create_routine_params(), null, exec);
       if (func.declare_block_inplace() != null)
         exec.visit(func.declare_block_inplace());
       exec.visit(func.single_block_stmt());
     } else {
       HplsqlParser.Create_procedure_stmtContext proc = (HplsqlParser.Create_procedure_stmtContext) procCtx;
-      setCallParameters(ctx, actualParams, proc.create_routine_params(), out, exec);
+      setCallParameters(proc.ident(0).getText(), ctx, actualParams, proc.create_routine_params(), out, exec);
       exec.visit(proc.proc_block());
     }
   }
@@ -152,7 +152,7 @@ public class HmsFunctionRegistry implements FunctionRegistry {
     try {
       StoredProcedureRequest request = new StoredProcedureRequest(
               hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name);
-      return Optional.of(msc.getStoredProcedure(request));
+      return Optional.ofNullable(msc.getStoredProcedure(request));
     } catch (NoSuchObjectException e) {
       return Optional.empty();
     } catch (TException e) {

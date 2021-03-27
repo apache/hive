@@ -207,7 +207,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void compact2(CompactionResponse& _return, const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
-  virtual void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) = 0;
+  virtual void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) = 0;
   virtual void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) = 0;
   virtual void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr) = 0;
   virtual void mark_cleaned(const CompactionInfoStruct& cr) = 0;
@@ -887,7 +887,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) {
     return;
   }
-  void find_next_compact(OptionalCompactionInfoStruct& /* _return */, const std::string& /* workerId */) {
+  void find_next_compact(OptionalCompactionInfoStruct& /* _return */, const std::string& /* workerId */, const std::string& /* workerVersion */) {
     return;
   }
   void update_compactor_state(const CompactionInfoStruct& /* cr */, const int64_t /* txn_id */) {
@@ -23811,8 +23811,9 @@ class ThriftHiveMetastore_add_dynamic_partitions_presult {
 };
 
 typedef struct _ThriftHiveMetastore_find_next_compact_args__isset {
-  _ThriftHiveMetastore_find_next_compact_args__isset() : workerId(false) {}
+  _ThriftHiveMetastore_find_next_compact_args__isset() : workerId(false), workerVersion(false) {}
   bool workerId :1;
+  bool workerVersion :1;
 } _ThriftHiveMetastore_find_next_compact_args__isset;
 
 class ThriftHiveMetastore_find_next_compact_args {
@@ -23820,19 +23821,24 @@ class ThriftHiveMetastore_find_next_compact_args {
 
   ThriftHiveMetastore_find_next_compact_args(const ThriftHiveMetastore_find_next_compact_args&);
   ThriftHiveMetastore_find_next_compact_args& operator=(const ThriftHiveMetastore_find_next_compact_args&);
-  ThriftHiveMetastore_find_next_compact_args() : workerId() {
+  ThriftHiveMetastore_find_next_compact_args() : workerId(), workerVersion() {
   }
 
   virtual ~ThriftHiveMetastore_find_next_compact_args() noexcept;
   std::string workerId;
+  std::string workerVersion;
 
   _ThriftHiveMetastore_find_next_compact_args__isset __isset;
 
   void __set_workerId(const std::string& val);
 
+  void __set_workerVersion(const std::string& val);
+
   bool operator == (const ThriftHiveMetastore_find_next_compact_args & rhs) const
   {
     if (!(workerId == rhs.workerId))
+      return false;
+    if (!(workerVersion == rhs.workerVersion))
       return false;
     return true;
   }
@@ -23854,6 +23860,7 @@ class ThriftHiveMetastore_find_next_compact_pargs {
 
   virtual ~ThriftHiveMetastore_find_next_compact_pargs() noexcept;
   const std::string* workerId;
+  const std::string* workerVersion;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -31156,10 +31163,9 @@ class ThriftHiveMetastore_get_stored_procedure_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_stored_procedure_result__isset {
-  _ThriftHiveMetastore_get_stored_procedure_result__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_stored_procedure_result__isset() : success(false), o1(false) {}
   bool success :1;
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_get_stored_procedure_result__isset;
 
 class ThriftHiveMetastore_get_stored_procedure_result {
@@ -31173,7 +31179,6 @@ class ThriftHiveMetastore_get_stored_procedure_result {
   virtual ~ThriftHiveMetastore_get_stored_procedure_result() noexcept;
   StoredProcedure success;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_get_stored_procedure_result__isset __isset;
 
@@ -31181,15 +31186,11 @@ class ThriftHiveMetastore_get_stored_procedure_result {
 
   void __set_o1(const MetaException& val);
 
-  void __set_o2(const NoSuchObjectException& val);
-
   bool operator == (const ThriftHiveMetastore_get_stored_procedure_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     if (!(o1 == rhs.o1))
-      return false;
-    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -31205,10 +31206,9 @@ class ThriftHiveMetastore_get_stored_procedure_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_stored_procedure_presult__isset {
-  _ThriftHiveMetastore_get_stored_procedure_presult__isset() : success(false), o1(false), o2(false) {}
+  _ThriftHiveMetastore_get_stored_procedure_presult__isset() : success(false), o1(false) {}
   bool success :1;
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_get_stored_procedure_presult__isset;
 
 class ThriftHiveMetastore_get_stored_procedure_presult {
@@ -31218,7 +31218,6 @@ class ThriftHiveMetastore_get_stored_procedure_presult {
   virtual ~ThriftHiveMetastore_get_stored_procedure_presult() noexcept;
   StoredProcedure* success;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_get_stored_procedure_presult__isset __isset;
 
@@ -31276,9 +31275,8 @@ class ThriftHiveMetastore_drop_stored_procedure_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_result__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false), o2(false) {}
+  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false) {}
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_drop_stored_procedure_result__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_result {
@@ -31291,19 +31289,14 @@ class ThriftHiveMetastore_drop_stored_procedure_result {
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_result() noexcept;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_drop_stored_procedure_result__isset __isset;
 
   void __set_o1(const MetaException& val);
 
-  void __set_o2(const NoSuchObjectException& val);
-
   bool operator == (const ThriftHiveMetastore_drop_stored_procedure_result & rhs) const
   {
     if (!(o1 == rhs.o1))
-      return false;
-    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -31319,9 +31312,8 @@ class ThriftHiveMetastore_drop_stored_procedure_result {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_presult__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false), o2(false) {}
+  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false) {}
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_drop_stored_procedure_presult__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_presult {
@@ -31330,7 +31322,6 @@ class ThriftHiveMetastore_drop_stored_procedure_presult {
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_presult() noexcept;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_drop_stored_procedure_presult__isset __isset;
 
@@ -32445,8 +32436,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions();
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId);
-  void send_find_next_compact(const std::string& workerId);
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion);
+  void send_find_next_compact(const std::string& workerId, const std::string& workerVersion);
   void recv_find_next_compact(OptionalCompactionInfoStruct& _return);
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
   void send_update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
@@ -34981,13 +34972,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_dynamic_partitions(rqst);
   }
 
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->find_next_compact(_return, workerId);
+      ifaces_[i]->find_next_compact(_return, workerId, workerVersion);
     }
-    ifaces_[i]->find_next_compact(_return, workerId);
+    ifaces_[i]->find_next_compact(_return, workerId, workerVersion);
     return;
   }
 
@@ -36236,8 +36227,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   int32_t send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions(const int32_t seqid);
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId);
-  int32_t send_find_next_compact(const std::string& workerId);
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion);
+  int32_t send_find_next_compact(const std::string& workerId, const std::string& workerVersion);
   void recv_find_next_compact(OptionalCompactionInfoStruct& _return, const int32_t seqid);
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
   int32_t send_update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);

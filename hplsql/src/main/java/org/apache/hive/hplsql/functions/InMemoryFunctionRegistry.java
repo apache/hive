@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.hive.hplsql.ArityException;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplsqlParser;
 import org.apache.hive.hplsql.Scope;
@@ -87,7 +88,7 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
     }
     ArrayList<Var> actualParams = getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(ctx, actualParams, userCtx.create_routine_params(), null, exec);
+    setCallParameters(name, ctx, actualParams, userCtx.create_routine_params(), null, exec);
     if (userCtx.declare_block_inplace() != null) {
       visit(userCtx.declare_block_inplace());
     }
@@ -116,7 +117,7 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
       visit(procCtx.declare_block_inplace());
     }
     if (procCtx.create_routine_params() != null) {
-      setCallParameters(ctx, actualParams, procCtx.create_routine_params(), out, exec);
+      setCallParameters(name, ctx, actualParams, procCtx.create_routine_params(), out, exec);
     }
     visit(procCtx.proc_block());
     exec.callStackPop();
@@ -130,7 +131,7 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
   /**
    * Set parameters for user-defined function call
    */
-  public static void setCallParameters(HplsqlParser.Expr_func_paramsContext actual, ArrayList<Var> actualValues,
+  public static void setCallParameters(String procName, HplsqlParser.Expr_func_paramsContext actual, ArrayList<Var> actualValues,
                          HplsqlParser.Create_routine_paramsContext formal,
                          HashMap<String, Var> out,
                          Exec exec) {
@@ -139,10 +140,10 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
     }
     int actualCnt = actualValues.size();
     int formalCnt = formal.create_routine_param_item().size();
+    if (formalCnt != actualCnt) {
+      throw new ArityException(actual.getParent(), procName, formalCnt, actualCnt);
+    }
     for (int i = 0; i < actualCnt; i++) {
-      if (i >= formalCnt) {
-        break;
-      }
       HplsqlParser.ExprContext a = actual.func_param(i).expr(); 
       HplsqlParser.Create_routine_param_itemContext p = getCallParameter(actual, formal, i);
       String name = p.ident().getText();

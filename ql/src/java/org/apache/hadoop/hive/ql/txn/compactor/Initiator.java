@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -246,7 +247,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
-    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(Worker.hostname());
+    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
     txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
@@ -411,6 +412,8 @@ public class Initiator extends MetaStoreCompactorThread {
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
+    rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
+    rqst.setInitiatorVersion(this.runtimeVersion);
     LOG.info("Requesting compaction: " + rqst);
     CompactionResponse resp = txnHandler.compact(rqst);
     if(resp.isAccepted()) {
@@ -501,5 +504,12 @@ public class Initiator extends MetaStoreCompactorThread {
       }
     }
     return true;
+  }
+
+  private String getInitiatorId(long threadId) {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(threadId);
+    return name.toString();
   }
 }

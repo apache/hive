@@ -14391,17 +14391,21 @@ class CompactionRequest(object):
      - type
      - runas
      - properties
+     - initiatorId
+     - initiatorVersion
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
         self.type = type
         self.runas = runas
         self.properties = properties
+        self.initiatorId = initiatorId
+        self.initiatorVersion = initiatorVersion
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14448,6 +14452,16 @@ class CompactionRequest(object):
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.initiatorId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.initiatorVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14485,6 +14499,14 @@ class CompactionRequest(object):
                 oprot.writeString(kiter719.encode('utf-8') if sys.version_info[0] == 2 else kiter719)
                 oprot.writeString(viter720.encode('utf-8') if sys.version_info[0] == 2 else viter720)
             oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.initiatorId is not None:
+            oprot.writeFieldBegin('initiatorId', TType.STRING, 7)
+            oprot.writeString(self.initiatorId.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorId)
+            oprot.writeFieldEnd()
+        if self.initiatorVersion is not None:
+            oprot.writeFieldBegin('initiatorVersion', TType.STRING, 8)
+            oprot.writeString(self.initiatorVersion.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorVersion)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -14930,11 +14952,14 @@ class ShowCompactResponseElement(object):
      - id
      - errorMessage
      - enqueueTime
+     - workerVersion
+     - initiatorId
+     - initiatorVersion
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -14950,6 +14975,9 @@ class ShowCompactResponseElement(object):
         self.id = id
         self.errorMessage = errorMessage
         self.enqueueTime = enqueueTime
+        self.workerVersion = workerVersion
+        self.initiatorId = initiatorId
+        self.initiatorVersion = initiatorVersion
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15035,6 +15063,21 @@ class ShowCompactResponseElement(object):
                     self.enqueueTime = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.STRING:
+                    self.workerVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 17:
+                if ftype == TType.STRING:
+                    self.initiatorId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 18:
+                if ftype == TType.STRING:
+                    self.initiatorVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15104,6 +15147,18 @@ class ShowCompactResponseElement(object):
         if self.enqueueTime is not None:
             oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
             oprot.writeI64(self.enqueueTime)
+            oprot.writeFieldEnd()
+        if self.workerVersion is not None:
+            oprot.writeFieldBegin('workerVersion', TType.STRING, 16)
+            oprot.writeString(self.workerVersion.encode('utf-8') if sys.version_info[0] == 2 else self.workerVersion)
+            oprot.writeFieldEnd()
+        if self.initiatorId is not None:
+            oprot.writeFieldBegin('initiatorId', TType.STRING, 17)
+            oprot.writeString(self.initiatorId.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorId)
+            oprot.writeFieldEnd()
+        if self.initiatorVersion is not None:
+            oprot.writeFieldBegin('initiatorVersion', TType.STRING, 18)
+            oprot.writeString(self.initiatorVersion.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorVersion)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -18579,12 +18634,14 @@ class Materialization(object):
     """
     Attributes:
      - sourceTablesUpdateDeleteModified
+     - sourceTablesCompacted
 
     """
 
 
-    def __init__(self, sourceTablesUpdateDeleteModified=None,):
+    def __init__(self, sourceTablesUpdateDeleteModified=None, sourceTablesCompacted=None,):
         self.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified
+        self.sourceTablesCompacted = sourceTablesCompacted
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -18598,6 +18655,11 @@ class Materialization(object):
             if fid == 1:
                 if ftype == TType.BOOL:
                     self.sourceTablesUpdateDeleteModified = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.BOOL:
+                    self.sourceTablesCompacted = iprot.readBool()
                 else:
                     iprot.skip(ftype)
             else:
@@ -18614,12 +18676,18 @@ class Materialization(object):
             oprot.writeFieldBegin('sourceTablesUpdateDeleteModified', TType.BOOL, 1)
             oprot.writeBool(self.sourceTablesUpdateDeleteModified)
             oprot.writeFieldEnd()
+        if self.sourceTablesCompacted is not None:
+            oprot.writeFieldBegin('sourceTablesCompacted', TType.BOOL, 2)
+            oprot.writeBool(self.sourceTablesCompacted)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
         if self.sourceTablesUpdateDeleteModified is None:
             raise TProtocolException(message='Required field sourceTablesUpdateDeleteModified is unset!')
+        if self.sourceTablesCompacted is None:
+            raise TProtocolException(message='Required field sourceTablesCompacted is unset!')
         return
 
     def __repr__(self):
@@ -28459,6 +28527,8 @@ CompactionRequest.thrift_spec = (
     (4, TType.I32, 'type', None, None, ),  # 4
     (5, TType.STRING, 'runas', 'UTF8', None, ),  # 5
     (6, TType.MAP, 'properties', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 6
+    (7, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 7
+    (8, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 8
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -28512,6 +28582,9 @@ ShowCompactResponseElement.thrift_spec = (
     (13, TType.I64, 'id', None, None, ),  # 13
     (14, TType.STRING, 'errorMessage', 'UTF8', None, ),  # 14
     (15, TType.I64, 'enqueueTime', None, None, ),  # 15
+    (16, TType.STRING, 'workerVersion', 'UTF8', None, ),  # 16
+    (17, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 17
+    (18, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 18
 )
 all_structs.append(ShowCompactResponse)
 ShowCompactResponse.thrift_spec = (
@@ -28789,6 +28862,7 @@ all_structs.append(Materialization)
 Materialization.thrift_spec = (
     None,  # 0
     (1, TType.BOOL, 'sourceTablesUpdateDeleteModified', None, None, ),  # 1
+    (2, TType.BOOL, 'sourceTablesCompacted', None, None, ),  # 2
 )
 all_structs.append(WMResourcePlan)
 WMResourcePlan.thrift_spec = (

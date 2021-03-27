@@ -3083,13 +3083,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def find_next_compact(workerId)
-      send_find_next_compact(workerId)
+    def find_next_compact(workerId, workerVersion)
+      send_find_next_compact(workerId, workerVersion)
       return recv_find_next_compact()
     end
 
-    def send_find_next_compact(workerId)
-      send_message('find_next_compact', Find_next_compact_args, :workerId => workerId)
+    def send_find_next_compact(workerId, workerVersion)
+      send_message('find_next_compact', Find_next_compact_args, :workerId => workerId, :workerVersion => workerVersion)
     end
 
     def recv_find_next_compact()
@@ -4139,7 +4139,6 @@ module ThriftHiveMetastore
       result = receive_message(Get_stored_procedure_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_stored_procedure failed: unknown result')
     end
 
@@ -4155,7 +4154,6 @@ module ThriftHiveMetastore
     def recv_drop_stored_procedure()
       result = receive_message(Drop_stored_procedure_result)
       raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
       return
     end
 
@@ -6584,7 +6582,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Find_next_compact_args)
       result = Find_next_compact_result.new()
       begin
-        result.success = @handler.find_next_compact(args.workerId)
+        result.success = @handler.find_next_compact(args.workerId, args.workerVersion)
       rescue ::MetaException => o1
         result.o1 = o1
       end
@@ -7333,8 +7331,6 @@ module ThriftHiveMetastore
         result.success = @handler.get_stored_procedure(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
-      rescue ::NoSuchObjectException => o2
-        result.o2 = o2
       end
       write_result(result, oprot, 'get_stored_procedure', seqid)
     end
@@ -7346,8 +7342,6 @@ module ThriftHiveMetastore
         @handler.drop_stored_procedure(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
-      rescue ::NoSuchObjectException => o2
-        result.o2 = o2
       end
       write_result(result, oprot, 'drop_stored_procedure', seqid)
     end
@@ -14284,9 +14278,11 @@ module ThriftHiveMetastore
   class Find_next_compact_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     WORKERID = 1
+    WORKERVERSION = 2
 
     FIELDS = {
-      WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'}
+      WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'},
+      WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion'}
     }
 
     def struct_fields; FIELDS; end
@@ -16527,12 +16523,10 @@ module ThriftHiveMetastore
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
-    O2 = 2
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::StoredProcedure},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
@@ -16562,11 +16556,9 @@ module ThriftHiveMetastore
   class Drop_stored_procedure_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
-    O2 = 2
 
     FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

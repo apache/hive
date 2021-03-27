@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -102,6 +103,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorT
 public abstract class CompactorTest {
   static final private String CLASS_NAME = CompactorTest.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  public static final String WORKER_VERSION = "4.0.0";
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;
@@ -210,7 +212,7 @@ public abstract class CompactorTest {
   }
 
   protected long openTxn(TxnType txnType) throws MetaException {
-    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), Worker.hostname());
+    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), ServerUtils.hostname());
     rqst.setTxn_type(txnType);
     List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
@@ -614,7 +616,7 @@ public abstract class CompactorTest {
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    CompactionInfo ci = txnHandler.findNextToCompact("fred", WORKER_VERSION);
     ci.runAs = System.getProperty("user.name");
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci

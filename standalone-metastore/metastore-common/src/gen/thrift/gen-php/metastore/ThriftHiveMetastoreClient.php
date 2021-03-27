@@ -11977,16 +11977,17 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function find_next_compact($workerId)
+    public function find_next_compact($workerId, $workerVersion)
     {
-        $this->send_find_next_compact($workerId);
+        $this->send_find_next_compact($workerId, $workerVersion);
         return $this->recv_find_next_compact();
     }
 
-    public function send_find_next_compact($workerId)
+    public function send_find_next_compact($workerId, $workerVersion)
     {
         $args = new \metastore\ThriftHiveMetastore_find_next_compact_args();
         $args->workerId = $workerId;
+        $args->workerVersion = $workerVersion;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -16064,9 +16065,6 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o1 !== null) {
             throw $result->o1;
         }
-        if ($result->o2 !== null) {
-            throw $result->o2;
-        }
         throw new \Exception("get_stored_procedure failed: unknown result");
     }
 
@@ -16125,9 +16123,6 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         }
         if ($result->o1 !== null) {
             throw $result->o1;
-        }
-        if ($result->o2 !== null) {
-            throw $result->o2;
         }
         return;
     }

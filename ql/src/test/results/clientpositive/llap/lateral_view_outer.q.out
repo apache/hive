@@ -23,11 +23,11 @@ STAGE PLANS:
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
               Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col5
+                outputColumnNames: _col0, _col1, _col6
                 Limit
                   Number of rows: 10
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+                    expressions: _col0 (type: string), _col1 (type: string), _col6 (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     ListSink
             Select Operator
@@ -37,11 +37,11 @@ STAGE PLANS:
                 function name: explode
                 outer lateral view: true
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col5
+                  outputColumnNames: _col0, _col1, _col6
                   Limit
                     Number of rows: 10
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+                      expressions: _col0 (type: string), _col1 (type: string), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       ListSink
 
@@ -88,11 +88,11 @@ STAGE PLANS:
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
               Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col5
+                outputColumnNames: _col0, _col1, _col6
                 Limit
                   Number of rows: 10
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+                    expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int)
                     outputColumnNames: _col0, _col1, _col2
                     ListSink
             Select Operator
@@ -102,11 +102,11 @@ STAGE PLANS:
                 function name: explode
                 outer lateral view: true
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col5
+                  outputColumnNames: _col0, _col1, _col6
                   Limit
                     Number of rows: 10
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+                      expressions: _col0 (type: string), _col1 (type: string), _col6 (type: int)
                       outputColumnNames: _col0, _col1, _col2
                       ListSink
 
@@ -165,11 +165,11 @@ STAGE PLANS:
               expressions: key (type: string), value (type: array<string>)
               outputColumnNames: key, value
               Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col5
+                outputColumnNames: _col0, _col1, _col6
                 Limit
                   Number of rows: 10
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: array<string>), _col5 (type: string)
+                    expressions: _col0 (type: string), _col1 (type: array<string>), _col6 (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     ListSink
             Select Operator
@@ -179,11 +179,11 @@ STAGE PLANS:
                 function name: explode
                 outer lateral view: true
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col5
+                  outputColumnNames: _col0, _col1, _col6
                   Limit
                     Number of rows: 10
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: array<string>), _col5 (type: string)
+                      expressions: _col0 (type: string), _col1 (type: array<string>), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       ListSink
 
