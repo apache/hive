@@ -2486,6 +2486,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               }
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             }
+          } else if (materialization.isSourceTablesUpdateDeleteModified()) {
+            return calcitePreMVRewritingPlan;
           }
         }
       } else if (useMaterializedViewsRegistry) {
