@@ -28,6 +28,7 @@ import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -53,6 +54,7 @@ import org.apache.impala.catalog.FeFsPartition;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanNodeId;
+import org.apache.impala.util.AcidUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -143,7 +145,7 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     // get the conjuncts from the filter. It is possible that new conditions were added
     // after partition pruning.  We pass in partition conjuncts because we don't want
     // the partition conjuncts to be used in the filter condition. This will also validate
-    // that the existing partition conjuncts found at pruning time are still present in the 
+    // that the existing partition conjuncts found at pruning time are still present in the
     // filter as a check to make sure that the partiton conjunct wasn't stripped out of
     // the filter. Since partition pruning has already been done, we do not add any new
     // partition conjuncts, even if it is on a partitioned column.  It will be added to
@@ -190,13 +192,17 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
   public static ImmutableMap<Integer, Expr> createScanOutputExprs(List<SlotDescriptor> slotDescs,
       RelOptHiveTable scanTable) {
     Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
-    int totalColumnsInTbl = scanTable.getNoOfNonVirtualCols();
+    Table msTbl =  scanTable.getHiveTableMD().getTTable();
+    int acidTableColumns = AcidUtils.isFullAcidTable(msTbl.getParameters()) ? 1 : 0;
+    int totalColumnsInTbl = scanTable.getNoOfNonVirtualCols() + acidTableColumns;
     int nonPartitionedCols = scanTable.getNonPartColumns().size();
     for (SlotDescriptor slotDesc : slotDescs) {
       slotDesc.setIsMaterialized(true);
       // We need to determine the position of the column in the table. However, Impala places
       // the partitioned columns as the first columns whereas Calcite places them at the end.
       // We do modulo arithmetic to get the right position of the column.
+      // Also on the Impala side, the HdfsTable will have an extra column in between the
+      // partitioned and nonpartitioned columns if the table is acid.
       int position = (slotDesc.getColumn().getPosition() + nonPartitionedCols) % totalColumnsInTbl;
       exprs.put(position, new SlotRef(slotDesc));
     }
