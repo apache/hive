@@ -2770,7 +2770,7 @@ public class TestInputOutputFormat {
         ugi.doAs(new PrivilegedExceptionAction<Void>() {
           @Override
           public Void run() throws Exception {
-            OrcInputFormat.generateSplitsInfo(conf, new Context(conf, -1, null));
+            OrcInputFormat.generateSplitsInfo(conf, new Context(conf, -1));
             return null;
           }
         });
@@ -2789,7 +2789,7 @@ public class TestInputOutputFormat {
       }
       assertEquals(1, OrcInputFormat.Context.getCurrentThreadPoolSize());
       FileInputFormat.setInputPaths(conf, "mock:/ugi/2");
-      List<OrcSplit> splits = OrcInputFormat.generateSplitsInfo(conf, new Context(conf, -1, null));
+      List<OrcSplit> splits = OrcInputFormat.generateSplitsInfo(conf, new Context(conf, -1));
       assertEquals(1, splits.size());
     } finally {
       MockFileSystem.clearGlobalFiles();
