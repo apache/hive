@@ -112,6 +112,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     acidEnableConf.putAll(overrides);
 
+    setReplicaExternalBase(miniDFSCluster.getFileSystem(), acidEnableConf);
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
@@ -2486,7 +2487,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         .run("insert into table t1 values (1)")
         .dump(primaryDbName, withClauseOptions);
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica
+        .load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("select id from t1")
         .verifyResults(new String[] {"1"});
@@ -2499,7 +2501,41 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         .run("insert into table t1 values (2)")
         .dump(primaryDbName, withClauseOptions);
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica
+        .load(replicatedDbName, primaryDbName)
+        .run("use " + replicatedDbName)
+        .run("select id from t1")
+        .verifyResults(new String[] {"2"});
+  }
+
+  @Test
+  public void testTransactionalTableReplWithSameNameAsDroppedExternalTable() throws Throwable {
+    List<String> withClauseOptions = new LinkedList<>();
+    withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname
+        + "'='" + UserGroupInformation.getCurrentUser().getUserName() + "'");
+
+    primary
+        .run("use " + primaryDbName)
+        .run("create external table t1 (id int)")
+        .run("insert into table t1 values (1)")
+        .dump(primaryDbName, withClauseOptions);
+
+    replica
+        .load(replicatedDbName, primaryDbName)
+        .run("use " + replicatedDbName)
+        .run("select id from t1")
+        .verifyResults(new String[] {"1"});
+
+    primary
+        .run("use " + primaryDbName)
+        .run("drop table t1")
+        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+            "tblproperties (\"transactional\"=\"true\")")
+        .run("insert into table t1 values (2)")
+        .dump(primaryDbName, withClauseOptions);
+
+    replica
+        .load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("select id from t1")
         .verifyResults(new String[] {"2"});

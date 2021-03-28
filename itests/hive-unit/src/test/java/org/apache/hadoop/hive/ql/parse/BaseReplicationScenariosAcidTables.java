@@ -117,7 +117,7 @@ public class BaseReplicationScenariosAcidTables {
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
 
-  private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
+  protected static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
     fs.mkdirs(REPLICA_EXTERNAL_BASE);
     fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
     confMap.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
