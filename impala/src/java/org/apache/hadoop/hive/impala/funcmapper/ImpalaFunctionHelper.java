@@ -19,24 +19,44 @@
 package org.apache.hadoop.hive.impala.funcmapper;
 
 import com.google.common.collect.Sets;
+import java.nio.charset.Charset;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.type.InferTypes;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CalciteUDFInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.CalciteUDAF;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.impala.plan.ImpalaQueryContext;
 import org.apache.hadoop.hive.impala.prune.ImpalaPartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.math.BigDecimal;
@@ -186,6 +206,159 @@ public class ImpalaFunctionHelper implements FunctionHelper {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SqlOperator getCalciteFunction(String functionName, List<RelDataType> argTypes,
+      RelDataType retType, boolean deterministic, boolean runtimeConstant) {
+    SqlOperator op = ImpalaOperatorTable.IMPALA_OPERATOR_MAP.get(functionName.toUpperCase());
+    if (op == null) {
+      CalciteUDFInfo udfInfo = CalciteUDFInfo.createUDFInfo(functionName, argTypes, retType);
+      op = new HiveSqlFunction(udfInfo.udfName, SqlKind.OTHER_FUNCTION, udfInfo.returnTypeInference,
+          udfInfo.operandTypeInference, udfInfo.operandTypeChecker,
+          SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic, runtimeConstant);
+    }
+    return op;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SqlAggFunction getCalciteAggregateFunction(String functionName, boolean isDistinct,
+      List<RelDataType> argTypes, RelDataType retType) {
+    RelDataTypeFactory typeFactory = factory.getRexBuilder().getTypeFactory();
+    CalciteUDFInfo functionInfo = CalciteUDFInfo.createUDFInfo(functionName,
+        argTypes, retType);
+
+    SqlAggFunction calciteAggregateFunction;
+    switch (functionName.toLowerCase()) {
+    case "sum":
+      calciteAggregateFunction = new HiveSqlSumAggFunction(
+          isDistinct,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    case "count":
+      calciteAggregateFunction = new HiveSqlCountAggFunction(
+          isDistinct,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    case "min":
+      calciteAggregateFunction = new HiveSqlMinMaxAggFunction(
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker, true);
+      break;
+    case "max":
+      calciteAggregateFunction = new HiveSqlMinMaxAggFunction(
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker, false);
+      break;
+    case "avg":
+      calciteAggregateFunction = new HiveSqlAverageAggFunction(
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    case "std":
+    case "stddev":
+    case "stddev_samp":
+      calciteAggregateFunction = new HiveSqlVarianceAggFunction(
+          "stddev_samp",
+          SqlKind.STDDEV_SAMP,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    case "stddev_pop":
+      calciteAggregateFunction = new HiveSqlVarianceAggFunction(
+          "stddev_pop",
+          SqlKind.STDDEV_POP,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    case "variance":
+    case "var_samp":
+      calciteAggregateFunction = new HiveSqlVarianceAggFunction(
+          "var_samp",
+          SqlKind.VAR_SAMP,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    case "var_pop":
+      calciteAggregateFunction = new HiveSqlVarianceAggFunction(
+          "var_pop",
+          SqlKind.VAR_POP,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    // Data sketches: HLL
+    case "ds_hll_union":
+    case "ds_hll_sketch":
+      SqlReturnTypeInference returnHLLTypeInference = ReturnTypes.explicit(
+          typeFactory.createTypeWithCharsetAndCollation(
+              typeFactory.createTypeWithNullability(
+                  typeFactory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE), true),
+              Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT));
+      calciteAggregateFunction = new HiveMergeableAggregate("ds_hll_union",
+          SqlKind.OTHER_FUNCTION,
+          returnHLLTypeInference,
+          InferTypes.ANY_NULLABLE,
+          OperandTypes.family(),
+          null);
+      if (functionName.equalsIgnoreCase("ds_hll_sketch")) {
+        calciteAggregateFunction = new HiveMergeableAggregate("ds_hll_sketch",
+            SqlKind.OTHER_FUNCTION,
+            returnHLLTypeInference,
+            InferTypes.ANY_NULLABLE,
+            OperandTypes.family(),
+            calciteAggregateFunction);
+      }
+      break;
+    // Data sketches: KLL
+    case "ds_kll_union":
+    case "ds_kll_sketch":
+      SqlReturnTypeInference returnKLLTypeInference = ReturnTypes.explicit(
+          typeFactory.createTypeWithCharsetAndCollation(
+              typeFactory.createTypeWithNullability(
+                  typeFactory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE), true),
+              Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT));
+      calciteAggregateFunction = new HiveMergeableAggregate("ds_kll_union",
+          SqlKind.OTHER_FUNCTION,
+          returnKLLTypeInference,
+          InferTypes.ANY_NULLABLE,
+          OperandTypes.family(),
+          null);
+      if (functionName.equalsIgnoreCase("ds_kll_sketch")) {
+        calciteAggregateFunction = new HiveMergeableAggregate("ds_kll_sketch",
+            SqlKind.OTHER_FUNCTION,
+            returnKLLTypeInference,
+            InferTypes.ANY_NULLABLE,
+            OperandTypes.family(),
+            calciteAggregateFunction);
+      }
+      break;
+    default:
+      calciteAggregateFunction = new CalciteUDAF(
+          isDistinct,
+          functionName,
+          functionInfo.returnTypeInference,
+          functionInfo.operandTypeInference,
+          functionInfo.operandTypeChecker);
+      break;
+    }
+    return calciteAggregateFunction;
   }
 
   /**

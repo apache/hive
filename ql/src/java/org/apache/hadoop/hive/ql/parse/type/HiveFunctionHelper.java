@@ -36,6 +36,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -381,6 +382,26 @@ public class HiveFunctionHelper implements FunctionHelper {
     }
 
     return expr;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SqlOperator getCalciteFunction(String functionName, List<RelDataType> argTypes,
+      RelDataType retType, boolean deterministic, boolean runtimeConstant)
+      throws SemanticException {
+    return SqlFunctionConverter.getCalciteFn(functionName,
+        argTypes, retType, deterministic, runtimeConstant);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SqlAggFunction getCalciteAggregateFunction(String functionName, boolean isDistinct,
+      List<RelDataType> argTypes, RelDataType retType) {
+    return SqlFunctionConverter.getCalciteAggFn(functionName, isDistinct, argTypes, retType);
   }
 
   /**

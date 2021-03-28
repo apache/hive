@@ -29,13 +29,16 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.SqlFunctionCategory;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CalciteUDFInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.impala.analysis.TypesUtil;
@@ -153,18 +156,16 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
   public RexNode createRexNode(ImpalaFunctionSignature candidate, List<RexNode> inputs,
       RelDataType returnDataType) {
-    try {
-      SqlOperator opToUse = op;
-      if (opToUse == null) {
-        boolean deterministic =
-            helper.isConsistentWithinQuery(new ImpalaFunctionInfo(candidate.getFunc()));
-        opToUse = SqlFunctionConverter.getCalciteFn(
-            func, argTypes, returnDataType, deterministic, false);
-      }
-      return rexBuilder.makeCall(returnDataType, opToUse, inputs);
-    } catch (CalciteSemanticException e) {
-      throw new RuntimeException("Could not create an SqlOperation for " + func);
+    SqlOperator opToUse = op;
+    if (opToUse == null) {
+      CalciteUDFInfo udfInfo = CalciteUDFInfo.createUDFInfo(func, argTypes, returnDataType);
+      boolean deterministic =
+          helper.isConsistentWithinQuery(new ImpalaFunctionInfo(candidate.getFunc()));
+      opToUse = new HiveSqlFunction(func, SqlKind.OTHER_FUNCTION, udfInfo.returnTypeInference,
+          udfInfo.operandTypeInference, udfInfo.operandTypeChecker,
+          SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic, false);
     }
+    return rexBuilder.makeCall(returnDataType, opToUse, inputs);
   }
 
   @Override

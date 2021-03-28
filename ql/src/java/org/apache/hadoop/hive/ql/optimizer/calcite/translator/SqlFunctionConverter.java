@@ -29,14 +29,10 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlMonotonicBinaryOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
-import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
-import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -45,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CalciteUDFInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CanAggregateDistinct;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
@@ -68,7 +65,6 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -106,7 +102,7 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getCalciteOperator(String funcTextName, GenericUDF hiveUDF,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType retType)
+      List<RelDataType> calciteArgTypes, RelDataType retType)
       throws SemanticException {
     // handle overloaded methods first
     if (hiveUDF instanceof GenericUDFOPNegative) {
@@ -541,29 +537,8 @@ public class SqlFunctionConverter {
     }
   }
 
-  private static class CalciteUDFInfo {
-    private String                     udfName;
-    private SqlReturnTypeInference     returnTypeInference;
-    private SqlOperandTypeInference    operandTypeInference;
-    private SqlOperandTypeChecker      operandTypeChecker;
-  }
-
-  private static CalciteUDFInfo getUDFInfo(String hiveUdfName,
-      List<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
-    CalciteUDFInfo udfInfo = new CalciteUDFInfo();
-    udfInfo.udfName = hiveUdfName;
-    udfInfo.returnTypeInference = ReturnTypes.explicit(calciteRetType);
-    udfInfo.operandTypeInference = InferTypes.explicit(calciteArgTypes);
-    ImmutableList.Builder<SqlTypeFamily> typeFamilyBuilder = new ImmutableList.Builder<SqlTypeFamily>();
-    for (RelDataType at : calciteArgTypes) {
-      typeFamilyBuilder.add(Util.first(at.getSqlTypeName().getFamily(), SqlTypeFamily.ANY));
-    }
-    udfInfo.operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
-    return udfInfo;
-  }
-
   public static SqlOperator getCalciteFn(String hiveUdfName,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType,
+      List<RelDataType> calciteArgTypes, RelDataType calciteRetType,
       boolean deterministic, boolean runtimeConstant)
       throws CalciteSemanticException {
 
@@ -574,7 +549,7 @@ public class SqlFunctionConverter {
       throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
     }
     SqlOperator calciteOp;
-    CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+    CalciteUDFInfo uInf = CalciteUDFInfo.createUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
     switch (hiveUdfName) {
       // Follow hive's rules for type inference as oppose to Calcite's
       // for return type.
@@ -599,12 +574,13 @@ public class SqlFunctionConverter {
     return calciteOp;
   }
 
-  public static SqlAggFunction getCalciteAggFn(FunctionHelper functionHelper, String hiveUdfName, boolean isDistinct,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
+  public static SqlAggFunction getCalciteAggFn(String hiveUdfName, boolean isDistinct,
+      List<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
     if (calciteAggFn == null) {
-      CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+      CalciteUDFInfo udfInfo =
+          CalciteUDFInfo.createUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
       switch (hiveUdfName.toLowerCase()) {
       case "sum":
@@ -641,14 +617,6 @@ public class SqlFunctionConverter {
         break;
       case "std":
       case "stddev":
-        calciteAggFn = new HiveSqlVarianceAggFunction(
-            functionHelper.getDefaultStandardDeviation() == SqlKind.STDDEV_POP ?
-                "stddev_pop" : "stddev_samp",
-            functionHelper.getDefaultStandardDeviation(),
-            udfInfo.returnTypeInference,
-            udfInfo.operandTypeInference,
-            udfInfo.operandTypeChecker);
-        break;
       case "stddev_pop":
         calciteAggFn = new HiveSqlVarianceAggFunction(
             "stddev_pop",
@@ -666,14 +634,6 @@ public class SqlFunctionConverter {
             udfInfo.operandTypeChecker);
         break;
       case "variance":
-        calciteAggFn = new HiveSqlVarianceAggFunction(
-            functionHelper.getDefaultVariance() == SqlKind.VAR_POP ?
-                "var_pop" : "var_samp",
-            functionHelper.getDefaultVariance(),
-            udfInfo.returnTypeInference,
-            udfInfo.operandTypeInference,
-            udfInfo.operandTypeChecker);
-        break;
       case "var_pop":
         calciteAggFn = new HiveSqlVarianceAggFunction(
             "var_pop",

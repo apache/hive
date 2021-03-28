@@ -22,12 +22,14 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.List;
@@ -85,6 +87,21 @@ public interface FunctionHelper {
   RexNode getExpression(String functionText, FunctionInfo functionInfo,
       List<RexNode> inputs, RelDataType returnType)
       throws SemanticException;
+
+  /**
+   * Given the function name and multiple parameters, it will return the
+   * corresponding SQL operator.
+   */
+  SqlOperator getCalciteFunction(String functionName, List<RelDataType> argTypes,
+      RelDataType retType, boolean deterministic, boolean runtimeConstant)
+      throws SemanticException;
+
+  /**
+   * Given the aggregate function name and multiple parameters, it will return the
+   * corresponding SQL aggregate operator.
+   */
+  SqlAggFunction getCalciteAggregateFunction(String functionName, boolean isDistinct,
+      List<RelDataType> argTypes, RelDataType retType);
 
   /**
    * Given a builder, a SQL operator, and the inputs to a function, it will

@@ -36,7 +36,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_1
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
@@ -70,7 +69,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), COALESCE(UDFToFloat(id),3.402823E38) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -146,14 +145,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), ds_kll_n(_col0) (type: bigint)
+                  expressions: _col0 (type: binary), UDFToDouble(ds_kll_n(_col0)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: binary), _col1 (type: bigint)
+                    value expressions: _col0 (type: binary), _col1 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -161,7 +160,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -334,7 +332,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sketch_input
 POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
@@ -366,7 +363,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), COALESCE(UDFToFloat(id),3.402823E38) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -435,14 +432,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), ds_kll_n(_col0) (type: bigint)
+                  expressions: _col0 (type: binary), UDFToDouble(ds_kll_n(_col0)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: binary), _col1 (type: bigint)
+                    value expressions: _col0 (type: binary), _col1 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -450,7 +447,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select 'rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -703,7 +699,6 @@ POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
 POSTHOOK: Lineage: mv_1._c1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), (mv_1)default.mv_1.FieldSchema(name:_c1, type:binary, comment:null), ]
 POSTHOOK: Lineage: mv_1.category EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), (mv_1)default.mv_1.FieldSchema(name:category, type:char(1), comment:null), ]
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
@@ -737,7 +732,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 44 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), COALESCE(UDFToFloat(id),3.402823E38) (type: float)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 44 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -813,14 +808,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: binary), ds_kll_n(_col0) (type: bigint)
+                  expressions: _col0 (type: binary), UDFToDouble(ds_kll_n(_col0)) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: binary), _col1 (type: bigint)
+                    value expressions: _col0 (type: binary), _col1 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -828,7 +823,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -884,7 +878,6 @@ rewrite; mv matching	14	41
 rewrite; mv matching	14	41
 rewrite; mv matching	15	43
 rewrite; mv matching	15	43
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id
 PREHOOK: type: QUERY
@@ -916,7 +909,7 @@ STAGE PLANS:
                   alias: sketch_input
                   Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: id (type: int), category (type: char(1)), UDFToFloat(COALESCE(UDFToFloat(id),3.4028234663852886E38D)) (type: float)
+                    expressions: id (type: int), category (type: char(1)), COALESCE(UDFToFloat(id),3.402823E38) (type: float)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 44 Data size: 4092 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -934,7 +927,7 @@ STAGE PLANS:
                   alias: default.mv_1
                   Statistics: Num rows: 2 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: category (type: char(1)), _c1 (type: binary), ds_kll_n(_c1) (type: bigint)
+                    expressions: category (type: char(1)), _c1 (type: binary), UDFToDouble(ds_kll_n(_c1)) (type: double)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -943,7 +936,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: char(1))
                       Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: binary), _col2 (type: bigint)
+                      value expressions: _col1 (type: binary), _col2 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -989,7 +982,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_1

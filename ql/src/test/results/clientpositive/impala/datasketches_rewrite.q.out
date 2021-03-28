@@ -1,0 +1,209 @@
+PREHOOK: query: create table sketch_input (id int, category char(1))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: create table sketch_input (id int, category char(1))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sketch_input
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select category, count(distinct id) from sketch_input group by category
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select category, count(distinct id) from sketch_input group by category
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaProjectPassthroughRel($f0=[$0], $f1=[ds_hll_estimate($1)])
+  ImpalaAggregateRel(group=[{1}], ds_hll_sketch=[ds_hll_sketch($0)])
+    ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, rank() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, rank() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(id=[$0], $f2=[CAST(CASE(<($3, +(CEIL(*(ds_kll_rank($2, $1), $3)), 1.0E0)), $3, +(CEIL(*(ds_kll_rank($2, $1), $3)), 1.0E0))):BIGINT])
+    ImpalaJoinRel(condition=[true], joinType=[inner])
+      ImpalaProjectPassthroughRel(id=[$0], CAST=[CAST(COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)):FLOAT])
+        ImpalaHdfsScanRel(table=[[default, sketch_input]])
+      ImpalaProjectPassthroughRel($f0=[$0], CAST=[CAST(ds_kll_n($0)):DOUBLE])
+        ImpalaAggregateRel(group=[{}], agg#0=[ds_kll_sketch($0)])
+          ImpalaProjectPassthroughRel(id0=[CAST($0):FLOAT])
+            ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, count(id) over ()*rank() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, count(id) over ()*rank() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(id=[$0], _o__c1=[*(count($0) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING), CAST(CASE(<($3, +(CEIL(*(ds_kll_rank($2, $1), $3)), 1.0E0)), $3, +(CEIL(*(ds_kll_rank($2, $1), $3)), 1.0E0))):BIGINT)])
+    ImpalaJoinRel(condition=[true], joinType=[inner])
+      ImpalaProjectPassthroughRel(id=[$0], CAST=[CAST(COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)):FLOAT])
+        ImpalaHdfsScanRel(table=[[default, sketch_input]])
+      ImpalaProjectPassthroughRel($f0=[$0], CAST=[CAST(ds_kll_n($0)):DOUBLE])
+        ImpalaAggregateRel(group=[{}], agg#0=[ds_kll_sketch($0)])
+          ImpalaProjectPassthroughRel(id0=[CAST($0):FLOAT])
+            ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, rank() over (partition by category order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by category,id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, rank() over (partition by category order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by category,id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaProjectPassthroughRel(id=[$0], _o__c1=[$1])
+  ImpalaSortRel(sort0=[$2], sort1=[$0], dir0=[ASC], dir1=[ASC])
+    ImpalaProjectRel(id=[$0], _o__c1=[CAST(CASE(<($5, +(CEIL(*(ds_kll_rank($4, $2), $5)), 1.0E0)), $5, +(CEIL(*(ds_kll_rank($4, $2), $5)), 1.0E0))):BIGINT], category=[$1])
+      ImpalaJoinRel(condition=[IS NOT DISTINCT FROM($1, $3)], joinType=[inner])
+        ImpalaProjectPassthroughRel(id=[$0], category=[$1], CAST=[CAST(COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)):FLOAT])
+          ImpalaHdfsScanRel(table=[[default, sketch_input]])
+        ImpalaProjectPassthroughRel(category=[$0], $f1=[$1], CAST=[CAST(ds_kll_n($1)):DOUBLE])
+          ImpalaAggregateRel(group=[{0}], agg#0=[ds_kll_sketch($1)])
+            ImpalaProjectPassthroughRel(category=[$1], id0=[CAST($0):FLOAT])
+              ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, ntile(4) over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, ntile(4) over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(id=[$0], $f2=[CAST(CASE(<(CEIL(*(ds_kll_rank($2, $1), 4)), 1.0E0), 1.0E0:DOUBLE, CEIL(*(ds_kll_rank($2, $1), 4)))):BIGINT])
+    ImpalaJoinRel(condition=[true], joinType=[inner])
+      ImpalaProjectPassthroughRel(id=[$0], CAST=[CAST(COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)):FLOAT])
+        ImpalaHdfsScanRel(table=[[default, sketch_input]])
+      ImpalaAggregateRel(group=[{}], agg#0=[ds_kll_sketch($0)])
+        ImpalaProjectPassthroughRel(id0=[CAST($0):FLOAT])
+          ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, ntile(4) over (partition by category order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by category,id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, ntile(4) over (partition by category order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by category,id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaProjectPassthroughRel(id=[$0], _o__c1=[$1])
+  ImpalaSortRel(sort0=[$2], sort1=[$0], dir0=[ASC], dir1=[ASC])
+    ImpalaProjectRel(id=[$0], _o__c1=[CAST(CASE(<(CEIL(*(ds_kll_rank($4, $2), 4)), 1.0E0), 1.0E0:DOUBLE, CEIL(*(ds_kll_rank($4, $2), 4)))):BIGINT], category=[$1])
+      ImpalaJoinRel(condition=[IS NOT DISTINCT FROM($1, $3)], joinType=[inner])
+        ImpalaProjectPassthroughRel(id=[$0], category=[$1], CAST=[CAST(COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)):FLOAT])
+          ImpalaHdfsScanRel(table=[[default, sketch_input]])
+        ImpalaAggregateRel(group=[{0}], agg#0=[ds_kll_sketch($1)])
+          ImpalaProjectPassthroughRel(category=[$1], id0=[CAST($0):FLOAT])
+            ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, cume_dist() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, cume_dist() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(id=[$0], $f2=[ds_kll_rank($2, $1)])
+    ImpalaJoinRel(condition=[true], joinType=[inner])
+      ImpalaProjectPassthroughRel(id=[$0], COALESCE=[COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)])
+        ImpalaHdfsScanRel(table=[[default, sketch_input]])
+      ImpalaAggregateRel(group=[{}], agg#0=[ds_kll_sketch($0)])
+        ImpalaProjectPassthroughRel(id0=[CAST($0):FLOAT])
+          ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, count(id) over ()*cume_dist() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, count(id) over ()*cume_dist() over (order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaSortRel(sort0=[$0], dir0=[ASC])
+  ImpalaProjectRel(id=[$0], _o__c1=[*(CAST(count($0) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)):DOUBLE, ds_kll_rank($2, $1))])
+    ImpalaJoinRel(condition=[true], joinType=[inner])
+      ImpalaProjectPassthroughRel(id=[$0], COALESCE=[COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)])
+        ImpalaHdfsScanRel(table=[[default, sketch_input]])
+      ImpalaAggregateRel(group=[{}], agg#0=[ds_kll_sketch($0)])
+        ImpalaProjectPassthroughRel(id0=[CAST($0):FLOAT])
+          ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_foreign_keys FOR sketch_input
+PREHOOK: query: explain cbo physical
+select id, cume_dist() over (partition by category order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by category,id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: streaming
+POSTHOOK: query: explain cbo physical
+select id, cume_dist() over (partition by category order by id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) from sketch_input order by category,id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+CBO PLAN:
+ImpalaProjectPassthroughRel(id=[$0], _o__c1=[$1])
+  ImpalaSortRel(sort0=[$2], sort1=[$0], dir0=[ASC], dir1=[ASC])
+    ImpalaProjectRel(id=[$0], _o__c1=[ds_kll_rank($4, $2)], category=[$1])
+      ImpalaJoinRel(condition=[IS NOT DISTINCT FROM($1, $3)], joinType=[inner])
+        ImpalaProjectPassthroughRel(id=[$0], category=[$1], COALESCE=[COALESCE(CAST($0):FLOAT, 3.402823E38:FLOAT)])
+          ImpalaHdfsScanRel(table=[[default, sketch_input]])
+        ImpalaAggregateRel(group=[{0}], agg#0=[ds_kll_sketch($1)])
+          ImpalaProjectPassthroughRel(category=[$1], id0=[CAST($0):FLOAT])
+            ImpalaHdfsScanRel(table=[[default, sketch_input]])
+
+HMS CALL get_table_req FOR sketch_input
+PREHOOK: query: drop table sketch_input
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sketch_input
+PREHOOK: Output: default@sketch_input
+HMS CALL get_table_req FOR sketch_input
+HMS CALL get_table_req FOR sketch_input
+POSTHOOK: query: drop table sketch_input
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sketch_input
+POSTHOOK: Output: default@sketch_input

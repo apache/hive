@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,6 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hive.plugin.api.HiveUDFPlugin;
 
 /**
@@ -156,11 +153,8 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
           OperandTypes.family(),
           unionFn);
 
-
       unionSFD.setCalciteFunction(unionFn);
       sketchSFD.setCalciteFunction(sketchFn);
-
-
     }
   }
 
@@ -178,33 +172,6 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
       sfd.setCalciteFunction(cdfFn);
     }
-  }
-
-  private void registerHiveFunctionsInternal(Registry system) {
-    for (SketchDescriptor sketchDescriptor : sketchClasses.values()) {
-      Collection<SketchFunctionDescriptor> functions = sketchDescriptor.fnMap.values();
-      for (SketchFunctionDescriptor fn : functions) {
-        if (UDF.class.isAssignableFrom(fn.udfClass)) {
-          system.registerUDF(fn.name, (Class<? extends UDF>) fn.udfClass, false);
-          continue;
-        }
-        if (GenericUDAFResolver2.class.isAssignableFrom(fn.udfClass)) {
-          String name = fn.name;
-          try {
-            system.registerGenericUDAF(name, ((Class<? extends GenericUDAFResolver2>) fn.udfClass).newInstance());
-          } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Unable to register: " + name, e);
-          }
-          continue;
-        }
-        if (GenericUDTF.class.isAssignableFrom(fn.udfClass)) {
-          system.registerGenericUDTF(fn.name, (Class<? extends GenericUDTF>) fn.udfClass);
-          continue;
-        }
-        throw new RuntimeException("Don't know how to register: " + fn.name);
-      }
-    }
-
   }
 
   static class SketchFunctionDescriptor implements HiveUDFPlugin.UDFDescriptor {

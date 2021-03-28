@@ -53,10 +53,15 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilder.AggCall;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper.AggregateInfo;
 import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,8 +135,6 @@ public final class HiveRewriteToDataSketchesRules {
           projectFactory.createProject(newAgg, vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
 
       call.transformTo(newProject);
-      return;
-
     }
 
     protected abstract VbuilderPAP processCall(RelOptRuleCall call);
@@ -202,12 +205,39 @@ public final class HiveRewriteToDataSketchesRules {
         newProjectsAbove.add(projRex);
       }
 
-      protected final SqlOperator getSqlOperator(String fnName) {
+      protected final SqlOperator getSqlOperator(String fnName, List<RexNode> inputs) {
         UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
         if (!fn.getCalciteFunction().isPresent()) {
           throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
         }
-        return fn.getCalciteFunction().get();
+        final FunctionHelper functionHelper =
+            aggregate.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
+        try {
+          FunctionInfo functionInfo = functionHelper.getFunctionInfo(fn.getFunctionName());
+          RelDataType retType = functionHelper.getReturnType(functionInfo, inputs);
+          return functionHelper.getCalciteFunction(fn.getFunctionName(),
+              inputs.stream().map(RexNode::getType).collect(Collectors.toList()),
+              retType, true, false);
+        } catch (SemanticException e) {
+          throw new RuntimeException("Could not load Calcite data sketch function: " + fn.getFunctionName());
+        }
+      }
+
+      protected final SqlAggFunction getSqlAggregateOperator(String fnName, List<RexNode> inputs) {
+        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+        if (!fn.getCalciteFunction().isPresent()) {
+          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+        }
+        final FunctionHelper functionHelper =
+            aggregate.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
+        try {
+          AggregateInfo aggregateInfo = functionHelper.getAggregateFunctionInfo(false, false, fn.getFunctionName(), inputs);
+          return functionHelper.getCalciteAggregateFunction(
+              fn.getFunctionName(), false, inputs.stream().map(RexNode::getType).collect(Collectors.toList()),
+              TypeConverter.convert(aggregateInfo.getReturnType(), aggregate.getCluster().getTypeFactory()));
+        } catch (SemanticException e) {
+          throw new RuntimeException("Could not load Calcite data sketch aggregate function: " + fn.getFunctionName());
+        }
       }
 
       abstract boolean isApplicable(AggregateCall aggCall);
@@ -267,7 +297,7 @@ public final class HiveRewriteToDataSketchesRules {
         RexNode call = rexBuilder.makeInputRef(aggregate.getInput(), argIndex);
         newProjectsBelow.add(call);
 
-        SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        SqlAggFunction aggFunction = getSqlAggregateOperator(DataSketchesFunctions.DATA_TO_SKETCH, ImmutableList.of(call));
         boolean distinct = false;
         boolean approximate = false;
         boolean ignoreNulls = true;
@@ -280,14 +310,23 @@ public final class HiveRewriteToDataSketchesRules {
         AggregateCall newAgg = AggregateCall.create(aggFunction, distinct, approximate, ignoreNulls, argList, filterArg,
             collation, type, name);
 
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE);
         RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjectsAbove.size());
-        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex));
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.ROUND, ImmutableList.of(projRex));
+        List<RexNode> inputs = ImmutableList.of(projRex);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.SKETCH_TO_ESTIMATE, inputs);
+        projRex = rexBuilder.makeCall(projectOperator, inputs);
+        projRex = round(projRex);
         projRex = rexBuilder.makeCast(origType, projRex);
 
         newAggCalls.add(newAgg);
         newProjectsAbove.add(projRex);
+      }
+
+      private RexNode round(RexNode node) {
+        if (node.getType().getSqlTypeName() == SqlTypeName.BIGINT) {
+          // no-op
+          return node;
+        }
+        return rexBuilder.makeCall(SqlStdOperatorTable.ROUND, ImmutableList.of(node));
       }
     }
   }
@@ -362,7 +401,7 @@ public final class HiveRewriteToDataSketchesRules {
         call = rexBuilder.makeCast(floatType, call);
         newProjectsBelow.add(call);
 
-        SqlAggFunction aggFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        SqlAggFunction aggFunction = getSqlAggregateOperator(DataSketchesFunctions.DATA_TO_SKETCH, ImmutableList.of(call));
         boolean distinct = false;
         boolean approximate = false;
         boolean ignoreNulls = true;
@@ -379,9 +418,10 @@ public final class HiveRewriteToDataSketchesRules {
         RexNode fraction = aggInput.getChildExps().get(origFractionIdx);
         fraction = rexBuilder.makeCast(floatType, fraction);
 
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
         RexNode projRex = rexBuilder.makeInputRef(newAgg.getType(), newProjectsAbove.size());
-        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(projRex, fraction));
+        List<RexNode> inputs = ImmutableList.of(projRex, fraction);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE, inputs);
+        projRex = rexBuilder.makeCall(projectOperator, inputs);
         projRex = rexBuilder.makeCast(origType, projRex);
 
         newAggCalls.add(newAgg);
@@ -461,12 +501,39 @@ public final class HiveRewriteToDataSketchesRules {
         return expr;
       }
 
-      protected final SqlOperator getSqlOperator(String fnName) {
+      protected final SqlOperator getSqlOperator(String fnName, List<RexNode> inputs) {
         UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
         if (!fn.getCalciteFunction().isPresent()) {
           throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
         }
-        return fn.getCalciteFunction().get();
+        final FunctionHelper functionHelper =
+            relBuilder.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
+        try {
+          FunctionInfo functionInfo = functionHelper.getFunctionInfo(fn.getFunctionName());
+          RelDataType retType = functionHelper.getReturnType(functionInfo, inputs);
+          return functionHelper.getCalciteFunction(fn.getFunctionName(),
+              inputs.stream().map(RexNode::getType).collect(Collectors.toList()),
+              retType, true, false);
+        } catch (SemanticException e) {
+          throw new RuntimeException("Could not load Calcite data sketch function: " + fn.getFunctionName());
+        }
+      }
+
+      protected final SqlAggFunction getSqlAggregateOperator(String fnName, List<RexNode> inputs) {
+        UDFDescriptor fn = DataSketchesFunctions.INSTANCE.getSketchFunction(sketchClass, fnName);
+        if (!fn.getCalciteFunction().isPresent()) {
+          throw new RuntimeException(fn.toString() + " doesn't have a Calcite function associated with it");
+        }
+        final FunctionHelper functionHelper =
+            relBuilder.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
+        try {
+          AggregateInfo aggregateInfo = functionHelper.getAggregateFunctionInfo(false, false, fn.getFunctionName(), inputs);
+          return functionHelper.getCalciteAggregateFunction(
+              fn.getFunctionName(), false, inputs.stream().map(RexNode::getType).collect(Collectors.toList()),
+              TypeConverter.convert(aggregateInfo.getReturnType(), relBuilder.getCluster().getTypeFactory()));
+        } catch (SemanticException e) {
+          throw new RuntimeException("Could not load Calcite data sketch aggregate function: " + fn.getFunctionName());
+        }
       }
 
       protected final RelDataType getFloatType() {
@@ -544,7 +611,7 @@ public final class HiveRewriteToDataSketchesRules {
 
         // @formatter:off
         AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
+            getSqlAggregateOperator(DataSketchesFunctions.DATA_TO_SKETCH, ImmutableList.of(key)),
             /* distinct */ false,
             /* approximate */ false,
             /* ignoreNulls */ true,
@@ -565,17 +632,19 @@ public final class HiveRewriteToDataSketchesRules {
 
         int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_RANK);
 
         // NULLs will be replaced by this value - to be before / after the other values
         // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
         final RexNode nullReplacement =
-            relBuilder.literal(orderKey.getNullDirection() == NullDirection.LAST ? Float.MAX_VALUE : -Float.MAX_VALUE);
+            relBuilder.getRexBuilder().makeLiteral(
+                orderKey.getNullDirection() == NullDirection.LAST ? Float.MAX_VALUE : -Float.MAX_VALUE,
+                relBuilder.getTypeFactory().createSqlType(SqlTypeName.FLOAT), false);
 
-        RexNode projRex = key;
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
+        RexNode projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
         projRex = rexBuilder.makeCast(getFloatType(), projRex);
-        projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
+        List<RexNode> inputs = ImmutableList.of(sketchInputRef, projRex);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_RANK, inputs);
+        projRex = rexBuilder.makeCall(projectOperator, inputs);
         projRex = evaluateRankValue(projRex, over, sketchInputRef);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
@@ -684,7 +753,10 @@ public final class HiveRewriteToDataSketchesRules {
 
       @Override
       protected RexNode evaluateRankValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
-        RexNode ntileOperand = over.getOperands().get(0);
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        RelDataType doubleType = typeFactory.createTypeWithNullability(
+            typeFactory.createSqlType(SqlTypeName.DOUBLE), true);
+        RexNode ntileOperand = rexBuilder.makeCast(doubleType, over.getOperands().get(0));
         RexNode ret = projRex;
         RexNode literal1 = relBuilder.literal(1.0);
 
@@ -740,11 +812,15 @@ public final class HiveRewriteToDataSketchesRules {
 
       @Override
       protected RexNode evaluateRankValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
         RexNode ret = projRex;
         RexNode literal1 = relBuilder.literal(1.0);
 
-        SqlOperator getNOperator = getSqlOperator(DataSketchesFunctions.GET_N);
-        RexNode n = rexBuilder.makeCall(getNOperator, ImmutableList.of(sketchInputRef));
+        List<RexNode> inputs = ImmutableList.of(sketchInputRef);
+        SqlOperator getNOperator = getSqlOperator(DataSketchesFunctions.GET_N, inputs);
+        RelDataType doubleType = typeFactory.createTypeWithNullability(
+            typeFactory.createSqlType(SqlTypeName.DOUBLE), true);
+        RexNode n = rexBuilder.makeCast(doubleType, rexBuilder.makeCall(getNOperator, inputs));
 
         ret = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, ret, n);
         ret = rexBuilder.makeCall(SqlStdOperatorTable.CEIL, ret);

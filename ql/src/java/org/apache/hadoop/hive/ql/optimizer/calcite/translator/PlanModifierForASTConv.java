@@ -415,7 +415,7 @@ public class PlanModifierForASTConv {
     // Create the dummy aggregation.
     FunctionHelper functionHelper =
         rel.getCluster().getPlanner().getContext().unwrap(FunctionHelper.class);
-    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn(functionHelper, "count", false,
+    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count", false,
         ImmutableList.of(intType), longType);
     // TODO: Using 0 might be wrong; might need to walk down to find the
     // proper index of a dummy.
