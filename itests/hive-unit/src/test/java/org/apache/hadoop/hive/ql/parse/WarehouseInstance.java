@@ -608,6 +608,21 @@ public class WarehouseInstance implements Closeable {
     return false;
   }
 
+  public boolean isTableTransactional(String dbName, String tbl) throws Exception {
+    String propVal = getTableProp("transactional", dbName, tbl);
+    return propVal != null && !propVal.isEmpty() && propVal.equalsIgnoreCase("true");
+  }
+
+  public boolean isTableExternal(String dbName, String tbl) throws Exception {
+    String propVal = getTableProp("EXTERNAL", dbName, tbl);
+    return propVal != null && !propVal.isEmpty() && propVal.equalsIgnoreCase("true");
+  }
+
+  private String getTableProp(String prop, String dbName, String tbl) throws Exception {
+    Map<String, String> props = getTable(dbName, tbl).getParameters();
+    return props.get(prop);
+  }
+
   @Override
   public void close() throws IOException {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {

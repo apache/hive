@@ -2481,31 +2481,36 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname
         + "'='" + UserGroupInformation.getCurrentUser().getUserName() + "'");
 
+    String tbl = "t1";
     primary
         .run("use " + primaryDbName)
-        .run("create table t1 (id int)")
-        .run("insert into table t1 values (1)")
+        .run("create table " + tbl + " (id int)")
+        .run("insert into table " + tbl + " values (1)")
         .dump(primaryDbName, withClauseOptions);
 
     replica
         .load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
-        .run("select id from t1")
+        .run("select id from " + tbl)
         .verifyResults(new String[] {"1"});
 
+    assertFalse(replica.isTableTransactional(replicatedDbName, tbl));
+
     primary
         .run("use " + primaryDbName)
-        .run("drop table t1")
-        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        .run("drop table " + tbl)
+        .run("create table " + tbl + " (id int) clustered by(id) into 3 buckets stored as orc " +
             "tblproperties (\"transactional\"=\"true\")")
-        .run("insert into table t1 values (2)")
+        .run("insert into table " + tbl + " values (2)")
         .dump(primaryDbName, withClauseOptions);
 
     replica
         .load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
-        .run("select id from t1")
+        .run("select id from " + tbl)
         .verifyResults(new String[] {"2"});
+
+    assertTrue(replica.isTableTransactional(replicatedDbName, tbl));
   }
 
   @Test
@@ -2514,30 +2519,37 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname
         + "'='" + UserGroupInformation.getCurrentUser().getUserName() + "'");
 
+    String tbl = "t1";
     primary
         .run("use " + primaryDbName)
-        .run("create external table t1 (id int)")
-        .run("insert into table t1 values (1)")
+        .run("create external table " + tbl + " (id int)")
+        .run("insert into table " + tbl + " values (1)")
         .dump(primaryDbName, withClauseOptions);
 
     replica
         .load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
-        .run("select id from t1")
+        .run("select id from " + tbl)
         .verifyResults(new String[] {"1"});
 
+    assertFalse(replica.isTableTransactional(replicatedDbName, tbl));
+    assertTrue(replica.isTableExternal(replicatedDbName, tbl));
+
     primary
         .run("use " + primaryDbName)
-        .run("drop table t1")
-        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        .run("drop table " + tbl)
+        .run("create table " + tbl + " (id int) clustered by(id) into 3 buckets stored as orc " +
             "tblproperties (\"transactional\"=\"true\")")
-        .run("insert into table t1 values (2)")
+        .run("insert into table " + tbl + " values (2)")
         .dump(primaryDbName, withClauseOptions);
 
     replica
         .load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
-        .run("select id from t1")
+        .run("select id from " + tbl)
         .verifyResults(new String[] {"2"});
+
+    assertTrue(replica.isTableTransactional(replicatedDbName, tbl));
+    assertFalse(replica.isTableExternal(replicatedDbName, tbl));
   }
 }
