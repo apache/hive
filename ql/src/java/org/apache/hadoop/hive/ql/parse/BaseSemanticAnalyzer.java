@@ -1729,7 +1729,7 @@ public abstract class BaseSemanticAnalyzer {
     try {
       connector = db.getDataConnector(dcName);
     } catch (Exception e) {
-      throw new SemanticException(e.getMessage(), e);
+      throw new SemanticException(e);
     }
     if (connector == null && throwException) {
       throw new SemanticException(ErrorMsg.DATACONNECTOR_NOT_EXISTS.getMsg(dcName));

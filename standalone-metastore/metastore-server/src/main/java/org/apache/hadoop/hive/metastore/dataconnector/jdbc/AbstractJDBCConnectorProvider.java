@@ -88,7 +88,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       isOpen = true;
     } catch (ClassNotFoundException cnfe) {
       LOG.warn("Driver class not found in classpath:" + driverClassName);
-      throw new RuntimeException("Driver class not found:" + driverClassName);
+      throw new RuntimeException("Driver class not found:" + driverClassName, cnfe);
     } catch (SQLException sqle) {
       LOG.warn("Could not connect to remote data source at " + jdbcUrl);
       throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());
@@ -100,7 +100,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       if (!isOpen)
         open();
     } catch (ConnectException ce) {
-      throw new RuntimeException(ce.getMessage());
+      throw new RuntimeException(ce.getMessage(), ce);
     }
 
     if (handle instanceof Connection)
@@ -115,6 +115,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
         ((Connection)handle).close();
       } catch (SQLException sqle) {
         LOG.warn("Could not close jdbc connection to " + jdbcUrl, sqle);
+        throw new RuntimeException(sqle);
       }
     }
   }

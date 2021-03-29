@@ -1165,12 +1165,6 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
     rawStore.createDataConnector(connector);
-    // in case of event based cache update, cache will be updated during commit.
-    /*
-    if (!canUseEvents) {
-      sharedCache.addDatabaseToCache(connector);
-    }
-     */
   }
 
   @Override public DataConnector getDataConnector(String dcName) throws NoSuchObjectException {

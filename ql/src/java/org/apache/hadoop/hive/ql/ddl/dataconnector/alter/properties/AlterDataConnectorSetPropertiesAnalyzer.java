@@ -43,11 +43,10 @@ public class AlterDataConnectorSetPropertiesAnalyzer extends AbstractAlterDataCo
     Map<String, String> dbProps = null;
     for (int i = 1; i < root.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) root.getChild(i);
-      switch (childNode.getToken().getType()) {
-      case HiveParser.TOK_DATACONNECTORPROPERTIES:
+      if (childNode.getToken().getType() == HiveParser.TOK_DATACONNECTORPROPERTIES) {
         dbProps = getProps((ASTNode) childNode.getChild(0));
         break;
-      default:
+      } else {
         throw new SemanticException("Unrecognized token in ALTER CONNECTOR statement");
       }
     }

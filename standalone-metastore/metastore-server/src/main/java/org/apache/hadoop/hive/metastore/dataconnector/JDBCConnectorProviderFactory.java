@@ -14,19 +14,6 @@ public class JDBCConnectorProviderFactory {
     switch(connector.getType().toLowerCase()) {
     case MYSQL_TYPE:
       provider = new MySQLConnectorProvider(dbName, connector);
-      /*
-      try {
-        Class.forName(driverClassName);
-        handle = DriverManager.getConnection(jdbcUrl, username, password);
-        isOpen = true;
-      } catch (ClassNotFoundException cnfe) {
-        LOG.warn("Driver class not found in classpath:" + driverClassName);
-        throw new RuntimeException("Driver class not found:" + driverClassName);
-      } catch (SQLException sqle) {
-        LOG.warn("Could not connect to remote data source at " + jdbcUrl);
-        throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());
-      }
-       */
       break;
     case POSTGRES_TYPE:
       provider = new PostgreSQLConnectorProvider(dbName, connector);
