@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -523,9 +525,14 @@ public class PartitionPruner extends Transform {
       boolean expressionIsSafe =
           isPruningByExactFilter && !isExpressionUnsafe(compactExpr, PartitionPruner::safeFilterFunctions);
 
-      if (doEvalClientSide || expressionIsSafe) {
+      if (doEvalClientSide) {
         // Either we have user functions, or metastore is old version - filter names locally.
         hasUnknownPartitions = pruneBySequentialScan(tab, partitions, compactExpr, conf, expressionIsSafe);
+      } else {
+        // FIXME: add feature toggle
+        if (expressionIsSafe) {
+          hasUnknownPartitions = rePrunePartitions(tab, partitions, compactExpr, conf, expressionIsSafe);
+        }
       }
       // The partitions are "unknown" if the call says so due to the expression
       // evaluator returning null for a partition, or if we sent a partial expression to
@@ -580,6 +587,29 @@ public class PartitionPruner extends Transform {
       partitions.addAll(Hive.get().getPartitionsByNames(tab, partNames));
     }
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    return hasUnknownPartitions;
+  }
+
+  static private boolean rePrunePartitions(Table tab, List<Partition> partitions, ExprNodeGenericFuncDesc prunerExpr,
+      HiveConf conf, boolean expressionIsSafe) throws HiveException, MetaException {
+
+    List<String> partNames = partitions.stream().map(Partition::getName).collect(Collectors.toList());
+
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    List<String> partCols = extractPartColNames(tab);
+    List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
+
+    boolean hasUnknownPartitions =
+        prunePartitionNames(partCols, partColTypeInfos, prunerExpr, defaultPartitionName, partNames, expressionIsSafe);
+
+    Set<String> partNamesSet = new HashSet<String>(partNames);
+
+    for (Iterator<Partition> it = partitions.iterator(); it.hasNext();) {
+      Partition p = it.next();
+      if (!partNamesSet.contains(p.getName())) {
+        it.remove();
+      }
+    }
     return hasUnknownPartitions;
   }
 
