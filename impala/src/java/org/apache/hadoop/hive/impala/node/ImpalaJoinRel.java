@@ -166,6 +166,20 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     nodeInfo.setAssignedConjuncts(assignedConjuncts);
     joinNode.init(ctx.getRootAnalyzer());
 
+    // For nested loop full or right outer joins, Impala only allows execution on a single
+    // node. This is checked during the validatePlan(). In some cases, the check for small query
+    // optimization (done at the end of the single node planning phase) will determine that the
+    // cardinality of the query is lower than the exec_single_node_rows_threshold and will force
+    // the num_nodes = 1. However, that check gets bypassed for some tests run through the test
+    // framework which explicitly disable the small query optimization (by setting
+    // exec_single_node_rows_threshold = 0). Thus, we have to set the
+    // num_nodes = 1 here for such scenarios.
+    if (joinNode instanceof ImpalaNestedLoopJoinNode &&
+        (joinOp == JoinOperator.RIGHT_OUTER_JOIN || joinOp == JoinOperator.FULL_OUTER_JOIN) &&
+        ctx.getQueryOptions().exec_single_node_rows_threshold <= 0) {
+      ctx.getQueryOptions().setNum_nodes(1);
+    }
+
     return joinNode;
   }
 
