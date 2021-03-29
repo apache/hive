@@ -43,7 +43,7 @@ public interface EngineSession {
     public void closeOperation(TOperationHandle opHandle) throws HiveException;
 
     /* Executes a query string */
-    public TOperationHandle execute(String sql) throws HiveException;
+    public TOperationHandle execute(String sql, boolean runAsync) throws HiveException;
 
     public boolean isOpen();
 

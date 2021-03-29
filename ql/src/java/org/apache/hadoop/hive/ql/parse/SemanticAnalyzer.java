@@ -583,7 +583,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return ctx.getOpContext();
   }
 
-  static String genPartValueString(String partColType, String partVal) throws SemanticException {
+  public static String genPartValueString(String partColType, String partVal) throws SemanticException {
     String returnVal = partVal;
     if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
         partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
@@ -1878,6 +1878,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
         qb.getParseInfo().setNoScanAnalyzeCommand(this.noscan);
+        qb.getParseInfo().setIncrementalAnalyze(AnalyzeCommandUtils.isIncrementalStats(ast));
         // Allow analyze the whole table and dynamic partitions
         HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
         HiveConf.setVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
@@ -11935,9 +11936,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
       }
-      if (isImpalaPlan(conf) && qbp.getTableSpec().specType == SpecType.STATIC_PARTITION) {
+      if (isImpalaPlan(conf) && qbp.getTableSpec().specType == SpecType.STATIC_PARTITION
+          && !qbp.isIncrementalAnalyze()) {
         throw new SemanticException(
-            "Partitions cannot be statically specified in ANALYZE TABLE in Impala");
+            "Partitions cannot be statically specified in ANALYZE TABLE in Impala without INCREMENTAL");
       }
       List<Partition> partitions = qbp.getTableSpec().partitions;
       if (partitions != null) {
@@ -15526,6 +15528,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setAnalyzeCommand(qb.getParseInfo().isAnalyzeCommand());
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
+      queryProperties.setIncrementalAnalyze(qb.getParseInfo().isIncrementalAnalyze());
       queryProperties.setCTAS(qb.getTableDesc() != null);
       queryProperties.setInsert(qb.getParseInfo().hasInsertTables());
       queryProperties.setETL(qb.isCTAS() || qb.getParseInfo().hasInsertTables());

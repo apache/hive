@@ -559,10 +559,15 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       colNames = getColumnName(ast);
       // Save away the original AST
       originalTree = ast;
+      // Check incremental keyword
+      if (AnalyzeCommandUtils.isIncrementalStats(ast)) {
+        throw new SemanticException(
+            "Columns cannot be specified with INCREMENTAL statistics computation");
+      }
       boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast);
       if (isImpalaPlan(conf) && isPartitionStats) {
         throw new SemanticException(
-            "Partitions cannot be statically specified in ANALYZE TABLE in Impala");
+            "Partitions cannot be statically specified in ANALYZE TABLE in Impala without INCREMENTAL");
       }
       Map<String, String> partSpec = null;
       checkForPartitionColumns(

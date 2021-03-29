@@ -45,6 +45,14 @@ public final class AnalyzeCommandUtils {
     return isPartitioned;
   }
 
+  public static boolean isIncrementalStats(ASTNode tree) {
+    if (tree.getChildCount() > 1) {
+      ASTNode child = (ASTNode) tree.getChild(tree.getChildCount() - 1);
+      return child.getToken().getType() == HiveParser.KW_INCREMENTAL;
+    }
+    return false;
+  }
+
   public static Table getTable(ASTNode tree, BaseSemanticAnalyzer sa) throws SemanticException {
     String tableName = ColumnStatsSemanticAnalyzer.getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
     String currentDb = SessionState.get().getCurrentDatabase();

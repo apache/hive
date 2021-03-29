@@ -386,16 +386,16 @@ public class ImpalaSessionImpl implements EngineSession {
 
     /* Executes a query string */
     @Override
-    public TOperationHandle execute(String sql) throws HiveException {
+    public TOperationHandle execute(String sql, boolean runAsync) throws HiveException {
         Preconditions.checkNotNull(client);
         Preconditions.checkNotNull(sessionHandle);
 
         TExecuteStatementReq req = new TExecuteStatementReq();
-        req.setRunAsync(true);
+        req.setRunAsync(runAsync);
         req.setStatement(sql);
 
         PrepareForExecution();
-        // Don't retry the Execute itself in case the statment was DML or modified state
+        // Don't retry the Execute itself in case the statement was DML or modified state
         TExecuteStatementResp resp;
         req.setSessionHandle(sessionHandle);
         try {

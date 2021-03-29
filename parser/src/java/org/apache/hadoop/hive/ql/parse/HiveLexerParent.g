@@ -369,6 +369,7 @@ KW_COST: 'COST';
 KW_JOINCOST: 'JOINCOST';
 KW_PHYSICAL: 'PHYSICAL';
 KW_WITHIN: 'WITHIN';
+KW_INCREMENTAL: 'INCREMENTAL';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

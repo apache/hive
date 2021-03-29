@@ -9,4 +9,4 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_n1
 HMS CALL get_table_req FOR test_table_n1
-FAILED: SemanticException Partitions cannot be statically specified in ANALYZE TABLE in Impala
+FAILED: SemanticException Partitions cannot be statically specified in ANALYZE TABLE in Impala without INCREMENTAL

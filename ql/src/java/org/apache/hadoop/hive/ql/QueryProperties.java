@@ -37,6 +37,7 @@ public class QueryProperties {
   boolean analyzeCommand;
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
+  boolean incrementalAnalyze;
   boolean ctas;
   boolean isInsert;
 
@@ -104,6 +105,14 @@ public class QueryProperties {
 
   public void setAnalyzeRewrite(boolean analyzeRewrite) {
     this.analyzeRewrite = analyzeRewrite;
+  }
+
+  public boolean isIncrementalAnalyze() {
+    return incrementalAnalyze;
+  }
+
+  public void setIncrementalAnalyze(boolean incrementalAnalyze) {
+    this.incrementalAnalyze = incrementalAnalyze;
   }
 
   public boolean isCTAS() {

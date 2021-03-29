@@ -75,12 +75,16 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
                 break;
             case COMPILED_QUERY:
                 Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE);
+                if (work.getInvalidateTableMetadataQuery() != null) {
+                  TOperationHandle opHandleInvalidate = session.execute(work.getInvalidateTableMetadataQuery(), false);
+                  closeOperation(opHandleInvalidate);
+                }
                 isStreaming = true;
-                opHandle = session.execute(work.getQuery());
+                opHandle = session.execute(work.getQuery(), true);
                 break;
             case QUERY:
                 isStreaming = conf.getResultMethod() == ResultMethod.STREAMING;
-                opHandle = session.execute(work.getQuery());
+                opHandle = session.execute(work.getQuery(), true);
                 break;
             default:
                 throw new RuntimeException("Type not recognized: " + work.getType());

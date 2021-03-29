@@ -24,11 +24,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.impala.exec.ImpalaQueryOperator;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -55,7 +58,9 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.impala.plan.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.impala.work.ImpalaWork;
-import org.apache.impala.thrift.TExecRequest;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +95,7 @@ public class ImpalaCompiler extends TaskCompiler {
             // results for this statement
             createFetchTask(pCtx);
             work = ImpalaWork.createPlannedWork(generateComputeStatsStatement(pCtx, inputs),
-                pCtx.getFetchTask(), requestedFetchSize);
+                pCtx.getFetchTask(), requestedFetchSize, generateInvalidateTableMetadataStatement(pCtx, inputs));
         } else {
             MoveWork moveWork = moveTask == null ? null : (MoveWork) moveTask.getWork();
             ImpalaCompiledPlan impalaCompiledPlan = getFinalizedCompiledPlan(pCtx, moveWork);
@@ -135,14 +140,36 @@ public class ImpalaCompiler extends TaskCompiler {
      * - Subset of columns:
      *    ANALYZE TABLE `tab` COMPUTE STATISTICS FOR COLUMNS `col1`, `col2`
      *     -> COMPUTE STATS `tab` (`col1`, `col2`)
+     * - Incremental stats:
+     *     ANALYZE TABLE `tab` COMPUTE INCREMENTAL STATISTICS
+     *     -> COMPUTE INCREMENTAL STATS `tab`
+     * - Incremental stats with partition spec:
+     *     ANALYZE TABLE `tab` PARTITION(`part_col`='part_val') COMPUTE INCREMENTAL STATISTICS
+     *     -> COMPUTE INCREMENTAL STATS `tab` PARTITION (`ss_sold_date_sk`='part_val')
      */
     private String generateComputeStatsStatement(ParseContext pCtx, Set<ReadEntity> inputs) {
+        boolean incremental = pCtx.getQueryProperties().isIncrementalAnalyze();
         Table table = inputs.iterator().next().getTable();
         StringBuilder sb = new StringBuilder();
-        sb.append("COMPUTE STATS ");
+        sb.append("COMPUTE ");
+        if (incremental) {
+          sb.append("INCREMENTAL ");
+        }
+        sb.append("STATS ");
         sb.append(unparseIdentifier(table.getDbName(), conf));
         sb.append(".");
         sb.append(unparseIdentifier(table.getTableName(), conf));
+        // Partition columns (if they have been specified)
+        if (table.getTableSpec() != null && table.getTableSpec().specType == SpecType.STATIC_PARTITION) {
+            List<FieldSchema> partCols = table.getPartCols();
+            Map<String, String> partitionSpec = table.getTableSpec().partSpec;
+            sb.append(" PARTITION (");
+            sb.append(partCols
+                .stream()
+                .map(fs -> unparseIdentifier(fs.getName(), conf) + "=" + genPartValueString(fs, partitionSpec))
+                .collect(Collectors.joining(", ")));
+            sb.append(")");
+        }
         AnalyzeRewriteContext columnStatsCtx = pCtx.getAnalyzeRewrite();
         if (columnStatsCtx != null && columnStatsCtx.getColName() != null) {
             Set<String> colStats = new HashSet<>(columnStatsCtx.getColName());
@@ -156,9 +183,55 @@ public class ImpalaCompiler extends TaskCompiler {
                   .collect(Collectors.joining(", ")));
               sb.append(")");
             }
-        } else {
+        } else if (!incremental) {
             sb.append(" ()");
         }
+        return sb.toString();
+    }
+
+    // This method is taken from CDPD-23225, we will unify both once it is pushed
+    private String genPartValueString(FieldSchema fs, Map<String, String> partitionSpec) {
+        String partVal = partitionSpec.get(fs.getName());
+        String partType = fs.getType().toLowerCase();
+        StringBuilder sb = new StringBuilder();
+        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(partType);
+        switch (pti.getTypeName()) {
+        // TODD: Remove the partition column data types
+        // not supported in Impala
+        case serdeConstants.BOOLEAN_TYPE_NAME: // NOT supported ?
+        case serdeConstants.INT_TYPE_NAME: // supported
+        case serdeConstants.BIGINT_TYPE_NAME: // supported
+        case serdeConstants.CHAR_TYPE_NAME:
+        case serdeConstants.FLOAT_TYPE_NAME: // supported
+        case serdeConstants.DOUBLE_TYPE_NAME: // supported
+        case serdeConstants.TINYINT_TYPE_NAME: // supported
+        case serdeConstants.SMALLINT_TYPE_NAME: // supported
+        case serdeConstants.BINARY_TYPE_NAME: // NOT supported
+            sb.append(partVal);
+            break;
+        case serdeConstants.STRING_TYPE_NAME: // supported
+        case serdeConstants.DATE_TYPE_NAME: // supported
+        case serdeConstants.TIMESTAMP_TYPE_NAME: // NOT supported
+        case serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME:
+        case serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME:
+            sb.append("\"");
+            sb.append(partVal);
+            sb.append("\"");
+            break;
+        default:
+            throw new RuntimeException("Unknown data type " + pti.getTypeName()
+                + " for partition column: " + fs.getName());
+        }
+        return sb.toString();
+    }
+
+    private String generateInvalidateTableMetadataStatement(ParseContext pCtx, Set<ReadEntity> inputs) {
+        Table table = inputs.iterator().next().getTable();
+        StringBuilder sb = new StringBuilder();
+        sb.append("INVALIDATE METADATA ");
+        sb.append(unparseIdentifier(table.getDbName(), conf));
+        sb.append(".");
+        sb.append(unparseIdentifier(table.getTableName(), conf));
         return sb.toString();
     }
 
