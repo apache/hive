@@ -191,6 +191,10 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
     if (!options.isSetMt_dop()) {
       options.setMt_dop(0);
     }
+
+    // CDPD-20969: Stopgap fix.  We don't support abort_on_error=false.  When this
+    // gets supported, this statement needs to go away.
+    options.setAbort_on_error(true);
     return options;
   }
 
