@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -2494,7 +2496,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         .run("select id from " + tbl)
         .verifyResults(new String[] {"1"});
 
-    assertFalse(replica.isTableTransactional(replicatedDbName, tbl));
+    assertFalse(AcidUtils.isTransactionalTable(replica.getTable(replicatedDbName, tbl)));
 
     primary
         .run("use " + primaryDbName)
@@ -2510,7 +2512,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         .run("select id from " + tbl)
         .verifyResults(new String[] {"2"});
 
-    assertTrue(replica.isTableTransactional(replicatedDbName, tbl));
+    assertTrue(AcidUtils.isTransactionalTable(replica.getTable(replicatedDbName, tbl)));
   }
 
   @Test
@@ -2532,8 +2534,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         .run("select id from " + tbl)
         .verifyResults(new String[] {"1"});
 
-    assertFalse(replica.isTableTransactional(replicatedDbName, tbl));
-    assertTrue(replica.isTableExternal(replicatedDbName, tbl));
+    assertFalse(AcidUtils.isTransactionalTable(replica.getTable(replicatedDbName, tbl)));
+    assertTrue(replica.getTable(replicatedDbName, tbl).getTableType().equals(TableType.EXTERNAL_TABLE.toString()));
 
     primary
         .run("use " + primaryDbName)
@@ -2549,7 +2551,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         .run("select id from " + tbl)
         .verifyResults(new String[] {"2"});
 
-    assertTrue(replica.isTableTransactional(replicatedDbName, tbl));
-    assertFalse(replica.isTableExternal(replicatedDbName, tbl));
+    assertTrue(AcidUtils.isTransactionalTable(replica.getTable(replicatedDbName, tbl)));
+    assertFalse(replica.getTable(replicatedDbName, tbl).getTableType().equals(TableType.EXTERNAL_TABLE.toString()));
   }
 }
