@@ -52,6 +52,7 @@ public class TestBasicLlapCacheHydration {
     hydr.setConf(conf);
     mockIo = mock(LlapIo.class);
     hydr.llapIo = mockIo;
+    hydr.initSavePath();
   }
 
   @Test

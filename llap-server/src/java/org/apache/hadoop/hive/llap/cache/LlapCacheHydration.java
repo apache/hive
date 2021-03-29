@@ -23,19 +23,18 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.common.util.ReflectionUtil;
-import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Interface to manage the cache content info, so that it can be saved on shutdown and loaded on startup.
  */
-public interface LlapCacheReplication extends Configurable {
+public interface LlapCacheHydration extends Configurable {
 
-  Logger LOG = LoggerFactory.getLogger(LlapCacheReplication.class);
+  Logger LOG = LoggerFactory.getLogger(LlapCacheHydration.class);
 
   /**
-   * Save the state of the cache. Will be attached to the shutdown hook.
+   * Save the state of the cache.
    */
   void save();
 
@@ -44,30 +43,35 @@ public interface LlapCacheReplication extends Configurable {
    */
   void load();
 
+  /**
+   * Initialize the strategy.
+   */
+  void init();
+
   static void setupAndStartIfEnabled(Configuration conf) {
     String clazz = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_HYDRATION_STRATEGY_CLASS);
     if (!StringUtils.isEmpty(clazz)) {
       try {
-        LlapCacheReplication strategy =
-            ReflectionUtil.newInstance(Class.forName(clazz).asSubclass(LlapCacheReplication.class), conf);
-        ShutdownHookManager.addShutdownHook(() -> strategy.save());
+        LlapCacheHydration strategy =
+            ReflectionUtil.newInstance(Class.forName(clazz).asSubclass(LlapCacheHydration.class), conf);
+        strategy.init();
 
         Runner runner = new Runner(strategy);
         Thread t = new Thread(runner, Runner.THREAD_NAME);
         t.start();
       } catch (Exception ex) {
-        LOG.warn("Llap cache replication error.", ex);
+        LOG.warn("Llap cache hydration error.", ex);
       }
     }
   }
 
   final class Runner implements Runnable {
 
-    private static final String THREAD_NAME = "LlapCacheReplicationRunner";
+    private static final String THREAD_NAME = "LlapCacheHydrationRunner";
 
-    private final LlapCacheReplication strategy;
+    private final LlapCacheHydration strategy;
 
-    public Runner(LlapCacheReplication strategy) {
+    public Runner(LlapCacheHydration strategy) {
       this.strategy = strategy;
     }
 

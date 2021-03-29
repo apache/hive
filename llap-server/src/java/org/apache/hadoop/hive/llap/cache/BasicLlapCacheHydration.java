@@ -63,6 +63,14 @@ public class BasicLlapCacheHydration implements LlapCacheHydration {
   @Override
   public void init() {
     ShutdownHookManager.addShutdownHook(() -> save());
+    initSavePath();
+    if (llapIo == null) {
+      llapIo = LlapProxy.getIo();
+    }
+  }
+
+  @VisibleForTesting
+  void initSavePath() {
     if (savePath == null) {
       String dir = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_HYDRATION_SAVE_DIR);
       String name = RegistryUtilities.getCanonicalHostName();
@@ -70,9 +78,6 @@ public class BasicLlapCacheHydration implements LlapCacheHydration {
         createDirIfNotExists(dir);
         savePath = dir + Path.SEPARATOR + name.hashCode() + ".cache";
       }
-    }
-    if (llapIo == null) {
-      llapIo = LlapProxy.getIo();
     }
   }
 
