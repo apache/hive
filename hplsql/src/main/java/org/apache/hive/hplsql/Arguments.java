@@ -39,7 +39,7 @@ public class Arguments {
   Map<String, String> vars = new HashMap<String, String>();
   
   @SuppressWarnings("static-access")
-  Arguments() {
+  public Arguments() {
     // -e 'query'
     options.addOption(OptionBuilder
         .hasArg()

@@ -26,13 +26,14 @@ import java.util.ArrayList;
 
 import org.apache.hive.hplsql.executor.QueryResult;
 
+
 /**
  * Variable or the result of expression 
  */
 public class Var {
   // Data types
 	public enum Type {BOOL, CURSOR, DATE, DECIMAL, DERIVED_TYPE, DERIVED_ROWTYPE, DOUBLE, FILE, IDENT, BIGINT, INTERVAL, ROW, 
-	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL};
+	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL, HPL_OBJECT}
 	public static final String DERIVED_TYPE = "DERIVED%TYPE";
 	public static final String DERIVED_ROWTYPE = "DERIVED%ROWTYPE";
 	public static Var Empty = new Var();
@@ -46,7 +47,7 @@ public class Var {
 	int scale;
 	
 	boolean constant = false;
-	
+
 	public Var() {
 	  type = Type.NULL;  
 	}
@@ -265,7 +266,7 @@ public class Var {
     return this;
   }
 
-  public Var setValues(QueryResult queryResult) {
+  public Var setRowValues(QueryResult queryResult) {
     Row row = (Row)this.value;
     int idx = 0;
     for (Column column : row.getColumns()) {
@@ -280,7 +281,7 @@ public class Var {
   /**
 	 * Set the data type from string representation
 	 */
-	void setType(String type) {
+	public void setType(String type) {
 	  this.type = defineType(type);
 	}
 	
@@ -345,6 +346,12 @@ public class Var {
     }
     else if (type.equalsIgnoreCase(Var.DERIVED_TYPE)) {
       return Type.DERIVED_TYPE;
+    }
+    else if (type.equalsIgnoreCase(Type.HPL_OBJECT.name())) {
+      return Type.HPL_OBJECT;
+    }
+    else if (type.equalsIgnoreCase(Type.ROW.name())) {
+      return Type.ROW;
     }
     return Type.NULL;
   }
@@ -437,6 +444,9 @@ public class Var {
     }
     else if (type == Type.BIGINT && v.type == Type.BIGINT) {
       return ((Long)value).compareTo((Long)v.value);
+    }
+    else if (type == Type.DOUBLE && v.type == Type.DECIMAL) {
+      return (new BigDecimal((double)value)).compareTo((BigDecimal)v.value);
     }
     else if (type == Type.STRING && v.type == Type.STRING) {
       return ((String)value).compareTo((String)v.value);

@@ -16,20 +16,34 @@
  *  limitations under the License.
  */
 
-package org.apache.hive.hplsql;
+package org.apache.hive.hplsql.objects;
 
-import org.antlr.v4.runtime.ParserRuleContext;
+import java.util.List;
 
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+import org.apache.hive.hplsql.Console;
+import org.apache.hive.hplsql.Var;
+
+public class DbmOutput implements HplObject {
+  private final HplClass hplClass;
+  private Console console;
+
+  public DbmOutput(HplClass hplClass) {
+    this.hplClass = hplClass;
   }
 
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+  public void initialize(Console console) {
+    this.console = console;
   }
 
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
+  @Override
+  public HplClass hplClass() {
+    return hplClass;
+  }
+
+  public Var putLine(List<Var> params) {
+    if (!params.isEmpty()) {
+      console.printLine(params.get(0).toString());
+    }
+    return null;
   }
 }
