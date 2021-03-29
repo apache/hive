@@ -13762,11 +13762,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     t.setTableType(type);
     t.setTemporary(isTemporary);
     HiveStorageHandler storageHandler = null;
-    try {
-      storageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
-              conf.getClassByName(storageFormat.getStorageHandler()), SessionState.get().getConf());
-    }catch(ClassNotFoundException ex){
-      System.out.println("Class not found. Storage handler will be set to null: "+ex);
+    if(storageFormat.getStorageHandler() != null) {
+      try {
+        storageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
+                conf.getClassByName(storageFormat.getStorageHandler()), SessionState.get().getConf());
+      } catch (ClassNotFoundException ex) {
+        System.out.println("Class not found. Storage handler will be set to null: " + ex);
+      }
     }
     t.setStorageHandler(storageHandler);
     for(Map.Entry<String,String> serdeMap : storageFormat.getSerdeProps().entrySet()){
