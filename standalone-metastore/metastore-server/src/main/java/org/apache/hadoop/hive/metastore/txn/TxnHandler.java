@@ -3657,7 +3657,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.ReadOnly
   public GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest rqst)
       throws MetaException {
-    GetLatestCompactionInfoResponse response = new GetLatestCompactionInfoResponse();
+    GetLatestCompactionInfoResponse response = new GetLatestCompactionInfoResponse(new ArrayList<>());
     Connection dbConn = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
