@@ -31,18 +31,12 @@ POSTHOOK: Lineage: t1pstring PARTITION(p1=a8888).col1 SCRIPT []
 PREHOOK: query: explain extended SELECT count(*) FROM t1pstring WHERE p1=8888
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1pstring
-PREHOOK: Input: default@t1pstring@p1=2021_backup
 PREHOOK: Input: default@t1pstring@p1=8888
-PREHOOK: Input: default@t1pstring@p1=8888_a
-PREHOOK: Input: default@t1pstring@p1=a8888
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT count(*) FROM t1pstring WHERE p1=8888
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1pstring
-POSTHOOK: Input: default@t1pstring@p1=2021_backup
 POSTHOOK: Input: default@t1pstring@p1=8888
-POSTHOOK: Input: default@t1pstring@p1=8888_a
-POSTHOOK: Input: default@t1pstring@p1=a8888
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM `default`.`t1pstring`
@@ -63,71 +57,31 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1pstring
-                  filterExpr: (UDFToDouble(p1) = 8888.0D) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 762 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: (8888.0D = 8888.0D) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: (UDFToDouble(p1) = 8888.0D) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.5
-                        mode: hash
-                        outputColumnNames: _col0
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        null sort order: 
+                        numBuckets: -1
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          bucketingVersion: 2
-                          null sort order: 
-                          numBuckets: -1
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          tag: -1
-                          value expressions: _col0 (type: bigint)
-                          auto parallelism: false
+                        tag: -1
+                        value expressions: _col0 (type: bigint)
+                        auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: p1=2021_backup
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    p1 2021_backup
-                  properties:
-                    column.name.delimiter ,
-                    columns col1
-                    columns.types string
-#### A masked pattern was here ####
-                    name default.t1pstring
-                    partition_columns p1
-                    partition_columns.types string
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns col1
-                      columns.comments 
-                      columns.types string
-#### A masked pattern was here ####
-                      name default.t1pstring
-                      partition_columns p1
-                      partition_columns.types string
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.t1pstring
-                  name: default.t1pstring
 #### A masked pattern was here ####
                 Partition
                   base file name: p1=8888
@@ -164,83 +118,8 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.t1pstring
                   name: default.t1pstring
-#### A masked pattern was here ####
-                Partition
-                  base file name: p1=8888_a
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    p1 8888_a
-                  properties:
-                    column.name.delimiter ,
-                    columns col1
-                    columns.types string
-#### A masked pattern was here ####
-                    name default.t1pstring
-                    partition_columns p1
-                    partition_columns.types string
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns col1
-                      columns.comments 
-                      columns.types string
-#### A masked pattern was here ####
-                      name default.t1pstring
-                      partition_columns p1
-                      partition_columns.types string
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.t1pstring
-                  name: default.t1pstring
-#### A masked pattern was here ####
-                Partition
-                  base file name: p1=a8888
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    p1 a8888
-                  properties:
-                    column.name.delimiter ,
-                    columns col1
-                    columns.types string
-#### A masked pattern was here ####
-                    name default.t1pstring
-                    partition_columns p1
-                    partition_columns.types string
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns col1
-                      columns.comments 
-                      columns.types string
-#### A masked pattern was here ####
-                      name default.t1pstring
-                      partition_columns p1
-                      partition_columns.types string
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.t1pstring
-                  name: default.t1pstring
             Truncated Path -> Alias:
-              /t1pstring/p1=2021_backup [t1pstring]
               /t1pstring/p1=8888 [t1pstring]
-              /t1pstring/p1=8888_a [t1pstring]
-              /t1pstring/p1=a8888 [t1pstring]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
