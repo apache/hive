@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +38,12 @@ import java.io.OutputStream;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /**
- * Simple cache replication strategy which saves the content info of the cache to a file on the local filesystem on
+ * Simple cache hydration strategy which saves the content info of the cache to a file on the local filesystem on
  * shutdown, and loads it when the daemon starts.
  */
-public class BasicLlapCacheReplication implements LlapCacheReplication {
+public class BasicLlapCacheHydration implements LlapCacheHydration {
 
-  private static final Logger LOG = LoggerFactory.getLogger(BasicLlapCacheReplication.class);
+  private static final Logger LOG = LoggerFactory.getLogger(BasicLlapCacheHydration.class);
 
   private Configuration conf;
   private String savePath;
@@ -51,19 +52,19 @@ public class BasicLlapCacheReplication implements LlapCacheReplication {
 
   @Override
   public void load() {
-    init();
     loadCacheContent();
   }
 
   @Override
   public void save() {
-    init();
     saveCacheContent();
   }
 
-  private void init() {
+  @Override
+  public void init() {
+    ShutdownHookManager.addShutdownHook(() -> save());
     if (savePath == null) {
-      String dir = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_REPL_SAVE_DIR);
+      String dir = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_HYDRATION_SAVE_DIR);
       String name = RegistryUtilities.getCanonicalHostName();
       if (dir != null && name != null) {
         createDirIfNotExists(dir);

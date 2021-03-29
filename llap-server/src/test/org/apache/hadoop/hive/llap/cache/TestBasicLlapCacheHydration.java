@@ -37,21 +37,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class TestBasicLlapCacheReplication {
+public class TestBasicLlapCacheHydration {
 
   private LlapIo mockIo;
-  private BasicLlapCacheReplication repl;
+  private BasicLlapCacheHydration hydr;
 
   @Before
   public void setUp() throws IOException {
     File tempDir = Files.createTempDir();
     tempDir.deleteOnExit();
     Configuration conf = new Configuration();
-    HiveConf.setVar(conf, ConfVars.LLAP_CACHE_REPL_SAVE_DIR, tempDir.getAbsolutePath());
-    repl = new BasicLlapCacheReplication();
-    repl.setConf(conf);
+    HiveConf.setVar(conf, ConfVars.LLAP_CACHE_HYDRATION_SAVE_DIR, tempDir.getAbsolutePath());
+    hydr = new BasicLlapCacheHydration();
+    hydr.setConf(conf);
     mockIo = mock(LlapIo.class);
-    repl.llapIo = mockIo;
+    hydr.llapIo = mockIo;
   }
 
   @Test
@@ -61,8 +61,8 @@ public class TestBasicLlapCacheReplication {
     ArgumentCaptor<LlapDaemonProtocolProtos.CacheEntryList> captor =
         forClass(LlapDaemonProtocolProtos.CacheEntryList.class);
 
-    repl.save();
-    repl.load();
+    hydr.save();
+    hydr.load();
 
     verify(mockIo).loadDataIntoCache(captor.capture());
     LlapDaemonProtocolProtos.CacheEntryList res = captor.getValue();

@@ -45,7 +45,7 @@ public interface LlapCacheReplication extends Configurable {
   void load();
 
   static void setupAndStartIfEnabled(Configuration conf) {
-    String clazz = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_REPL_STRATEGY_CLASS);
+    String clazz = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_HYDRATION_STRATEGY_CLASS);
     if (!StringUtils.isEmpty(clazz)) {
       try {
         LlapCacheReplication strategy =
