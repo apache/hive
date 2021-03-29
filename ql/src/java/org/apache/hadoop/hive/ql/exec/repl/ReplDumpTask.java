@@ -584,6 +584,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String dbName = (null != work.dbNameOrPattern && !work.dbNameOrPattern.isEmpty())
         ? work.dbNameOrPattern
         : "?";
+    Database db = hiveDb.getDatabase(dbName);
+    if (db != null && !HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
+      checkReplSourceFor(hiveDb, dbName, db);
+    }
+
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
         maxEventLimit);
     try {
@@ -905,23 +910,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
 
         if (db != null && !HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
-          if (!ReplChangeManager.isSourceOfReplication(db)) {
-            // Check if the schedule name is available else set the query value
-            // as default.
-            String value = conf.get(SCHEDULED_QUERY_SCHEDULENAME,
-                "default_" + getQueryState().getQueryString());
-            updateReplSourceFor(hiveDb, dbName, db, value);
-          } else {
-            // If a schedule name is available and that isn't part of the
-            // existing conf, append the schedule name to the conf.
-            String scheduleQuery = conf.get(SCHEDULED_QUERY_SCHEDULENAME);
-            if (!StringUtils.isEmpty(scheduleQuery)) {
-              if (!getReplPolicyIdString(db).contains(scheduleQuery)) {
-                updateReplSourceFor(hiveDb, dbName, db,
-                    getReplPolicyIdString(db) + ", " + scheduleQuery);
-              }
-            }
-          }
+          checkReplSourceFor(hiveDb, dbName, db);
         }
 
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
@@ -1026,8 +1015,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void updateReplSourceFor(Hive hiveDb, String dbName, Database db,
-      String value) throws HiveException {
+  private void checkReplSourceFor(Hive hiveDb, String dbName, Database db) throws HiveException {
+    if (!ReplChangeManager.isSourceOfReplication(db)) {
+      // Check if the schedule name is available else set the query value
+      // as default.
+      String value = conf.get(SCHEDULED_QUERY_SCHEDULENAME,
+              "default_" + getQueryState().getQueryString());
+      updateReplSourceFor(hiveDb, dbName, db, value);
+    } else {
+      // If a schedule name is available and that isn't part of the
+      // existing conf, append the schedule name to the conf.
+      String scheduleQuery = conf.get(SCHEDULED_QUERY_SCHEDULENAME);
+      if (!StringUtils.isEmpty(scheduleQuery)) {
+        if (!getReplPolicyIdString(db).contains(scheduleQuery)) {
+          updateReplSourceFor(hiveDb, dbName, db,
+                  getReplPolicyIdString(db) + ", " + scheduleQuery);
+        }
+      }
+    }
+  }
+
+  private void updateReplSourceFor(Hive hiveDb, String dbName, Database db, String value) throws HiveException {
     Map<String, String> params = db.getParameters();
     if (params != null) {
       params.put("repl.source.for", value);
