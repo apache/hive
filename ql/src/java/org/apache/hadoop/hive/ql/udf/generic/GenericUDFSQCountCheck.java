@@ -21,10 +21,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsDecimalToDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsDoubleToDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsLongToLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -33,13 +29,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.LongWritable;
 
 /**
- * GenericUDFAbs.
+ * GenericUDFSQCountCheck.
  *
  */
 @Description(name = "sq_count_check",
     value = "_FUNC_(x) - Internal check on scalar subquery expression to make sure atmost one row is returned",
     extended = "For internal use only")
-@VectorizedExpressions({FuncAbsLongToLong.class, FuncAbsDoubleToDouble.class, FuncAbsDecimalToDecimal.class})
 public class GenericUDFSQCountCheck extends GenericUDF {
   private final LongWritable resultLong = new LongWritable();
   private transient Converter[] converters = new Converter[1];
@@ -100,3 +95,4 @@ public class GenericUDFSQCountCheck extends GenericUDF {
   }
 
 }
+ 
