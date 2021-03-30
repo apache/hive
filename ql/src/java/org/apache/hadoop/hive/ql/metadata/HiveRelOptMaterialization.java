@@ -92,7 +92,7 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
     return sourceTablesCompacted;
   }
 
-  public HiveRelOptMaterialization update(Materialization materialization) {
+  public HiveRelOptMaterialization updateInvalidation(Materialization materialization) {
     return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
         materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted());
   }

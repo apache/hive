@@ -166,7 +166,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveFetchDeletedRowsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveRowIsDeletedPropagatorRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -1379,19 +1379,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     // 4.3) Add filter condition to delete
     // 4.2) Modifying filter condition. The incremental rewriting rule generated an OR
-    // clause where first disjunct contains the condition for the UPDATE branch.
+    // clause where first disjunct contains the condition for the DELETE branch.
     // TOK_WHERE
     //    or
-    //       .                        <- DISJUNCT FOR <UPDATE>
+    //       .                        <- DISJUNCT FOR <DELETE>
     //          TOK_TABLE_OR_COL
     //             $hdt$_0
-    //          $f3
+    //          ROW__IS__DELETED
     //       TOK_FUNCTION             <- DISJUNCT FOR <INSERT>
     //          isnull
     //          .
     //             TOK_TABLE_OR_COL
     //                $hdt$_0
-    //             $f3
+    //             ROW__IS__DELETED
     ASTNode whereClauseInDelete = null;
     for (int i = 0; i < deleteNode.getChildren().size(); i++) {
       if (deleteNode.getChild(i).getType() == HiveParser.TOK_WHERE) {
@@ -2522,7 +2522,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
       } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_REBUILD) {
         program = new HepProgramBuilder();
-        generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, new HiveFetchDeletedRowsRule());
+        generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, new HiveRowIsDeletedPropagatorRule());
         basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
       }
 

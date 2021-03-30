@@ -31,11 +31,15 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFieldTrimmerRule;
 
-public class HiveFetchDeletedRowsRule extends HiveFieldTrimmerRule {
+/**
+ * Planner rule to propagate rowIsDeleted column in Materialized View incremental rebuild plans.
+ * This rule uses {@link HiveRowIsDeletedPropagator}.
+ * This rule should be applied on the uppermost Right outer join node.
+ */
+public class HiveRowIsDeletedPropagatorRule extends HiveFieldTrimmerRule {
 
-
-  public HiveFetchDeletedRowsRule() {
-    super(operand(Join.class, any()), false, "HiveFetchDeletedRowsRule");
+  public HiveRowIsDeletedPropagatorRule() {
+    super(operand(Join.class, any()), false, "HiveRowIsDeletedPropagatorRule");
   }
 
   @Override
@@ -47,11 +51,14 @@ public class HiveFetchDeletedRowsRule extends HiveFieldTrimmerRule {
   protected RelNode trim(RelOptRuleCall call, RelNode node) {
     Join join = (Join) node;
 
+    // This should be a Scan on the MV
     RelNode leftInput = join.getLeft();
 
+    // This branch is querying the rows should be inserted/deleted into the view since the last rebuild.
     RelNode rightInput = join.getRight();
-    RelNode newRightInput = new HiveFetchDeletedRowsPropagator(call.builder()).propagate(rightInput);
+    RelNode newRightInput = new HiveRowIsDeletedPropagator(call.builder()).propagate(rightInput);
 
+    // Create input ref to rowIsDeleteColumn. It is used in filter condition later.
     RelDataType newRowType = newRightInput.getRowType();
     int rowIsDeletedIdx = newRowType.getFieldCount() - 1;
     RexBuilder rexBuilder = call.builder().getRexBuilder();
@@ -72,6 +79,7 @@ public class HiveFetchDeletedRowsRule extends HiveFieldTrimmerRule {
       projectNames.add(relDataTypeField.getName());
     }
 
+    // Create new Join and a Filter. The filter condition is used in CalcitePlanner.fixUpASTJoinIncrementalRebuild().
     return call.builder()
         .push(leftInput)
         .push(newRightInput)

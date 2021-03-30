@@ -2044,7 +2044,7 @@ public class Hive {
                   relOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                       creationMetadata.getValidTxnList()));
             }
-            addResult(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
+            addToMaterializationList(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
             continue;
           }
         }
@@ -2067,7 +2067,7 @@ public class Hive {
                     hiveRelOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                     creationMetadata.getValidTxnList()));
           }
-          addResult(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
+          addToMaterializationList(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
         }
       }
       return result;
@@ -2076,7 +2076,7 @@ public class Hive {
     }
   }
 
-  private void addResult(
+  private void addToMaterializationList(
           boolean expandGroupingSets, Materialization invalidationInfo, HiveRelOptMaterialization relOptMaterialization,
           List<HiveRelOptMaterialization> result) {
     if (expandGroupingSets) {
@@ -2084,13 +2084,13 @@ public class Hive {
               HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization);
       if (invalidationInfo != null) {
         for (HiveRelOptMaterialization materialization : hiveRelOptMaterializationList) {
-          result.add(materialization.update(invalidationInfo));
+          result.add(materialization.updateInvalidation(invalidationInfo));
         }
       } else {
         result.addAll(hiveRelOptMaterializationList);
       }
     } else {
-      result.add(invalidationInfo == null ? relOptMaterialization : relOptMaterialization.update(invalidationInfo));
+      result.add(invalidationInfo == null ? relOptMaterialization : relOptMaterialization.updateInvalidation(invalidationInfo));
     }
   }
 

@@ -29,22 +29,25 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
+/**
+ * {@link HiveRelShuttle} to propagate rowIsDeleted column to all HiveRelNodes' rowType in the plan.
+ * General rule: we expect that the rowIsDeleted column is the last column in the input rowType of the current
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode}.
+ */
+public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
 
   private final RelBuilder relBuilder;
 
-  public HiveFetchDeletedRowsPropagator(RelBuilder relBuilder) {
+  public HiveRowIsDeletedPropagator(RelBuilder relBuilder) {
     this.relBuilder = relBuilder;
   }
 
@@ -52,6 +55,13 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
     return relNode.accept(this);
   }
 
+  /**
+   * Create a Projection on top of TS that contains all columns from TS.
+   * Let rowIsDeleted the last column in the new Project.
+   * Enable fetching Deleted rows in TS.
+   * @param scan - TS to transform
+   * @return - new TS and a optionally a Project on top of it.
+   */
   @Override
   public RelNode visit(HiveTableScan scan) {
     RelDataType tableRowType = scan.getTable().getRowType();
@@ -61,6 +71,7 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
 
     List<RexNode> projects;
     List<String> projectNames;
+    HiveTableScan newScan;
     if (column == null) {
       RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
       RexNode propagatedColumn = rexBuilder.makeLiteral(
@@ -72,6 +83,8 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
       populateProjects(rexBuilder, tableRowType, projects, projectNames);
       projects.add(propagatedColumn);
       projectNames.add("rowIsDeleted");
+
+      newScan = scan;
     } else {
       projects = new ArrayList<>(tableRowType.getFieldCount());
       projectNames = new ArrayList<>(tableRowType.getFieldCount());
@@ -81,25 +94,35 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
       projects.add(propagatedColumn);
       String propagatedColumnName = projectNames.remove(column.getIndex());
       projectNames.add(propagatedColumnName);
+
+      newScan = scan.enableFetchDeletedRows();
     }
 
+    // Note: as a nature of Calcite if row schema of TS and the new Project would be exactly the same no
+    // Project is created.
     return relBuilder
-            .push(scan.withFetchDeletedRows())
+            .push(newScan)
             .project(projects, projectNames)
             .build();
   }
 
+  /**
+   * Create a new Project with original projected columns plus add rowIsDeleted as last column referencing
+   * the last column of the input {@link RelNode}.
+   * @param project - {@link HiveProject to transform}
+   * @return new Project
+   */
   @Override
   public RelNode visit(HiveProject project) {
     RelNode newProject = visitChild(project, 0, project.getInput());
     RelNode projectInput = newProject.getInput(0);
-    int rowIsNullIndex = projectInput.getRowType().getFieldCount() - 1;
+    int rowIsDeletedIndex = projectInput.getRowType().getFieldCount() - 1;
     List<RexNode> newProjects = new ArrayList<>(project.getRowType().getFieldCount() + 1);
     newProjects.addAll(project.getProjects());
 
-    RexNode rowIsNull = relBuilder.getRexBuilder().makeInputRef(
-            projectInput.getRowType().getFieldList().get(rowIsNullIndex).getType(), rowIsNullIndex);
-    newProjects.add(rowIsNull);
+    RexNode rowIsDeleted = relBuilder.getRexBuilder().makeInputRef(
+            projectInput.getRowType().getFieldList().get(rowIsDeletedIndex).getType(), rowIsDeletedIndex);
+    newProjects.add(rowIsDeleted);
 
     return relBuilder
             .push(projectInput)
@@ -107,17 +130,25 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
             .build();
   }
 
+  /**
+   * Create new Join and a Project on top of it.
+   * @param join - {@link HiveJoin} to transform
+   * @return - new Join with a Project on top
+   */
   @Override
   public RelNode visit(HiveJoin join) {
-    RelNode newJoin = visitChild(join, 0, join.getInput(0));
-    RelNode leftInput = newJoin.getInput(0);
-    RelDataType leftRowType = newJoin.getInput(0).getRowType();
+    // Propagate rowISDeleted to left input
+    RelNode tmpJoin = visitChild(join, 0, join.getInput(0));
+    RelNode leftInput = tmpJoin.getInput(0);
+    RelDataType leftRowType = tmpJoin.getInput(0).getRowType();
     int leftRowIsDeletedIndex = leftRowType.getFieldCount() - 1;
-    newJoin = visitChild(join, 1, join.getInput(1));
-    RelNode rightInput = newJoin.getInput(1);
+    // Propagate rowISDeleted to right input
+    tmpJoin = visitChild(join, 1, join.getInput(1));
+    RelNode rightInput = tmpJoin.getInput(1);
     RelDataType rightRowType = rightInput.getRowType();
     int rightRowIsDeletedIndex = rightRowType.getFieldCount() - 1;
 
+    // Create input ref to rowIsDeleted columns in left and right inputs
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
     RexNode leftRowIsDeleted = rexBuilder.makeInputRef(
             leftRowType.getFieldList().get(leftRowIsDeletedIndex).getType(), leftRowIsDeletedIndex);
@@ -125,14 +156,18 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
             rightRowType.getFieldList().get(rightRowIsDeletedIndex).getType(),
             leftRowType.getFieldCount() + rightRowIsDeletedIndex);
 
+    // Collect projected columns: all columns from both inputs except rowIsDeleted columns
     List<RexNode> projects = new ArrayList<>(leftRowType.getFieldCount() + rightRowType.getFieldCount() - 1);
     List<String> projectNames = new ArrayList<>(leftRowType.getFieldCount() + rightRowType.getFieldCount() - 1);
     populateProjects(rexBuilder, leftRowType, 0, leftRowType.getFieldCount() - 1, projects, projectNames);
     populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), rightRowType.getFieldCount() - 1, projects, projectNames);
+    // Add rowIsDeleted column to project
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
     projectNames.add("rowIsDeleted");
 
-    RexNode newJoinCondition = new JoinConditionShifter(leftRowType.getFieldCount() - 1, relBuilder)
+    // Shift column references refers columns coming from right input by one in join condition since the new left input
+    // has a new column
+    RexNode newJoinCondition = new InputRefShifter(leftRowType.getFieldCount() - 1, relBuilder)
         .apply(join.getCondition());
 
     return relBuilder
@@ -143,18 +178,24 @@ public class HiveFetchDeletedRowsPropagator extends HiveRelShuttleImpl {
             .build();
   }
 
-  private static class JoinConditionShifter extends RexShuttle {
-    private final int rightStartIndex;
+  private static class InputRefShifter extends RexShuttle {
+    private final int startIndex;
     private final RelBuilder relBuilder;
 
-    private JoinConditionShifter(int rightStartIndex, RelBuilder relBuilder) {
-      this.rightStartIndex = rightStartIndex;
+    private InputRefShifter(int startIndex, RelBuilder relBuilder) {
+      this.startIndex = startIndex;
       this.relBuilder = relBuilder;
     }
 
+    /**
+     * Shift input reference index by one if the referenced column index is higher or equals with the startIndex.
+     * @param inputRef - {@link RexInputRef} to transform
+     * @return new {@link RexInputRef} if the referenced column index is higher or equals with the startIndex,
+     * original otherwise
+     */
     @Override
     public RexNode visitInputRef(RexInputRef inputRef) {
-      if (inputRef.getIndex() >= rightStartIndex) {
+      if (inputRef.getIndex() >= startIndex) {
         RexBuilder rexBuilder = relBuilder.getRexBuilder();
         return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + 1);
       }

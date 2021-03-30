@@ -137,7 +137,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
   }
 
-  public HiveTableScan withFetchDeletedRows() {
+  public HiveTableScan enableFetchDeletedRows() {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
         this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, true);
   }

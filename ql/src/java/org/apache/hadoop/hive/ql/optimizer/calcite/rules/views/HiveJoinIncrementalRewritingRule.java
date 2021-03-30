@@ -16,7 +16,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;/*
  * limitations under the License.
  */
 
-import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
@@ -80,8 +79,6 @@ public class HiveJoinIncrementalRewritingRule extends RelOptRule {
             .push(union.getInput(1))
             .push(union.getInput(0))
             .join(JoinRelType.RIGHT, joinCond)
-//            .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR,
-//                    rowIsDeleted, rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted)))
             .project(projExprs)
             .build();
     call.transformTo(newNode);
