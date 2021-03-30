@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
@@ -55,6 +55,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
@@ -316,45 +317,27 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
+      if (loadPath != null) {
+        DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
-      if (loadPath == null) {
-        LOG.warn("loadPath is null.");
-        return;
-      }
-
-      DumpMetaData dmd = new DumpMetaData(loadPath, conf);
-
-      if (!loadPath.getFileSystem(conf).exists(dmd.getDumpFilePath())) {
-        LOG.warn("_dumpmetadata file doesn't exist.");
-        return;
-      }
-
-      if (!dmd.isVersionCompatible()) {
-        String exceptionMessage = String.format("Dump format version: %d. Versions older than %d are not supported",
-            dmd.getDumpFormatVersion(), Utilities.MIN_VERSION_FOR_NEW_DUMP_FORMAT);
-        throw new SemanticException(exceptionMessage);
-      }
-
-      if (!shouldLoadProceed(loadPath)) {
-        LOG.warn("Previous Dump Already Loaded");
-        return;
-      }
-
-      boolean evDump = false;
-      // we will decide what hdfs locations needs to be copied over here as well.
-      if (dmd.isIncrementalDump()) {
-        LOG.debug("{} contains an incremental dump", loadPath);
-        evDump = true;
+        boolean evDump = false;
+        // we will decide what hdfs locations needs to be copied over here as well.
+        if (dmd.isIncrementalDump()) {
+          LOG.debug("{} contains an incremental dump", loadPath);
+          evDump = true;
+        } else {
+          LOG.debug("{} contains an bootstrap dump", loadPath);
+        }
+        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
+                replScope.getDbName(),
+                dmd.getReplScope(),
+                queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
+            initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
+              dmd.getDumpExecutionId()), dmd.isReplScopeModified());
+        rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
-        LOG.debug("{} contains an bootstrap dump", loadPath);
+        LOG.warn("Previous Dump Already Loaded");
       }
-      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
-              replScope.getDbName(),
-              dmd.getReplScope(),
-              queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
-          initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
-            dmd.getDumpExecutionId()), dmd.isReplScopeModified());
-      rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
@@ -388,20 +371,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         Path hiveDumpPath = new Path(latestUpdatedStatus.getPath(), ReplUtils.REPL_HIVE_BASE_DIR);
-        if (loadPathBase.getFileSystem(conf).exists(hiveDumpPath)) {
+        if (loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath,
+                ReplAck.DUMP_ACKNOWLEDGEMENT.toString()))
+                && !loadPathBase.getFileSystem(conf).exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()))) {
           return hiveDumpPath;
         }
       }
     }
     return null;
-  }
-
-  private boolean shouldLoadProceed (Path hiveDumpPath) throws IOException {
-    if (hiveDumpPath != null) {
-      return hiveDumpPath.getFileSystem(conf).exists(new Path(hiveDumpPath, ReplAck.DUMP_ACKNOWLEDGEMENT.toString()))
-          && !hiveDumpPath.getFileSystem(conf).exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
-    }
-    return false;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {
