@@ -61,6 +61,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,11 +124,13 @@ public class Initiator extends MetaStoreCompactorThread {
 
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
+          Set<String> skipDBs = new HashSet<>();
+          Set<String> skipTables = new HashSet<>();
 
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
               abortedTimeThreshold, compactionInterval)
               .stream()
-              .filter(ci -> isEligibleForCompaction(ci, currentCompactions))
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
               .collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
@@ -444,21 +447,38 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean isEligibleForCompaction(CompactionInfo ci, ShowCompactResponse currentCompactions) {
-    LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
-
-    // Check if we already have initiated or are working on a compaction for this partition
-    // or table. If so, skip it. If we are just waiting on cleaning we can still check,
-    // as it may be time to compact again even though we haven't cleaned.
-    // todo: this is not robust. You can easily run `alter table` to start a compaction between
-    // the time currentCompactions is generated and now
-    if (lookForCurrentCompactions(currentCompactions, ci)) {
-      LOG.info("Found currently initiated or working compaction for " +
-          ci.getFullPartitionName() + " so we will not initiate another compaction");
-      return false;
-    }
-
+  private boolean isEligibleForCompaction(CompactionInfo ci,
+      ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
     try {
+      if (skipDBs.contains(ci.dbname)) {
+        LOG.debug("Skipping {}::{}, skipDBs:{}", ci.dbname, ci.tableName, skipDBs);
+        return false;
+      } else {
+        if (replIsCompactionDisabledForDatabase(ci.dbname)) {
+          skipDBs.add(ci.dbname);
+          LOG.debug("Skipping {}::{}, skipDBs:{}", ci.dbname, ci.tableName, skipDBs);
+          return false;
+        }
+      }
+
+      if (skipTables.contains(ci.getFullTableName())) {
+        return false;
+      }
+
+      LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
+
+      // Check if we already have initiated or are working on a compaction for this partition
+      // or table. If so, skip it. If we are just waiting on cleaning we can still check,
+      // as it may be time to compact again even though we haven't cleaned.
+      // todo: this is not robust. You can easily run `alter table` to start a compaction between
+      // the time currentCompactions is generated and now
+      if (lookForCurrentCompactions(currentCompactions, ci)) {
+        LOG.info("Found currently initiated or working compaction for " +
+            ci.getFullPartitionName() + " so we will not initiate another compaction");
+        return false;
+      }
+
+      //TODO: avoid repeated HMS lookup for same table (e.g partitions within table)
       Table t = resolveTable(ci);
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
@@ -466,7 +486,8 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      if (replIsCompactionDisabledForDatabase(ci.dbname) || replIsCompactionDisabledForTable(t)) {
+      if (replIsCompactionDisabledForTable(t)) {
+        skipTables.add(ci.getFullTableName());
         return false;
       }
 
