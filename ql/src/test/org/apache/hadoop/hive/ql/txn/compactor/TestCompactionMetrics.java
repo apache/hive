@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -43,8 +42,8 @@ import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -60,6 +59,13 @@ public class TestCompactionMetrics  extends CompactorTest {
   private static final String INITIATOR_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_INITIATOR_CYCLE;
   private static final String CLEANER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_CLEANER_CYCLE;
   private static final String WORKER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_WORKER_CYCLE;
+
+  @Before
+  public void setUp() throws Exception {
+    // re-initialize metrics
+    Metrics.shutdown();
+    Metrics.initialize(conf);
+  }
 
   @Test
   public void testInitiatorPerfMetricsEnabled() throws Exception {
@@ -468,9 +474,6 @@ public class TestCompactionMetrics  extends CompactorTest {
   @Test
   public void testTxnHandlerCounters() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    // re-initialize with metrics enabled
-    ms = new HiveMetaStoreClient(conf);
-    txnHandler = TxnUtils.getTxnStore(conf);
 
     String dbName = "default";
     String tblName = "txnhandlercounters";

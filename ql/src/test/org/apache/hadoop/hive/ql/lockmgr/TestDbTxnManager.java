@@ -510,6 +510,9 @@ public class TestDbTxnManager {
     houseKeeperService = new AcidHouseKeeperService();
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
     houseKeeperService.setConf(conf);
+    // re-initialize metrics
+    Metrics.shutdown();
+    Metrics.initialize(conf);
   }
 
   @After
