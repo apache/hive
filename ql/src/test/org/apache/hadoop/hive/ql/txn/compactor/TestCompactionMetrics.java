@@ -458,17 +458,17 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
 
-    start = System.currentTimeMillis() - 1000L;
+    start = System.currentTimeMillis();
     burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(27L, 29L)));
     Thread.sleep(1000);
     runAcidMetricService();
     diff = (System.currentTimeMillis() - start) / 1000;
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE_IN_SEC).intValue() <= diff);
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE_IN_SEC).intValue() >= 1);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() >= 1);
 
     Assert.assertEquals(27L, Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
 
-    Assert.assertEquals(2, Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS_IN_TXNS).intValue());
+    Assert.assertEquals(2, Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
   }
 
   @Test
@@ -481,12 +481,12 @@ public class TestCompactionMetrics  extends CompactorTest {
     Table t = newTable(dbName, tblName, false);
 
     burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Arrays.asList(2L, 3L)));
-    Assert.assertEquals(2, Metrics.getOrCreateCounter(MetricsConstants.NUM_ABORTED_WRITE_TXNS).getCount());
-    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.NUM_COMMITTED_TXNS).getCount());
+    Assert.assertEquals(2, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
+    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
 
     burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Collections.singletonList(4L)));
-    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.NUM_ABORTED_WRITE_TXNS).getCount());
-    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.NUM_COMMITTED_TXNS).getCount());
+    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
+    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,

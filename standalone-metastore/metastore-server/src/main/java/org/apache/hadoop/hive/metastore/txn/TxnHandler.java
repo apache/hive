@@ -155,7 +155,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Counter;
 import com.google.common.base.Splitter;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -1455,10 +1454,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         createCommitNotificationEvent(dbConn, txnid , txnType);
-        Metrics.getOrCreateCounter(MetricsConstants.NUM_COMMITTED_TXNS).inc();
 
         LOG.debug("Going to commit");
         dbConn.commit();
+
+        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -4584,15 +4584,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE ");
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
-      Metrics.getOrCreateCounter(MetricsConstants.NUM_ABORTED_WRITE_TXNS).inc(txnids.size());
       // execute all queries in the list in one batch
+      int numAborted = 0;
       if (skipCount) {
         executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
-        return 0;
       } else {
         List<Integer> affectedRowsByQuery = executeQueriesInBatch(stmt, queries, maxBatchSize);
-        return getUpdateCount(numUpdateQueries, affectedRowsByQuery);
+        numAborted = getUpdateCount(numUpdateQueries, affectedRowsByQuery);
       }
+
+      Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(numAborted);
+      return numAborted;
     } finally {
       closeStmt(stmt);
     }
@@ -5231,7 +5233,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
-        Metrics.getOrCreateCounter(MetricsConstants.NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
+        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
       }
     } catch (SQLException ex) {
       LOG.warn("Aborting timed out transactions failed due to " + getMessage(ex), ex);

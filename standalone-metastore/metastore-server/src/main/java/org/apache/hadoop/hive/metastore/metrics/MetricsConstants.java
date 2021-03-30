@@ -28,9 +28,9 @@ public class MetricsConstants {
   public static final String OLDEST_OPEN_TXN_ID = "oldest_open_txn_id";
   public static final String OLDEST_OPEN_TXN_AGE = "oldest_open_txn_age_in_sec";
   // number of aborted txns in TXNS table
-  public static final String NUM_ABORTED_TXNS_IN_TXNS = COMPACTION_STATUS_PREFIX + "aborted_txns_in_txns";
+  public static final String NUM_ABORTED_TXNS = "num_aborted_txns";
   public static final String OLDEST_ABORTED_TXN_ID = "oldest_aborted_txn_id";
-  public static final String OLDEST_ABORTED_TXN_AGE_IN_SEC = "oldest_aborted_txn_age_in_sec";
+  public static final String OLDEST_ABORTED_TXN_AGE = "oldest_aborted_txn_age_in_sec";
 
 
   public static final String TOTAL_API_CALLS = "total_api_calls";
@@ -50,9 +50,9 @@ public class MetricsConstants {
   public static final String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
 
   public static final String NUM_OPEN_TXNS = "num_open_transactions";
-  public static final String NUM_ABORTED_WRITE_TXNS = COMPACTION_STATUS_PREFIX + "aborted_write_txns";
-  public static final String NUM_COMMITTED_TXNS = COMPACTION_STATUS_PREFIX + "committed_txns";
-  public static final String NUM_TIMED_OUT_TXNS = "num_timed_out_transactions";
+  public static final String TOTAL_NUM_ABORTED_TXNS = "total_num_aborted_txns";
+  public static final String TOTAL_NUM_COMMITTED_TXNS = "total_num_committed_txns";
+  public static final String TOTAL_NUM_TIMED_OUT_TXNS = "total_num_timed_out_transactions";
 
   public static final String OPEN_CONNECTIONS = "open_connections";
 

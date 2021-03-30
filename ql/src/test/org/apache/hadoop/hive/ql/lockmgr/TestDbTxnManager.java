@@ -492,7 +492,7 @@ public class TestDbTxnManager {
     }
     Assert.assertNotNull("Txn should have been aborted", exception);
     Assert.assertEquals(ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
-    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.NUM_TIMED_OUT_TXNS).getCount());
+    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).getCount());
   }
 
   @Before
