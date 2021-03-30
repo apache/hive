@@ -2441,7 +2441,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     GetTablesRequest req = new GetTablesRequest(dbName);
     req.setCatName(catName);
     req.setCapabilities(version);
-    req.setTblNames(tables);
+    req.setTblNames(null);
+    if(tablePattern == null){
+      tablePattern = ".*";
+    }
     req.setTablesPattern(tablePattern);
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));

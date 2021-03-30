@@ -1865,8 +1865,8 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> parameterVals = new ArrayList<>();
       appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
       appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
-      if(tbl_names != null && !tbl_names.isEmpty()){
-        appendSimpleCondition(filterBuilder, "tableName", tbl_names.toArray(new String[0]), parameterVals);
+      if(tbl_names != null){
+        appendSimpleCondition(filterBuilder, "tableName", lowered_tbl_names.toArray(new String[0]), parameterVals);
       }
       if(tablePattern != null){
         appendPatternCondition(filterBuilder, "tableName", tablePattern, parameterVals);
