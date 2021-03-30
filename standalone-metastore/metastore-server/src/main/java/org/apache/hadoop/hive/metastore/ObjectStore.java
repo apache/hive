@@ -1861,24 +1861,17 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
 
-      query = pm.newQuery(MTable.class);
-      if(tablePattern != null && tablePattern.equals("*")){
-        tablePattern = ".*";
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
+      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
+      if(tbl_names != null && !tbl_names.isEmpty()){
+        appendSimpleCondition(filterBuilder, "tableName", tbl_names.toArray(new String[0]), parameterVals);
       }
-      String filterCondition = "database.name == db && database.catalogName == cat";
-      String filterParameters = "java.lang.String db, java.lang.String cat";
-      if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null) {
-        query.setFilter(filterCondition + " && tbl_names.contains(tableName) && tableName.matches(tablePattern)");
-        query.declareParameters(filterParameters + ", java.util.Collection tbl_names, java.lang.String tablePattern");
-      }else if(tablePattern == null) {
-        query.setFilter(filterCondition + " && tbl_names.contains(tableName)");
-        query.declareParameters(filterParameters +", java.util.Collection tbl_names");
-      }else{
-        query.setFilter(filterCondition + " && tableName.matches(tablePattern)");
-        query.declareParameters(filterParameters +", java.lang.String tablePattern");
+      if(tablePattern != null){
+        appendPatternCondition(filterBuilder, "tableName", tablePattern, parameterVals);
       }
-//      query.setFilter(filterCondition);
-//      query.declareParameters(filterParameters);
+      query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
       List<String> projectionFields = null;
 
       // If a projection specification has been set, validate it and translate it to JDO columns.
@@ -1894,26 +1887,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (projectionFields == null) {
-        if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null){
-          mtables = (List<MTable>) query.executeWithArray(db, catName, lowered_tbl_names, tablePattern);
-        }
-        else if(tablePattern == null) {
-          mtables = (List<MTable>) query.executeWithArray(db, catName, lowered_tbl_names);
-        }else{
-          mtables = (List<MTable>) query.executeWithArray(db, catName, tablePattern);
-        }
+        mtables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
       } else {
         if (projectionFields.size() > 1) {
           // Execute the query to fetch the partial results.
-          List<Object[]> results = new ArrayList<>();
-          if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null){
-            results = (List<Object[]>) query.executeWithArray(db, catName, lowered_tbl_names, tablePattern);
-          }
-          else if(tablePattern == null) {
-            results = (List<Object[]>) query.executeWithArray(db, catName, lowered_tbl_names);
-          }else{
-            results = (List<Object[]>) query.executeWithArray(db, catName, tablePattern);
-          }
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Declare the tables array to return the list of tables
           mtables = new ArrayList<>(results.size());
           // Iterate through each row of the result and create the MTable object.
@@ -1928,15 +1906,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         } else if (projectionFields.size() == 1) {
           // Execute the query to fetch the partial results.
-          List<Object[]> results = new ArrayList<>();
-          if(tbl_names != null && !tbl_names.isEmpty() && tablePattern != null){
-            results = (List<Object[]>) query.executeWithArray(db, catName, lowered_tbl_names, tablePattern);
-          }
-          else if(tablePattern == null) {
-            results = (List<Object[]>) query.executeWithArray(db, catName, lowered_tbl_names);
-          }else{
-            results = (List<Object[]>) query.executeWithArray(db, catName, tablePattern);
-          }
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Iterate through each row of the result and create the MTable object.
           mtables = new ArrayList<>(results.size());
           for (Object row : results) {
@@ -1956,11 +1926,11 @@ public class ObjectStore implements RawStore, Configurable {
           ex = nsoe;
         }
 
-//        if (tempDB == null) {
-//          final String errorMessage = (ex == null ? "" : (": " + ex.getMessage()));
-//          throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, db) +
-//                  errorMessage);
-//        } TODO:// Need to see if not throwing this error would avoid TestTablesGetExists failures.
+        if (tempDB == null) {
+          final String errorMessage = (ex == null ? "" : (": " + ex.getMessage()));
+          throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, db) +
+                  errorMessage);
+        }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
           Table tbl = convertToTable((MTable) iter.next());
