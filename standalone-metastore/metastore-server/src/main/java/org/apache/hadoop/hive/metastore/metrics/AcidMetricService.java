@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 public class AcidMetricService  implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidMetricService.class);
+  private static final String NO_VAL = " --- ";
+
   private Configuration conf;
   private TxnStore txnHandler;
 
@@ -129,27 +131,17 @@ public class AcidMetricService  implements MetastoreTaskThread {
 
     long initiatorsCount = lastElements.values().stream()
         .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "initiators").set((int) initiatorsCount);
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
     long workersCount = lastElements.values().stream()
         .map(e -> getHostFromId(e.getWorkerid())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "workers").set((int) workersCount);
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKERS).set((int) workersCount);
 
     long initiatorVersionsCount = lastElements.values().stream()
         .map(ShowCompactResponseElement::getInitiatorVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "initiator_versions").set((int) initiatorVersionsCount);
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS).set((int) initiatorVersionsCount);
     long workerVersionsCount = lastElements.values().stream()
         .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "worker_versions").set((int) workerVersionsCount);
-  }
-
-  private static final String NO_VAL = " --- ";
-
-  private static String getHostFromId(String id) {
-    if (id == null) {
-      return NO_VAL;
-    }
-    int lastDash = id.lastIndexOf('-');
-    return id.substring(0, lastDash > -1 ? lastDash : id.length());
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
   }
 
   @Override
@@ -161,6 +153,14 @@ public class AcidMetricService  implements MetastoreTaskThread {
   @Override
   public Configuration getConf() {
     return this.conf;
+  }
+
+  private static String getHostFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    int lastDash = id.lastIndexOf('-');
+    return id.substring(0, lastDash > -1 ? lastDash : id.length());
   }
 
 }
