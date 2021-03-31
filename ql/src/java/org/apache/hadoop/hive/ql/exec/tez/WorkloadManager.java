@@ -697,7 +697,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
               MoveSession moveSession = itr.next();
               itr.remove();
               WmTezSession srcSession = moveSession.srcSession;
-              if (pool.sessions.contains(srcSession)) {
+              if ((srcSession != null) && (pool.sessions.contains(srcSession))) {
                 LOG.info("Processing delayed move {} for pool {} in wm main thread as the pool has queued requests",
                     moveSession, poolName);
                 movedCount++;
@@ -858,22 +858,23 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       // If delayed move is set to true and if destination pool doesn't have enough capacity, don't kill the query. Let the query run in source pool
       // add the session to the source pool's delayed move sessions so that the session can be moved
       // later when there is a new request on the source pool.
+      String srcPoolName = moveSession.srcSession.getPoolName();
+      PoolState srcPool = pools.get(srcPoolName);
       if (delayedMove && !capacityAvailable(destPoolName)) {
-        String srcPoolName = moveSession.srcSession.getPoolName();
-        if (srcPoolName != null) {
-          PoolState srcPool = pools.get(srcPoolName);
-          if (srcPool != null) {
-            if (srcPool.delayedMoveSessions.add(moveSession)) {
-              LOG.info("Move: {} is a delayed move. Since destination pool {} is full, running in source pool "
-                  + "as long as possible.", moveSession, destPoolName);
-            }
-          }
+        if (srcPool.delayedMoveSessions.add(moveSession)) {
+          moveSession.srcSession.setDelayedMove(true);
+          LOG.info("Move: {} is a delayed move. Since destination pool {} is full, running in source pool "
+              + "as long as possible.", moveSession, destPoolName);
         }
         moveSession.future.set(false);
         return;
       }
       WmEvent moveEvent = new WmEvent(WmEvent.EventType.MOVE);
       // remove from src pool
+      if (moveSession.srcSession.isDelayedMove()) {
+        srcPool.delayedMoveSessions.remove(moveSession);
+        moveSession.srcSession.setDelayedMove(false);
+      }
       RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
           moveSession.srcSession, poolsToRedistribute, true, true);
       if (rr == RemoveSessionResult.OK) {
@@ -917,6 +918,16 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       pools.containsKey(srcSession.getPoolName()) &&
       pools.containsKey(destPool) &&
       !srcSession.getPoolName().equalsIgnoreCase(destPool);
+  }
+
+  private void clearDelayedMoveForSessionFromPool(PoolState pool, WmTezSession session) {
+    Iterator<MoveSession> delayedMoveIterator = pool.delayedMoveSessions.iterator();
+    while (delayedMoveIterator.hasNext()) {
+      if (delayedMoveIterator.next().srcSession == session) {
+        delayedMoveIterator.remove();
+        break;
+      }
+    }
   }
 
   // ========= Master thread methods
@@ -1383,6 +1394,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (poolName != null) {
       poolsToRedistribute.add(poolName);
       PoolState pool = pools.get(poolName);
+      if (session.isDelayedMove()) {
+        clearDelayedMoveForSessionFromPool(pool, session);
+      }
       session.clearWm();
       if (pool != null && pool.sessions.remove(session)) {
         if (updateMetrics && pool.metrics != null) {
@@ -1959,6 +1973,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         IdentityHashMap<WmTezSession, GetRequest> toReuse,
         WmThreadSyncWork syncWork) {
       int totalCount = sessions.size() + initializingSessions.size();
+      delayedMoveSessions.clear();
       for (WmTezSession sessionToKill : sessions) {
         resetRemovedSessionToKill(syncWork.toKillQuery,
           new KillQueryContext(sessionToKill, killReason), toReuse);
@@ -2343,6 +2358,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       PoolState poolState = pools.get(poolName);
       if (poolState != null) {
         poolState.getSessions().remove(toKill);
+        if (toKill.isDelayedMove()) {
+          clearDelayedMoveForSessionFromPool(poolState, toKill);
+        }
         Iterator<SessionInitContext> iter = poolState.getInitializingSessions().iterator();
         while (iter.hasNext()) {
           if (iter.next().session == toKill) {
