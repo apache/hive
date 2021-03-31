@@ -402,7 +402,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   private String defaultUri(Namespace namespace) throws TException {
     return metastoreClient.getConfigValue(
-        "hive.metastore.warehouse.dir", "") +  "/" + namespace.level(0) + ".db";
+        "hive.metastore.warehouse.external.dir", "") +  "/" + namespace.level(0) + ".db";
   }
 
 }

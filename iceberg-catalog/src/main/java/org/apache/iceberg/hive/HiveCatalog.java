@@ -523,6 +523,13 @@ public class HiveCatalog extends BaseMetastoreCatalog implements Closeable, Supp
     return warehouseLocation;
   }
 
+  private String getExternalWarehouseLocation() {
+    String warehouseLocation = conf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname);
+    Preconditions.checkNotNull(warehouseLocation,
+        "Warehouse location is not set: hive.metastore.warehouse.external.dir=null");
+    return warehouseLocation;
+  }
+
   private Map<String, String> convertToMetadata(Database database) {
 
     Map<String, String> meta = Maps.newHashMap();
@@ -545,7 +552,8 @@ public class HiveCatalog extends BaseMetastoreCatalog implements Closeable, Supp
     Map<String, String> parameter = Maps.newHashMap();
 
     database.setName(namespace.level(0));
-    database.setLocationUri(new Path(getWarehouseLocation(), namespace.level(0)).toString() + ".db");
+    database.setLocationUri(new Path(getExternalWarehouseLocation(), namespace.level(0)).toString() + ".db");
+    database.setManagedLocationUri(new Path(getWarehouseLocation(), namespace.level(0)).toString() + ".db");
 
     meta.forEach((key, value) -> {
       if (key.equals("comment")) {
