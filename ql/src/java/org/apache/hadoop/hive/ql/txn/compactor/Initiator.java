@@ -451,12 +451,13 @@ public class Initiator extends MetaStoreCompactorThread {
       ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
     try {
       if (skipDBs.contains(ci.dbname)) {
-        LOG.debug("Skipping {}::{}, skipDBs:{}", ci.dbname, ci.tableName, skipDBs);
+        LOG.info("Skipping {}::{}, skipDBs::size:{}", ci.dbname, ci.tableName, skipDBs.size());
         return false;
       } else {
         if (replIsCompactionDisabledForDatabase(ci.dbname)) {
           skipDBs.add(ci.dbname);
-          LOG.debug("Skipping {}::{}, skipDBs:{}", ci.dbname, ci.tableName, skipDBs);
+          LOG.debug("Skipping {} as compaction is disabled due to repl; skipDBs::size:{}",
+              ci.dbname, skipDBs.size());
           return false;
         }
       }
