@@ -4593,7 +4593,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         numAborted = getUpdateCount(numUpdateQueries, affectedRowsByQuery);
       }
 
-      Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(numAborted);
+      Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
       return numAborted;
     } finally {
       closeStmt(stmt);

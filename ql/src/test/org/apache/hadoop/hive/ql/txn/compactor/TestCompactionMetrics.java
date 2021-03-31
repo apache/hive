@@ -62,6 +62,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Before
   public void setUp() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     // re-initialize metrics
     Metrics.shutdown();
     Metrics.initialize(conf);
@@ -69,8 +70,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testInitiatorPerfMetricsEnabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
     Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).set(0);
     long initiatorCycles = Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount();
     Table t = newTable("default", "ime", true);
@@ -163,9 +162,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testCleanerPerfMetricsEnabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
-
     long cleanerCyclesMinor = Objects.requireNonNull(
         Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR)).getCount();
     long cleanerCyclesMajor = Objects.requireNonNull(
@@ -304,7 +300,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testUpdateCompactionMetrics() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     elements.add(generateElement(1,"db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE));
@@ -349,7 +344,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testAgeMetricsNotSet() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     elements.add(generateElement(1, "db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE, 1L));
@@ -366,7 +360,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testAgeMetricsAge() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     long start = System.currentTimeMillis() - 1000L;
@@ -382,7 +375,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testAgeMetricsOrder() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     long start = System.currentTimeMillis();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
@@ -409,9 +401,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testDBMetrics() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
-
     String dbName = "default";
      String tblName = "dcamc";
     Table t = newTable(dbName, tblName, false);
@@ -473,20 +462,21 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testTxnHandlerCounters() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-
     String dbName = "default";
     String tblName = "txnhandlercounters";
-
     Table t = newTable(dbName, tblName, false);
 
     burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Arrays.asList(2L, 3L)));
-    Assert.assertEquals(2, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
-    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_ABORTED_TXNS + " value incorrect",
+            2, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS + " value incorrect",
+            1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
 
     burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Collections.singletonList(4L)));
-    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
-    Assert.assertEquals(3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_ABORTED_TXNS + " value incorrect",
+            3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS + " value incorrect",
+            3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
