@@ -177,7 +177,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           // Set distCp custom name corresponding to the replication policy.
-          String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+          String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameOrPattern);
           conf.set(JobContext.JOB_NAME, mapRedCustomName);
           work.setCurrentDumpPath(currentDumpPath);
           work.setMetricCollector(initMetricCollection(isBootstrap, hiveDumpRoot));
