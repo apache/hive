@@ -21,11 +21,13 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -38,14 +40,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
+import org.apache.iceberg.PartitionField;
+import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
 import org.apache.iceberg.mr.mapred.Container;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +62,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private ObjectInspector inspector;
   private Schema tableSchema;
+  private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = new HashMap<>(1);
   private Container<Record> row = new Container<>();
 
@@ -77,15 +85,26 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
     if (serDeProperties.get(InputFormatConfig.TABLE_SCHEMA) != null) {
       this.tableSchema = SchemaParser.fromJson((String) serDeProperties.get(InputFormatConfig.TABLE_SCHEMA));
+      if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
+        PartitionSpec spec =
+            PartitionSpecParser.fromJson(tableSchema, (String) serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
+        this.partitionColumns = spec.fields().stream().map(PartitionField::name).collect(Collectors.toList());
+      } else {
+        this.partitionColumns = ImmutableList.of();
+      }
     } else {
       try {
         // always prefer the original table schema if there is one
-        this.tableSchema = Catalogs.loadTable(configuration, serDeProperties).schema();
+        Table table = Catalogs.loadTable(configuration, serDeProperties);
+        this.tableSchema = table.schema();
+        this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
       } catch (Exception e) {
         boolean autoConversion = configuration.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
         // If we can not load the table try the provided hive schema
         this.tableSchema = hiveSchemaOrThrow(serDeProperties, e, autoConversion);
+        // This is only for table creation, it is ok to have an empty partition column list
+        this.partitionColumns = ImmutableList.of();
       }
     }
 
@@ -196,5 +215,14 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     } else {
       throw new SerDeException("Please provide an existing table or a valid schema", previousException);
     }
+  }
+
+  /**
+   * If the table already exists then returns the list of the current Iceberg partition column names.
+   * If the table is not partitioned by Iceberg, or the table does not exists yet then returns an empty list.
+   * @return The name of the Iceberg partition columns.
+   */
+  public Collection<String> partitionColumns() {
+    return partitionColumns;
   }
 }

@@ -47,6 +47,22 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
   // the partition column we're interested in
   private ExprNodeDesc partKey;
 
+  private ExprNodeDesc predicate;
+
+  public ExprNodeDesc getPredicate() {
+    return predicate;
+  }
+
+  public void setPredicate(ExprNodeDesc predicate) {
+    this.predicate = predicate;
+  }
+
+  @Explain(displayName = "Partition predicate expr")
+  @Signature
+  public String getPartPredicateString() {
+    return this.predicate.getExprString();
+  }
+
   public TableScanOperator getTableScan() {
     return tableScan;
   }

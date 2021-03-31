@@ -474,7 +474,7 @@ public class TestDynamicPartitionPruner {
         } finally {
           lock.unlock();
         }
-        pruner.prune();
+        pruner.prune(null);
       } catch (Exception e) {
         inError.set(true);
         exception = e;
@@ -558,10 +558,10 @@ public class TestDynamicPartitionPruner {
     LongAdder eventsProceessed = new LongAdder();
 
     @Override
-    protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, String columnName, String columnType,
+    protected SourceInfo createSourceInfo(TableDesc t, ExprNodeDesc partKeyExpr, ExprNodeDesc predicate, String columnName, String columnType,
                                           JobConf jobConf) throws
         SerDeException {
-      return new SourceInfo(t, partKeyExpr, columnName, columnType, jobConf, null);
+      return new SourceInfo(t, partKeyExpr, predicate, columnName, columnType, jobConf, null);
     }
 
     @Override
@@ -572,9 +572,10 @@ public class TestDynamicPartitionPruner {
     }
 
     @Override
-    protected void prunePartitionSingleSource(String source, SourceInfo si)
+    protected ExprNodeDesc prunePartitionSingleSource(JobConf conf, String source, SourceInfo si)
         throws HiveException {
       filteredSources.increment();
+      return null;
     }
   }
 }

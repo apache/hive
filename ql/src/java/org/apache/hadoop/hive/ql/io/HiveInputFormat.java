@@ -48,8 +48,11 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -74,6 +77,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -890,6 +894,24 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
     ExprNodeGenericFuncDesc filterExpr = scanDesc.getFilterExpr();
+    String pruningFilter = jobConf.get(TableScanDesc.PARTITION_PRUNING_FILTER);
+    // If we have a pruning filter then combine it with the original
+    if (pruningFilter != null) {
+      ExprNodeGenericFuncDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
+      if (filterExpr != null) {
+        // Combine the 2 filters with AND
+        filterExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and",
+            Arrays.asList(filterExpr, pruningExpr));
+      } else {
+        // Use the pruning filter if there was no filter before
+        filterExpr = pruningExpr;
+      }
+
+      // Set the combined filter in the TableScanDesc and remove the pruning filter
+      scanDesc.setFilterExpr(filterExpr);
+      scanDesc.setSerializedFilterExpr(SerializationUtilities.serializeExpression(filterExpr));
+      jobConf.unset(TableScanDesc.PARTITION_PRUNING_FILTER);
+    }
     if (filterExpr == null) {
       return;
     }
