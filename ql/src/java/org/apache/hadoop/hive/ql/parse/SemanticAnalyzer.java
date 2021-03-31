@@ -8718,7 +8718,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // The numbers of input columns and output columns should match for regular query
-    if (!updating(dest) && !deleting(dest) && inColumnCnt != outColumnCnt) {
+    // Impala partial width inserts are handled later by ImpalaPlanner
+    if (inColumnCnt != outColumnCnt &&
+        !updating(dest) && !deleting(dest) &&
+        !(isImpalaPlan(conf) && inserting(dest) &&
+             getQB().getParseInfo().getDestSchemaForClause(dest) != null)) {
       String reason = "Table " + dest + " has " + outColumnCnt
           + " columns, but query has " + inColumnCnt + " columns.";
       throw new SemanticException(ASTErrorUtils.getMsg(
@@ -8753,6 +8757,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .getFieldObjectInspector();
         TypeInfo tableFieldTypeInfo = TypeInfoUtils
             .getTypeInfoFromObjectInspector(tableFieldOI);
+        if (rowFieldsOffset >= rowFields.size() && isImpalaPlan(conf) && inserting(dest)) {
+          continue;
+        }
         TypeInfo rowFieldTypeInfo = rowFields.get(rowFieldsOffset).getType();
         ExprNodeDesc column = new ExprNodeColumnDesc(rowFieldTypeInfo,
             rowFields.get(rowFieldsOffset).getInternalName(), "", false,
@@ -15537,6 +15544,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private boolean deleting(String destination) {
     return destination.startsWith(Context.DestClausePrefix.DELETE.toString());
+  }
+
+  private boolean inserting(String destination) {
+    return destination.startsWith(Context.DestClausePrefix.INSERT.toString());
   }
 
   // Make sure the proper transaction manager that supports ACID is being used
