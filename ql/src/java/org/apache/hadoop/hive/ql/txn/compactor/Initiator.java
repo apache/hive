@@ -456,7 +456,7 @@ public class Initiator extends MetaStoreCompactorThread {
       } else {
         if (replIsCompactionDisabledForDatabase(ci.dbname)) {
           skipDBs.add(ci.dbname);
-          LOG.debug("Skipping {} as compaction is disabled due to repl; skipDBs::size:{}",
+          LOG.info("Skipping {} as compaction is disabled due to repl; skipDBs::size:{}",
               ci.dbname, skipDBs.size());
           return false;
         }
