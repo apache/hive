@@ -10,7 +10,13 @@ CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr st
 EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
 
+EXPLAIN INSERT OVERWRITE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+
 INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+
+INSERT OVERWRITE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
 
 select one,two from destinTable order by one desc, two desc;
@@ -18,7 +24,13 @@ select one,two from destinTable order by one desc, two desc;
 EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5;
 
+EXPLAIN INSERT OVERWRITE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5;
+
 INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5;
+
+INSERT OVERWRITE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5;
 
 select one,two from destinTable order by one desc, two desc;
@@ -29,7 +41,11 @@ CREATE TABLE destinTable (one string,two string);
 
 EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
 
+EXPLAIN INSERT OVERWRITE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+
 INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+
+INSERT OVERWRITE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
 
 drop table destinTable;
 
@@ -44,7 +60,13 @@ CREATE TABLE destinTable (one string,two string) PARTITIONED BY (DS string,HR st
 EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
 SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5;
 
+EXPLAIN INSERT OVERWRITE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
+SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5;
+
 INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
+SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5;
+
+INSERT OVERWRITE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
 SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5;
 
 drop table destinTable;

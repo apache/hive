@@ -3028,7 +3028,7 @@ destination
    :
      (local = KW_LOCAL)? KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat?
        -> ^(TOK_DIR StringLiteral $local? tableRowFormat? tableFileFormat?)
-   | KW_TABLE tableOrPartition -> tableOrPartition
+   | KW_TABLE? tableOrPartition -> tableOrPartition
    ;
 
 limitClause
