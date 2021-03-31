@@ -559,6 +559,8 @@ public class MetastoreConf {
     DELEGATION_TOKEN_STORE_CLS("metastore.cluster.delegation.token.store.class",
         "hive.cluster.delegation.token.store.class", METASTORE_DELEGATION_MANAGER_CLASS,
         "Class to store delegation tokens"),
+    DESCTABLE_ENABLE_PARTITION_STATS("desctable.enable.partitionstats", "desctable.enable.partitionstats", true, 
+        "Enable stats collection for describe formatted or extended."),
     DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit",
         "javax.jdo.option.DetachAllOnCommit", true,
         "Detaches all objects from session so that they can be used after transaction is committed"),
