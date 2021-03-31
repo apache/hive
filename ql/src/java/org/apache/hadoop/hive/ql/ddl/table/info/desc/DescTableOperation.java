@@ -148,8 +148,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     // Fetch partition statistics only for describe extended or formatted.
     if (desc.isExtended() || desc.isFormatted()) {
-      boolean should_get_part_stats = MetastoreConf.getBoolVar(context.getConf(), MetastoreConf.ConfVars.DESCTABLE_ENABLE_PARTITION_STATS)
-      if (table.isPartitioned() && partition == null && should_get_part_stats) {
+      boolean shouldGetPartStats = MetastoreConf.getBoolVar(context.getConf(), MetastoreConf.ConfVars.DESCTABLE_ENABLE_PARTITION_STATS)
+      if (table.isPartitioned() && partition == null && shouldGetPartStats) {
         // No partition specified for partitioned table, lets fetch all.
         Map<String, String> tblProps = table.getParameters() == null ?
                 new HashMap<String, String>() : table.getParameters();
