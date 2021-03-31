@@ -85,6 +85,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     this.hmsHandler = handler;
     this.defaultCatalog = MetaStoreUtils.getDefaultCatalog(handler.getConf());
     this.isTenantBasedStorage = hmsHandler.getConf().getBoolean(MetastoreConf.ConfVars.ALLOW_TENANT_BASED_STORAGE.getVarname(), false);
+    //    this.xMode = hmsHandler.getConf
 
     acidWriteList.addAll(ACIDCOMMONWRITELIST);
     acidList.addAll(acidWriteList);
@@ -466,8 +467,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       String dbName = partition.getDbName();
 
       Map<String, String> params = table.getParameters();
-      if (params == null)
+      if (params == null) {
         params = new HashMap<>();
+      }
       String tableType = table.getTableType();
       String tCapabilities = params.get(OBJCAPABILITIES);
       if (partition.getSd() != null) {
@@ -485,8 +487,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
             Partition newPartition = new Partition(partition);
             StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-            if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+            if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
               newSd.setNumBuckets(-1); // remove bucketing info
+            }
             newPartition.setSd(newSd);
             ret.add(newPartition);
           } else {
@@ -499,8 +502,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
                 newSd.setNumBuckets(-1); // remove bucketing info
+              }
               newPartition.setSd(newSd);
               ret.add(newPartition);
               break;
@@ -527,7 +531,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
               if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+               {
                 newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
+              }
               newPartition.setSd(newSd);
               LOG.info("Removed bucketing information from partition");
               ret.add(newPartition);
@@ -539,8 +545,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               if (!processorCapabilities.contains(HIVEBUCKET2)) {
                 Partition newPartition = new Partition(partition);
                 StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-                if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
                   newSd.setNumBuckets(-1); // remove bucketing info
+                }
                 newPartition.setSd(newSd);
                 ret.add(newPartition);
                 break;
@@ -569,8 +576,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for CreateTable for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
     Map<String, String> params = table.getParameters();
-    if (params == null)
+    if (params == null) {
       params = new HashMap<>();
+    }
     String tableType = newTable.getTableType();
     String txnal = null;
     String txn_properties = null;
@@ -607,10 +615,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           if (!table.isSetSd() || table.getSd().getLocation() == null) {
             try {
               Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
+              if (hmsHandler.getWh().isDir(newPath)) {
+
+              }
               newTable.getSd().setLocation(newPath.toString());
               LOG.info("Modified location from null to " + newPath);
             } catch (Exception e) {
-              LOG.warn("Exception determining external table location:" + e.getMessage());
+              throw new MetaException("Exception determining external table location:" + e.getMessage());
             }
           }
         }
@@ -656,8 +667,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + table.getTableName());
 
-    if (tableLocationChanged(table))
+    if (tableLocationChanged(table)) {
       validateTablePaths(table);
+    }
 
     LOG.debug("Transformer returning table:" + table.toString());
     return table;
@@ -693,7 +705,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         + " on database {} locationUri={} managedLocationUri={}", db.getName(), db.getLocationUri(), db.getManagedLocationUri());
 
     if (!isTenantBasedStorage) {
-      // for legacy DBs, location could have been managed or external. So if it is pointing to managed location, set it as 
+      // for legacy DBs, location could have been managed or external. So if it is pointing to managed location, set it as
       // managed location and return a new default external path for location
       Path locationPath = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
       Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
@@ -717,14 +729,17 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private List<String> diff(final List<String> list1, final List<String> list2) {
     List<String> diffList = new ArrayList<>();
 
-    if (list2 == null || list2.size() == 0)
+    if (list2 == null || list2.size() == 0) {
       return list1;
+    }
 
-    if (list1 == null || list1.size() == 0)
+    if (list1 == null || list1.size() == 0) {
       return Collections.emptyList();
+    }
 
-    if (list2.containsAll(list1))
+    if (list2.containsAll(list1)) {
       return Collections.emptyList();
+    }
 
     diffList.addAll(list2);
     LOG.debug("diffList=" + Arrays.toString(diffList.toArray()) + ",master list=" + Arrays.toString(list1.toArray()));
