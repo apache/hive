@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
@@ -69,7 +68,6 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -146,7 +144,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
-  private ReplLogger replLogger;
 
   @Override
   public String getName() {
@@ -274,7 +271,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (childTasks == null) {
       childTasks = new ArrayList<>();
     }
-    childTasks.addAll(work.externalTableCopyTasks(taskTracker, conf));
+    List<Task<?>> externalTableCopyTasks = work.externalTableCopyTasks(taskTracker, conf);
+    childTasks.addAll(externalTableCopyTasks);
+    LOG.debug("Scheduled {} external table copy tasks", externalTableCopyTasks.size());
+    // If external table data copy tasks are present add a task to mark the end of data copy
+    if (!externalTableCopyTasks.isEmpty() && !work.getExternalTblCopyPathIterator().hasNext()) {
+      ReplUtils.addLoggerTask(work.getReplLogger(), childTasks, conf);
+    }
     childTasks.addAll(work.managedTableCopyTasks(taskTracker, conf));
     childTasks.addAll(work.functionsBinariesCopyTasks(taskTracker, conf));
     if (childTasks.isEmpty()) {
@@ -587,8 +590,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
         maxEventLimit);
     try {
-      replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents,
-        work.eventFrom, work.eventTo, maxEventLimit);
+      IncrementalDumpLogger replLogger =
+          new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents, work.eventFrom, work.eventTo,
+              maxEventLimit);
+      work.setReplLogger(replLogger);
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
@@ -823,7 +828,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
     work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
-    replLogger.eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
+    work.getReplLogger().eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
 
   private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) {
@@ -926,9 +931,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
         int estimatedNumFunctions = hiveDb.getFunctions(dbName, "*").size();
-        replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
-                estimatedNumTables,
-                estimatedNumFunctions);
+        BootstrapDumpLogger replLogger =
+            new BootstrapDumpLogger(dbName, dumpRoot.toString(), estimatedNumTables, estimatedNumFunctions);
+        work.setReplLogger(replLogger);
         replLogger.startLog();
         Map<String, Long> metricMap = new HashMap<>();
         metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) estimatedNumTables);
@@ -1125,7 +1130,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write(
             false, managedTbleList, dataCopyAtLoad);
     work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TABLES.name(), 1);
-    replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
+    work.getReplLogger().tableLog(tblName, tableSpec.tableHandle.getTableType());
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
@@ -1314,7 +1319,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         functionsBinaryCopyPaths.addAll(serializer.getFunctionBinaryCopyPaths());
       }
       work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.FUNCTIONS.name(), 1);
-      replLogger.functionLog(functionName);
+      work.getReplLogger().functionLog(functionName);
     }
     return functionsBinaryCopyPaths;
   }

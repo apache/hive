@@ -68,6 +68,11 @@ public class IncrementalLoadTasksBuilder {
   private final HashSet<WriteEntity> outputs;
   private Logger log;
   private final HiveConf conf;
+
+  public ReplLogger getReplLogger() {
+    return replLogger;
+  }
+
   private final ReplLogger replLogger;
   private static long numIteration;
   private final Long eventTo;
