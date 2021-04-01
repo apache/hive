@@ -402,7 +402,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   @Test
   public void testDBMetrics() throws Exception {
     String dbName = "default";
-     String tblName = "dcamc";
+    String tblName = "dcamc";
     Table t = newTable(dbName, tblName, false);
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
 
