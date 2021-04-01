@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestConfHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
@@ -230,6 +231,7 @@ public class QTestUtil {
     dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("disabled", new QTestDisabledHandler());
+    dispatcher.register("conf", new QTestConfHandler());
 
     String scriptsDir = getScriptsDir();
 
