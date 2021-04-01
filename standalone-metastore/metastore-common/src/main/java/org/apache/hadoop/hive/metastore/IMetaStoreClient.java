@@ -3479,7 +3479,7 @@ public interface IMetaStoreClient {
    * partition specified by the request.
    * @throws TException
    */
-  GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest request)
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(GetLatestCommittedCompactionInfoRequest request)
     throws TException;
 
   /**

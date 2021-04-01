@@ -522,11 +522,9 @@ class ShowCompactResponseElement; end
 
 class ShowCompactResponse; end
 
-class GetLatestCompactionInfoRequest; end
+class GetLatestCommittedCompactionInfoRequest; end
 
-class LatestCompactionInfo; end
-
-class GetLatestCompactionInfoResponse; end
+class GetLatestCommittedCompactionInfoResponse; end
 
 class AddDynamicPartitions; end
 
@@ -4422,7 +4420,7 @@ class ShowCompactResponse
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetLatestCompactionInfoRequest
+class GetLatestCommittedCompactionInfoRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
   TABLENAME = 2
@@ -4444,37 +4442,12 @@ class GetLatestCompactionInfoRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-class LatestCompactionInfo
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  ID = 1
-  PARTITIONNAME = 2
-  TYPE = 3
-
-  FIELDS = {
-    ID => {:type => ::Thrift::Types::I64, :name => 'id'},
-    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field id is unset!') unless @id
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
-    unless @type.nil? || ::CompactionType::VALID_VALUES.include?(@type)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
-    end
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetLatestCompactionInfoResponse
+class GetLatestCommittedCompactionInfoResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   COMPACTIONS = 1
 
   FIELDS = {
-    COMPACTIONS => {:type => ::Thrift::Types::LIST, :name => 'compactions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LatestCompactionInfo}}
+    COMPACTIONS => {:type => ::Thrift::Types::LIST, :name => 'compactions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::CompactionInfoStruct}}
   }
 
   def struct_fields; FIELDS; end

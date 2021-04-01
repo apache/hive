@@ -317,7 +317,8 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest rqst) throws MetaException;
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException;
 
   /**
    * Add information on a set of dynamic partitions that participated in a transaction.

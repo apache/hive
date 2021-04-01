@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_latest_compaction_info_result
+class ThriftHiveMetastore_get_latest_committed_compaction_info_result
 {
     static public $isValidate = false;
 
@@ -25,12 +25,12 @@ class ThriftHiveMetastore_get_latest_compaction_info_result
             'var' => 'success',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\GetLatestCompactionInfoResponse',
+            'class' => '\metastore\GetLatestCommittedCompactionInfoResponse',
         ),
     );
 
     /**
-     * @var \metastore\GetLatestCompactionInfoResponse
+     * @var \metastore\GetLatestCommittedCompactionInfoResponse
      */
     public $success = null;
 
@@ -45,7 +45,7 @@ class ThriftHiveMetastore_get_latest_compaction_info_result
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_get_latest_compaction_info_result';
+        return 'ThriftHiveMetastore_get_latest_committed_compaction_info_result';
     }
 
 
@@ -64,7 +64,7 @@ class ThriftHiveMetastore_get_latest_compaction_info_result
             switch ($fid) {
                 case 0:
                     if ($ftype == TType::STRUCT) {
-                        $this->success = new \metastore\GetLatestCompactionInfoResponse();
+                        $this->success = new \metastore\GetLatestCommittedCompactionInfoResponse();
                         $xfer += $this->success->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
@@ -83,7 +83,7 @@ class ThriftHiveMetastore_get_latest_compaction_info_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_compaction_info_result');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_committed_compaction_info_result');
         if ($this->success !== null) {
             if (!is_object($this->success)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

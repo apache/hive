@@ -8458,14 +8458,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public GetLatestCompactionInfoResponse get_latest_compaction_info(GetLatestCompactionInfoRequest rqst)
-      throws MetaException {
+  public GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException {
     if (rqst.getDbname() == null || rqst.getTablename() == null) {
       throw new MetaException("Database name and table name cannot be null.");
     }
-    GetLatestCompactionInfoResponse response = getTxnHandler().getLatestCompactionInfo(rqst);
-    return FilterUtils.filterLatestCompactionInfoIfEnabled(isServerFilterEnabled, filterHook, getDefaultCatalog(conf),
-        rqst.getDbname(), rqst.getTablename(), response);
+    GetLatestCommittedCompactionInfoResponse response = getTxnHandler().getLatestCommittedCompactionInfo(rqst);
+    return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isServerFilterEnabled, filterHook,
+        getDefaultCatalog(conf), rqst.getDbname(), rqst.getTablename(), response);
   }
 
   @Override

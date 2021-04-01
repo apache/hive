@@ -1683,7 +1683,7 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_latest_compaction_info(self, rqst):
+    def get_latest_committed_compaction_info(self, rqst):
         """
         Parameters:
          - rqst
@@ -9231,24 +9231,24 @@ class Client(fb303.FacebookService.Client, Iface):
         iprot.readMessageEnd()
         return
 
-    def get_latest_compaction_info(self, rqst):
+    def get_latest_committed_compaction_info(self, rqst):
         """
         Parameters:
          - rqst
 
         """
-        self.send_get_latest_compaction_info(rqst)
-        return self.recv_get_latest_compaction_info()
+        self.send_get_latest_committed_compaction_info(rqst)
+        return self.recv_get_latest_committed_compaction_info()
 
-    def send_get_latest_compaction_info(self, rqst):
-        self._oprot.writeMessageBegin('get_latest_compaction_info', TMessageType.CALL, self._seqid)
-        args = get_latest_compaction_info_args()
+    def send_get_latest_committed_compaction_info(self, rqst):
+        self._oprot.writeMessageBegin('get_latest_committed_compaction_info', TMessageType.CALL, self._seqid)
+        args = get_latest_committed_compaction_info_args()
         args.rqst = rqst
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_get_latest_compaction_info(self):
+    def recv_get_latest_committed_compaction_info(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -9256,12 +9256,12 @@ class Client(fb303.FacebookService.Client, Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = get_latest_compaction_info_result()
+        result = get_latest_committed_compaction_info_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_latest_compaction_info failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_latest_committed_compaction_info failed: unknown result")
 
     def get_next_notification(self, rqst):
         """
@@ -11672,7 +11672,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["mark_compacted"] = Processor.process_mark_compacted
         self._processMap["mark_failed"] = Processor.process_mark_failed
         self._processMap["set_hadoop_jobid"] = Processor.process_set_hadoop_jobid
-        self._processMap["get_latest_compaction_info"] = Processor.process_get_latest_compaction_info
+        self._processMap["get_latest_committed_compaction_info"] = Processor.process_get_latest_committed_compaction_info
         self._processMap["get_next_notification"] = Processor.process_get_next_notification
         self._processMap["get_current_notificationEventId"] = Processor.process_get_current_notificationEventId
         self._processMap["get_notification_events_count"] = Processor.process_get_notification_events_count
@@ -17235,13 +17235,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_get_latest_compaction_info(self, seqid, iprot, oprot):
-        args = get_latest_compaction_info_args()
+    def process_get_latest_committed_compaction_info(self, seqid, iprot, oprot):
+        args = get_latest_committed_compaction_info_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = get_latest_compaction_info_result()
+        result = get_latest_committed_compaction_info_result()
         try:
-            result.success = self._handler.get_latest_compaction_info(args.rqst)
+            result.success = self._handler.get_latest_committed_compaction_info(args.rqst)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -17253,7 +17253,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("get_latest_compaction_info", msg_type, seqid)
+        oprot.writeMessageBegin("get_latest_committed_compaction_info", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -49388,7 +49388,7 @@ set_hadoop_jobid_result.thrift_spec = (
 )
 
 
-class get_latest_compaction_info_args(object):
+class get_latest_committed_compaction_info_args(object):
     """
     Attributes:
      - rqst
@@ -49410,7 +49410,7 @@ class get_latest_compaction_info_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.rqst = GetLatestCompactionInfoRequest()
+                    self.rqst = GetLatestCommittedCompactionInfoRequest()
                     self.rqst.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -49423,7 +49423,7 @@ class get_latest_compaction_info_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_latest_compaction_info_args')
+        oprot.writeStructBegin('get_latest_committed_compaction_info_args')
         if self.rqst is not None:
             oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
             self.rqst.write(oprot)
@@ -49444,14 +49444,14 @@ class get_latest_compaction_info_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_latest_compaction_info_args)
-get_latest_compaction_info_args.thrift_spec = (
+all_structs.append(get_latest_committed_compaction_info_args)
+get_latest_committed_compaction_info_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'rqst', [GetLatestCompactionInfoRequest, None], None, ),  # 1
+    (1, TType.STRUCT, 'rqst', [GetLatestCommittedCompactionInfoRequest, None], None, ),  # 1
 )
 
 
-class get_latest_compaction_info_result(object):
+class get_latest_committed_compaction_info_result(object):
     """
     Attributes:
      - success
@@ -49473,7 +49473,7 @@ class get_latest_compaction_info_result(object):
                 break
             if fid == 0:
                 if ftype == TType.STRUCT:
-                    self.success = GetLatestCompactionInfoResponse()
+                    self.success = GetLatestCommittedCompactionInfoResponse()
                     self.success.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -49486,7 +49486,7 @@ class get_latest_compaction_info_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_latest_compaction_info_result')
+        oprot.writeStructBegin('get_latest_committed_compaction_info_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -49507,9 +49507,9 @@ class get_latest_compaction_info_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_latest_compaction_info_result)
-get_latest_compaction_info_result.thrift_spec = (
-    (0, TType.STRUCT, 'success', [GetLatestCompactionInfoResponse, None], None, ),  # 0
+all_structs.append(get_latest_committed_compaction_info_result)
+get_latest_committed_compaction_info_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [GetLatestCommittedCompactionInfoResponse, None], None, ),  # 0
 )
 
 

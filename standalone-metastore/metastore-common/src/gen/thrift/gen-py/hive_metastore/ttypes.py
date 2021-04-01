@@ -15254,7 +15254,7 @@ class ShowCompactResponse(object):
         return not (self == other)
 
 
-class GetLatestCompactionInfoRequest(object):
+class GetLatestCommittedCompactionInfoRequest(object):
     """
     Attributes:
      - dbname
@@ -15307,7 +15307,7 @@ class GetLatestCompactionInfoRequest(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('GetLatestCompactionInfoRequest')
+        oprot.writeStructBegin('GetLatestCommittedCompactionInfoRequest')
         if self.dbname is not None:
             oprot.writeFieldBegin('dbname', TType.STRING, 1)
             oprot.writeString(self.dbname.encode('utf-8') if sys.version_info[0] == 2 else self.dbname)
@@ -15345,90 +15345,7 @@ class GetLatestCompactionInfoRequest(object):
         return not (self == other)
 
 
-class LatestCompactionInfo(object):
-    """
-    Attributes:
-     - id
-     - partitionname
-     - type
-
-    """
-
-
-    def __init__(self, id=None, partitionname=None, type=None,):
-        self.id = id
-        self.partitionname = partitionname
-        self.type = type
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.I64:
-                    self.id = iprot.readI64()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.partitionname = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.I32:
-                    self.type = iprot.readI32()
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('LatestCompactionInfo')
-        if self.id is not None:
-            oprot.writeFieldBegin('id', TType.I64, 1)
-            oprot.writeI64(self.id)
-            oprot.writeFieldEnd()
-        if self.partitionname is not None:
-            oprot.writeFieldBegin('partitionname', TType.STRING, 2)
-            oprot.writeString(self.partitionname.encode('utf-8') if sys.version_info[0] == 2 else self.partitionname)
-            oprot.writeFieldEnd()
-        if self.type is not None:
-            oprot.writeFieldBegin('type', TType.I32, 3)
-            oprot.writeI32(self.type)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        if self.id is None:
-            raise TProtocolException(message='Required field id is unset!')
-        if self.type is None:
-            raise TProtocolException(message='Required field type is unset!')
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
-class GetLatestCompactionInfoResponse(object):
+class GetLatestCommittedCompactionInfoResponse(object):
     """
     Attributes:
      - compactions
@@ -15453,7 +15370,7 @@ class GetLatestCompactionInfoResponse(object):
                     self.compactions = []
                     (_etype738, _size735) = iprot.readListBegin()
                     for _i739 in range(_size735):
-                        _elem740 = LatestCompactionInfo()
+                        _elem740 = CompactionInfoStruct()
                         _elem740.read(iprot)
                         self.compactions.append(_elem740)
                     iprot.readListEnd()
@@ -15468,7 +15385,7 @@ class GetLatestCompactionInfoResponse(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('GetLatestCompactionInfoResponse')
+        oprot.writeStructBegin('GetLatestCommittedCompactionInfoResponse')
         if self.compactions is not None:
             oprot.writeFieldBegin('compactions', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.compactions))
@@ -28833,24 +28750,17 @@ ShowCompactResponse.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'compacts', (TType.STRUCT, [ShowCompactResponseElement, None], False), None, ),  # 1
 )
-all_structs.append(GetLatestCompactionInfoRequest)
-GetLatestCompactionInfoRequest.thrift_spec = (
+all_structs.append(GetLatestCommittedCompactionInfoRequest)
+GetLatestCommittedCompactionInfoRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'dbname', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
     (3, TType.LIST, 'partitionnames', (TType.STRING, 'UTF8', False), None, ),  # 3
 )
-all_structs.append(LatestCompactionInfo)
-LatestCompactionInfo.thrift_spec = (
+all_structs.append(GetLatestCommittedCompactionInfoResponse)
+GetLatestCommittedCompactionInfoResponse.thrift_spec = (
     None,  # 0
-    (1, TType.I64, 'id', None, None, ),  # 1
-    (2, TType.STRING, 'partitionname', 'UTF8', None, ),  # 2
-    (3, TType.I32, 'type', None, None, ),  # 3
-)
-all_structs.append(GetLatestCompactionInfoResponse)
-GetLatestCompactionInfoResponse.thrift_spec = (
-    None,  # 0
-    (1, TType.LIST, 'compactions', (TType.STRUCT, [LatestCompactionInfo, None], False), None, ),  # 1
+    (1, TType.LIST, 'compactions', (TType.STRUCT, [CompactionInfoStruct, None], False), None, ),  # 1
 )
 all_structs.append(AddDynamicPartitions)
 AddDynamicPartitions.thrift_spec = (

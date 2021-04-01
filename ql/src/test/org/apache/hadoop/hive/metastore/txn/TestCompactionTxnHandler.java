@@ -23,13 +23,13 @@ import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoRequest;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.LatestCompactionInfo;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -260,42 +260,52 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
-  public void testGetLatestCompactionInfo() throws Exception {
+  public void testGetLatestCommittedCompaction() throws Exception {
     final String dbName = "foo";
     final String tableName = "bar";
     final String errorMessage = "Dummy error";
     addSucceededCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
-    GetLatestCompactionInfoRequest rqst = new GetLatestCompactionInfoRequest();
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
-    GetLatestCompactionInfoResponse response = txnHandler.getLatestCompactionInfo(rqst);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertNotNull(response);
     assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
-    LatestCompactionInfo lci = response.getCompactions().get(0);
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
+    assertNull("Expecting null partitionname for a non-partitioned table", lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    rqst.setPartitionnames(new ArrayList<>());
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
+    lci = response.getCompactions().get(0);
     assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
     assertNull("Expecting null partitionname for a non-partitioned table", lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
   }
 
   @Test
-  public void testGetLatestCompactionPartition() throws Exception {
+  public void testGetLatestCommittedCompactionPartition() throws Exception {
     final String dbName = "foo";
     final String tableName = "bar";
     final String partitionName = "ds=today";
     final String errorMessage = "Dummy error";
     addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
-    GetLatestCompactionInfoRequest rqst = new GetLatestCompactionInfoRequest();
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     rqst.addToPartitionnames(partitionName);
-    GetLatestCompactionInfoResponse response = txnHandler.getLatestCompactionInfo(rqst);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertNotNull(response);
     assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
-    LatestCompactionInfo lci = response.getCompactions().get(0);
+    CompactionInfoStruct lci = response.getCompactions().get(0);
     assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
     assertEquals(partitionName, lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
@@ -303,14 +313,14 @@ public class TestCompactionTxnHandler {
     final String anotherPartitionName = "ds=yesterday";
     addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, anotherPartitionName, errorMessage);
     rqst.addToPartitionnames(anotherPartitionName);
-    response = txnHandler.getLatestCompactionInfo(rqst);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertNotNull(response);
     assertEquals("Expecting a single compaction record for each partition", 2, response.getCompactionsSize());
-    LatestCompactionInfo lci1 = response.getCompactions().stream()
+    CompactionInfoStruct lci1 = response.getCompactions().stream()
         .filter(c -> c.getPartitionname().equals(partitionName)).findFirst().get();
     assertEquals(1, lci1.getId());
-    LatestCompactionInfo lci2 = response.getCompactions().stream().
+    CompactionInfoStruct lci2 = response.getCompactions().stream().
         filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
     assertEquals(3, lci2.getId());
   }
@@ -323,22 +333,22 @@ public class TestCompactionTxnHandler {
     final String errorMessage = "Dummy error";
     addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
-    GetLatestCompactionInfoRequest rqst = new GetLatestCompactionInfoRequest();
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     rqst.addToPartitionnames(partitionName);
-    txnHandler.getLatestCompactionInfo(rqst);
-    GetLatestCompactionInfoResponse response = txnHandler.getLatestCompactionInfo(rqst);
+    txnHandler.getLatestCommittedCompactionInfo(rqst);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertNotNull(response);
     assertEquals("Expecting a single record", 1, response.getCompactionsSize());
-    LatestCompactionInfo lci = response.getCompactions().get(0);
+    CompactionInfoStruct lci = response.getCompactions().get(0);
     assertEquals("Expecting the second succeeded compaction record", 2, lci.getId());
     assertEquals(partitionName, lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
 
     addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
-    response = txnHandler.getLatestCompactionInfo(rqst);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertNotNull(response);
     assertEquals("Expecting a single record", 1, response.getCompactionsSize());
@@ -353,15 +363,15 @@ public class TestCompactionTxnHandler {
     final String dbName = "foo";
     final String tableName = "bar";
     final String errorMessage = "Dummy error";
-    GetLatestCompactionInfoRequest rqst = new GetLatestCompactionInfoRequest();
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
-    GetLatestCompactionInfoResponse response = txnHandler.getLatestCompactionInfo(rqst);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertEquals(0, response.getCompactionsSize());
 
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
-    response = txnHandler.getLatestCompactionInfo(rqst);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertEquals(0, response.getCompactionsSize());
   }

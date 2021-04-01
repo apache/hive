@@ -2606,9 +2606,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest request)
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest request)
       throws TException {
-    return client.get_latest_compaction_info(request);
+    return client.get_latest_committed_compaction_info(request);
   }
 
   @Deprecated

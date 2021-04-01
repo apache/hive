@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class GetLatestCompactionInfoRequest
+class GetLatestCommittedCompactionInfoRequest
 {
     static public $isValidate = false;
 
@@ -72,7 +72,7 @@ class GetLatestCompactionInfoRequest
 
     public function getName()
     {
-        return 'GetLatestCompactionInfoRequest';
+        return 'GetLatestCommittedCompactionInfoRequest';
     }
 
 
@@ -132,7 +132,7 @@ class GetLatestCompactionInfoRequest
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('GetLatestCompactionInfoRequest');
+        $xfer += $output->writeStructBegin('GetLatestCommittedCompactionInfoRequest');
         if ($this->dbname !== null) {
             $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
             $xfer += $output->writeString($this->dbname);

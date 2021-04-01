@@ -24,8 +24,8 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CATALOG_DB_S
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoResponse;
-import org.apache.hadoop.hive.metastore.api.LatestCompactionInfo;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -448,12 +448,12 @@ public class FilterUtils {
     }
   }
 
-  public static GetLatestCompactionInfoResponse filterLatestCompactionInfoIfEnabled(
+  public static GetLatestCommittedCompactionInfoResponse filterCommittedCompactionInfoStructIfEnabled(
       boolean isFilterEnabled, MetaStoreFilterHook filterHook,
-      String catName, String dbName, String tableName, GetLatestCompactionInfoResponse response
+      String catName, String dbName, String tableName, GetLatestCommittedCompactionInfoResponse response
   ) throws MetaException {
     if (isFilterEnabled && response.getCompactionsSize() > 0) {
-      List<LatestCompactionInfo> compactions = response.getCompactions();
+      List<CompactionInfoStruct> compactions = response.getCompactions();
       if (compactions.get(0).getPartitionname() == null) {
         // non partitioned table
         List<String> tableNames = new ArrayList<>();
@@ -465,7 +465,7 @@ public class FilterUtils {
       } else {
         // partitioned table
         List<String> partitionNames = compactions.stream()
-            .map(LatestCompactionInfo::getPartitionname)
+            .map(CompactionInfoStruct::getPartitionname)
             .collect(Collectors.toList());
         partitionNames = filterHook.filterPartitionNames(
             catName, dbName, tableName, partitionNames);

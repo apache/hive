@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -92,8 +93,8 @@ import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoRequest;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -102,7 +103,6 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.LatestCompactionInfo;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -3655,9 +3655,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * only these two states means there are new files ready to be read.
    */
   @RetrySemantics.ReadOnly
-  public GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest rqst)
-      throws MetaException {
-    GetLatestCompactionInfoResponse response = new GetLatestCompactionInfoResponse(new ArrayList<>());
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException {
+    GetLatestCommittedCompactionInfoResponse response = new GetLatestCommittedCompactionInfoResponse(new ArrayList<>());
     Connection dbConn = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
@@ -3686,7 +3686,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             .append(" WHERE \"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
         params.add(rqst.getDbname());
         params.add(rqst.getTablename());
-        if (rqst.getPartitionnames() != null) {
+        if (rqst.getPartitionnamesSize() > 0) {
           sb.append(" AND \"CC_PARTITION\" IN (");
           sb.append(String.join(",",
               Collections.nCopies(rqst.getPartitionnamesSize(), "?")));
@@ -3702,7 +3702,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         rs = pst.executeQuery();
         Set<String> partitionSet = new HashSet<>();
         while (rs.next()) {
-          LatestCompactionInfo lci = new LatestCompactionInfo();
+          CompactionInfoStruct lci = new CompactionInfoStruct();
           lci.setId(rs.getLong(1));
           String partition = rs.getString(4);
           if (!rs.wasNull()) {
@@ -3717,7 +3717,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       } catch (SQLException e) {
         LOG.error("Unable to execute query " + e.getMessage());
-        checkRetryable(dbConn, e, "getLatestCompactionInfo");
+        checkRetryable(dbConn, e, "getLatestCommittedCompactionInfo");
       } finally {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -3725,7 +3725,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       return response;
     } catch (RetryException e) {
-      return getLatestCompactionInfo(rqst);
+      return getLatestCommittedCompactionInfo(rqst);
     }
   }
 

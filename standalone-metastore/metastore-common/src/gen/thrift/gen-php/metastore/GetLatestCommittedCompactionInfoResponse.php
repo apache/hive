@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class GetLatestCompactionInfoResponse
+class GetLatestCommittedCompactionInfoResponse
 {
     static public $isValidate = false;
 
@@ -28,13 +28,13 @@ class GetLatestCompactionInfoResponse
             'etype' => TType::STRUCT,
             'elem' => array(
                 'type' => TType::STRUCT,
-                'class' => '\metastore\LatestCompactionInfo',
+                'class' => '\metastore\CompactionInfoStruct',
                 ),
         ),
     );
 
     /**
-     * @var \metastore\LatestCompactionInfo[]
+     * @var \metastore\CompactionInfoStruct[]
      */
     public $compactions = null;
 
@@ -49,7 +49,7 @@ class GetLatestCompactionInfoResponse
 
     public function getName()
     {
-        return 'GetLatestCompactionInfoResponse';
+        return 'GetLatestCommittedCompactionInfoResponse';
     }
 
 
@@ -74,7 +74,7 @@ class GetLatestCompactionInfoResponse
                         $xfer += $input->readListBegin($_etype741, $_size738);
                         for ($_i742 = 0; $_i742 < $_size738; ++$_i742) {
                             $elem743 = null;
-                            $elem743 = new \metastore\LatestCompactionInfo();
+                            $elem743 = new \metastore\CompactionInfoStruct();
                             $xfer += $elem743->read($input);
                             $this->compactions []= $elem743;
                         }
@@ -96,7 +96,7 @@ class GetLatestCompactionInfoResponse
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('GetLatestCompactionInfoResponse');
+        $xfer += $output->writeStructBegin('GetLatestCommittedCompactionInfoResponse');
         if ($this->compactions !== null) {
             if (!is_array($this->compactions)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

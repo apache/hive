@@ -3904,10 +3904,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public GetLatestCompactionInfoResponse getLatestCompactionInfo(GetLatestCompactionInfoRequest request)
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest request)
       throws TException {
-    GetLatestCompactionInfoResponse response = client.get_latest_compaction_info(request);
-    return FilterUtils.filterLatestCompactionInfoIfEnabled(isClientFilterEnabled, filterHook,
+    GetLatestCommittedCompactionInfoResponse response = client.get_latest_committed_compaction_info(request);
+    return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isClientFilterEnabled, filterHook,
         getDefaultCatalog(conf), request.getDbname(), request.getTablename(), response);
   }
 

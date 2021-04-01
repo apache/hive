@@ -698,11 +698,9 @@ class ShowCompactResponseElement;
 
 class ShowCompactResponse;
 
-class GetLatestCompactionInfoRequest;
+class GetLatestCommittedCompactionInfoRequest;
 
-class LatestCompactionInfo;
-
-class GetLatestCompactionInfoResponse;
+class GetLatestCommittedCompactionInfoResponse;
 
 class AddDynamicPartitions;
 
@@ -9945,25 +9943,25 @@ void swap(ShowCompactResponse &a, ShowCompactResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponse& obj);
 
-typedef struct _GetLatestCompactionInfoRequest__isset {
-  _GetLatestCompactionInfoRequest__isset() : partitionnames(false) {}
+typedef struct _GetLatestCommittedCompactionInfoRequest__isset {
+  _GetLatestCommittedCompactionInfoRequest__isset() : partitionnames(false) {}
   bool partitionnames :1;
-} _GetLatestCompactionInfoRequest__isset;
+} _GetLatestCommittedCompactionInfoRequest__isset;
 
-class GetLatestCompactionInfoRequest : public virtual ::apache::thrift::TBase {
+class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift::TBase {
  public:
 
-  GetLatestCompactionInfoRequest(const GetLatestCompactionInfoRequest&);
-  GetLatestCompactionInfoRequest& operator=(const GetLatestCompactionInfoRequest&);
-  GetLatestCompactionInfoRequest() : dbname(), tablename() {
+  GetLatestCommittedCompactionInfoRequest(const GetLatestCommittedCompactionInfoRequest&);
+  GetLatestCommittedCompactionInfoRequest& operator=(const GetLatestCommittedCompactionInfoRequest&);
+  GetLatestCommittedCompactionInfoRequest() : dbname(), tablename() {
   }
 
-  virtual ~GetLatestCompactionInfoRequest() noexcept;
+  virtual ~GetLatestCommittedCompactionInfoRequest() noexcept;
   std::string dbname;
   std::string tablename;
   std::vector<std::string>  partitionnames;
 
-  _GetLatestCompactionInfoRequest__isset __isset;
+  _GetLatestCommittedCompactionInfoRequest__isset __isset;
 
   void __set_dbname(const std::string& val);
 
@@ -9971,7 +9969,7 @@ class GetLatestCompactionInfoRequest : public virtual ::apache::thrift::TBase {
 
   void __set_partitionnames(const std::vector<std::string> & val);
 
-  bool operator == (const GetLatestCompactionInfoRequest & rhs) const
+  bool operator == (const GetLatestCommittedCompactionInfoRequest & rhs) const
   {
     if (!(dbname == rhs.dbname))
       return false;
@@ -9983,11 +9981,11 @@ class GetLatestCompactionInfoRequest : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const GetLatestCompactionInfoRequest &rhs) const {
+  bool operator != (const GetLatestCommittedCompactionInfoRequest &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GetLatestCompactionInfoRequest & ) const;
+  bool operator < (const GetLatestCommittedCompactionInfoRequest & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -9995,89 +9993,35 @@ class GetLatestCompactionInfoRequest : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(GetLatestCompactionInfoRequest &a, GetLatestCompactionInfoRequest &b);
+void swap(GetLatestCommittedCompactionInfoRequest &a, GetLatestCommittedCompactionInfoRequest &b);
 
-std::ostream& operator<<(std::ostream& out, const GetLatestCompactionInfoRequest& obj);
+std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoRequest& obj);
 
-typedef struct _LatestCompactionInfo__isset {
-  _LatestCompactionInfo__isset() : partitionname(false) {}
-  bool partitionname :1;
-} _LatestCompactionInfo__isset;
 
-class LatestCompactionInfo : public virtual ::apache::thrift::TBase {
+class GetLatestCommittedCompactionInfoResponse : public virtual ::apache::thrift::TBase {
  public:
 
-  LatestCompactionInfo(const LatestCompactionInfo&);
-  LatestCompactionInfo& operator=(const LatestCompactionInfo&);
-  LatestCompactionInfo() : id(0), partitionname(), type((CompactionType::type)0) {
+  GetLatestCommittedCompactionInfoResponse(const GetLatestCommittedCompactionInfoResponse&);
+  GetLatestCommittedCompactionInfoResponse& operator=(const GetLatestCommittedCompactionInfoResponse&);
+  GetLatestCommittedCompactionInfoResponse() {
   }
 
-  virtual ~LatestCompactionInfo() noexcept;
-  int64_t id;
-  std::string partitionname;
-  CompactionType::type type;
+  virtual ~GetLatestCommittedCompactionInfoResponse() noexcept;
+  std::vector<CompactionInfoStruct>  compactions;
 
-  _LatestCompactionInfo__isset __isset;
+  void __set_compactions(const std::vector<CompactionInfoStruct> & val);
 
-  void __set_id(const int64_t val);
-
-  void __set_partitionname(const std::string& val);
-
-  void __set_type(const CompactionType::type val);
-
-  bool operator == (const LatestCompactionInfo & rhs) const
-  {
-    if (!(id == rhs.id))
-      return false;
-    if (__isset.partitionname != rhs.__isset.partitionname)
-      return false;
-    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
-      return false;
-    if (!(type == rhs.type))
-      return false;
-    return true;
-  }
-  bool operator != (const LatestCompactionInfo &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const LatestCompactionInfo & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(LatestCompactionInfo &a, LatestCompactionInfo &b);
-
-std::ostream& operator<<(std::ostream& out, const LatestCompactionInfo& obj);
-
-
-class GetLatestCompactionInfoResponse : public virtual ::apache::thrift::TBase {
- public:
-
-  GetLatestCompactionInfoResponse(const GetLatestCompactionInfoResponse&);
-  GetLatestCompactionInfoResponse& operator=(const GetLatestCompactionInfoResponse&);
-  GetLatestCompactionInfoResponse() {
-  }
-
-  virtual ~GetLatestCompactionInfoResponse() noexcept;
-  std::vector<LatestCompactionInfo>  compactions;
-
-  void __set_compactions(const std::vector<LatestCompactionInfo> & val);
-
-  bool operator == (const GetLatestCompactionInfoResponse & rhs) const
+  bool operator == (const GetLatestCommittedCompactionInfoResponse & rhs) const
   {
     if (!(compactions == rhs.compactions))
       return false;
     return true;
   }
-  bool operator != (const GetLatestCompactionInfoResponse &rhs) const {
+  bool operator != (const GetLatestCommittedCompactionInfoResponse &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const GetLatestCompactionInfoResponse & ) const;
+  bool operator < (const GetLatestCommittedCompactionInfoResponse & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -10085,9 +10029,9 @@ class GetLatestCompactionInfoResponse : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(GetLatestCompactionInfoResponse &a, GetLatestCompactionInfoResponse &b);
+void swap(GetLatestCommittedCompactionInfoResponse &a, GetLatestCommittedCompactionInfoResponse &b);
 
-std::ostream& operator<<(std::ostream& out, const GetLatestCompactionInfoResponse& obj);
+std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoResponse& obj);
 
 typedef struct _AddDynamicPartitions__isset {
   _AddDynamicPartitions__isset() : operationType(true) {}

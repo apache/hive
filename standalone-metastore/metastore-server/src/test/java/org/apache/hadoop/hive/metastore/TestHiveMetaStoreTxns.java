@@ -22,12 +22,12 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoRequest;
-import org.apache.hadoop.hive.metastore.api.GetLatestCompactionInfoResponse;
-import org.apache.hadoop.hive.metastore.api.LatestCompactionInfo;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -400,7 +400,7 @@ public class TestHiveMetaStoreTxns {
   }
 
   @Test
-  public void testGetLatestCompactionInfo() throws Exception {
+  public void testGetLatestCommittedCompactionInfo() throws Exception {
     final String dbName = "mydb";
     final String tblName = "mytable";
     Database db = new DatabaseBuilder().setName(dbName).build(conf);
@@ -417,25 +417,25 @@ public class TestHiveMetaStoreTxns {
     OptionalCompactionInfoStruct optionalCi = client.findNextCompact("myworker");
     client.markCleaned(optionalCi.getCi());
 
-    GetLatestCompactionInfoRequest rqst = new GetLatestCompactionInfoRequest();
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
 
     // Test invalid inputs
     final String invalidTblName = "invalid";
     rqst.setDbname(dbName);
-    Assert.assertThrows(MetaException.class, () -> client.getLatestCompactionInfo(rqst));
+    Assert.assertThrows(MetaException.class, () -> client.getLatestCommittedCompactionInfo(rqst));
     rqst.setTablename(invalidTblName);
-    GetLatestCompactionInfoResponse response = client.getLatestCompactionInfo(rqst);
+    GetLatestCommittedCompactionInfoResponse response = client.getLatestCommittedCompactionInfo(rqst);
 
     Assert.assertNotNull(response);
     Assert.assertEquals(0, response.getCompactionsSize());
 
     // Test normal inputs
     rqst.setTablename(tblName);
-    response = client.getLatestCompactionInfo(rqst);
+    response = client.getLatestCommittedCompactionInfo(rqst);
 
     Assert.assertNotNull(response);
     Assert.assertEquals(1, response.getCompactionsSize());
-    LatestCompactionInfo lci = response.getCompactions().get(0);
+    CompactionInfoStruct lci = response.getCompactions().get(0);
     Assert.assertEquals(1, lci.getId());
     Assert.assertNull(lci.getPartitionname());
     Assert.assertEquals(CompactionType.MINOR, lci.getType());
