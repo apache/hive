@@ -1,0 +1,256 @@
+PREHOOK: query: DROP DATABASE IF EXISTS database0 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS database0 CASCADE
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: CREATE DATABASE database0
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:database0
+POSTHOOK: query: CREATE DATABASE database0
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:database0
+PREHOOK: query: use database0
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:database0
+POSTHOOK: query: use database0
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:database0
+PREHOOK: query: CREATE TABLE t2(c0 DOUBLE , c1 DECIMAL)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database0@t2
+PREHOOK: Output: database:database0
+POSTHOOK: query: CREATE TABLE t2(c0 DOUBLE , c1 DECIMAL)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database0@t2
+POSTHOOK: Output: database:database0
+PREHOOK: query: INSERT INTO t2(c1) VALUES(1), (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database0@t2
+POSTHOOK: query: INSERT INTO t2(c1) VALUES(1), (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database0@t2
+POSTHOOK: Lineage: t2.c0 SIMPLE []
+POSTHOOK: Lineage: t2.c1 SCRIPT []
+PREHOOK: query: INSERT INTO t2(c1) VALUES(1), (1), (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database0@t2
+POSTHOOK: query: INSERT INTO t2(c1) VALUES(1), (1), (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database0@t2
+POSTHOOK: Lineage: t2.c0 SIMPLE []
+POSTHOOK: Lineage: t2.c1 SCRIPT []
+PREHOOK: query: INSERT INTO t2(c0, c1) VALUES(-1.9767927E3, 0), (0.87755716, 0), (0.08714639, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database0@t2
+POSTHOOK: query: INSERT INTO t2(c0, c1) VALUES(-1.9767927E3, 0), (0.87755716, 0), (0.08714639, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database0@t2
+POSTHOOK: Lineage: t2.c0 SCRIPT []
+POSTHOOK: Lineage: t2.c1 SCRIPT []
+PREHOOK: query: SELECT t2.c1 FROM t2
+PREHOOK: type: QUERY
+PREHOOK: Input: database0@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t2.c1 FROM t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: database0@t2
+#### A masked pattern was here ####
+1
+1
+1
+1
+1
+0
+0
+1
+PREHOOK: query: SELECT t2.c1 FROM t2 WHERE CAST(CAST(t2.c1 AS VARCHAR(30)) AS BOOLEAN) UNION ALL
+SELECT ALL t2.c1 FROM t2 WHERE NOT (CAST(CAST(t2.c1 AS VARCHAR(30)) AS BOOLEAN)) UNION ALL
+SELECT ALL t2.c1 FROM t2 WHERE (CAST(CAST(t2.c1 AS VARCHAR(30)) AS BOOLEAN)) IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: database0@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t2.c1 FROM t2 WHERE CAST(CAST(t2.c1 AS VARCHAR(30)) AS BOOLEAN) UNION ALL
+SELECT ALL t2.c1 FROM t2 WHERE NOT (CAST(CAST(t2.c1 AS VARCHAR(30)) AS BOOLEAN)) UNION ALL
+SELECT ALL t2.c1 FROM t2 WHERE (CAST(CAST(t2.c1 AS VARCHAR(30)) AS BOOLEAN)) IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: database0@t2
+#### A masked pattern was here ####
+1
+1
+1
+1
+1
+1
+0
+0
+PREHOOK: query: DROP DATABASE IF EXISTS database0 CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:database0
+PREHOOK: Output: database0@t2
+PREHOOK: Output: database:database0
+POSTHOOK: query: DROP DATABASE IF EXISTS database0 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:database0
+POSTHOOK: Output: database0@t2
+POSTHOOK: Output: database:database0
+PREHOOK: query: CREATE DATABASE database0
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:database0
+POSTHOOK: query: CREATE DATABASE database0
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:database0
+PREHOOK: query: use database0
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:database0
+POSTHOOK: query: use database0
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:database0
+PREHOOK: query: CREATE TABLE t2(c0 DOUBLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database0@t2
+PREHOOK: Output: database:database0
+POSTHOOK: query: CREATE TABLE t2(c0 DOUBLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database0@t2
+POSTHOOK: Output: database:database0
+PREHOOK: query: INSERT INTO t2(c0) VALUES(-1.29983398E9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database0@t2
+POSTHOOK: query: INSERT INTO t2(c0) VALUES(-1.29983398E9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database0@t2
+POSTHOOK: Lineage: t2.c0 SCRIPT []
+PREHOOK: query: INSERT INTO t2(c0) VALUES(0.054497764), (0.3935181), (0.11656447)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database0@t2
+POSTHOOK: query: INSERT INTO t2(c0) VALUES(0.054497764), (0.3935181), (0.11656447)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database0@t2
+POSTHOOK: Lineage: t2.c0 SCRIPT []
+PREHOOK: query: SELECT t2.c0 FROM t2 WHERE NOT ((t2.c0) BETWEEN (1918702615) AND (-1229014254))
+PREHOOK: type: QUERY
+PREHOOK: Input: database0@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t2.c0 FROM t2 WHERE NOT ((t2.c0) BETWEEN (1918702615) AND (-1229014254))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: database0@t2
+#### A masked pattern was here ####
+-1.29983398E9
+0.054497764
+0.3935181
+0.11656447
+PREHOOK: query: select not ((t2.c0) between (1918702615) and (-1229014254)) from t2
+PREHOOK: type: QUERY
+PREHOOK: Input: database0@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select not ((t2.c0) between (1918702615) and (-1229014254)) from t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: database0@t2
+#### A masked pattern was here ####
+true
+true
+true
+true
+PREHOOK: query: SELECT t2.c0 FROM t2 WHERE NOT ((t2.c0) BETWEEN (-1229014254) AND (1918702615))
+PREHOOK: type: QUERY
+PREHOOK: Input: database0@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t2.c0 FROM t2 WHERE NOT ((t2.c0) BETWEEN (-1229014254) AND (1918702615))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: database0@t2
+#### A masked pattern was here ####
+-1.29983398E9
+PREHOOK: query: select NOT ((t2.c0) BETWEEN (-1229014254) AND (1918702615)) FROM t2
+PREHOOK: type: QUERY
+PREHOOK: Input: database0@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select NOT ((t2.c0) BETWEEN (-1229014254) AND (1918702615)) FROM t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: database0@t2
+#### A masked pattern was here ####
+true
+false
+false
+false
+PREHOOK: query: DROP DATABASE IF EXISTS hivedb12 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS hivedb12 CASCADE
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: CREATE DATABASE hivedb12
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:hivedb12
+POSTHOOK: query: CREATE DATABASE hivedb12
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:hivedb12
+PREHOOK: query: use hivedb12
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:hivedb12
+POSTHOOK: query: use hivedb12
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:hivedb12
+PREHOOK: query: CREATE TABLE IF NOT EXISTS t0(c0 DOUBLE , c1 DOUBLE )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:hivedb12
+PREHOOK: Output: hivedb12@t0
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS t0(c0 DOUBLE , c1 DOUBLE )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:hivedb12
+POSTHOOK: Output: hivedb12@t0
+PREHOOK: query: INSERT INTO t0(c1, c0) VALUES(0.36253822, 0.36253822)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hivedb12@t0
+POSTHOOK: query: INSERT INTO t0(c1, c0) VALUES(0.36253822, 0.36253822)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hivedb12@t0
+POSTHOOK: Lineage: t0.c0 SCRIPT []
+POSTHOOK: Lineage: t0.c1 SCRIPT []
+PREHOOK: query: INSERT INTO t0(c0) VALUES(0.38554788), (0.8438145)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hivedb12@t0
+POSTHOOK: query: INSERT INTO t0(c0) VALUES(0.38554788), (0.8438145)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hivedb12@t0
+POSTHOOK: Lineage: t0.c0 SCRIPT []
+POSTHOOK: Lineage: t0.c1 SIMPLE []
+PREHOOK: query: INSERT INTO t0(c1) VALUES(0.05024221)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hivedb12@t0
+POSTHOOK: query: INSERT INTO t0(c1) VALUES(0.05024221)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hivedb12@t0
+POSTHOOK: Lineage: t0.c0 SIMPLE []
+POSTHOOK: Lineage: t0.c1 SCRIPT []
+PREHOOK: query: SELECT t0.c1 FROM t0 WHERE ((((t0.c1)<(0.81091404)))OR(((t0.c1)>(0.39049575))))
+PREHOOK: type: QUERY
+PREHOOK: Input: hivedb12@t0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t0.c1 FROM t0 WHERE ((((t0.c1)<(0.81091404)))OR(((t0.c1)>(0.39049575))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: hivedb12@t0
+#### A masked pattern was here ####
+0.36253822
+0.05024221
+PREHOOK: query: SELECT SUM(count) FROM (SELECT CAST(((((t0.c1)<(0.81091404)))OR(((t0.c1)>(0.39049575)))) AS INT) as count FROM t0) as res
+PREHOOK: type: QUERY
+PREHOOK: Input: hivedb12@t0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(count) FROM (SELECT CAST(((((t0.c1)<(0.81091404)))OR(((t0.c1)>(0.39049575)))) AS INT) as count FROM t0) as res
+POSTHOOK: type: QUERY
+POSTHOOK: Input: hivedb12@t0
+#### A masked pattern was here ####
+2
