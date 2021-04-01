@@ -411,11 +411,5 @@
   <name>hive.cbo.fallback.strategy</name>
   <value>TEST</value>
 </property>
-
-<property>
-  <name>metastore.metadata.transformer.class</name>
-  <value></value>
-</property>
-
   
 </configuration>
