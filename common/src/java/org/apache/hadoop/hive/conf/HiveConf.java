@@ -460,6 +460,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_AM_USE_FQDN.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_OUTPUT_FORMAT_ARROW.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_PATH_CACHE_SIZE.varname);
   }
 
   /**
@@ -541,10 +542,6 @@ public class HiveConf extends Configuration {
         "Number of threads that will be used to dump partition data information during repl dump."),
     REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
             "Indicates whether replication should run data copy tasks during repl load operation."),
-    REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
-        "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
-                + "When the config 'hive.repl.run.data.copy.tasks.on.target' is set to true, this config " +
-          "is not considered."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
@@ -554,6 +551,8 @@ public class HiveConf extends Configuration {
     REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
             "Indicates maximium number of latest previously used dump-directories which would be retained when " +
              "hive.repl.retain.prev.dump.dir is set to true"),
+    REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET("hive.repl.retain.custom.db.locations.on.target", true,
+            "Indicates if source database has custom warehouse locations, whether that should be retained on target as well"),
     REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
             "Indicates whether replication of materialized views is enabled."),
     REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
@@ -600,6 +599,11 @@ public class HiveConf extends Configuration {
         "This is the fully qualified base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
             + "external table path on target cluster."),
+    REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK("hive.repl.external.warehouse.single.copy.task",
+        false, "Should create single copy task for all the external tables "
+        + "within the database default location for external tables, Would require more memory "
+        + "for preparing the initial listing, Should be used if the memory "
+        + "requirements can be fulfilled."),
     REPL_INCLUDE_AUTHORIZATION_METADATA("hive.repl.include.authorization.metadata", false,
             "This configuration will enable security and authorization related metadata along "
                     + "with the hive data and metadata replication. "),
@@ -645,6 +649,11 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.HOURS),
       "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
         "the policy instance will be marked as failed and will need manual intervention to restart."),
+    REPL_COPY_FILE_LIST_ITERATOR_RETRY("hive.repl.copy.file.list.iterator.retry", true,
+            "Determines whether writes happen with retry upon encountering filesystem errors for data-copy \n"
+            + "iterator files. It should be disabled when we do not want retry on a per-line basis while writing \n"
+            + "to the files and in cases when flushing capabilities are not available on the stream. If disabled, then retry \n"
+            + "is only attempted during file creation, not for errors encountered while writing entries."),
     REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
@@ -2130,9 +2139,10 @@ public class HiveConf extends Configuration {
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
         "format", false),
+    HIVE_EXTEND_BUCKET_ID_RANGE("hive.extend.bucketid.range", true,
+            "Dynamically allocate some bits from statement id when bucket id overflows. This allows having more than 4096 buckets."),
     HIVETESTMODEACIDKEYIDXSKIP("hive.test.acid.key.index.skip", false, "For testing only. OrcRecordUpdater will skip "
         + "generation of the hive.acid.key.index", false),
-
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false,
@@ -2607,7 +2617,7 @@ public class HiveConf extends Configuration {
         "Whether to enable shared work extended optimizer. The optimizer tries to merge equal operators\n" +
         "after a work boundary after shared work optimizer has been executed. Requires hive.optimize.shared.work\n" +
         "to be set to true. Tez only."),
-    HIVE_SHARED_WORK_SEMIJOIN_OPTIMIZATION("hive.optimize.shared.work.semijoin", true,
+    HIVE_SHARED_WORK_SEMIJOIN_OPTIMIZATION("hive.optimize.shared.work.semijoin", false,
         "Whether to enable shared work extended optimizer for semijoins. The optimizer tries to merge\n" +
         "scan operators if one of them reads the full table, even if the other one is the target for\n" +
         "one or more semijoin edges. Tez only."),
@@ -3899,7 +3909,7 @@ public class HiveConf extends Configuration {
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
-      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM"),
+      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM", "SAML"),
         "Client authentication types.\n" +
         "  NONE: no authentication check\n" +
         "  LDAP: LDAP/AD based authentication\n" +
@@ -3907,7 +3917,8 @@ public class HiveConf extends Configuration {
         "  CUSTOM: Custom authentication provider\n" +
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
-        "  NOSASL:  Raw transport"),
+        "  NOSASL:  Raw transport\n" +
+        "  SAML2: SAML 2.0 compliant authentication. This is only supported in http transport mode."),
     HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
         "Specifies the host or a domain to trust connections from. Authentication is skipped " +
         "for any connection coming from a host whose hostname ends with the value of this" +
@@ -4013,6 +4024,70 @@ public class HiveConf extends Configuration {
       "List of the underlying pam services that should be used when auth type is PAM\n" +
       "A file with the same name must exist in /etc/pam.d"),
 
+    // HS2 SAML2.0 configuration
+    HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",
+        "Keystore path to the saml2 client. This keystore is used to store the\n"
+            + " key pair used to sign the authentication requests when hive.server2.saml2.sign.requests\n"
+            + " is set to true. If the path doesn't exist, HiveServer2 will attempt to\n"
+            + " create a keystore using the default configurations otherwise it will use\n"
+            + " the one provided."),
+    HIVE_SERVER2_SAML_KEYSTORE_PASSWORD("hive.server2.saml2.keystore.password", "",
+        "Password to the keystore used to sign the authentication requests. By default,\n"
+            + " this must be set to a non-blank value if the authentication mode is SAML."),
+    HIVE_SERVER2_SAML_PRIVATE_KEY_PASSWORD("hive.server2.saml2.private.key.password", "",
+        "Password for the private key which is stored in the keystore pointed \n"
+            + " by hive.server2.saml2.keystore.path. This key is used to sign the authentication request\n"
+            + " if hive.server2.saml2.sign.requests is set to true."),
+    HIVE_SERVER2_SAML_IDP_METADATA("hive.server2.saml2.idp.metadata", "",
+        "IDP metadata file for the SAML configuration. This metadata file must be\n"
+            + " exported from the external identity provider. This is used to validate the SAML assertions\n"
+            + " received by HiveServer2."),
+    HIVE_SERVER2_SAML_SP_ID("hive.server2.saml2.sp.entity.id", "",
+        "Service provider entity id for this HiveServer2. This must match with the\n"
+            + " SP id on the external identity provider. If this is not set, HiveServer2 will use the\n"
+            + " callback url as the SP id."),
+    HIVE_SERVER2_SAML_FORCE_AUTH("hive.server2.saml2.sp.force.auth", "false",
+        "This is a boolean configuration which toggles the force authentication\n"
+            + " flag in the SAML authentication request. When set to true, the request generated\n"
+            + " to the IDP will ask the IDP to force the authentication again."),
+    HIVE_SERVER2_SAML_AUTHENTICATION_LIFETIME(
+        "hive.server2.saml2.max.authentication.lifetime", "1h",
+        "This configuration can be used to set the lifetime of the\n"
+            + " authentication response from IDP. Generally the IDP will not ask\n"
+            + " you enter credentials if you have a authenticated session with it already.\n"
+            + " The IDP will automatically generate an assertion in such a case. This configuration\n"
+            + " can be used to set the time limit for such assertions. Assertions which are\n"
+            + " older than this value will not be accepted by HiveServer2. The default\n"
+            + " is one hour."),
+    HIVE_SERVER2_SAML_BLACKLISTED_SIGNATURE_ALGORITHMS(
+        "hive.server2.saml2.blacklisted.signature.algorithms", "",
+        "Comma separated list of signature algorithm names which are not\n"
+            + " allowed by HiveServer2 during validation of the assertions received from IDP"),
+    HIVE_SERVER2_SAML_ACS_INDEX("hive.server2.saml2.acs.index", "",
+        "This configuration specifies the assertion consumer service (ACS)\n"
+            + " index to be sent to the IDP in case it support multiple ACS URLs. This\n"
+            + " will also be used to pick the ACS URL from the IDP metadata for validation."),
+    HIVE_SERVER2_SAML_CALLBACK_URL("hive.server2.saml2.sp.callback.url", "",
+        "Callback URL where SAML responses should be posted. Currently this\n" +
+            " must be configured at the same port number as defined by hive.server2.thrift.http.port."),
+    HIVE_SERVER2_SAML_WANT_ASSERTIONS_SIGNED("hive.server2.saml2.want.assertions.signed", true,
+        "When this configuration is set to true, hive server2 will validate the signature\n"
+            + " of the assertions received at the callback url. For security reasons, it is recommended"
+            + "that this value should be true."),
+    HIVE_SERVER2_SAML_SIGN_REQUESTS("hive.server2.saml2.sign.requests", false,
+        "When this configuration is set to true, HiveServer2 will sign the SAML requests\n" +
+            " which can be validated by the IDP provider."),
+    HIVE_SERVER2_SAML_CALLBACK_TOKEN_TTL("hive.server2.saml2.callback.token.ttl", "30s",
+        new TimeValidator(TimeUnit.MILLISECONDS), "Time for which the token issued by\n"
+        + "service provider is valid."),
+    HIVE_SERVER2_SAML_GROUP_ATTRIBUTE_NAME("hive.server2.saml2.group.attribute.name",
+        "", "The attribute name in the SAML assertion which would\n"
+        + " be used to compare for the group name matching. By default it is empty\n"
+        + " which would allow any authenticated user. If this value is set then\n"
+            + " then hive.server2.saml2.group.filter must be set to a non-empty value."),
+    HIVE_SERVER2_SAML_GROUP_FILTER("hive.server2.saml2.group.filter", "",
+        "Comma separated list of group names which will be allowed when SAML\n"
+            + " authentication is enabled."),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true,
         "Setting this property to true will have HiveServer2 execute\n" +
         "Hive operations as the user making the calls to it."),
@@ -4175,6 +4250,9 @@ public class HiveConf extends Configuration {
         "If hive (in tez mode only) cannot find a usable hive jar in \"hive.jar.directory\", \n" +
         "it will upload the hive jar to \"hive.user.install.directory/user.name\"\n" +
         "and use it to run queries."),
+    HIVE_MASKING_ALGO("hive.masking.algo","sha256", "This property is used to indicate whether " +
+            "FIPS mode is enabled or not. Value should be sha512 to indicate that FIPS mode is enabled." +
+            "Else the value should be sha256. Using this value column masking is being done"),
 
     // Vectorization enabled
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", true,
@@ -4564,6 +4642,9 @@ public class HiveConf extends Configuration {
         "The meaning of this parameter is the inverse of the number of time ticks (cache\n" +
         " operations, currently) that cause the combined recency-frequency of a block in cache\n" +
         " to be halved."),
+    LLAP_LRFU_HOTBUFFERS_PERCENTAGE("hive.llap.io.lrfu.hotbuffers.percentage", 0.10f,
+        new RangeValidator(0.0f, 1.0f), "The number specifies the percentage of the cached buffers "
+        + "which are considered the most important ones based on the policy."),
     LLAP_LRFU_BP_WRAPPER_SIZE("hive.llap.io.lrfu.bp.wrapper.size", 64, "thread local queue "
         + "used to amortize the lock contention, the idea hear is to try locking as soon we reach max size / 2 "
         + "and block when max queue size reached"),
@@ -4583,6 +4664,12 @@ public class HiveConf extends Configuration {
         "Whether LLAP cache for ORC should remember gaps in ORC compression buffer read\n" +
         "estimates, to avoid re-reading the data that was read once and discarded because it\n" +
         "is unneeded. This is only necessary for ORC files written before HIVE-9660."),
+    LLAP_CACHE_HYDRATION_STRATEGY_CLASS("hive.llap.cache.hydration.strategy.class", "", "Strategy class for managing the "
+        + "llap cache hydration. It's executed when the daemon starts and stops, and gives a chance to save and/or "
+        + "load the contens of the llap cache. If left empty the feature is disabled.\n" +
+        "The class should implement org.apache.hadoop.hive.llap.LlapCacheHydration interface."),
+    LLAP_CACHE_HYDRATION_SAVE_DIR("hive.llap.cache.hydration.save.dir", "/tmp/hive", "Directory to save the llap cache content\n"
+        + "info on shutdown, if BasicLlapCacheHydration is used as the hive.llap.cache.hydration.strategy.class."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
         "cases of file overwrites. This is supported on HDFS. Disabling this also turns off any\n" +
@@ -4640,6 +4727,8 @@ public class HiveConf extends Configuration {
          "will be cached. If set to 'none', only the base files and insert deltas will be channeled through LLAP, " +
          "while delete deltas will be accessed directly from their configured FS without caching them. " +
          "This feature only works with ColumnizedDeleteEventRegistry, SortMergedDeleteEventRegistry is not supported."),
+    LLAP_IO_PATH_CACHE_SIZE("hive.llap.io.path.cache.size", "10Mb", new SizeValidator(),
+        "The amount of the maximum memory allowed to store the file paths."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
@@ -4675,6 +4764,10 @@ public class HiveConf extends Configuration {
         "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER("hive.llap.io.encode.threadpool.multiplier", 2,
+        "Used to determine the size of IO encode threadpool by multiplying hive.llap.io.threadpool.size" +
+        "with this value. During text table reads a thread from the 'regular' IO thread pool may place a number of" +
+        "encode tasks to the threads in the encode pool."),
     LLAP_USE_KERBEROS("hive.llap.kerberos.enabled", true,
         "If LLAP is configured for Kerberos authentication. This could be useful when cluster\n" +
         "is kerberized, but LLAP is not."),

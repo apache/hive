@@ -611,13 +611,14 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
     // group by requires "ArrayList", don't ask.
     ArrayList<String> outputNames = new ArrayList<String>();
-    outputNames.add(HiveConf.getColumnInternalName(0));
 
     // project the relevant key column
     SelectDesc select = new SelectDesc(keyExprs, outputNames);
 
     // Create the new RowSchema for the projected column
     ColumnInfo columnInfo = parentOfRS.getSchema().getColumnInfo(internalColName);
+    columnInfo = new ColumnInfo(columnInfo);
+    outputNames.add(internalColName);
     ArrayList<ColumnInfo> signature = new ArrayList<ColumnInfo>();
     signature.add(columnInfo);
     RowSchema rowSchema = new RowSchema(signature);
@@ -712,16 +713,21 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     // Get the column names of the aggregations for reduce sink
     int colPos = 0;
     ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < aggs.size() - 1; i++) {
       ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(key.getTypeInfo(),
-              gbOutputNames.get(colPos++), "", false);
+              gbOutputNames.get(colPos), "", false);
       rsValueCols.add(colExpr);
+      columnExprMap.put(gbOutputNames.get(colPos), colExpr);
+      colPos++;
     }
 
     // Bloom Filter uses binary
     ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(TypeInfoFactory.binaryTypeInfo,
-            gbOutputNames.get(colPos++), "", false);
+        gbOutputNames.get(colPos), "", false);
     rsValueCols.add(colExpr);
+    columnExprMap.put(gbOutputNames.get(colPos), colExpr);
+    colPos++;
 
     // Create the reduce sink operator
     ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(
@@ -729,7 +735,6 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             -1, 0, 1, Operation.NOT_ACID, NullOrdering.defaultNullOrder(parseContext.getConf()));
     ReduceSinkOperator rsOp = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
             rsDesc, new RowSchema(groupByOp.getSchema()), groupByOp);
-    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
     rsOp.setColumnExprMap(columnExprMap);
 
     rsOp.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.QUICKSTART));

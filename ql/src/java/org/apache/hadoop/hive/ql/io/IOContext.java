@@ -49,6 +49,7 @@ public class IOContext {
    * supports {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#ROWID}
    */
   private  RecordIdentifier ri;
+  private boolean isDeletedRecord;
 
   public static enum Comparison {
     GREATER,
@@ -174,6 +175,14 @@ public class IOContext {
 
   public void setRecordIdentifier(RecordIdentifier ri) {
     this.ri = ri;
+  }
+
+  public boolean isDeletedRecord() {
+    return isDeletedRecord;
+  }
+
+  public void setDeletedRecord(boolean deletedRecord) {
+    isDeletedRecord = deletedRecord;
   }
 
   /**

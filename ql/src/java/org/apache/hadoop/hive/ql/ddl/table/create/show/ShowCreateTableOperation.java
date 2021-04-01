@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.create.show;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -103,7 +104,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   }
 
   private static final String CREATE_VIEW_TEMPLATE =
-      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME + ">` AS <SQL>";
+      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME + ">`<" + PARTITIONS + "> AS <SQL>";
 
   private String getCreateViewCommand(Table table, boolean isRelative) {
     ST command = new ST(CREATE_VIEW_TEMPLATE);
@@ -112,6 +113,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
       command.add(DATABASE_NAME, table.getDbName());
     }
     command.add(TABLE_NAME, table.getTableName());
+    command.add(PARTITIONS, getPartitionsForView(table));
     command.add("SQL", table.getViewExpandedText());
 
     return command.render();
@@ -222,6 +224,18 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   private String getComment(Table table) {
     String comment = table.getProperty("comment");
     return (comment != null) ? "COMMENT '" + HiveStringUtils.escapeHiveCommand(comment) + "'" : "";
+  }
+
+  private String getPartitionsForView(Table table) {
+    List<FieldSchema> partitionKeys = table.getPartCols();
+    if (partitionKeys.isEmpty()) {
+      return "";
+    }
+    List<String> partitionCols = new ArrayList<String>();
+    for(String col:table.getPartColNames()) {
+      partitionCols.add('`' + col + '`');
+    }
+    return " PARTITIONED ON (" + StringUtils.join(partitionCols, ", ") + ")";
   }
 
   private String getPartitions(Table table) {
@@ -347,7 +361,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   }
 
   private static final Set<String> PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES = Sets.union(
-      ImmutableSet.<String>of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE),
+      ImmutableSet.<String>of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE, TABLE_IS_CTAS),
       new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
 
   private String getProperties(Table table) {

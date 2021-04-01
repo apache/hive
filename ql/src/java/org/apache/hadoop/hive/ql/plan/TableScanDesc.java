@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -115,6 +116,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private boolean vectorized;
 
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
+
+  private boolean fetchDeletedRows = false;
 
   private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
 
@@ -223,6 +226,14 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public AcidUtils.AcidOperationalProperties getAcidOperationalProperties() {
     return acidOperationalProperties;
+  }
+
+  public boolean isFetchDeletedRows() {
+    return fetchDeletedRows;
+  }
+
+  public void setFetchDeletedRows(boolean fetchDeletedRows) {
+    this.fetchDeletedRows = fetchDeletedRows;
   }
 
   @Explain(displayName = "Output", explainLevels = { Level.USER })
@@ -480,7 +491,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean isNeedSkipHeaderFooters() {
     boolean rtn = false;
-    if (tableMetadata != null && tableMetadata.getTTable() != null) {
+    if (tableMetadata != null && tableMetadata.getTTable() != null
+        && TextInputFormat.class
+        .isAssignableFrom(tableMetadata.getInputFormatClass())) {
       Map<String, String> params = tableMetadata.getTTable().getParameters();
       if (params != null) {
         String skipHVal = params.get(serdeConstants.HEADER_COUNT);

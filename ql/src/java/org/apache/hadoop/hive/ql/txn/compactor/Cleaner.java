@@ -26,6 +26,9 @@ import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -90,6 +93,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   public void run() {
     LOG.info("Starting Cleaner thread");
     try {
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
@@ -120,7 +124,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
             for (CompactionInfo compactionInfo : readyToClean) {
               cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                      clean(compactionInfo, cleanerWaterMark)), cleanerExecutor));
+                      clean(compactionInfo, cleanerWaterMark, metricsEnabled)), cleanerExecutor));
             }
             CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
           }
@@ -149,9 +153,14 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
+    String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" + ci.type;
     try {
+      if (metricsEnabled) {
+        perfLogger.perfLogBegin(CLASS_NAME, cleanerMetric);
+      }
       Table t = resolveTable(ci);
       if (t == null) {
         // The table was dropped before we got around to cleaning it.
@@ -242,6 +251,10 @@ public class Cleaner extends MetaStoreCompactorThread {
           StringUtils.stringifyException(e));
       ci.errorMessage = e.getMessage();
       txnHandler.markFailed(ci);
+    } finally {
+      if (metricsEnabled) {
+        perfLogger.perfLogEnd(CLASS_NAME, cleanerMetric);
+      }
     }
   }
 

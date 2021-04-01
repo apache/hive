@@ -25,7 +25,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -68,10 +70,12 @@ import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionD
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
@@ -81,6 +85,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -90,7 +100,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
@@ -111,6 +120,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
+import static org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData.DUMP_METADATA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -140,7 +150,7 @@ public class TestReplicationScenarios {
 
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
-  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
 
   private boolean verifySetupSteps = false;
@@ -485,6 +495,10 @@ public class TestReplicationScenarios {
       metricCollector = new BootstrapLoadMetricCollector(replicadb, tuple.dumpLocation, 0,
         confTemp);
     }
+    /* When 'hive.repl.retain.custom.db.locations.on.target' is enabled, the first iteration of repl load would
+       run only database creation task, and only in next iteration of Repl Load Task execution, remaining tasks will be
+       executed. Hence disabling this to perform the test on task optimization.  */
+    confTemp.setBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET, false);
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
         0L, metricCollector, false);
@@ -2163,6 +2177,65 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testDumpMetadataBackwardCompatibility() throws IOException, SemanticException {
+    boolean verifySetupOriginal = verifySetupSteps;
+    verifySetupSteps = true;
+    String nameOfTest = testName.getMethodName();
+    String dbName = createDB(nameOfTest, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    //ensure bootstrap load runs with earlier format of dumpmetadata
+    Tuple bootstrapDump = replDumpDb(dbName);
+    deleteNewMetadataFields(bootstrapDump);
+    loadAndVerify(replDbName, dbName, bootstrapDump.lastReplId);
+
+    String[] unptnData = new String[] {"eleven", "twelve"};
+    String[] ptnData1 = new String[] {"thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[] {"fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[] {};
+
+    String unptnLocn = new Path(TEST_PATH, nameOfTest + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, nameOfTest + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, nameOfTest + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptnLocn, unptnData);
+    createTestDataFile(ptnLocn1, ptnData1);
+    createTestDataFile(ptnLocn2, ptnData2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptnLocn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptnData, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptnData, driver);
+
+    //ensure first incremental load runs with earlier format of dumpmetadata
+    Tuple incDump = replDumpDb(dbName);
+    deleteNewMetadataFields(incDump);
+    loadAndVerify(replDbName, dbName, incDump.lastReplId);
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptnData, driverMirror);
+    verifyRun("SELECT * from " + replDbName + ".unptned_late", unptnData, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn1 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptnData1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
+
+    //verify 2nd incremental load
+    incDump = replDumpDb(dbName);
+    deleteNewMetadataFields(incDump);
+    loadAndVerify(replDbName, dbName, incDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
+    verifySetupSteps = verifySetupOriginal;
+  }
+
+  @Test
   public void testReplConfiguredCleanupOfNotificationEvents() throws Exception {
 
     boolean verifySetupOriginal = verifySetupSteps;
@@ -2808,7 +2881,9 @@ public class TestReplicationScenarios {
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ext_ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
     run("CREATE VIEW " + dbName + ".virtual_view AS SELECT * FROM " + dbName + ".unptned", driver);
+    run("CREATE VIEW " + dbName + ".virtual_view_with_partition PARTITIONED ON (b) AS SELECT * FROM " + dbName + ".ext_ptned", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -2818,14 +2893,17 @@ public class TestReplicationScenarios {
     String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
     String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
     String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+    String ext_ptned_locn = new Path(TEST_PATH , testName + "_ext_ptned").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ext_ptned_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
     verifySetup("SELECT a from " + dbName + ".ptned", empty, driver);
     verifySetup("SELECT * from " + dbName + ".unptned", empty, driver);
     verifySetup("SELECT * from " + dbName + ".virtual_view", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".virtual_view_with_partition", empty, driver);
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
     verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
@@ -2835,6 +2913,9 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ext_ptned_locn + "' OVERWRITE INTO TABLE " + dbName + ".ext_ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ext_ptned WHERE b=2", ptn_data_2, driver);
 
     // TODO: This does not work because materialized views need the creation metadata
     // to be updated in case tables used were replicated to a different database.
@@ -2847,11 +2928,16 @@ public class TestReplicationScenarios {
     verifyRun("SELECT * from " + replDbName + ".virtual_view", empty, driverMirror);
     //verifyRun("SELECT a from " + replDbName + ".mat_view", ptn_data_1, driverMirror);
 
+    verifySetup("SELECT * from " + replDbName + ".virtual_view_with_partition", empty, driver);
+
     run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
     verifySetup("SELECT a from " + dbName + ".virtual_view2", ptn_data_2, driver);
 
     // Create a view with name already exist. Just to verify if failure flow clears the added create_table event.
     run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
+
+    // Create view with partition
+    run("CREATE VIEW " + dbName + ".virtual_view_with_partition_2 PARTITIONED ON (b) AS SELECT * FROM " + dbName + ".ext_ptned", driver);
 
     //run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view2 AS SELECT * FROM " + dbName + ".unptned", driver);
     //verifySetup("SELECT * from " + dbName + ".mat_view2", unptn_data, driver);
@@ -2867,6 +2953,7 @@ public class TestReplicationScenarios {
     // view is referring to old database, so no data
     verifyRun("SELECT * from " + replDbName + ".virtual_view2", empty, driverMirror);
     //verifyRun("SELECT * from " + replDbName + ".mat_view2", unptn_data, driverMirror);
+    verifySetup("SELECT * from " + dbName + ".virtual_view_with_partition_2", empty, driver);
 
     // Test "alter table" with rename
     run("ALTER VIEW " + dbName + ".virtual_view RENAME TO " + dbName + ".virtual_view_rename", driver);
@@ -4247,6 +4334,40 @@ public class TestReplicationScenarios {
         result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
   }
 
+  @Test
+  public void testAddPartition() throws Throwable{
+    // Get the logger at the root level.
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
+    // Create a String Appender to capture log output
+
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+    String testName = "testAddPartition";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("insert into table " + dbName + ".ptned partition(b='2') values "
+        + "('delhi')", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    appender.reset();
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+    // Check the add partition calls get triggered.
+    assertTrue(appender.getOutput().contains("Calling AddPartition for [Partition(values:[1]"));
+    // Check the alter partition call doesn't get triggered
+    assertFalse(appender.getOutput().contains("Calling AlterPartition for "));
+  }
+
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
@@ -4527,5 +4648,34 @@ public class TestReplicationScenarios {
       }
     }
     return null;
+  }
+
+  private void deleteNewMetadataFields(Tuple dump) throws SemanticException {
+    Path dumpHiveDir = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    DumpMetaData dmd = new DumpMetaData(dumpHiveDir, hconf);
+    Path dumpMetaPath = new Path(dumpHiveDir, DUMP_METADATA);
+
+    List<List<String>> listValues = new ArrayList<>();
+    DumpType dumpType = dmd.getDumpType();
+    Long eventFrom = dmd.getEventFrom();
+    Long eventTo = dmd.getEventTo();
+    String cmRoot = "testCmRoot";
+    String payload = dmd.getPayload();
+    Long dumpExecutionId = dmd.getDumpExecutionId();
+    ReplScope replScope = dmd.getReplScope();
+    listValues.add(
+            Arrays.asList(
+                    dumpType.toString(),
+                    eventFrom.toString(),
+                    eventTo.toString(),
+                    cmRoot,
+                    dumpExecutionId.toString(),
+                    payload)
+    );
+    if (replScope != null) {
+      listValues.add(dmd.prepareReplScopeValues());
+    }
+    org.apache.hadoop.hive.ql.parse.repl.dump
+            .Utils.writeOutput(listValues, dumpMetaPath, hconf, true);
   }
 }

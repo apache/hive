@@ -41,4 +41,10 @@ public final class Bug {
    * CALCITE-4166</a> is fixed.
    */
   public static final boolean CALCITE_4166_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4499">issue
+   * CALCITE-4499</a> is fixed.
+   */
+  public static final boolean CALCITE_4499_FIXED = false;
 }

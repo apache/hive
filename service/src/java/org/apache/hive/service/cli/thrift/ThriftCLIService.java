@@ -28,10 +28,12 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
 import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
@@ -147,15 +149,80 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   protected ThreadLocal<ServerContext> currentServerContext;
 
+  /**
+   * A context container for information related to client connections to the
+   * Thrift server.
+   */
   static class ThriftCLIServerContext implements ServerContext {
-    private SessionHandle sessionHandle = null;
 
-    public void setSessionHandle(SessionHandle sessionHandle) {
-      this.sessionHandle = sessionHandle;
+    private final long createTime;
+    private Optional<SessionHandle> hiveSessionHandle;
+    private int messagesProcessedCounter;
+    private int sessionCount;
+
+    public ThriftCLIServerContext() {
+      this.createTime = System.nanoTime();
+      this.hiveSessionHandle = Optional.empty();
+      this.messagesProcessedCounter = 0;
+      this.sessionCount = 0;
     }
 
-    public SessionHandle getSessionHandle() {
-      return sessionHandle;
+    /**
+     * Set the Hive session handle tied to this client connection.
+     *
+     * @param hiveSessionHandle The Hive session handle
+     * @throws NullPointerException if {@code hiveSessionHandle} is null
+     */
+    public void setSessionHandle(SessionHandle hiveSessionHandle) {
+      this.hiveSessionHandle = Optional.of(hiveSessionHandle);
+      this.sessionCount++;
+    }
+
+    /**
+     * Clear the Hive session handle once the session is closed and no longer
+     * valid.
+     */
+    public void clearSessionHandle() {
+      this.hiveSessionHandle = Optional.empty();
+    }
+
+    /**
+     * Get the currently assigned Hive session handle.
+     *
+     * @return the currently assigned Hive session handle (if there is one)
+     */
+    public Optional<SessionHandle> getSessionHandle() {
+      return this.hiveSessionHandle;
+    }
+
+    public int getMessagesProcessedCount() {
+      return this.messagesProcessedCounter;
+    }
+
+    public void incMessagesProcessedCount() {
+      this.messagesProcessedCounter++;
+    }
+
+    /**
+     * Get the duration of time that this {@code ServerContext} has been in
+     * existence.
+     *
+     * @return The duration of time this context has been existing.
+     */
+    public Duration getDuration() {
+      return Duration.ofNanos(System.nanoTime() - this.createTime);
+    }
+
+    /**
+     * Return the number of Hive sessions this context has handled. It is
+     * technically possible that a single connection context could handle an
+     * unbounded number of sequential Hive sessions, though it is currently not
+     * implemented.
+     *
+     * @return The number of sessions this thrift context has handled
+     */
+    public int getSessionCount() {
+      return this.sessionCount;
     }
   }
 
@@ -334,8 +401,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       resp.setConfiguration(map);
       resp.setStatus(OK_STATUS);
-      ThriftCLIServerContext context =
-        (ThriftCLIServerContext)currentServerContext.get();
+      ThriftCLIServerContext context = (ThriftCLIServerContext) currentServerContext.get();
       if (context != null) {
         context.setSessionHandle(sessionHandle);
       }
@@ -474,7 +540,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     String ipAddress = getIpAddress();
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());
-    SessionHandle sessionHandle;
+    final SessionHandle sessionHandle;
     if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
         (userName != null)) {
       String delegationTokenStr = getDelegationToken(userName);
@@ -530,10 +596,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
       cliService.closeSession(sessionHandle);
       resp.setStatus(OK_STATUS);
-      ThriftCLIServerContext context =
-        (ThriftCLIServerContext)currentServerContext.get();
+      ThriftCLIServerContext context = (ThriftCLIServerContext) currentServerContext.get();
       if (context != null) {
-        context.setSessionHandle(null);
+        context.clearSessionHandle();
       }
     } catch (Exception e) {
       LOG.warn("Error closing session: ", e);
@@ -574,13 +639,13 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       SessionManager sessionManager = cliService.getSessionManager();
       if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle)) {
-        StringBuilder urlBuilder = new StringBuilder("The url to track the operation: ")
+        StringBuilder urlBuilder = new StringBuilder("The url to track the statement: ")
             .append(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_USE_SSL) ? "https" : "http")
             .append("://")
             .append(sessionManager.getHiveServer2HostName())
             .append(":")
             .append(hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT))
-            .append("/query_page?operationId=")
+            .append("/query_page.html?operationId=")
             .append(operationHandle.getHandleIdentifier().toString());
         TStatus successWithInfo = new TStatus(TStatusCode.SUCCESS_WITH_INFO_STATUS);
         successWithInfo.addToInfoMessages(urlBuilder.toString());

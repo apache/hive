@@ -1,0 +1,517 @@
+PREHOOK: query: CREATE TABLE t1 (a int, b varchar(256), c decimal(10,2), d int) STORED AS orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1 (a int, b varchar(256), c decimal(10,2), d int) STORED AS orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: INSERT INTO t1 VALUES
+ (NULL, 'row with NULL GBY key', 100.77, 7),
+ (NULL, 'row with NULL GBY key', 100.77, 8),
+ (NULL, 'row with NULL GBY key will be inserted', 100.77, 7),
+ (1, 'row with NULL aggregated value', 100.77, NULL),
+ (1, 'row with NULL aggregated value will be inserted', 100.77, NULL),
+ (2, 'average row', 100, 10),
+ (2, 'average row', 100, 11),
+ (3, 'average row will be inserted', 100, 20),
+ (4, 'row with NULL aggregated value + non null value will be inserted', 100.77, NULL),
+ (5, 'average row + null value will be inserted', 100, 11),
+ (NULL, NULL, 200, 100)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1 VALUES
+ (NULL, 'row with NULL GBY key', 100.77, 7),
+ (NULL, 'row with NULL GBY key', 100.77, 8),
+ (NULL, 'row with NULL GBY key will be inserted', 100.77, 7),
+ (1, 'row with NULL aggregated value', 100.77, NULL),
+ (1, 'row with NULL aggregated value will be inserted', 100.77, NULL),
+ (2, 'average row', 100, 10),
+ (2, 'average row', 100, 11),
+ (3, 'average row will be inserted', 100, 20),
+ (4, 'row with NULL aggregated value + non null value will be inserted', 100.77, NULL),
+ (5, 'average row + null value will be inserted', 100, 11),
+ (NULL, NULL, 200, 100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+POSTHOOK: Lineage: t1.c SCRIPT []
+POSTHOOK: Lineage: t1.d SCRIPT []
+_col0	_col1	_col2	_col3
+PREHOOK: query: CREATE MATERIALIZED VIEW mat1 TBLPROPERTIES ('transactional'='true') AS
+  SELECT a, b, sum(d), min(d), max(d)
+  FROM t1
+  WHERE c > 10.0
+  GROUP BY a, b
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: CREATE MATERIALIZED VIEW mat1 TBLPROPERTIES ('transactional'='true') AS
+  SELECT a, b, sum(d), min(d), max(d)
+  FROM t1
+  WHERE c > 10.0
+  GROUP BY a, b
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+a	b	_c2	_c3	_c4
+PREHOOK: query: INSERT INTO t1 VALUES
+ (NULL, 'new row with NULL GBY key', 100.77, 35),
+ (NULL, 'new row with NULL GBY key', 100.77, 36),
+ (NULL, 'row with NULL GBY key will be inserted', 100.77, 7),
+ (1, 'new row with NULL aggregated value', 100.77, NULL),
+ (1, 'row with NULL aggregated value will be inserted', 100.77, NULL),
+ (2, 'new average row', 100, 50),
+ (2, 'new average row', 100, 51),
+ (3, 'average row will be inserted', 100, 20),
+ (4, 'row with NULL aggregated value + non null value will be inserted', 100.77, 100),
+ (5, 'average row + null value will be inserted', 100, NULL),
+ (NULL, NULL, 200, 100)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1 VALUES
+ (NULL, 'new row with NULL GBY key', 100.77, 35),
+ (NULL, 'new row with NULL GBY key', 100.77, 36),
+ (NULL, 'row with NULL GBY key will be inserted', 100.77, 7),
+ (1, 'new row with NULL aggregated value', 100.77, NULL),
+ (1, 'row with NULL aggregated value will be inserted', 100.77, NULL),
+ (2, 'new average row', 100, 50),
+ (2, 'new average row', 100, 51),
+ (3, 'average row will be inserted', 100, 20),
+ (4, 'row with NULL aggregated value + non null value will be inserted', 100.77, 100),
+ (5, 'average row + null value will be inserted', 100, NULL),
+ (NULL, NULL, 200, 100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+POSTHOOK: Lineage: t1.c SCRIPT []
+POSTHOOK: Lineage: t1.d SCRIPT []
+_col0	_col1	_col2	_col3
+PREHOOK: query: explain cbo
+ALTER MATERIALIZED VIEW mat1 REBUILD
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: explain cbo
+ALTER MATERIALIZED VIEW mat1 REBUILD
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@mat1
+POSTHOOK: Output: default@mat1
+Explain
+CBO PLAN:
+HiveProject($f0=[$6], $f1=[$7], $f2=[CASE(IS NULL($2), $8, IS NULL($8), $2, +($8, $2))], $f3=[CASE(IS NULL($3), $9, IS NULL($9), $3, CASE(<($9, $3), $9, $3))], $f4=[CASE(IS NULL($4), $10, IS NULL($10), $4, CASE(>($10, $4), $10, $4))])
+  HiveFilter(condition=[OR($5, IS NULL($5))])
+    HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $6), IS NOT DISTINCT FROM($1, $7))], joinType=[right], algorithm=[none], cost=[not available])
+      HiveProject(a=[$0], b=[$1], _c2=[$2], _c3=[$3], _c4=[$4], $f5=[true])
+        HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+      HiveProject(a=[$0], b=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+        HiveAggregate(group=[{0, 1}], agg#0=[sum($3)], agg#1=[min($3)], agg#2=[max($3)])
+          HiveFilter(condition=[AND(<(1, $6.writeid), >($2, 10))])
+            HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: explain
+ALTER MATERIALIZED VIEW mat1 REBUILD
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: explain
+ALTER MATERIALIZED VIEW mat1 REBUILD
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@mat1
+POSTHOOK: Output: default@mat1
+Explain
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-6 depends on stages: Stage-4, Stage-5
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mat1
+                  Statistics: Num rows: 9 Data size: 1175 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), b (type: varchar(256)), _c2 (type: bigint), _c3 (type: int), _c4 (type: int), true (type: boolean), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 9 Data size: 1895 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col1 (type: varchar(256))
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(256))
+                      Statistics: Num rows: 9 Data size: 1895 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col2 (type: bigint), _col3 (type: int), _col4 (type: int), _col5 (type: boolean), _col6 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: ((ROW__ID.writeid > 1L) and (c > 10)) (type: boolean)
+                  Statistics: Num rows: 22 Data size: 4986 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ROW__ID.writeid > 1L) and (c > 10)) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 1626 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: a (type: int), b (type: varchar(256)), d (type: int)
+                      outputColumnNames: a, b, d
+                      Statistics: Num rows: 7 Data size: 1626 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: sum(d), min(d), max(d)
+                        keys: a (type: int), b (type: varchar(256))
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 7 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: varchar(256))
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(256))
+                          Statistics: Num rows: 7 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col2 (type: bigint), _col3 (type: int), _col4 (type: int)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int), _col1 (type: varchar(256))
+                  1 _col0 (type: int), _col1 (type: varchar(256))
+                nullSafes: [true, true]
+                outputColumnNames: _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 10 Data size: 2052 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col5 is null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 674 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col7 (type: int), _col8 (type: varchar(256)), CASE WHEN (_col2 is null) THEN (_col9) WHEN (_col9 is null) THEN (_col2) ELSE ((_col9 + _col2)) END (type: bigint), CASE WHEN (_col3 is null) THEN (_col10) WHEN (_col10 is null) THEN (_col3) ELSE (CASE WHEN ((_col10 < _col3)) THEN (_col10) ELSE (_col3) END) END (type: int), CASE WHEN (_col4 is null) THEN (_col11) WHEN (_col11 is null) THEN (_col4) ELSE (CASE WHEN ((_col11 > _col4)) THEN (_col11) ELSE (_col4) END) END (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 3 Data size: 402 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 402 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.mat1
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: varchar(256)), _col2 (type: bigint), _col3 (type: int), _col4 (type: int)
+                      outputColumnNames: a, b, _c2, _c3, _c4
+                      Statistics: Num rows: 3 Data size: 402 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), max(length(b)), avg(COALESCE(length(b),0)), count(b), compute_bit_vector_hll(b), min(_c2), max(_c2), count(_c2), compute_bit_vector_hll(_c2), min(_c3), max(_c3), count(_c3), compute_bit_vector_hll(_c3), min(_c4), max(_c4), count(_c4), compute_bit_vector_hll(_c4)
+                        minReductionHashAggr: 0.6666666
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                        Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 888 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: int), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: int), _col19 (type: bigint), _col20 (type: binary)
+                Filter Operator
+                  predicate: _col5 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 230 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col6 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col7 (type: int), _col8 (type: varchar(256)), CASE WHEN (_col2 is null) THEN (_col9) WHEN (_col9 is null) THEN (_col2) ELSE ((_col9 + _col2)) END (type: bigint), CASE WHEN (_col3 is null) THEN (_col10) WHEN (_col10 is null) THEN (_col3) ELSE (CASE WHEN ((_col10 < _col3)) THEN (_col10) ELSE (_col3) END) END (type: int), CASE WHEN (_col4 is null) THEN (_col11) WHEN (_col11 is null) THEN (_col4) ELSE (CASE WHEN ((_col11 > _col4)) THEN (_col11) ELSE (_col4) END) END (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                      Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: bigint), _col4 (type: int), _col5 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                Statistics: Num rows: 1 Data size: 820 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), UDFToLong(_col13) (type: bigint), UDFToLong(_col14) (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'LONG' (type: string), UDFToLong(_col17) (type: bigint), UDFToLong(_col18) (type: bigint), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                  Statistics: Num rows: 1 Data size: 1322 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1322 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: varchar(256)), VALUE._col2 (type: bigint), VALUE._col3 (type: int), VALUE._col4 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.mat1
+                  Write Type: UPDATE
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
+                keys: KEY._col0 (type: int), KEY._col1 (type: varchar(256))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 7 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: varchar(256))
+                  null sort order: zz
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(256))
+                  Statistics: Num rows: 7 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: bigint), _col3 (type: int), _col4 (type: int)
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.mat1
+          Write Type: INSERT
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-6
+    Materialized View Update
+      name: default.mat1
+      update creation metadata: true
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.mat1
+          Write Type: UPDATE
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, b, _c2, _c3, _c4
+          Column Types: int, varchar(256), bigint, int, int
+          Table: default.mat1
+
+PREHOOK: query: ALTER MATERIALIZED VIEW mat1 REBUILD
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: ALTER MATERIALIZED VIEW mat1 REBUILD
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@mat1
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1._c2 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c2, type:bigint, comment:null), (t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c3 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c3, type:int, comment:null), (t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c4 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c4, type:int, comment:null), (t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.b SIMPLE [(t1)t1.FieldSchema(name:b, type:varchar(256), comment:null), ]
+$hdt$_0.row__id	t1.a	t1.b	_c2	_c3	_c4
+PREHOOK: query: EXPLAIN CBO
+SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
+  HiveProject(a=[$0], b=[$1], _c2=[$2], _c3=[$3], _c4=[$4])
+    HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+a	b	_c2	_c3	_c4
+1	new row with NULL aggregated value	NULL	NULL	NULL
+1	row with NULL aggregated value	NULL	NULL	NULL
+1	row with NULL aggregated value will be inserted	NULL	NULL	NULL
+2	average row	21	10	11
+2	new average row	101	50	51
+3	average row will be inserted	40	20	20
+4	row with NULL aggregated value + non null value will be inserted	100	100	100
+5	average row + null value will be inserted	11	11	11
+NULL	new row with NULL GBY key	71	35	36
+NULL	row with NULL GBY key	15	7	8
+NULL	row with NULL GBY key will be inserted	14	7	7
+NULL	NULL	200	100	100
+PREHOOK: query: SELECT * FROM mat1
+ORDER BY a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM mat1
+ORDER BY a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+#### A masked pattern was here ####
+mat1.a	mat1.b	mat1._c2	mat1._c3	mat1._c4
+1	new row with NULL aggregated value	NULL	NULL	NULL
+1	row with NULL aggregated value	NULL	NULL	NULL
+1	row with NULL aggregated value will be inserted	NULL	NULL	NULL
+2	average row	21	10	11
+2	new average row	101	50	51
+3	average row will be inserted	40	20	20
+4	row with NULL aggregated value + non null value will be inserted	100	100	100
+5	average row + null value will be inserted	11	11	11
+NULL	new row with NULL GBY key	71	35	36
+NULL	row with NULL GBY key	15	7	8
+NULL	row with NULL GBY key will be inserted	14	7	7
+NULL	NULL	200	100	100
+PREHOOK: query: DROP MATERIALIZED VIEW mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: DROP MATERIALIZED VIEW mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1
+PREHOOK: query: EXPLAIN CBO
+SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
+  HiveProject(a=[$0], b=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+    HiveAggregate(group=[{0, 1}], agg#0=[sum($3)], agg#1=[min($3)], agg#2=[max($3)])
+      HiveFilter(condition=[>($2, 10)])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(d), min(d), max(d)
+FROM t1
+WHERE c > 10.0
+GROUP BY a, b
+ORDER BY a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+a	b	_c2	_c3	_c4
+1	new row with NULL aggregated value	NULL	NULL	NULL
+1	row with NULL aggregated value	NULL	NULL	NULL
+1	row with NULL aggregated value will be inserted	NULL	NULL	NULL
+2	average row	21	10	11
+2	new average row	101	50	51
+3	average row will be inserted	40	20	20
+4	row with NULL aggregated value + non null value will be inserted	100	100	100
+5	average row + null value will be inserted	11	11	11
+NULL	new row with NULL GBY key	71	35	36
+NULL	row with NULL GBY key	15	7	8
+NULL	row with NULL GBY key will be inserted	14	7	7
+NULL	NULL	200	100	100

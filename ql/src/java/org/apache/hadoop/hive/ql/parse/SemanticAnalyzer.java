@@ -22,6 +22,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
@@ -143,6 +144,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -3582,6 +3584,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (!filterCond.getTypeInfo().accept(TypeInfoFactory.booleanTypeInfo)) {
+      // If the returning type of the filter condition is not boolean, try to implicitly
+      // convert the result of the condition to a boolean value.
+      if (filterCond.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        // For primitive types like string/double/timestamp, try to cast the result of
+        // the child expression to a boolean.
+        filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .createConversionCast(filterCond, TypeInfoFactory.booleanTypeInfo);
+      } else {
+        // For complex types like map/list/struct, create a isnotnull function on the child expression.
+        filterCond = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .getFuncExprNodeDesc("isnotnull", filterCond);
+      }
+    }
+
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);
@@ -6052,10 +6069,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       inputField++;
       String col = getColumnInternalName(reduceValues.size() - 1);
       outputColumnNames.add(col);
-      reduceSinkOutputRowResolver2.putExpression(t, new ColumnInfo(
+      ColumnInfo colInfo = new ColumnInfo(
           Utilities.ReduceField.VALUE.toString() + "." + col, typeInfo, "",
-          false));
-      colExprMap.put(col, exprDesc);
+          false);
+      reduceSinkOutputRowResolver2.putExpression(t, colInfo);
+      colExprMap.put(colInfo.getInternalName(), exprDesc);
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
@@ -9277,12 +9295,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genJoinReduceSinkChild(ExprNodeDesc[] joinKeys,
-                                          Operator<?> child, String[] srcs, int tag) throws SemanticException {
+                                          Operator<?> parent, String[] srcs, int tag) throws SemanticException {
 
     Operator dummy = Operator.createDummy();  // dummy for backtracking
-    dummy.setParentOperators(Arrays.asList(child));
+    dummy.setParentOperators(Arrays.asList(parent));
 
-    RowResolver inputRR = opParseCtx.get(child).getRowResolver();
+    RowResolver inputRR = opParseCtx.get(parent).getRowResolver();
     RowResolver outputRR = new RowResolver();
     List<String> outputColumns = new ArrayList<String>();
     List<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
@@ -9291,12 +9309,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Compute join keys and store in reduceKeys
     for (ExprNodeDesc joinKey : joinKeys) {
       reduceKeys.add(joinKey);
-      reduceKeysBack.add(ExprNodeDescUtils.backtrack(joinKey, dummy, child));
+      reduceKeysBack.add(ExprNodeDescUtils.backtrack(joinKey, dummy, parent));
     }
 
     // Walk over the input row resolver and copy in the output
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
 
     List<ColumnInfo> columns = inputRR.getColumnInfos();
     int[] index = new int[columns.size()];
@@ -9307,7 +9324,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ExprNodeDesc expr = new ExprNodeColumnDesc(colInfo);
 
       // backtrack can be null when input is script operator
-      ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, child);
+      ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, parent);
       int kindex;
       if (exprBack == null) {
         kindex = -1;
@@ -9318,7 +9335,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (kindex >= 0) {
         ColumnInfo newColInfo = new ColumnInfo(colInfo);
-        newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
+        String internalColName = Utilities.ReduceField.KEY + ".reducesinkkey" + kindex;
+        newColInfo.setInternalName(internalColName);
         newColInfo.setTabAlias(nm[0]);
         outputRR.put(nm[0], nm[1], newColInfo);
         if (nm2 != null) {
@@ -9333,7 +9351,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceValues.add(expr);
 
       ColumnInfo newColInfo = new ColumnInfo(colInfo);
-      newColInfo.setInternalName(Utilities.ReduceField.VALUE + "." + outputColName);
+      String internalColName = Utilities.ReduceField.VALUE + "." + outputColName;
+      newColInfo.setInternalName(internalColName);
       newColInfo.setTabAlias(nm[0]);
 
       outputRR.put(nm[0], nm[1], newColInfo);
@@ -9359,17 +9378,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         reduceValues, outputColumns, false, tag,
         reduceKeys.size(), numReds, AcidUtils.Operation.NOT_ACID, defaultNullOrder);
 
-    ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(outputRR.getColumnInfos()),
-            child), outputRR);
+    Map<String, String> translatorMap = new HashMap<String, String>();
+
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
-      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), reduceKeys.get(i));
+      String oldName = keyColNames.get(i);
+      String newName = Utilities.ReduceField.KEY + "." + oldName;
+      colExprMap.put(newName, reduceKeys.get(i));
+      translatorMap.put(oldName, newName);
     }
     List<String> valColNames = rsDesc.getOutputValueColumnNames();
     for (int i = 0 ; i < valColNames.size(); i++) {
-      colExprMap.put(Utilities.ReduceField.VALUE + "." + valColNames.get(i), reduceValues.get(i));
+      String oldName = valColNames.get(i);
+      String newName = Utilities.ReduceField.VALUE + "." + oldName;
+      colExprMap.put(newName, reduceValues.get(i));
+      translatorMap.put(oldName, newName);
     }
+
+    RowSchema defaultRs = new RowSchema(outputRR.getColumnInfos());
+
+    List<ColumnInfo> newColumnInfos = new ArrayList<ColumnInfo>();
+    for (ColumnInfo ci : outputRR.getColumnInfos()) {
+      if (translatorMap.containsKey(ci.getInternalName())) {
+        ci = new ColumnInfo(ci);
+        ci.setInternalName(translatorMap.get(ci.getInternalName()));
+      }
+      newColumnInfos.add(ci);
+    }
+
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
+        OperatorFactory.getAndMakeChild(rsDesc, new RowSchema(newColumnInfos), parent), outputRR);
 
     rsOp.setValueIndex(index);
     rsOp.setColumnExprMap(colExprMap);
@@ -11433,6 +11473,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
+      Map<String, String> tblProperties = tab.getParameters();
+      tsDesc.setFetchDeletedRows(tblProperties != null &&
+          Boolean.parseBoolean(tblProperties.get(Constants.ACID_FETCH_DELETED_ROWS)));
+
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {
         tsDesc.setRowLimit(sample.getRowCount());
@@ -11963,9 +12007,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ColumnInfo col : source.getColumnInfos()) {
       String[] tabCol = source.reverseLookup(col.getInternalName());
       lvForwardRR.put(tabCol[0], tabCol[1], col);
-      ExprNodeDesc colExpr = new ExprNodeColumnDesc(col);
+      ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(col);
       colList.add(colExpr);
-      colNames.add(colExpr.getName());
+      colNames.add(colExpr.getColumn());
       lvfColExprMap.put(col.getInternalName(), colExpr);
       selColExprMap.put(col.getInternalName(), colExpr.clone());
     }
@@ -13162,12 +13206,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param tblProp
    *          property map
+   * @param isCTAS
    * @return Modified table property map
    */
   private Map<String, String> validateAndAddDefaultProperties(
-      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable, boolean isTransactional, boolean isManaged) throws SemanticException {
+          Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
+          String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
+          boolean isTemporaryTable, boolean isTransactional, boolean isManaged, boolean isCTAS) throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
 
     String paraString = HiveConf.getVar(conf, ConfVars.NEWTABLEDEFAULTPARA);
@@ -13216,6 +13261,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (makeAcid || isTransactional || (isManaged && !makeInsertOnly)) {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
+    }
+    if (isCTAS) {
+      retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
     }
     return retValue;
   }
@@ -13543,7 +13591,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13571,7 +13619,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
       }
       tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-          isTemporary, isTransactional, isManaged);
+          isTemporary, isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, false, tblProps);
 
@@ -13595,7 +13643,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, false);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13681,7 +13729,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged);
+          isTransactional, isManaged, true);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,
@@ -14323,10 +14371,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if ( wsNode != null ) {
+      WindowFunctionInfo functionInfo = FunctionRegistry.getWindowFunctionInfo(wfSpec.name);
+      if (functionInfo == null) {
+        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(wfSpec.name));
+      }
+      wfSpec.setRespectNulls(processRespectIgnoreNulls(functionInfo, wsNode));
       wfSpec.setWindowSpec(processWindowSpec(wsNode));
     }
 
     return wfSpec;
+  }
+
+  private boolean processRespectIgnoreNulls(WindowFunctionInfo functionInfo, ASTNode node)
+      throws SemanticException {
+
+    for(int i=0; i < node.getChildCount(); i++) {
+      int type = node.getChild(i).getType();
+      switch(type) {
+      case HiveParser.TOK_RESPECT_NULLS:
+        if (!functionInfo.isSupportsNullTreatment()) {
+          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
+        }
+        return true;
+      case HiveParser.TOK_IGNORE_NULLS:
+        if (!functionInfo.isSupportsNullTreatment()) {
+          throw new SemanticException(ErrorMsg.NULL_TREATMENT_NOT_SUPPORTED, functionInfo.getDisplayName());
+        }
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private boolean containsLeadLagUDF(ASTNode expressionTree) {
@@ -14400,8 +14475,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ws.setPartitioning(partitioning);
     }
 
-    if ( hasWF)
-    {
+    if (hasWF) {
       ASTNode wfNode = (ASTNode) node.getChild(wfIdx);
       WindowFrameSpec wfSpec = processWindowFrame(wfNode);
       ws.setWindowFrame(wfSpec);

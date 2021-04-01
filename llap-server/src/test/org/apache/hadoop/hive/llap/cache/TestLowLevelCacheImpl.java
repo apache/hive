@@ -237,6 +237,22 @@ Example code to test specific scenarios:
   }
 
   @Test
+  public void testCacheHydrationMetadata() {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+    long fn1 = 1234;
+    long baseOffset = 100;
+    LlapDataBuffer[] buffs = IntStream.range(0, 3).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs = drs(10, 20, 30);
+
+    cache.putFileData(fn1, drs, buffs, baseOffset, Priority.NORMAL, null, null);
+    for (int i = 0; i < buffs.length; i++) {
+      assertEquals(drs[i].getOffset() + baseOffset, buffs[i].getStart());
+    }
+  }
+
+  @Test
   public void testDeclaredLengthUnsetForCollidedBuffer() throws Exception {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),

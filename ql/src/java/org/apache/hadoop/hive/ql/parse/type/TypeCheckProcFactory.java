@@ -838,6 +838,29 @@ public class TypeCheckProcFactory<T> {
           children.set(0, newColumn);
         }
       }
+
+      if (funcText.equalsIgnoreCase("and") || funcText.equalsIgnoreCase("or")
+          || funcText.equalsIgnoreCase("not") || funcText.equalsIgnoreCase("!")) {
+        // If the current function is a conjunction, the returning types of the children should be booleans.
+        // Iterate on the children, if the result of a child expression is not a boolean, try to implicitly
+        // convert the result of such a child to a boolean value.
+        for (int i = 0; i < children.size(); i++) {
+          T child = children.get(i);
+          TypeInfo typeInfo = exprFactory.getTypeInfo(child);
+          if (!TypeInfoFactory.booleanTypeInfo.accept(typeInfo)) {
+            if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+              // For primitive types like string/double/timestamp, try to cast the result of
+              // the child expression to a boolean.
+              children.set(i, createConversionCast(child, TypeInfoFactory.booleanTypeInfo));
+            } else {
+              // For complex types like map/list/struct, create a isnotnull function on the child expression.
+              child = exprFactory.createFuncCallExpr(TypeInfoFactory.booleanTypeInfo,
+                  exprFactory.getFunctionInfo("isnotnull"),"isnotnull", Arrays.asList(child));
+              children.set(i, child);
+            }
+          }
+        }
+      }
     }
 
     protected T getXpathOrFuncExprNodeDesc(ASTNode node,
@@ -957,14 +980,8 @@ public class TypeCheckProcFactory<T> {
 
           final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
               exprFactory.getTypeInfo(columnChild).getTypeName().toLowerCase());
-          T newChild = interpretNodeAsConstant(colTypeInfo, constChild,
-              exprFactory.isEqualFunction(fi));
-          if (newChild == null) {
-            // non-interpretable as target type...
-            if (!exprFactory.isNSCompareFunction(fi)) {
-              return exprFactory.createBooleanConstantExpr(null);
-            }
-          } else {
+          T newChild = interpretNodeAsConstant(colTypeInfo, constChild);
+          if (newChild != null) {
             children.set(constIdx, newChild);
           }
         }
@@ -984,17 +1001,12 @@ public class TypeCheckProcFactory<T> {
             T columnDesc = children.get(0);
             T valueDesc = interpretNode(columnDesc, children.get(i));
             if (valueDesc == null) {
-              if (hasNullValue) {
-                // Skip if null value has already been added
-                continue;
-              }
-              TypeInfo targetType = exprFactory.getTypeInfo(columnDesc);
+              // Keep original
+              TypeInfo targetType = exprFactory.getTypeInfo(children.get(i));
               if (!expressions.containsKey(targetType)) {
                 expressions.put(targetType, columnDesc);
               }
-              T nullConst = exprFactory.createConstantExpr(targetType, null);
-              expressions.put(targetType, nullConst);
-              hasNullValue = true;
+              expressions.put(targetType, children.get(i));
             } else {
               TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
               if (!expressions.containsKey(targetType)) {
@@ -1128,9 +1140,17 @@ public class TypeCheckProcFactory<T> {
     private T interpretNode(T columnDesc, T valueDesc)
         throws SemanticException {
       if (exprFactory.isColumnRefExpr(columnDesc)) {
-        final PrimitiveTypeInfo typeInfo = TypeInfoFactory.getPrimitiveTypeInfo(
-            exprFactory.getTypeInfo(columnDesc).getTypeName().toLowerCase());
-        return interpretNodeAsConstant(typeInfo, valueDesc);
+        final TypeInfo info = exprFactory.getTypeInfo(columnDesc);
+        switch (info.getCategory()) {
+        case MAP:
+        case LIST:
+        case UNION:
+        case STRUCT:
+          return valueDesc;
+        case PRIMITIVE:
+          PrimitiveTypeInfo primitiveInfo = TypeInfoFactory.getPrimitiveTypeInfo(info.getTypeName().toLowerCase());
+          return interpretNodeAsConstant(primitiveInfo, valueDesc);
+        }
       }
       boolean columnStruct = exprFactory.isSTRUCTFuncCallExpr(columnDesc);
       if (columnStruct) {

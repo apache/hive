@@ -75,4 +75,4 @@ POSTHOOK: query: select mask_last_n('TestString-123', 4, 'X', 'x', '0', ':'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-TestString:000	TestString:000	TestString-123      ::::                                                                                                                                                                                                                                       	1	0	5	43	15555	15555	15555	0001-01-01
+TestString:000	TestString:000	TestString-123      ::::                                                                                                                                                                                                                                       	1	0	5	43	15555	15555	15555	0000-01-01

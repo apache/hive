@@ -401,7 +401,7 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 0
-Warning: Shuffle Join MERGEJOIN[45][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from part where ((p_partkey <> ALL (select p_partkey from part_null_n0)) == false)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -413,8 +413,8 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*) from part where (p_partkey <> ALL (select p_partkey from part_null_n0 where p_partkey is null)) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -595,12 +595,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: int), _col7 (type: bigint), _col8 (type: bigint), _col3 (type: boolean)
                   outputColumnNames: _col1, _col5, _col6, _col8
-                  Statistics: Num rows: 26 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((_col5 = 0L) or (_col8 is null and (_col6 >= _col5) and _col1 is not null)) (type: boolean)
-                    Statistics: Num rows: 26 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 26 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.96153843

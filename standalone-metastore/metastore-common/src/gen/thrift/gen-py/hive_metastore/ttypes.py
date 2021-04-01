@@ -14391,17 +14391,21 @@ class CompactionRequest(object):
      - type
      - runas
      - properties
+     - initiatorId
+     - initiatorVersion
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
         self.type = type
         self.runas = runas
         self.properties = properties
+        self.initiatorId = initiatorId
+        self.initiatorVersion = initiatorVersion
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14448,6 +14452,16 @@ class CompactionRequest(object):
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.initiatorId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.initiatorVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14485,6 +14499,14 @@ class CompactionRequest(object):
                 oprot.writeString(kiter719.encode('utf-8') if sys.version_info[0] == 2 else kiter719)
                 oprot.writeString(viter720.encode('utf-8') if sys.version_info[0] == 2 else viter720)
             oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.initiatorId is not None:
+            oprot.writeFieldBegin('initiatorId', TType.STRING, 7)
+            oprot.writeString(self.initiatorId.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorId)
+            oprot.writeFieldEnd()
+        if self.initiatorVersion is not None:
+            oprot.writeFieldBegin('initiatorVersion', TType.STRING, 8)
+            oprot.writeString(self.initiatorVersion.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorVersion)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -14930,11 +14952,14 @@ class ShowCompactResponseElement(object):
      - id
      - errorMessage
      - enqueueTime
+     - workerVersion
+     - initiatorId
+     - initiatorVersion
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -14950,6 +14975,9 @@ class ShowCompactResponseElement(object):
         self.id = id
         self.errorMessage = errorMessage
         self.enqueueTime = enqueueTime
+        self.workerVersion = workerVersion
+        self.initiatorId = initiatorId
+        self.initiatorVersion = initiatorVersion
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15035,6 +15063,21 @@ class ShowCompactResponseElement(object):
                     self.enqueueTime = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.STRING:
+                    self.workerVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 17:
+                if ftype == TType.STRING:
+                    self.initiatorId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 18:
+                if ftype == TType.STRING:
+                    self.initiatorVersion = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15104,6 +15147,18 @@ class ShowCompactResponseElement(object):
         if self.enqueueTime is not None:
             oprot.writeFieldBegin('enqueueTime', TType.I64, 15)
             oprot.writeI64(self.enqueueTime)
+            oprot.writeFieldEnd()
+        if self.workerVersion is not None:
+            oprot.writeFieldBegin('workerVersion', TType.STRING, 16)
+            oprot.writeString(self.workerVersion.encode('utf-8') if sys.version_info[0] == 2 else self.workerVersion)
+            oprot.writeFieldEnd()
+        if self.initiatorId is not None:
+            oprot.writeFieldBegin('initiatorId', TType.STRING, 17)
+            oprot.writeString(self.initiatorId.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorId)
+            oprot.writeFieldEnd()
+        if self.initiatorVersion is not None:
+            oprot.writeFieldBegin('initiatorVersion', TType.STRING, 18)
+            oprot.writeString(self.initiatorVersion.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorVersion)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -18579,12 +18634,14 @@ class Materialization(object):
     """
     Attributes:
      - sourceTablesUpdateDeleteModified
+     - sourceTablesCompacted
 
     """
 
 
-    def __init__(self, sourceTablesUpdateDeleteModified=None,):
+    def __init__(self, sourceTablesUpdateDeleteModified=None, sourceTablesCompacted=None,):
         self.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified
+        self.sourceTablesCompacted = sourceTablesCompacted
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -18598,6 +18655,11 @@ class Materialization(object):
             if fid == 1:
                 if ftype == TType.BOOL:
                     self.sourceTablesUpdateDeleteModified = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.BOOL:
+                    self.sourceTablesCompacted = iprot.readBool()
                 else:
                     iprot.skip(ftype)
             else:
@@ -18614,12 +18676,18 @@ class Materialization(object):
             oprot.writeFieldBegin('sourceTablesUpdateDeleteModified', TType.BOOL, 1)
             oprot.writeBool(self.sourceTablesUpdateDeleteModified)
             oprot.writeFieldEnd()
+        if self.sourceTablesCompacted is not None:
+            oprot.writeFieldBegin('sourceTablesCompacted', TType.BOOL, 2)
+            oprot.writeBool(self.sourceTablesCompacted)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
         if self.sourceTablesUpdateDeleteModified is None:
             raise TProtocolException(message='Required field sourceTablesUpdateDeleteModified is unset!')
+        if self.sourceTablesCompacted is None:
+            raise TProtocolException(message='Required field sourceTablesCompacted is unset!')
         return
 
     def __repr__(self):
@@ -25968,6 +26036,470 @@ class StoredProcedure(object):
         return not (self == other)
 
 
+class AddPackageRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - packageName
+     - ownerName
+     - header
+     - body
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, packageName=None, ownerName=None, header=None, body=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.packageName = packageName
+        self.ownerName = ownerName
+        self.header = header
+        self.body = body
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.packageName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.ownerName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.header = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.body = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('AddPackageRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.packageName is not None:
+            oprot.writeFieldBegin('packageName', TType.STRING, 3)
+            oprot.writeString(self.packageName.encode('utf-8') if sys.version_info[0] == 2 else self.packageName)
+            oprot.writeFieldEnd()
+        if self.ownerName is not None:
+            oprot.writeFieldBegin('ownerName', TType.STRING, 4)
+            oprot.writeString(self.ownerName.encode('utf-8') if sys.version_info[0] == 2 else self.ownerName)
+            oprot.writeFieldEnd()
+        if self.header is not None:
+            oprot.writeFieldBegin('header', TType.STRING, 5)
+            oprot.writeString(self.header.encode('utf-8') if sys.version_info[0] == 2 else self.header)
+            oprot.writeFieldEnd()
+        if self.body is not None:
+            oprot.writeFieldBegin('body', TType.STRING, 6)
+            oprot.writeString(self.body.encode('utf-8') if sys.version_info[0] == 2 else self.body)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class GetPackageRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - packageName
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, packageName=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.packageName = packageName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.packageName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('GetPackageRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.packageName is not None:
+            oprot.writeFieldBegin('packageName', TType.STRING, 3)
+            oprot.writeString(self.packageName.encode('utf-8') if sys.version_info[0] == 2 else self.packageName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.packageName is None:
+            raise TProtocolException(message='Required field packageName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class DropPackageRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - packageName
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, packageName=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.packageName = packageName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.packageName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('DropPackageRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.packageName is not None:
+            oprot.writeFieldBegin('packageName', TType.STRING, 3)
+            oprot.writeString(self.packageName.encode('utf-8') if sys.version_info[0] == 2 else self.packageName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.packageName is None:
+            raise TProtocolException(message='Required field packageName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ListPackageRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None,):
+        self.catName = catName
+        self.dbName = dbName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ListPackageRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class Package(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - packageName
+     - ownerName
+     - header
+     - body
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, packageName=None, ownerName=None, header=None, body=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.packageName = packageName
+        self.ownerName = ownerName
+        self.header = header
+        self.body = body
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.packageName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.ownerName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.header = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.body = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('Package')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.packageName is not None:
+            oprot.writeFieldBegin('packageName', TType.STRING, 3)
+            oprot.writeString(self.packageName.encode('utf-8') if sys.version_info[0] == 2 else self.packageName)
+            oprot.writeFieldEnd()
+        if self.ownerName is not None:
+            oprot.writeFieldBegin('ownerName', TType.STRING, 4)
+            oprot.writeString(self.ownerName.encode('utf-8') if sys.version_info[0] == 2 else self.ownerName)
+            oprot.writeFieldEnd()
+        if self.header is not None:
+            oprot.writeFieldBegin('header', TType.STRING, 5)
+            oprot.writeString(self.header.encode('utf-8') if sys.version_info[0] == 2 else self.header)
+            oprot.writeFieldEnd()
+        if self.body is not None:
+            oprot.writeFieldBegin('body', TType.STRING, 6)
+            oprot.writeString(self.body.encode('utf-8') if sys.version_info[0] == 2 else self.body)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class MetaException(TException):
     """
     Attributes:
@@ -27995,6 +28527,8 @@ CompactionRequest.thrift_spec = (
     (4, TType.I32, 'type', None, None, ),  # 4
     (5, TType.STRING, 'runas', 'UTF8', None, ),  # 5
     (6, TType.MAP, 'properties', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 6
+    (7, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 7
+    (8, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 8
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -28048,6 +28582,9 @@ ShowCompactResponseElement.thrift_spec = (
     (13, TType.I64, 'id', None, None, ),  # 13
     (14, TType.STRING, 'errorMessage', 'UTF8', None, ),  # 14
     (15, TType.I64, 'enqueueTime', None, None, ),  # 15
+    (16, TType.STRING, 'workerVersion', 'UTF8', None, ),  # 16
+    (17, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 17
+    (18, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 18
 )
 all_structs.append(ShowCompactResponse)
 ShowCompactResponse.thrift_spec = (
@@ -28325,6 +28862,7 @@ all_structs.append(Materialization)
 Materialization.thrift_spec = (
     None,  # 0
     (1, TType.BOOL, 'sourceTablesUpdateDeleteModified', None, None, ),  # 1
+    (2, TType.BOOL, 'sourceTablesCompacted', None, None, ),  # 2
 )
 all_structs.append(WMResourcePlan)
 WMResourcePlan.thrift_spec = (
@@ -28936,6 +29474,46 @@ StoredProcedure.thrift_spec = (
     (3, TType.STRING, 'catName', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'ownerName', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'source', 'UTF8', None, ),  # 5
+)
+all_structs.append(AddPackageRequest)
+AddPackageRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'packageName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'ownerName', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'header', 'UTF8', None, ),  # 5
+    (6, TType.STRING, 'body', 'UTF8', None, ),  # 6
+)
+all_structs.append(GetPackageRequest)
+GetPackageRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'packageName', 'UTF8', None, ),  # 3
+)
+all_structs.append(DropPackageRequest)
+DropPackageRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'packageName', 'UTF8', None, ),  # 3
+)
+all_structs.append(ListPackageRequest)
+ListPackageRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+)
+all_structs.append(Package)
+Package.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'packageName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'ownerName', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'header', 'UTF8', None, ),  # 5
+    (6, TType.STRING, 'body', 'UTF8', None, ),  # 6
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (

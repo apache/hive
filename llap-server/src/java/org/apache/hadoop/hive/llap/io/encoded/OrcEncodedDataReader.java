@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
@@ -161,6 +162,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
   private final SchemaEvolution evolution;
+  private final PathCache pathCache;
   private final boolean useCodecPool, useObjectPools;
   private static final String STRIPE_STATS_STREAM = "stripe stats";
 
@@ -197,7 +199,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       MetadataCache metadataCache, Configuration daemonConf, Configuration jobConf,
       FileSplit split, Includes includes, SearchArgument sarg, OrcEncodedDataConsumer consumer,
       QueryFragmentCounters counters, SchemaEvolutionFactory sef, Pool<IoTrace> tracePool,
-      Map<Path, PartitionDesc> parts)
+      Map<Path, PartitionDesc> parts, PathCache pathCache)
           throws IOException {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
@@ -210,6 +212,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.trace = tracePool.take();
     this.tracePool = tracePool;
     this.parts = parts;
+    this.pathCache = pathCache;
     try {
       this.ugi = UserGroupInformation.getCurrentUser();
     } catch (IOException e) {
@@ -279,7 +282,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     });
   }
 
-  private static Supplier<FileSystem> getFsSupplier(final Path path,
+  static Supplier<FileSystem> getFsSupplier(final Path path,
       final Configuration conf) {
     return () -> {
       try {
@@ -372,6 +375,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // TODO: I/O threadpool could be here - one thread per stripe; for now, linear.
     boolean hasFileId = this.fileKey != null;
     OrcBatchKey stripeKey = hasFileId ? new OrcBatchKey(fileKey, -1, 0) : null;
+    pathCache.touch(fileKey, split.getPath().toUri().toString());
     for (int stripeIxMod = 0; stripeIxMod < stripeRgs.length; ++stripeIxMod) {
       if (processStop()) {
         recordReaderTime(startTime);
@@ -506,7 +510,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return determineFileId(fsSupplier, split.getPath(), daemonConf);
   }
 
-  private static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
+  static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
       throws IOException {
 
     boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);

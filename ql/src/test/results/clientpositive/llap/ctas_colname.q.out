@@ -250,7 +250,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 11075 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -271,7 +271,7 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 25 Data size: 11075 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -474,7 +474,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -495,10 +495,10 @@ STAGE PLANS:
                               window function: GenericUDAFLeadEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
-                    Statistics: Num rows: 20 Data size: 8920 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 3560 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), lead_window_0 (type: string)
                       outputColumnNames: _col0, _col1, _col2

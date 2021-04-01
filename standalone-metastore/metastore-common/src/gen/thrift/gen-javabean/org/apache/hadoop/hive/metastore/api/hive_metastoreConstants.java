@@ -71,4 +71,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String JDBC_CONFIG_PREFIX = "hive.sql.";
 
+  public static final java.lang.String TABLE_IS_CTAS = "created_with_ctas";
+
 }

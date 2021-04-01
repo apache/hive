@@ -102,6 +102,8 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -1816,10 +1818,11 @@ public class Hive {
               result = false;
             } else {
               // Obtain additional information if we should try incremental rewriting / rebuild
-              // We will not try partial rewriting if there were update/delete operations on source tables
+              // We will not try partial rewriting if there were update/delete/compaction operations on source tables
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                   materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
-              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified()) {
+              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
+                  invalidationInfo.isSetSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
                 // registry, since it is up-to-date
                 result = false;
@@ -1912,10 +1915,11 @@ public class Hive {
             ignore = true;
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
-            // We will not try partial rewriting if there were update/delete operations on source tables
+            // We will not try partial rewriting if there were update/delete/compaction operations on source tables
             Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                 creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
-            ignore = invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified();
+            ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted() ||
+                invalidationInfo.isSourceTablesUpdateDeleteModified();
           }
           if (ignore) {
             LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
@@ -2362,10 +2366,20 @@ public class Hive {
               + ", Direct insert = " + isDirectInsert + ")");
         }
         if (newFiles != null) {
-          newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
-          newFiles.addAll(newFileStatuses.stream()
-              .map(FileStatus::getPath)
-              .collect(Collectors.toList()));
+          if (!newFiles.isEmpty()) {
+            // We already know the file list from the direct insert manifestfile
+            FileSystem srcFs = loadPath.getFileSystem(conf);
+            newFileStatuses = new ArrayList<>();
+            for (Path filePath : newFiles) {
+              newFileStatuses.add(srcFs.getFileStatus(filePath));
+            }
+          } else {
+            newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
+            newFiles.addAll(newFileStatuses
+                .stream()
+                .map(FileStatus::getPath)
+                .collect(Collectors.toList()));
+          }
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
@@ -2849,8 +2863,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
           SessionState.setCurrentSessionState(parentSession);
           LOG.info("New loading path = " + entry.getKey() + " withPartSpec " + fullPartSpec);
 
-          List<Path> newFiles = Lists.newArrayList();
           Partition oldPartition = partitionDetails.partition;
+          List<Path> newFiles = null;
+          if (partitionDetails.newFiles != null) {
+            // If we already know the files from the direct insert manifest, use them
+            newFiles = partitionDetails.newFiles;
+          } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPartition == null) {
+            // Otherwise only collect them, if we are going to fire write notifications
+            newFiles = Collections.synchronizedList(new ArrayList<>());
+          }
           // load the partition
           Partition partition = loadPartitionInternal(entry.getKey(), tbl,
                   fullPartSpec, oldPartition, tbd.getLoadFileType(), true, false, numLB > 0, false, isAcid,
@@ -3192,15 +3213,34 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(String dbName, String tableName,
-      List<String> partitionNames) throws HiveException {
+      List<String> partitionNames, Table t) throws HiveException {
     try {
-      return getMSC().getPartitionsByNames(dbName, tableName, partitionNames);
+      GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+      req.setDb_name(dbName);
+      req.setTbl_name(tableName);
+      req.setNames(partitionNames);
+      return getPartitionsByNames(req, t);
     } catch (Exception e) {
       LOG.error("Failed getPartitionsByNames", e);
       throw new HiveException(e);
     }
   }
 
+    public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(GetPartitionsByNamesRequest req,
+      Table table)
+        throws HiveException {
+    try {
+      if (table !=null && AcidUtils.isTransactionalTable(table)) {
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(req.getDb_name(), req.getTbl_name());
+        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(table.getTTable().getId());
+      }
+      return (getMSC().getPartitionsByNames(req)).getPartitions();
+    } catch (Exception e) {
+      LOG.error("Failed getPartitionsByNames", e);
+      throw new HiveException(e);
+    }
+  }
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate) throws HiveException {
     return getPartition(tbl, partSpec, forceCreate, null, true);
@@ -3787,9 +3827,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     try {
       for (int i = 0; i < nBatches; ++i) {
-        List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats, Constants.HIVE_ENGINE);
+        GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+        req.setDb_name(tbl.getDbName());
+        req.setTbl_name(tbl.getTableName());
+        req.setNames(partNames.subList(i*batchSize, (i+1)*batchSize));
+        req.setGet_col_stats(false);
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getPartitionsByNames(req, tbl);
+
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3798,6 +3842,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (nParts > nBatches * batchSize) {
+       String validWriteIdList = null;
+       Long tableId = null;
+       if (AcidUtils.isTransactionalTable(tbl)) {
+        ValidWriteIdList vWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+        validWriteIdList = vWriteIdList != null ? vWriteIdList.toString() : null;
+        tableId = tbl.getTTable().getId();
+      }
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
             partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);

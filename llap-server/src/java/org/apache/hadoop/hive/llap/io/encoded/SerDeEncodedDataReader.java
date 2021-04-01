@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -173,6 +174,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final boolean[] writerIncludes;
   private FileReaderYieldReturn currentFileRead = null;
   private final boolean isReadCacheOnly;
+  private final ExecutorService encodeExecutor;
 
   /**
    * Data from cache currently being processed. We store it here so that we could decref
@@ -182,12 +184,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private FileData cachedData;
   private List<VectorDeserializeOrcWriter> asyncWriters = new ArrayList<>();
 
-  public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache,
-      BufferUsageManager bufferManager, Configuration daemonConf, FileSplit split,
-      List<Integer> columnIds, OrcEncodedDataConsumer consumer, JobConf jobConf, Reporter reporter,
-      InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
-      QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
-          throws IOException {
+  public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache, BufferUsageManager bufferManager,
+      Configuration daemonConf, FileSplit split, List<Integer> columnIds, OrcEncodedDataConsumer consumer,
+      JobConf jobConf, Reporter reporter, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts,
+      ExecutorService encodeExecutor) throws IOException {
     assert cache != null;
     this.cache = cache;
     this.bufferManager = bufferManager;
@@ -242,6 +243,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         new Reader.Options(jobConf).include(writerIncludes));
     consumer.setSchemaEvolution(evolution);
     isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
+    this.encodeExecutor = encodeExecutor;
   }
 
   private static int determineAllocSize(BufferUsageManager bufferManager, Configuration conf) {
@@ -1460,7 +1462,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // fileread writes to the writer, which writes to orcWriter, which writes to cacheWriter
       EncodingWriter writer = VectorDeserializeOrcWriter.create(
           sourceInputFormat, sourceSerDe, parts, daemonConf, jobConf, split.getPath(), originalOi,
-          splitColumnIds, splitIncludes, allocSize);
+          splitColumnIds, splitIncludes, allocSize, encodeExecutor);
       // TODO: move this into ctor? EW would need to create CacheWriter then
       List<Integer> cwColIds = writer.isOnlyWritingIncludedColumns() ? splitColumnIds : columnIds;
       writer.init(new CacheWriter(bufferManager, cwColIds, splitIncludes,

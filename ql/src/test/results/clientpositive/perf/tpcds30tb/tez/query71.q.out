@@ -22,7 +22,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_sold_time_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:time_sk, smallTablePos:1, keyRatio:4.3992401279400425E-9
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:ws_sold_time_sk, smallTablePos:1, keyRatio:4.3992401279400425E-9
                   Statistics: Num rows: 21594638446 Data size: 2936546600912 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_sold_time_sk is not null (type: boolean)
@@ -405,12 +405,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: char(50)), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(17,2)), _col0 (type: int)
                   outputColumnNames: _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 11813956 Data size: 2693581888 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 11813956 Data size: 2646326104 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col4 (type: decimal(17,2)), _col5 (type: int)
                     null sort order: az
                     sort order: -+
-                    Statistics: Num rows: 11813956 Data size: 2693581888 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 11813956 Data size: 2646326104 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: char(50)), _col2 (type: int), _col3 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap

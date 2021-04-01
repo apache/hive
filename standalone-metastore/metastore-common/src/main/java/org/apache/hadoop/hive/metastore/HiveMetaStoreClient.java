@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
@@ -2176,6 +2177,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
+  }
+
+  @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
       throws NoSuchObjectException, MetaException, TException {
 
@@ -2197,21 +2204,52 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
+          throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
+      validWriteIdList, tableId);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                              List<String> part_names) throws TException {
+      List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine) throws TException {
+      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
+      validWriteIdList, tableId);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine)
+            throws TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats, engine,
+      null, null);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
+            throws TException {
     checkDbAndTableFilters(catName, db_name, tbl_name);
     GetPartitionsByNamesRequest gpbnr =
             new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
-    gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    if( validWriteIdList != null) {
+      gpbnr.setValidWriteIdList(validWriteIdList);
+    }else {
+      gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    }
+    if( tableId != null) {
+      gpbnr.setId(tableId);
+    }
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
@@ -2221,6 +2259,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       gpbnr.setProcessorIdentifier(processorIdentifier);
     List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+  }
+
+  @Override
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
+          throws NoSuchObjectException, MetaException, TException {
+    checkDbAndTableFilters(getDefaultCatalog(conf), req.getDb_name(), req.getTbl_name());
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    List<Partition> parts = getPartitionsByNamesInternal(req).getPartitions();
+    GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
+    res.setPartitions(deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(
+            isClientFilterEnabled, filterHook, parts)));
+    return res;
   }
 
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
@@ -3837,6 +3890,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     cr.setType(type);
     cr.setProperties(tblproperties);
+    cr.setInitiatorId(JavaUtils.hostname() + "-manual");
+    cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
   }
 
@@ -4584,9 +4639,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_partitions_with_specs(request);
   }
 
+  @Deprecated
   @Override
   public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
-    return client.find_next_compact(workerId);
+    return client.find_next_compact(workerId, null);
+  }
+
+  @Override
+  public OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException {
+    return client.find_next_compact(workerId, workerVersion);
   }
 
   @Override
@@ -4674,5 +4735,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
     return client.get_all_stored_procedures(request);
+  }
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException {
+    client.add_package(request);
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) throws TException {
+    return client.find_package(request);
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) throws TException {
+    return client.get_all_packages(request);
+  }
+
+  @Override
+  public void dropPackage(DropPackageRequest request) throws TException {
+    client.drop_package(request);
   }
 }
