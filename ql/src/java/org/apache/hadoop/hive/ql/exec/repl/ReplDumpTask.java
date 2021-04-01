@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
@@ -586,7 +585,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         : "?";
     Database db = hiveDb.getDatabase(dbName);
     if (db != null && !HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
-      checkReplSourceFor(hiveDb, dbName, db);
+      setReplSourceFor(hiveDb, dbName, db);
     }
 
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
@@ -910,7 +909,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
 
         if (db != null && !HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
-          checkReplSourceFor(hiveDb, dbName, db);
+          setReplSourceFor(hiveDb, dbName, db);
         }
 
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
@@ -1015,7 +1014,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void checkReplSourceFor(Hive hiveDb, String dbName, Database db) throws HiveException {
+  private void setReplSourceFor(Hive hiveDb, String dbName, Database db) throws HiveException {
     if (!ReplChangeManager.isSourceOfReplication(db)) {
       // Check if the schedule name is available else set the query value
       // as default.
