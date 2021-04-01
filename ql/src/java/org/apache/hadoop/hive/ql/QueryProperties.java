@@ -37,7 +37,8 @@ public class QueryProperties {
   boolean analyzeCommand;
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
-  boolean incrementalAnalyze;
+  boolean incrementalStats;
+  boolean dropStatsCommand;
   boolean ctas;
   boolean isInsert;
 
@@ -107,12 +108,20 @@ public class QueryProperties {
     this.analyzeRewrite = analyzeRewrite;
   }
 
-  public boolean isIncrementalAnalyze() {
-    return incrementalAnalyze;
+  public boolean isIncrementalStats() {
+    return incrementalStats;
   }
 
-  public void setIncrementalAnalyze(boolean incrementalAnalyze) {
-    this.incrementalAnalyze = incrementalAnalyze;
+  public void setIncrementalStats(boolean incrementalStats) {
+    this.incrementalStats = incrementalStats;
+  }
+
+  public boolean isDropStatsCommand() {
+    return dropStatsCommand;
+  }
+
+  public void setDropStatsCommand(boolean dropStatsCommand) {
+    this.dropStatsCommand = dropStatsCommand;
   }
 
   public boolean isCTAS() {
@@ -320,6 +329,8 @@ public class QueryProperties {
     analyzeCommand = false;
     noScanAnalyzeCommand = false;
     analyzeRewrite = false;
+    incrementalStats = false;
+    dropStatsCommand = false;
     ctas = false;
     isInsert = false;
     isETL = false;

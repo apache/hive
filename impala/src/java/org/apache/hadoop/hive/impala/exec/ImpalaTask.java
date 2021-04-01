@@ -74,7 +74,8 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
                 opHandle = sessionImpl.executePlan(work.getQuery(), work.getCompiledPlan());
                 break;
             case COMPILED_QUERY:
-                Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE);
+                Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE ||
+                    queryPlan.getOperation() == HiveOperation.DROP_STATS);
                 if (work.getInvalidateTableMetadataQuery() != null) {
                   TOperationHandle opHandleInvalidate = session.execute(work.getInvalidateTableMetadataQuery(), false);
                   closeOperation(opHandleInvalidate);

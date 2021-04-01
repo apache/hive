@@ -82,7 +82,8 @@ public class QBParseInfo {
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
-  private boolean isIncrementalAnalyze;
+  private boolean isIncrementalStats;
+  private boolean isDropStatsCommand;
 
   private final Map<String, TableSpec> tableSpecs; // used for statistics
 
@@ -663,12 +664,20 @@ public class QBParseInfo {
     this.analyzeRewrite = analyzeRewrite;
   }
 
-  public boolean isIncrementalAnalyze() {
-    return isIncrementalAnalyze;
+  public boolean isDropStatsCommand() {
+    return isDropStatsCommand;
   }
 
-  public void setIncrementalAnalyze(boolean isIncrementalAnalyze) {
-    this.isIncrementalAnalyze = isIncrementalAnalyze;
+  public void setDropStatsCommand(boolean isDropStatsCommand) {
+    this.isDropStatsCommand = isDropStatsCommand;
+  }
+
+  public boolean isIncrementalStats() {
+    return isIncrementalStats;
+  }
+
+  public void setIncrementalStats(boolean isIncrementalStats) {
+    this.isIncrementalStats = isIncrementalStats;
   }
 
   /**

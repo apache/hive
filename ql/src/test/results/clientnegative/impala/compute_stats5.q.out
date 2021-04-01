@@ -1,0 +1,12 @@
+PREHOOK: query: create table test_table_n1 (my_id int)
+partitioned by (my_date date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: create table test_table_n1 (my_id int)
+partitioned by (my_date date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n1
+HMS CALL get_table_req FOR test_table_n1
+FAILED: SemanticException Partitions cannot be statically specified in DROP STATISTICS in Impala without INCREMENTAL

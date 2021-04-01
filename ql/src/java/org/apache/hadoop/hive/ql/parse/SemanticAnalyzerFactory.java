@@ -90,8 +90,11 @@ public final class SemanticAnalyzerFactory {
         queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
         return new SemanticAnalyzer(queryState);
       }
+
       case HiveParser.TOK_ANALYZE:
         return new ColumnStatsSemanticAnalyzer(queryState);
+      case HiveParser.TOK_DROP_STATS:
+        return new DropStatsSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_UPDATE_TABLE:
       case HiveParser.TOK_DELETE_FROM:

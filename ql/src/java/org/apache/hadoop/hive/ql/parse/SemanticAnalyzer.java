@@ -1870,19 +1870,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_ANALYZE:
         // Case of analyze command
-
         String table_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
-
-
         qb.setTabAlias(table_name, table_name);
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
         qb.getParseInfo().setNoScanAnalyzeCommand(this.noscan);
-        qb.getParseInfo().setIncrementalAnalyze(AnalyzeCommandUtils.isIncrementalStats(ast));
+        qb.getParseInfo().setIncrementalStats(AnalyzeCommandUtils.isIncrementalStats(ast));
         // Allow analyze the whole table and dynamic partitions
         HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
         HiveConf.setVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+        break;
 
+      case HiveParser.TOK_DROP_STATS:
+        // Case of drop stats command
+        String tblName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
+        qb.setTabAlias(tblName, tblName);
+        qb.addAlias(tblName);
+        qb.getParseInfo().setDropStatsCommand(true);
+        qb.getParseInfo().setIncrementalStats(AnalyzeCommandUtils.isIncrementalStats(ast));
         break;
 
       case HiveParser.TOK_UNIONALL:
@@ -2308,6 +2313,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
+        tab.setTableSpec(ts);
+        qb.getParseInfo().addTableSpec(alias, ts);
+      }
+
+      if (qb.getParseInfo().isDropStatsCommand()) {
+        TableSpec ts = new TableSpec(db, conf, (ASTNode) ast.getChild(0), false, false);
         tab.setTableSpec(ts);
         qb.getParseInfo().addTableSpec(alias, ts);
       }
@@ -11937,7 +11948,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
       }
       if (isImpalaPlan(conf) && qbp.getTableSpec().specType == SpecType.STATIC_PARTITION
-          && !qbp.isIncrementalAnalyze()) {
+          && !qbp.isIncrementalStats()) {
         throw new SemanticException(
             "Partitions cannot be statically specified in ANALYZE TABLE in Impala without INCREMENTAL");
       }
@@ -15528,7 +15539,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setAnalyzeCommand(qb.getParseInfo().isAnalyzeCommand());
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
-      queryProperties.setIncrementalAnalyze(qb.getParseInfo().isIncrementalAnalyze());
+      queryProperties.setDropStatsCommand(qb.getParseInfo().isDropStatsCommand());
+      queryProperties.setIncrementalStats(qb.getParseInfo().isIncrementalStats());
       queryProperties.setCTAS(qb.getTableDesc() != null);
       queryProperties.setInsert(qb.getParseInfo().hasInsertTables());
       queryProperties.setETL(qb.isCTAS() || qb.getParseInfo().hasInsertTables());

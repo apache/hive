@@ -84,6 +84,7 @@ public enum HiveOperation {
   ALTERTABLE_CLUSTER_SORT("ALTERTABLE_CLUSTER_SORT", HiveParser.TOK_ALTERTABLE_CLUSTER_SORT,
       new Privilege[]{Privilege.ALTER_METADATA}, null),
   ANALYZE_TABLE("ANALYZE_TABLE", HiveParser.TOK_ANALYZE, null, null),
+  DROP_STATS ("DROP_STATS", HiveParser.TOK_DROP_STATS, null, null),
   CACHE_METADATA("CACHE_METADATA", HiveParser.TOK_CACHE_METADATA, new Privilege[]{Privilege.SELECT}, null),
   ALTERTABLE_BUCKETNUM("ALTERTABLE_BUCKETNUM", HiveParser.TOK_ALTERTABLE_BUCKETS,
       new Privilege[]{Privilege.ALTER_METADATA}, null),

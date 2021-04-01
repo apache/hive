@@ -228,6 +228,58 @@ STAGE PLANS:
 HMS CALL get_table_req FOR impala_tpch_lineitem
 HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
+drop statistics `impala_tpch_lineitem`
+PREHOOK: type: DROP_STATS
+PREHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: query: explain
+drop statistics `impala_tpch_lineitem`
+POSTHOOK: type: DROP_STATS
+POSTHOOK: Input: default@impala_tpch_lineitem
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: DROP STATS `default`.`impala_tpch_lineitem`
+      Invalidate Table Metadata: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+PREHOOK: query: explain
+drop statistics `impala_tpcds_store_sales`
+PREHOOK: type: DROP_STATS
+PREHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: query: explain
+drop statistics `impala_tpcds_store_sales`
+POSTHOOK: type: DROP_STATS
+POSTHOOK: Input: default@impala_tpcds_store_sales
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: DROP STATS `default`.`impala_tpcds_store_sales`
+      Invalidate Table Metadata: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+PREHOOK: query: explain
 analyze table `impala_tpch_lineitem`
 compute incremental statistics
 PREHOOK: type: ANALYZE_TABLE
@@ -307,6 +359,32 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Query: COMPUTE INCREMENTAL STATS `default`.`impala_tpcds_store_sales` PARTITION (`ss_sold_date_sk`=1)
+      Invalidate Table Metadata: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+PREHOOK: query: explain
+drop incremental statistics `impala_tpcds_store_sales` partition(`ss_sold_date_sk`='1')
+PREHOOK: type: DROP_STATS
+PREHOOK: Input: default@impala_tpcds_store_sales
+POSTHOOK: query: explain
+drop incremental statistics `impala_tpcds_store_sales` partition(`ss_sold_date_sk`='1')
+POSTHOOK: type: DROP_STATS
+POSTHOOK: Input: default@impala_tpcds_store_sales
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Query: DROP INCREMENTAL STATS `default`.`impala_tpcds_store_sales` PARTITION (`ss_sold_date_sk`=1)
       Invalidate Table Metadata: true
 
   Stage: Stage-0
