@@ -201,22 +201,17 @@ final class CommandAuthorizerV2 {
           tableProperties.putAll(table.getSd().getSerdeInfo().getParameters());
           tableProperties.putAll(table.getParameters());
           try {
-            Method methodIsImplemented = table.getStorageHandler().getClass().getMethod("getURIForAuth", Map.class);
-            if(methodIsImplemented != null && table.getStorageHandler() instanceof DefaultStorageHandler) {
-              DefaultStorageHandler defaultHandler = (DefaultStorageHandler) ReflectionUtils.newInstance(
-                      conf.getClassByName(table.getStorageHandler().getClass().getName()), SessionState.get().getConf());
-              storageuri = defaultHandler.getURIForAuth(tableProperties).toString();
-            }else if(methodIsImplemented != null && table.getStorageHandler() instanceof HiveStorageAuthorizationHandler){
+            if(table.getStorageHandler() instanceof HiveStorageAuthorizationHandler){
               HiveStorageAuthorizationHandler authorizationHandler = (HiveStorageAuthorizationHandler) ReflectionUtils.newInstance(
                       conf.getClassByName(table.getStorageHandler().getClass().getName()), SessionState.get().getConf());
               storageuri = authorizationHandler.getURIForAuth(tableProperties).toString();
+            }else{
+              //Custom storage handler that has not implemented the HiveStorageAuthorizationHandler
+              storageuri = table.getStorageHandler().getClass().getName()+"://"+
+                      HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
             }
-          }catch(NullPointerException nullExp){
-            throw nullExp;
-          }catch(Exception ex){
-            //Custom storage handler that has not implemented the getURIForAuth()
-            storageuri = table.getStorageHandler().getClass().getName()+"://"+
-                    getTablePropsForCustomStorageHandler(tableProperties);
+          }catch(NullPointerException|Exception ex){
+            throw ex;
           }
           hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
                   actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
@@ -252,14 +247,4 @@ final class CommandAuthorizerV2 {
     hivePrivObjs.add(hivePrivObject);
   }
 
-  private static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties){
-    StringBuilder properties = new StringBuilder();
-    for(Map.Entry<String,String> serdeMap : tableProperties.entrySet()){
-      if(!serdeMap.getKey().equalsIgnoreCase("serialization.format")) {
-        properties.append(serdeMap.getValue());
-        properties.append("/");
-      }
-    }
-    return properties.toString();
-  }
 }
