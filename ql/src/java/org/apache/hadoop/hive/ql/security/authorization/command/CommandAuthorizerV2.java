@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.command;
 
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
@@ -210,8 +212,8 @@ final class CommandAuthorizerV2 {
               storageuri = table.getStorageHandler().getClass().getName()+"://"+
                       HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
             }
-          }catch(NullPointerException|Exception ex){
-            throw ex;
+          }catch(Exception ex){
+            ex.printStackTrace();
           }
           hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
                   actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
