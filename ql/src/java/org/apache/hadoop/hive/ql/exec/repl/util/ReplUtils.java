@@ -464,9 +464,9 @@ public class ReplUtils {
       if (policyName.isEmpty()) {
         userChosenName = "Repl#" + dbName;
       } else {
-        String policyId = conf.get(SCHEDULED_QUERY_EXECUTIONID, "");
+        String executionId = conf.get(SCHEDULED_QUERY_EXECUTIONID, "");
 
-        userChosenName = "Repl#" + policyName + "#" + policyId + "#" + dbName;
+        userChosenName = "Repl#" + policyName + "#" + executionId + "#" + dbName;
       }
       LOG.info("Using {} as job name for map-reduce jobs.", userChosenName);
     } else {
