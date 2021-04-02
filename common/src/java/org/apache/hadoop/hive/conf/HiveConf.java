@@ -4820,7 +4820,7 @@ public class HiveConf extends Configuration {
         "is unneeded. This is only necessary for ORC files written before HIVE-9660."),
     LLAP_CACHE_HYDRATION_STRATEGY_CLASS("hive.llap.cache.hydration.strategy.class", "", "Strategy class for managing the "
         + "llap cache hydration. It's executed when the daemon starts and stops, and gives a chance to save and/or "
-        + "load the contens of the llap cache. If left empty the feature is disabled.\n" +
+        + "load the contents of the llap cache. If left empty the feature is disabled.\n" +
         "The class should implement org.apache.hadoop.hive.llap.LlapCacheHydration interface."),
     LLAP_CACHE_HYDRATION_SAVE_DIR("hive.llap.cache.hydration.save.dir", "/tmp/hive", "Directory to save the llap cache content\n"
         + "info on shutdown, if BasicLlapCacheHydration is used as the hive.llap.cache.hydration.strategy.class."),
