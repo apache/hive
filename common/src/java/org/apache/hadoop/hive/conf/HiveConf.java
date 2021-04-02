@@ -2945,7 +2945,7 @@ public class HiveConf extends Configuration {
         "queries that read non-orc MM tables with original files will fail. The default in\n" +
         "Hive 3.0 is false."),
     HIVE_LOCK_FILE_MOVE_MODE("hive.lock.file.move.protect", "all", new StringSet("none", "dp", "all"),
-        "During file move operations acqueires a SEMI_SHARED lock at the table level."
+        "During file move operations acquires a SEMI_SHARED lock at the table level."
             + "none:never; dp: only in case of dynamic partitioning operations; all: all table operations"),
 
     // Zookeeper related configs
