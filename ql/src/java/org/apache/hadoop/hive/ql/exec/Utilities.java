@@ -4673,7 +4673,7 @@ public final class Utilities {
   static List<Path> selectManifestFiles(FileStatus[] manifestFiles) {
     List<Path> manifests = new ArrayList<>();
     if (manifestFiles != null) {
-      Map<String, Integer> fileNameToAttempId = new HashMap<>();
+      Map<String, Integer> fileNameToAttemptId = new HashMap<>();
       Map<String, Path> fileNameToPath = new HashMap<>();
 
       for (FileStatus manifestFile : manifestFiles) {
@@ -4689,13 +4689,13 @@ public final class Utilities {
           if (matcher.matches()) {
             String taskId = matcher.group(1);
             int attemptId = Integer.parseInt(matcher.group(2));
-            Integer maxAttemptId = fileNameToAttempId.get(taskId);
+            Integer maxAttemptId = fileNameToAttemptId.get(taskId);
             if (maxAttemptId == null) {
-              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToAttemptId.put(taskId, attemptId);
               fileNameToPath.put(taskId, path);
               Utilities.FILE_OP_LOGGER.info("Found manifest file {} with attemptId {}.", path, attemptId);
             } else if (attemptId > maxAttemptId) {
-              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToAttemptId.put(taskId, attemptId);
               fileNameToPath.put(taskId, path);
               Utilities.FILE_OP_LOGGER.info(
                   "Found manifest file {} which has higher attemptId than {}. Ignore the manifest files with attemptId below {}.",
