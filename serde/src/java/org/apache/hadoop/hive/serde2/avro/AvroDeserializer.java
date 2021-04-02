@@ -427,7 +427,7 @@ class AvroDeserializer {
                                  ListTypeInfo columnType) throws AvroSerdeException {
     // Need to check the original schema to see if this is actually a Fixed.
     if(recordSchema.getType().equals(Schema.Type.FIXED)) {
-    // We're faking out Hive to work through a type system impedence mismatch.
+    // We're faking out Hive to work through a type system impedance mismatch.
     // Pull out the backing array and convert to a list.
       GenericData.Fixed fixed = (GenericData.Fixed) datum;
       List<Byte> asList = new ArrayList<Byte>(fixed.bytes().length);
