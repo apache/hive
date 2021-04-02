@@ -75,18 +75,6 @@ public class DataConnectorProviderFactory {
     return provider;
   }
 
-  IDataConnectorProvider getDataConnectorProvider(String connectorName) {
-    if (connectorName == null || connectorName.isEmpty()) {
-      return null;
-    }
-
-    if (cache.containsKey(connectorName.toLowerCase() != null)) {
-      return cache.get(connectorName.toLowerCase());
-    }
-    return null;
-    // return getDataConnectorProvider();
-  }
-
   public void shutdown() {
     for (IDataConnectorProvider provider: cache.values()) {
       try {

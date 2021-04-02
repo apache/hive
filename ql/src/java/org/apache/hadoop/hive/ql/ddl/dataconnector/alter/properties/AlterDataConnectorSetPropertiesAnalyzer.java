@@ -51,7 +51,7 @@ public class AlterDataConnectorSetPropertiesAnalyzer extends AbstractAlterDataCo
       }
     }
 
-    AlterDataConnectorSetPropertiesDesc desc = new AlterDataConnectorSetPropertiesDesc(connectorName, dbProps, null);
+    AlterDataConnectorSetPropertiesDesc desc = new AlterDataConnectorSetPropertiesDesc(connectorName, dbProps);
     addAlterDataConnectorDesc(desc);
   }
 }

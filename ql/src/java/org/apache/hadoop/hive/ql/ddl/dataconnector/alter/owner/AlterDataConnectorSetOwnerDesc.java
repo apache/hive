@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.dataconnector.alter.owner;
 
 import org.apache.hadoop.hive.ql.ddl.dataconnector.alter.AbstractAlterDataConnectorDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -33,8 +32,8 @@ public class AlterDataConnectorSetOwnerDesc extends AbstractAlterDataConnectorDe
 
   private final PrincipalDesc ownerPrincipal;
 
-  public AlterDataConnectorSetOwnerDesc(String connectorName, PrincipalDesc ownerPrincipal, ReplicationSpec replicationSpec) {
-    super(connectorName, replicationSpec);
+  public AlterDataConnectorSetOwnerDesc(String connectorName, PrincipalDesc ownerPrincipal) {
+    super(connectorName);
     this.ownerPrincipal = ownerPrincipal;
   }
 

@@ -43,17 +43,13 @@ public abstract class AbstractAlterDataConnectorOperation<T extends AbstractAlte
     }
 
     Map<String, String> params = connector.getParameters();
-    if ((desc.getReplicationSpec() != null) &&
-        !desc.getReplicationSpec().allowEventReplacementInto(params)) {
-      LOG.debug("DDLTask: Alter Connector {} is skipped as connector is newer than update", dcName);
-      return 0; // no replacement, the existing connector state is newer than our update.
-    }
+    // this call is to set the values from the alter descriptor onto the connector object
+    doAlteration(connector);
 
-    doAlteration(connector, params);
-
+    // This is the HMS metadata operation to modify the object
     context.getDb().alterDataConnector(connector.getName(), connector);
     return 0;
   }
 
-  protected abstract void doAlteration(DataConnector connector, Map<String, String> params) throws HiveException;
+  protected abstract void doAlteration(DataConnector connector) throws HiveException;
 }

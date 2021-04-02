@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.dataconnector.alter.properties;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.dataconnector.alter.AbstractAlterDataConnectorDesc;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,9 +33,8 @@ public class AlterDataConnectorSetPropertiesDesc extends AbstractAlterDataConnec
 
   private final Map<String, String> dcProperties;
 
-  public AlterDataConnectorSetPropertiesDesc(String connectorName, Map<String, String> dcProperties,
-      ReplicationSpec replicationSpec) {
-    super(connectorName, replicationSpec);
+  public AlterDataConnectorSetPropertiesDesc(String connectorName, Map<String, String> dcProperties) {
+    super(connectorName);
     this.dcProperties = dcProperties;
   }
 

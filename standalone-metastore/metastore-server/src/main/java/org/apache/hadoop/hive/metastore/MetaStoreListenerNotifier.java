@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
@@ -138,6 +139,13 @@ public class MetaStoreListenerNotifier {
             public void notify(MetaStoreEventListener listener,
                                ListenerEvent event) throws MetaException {
               listener.onAlterDatabase((AlterDatabaseEvent)event);
+            }
+          })
+          .put(EventType.ALTER_DATACONNECTOR, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener,
+                ListenerEvent event) throws MetaException {
+              listener.onAlterDataConnector((AlterDataConnectorEvent)event);
             }
           })
           .put(EventType.ALTER_TABLE, new EventNotifier() {

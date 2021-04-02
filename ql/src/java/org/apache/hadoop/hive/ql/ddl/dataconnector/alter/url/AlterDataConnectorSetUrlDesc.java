@@ -32,7 +32,7 @@ public class AlterDataConnectorSetUrlDesc extends AbstractAlterDataConnectorDesc
   private final String url;
 
   public AlterDataConnectorSetUrlDesc(String connectorName, String location) {
-    super(connectorName, null);
+    super(connectorName);
     this.url = location;
   }
 

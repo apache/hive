@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.dataconnector.drop;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,16 +33,10 @@ public class DropDataConnectorDesc implements DDLDesc, Serializable {
 
   private final String connectorName;
   private final boolean ifExists;
-  private final ReplicationSpec replicationSpec;
 
-  public DropDataConnectorDesc(String connectorName, boolean ifExists, ReplicationSpec replicationSpec) {
-    this(connectorName, ifExists, false, replicationSpec);
-  }
-
-  public DropDataConnectorDesc(String connectorName, boolean ifExists, boolean cascade, ReplicationSpec replicationSpec) {
+  public DropDataConnectorDesc(String connectorName, boolean ifExists) {
     this.connectorName = connectorName;
     this.ifExists = ifExists;
-    this.replicationSpec = replicationSpec;
   }
 
   @Explain(displayName = "connector", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -54,9 +47,5 @@ public class DropDataConnectorDesc implements DDLDesc, Serializable {
   @Explain(displayName = "if exists")
   public boolean getIfExists() {
     return ifExists;
-  }
-
-  public ReplicationSpec getReplicationSpec() {
-    return replicationSpec;
   }
 }

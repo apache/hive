@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.dataconnector.alter;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -32,23 +31,13 @@ public abstract class AbstractAlterDataConnectorDesc implements DDLDesc, Seriali
   private static final long serialVersionUID = 1L;
 
   private final String connectorName;
-  private final ReplicationSpec replicationSpec;
 
-  public AbstractAlterDataConnectorDesc(String connectorName, ReplicationSpec replicationSpec) {
+  public AbstractAlterDataConnectorDesc(String connectorName) {
     this.connectorName = connectorName;
-    this.replicationSpec = replicationSpec;
   }
 
   @Explain(displayName="name", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getConnectorName() {
     return connectorName;
-  }
-
-  /**
-   * @return what kind of replication scope this alter is running under.
-   * This can result in a "ALTER IF NEWER THAN" kind of semantic
-   */
-  public ReplicationSpec getReplicationSpec() {
-    return this.replicationSpec;
   }
 }

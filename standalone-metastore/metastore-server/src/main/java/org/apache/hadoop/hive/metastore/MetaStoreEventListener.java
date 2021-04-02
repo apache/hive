@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -159,6 +160,13 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onDropDataConnector (DropDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  /**
+   * @param dcEvent alter data connector event
+   * @throws MetaException
+   */
+  public void onAlterDataConnector(AlterDataConnectorEvent dcEvent) throws MetaException {
   }
 
   /**

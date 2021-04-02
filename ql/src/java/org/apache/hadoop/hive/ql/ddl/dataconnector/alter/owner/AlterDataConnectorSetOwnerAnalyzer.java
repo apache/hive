@@ -48,7 +48,7 @@ public class AlterDataConnectorSetOwnerAnalyzer extends AbstractAlterDataConnect
       throw new SemanticException("Owner type can't be null in alter connector set owner command");
     }
 
-    AlterDataConnectorSetOwnerDesc desc = new AlterDataConnectorSetOwnerDesc(connectorName, principalDesc, null);
+    AlterDataConnectorSetOwnerDesc desc = new AlterDataConnectorSetOwnerDesc(connectorName, principalDesc);
     addAlterDataConnectorDesc(desc);
   }
 }

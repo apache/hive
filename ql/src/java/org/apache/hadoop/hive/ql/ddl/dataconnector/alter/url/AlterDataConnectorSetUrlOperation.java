@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.dataconnector.alter.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
@@ -39,7 +38,7 @@ public class AlterDataConnectorSetUrlOperation extends
   }
 
   @Override
-  protected void doAlteration(DataConnector connector, Map<String, String> params) throws HiveException {
+  protected void doAlteration(DataConnector connector) throws HiveException {
     try {
       String newUrl = desc.getURL();
 

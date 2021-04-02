@@ -34,8 +34,9 @@ public class AlterDataConnectorSetPropertiesOperation
   }
 
   @Override
-  protected void doAlteration(DataConnector connector, Map<String, String> params) {
+  protected void doAlteration(DataConnector connector) {
     Map<String, String> newParams = desc.getConnectorProperties();
+    Map<String, String> params = connector.getParameters();
 
     // if both old and new params are not null, merge them
     if (params != null && newParams != null) {

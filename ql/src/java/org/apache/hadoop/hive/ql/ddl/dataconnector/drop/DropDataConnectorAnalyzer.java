@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
@@ -53,7 +52,7 @@ public class DropDataConnectorAnalyzer extends BaseSemanticAnalyzer {
     inputs.add(new ReadEntity(connector));
     outputs.add(new WriteEntity(connector, WriteEntity.WriteType.DDL_EXCLUSIVE));
 
-    DropDataConnectorDesc desc = new DropDataConnectorDesc(connectorName, ifExists, new ReplicationSpec());
+    DropDataConnectorDesc desc = new DropDataConnectorDesc(connectorName, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

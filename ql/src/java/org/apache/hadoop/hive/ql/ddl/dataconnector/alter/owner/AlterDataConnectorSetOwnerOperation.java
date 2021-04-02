@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.dataconnector.alter.owner;
 
-import java.util.Map;
-
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.dataconnector.alter.AbstractAlterDataConnectorOperation;
@@ -34,7 +32,7 @@ public class AlterDataConnectorSetOwnerOperation extends
   }
 
   @Override
-  protected void doAlteration(DataConnector connector, Map<String, String> params) {
+  protected void doAlteration(DataConnector connector) {
     connector.setOwnerName(desc.getOwnerPrincipal().getName());
     connector.setOwnerType(desc.getOwnerPrincipal().getType());
   }
