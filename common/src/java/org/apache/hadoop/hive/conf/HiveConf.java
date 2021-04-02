@@ -3673,7 +3673,7 @@ public class HiveConf extends Configuration {
         "To hold a lock file in scratchdir to prevent to be removed by cleardanglingscratchdir"),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false,
         "Where to insert into multilevel directories like\n" +
-        "\"insert directory '/HIVEFT25686/chinna/' from table\""),
+        "\"insert directory '/HIVEFT25686/china/' from table\""),
     HIVE_CTAS_EXTERNAL_TABLES("hive.ctas.external.tables", true,
             "whether CTAS for external tables is allowed"),
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true,
