@@ -1,4 +1,9 @@
 --! qt:dataset:srcpart
+set hive.describe.partitionedtable.ignore.stats=true;
+describe formatted `srcpart`;
+describe extended `srcpart`;
+set hive.describe.partitionedtable.ignore.stats=false;
+
 describe srcpart;
 describe srcpart key;
 describe srcpart PARTITION(ds='2008-04-08', hr='12');
@@ -22,7 +27,6 @@ describe formatted srcpart PARTITION(ds='2008-04-08', hr='12');
 describe formatted `srcpart`;
 describe formatted `srcpart` `key`;
 describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12');
-
 
 describe formatted `srcpart` `ds`;
 describe formatted `srcpart` `hr`;
