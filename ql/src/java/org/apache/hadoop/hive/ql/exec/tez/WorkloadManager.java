@@ -650,7 +650,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       int failedEndpointVersion = entry.getValue();
       LOG.info("Update failed for {}", sessionWithUpdateError);
       handleUpdateErrorOnMasterThread(
-        sessionWithUpdateError, failedEndpointVersion, e.toReuse, syncWork, poolsToRedistribute);
+          sessionWithUpdateError, failedEndpointVersion, e.toReuse, syncWork, poolsToRedistribute);
     }
     e.updateErrors.clear();
 
