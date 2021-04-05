@@ -175,7 +175,16 @@ public final class HiveMaterializedViewsRegistry {
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
         if (initialized.get()) {
-          for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
+          for (Table mvTableFromAll : db.getAllMaterializedViewObjectsForRewriting()) {
+            // CDPD-24608: We refetch the table object because the initial Table retrieved does not
+            // contain the accessType attribute. The getAllMaterializedViewObjectsForRewriting() call
+            // needs to be changed to send over the processorCapabilities object.
+            Table mvTable = db.getTable(mvTableFromAll.getDbName(), mvTableFromAll.getTableName());
+            // Check if the object got deleted somehow between the first HMS call and the second.
+            if (mvTable == null) {
+              continue;
+            }
+
             RelOptMaterialization existingMV = getRewritingMaterializedView(mvTable.getDbName(), mvTable.getTableName());
             if (existingMV != null) {
               // We replace if the existing MV is not newer
@@ -192,7 +201,15 @@ public final class HiveMaterializedViewsRegistry {
           }
           LOG.info("Materialized views registry has been refreshed");
         } else {
-          for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
+          for (Table mvTableFromAll : db.getAllMaterializedViewObjectsForRewriting()) {
+            // CDPD-24608: We refetch the table object because the initial Table retrieved does not
+            // contain the accessType attribute. The getAllMaterializedViewObjectsForRewriting() call
+            // needs to be changed to send over the processorCapabilities object.
+            Table mvTable = db.getTable(mvTableFromAll.getDbName(), mvTableFromAll.getTableName());
+            // Check if the object got deleted somehow between the first HMS call and the second.
+            if (mvTable == null) {
+              continue;
+            }
             refreshMaterializedView(db.getConf(), db, null, mvTable);
           }
           initialized.set(true);
