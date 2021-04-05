@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
@@ -48,6 +49,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TestCompactionMetrics  extends CompactorTest {
 
@@ -334,6 +336,15 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.WORKING_RESPONSE).intValue());
     Assert.assertEquals(0,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.CLEANING_RESPONSE).intValue());
+
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).intValue());
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKERS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS).intValue());
   }
 
   @Test
@@ -457,6 +468,12 @@ public class TestCompactionMetrics  extends CompactorTest {
     element.setId(id);
     element.setPartitionname(partition);
     element.setEnqueueTime(enqueueTime);
+
+    String runtimeId = ServerUtils.hostname() + "-" + ThreadLocalRandom.current().nextInt();
+    element.setInitiatorId(runtimeId);
+    element.setWorkerid(runtimeId);
+    element.setInitiatorVersion("4.0.0");
+    element.setWorkerVersion("4.0.0");
     return element;
   }
 
