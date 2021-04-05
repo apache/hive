@@ -482,11 +482,11 @@ POSTHOOK: query: drop table srcpart_serdeprops
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_serdeprops
 POSTHOOK: Output: default@srcpart_serdeprops
-PREHOOK: query: CREATE TABLE IF NOT EXISTS desc_parttable_stats (somenumber int) PARTITIONED BY (`yr` int)
+PREHOOK: query: CREATE TABLE IF NOT EXISTS desc_parttable_stats (somenumber int) PARTITIONED BY (yr int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@desc_parttable_stats
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS desc_parttable_stats (somenumber int) PARTITIONED BY (`yr` int)
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS desc_parttable_stats (somenumber int) PARTITIONED BY (yr int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@desc_parttable_stats
