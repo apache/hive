@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.impala.node;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.apache.hadoop.hive.impala.plan.ImpalaPlannerUtils;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.SlotDescriptor;
 import com.google.common.base.Preconditions;
@@ -111,7 +112,9 @@ public class ImpalaSortRel extends ImpalaPlanRel {
 
     sortInfo.materializeRequiredSlots(ctx.getRootAnalyzer(), new ExprSubstitutionMap());
 
-    SortNode sortNode = SingleNodePlanner.createSortNode(ctx, ctx.getRootAnalyzer(),
+    // Call a FENG specific implementation of createSortNode(). In the future, we could
+    // try to leverage Impala's SingleNodePlanner.createSortNode()
+    SortNode sortNode = ImpalaPlannerUtils.createSortNode(ctx, ctx.getRootAnalyzer(),
         sortInputNode, sortInfo, limit, offset, limit != -1,
         false /* don't disable outermost topN */);
 
