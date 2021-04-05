@@ -125,7 +125,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.FileFormatException;
-import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcUtils;
@@ -139,11 +138,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.CodedInputStream;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileType.ORIGINAL_BASE;
+
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_OBSOLETE_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.getNumObsoleteDeltas;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.getNumDeltas;
 
 /**
  * A MapReduce/Hive input format for ORC files.
@@ -1781,6 +1786,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         " reader schema " + (readerSchema == null ? "NULL" : readerSchema.toString()) +
         " ACID scan property " + isAcidTableScan);
     }
+    boolean metricsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED);
+    Map<String, Integer> obsoleteDeltas = new HashMap<>();
+    Map<String, Integer> deltas = new HashMap<>();
 
     // complete path futures and schedule split generation
     try {
@@ -1807,6 +1815,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           continue;
         }
 
+        if (metricsEnabled && directory instanceof AcidDirectory) {
+          String relPath = directory.getPath().getName().contains("=") ?
+              directory.getPath().getParent().getName() + Path.SEPARATOR + directory.getPath().getName() :
+              directory.getPath().getName();
+          obsoleteDeltas.put(relPath, getNumObsoleteDeltas((AcidDirectory) directory));
+          deltas.put(relPath, getNumDeltas((AcidDirectory) directory));
+        }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
         if (directory.getFiles().isEmpty()) {
@@ -1838,6 +1853,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
+      addAcidMetricsToConfObj(obsoleteDeltas, deltas, conf);
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {
@@ -1872,6 +1888,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
     }
     return splits;
+  }
+
+  private static void addAcidMetricsToConfObj(Map<String, Integer> obsoleteDeltas, Map<String, Integer> deltas, Configuration conf) {
+    if (!obsoleteDeltas.isEmpty()) {
+      conf.set(NUM_OBSOLETE_DELTAS, Joiner.on(",").withKeyValueSeparator("->").join(obsoleteDeltas));
+    }
+    if (!deltas.isEmpty()) {
+      conf.set(NUM_DELTAS, Joiner.on(",").withKeyValueSeparator("->").join(deltas));
+    }
   }
 
   @VisibleForTesting
@@ -1946,6 +1971,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));
+    if (conf.get(NUM_OBSOLETE_DELTAS) != null) {
+      job.set(NUM_OBSOLETE_DELTAS, conf.get(NUM_OBSOLETE_DELTAS));
+    }
+    if (conf.get(NUM_DELTAS) != null) {
+      job.set(NUM_DELTAS, conf.get(NUM_DELTAS));
+    }
+
     long end = System.currentTimeMillis();
     LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));
     return result.toArray(new InputSplit[result.size()]);

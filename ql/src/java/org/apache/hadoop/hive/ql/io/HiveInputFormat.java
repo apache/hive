@@ -91,6 +91,9 @@ import java.util.concurrent.Future;
 
 import static java.lang.Integer.min;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_OBSOLETE_DELTAS;
+
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
  * and determine the correct InputFormat for that path name from
@@ -826,6 +829,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           getInputFormatFromCache(currentInputFormatClass, job),
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
           currentTable, result);
+    }
+    if (newjob.get(NUM_OBSOLETE_DELTAS) != null) {
+      job.set(NUM_OBSOLETE_DELTAS, newjob.get(NUM_OBSOLETE_DELTAS));
+    }
+    if (newjob.get(NUM_DELTAS) != null) {
+      job.set(NUM_DELTAS, newjob.get(NUM_DELTAS));
     }
 
     Utilities.clearWorkMapForConf(job);
