@@ -11728,6 +11728,7 @@ class GetPartitionsByNamesRequest:
    - engine
    - validWriteIdList
    - getFileMetadata
+   - id
   """
 
   thrift_spec = (
@@ -11741,9 +11742,10 @@ class GetPartitionsByNamesRequest:
     (7, TType.STRING, 'engine', None, None, ), # 7
     (8, TType.STRING, 'validWriteIdList', None, None, ), # 8
     (9, TType.BOOL, 'getFileMetadata', None, None, ), # 9
+    (10, TType.I64, 'id', None, -1, ), # 10
   )
 
-  def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None, validWriteIdList=None, getFileMetadata=None,):
+  def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None, validWriteIdList=None, getFileMetadata=None, id=thrift_spec[10][4],):
     self.db_name = db_name
     self.tbl_name = tbl_name
     self.names = names
@@ -11753,6 +11755,7 @@ class GetPartitionsByNamesRequest:
     self.engine = engine
     self.validWriteIdList = validWriteIdList
     self.getFileMetadata = getFileMetadata
+    self.id = id
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -11818,6 +11821,11 @@ class GetPartitionsByNamesRequest:
           self.getFileMetadata = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.I64:
+          self.id = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -11870,6 +11878,10 @@ class GetPartitionsByNamesRequest:
       oprot.writeFieldBegin('getFileMetadata', TType.BOOL, 9)
       oprot.writeBool(self.getFileMetadata)
       oprot.writeFieldEnd()
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I64, 10)
+      oprot.writeI64(self.id)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -11892,6 +11904,7 @@ class GetPartitionsByNamesRequest:
     value = (value * 31) ^ hash(self.engine)
     value = (value * 31) ^ hash(self.validWriteIdList)
     value = (value * 31) ^ hash(self.getFileMetadata)
+    value = (value * 31) ^ hash(self.id)
     return value
 
   def __repr__(self):

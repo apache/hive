@@ -2608,6 +2608,7 @@ class GetPartitionsByNamesRequest
   ENGINE = 7
   VALIDWRITEIDLIST = 8
   GETFILEMETADATA = 9
+  ID = 10
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
@@ -2618,7 +2619,8 @@ class GetPartitionsByNamesRequest
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
     ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    GETFILEMETADATA => {:type => ::Thrift::Types::BOOL, :name => 'getFileMetadata', :optional => true}
+    GETFILEMETADATA => {:type => ::Thrift::Types::BOOL, :name => 'getFileMetadata', :optional => true},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true}
   }
 
   def struct_fields; FIELDS; end

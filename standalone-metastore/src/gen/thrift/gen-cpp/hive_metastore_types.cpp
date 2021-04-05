@@ -16907,6 +16907,11 @@ void GetPartitionsByNamesRequest::__set_getFileMetadata(const bool val) {
 __isset.getFileMetadata = true;
 }
 
+void GetPartitionsByNamesRequest::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
+}
+
 uint32_t GetPartitionsByNamesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -17026,6 +17031,14 @@ uint32_t GetPartitionsByNamesRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -17106,6 +17119,11 @@ uint32_t GetPartitionsByNamesRequest::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeBool(this->getFileMetadata);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 10);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -17122,6 +17140,7 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b) {
   swap(a.engine, b.engine);
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.getFileMetadata, b.getFileMetadata);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -17135,6 +17154,7 @@ GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNa
   engine = other684.engine;
   validWriteIdList = other684.validWriteIdList;
   getFileMetadata = other684.getFileMetadata;
+  id = other684.id;
   __isset = other684.__isset;
 }
 GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPartitionsByNamesRequest& other685) {
@@ -17147,6 +17167,7 @@ GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPar
   engine = other685.engine;
   validWriteIdList = other685.validWriteIdList;
   getFileMetadata = other685.getFileMetadata;
+  id = other685.id;
   __isset = other685.__isset;
   return *this;
 }
@@ -17162,6 +17183,7 @@ void GetPartitionsByNamesRequest::printTo(std::ostream& out) const {
   out << ", " << "engine="; (__isset.engine ? (out << to_string(engine)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "getFileMetadata="; (__isset.getFileMetadata ? (out << to_string(getFileMetadata)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 

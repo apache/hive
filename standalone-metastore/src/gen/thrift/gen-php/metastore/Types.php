@@ -16944,6 +16944,10 @@ class GetPartitionsByNamesRequest {
    * @var bool
    */
   public $getFileMetadata = null;
+  /**
+   * @var int
+   */
+  public $id = -1;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -16992,6 +16996,10 @@ class GetPartitionsByNamesRequest {
           'var' => 'getFileMetadata',
           'type' => TType::BOOL,
           ),
+        10 => array(
+          'var' => 'id',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -17021,6 +17029,9 @@ class GetPartitionsByNamesRequest {
       }
       if (isset($vals['getFileMetadata'])) {
         $this->getFileMetadata = $vals['getFileMetadata'];
+      }
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
       }
     }
   }
@@ -17127,6 +17138,13 @@ class GetPartitionsByNamesRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 10:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->id);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17207,6 +17225,11 @@ class GetPartitionsByNamesRequest {
     if ($this->getFileMetadata !== null) {
       $xfer += $output->writeFieldBegin('getFileMetadata', TType::BOOL, 9);
       $xfer += $output->writeBool($this->getFileMetadata);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->id !== null) {
+      $xfer += $output->writeFieldBegin('id', TType::I64, 10);
+      $xfer += $output->writeI64($this->id);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -3837,7 +3837,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   public List<Partition> getPartitionsByNames(Table tbl, List<String> partNames, boolean getColStats)
-      throws HiveException {
+          throws HiveException {
 
     if (!tbl.isPartitioned()) {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
@@ -3857,6 +3857,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
       request.setTbl_name(tbl.getTableName());
       request.setGet_col_stats(getColStats);
       request.setEngine(Constants.HIVE_ENGINE);
+      if (AcidUtils.isTransactionalTable(tbl)) {
+        ValidWriteIdList vWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+        request.setValidWriteIdList(vWriteIdList != null ? vWriteIdList.toString() : null);
+        request.setId(tbl.getTTable().getId());
+      }
       //TODO if the request is for external engine execution set the file-metadata flag to true
       // in the request
       for (int i = 0; i < nBatches; ++i) {

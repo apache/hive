@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField ENGINE_FIELD_DESC = new org.apache.thrift.protocol.TField("engine", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)8);
   private static final org.apache.thrift.protocol.TField GET_FILE_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("getFileMetadata", org.apache.thrift.protocol.TType.BOOL, (short)9);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -63,6 +64,7 @@ import org.slf4j.LoggerFactory;
   private String engine; // optional
   private String validWriteIdList; // optional
   private boolean getFileMetadata; // optional
+  private long id; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -74,7 +76,8 @@ import org.slf4j.LoggerFactory;
     PROCESSOR_IDENTIFIER((short)6, "processorIdentifier"),
     ENGINE((short)7, "engine"),
     VALID_WRITE_ID_LIST((short)8, "validWriteIdList"),
-    GET_FILE_METADATA((short)9, "getFileMetadata");
+    GET_FILE_METADATA((short)9, "getFileMetadata"),
+    ID((short)10, "id");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -107,6 +110,8 @@ import org.slf4j.LoggerFactory;
           return VALID_WRITE_ID_LIST;
         case 9: // GET_FILE_METADATA
           return GET_FILE_METADATA;
+        case 10: // ID
+          return ID;
         default:
           return null;
       }
@@ -149,8 +154,9 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __GET_COL_STATS_ISSET_ID = 0;
   private static final int __GETFILEMETADATA_ISSET_ID = 1;
+  private static final int __ID_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NAMES,_Fields.GET_COL_STATS,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.ENGINE,_Fields.VALID_WRITE_ID_LIST,_Fields.GET_FILE_METADATA};
+  private static final _Fields optionals[] = {_Fields.NAMES,_Fields.GET_COL_STATS,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.ENGINE,_Fields.VALID_WRITE_ID_LIST,_Fields.GET_FILE_METADATA,_Fields.ID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -174,11 +180,15 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.GET_FILE_METADATA, new org.apache.thrift.meta_data.FieldMetaData("getFileMetadata", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPartitionsByNamesRequest.class, metaDataMap);
   }
 
   public GetPartitionsByNamesRequest() {
+    this.id = -1L;
+
   }
 
   public GetPartitionsByNamesRequest(
@@ -220,6 +230,7 @@ import org.slf4j.LoggerFactory;
       this.validWriteIdList = other.validWriteIdList;
     }
     this.getFileMetadata = other.getFileMetadata;
+    this.id = other.id;
   }
 
   public GetPartitionsByNamesRequest deepCopy() {
@@ -239,6 +250,8 @@ import org.slf4j.LoggerFactory;
     this.validWriteIdList = null;
     setGetFileMetadataIsSet(false);
     this.getFileMetadata = false;
+    this.id = -1L;
+
   }
 
   public String getDb_name() {
@@ -476,6 +489,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __GETFILEMETADATA_ISSET_ID, value);
   }
 
+  public long getId() {
+    return this.id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+    setIdIsSet(true);
+  }
+
+  public void unsetId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
+  }
+
+  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  public boolean isSetId() {
+    return EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
+  }
+
+  public void setIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -550,6 +585,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case ID:
+      if (value == null) {
+        unsetId();
+      } else {
+        setId((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -582,6 +625,9 @@ import org.slf4j.LoggerFactory;
     case GET_FILE_METADATA:
       return isGetFileMetadata();
 
+    case ID:
+      return getId();
+
     }
     throw new IllegalStateException();
   }
@@ -611,6 +657,8 @@ import org.slf4j.LoggerFactory;
       return isSetValidWriteIdList();
     case GET_FILE_METADATA:
       return isSetGetFileMetadata();
+    case ID:
+      return isSetId();
     }
     throw new IllegalStateException();
   }
@@ -709,6 +757,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_id = true && this.isSetId();
+    boolean that_present_id = true && that.isSetId();
+    if (this_present_id || that_present_id) {
+      if (!(this_present_id && that_present_id))
+        return false;
+      if (this.id != that.id)
+        return false;
+    }
+
     return true;
   }
 
@@ -760,6 +817,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_getFileMetadata);
     if (present_getFileMetadata)
       list.add(getFileMetadata);
+
+    boolean present_id = true && (isSetId());
+    list.add(present_id);
+    if (present_id)
+      list.add(id);
 
     return list.hashCode();
   }
@@ -862,6 +924,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetId()).compareTo(other.isSetId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -957,6 +1029,12 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("getFileMetadata:");
       sb.append(this.getFileMetadata);
+      first = false;
+    }
+    if (isSetId()) {
+      if (!first) sb.append(", ");
+      sb.append("id:");
+      sb.append(this.id);
       first = false;
     }
     sb.append(")");
@@ -1104,6 +1182,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 10: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.id = iprot.readI64();
+              struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1186,6 +1272,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.getFileMetadata);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetId()) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        oprot.writeI64(struct.id);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1227,7 +1318,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetGetFileMetadata()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetId()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetNames()) {
         {
           oprot.writeI32(struct.names.size());
@@ -1261,6 +1355,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetGetFileMetadata()) {
         oprot.writeBool(struct.getFileMetadata);
       }
+      if (struct.isSetId()) {
+        oprot.writeI64(struct.id);
+      }
     }
 
     @Override
@@ -1270,7 +1367,7 @@ import org.slf4j.LoggerFactory;
       struct.setDb_nameIsSet(true);
       struct.tbl_name = iprot.readString();
       struct.setTbl_nameIsSet(true);
-      BitSet incoming = iprot.readBitSet(7);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list614 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -1316,6 +1413,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(6)) {
         struct.getFileMetadata = iprot.readBool();
         struct.setGetFileMetadataIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.id = iprot.readI64();
+        struct.setIdIsSet(true);
       }
     }
   }

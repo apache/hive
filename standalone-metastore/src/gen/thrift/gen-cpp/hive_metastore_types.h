@@ -7217,7 +7217,7 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse
 }
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false), getFileMetadata(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false), getFileMetadata(false), id(true) {}
   bool names :1;
   bool get_col_stats :1;
   bool processorCapabilities :1;
@@ -7225,6 +7225,7 @@ typedef struct _GetPartitionsByNamesRequest__isset {
   bool engine :1;
   bool validWriteIdList :1;
   bool getFileMetadata :1;
+  bool id :1;
 } _GetPartitionsByNamesRequest__isset;
 
 class GetPartitionsByNamesRequest {
@@ -7232,7 +7233,7 @@ class GetPartitionsByNamesRequest {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine(), validWriteIdList(), getFileMetadata(0) {
+  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine(), validWriteIdList(), getFileMetadata(0), id(-1LL) {
   }
 
   virtual ~GetPartitionsByNamesRequest() throw();
@@ -7245,6 +7246,7 @@ class GetPartitionsByNamesRequest {
   std::string engine;
   std::string validWriteIdList;
   bool getFileMetadata;
+  int64_t id;
 
   _GetPartitionsByNamesRequest__isset __isset;
 
@@ -7265,6 +7267,8 @@ class GetPartitionsByNamesRequest {
   void __set_validWriteIdList(const std::string& val);
 
   void __set_getFileMetadata(const bool val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const GetPartitionsByNamesRequest & rhs) const
   {
@@ -7299,6 +7303,10 @@ class GetPartitionsByNamesRequest {
     if (__isset.getFileMetadata != rhs.__isset.getFileMetadata)
       return false;
     else if (__isset.getFileMetadata && !(getFileMetadata == rhs.getFileMetadata))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }

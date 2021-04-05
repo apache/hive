@@ -895,7 +895,8 @@ struct GetPartitionsByNamesRequest {
   8: optional string validWriteIdList,
   // when this flag is set to true, HMS will return back the file-metadata
   // for the requested partition names along with the Partition objects
-  9: optional bool getFileMetadata
+  9: optional bool getFileMetadata,
+  10: optional i64 id=-1 // table id
 }
 
 struct GetPartitionsByNamesResult {
