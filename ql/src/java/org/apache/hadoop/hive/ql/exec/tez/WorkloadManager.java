@@ -247,10 +247,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     delayedMoveValidationIntervalMs =
         (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL, TimeUnit.SECONDS)
             * 1000;
-    delayedMoveThread = new Thread(() -> runDelayedMoveThread(), "Workload management delayed move");
-    delayedMoveThread.setDaemon(true);
+
     if ((delayedMoveTimeOutMs > 0) && (delayedMoveValidationIntervalMs > 0)) {
+      delayedMoveThread = new Thread(() -> runDelayedMoveThread(), "Workload management delayed move");
+      delayedMoveThread.setDaemon(true);
       delayedMoveThread.start();
+    } else {
+      delayedMoveThread = null;
     }
 
     updateResourcePlanAsync(plan).get(); // Wait for the initial resource plan to be applied.
@@ -310,6 +313,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (wmThread != null) {
       wmThread.interrupt();
     }
+
+    if (delayedMoveThread != null) {
+      delayedMoveThread.interrupt();
+    }
+
     if (amComm != null) {
       amComm.stop();
     }
