@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -148,7 +149,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     // Fetch partition statistics only for describe extended or formatted.
     if (desc.isExtended() || desc.isFormatted()) {
-      if (table.isPartitioned() && partition == null) {
+      boolean disablePartitionStats = HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
+      if (table.isPartitioned() && partition == null && !disablePartitionStats) {
         // No partition specified for partitioned table, lets fetch all.
         Map<String, String> tblProps = table.getParameters() == null ?
                 new HashMap<String, String>() : table.getParameters();
