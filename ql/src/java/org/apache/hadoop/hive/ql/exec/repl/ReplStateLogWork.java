@@ -42,6 +42,7 @@ public class ReplStateLogWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private final ReplLogger replLogger;
   private final LOG_TYPE logType;
+  private String message = "";
   private String eventId;
   private String eventType;
   private String tableName;
@@ -55,7 +56,8 @@ public class ReplStateLogWork implements Serializable {
     TABLE,
     FUNCTION,
     EVENT,
-    END
+    END,
+    DATA_COPY_END
   }
 
   public ReplStateLogWork(ReplLogger replLogger, ReplicationMetricCollector metricCollector,
@@ -126,6 +128,13 @@ public class ReplStateLogWork implements Serializable {
     this.metricCollector = collector;
   }
 
+  public ReplStateLogWork(ReplLogger replLogger, String message) {
+    this.logType = LOG_TYPE.DATA_COPY_END;
+    this.replLogger = replLogger;
+    this.metricCollector = null;
+    this.message = message;
+  }
+
 
   public ReplicationMetricCollector getMetricCollector() { return metricCollector; }
 
@@ -153,6 +162,9 @@ public class ReplStateLogWork implements Serializable {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS, Long.parseLong(lastReplId));
       }
       metricCollector.reportEnd(Status.SUCCESS);
+      break;
+    case DATA_COPY_END:
+      replLogger.dataCopyLog(message);
       break;
     }
   }

@@ -107,6 +107,8 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
+import static org.apache.hadoop.tools.DistCpConstants.CONF_LABEL_DISTCP_JOB_ID;
+
 /**
  * Implemention of shims against Hadoop 0.23.0.
  */
@@ -1169,10 +1171,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
-
+    DistCp distcp = null;
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
-      DistCp distcp = new DistCp(conf, options);
+      distcp = new DistCp(conf, options);
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
@@ -1184,6 +1186,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: " + e, e);
     } finally {
+      // Set the job id from distCp conf to the callers configuration.
+      if (distcp != null) {
+        String jobId = distcp.getConf().get(CONF_LABEL_DISTCP_JOB_ID);
+        if (jobId != null) {
+          conf.set(CONF_LABEL_DISTCP_JOB_ID, jobId);
+        }
+      }
       conf.setBoolean("mapred.mapper.new-api", false);
     }
   }
