@@ -848,42 +848,46 @@ class CompactionTxnHandler extends TxnHandler {
     int didNotInitiateRetention = 0;
     int failedRetention = 0;
     int succeededRetention = 0;
-    long deleteIfOlderThanAndHasNewerSucceeded;
-    boolean hasSucceededCompaction = false;
+    boolean hasSucceededMajorCompaction = false;
+    boolean hasSucceededMinorCompaction = false;
 
-    RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention, long deleteIfOlderThanAndHasNewerSucceeded) {
+    RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention) {
       this.didNotInitiateRetention = didNotInitiateRetention;
       this.failedRetention = failedRetention;
       this.succeededRetention = succeededRetention;
-      this.deleteIfOlderThanAndHasNewerSucceeded = deleteIfOlderThanAndHasNewerSucceeded;
     }
   }
 
-  private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc) {
+  private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc, long timeoutThreshold) {
     switch (ci.state) {
       case DID_NOT_INITIATE:
-        if(--rc.didNotInitiateRetention < 0) {
-          deleteSet.add(ci.id);
-        } else if (rc.hasSucceededCompaction && ci.start < rc.deleteIfOlderThanAndHasNewerSucceeded) {
+        if(--rc.didNotInitiateRetention < 0 || timedOut(ci, rc, timeoutThreshold)) {
           deleteSet.add(ci.id);
         }
         break;
       case FAILED_STATE:
-        if(--rc.failedRetention < 0) {
-          deleteSet.add(ci.id);
-        } else if (rc.hasSucceededCompaction && ci.start < rc.deleteIfOlderThanAndHasNewerSucceeded) {
+        if(--rc.failedRetention < 0 || timedOut(ci, rc, timeoutThreshold)) {
           deleteSet.add(ci.id);
         }
         break;
       case SUCCEEDED_STATE:
-        rc.hasSucceededCompaction = true;
         if(--rc.succeededRetention < 0) {
           deleteSet.add(ci.id);
         }
+        if (ci.type == CompactionType.MAJOR) {
+          rc.hasSucceededMajorCompaction = true;
+        } else {
+          rc.hasSucceededMinorCompaction = true;
+        }
         break;
       default:
-        //do nothing to hanlde future RU/D where we may want to add new state types
+        //do nothing to handle future RU/D where we may want to add new state types
     }
+  }
+
+  private static boolean timedOut(CompactionInfo ci, RetentionCounters rc, long pastTimeout) {
+    return ci.start < pastTimeout
+            && (rc.hasSucceededMajorCompaction || (rc.hasSucceededMinorCompaction && ci.type == CompactionType.MINOR));
   }
 
   /**
@@ -910,30 +914,34 @@ class CompactionTxnHandler extends TxnHandler {
         /* cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first */
         rs = stmt.executeQuery("SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", "
-            + "\"CC_STATE\" , \"CC_START\" "
-            + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_ID\" DESC");
+            + "\"CC_STATE\" , \"CC_START\", \"CC_TYPE\" "
+            + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"," +
+                "\"CC_ID\" DESC");
         String lastCompactedEntity = null;
         /* In each group, walk from most recent and count occurrences of each state type.  Once you
         * have counted enough (for each state) to satisfy retention policy, delete all other
         * instances of this status.
-        * Exception to this: not initiated and failed compactions are cleaned up if there is a newer
-        * succeeded compaction and they are older than metastore.compactor.history.retention.timeout
-        * */
+        * Also, "not initiated" and "failed" compactions are cleaned up if they are older than
+        * metastore.compactor.history.retention.timeout and there is a newer "succeeded"
+        * compaction on the table and either (1) the "succeeded" compaction is major or (2) it is minor
+        * and the "not initiated" or "failed" compaction is also minor –– so a minor succeeded compaction
+        * will not cause the deletion of a major "not initiated" or "failed" compaction.
+        */
         while(rs.next()) {
           CompactionInfo ci = new CompactionInfo(
               rs.getLong(1), rs.getString(2), rs.getString(3),
               rs.getString(4), rs.getString(5).charAt(0));
           ci.start = rs.getLong(6);
+          ci.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
             rc = new RetentionCounters(
                 MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
                 getFailedCompactionRetention(),
-                MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED),
-              System.currentTimeMillis() -
-                    MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS));
+                MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
           }
-          checkForDeletion(deleteSet, ci, rc);
+          checkForDeletion(deleteSet, ci, rc, System.currentTimeMillis() -
+                  MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS));
         }
         close(rs);
 

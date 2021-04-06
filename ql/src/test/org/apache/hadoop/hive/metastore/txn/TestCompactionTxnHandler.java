@@ -529,12 +529,11 @@ public class TestCompactionTxnHandler {
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
 
-    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 13, resp.getCompactsSize());
+    countCompactionsInHistory(13);
 
     txnHandler.purgeCompactionHistory();
-    resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 8, resp.getCompactsSize());
+
+    countCompactionsInHistory(8);
   }
 
   @Test
@@ -549,29 +548,48 @@ public class TestCompactionTxnHandler {
     String tableName = "tpch";
     String part1 = "(p=1)";
 
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, part1, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MINOR);
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, part1, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
 
-    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 5, resp.getCompactsSize());
+    countCompactionsInHistory(5);
 
     txnHandler.purgeCompactionHistory();
 
     // the oldest 2 compactions should be cleaned
-    resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 3, resp.getCompactsSize());
+    countCompactionsInHistory(3);
 
     addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
 
     txnHandler.purgeCompactionHistory();
 
     // only 2 succeeded compactions should be left
-    resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    countCompactionsInHistory(2);
     checkShowCompaction(dbName, tableName, part1, "succeeded", null);
+
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MINOR);
+
+    // succeeded minor compaction shouldn't cause cleanup, but the oldest succeeded will be cleaned up
+    txnHandler.purgeCompactionHistory();
+    countCompactionsInHistory(4);
+
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+
+    // only 2 succeeded compactions should be left
+    txnHandler.purgeCompactionHistory();
+    countCompactionsInHistory(2);
+    checkShowCompaction(dbName, tableName, part1, "succeeded", null);
+  }
+
+  private void countCompactionsInHistory(int expected) throws MetaException {
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", expected, resp.getCompactsSize());
   }
 
   @Test
