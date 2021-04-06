@@ -73,12 +73,6 @@ public class TestHiveMetaStoreTxns {
   private static IMetaStoreClient client;
   private Connection conn;
 
-  @BeforeClass
-  public static void setupClass() {
-    conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
-  }
-
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
@@ -404,6 +398,8 @@ public class TestHiveMetaStoreTxns {
 
   @BeforeClass
   public static void setUpDB() throws Exception {
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TestTxnDbUtil.setConfValues(conf);
