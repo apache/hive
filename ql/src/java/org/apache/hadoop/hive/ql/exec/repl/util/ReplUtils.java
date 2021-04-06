@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -68,6 +69,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -161,6 +163,10 @@ public class ReplUtils {
   public enum MetricName {
     TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
   }
+
+  public static final String DISTCP_JOB_ID_CONF = "distcp.job.id";
+  public static final String DISTCP_JOB_ID_CONF_DEFAULT = "UNAVAILABLE";
+
 
   private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
@@ -470,5 +476,30 @@ public class ReplUtils {
           + "replication job custom name.", userChosenName);
     }
     return userChosenName;
+  }
+
+  /**
+   * Convert to a human time of minutes:seconds.millis.
+   * @param time time to humanize.
+   * @return a printable value.
+   */
+  public static String convertToHumanReadableTime(long time) {
+    long seconds = (time / 1000);
+    long minutes = (seconds / 60);
+    return String.format("%d:%02d.%03ds", minutes, seconds % 60, time % 1000);
+  }
+
+  /**
+   * Adds a logger task at the end of the tasks passed.
+   */
+  public static void addLoggerTask(ReplLogger replLogger, List<Task<?>> tasks, HiveConf conf) {
+    String message = "Completed all external table copy tasks.";
+    ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, message);
+    Task<ReplStateLogWork> task = TaskFactory.get(replStateLogWork, conf);
+    if (tasks.isEmpty()) {
+      tasks.add(task);
+    } else {
+      DAGTraversal.traverse(tasks, new AddDependencyToLeaves(Collections.singletonList(task)));
+    }
   }
 }
