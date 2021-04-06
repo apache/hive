@@ -3671,7 +3671,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
 
         if (descTbl.isExt() || descTbl.isFormatted()) {
-          boolean disablePartitionStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS)
+          boolean disablePartitionStats = conf.getBoolVar(HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
           if (tbl.isPartitioned() && part == null && !disablePartitionStats) {
             // No partitioned specified for partitioned table, lets fetch all.
             Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
