@@ -4332,6 +4332,24 @@ public class TestReplicationScenarios {
     System.out.print(result);
     assertTrue(result.get(0),
         result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
+
+    // Remove SOURCE_OF_REPLICATION property after bootstrap dump.
+    run("ALTER DATABASE " + name + " Set DBPROPERTIES ( '"
+            + SOURCE_OF_REPLICATION + "' = '')", driver);
+    run("INSERT INTO TABLE " + dbName + ".dataTable values('a', 'b', 'c')", driver);
+
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replicatedDbName);
+    fs = new Path(incrementalDump.dumpLocation).getFileSystem(hconf);
+    dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+
+    // Check the value of SOURCE_OF_REPLICATION in the database, it should
+    // get set automatically.
+    run("DESCRIBE DATABASE EXTENDED " + dbName, driver);
+    result = getOutput(driver);
+    assertTrue(result.get(0),
+            result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
   }
 
   @Test
