@@ -639,9 +639,9 @@ public class Context {
    * Remove any created scratch directories.
    */
   public void removeScratchDir() {
-    for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
+    SessionState sessionState = SessionState.get();
+    for (Path p: fsScratchDirs.values()) {
       try {
-        Path p = entry.getValue();
         if (p.toUri().getPath().contains(stagingDir) && subDirOf(p, fsScratchDirs.values())  ) {
           LOG.debug("Skip deleting stagingDir: " + p);
           FileSystem fs = p.getFileSystem(conf);

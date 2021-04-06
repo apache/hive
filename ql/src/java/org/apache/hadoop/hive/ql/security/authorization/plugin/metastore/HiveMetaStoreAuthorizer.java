@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
@@ -69,9 +70,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   private static final Log    LOG              = LogFactory.getLog(HiveMetaStoreAuthorizer.class);
 
   private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
+
     @Override
     protected Configuration initialValue() {
-      return new HiveConf(HiveMetaStoreAuthorizer.class);
+      return null;
     }
   };
 
@@ -446,8 +448,13 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   }
 
   HiveAuthorizer createHiveMetaStoreAuthorizer() throws Exception {
-    HiveAuthorizer        ret               = null;
-    HiveConf              hiveConf          = new HiveConf(super.getConf(), HiveConf.class);
+    HiveAuthorizer ret = null;
+    HiveConf hiveConf = (HiveConf)tConfig.get();
+    if(hiveConf == null){
+      HiveConf hiveConf1 = new HiveConf(super.getConf(), HiveConf.class);
+      tConfig.set(hiveConf1);
+      hiveConf = hiveConf1;
+    }
     HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
 
     if (authorizerFactory != null) {

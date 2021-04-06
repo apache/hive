@@ -198,6 +198,8 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // unlink connection between FS and its parent
       fsParent = fsOp.getParentOperators().get(0);
+      // store the index of the file sink operator to later insert the modified operator with RS at the same position
+      int fsOpIndex = fsParent.getChildOperators().indexOf(fsOp);
       fsParent.getChildOperators().remove(fsOp);
 
 
@@ -285,6 +287,12 @@ public class SortedDynPartitionOptimizer extends Transform {
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
                                                   allRSCols, bucketColumns, numBuckets,
                                                  fsParent, fsOp.getConf().getWriteType());
+      // we have to make sure not to reorder the child operators as it might cause weird behavior in the tasks at
+      // the same level. when there is auto stats gather at the same level as another operation then it might
+      // cause unnecessary preemption. Maintaining the order here to avoid such preemption and possible errors
+      // Ref TEZ-3296
+      fsParent.getChildOperators().remove(rsOp);
+      fsParent.getChildOperators().add(fsOpIndex, rsOp);
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();

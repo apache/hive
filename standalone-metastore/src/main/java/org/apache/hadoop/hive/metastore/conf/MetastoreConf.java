@@ -1264,6 +1264,8 @@ public class MetastoreConf {
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
+        "Comma-separated list of supported blobstore schemes."),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

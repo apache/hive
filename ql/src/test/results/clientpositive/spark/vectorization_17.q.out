@@ -130,7 +130,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 14
-                    dataColumns: KEY.reducesinkkey0:bigint, KEY.reducesinkkey1:float, VALUE._col0:string, VALUE._col1:int, VALUE._col2:timestamp, VALUE._col3:double, VALUE._col4:double, VALUE._col5:bigint, VALUE._col6:double, VALUE._col7:double, VALUE._col8:double, VALUE._col9:double, VALUE._col10:decimal(11,4), VALUE._col11:double
+                    dataColumns: KEY.reducesinkkey0:bigint, KEY.reducesinkkey1:float, VALUE._col0:string, VALUE._col1:int, VALUE._col2:timestamp, VALUE._col3:double, VALUE._col4:double, VALUE._col5:bigint, VALUE._col6:double, VALUE._col7:double, VALUE._col8:double, VALUE._col9:double, VALUE._col10:decimal(11,4)/DECIMAL_64, VALUE._col11:double
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:

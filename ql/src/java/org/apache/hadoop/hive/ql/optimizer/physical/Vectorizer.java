@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -1474,7 +1475,8 @@ public class Vectorizer implements PhysicalPlanResolver {
           deserializerClassName.equals(LazySimpleSerDe.class.getName());
       boolean isSequenceFormat =
           inputFileFormatClassName.equals(SequenceFileInputFormat.class.getName()) &&
-          deserializerClassName.equals(LazyBinarySerDe.class.getName());
+                  (deserializerClassName.equals(LazyBinarySerDe.class.getName()) ||
+                          deserializerClassName.equals(LazyBinarySerDe2.class.getName()));
       boolean isVectorDeserializeEligable = isTextFormat || isSequenceFormat;
 
       if (useVectorDeserialize) {
@@ -2337,6 +2339,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       ArrayList<String> reduceColumnNames = new ArrayList<String>();
       ArrayList<TypeInfo> reduceTypeInfos = new ArrayList<TypeInfo>();
+      ArrayList<DataTypePhysicalVariation> reduceDataTypePhysicalVariations = new ArrayList<DataTypePhysicalVariation>();
 
       if (reduceWork.getNeedsTagging()) {
         setNodeIssue("Tagging not supported");
@@ -2372,6 +2375,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (StructField field: keyFields) {
           reduceColumnNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
           reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+          reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
         }
 
         columnSortOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
@@ -2392,7 +2396,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
           for (StructField field: valueFields) {
             reduceColumnNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-            reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+            TypeInfo reduceTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+                field.getFieldObjectInspector().getTypeName());
+            reduceTypeInfos.add(reduceTypeInfo);
+            if (reduceTypeInfo instanceof DecimalTypeInfo &&
+                HiveDecimalWritable.isPrecisionDecimal64(((DecimalTypeInfo)reduceTypeInfo).getPrecision())) {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.DECIMAL_64);
+            }
+            else {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
+            }
           }
         }
       } catch (Exception e) {
@@ -2401,6 +2414,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       vectorTaskColumnInfo.setAllColumnNames(reduceColumnNames);
       vectorTaskColumnInfo.setAllTypeInfos(reduceTypeInfos);
+      vectorTaskColumnInfo.setAlldataTypePhysicalVariations(reduceDataTypePhysicalVariations);
 
       vectorTaskColumnInfo.setReduceColumnSortOrder(columnSortOrder);
       vectorTaskColumnInfo.setReduceColumnNullOrder(columnNullOrder);
@@ -4121,7 +4135,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     TableDesc valueTableDesc = desc.getValueSerializeInfo();
     Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getDeserializerClass();
-    boolean isValueLazyBinary = (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class);
+    boolean isValueLazyBinary =
+            (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class) ||
+            (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2.class);
 
     // We are doing work here we'd normally do in VectorGroupByCommonOperator's constructor.
     // So if we later decide not to specialize, we'll just waste any scratch columns allocated...
@@ -5128,6 +5144,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // Determine input vector expression using the VectorizationContext.
         inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+
+        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+          inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+        }
 
         TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
         PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();

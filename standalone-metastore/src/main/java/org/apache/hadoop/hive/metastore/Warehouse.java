@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -136,14 +137,50 @@ public class Warehouse {
    * This routine solves this problem by replacing the scheme and authority of a
    * path with the scheme and authority of the FileSystem that it maps to.
    *
+   * Since creating a new file system object is expensive, this method
+   * mimics getFileSystem() without creating an actual FileSystem object.
+   * When the input path lacks a scheme or an authority this is added
+   * from the default URI.
+   *
    * @param path
    *          Path to be canonicalized
    * @return Path with canonical scheme and authority
    */
   public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
-    FileSystem fs = getFs(path, conf);
-    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), path
-        .toUri().getPath()));
+    if (isBlobStorageScheme(conf, path.toUri().getScheme())) {
+      String scheme = path.toUri().getScheme();
+      String authority = path.toUri().getAuthority();
+      URI defaultUri = FileSystem.getDefaultUri(conf);
+      if ((authority == null && scheme == null)
+              || StringUtils.equalsIgnoreCase(scheme, defaultUri.getScheme())) {
+        if (authority == null) {
+          authority = defaultUri.getAuthority();
+        }
+        if (scheme == null) {
+          scheme = defaultUri.getScheme();
+        }
+        String uriPath = path.toUri().getPath();
+        if (StringUtils.isEmpty(uriPath)) {
+          uriPath = "/";
+        }
+        return new Path(scheme, authority, uriPath);
+      }
+      return path;
+    } else { // fallback: for other FS type make the FS instance
+      FileSystem fs = getFs(path, conf);
+      String uriPath = path.toUri().getPath();
+      if (StringUtils.isEmpty(uriPath)) {
+        uriPath = "/";
+      }
+      return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), uriPath));
+    }
+  }
+
+  private static boolean isBlobStorageScheme(Configuration conf, String scheme) {
+    final String uriScheme = scheme == null ? FileSystem.getDefaultUri(conf).getScheme() : scheme;
+    return MetastoreConf.getStringCollection(conf, MetastoreConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES)
+            .stream()
+            .anyMatch(each -> each.equalsIgnoreCase(uriScheme));
   }
 
   public Path getDnsPath(Path path) throws MetaException {

@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
@@ -580,7 +581,7 @@ public final class PlanUtils {
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.ESCAPE_CHAR, "\\",
-        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+        serdeConstants.SERIALIZATION_LIB, LazyBinarySerDe.class.getName()));
   }
 
   /**
@@ -594,7 +595,7 @@ public final class PlanUtils {
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.ESCAPE_CHAR, "\\",
-        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe2.class.getName()));
   }
 
   /**

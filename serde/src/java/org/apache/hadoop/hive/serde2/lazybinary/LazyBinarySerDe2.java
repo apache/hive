@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -143,6 +145,8 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
       return new LBHiveIntervalDayTimeSerializer();
     case DECIMAL:
       return new LBHiveDecimalSerializer();
+    case TIMESTAMPLOCALTZ:
+      return new LBTimestampLocalTZSerializer();
     default:
       throw new IllegalArgumentException("Unsupported primitive category " + poi.getPrimitiveCategory());
     }
@@ -382,6 +386,15 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
         return;
       }
       writeToByteStream(byteStream, t);
+    }
+  }
+
+  static class LBTimestampLocalTZSerializer extends LBSerializer {
+    @Override
+    void serialize(RandomAccessOutput byteStream, Object obj, ObjectInspector objInspector,
+                   boolean skipLengthPrefix, BooleanRef warnedOnceNullMapKey) {
+      TimestampLocalTZWritable t = ((TimestampLocalTZObjectInspector) objInspector).getPrimitiveWritableObject(obj);
+      t.writeToByteStream(byteStream);
     }
   }
 

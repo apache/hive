@@ -7962,14 +7962,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: VALUE._col0:decimal(15,3)
+                    dataColumns: VALUE._col0:decimal(15,3)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMinDecimal(col 0:decimal(15,3)) -> decimal(15,3)
+                    aggregators: VectorUDAFMinDecimal64(col 0:decimal(15,3)/DECIMAL_64) -> decimal(15,3)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     native: false
@@ -8098,14 +8098,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: VALUE._col0:decimal(15,3)
+                    dataColumns: VALUE._col0:decimal(15,3)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxDecimal(col 0:decimal(15,3)) -> decimal(15,3)
+                    aggregators: VectorUDAFMaxDecimal64(col 0:decimal(15,3)/DECIMAL_64) -> decimal(15,3)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     native: false

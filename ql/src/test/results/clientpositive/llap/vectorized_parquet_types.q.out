@@ -351,7 +351,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), count(VALUE._col7), max(VALUE._col8)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFMinLong(col 2:smallint) -> smallint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFCountMerge(col 8:bigint) -> bigint, VectorUDAFMaxDecimal(col 9:decimal(4,2)) -> decimal(4,2)
+                    aggregators: VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFMinLong(col 2:smallint) -> smallint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFCountMerge(col 8:bigint) -> bigint, VectorUDAFMaxDecimal64(col 9:decimal(4,2)/DECIMAL_64) -> decimal(4,2)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     keyExpressions: col 0:tinyint
