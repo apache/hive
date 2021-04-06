@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -264,7 +265,7 @@ public class TestCompactionTxnHandler {
     final String dbName = "foo";
     final String tableName = "bar";
     final String errorMessage = "Dummy error";
-    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    addSucceededCompaction(dbName, tableName, null, CompactionType.MINOR);
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
@@ -295,7 +296,7 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     final String errorMessage = "Dummy error";
-    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
@@ -331,8 +332,8 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     final String errorMessage = "Dummy error";
-    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
-    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
@@ -462,8 +463,7 @@ public class TestCompactionTxnHandler {
     txnHandler.markFailed(ci);
   }
 
-  private void addSucceededCompaction(String dbName, String tableName, CompactionType type,
-      String partitionName, String errorMessage) throws MetaException {
+  private void addSucceededCompaction(String dbName, String tableName, String partitionName, CompactionType type) throws MetaException {
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
     CompactionInfo ci;
     if (partitionName != null) {
@@ -472,7 +472,6 @@ public class TestCompactionTxnHandler {
     txnHandler.compact(rqst);
     ci = txnHandler.findNextToCompact("fred", WORKER_VERSION);
     assertNotNull(ci);
-    ci.errorMessage = errorMessage;
     txnHandler.markCleaned(ci);
   }
 
@@ -488,6 +487,91 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     ci.errorMessage = errorMessage;
     txnHandler.markCompacted(ci);
+  }
+
+  private void addDidNotInitiateCompaction(String dbName, String tableName, String partitionName,
+          CompactionType type, String errorMessage) throws MetaException {
+    CompactionInfo ci = new CompactionInfo(dbName, tableName, partitionName, type);
+    ci.errorMessage = errorMessage;
+    ci.id = 0;
+    txnHandler.markFailed(ci);
+  }
+
+  @Test
+  public void testPurgeCompactionHistory() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED, 2);
+    txnHandler.setConf(conf);
+
+    String dbName = "default";
+    String tableName = "tpch";
+    String part1 = "(p=1)";
+    String part2 = "(p=2)";
+
+    // 3 successful compactions on p=1
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+
+    // 3 failed on p=1
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    //4 failed on p=2
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
+
+    // 3 not initiated on p=1
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 13, resp.getCompactsSize());
+
+    txnHandler.purgeCompactionHistory();
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 8, resp.getCompactsSize());
+  }
+
+  @Test
+  public void testPurgeCompactionHistoryTimeout() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED, 2);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, 1, TimeUnit.MILLISECONDS);
+    txnHandler.setConf(conf);
+
+    String dbName = "default";
+    String tableName = "tpch";
+    String part1 = "(p=1)";
+
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 5, resp.getCompactsSize());
+
+    txnHandler.purgeCompactionHistory();
+
+    // the oldest 2 compactions should be cleaned
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 3, resp.getCompactsSize());
+
+    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+
+    txnHandler.purgeCompactionHistory();
+
+    // only 2 succeeded compactions should be left
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    checkShowCompaction(dbName, tableName, part1, "succeeded", null);
   }
 
   @Test
