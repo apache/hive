@@ -310,6 +310,20 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
           return false;
         }
       }, 100, 10000);
+
+      // Remove the SOURCE_OF_REPLICATION property from the database.
+      primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES ( '"
+              + SOURCE_OF_REPLICATION + "' = '')");
+
+      GenericTestUtils.waitFor(() -> {
+        try {
+          primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
+          return primary.getOutput().get(0)
+                  .contains("repl.source.for=s1_t2_new");
+        } catch (Throwable e) {
+          return false;
+        }
+      }, 100, 10000);
     } finally {
       primary.run("drop scheduled query s1_t2_new");
       replica.run("drop scheduled query s2_t2");

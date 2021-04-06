@@ -15,36 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl;
+package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.state.DataCopyEnd;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-/**
- * ReplLogger.
- *
- * Logger class for Repl Events.
- **/
-public abstract class ReplLogger<T> {
+public class DataCopyEnd extends ReplState {
 
-  public ReplLogger() {
-  }
+  @JsonProperty String message;
 
-  public abstract void startLog();
-
-  public abstract void endLog(T logVal);
-
-  public void tableLog(String tableName, TableType tableType) {
-  }
-  public void functionLog(String funcName){
-  }
-  public void eventLog(String eventId, String eventType) {
-  }
-
-  public void dataCopyLog(String message) {
-    new DataCopyEnd(message).log(ReplState.LogTag.DATA_COPY_END);
-  }
-
-  public void setParams(String dbName, String dumpDirectory, long numTables, long numFunctions) {
+  public DataCopyEnd(String message) {
+    this.message = message;
   }
 }
