@@ -2350,9 +2350,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (!tbl.isSetCatName()) {
       tbl.setCatName(getDefaultCatalog(conf));
     }
-<<<<<<< HEAD
-    if (transformer != null) {
-=======
 
     Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
     if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
@@ -2360,8 +2357,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return;
     }
 
-    if (transformer != null && !isInTest) {
->>>>>>> apache/master
+    if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
     if (tbl.getParameters() != null) {
