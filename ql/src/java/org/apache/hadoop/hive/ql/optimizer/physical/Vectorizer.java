@@ -2895,6 +2895,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
+    boolean[] distinctEvaluator = vectorPTFDesc.getEvaluatorsAreDistinct();
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
     final int count = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
@@ -2902,6 +2903,11 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     for (int i = 0; i < count; i++) {
       String functionName = evaluatorFunctionNames[i];
+      if (distinctEvaluator[i]) {
+        setOperatorIssue(functionName + " distinct is not supported ");
+        return false;
+      }
+
       SupportedFunctionType supportedFunctionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       if (supportedFunctionType == null) {
         setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
