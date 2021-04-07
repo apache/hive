@@ -485,7 +485,7 @@ public class TestReplicationScenarios {
 
   private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
                                    Tuple tuple) throws Throwable {
-    HiveConf confTemp = new HiveConf();
+    HiveConf confTemp = driverMirror.getConf();
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ReplicationMetricCollector metricCollector;
     if (isIncrementalDump) {
