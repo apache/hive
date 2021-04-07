@@ -57,10 +57,8 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
     this.predicate = predicate;
   }
 
-  @Explain(displayName = "Partition predicate expr")
-  @Signature
   public String getPartPredicateString() {
-    return this.predicate.getExprString();
+    return this.predicate != null ? this.predicate.getExprString() : "-";
   }
 
   public TableScanOperator getTableScan() {
@@ -128,7 +126,8 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
       DynamicPruningEventDesc otherDesc = (DynamicPruningEventDesc) other;
       return Objects.equals(getTargetColumnName(), otherDesc.getTargetColumnName()) &&
           Objects.equals(getTargetColumnType(), otherDesc.getTargetColumnType()) &&
-          Objects.equals(getPartKeyString(), otherDesc.getPartKeyString());
+          Objects.equals(getPartKeyString(), otherDesc.getPartKeyString()) &&
+          Objects.equals(getPartPredicateString(), otherDesc.getPartPredicateString());
     }
     return false;
   }
