@@ -4411,6 +4411,9 @@ public class HiveConf extends Configuration {
         "Comma-separated list of class names extending EventConsumer," +
          "to handle the NotificationEvents retreived by the notification event poll."),
 
+    HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS("hive.describe.partitionedtable.ignore.stats", false,
+        "Disable partitioned table stats collection for 'DESCRIBE FORMATTED' or 'DESCRIBE EXTENDED' commands."),
+
     /* BLOBSTORE section */
 
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",
