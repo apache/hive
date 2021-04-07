@@ -103,6 +103,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
+    extraConf.put(ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS.getVarname(), " ");
+
     startMetaStores(msConf, extraConf);
   }
 

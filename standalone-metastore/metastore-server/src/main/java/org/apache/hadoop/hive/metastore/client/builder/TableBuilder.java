@@ -218,8 +218,6 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   public Table create(IMetaStoreClient client, Configuration conf) throws TException {
     Table t = build(conf);
     client.createTable(t);
-    // metastore transformer may alter the table
-    t = client.getTable(t.getCatName(), t.getDbName(), t.getTableName());
     return t;
   }
 

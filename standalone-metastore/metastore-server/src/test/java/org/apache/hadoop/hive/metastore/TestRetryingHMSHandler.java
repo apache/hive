@@ -74,7 +74,7 @@ public class TestRetryingHMSHandler {
         .addCol("c1", ColumnType.STRING_TYPE_NAME)
         .create(msc, conf);
 
-    Assert.assertEquals(6, AlternateFailurePreListener.getCallCount());
+    Assert.assertEquals(4, AlternateFailurePreListener.getCallCount());
   }
 
 }
