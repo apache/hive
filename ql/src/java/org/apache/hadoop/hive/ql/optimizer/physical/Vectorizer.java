@@ -2903,16 +2903,17 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     for (int i = 0; i < count; i++) {
       String functionName = evaluatorFunctionNames[i];
-      if (distinctEvaluator[i]) {
-        setOperatorIssue(functionName + " distinct is not supported ");
-        return false;
-      }
-
       SupportedFunctionType supportedFunctionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       if (supportedFunctionType == null) {
         setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
         return false;
       }
+
+      if (distinctEvaluator[i] && !supportedFunctionType.isSupportDistinct()) {
+        setOperatorIssue(functionName + " distinct is not supported ");
+        return false;
+      }
+
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       if (!windowFrameDef.isStartUnbounded()) {
         setOperatorIssue(functionName + " only UNBOUNDED start frame is supported");
