@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance.Tuple;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -70,8 +69,6 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
-import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_HIVE_BASE_DIR;
-import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1088,7 +1085,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // Bootstrap Repl B -> C
     WarehouseInstance.Tuple tupleReplica = replica.run("alter database " + replicatedDbName
-      + " set dbproperties ('" + TARGET_OF_REPLICATION + "' = '')").dump(replicatedDbName);
+            + " set dbproperties ('" + ReplUtils.TARGET_OF_REPLICATION + "' = '')").dump(replicatedDbName);
     String replDbFromReplica = replicatedDbName + "_dupe";
     replica.load(replDbFromReplica, replicatedDbName)
             .run("use " + replDbFromReplica)
@@ -1122,6 +1119,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     WarehouseInstance.Tuple tupleReplicaInc = replica.load(replicatedDbName, primaryDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimaryInc.lastReplicationId)
+            .run("alter database " + replicatedDbName
+                    + " set dbproperties ('" + ReplUtils.TARGET_OF_REPLICATION + "' = '')")
             .dump(replicatedDbName, Collections.emptyList());
 
     // Check if DB in B have ckpt property is set to bootstrap dump location used in B and missing for table/partition.
@@ -1151,6 +1150,39 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     verifyIfCkptPropMissing(india.getParameters());
 
     replica.run("drop database if exists " + replDbFromReplica + " cascade");
+  }
+
+  @Test
+  public void testIfReplTargetSetInIncremental() throws Throwable {
+    WarehouseInstance.Tuple tuplePrimary = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (place string) partitioned by (country string)")
+            .run("insert into table t1 partition(country='india') values ('bangalore')")
+            .dump(primaryDbName);
+
+    // Bootstrap Repl A -> B
+    replica.load(replicatedDbName, primaryDbName);
+
+    //Perform empty dump and load
+    primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+    assertTrue(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+
+    replica.dumpFailure(replicatedDbName);  //can not dump db which is target of replication
+
+    replica.run("ALTER DATABASE " + replicatedDbName + " Set DBPROPERTIES('repl.target.for' = '')");
+    assertFalse(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    replica.dump(replicatedDbName);
+
+    // do a empty incremental load to allow dump of replicatedDbName
+    primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES('custom_property1' = 'custom_value1')")
+            .dump(primaryDbName, Collections.emptyList());
+    replica.load(replicatedDbName, primaryDbName);
+    compareDbProperties(primary.getDatabase(primaryDbName).getParameters(),
+            replica.getDatabase(replicatedDbName).getParameters());
+    assertTrue(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+
+    replica.dumpFailure(replicatedDbName);    //Cannot dump database which is target of replication.
   }
 
   @Test
@@ -1561,6 +1593,16 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("select country from " + tbl + " where country == 'india'")
             .verifyResults(Arrays.asList("india"))
             .run(" drop database if exists " + replicatedDbName_CM + " cascade");
+  }
+
+  private void compareDbProperties(Map<String, String> primaryDbProps, Map<String, String> replicaDbProps){
+    for (Map.Entry<String, String> prop : primaryDbProps.entrySet()) {
+      if (prop.getKey().equals(SOURCE_OF_REPLICATION)) {
+        continue;
+      }
+      assertTrue(replicaDbProps.containsKey(prop.getKey()));
+      assertTrue(replicaDbProps.get(prop.getKey()).equals(prop.getValue()));
+    }
   }
 
   // This requires the tables are loaded in a fixed sorted order.

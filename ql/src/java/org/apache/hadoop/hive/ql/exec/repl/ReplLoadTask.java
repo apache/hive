@@ -611,6 +611,18 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
     }
+    if (!ReplUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
+      Map<String, String> props = new HashMap<>();
+      props.put(ReplUtils.TARGET_OF_REPLICATION, "true");
+      AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+      Task<?> addReplTargetPropTask =
+              TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,
+                      work.dumpDirectory, work.getMetricCollector()), conf);
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.add(addReplTargetPropTask);
+    }
     IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
     // If incremental events are already applied, then check and perform if need to bootstrap any tables.
     if (!builder.hasMoreWork() && work.isLastReplIDUpdated()) {
