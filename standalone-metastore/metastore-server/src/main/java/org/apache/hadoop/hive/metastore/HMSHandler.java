@@ -3531,7 +3531,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
     return getTableInternal(
-        parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false, null, null, null);
+        parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false, null, null, null, -1);
   }
 
   @Override
@@ -3609,7 +3609,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
         req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats(), req.getEngine(),
-        req.getProcessorCapabilities(), req.getProcessorIdentifier()));
+        req.getProcessorCapabilities(), req.getProcessorIdentifier(), req.getId()));
   }
 
   /**
@@ -3619,7 +3619,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    */
   private Table getTableInternal(String catName, String dbname, String name,
                                  ClientCapabilities capabilities, String writeIdList, boolean getColumnStats, String engine,
-                                 List<String> processorCapabilities, String processorId)
+                                 List<String> processorCapabilities, String processorId, long tableId)
       throws MetaException, NoSuchObjectException {
     Preconditions.checkArgument(!getColumnStats || engine != null,
         "To retrieve column statistics with a table, engine parameter cannot be null");
@@ -3633,7 +3633,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     startTableFunction("get_table", catName, dbname, name);
     Exception ex = null;
     try {
-      t = get_table_core(catName, dbname, name, writeIdList, getColumnStats, engine);
+      t = get_table_core(catName, dbname, name, writeIdList, getColumnStats, engine, tableId);
       if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
         assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
             "insert-only tables", "get_table_req");
@@ -3701,7 +3701,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final String name,
       final String writeIdList)
       throws MetaException, NoSuchObjectException {
-    return get_table_core(catName, dbname, name, writeIdList, false, null);
+    return get_table_core(catName, dbname, name, writeIdList, false, null, -1);
   }
 
   /**
@@ -3713,7 +3713,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                               final String dbname,
                               final String name,
                               final String writeIdList,
-                              boolean getColumnStats, String engine)
+                              boolean getColumnStats, String engine, long tableId)
       throws MetaException, NoSuchObjectException {
     Preconditions.checkArgument(!getColumnStats || engine != null,
         "To retrieve column statistics with a table, engine parameter cannot be null");

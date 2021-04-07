@@ -648,6 +648,7 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  @Deprecated
   Table getTable(String dbName, String tableName) throws MetaException,
       TException, NoSuchObjectException;
 
@@ -669,6 +670,7 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  @Deprecated
   Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
           TException, NoSuchObjectException;
 
@@ -681,6 +683,7 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
 
   /**
@@ -693,6 +696,7 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList) throws TException;
 
@@ -708,8 +712,23 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName,
                  String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+
+  /**
+   *
+   * @param getTableRequest request object to query a table in HMS
+   * @return An object representing the table.
+   * @throws MetaException
+   *           Could not fetch the table
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws NoSuchObjectException
+   *           In case the table wasn't found.
+   */
+  Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException;
+
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and

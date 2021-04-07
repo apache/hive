@@ -1256,7 +1256,11 @@ public class CachedStore implements RawStore, Configurable {
     return getTable(catName, dbName, tblName, null);
   }
 
-  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds)
+  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
+    return getTable(catName, dbName, tblName, null, -1);
+  }
+
+  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
       throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);

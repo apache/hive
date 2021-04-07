@@ -2382,47 +2382,43 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  @Deprecated
   public Table getTable(String dbname, String name) throws TException {
-    return getTable(getDefaultCatalog(conf), dbname, name);
+    GetTableRequest req = new GetTableRequest(dbname, name);
+    req.setCatName(getDefaultCatalog(conf));
+    return getTable(req);
   }
 
   @Override
+  @Deprecated
   public Table getTable(String dbname, String name, boolean getColumnStats, String engine) throws TException {
-    return getTable(getDefaultCatalog(conf), dbname, name, getColumnStats, engine);
+    GetTableRequest req = new GetTableRequest(dbname, name);
+    req.setCatName(getDefaultCatalog(conf));
+    req.setGetColumnStats(getColumnStats);
+    if (getColumnStats) {
+      req.setEngine(engine);
+    }
+    return getTable(req);
   }
 
   @Override
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName) throws TException {
-    return getTable(catName, dbName, tableName, false, null);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    return getTable(req);
   }
 
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName,
       boolean getColumnStats, String engine) throws TException {
-    long t1 = System.currentTimeMillis();
-
-    try {
       GetTableRequest req = new GetTableRequest(dbName, tableName);
       req.setCatName(catName);
-      req.setCapabilities(version);
       req.setGetColumnStats(getColumnStats);
       if (getColumnStats) {
         req.setEngine(engine);
       }
-      if (processorCapabilities != null)
-        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      if (processorIdentifier != null)
-        req.setProcessorIdentifier(processorIdentifier);
-
-      Table t = getTableInternal(req).getTable();
-
-      return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
-    } finally {
-      long diff = System.currentTimeMillis() - t1;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTable",
-            diff, "HMS client");
-      }
-    }
+      return getTable(req);
   }
 
   protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
@@ -2430,33 +2426,41 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName,
       String validWriteIdList) throws TException {
-    return getTable(catName, dbName, tableName, validWriteIdList, false, null);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setValidWriteIdList(validWriteIdList);
+    return getTable(req);
   }
 
-
   @Override
+  @Deprecated
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
       boolean getColumnStats, String engine) throws TException {
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setValidWriteIdList(validWriteIdList);
+    req.setGetColumnStats(getColumnStats);
+    if (getColumnStats) {
+      req.setEngine(engine);
+    }
+    return getTable(req);
+  }
+
+  @Override
+  public Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
     long t1 = System.currentTimeMillis();
 
     try {
-      GetTableRequest req = new GetTableRequest(dbName, tableName);
-      req.setCatName(catName);
-      req.setCapabilities(version);
-      req.setValidWriteIdList(validWriteIdList);
-      req.setGetColumnStats(getColumnStats);
-      if (getColumnStats) {
-        req.setEngine(engine);
-      }
+      getTableRequest.setCapabilities(version);
       if (processorCapabilities != null)
-        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+        getTableRequest.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
       if (processorIdentifier != null)
-        req.setProcessorIdentifier(processorIdentifier);
+        getTableRequest.setProcessorIdentifier(processorIdentifier);
 
-      Table t = getTableInternal(req).getTable();
-
+      Table t = getTableInternal(getTableRequest).getTable();
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
       long diff = System.currentTimeMillis() - t1;

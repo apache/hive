@@ -3304,7 +3304,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                         String validWriteIdList) throws TException {
     throw new UnsupportedOperationException();
   }
-
+  
   @Override
   public Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList, boolean getColumnStats, String engine) throws TException {
@@ -3312,6 +3312,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+
   public List<Table> getTableObjectsByName(String catName, String dbName,
                                            List<String> tableNames) throws MetaException,
       InvalidOperationException, UnknownDBException, TException {
