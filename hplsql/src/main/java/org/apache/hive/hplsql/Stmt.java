@@ -474,14 +474,14 @@ public class Stmt {
         exec.signal(queryResult);
         return 1;
       } else if (!exec.getOffline()) {
-        exec.setSqlCode(0);
+        exec.setSqlCode(SqlCodes.SUCCESS);
       }
       if (cursor.isWithReturn()) {
         exec.addReturnCursor(var);
       }
     } else {
       trace(ctx, "Cursor not found: " + cursorName);
-      exec.setSqlCode(-1);
+      exec.setSqlCode(SqlCodes.ERROR);
       exec.signal(Signal.Type.SQLEXCEPTION);
       return 1;
     }
@@ -497,16 +497,16 @@ public class Stmt {
     Var varCursor = exec.findCursor(name);
     if (varCursor == null) {
       trace(ctx, "Cursor not found: " + name);
-      exec.setSqlCode(-1);
+      exec.setSqlCode(SqlCodes.ERROR);
       exec.signal(Signal.Type.SQLEXCEPTION);
       return 1;
     } else if (varCursor.value == null) {
       trace(ctx, "Cursor not open: " + name);
-      exec.setSqlCode(-1);
+      exec.setSqlCode(SqlCodes.ERROR);
       exec.signal(Signal.Type.SQLEXCEPTION);
       return 1;
     } else if (exec.getOffline()) {
-      exec.setSqlCode(100);
+      exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
       exec.signal(Signal.Type.NOTFOUND);
       return 0;
     }
@@ -554,7 +554,7 @@ public class Stmt {
           exec.setSqlSuccess();
         } else {
           cursor.setFetch(false);
-          exec.setSqlCode(100);
+          exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
         }
       }
     } catch (QueryException e) {
@@ -580,7 +580,7 @@ public class Stmt {
     Var var = exec.findVariable(name);
     if(var != null && var.type == Type.CURSOR) {
       ((Cursor)var.value).close();
-      exec.setSqlCode(0);
+      exec.setSqlCode(SqlCodes.SUCCESS);
     } else if(trace) {
       trace(ctx, "Cursor not found: " + name);
     }
@@ -695,7 +695,7 @@ public class Stmt {
         exec.incRowCount();
         exec.setSqlSuccess();
       } else {
-        exec.setSqlCode(100);
+        exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
         exec.signal(Signal.Type.NOTFOUND);
       }
     } catch (QueryException e) {
@@ -877,7 +877,7 @@ public class Stmt {
       exec.signal(query);
       return 1;
     }
-    exec.setSqlCode(0);
+    exec.setSqlCode(SqlCodes.SUCCESS);
     query.close();
     return 0; 
   }
@@ -994,10 +994,9 @@ public class Stmt {
       exec.enterScope(Scope.Type.LOOP);
       visit(ctx.block());
       exec.leaveScope();
-      if (canContinue(label)) {
-        continue;
+      if (!canContinue(label)) {
+        break;
       }
-      break;
     }
     trace(ctx, "UNCONDITIONAL LOOP - LEFT");
     return 0;
@@ -1064,7 +1063,7 @@ public class Stmt {
               trace(ctx, "Variable not found: " + ctx.L_ID(i).getText());
             }
           }
-          exec.setSqlCode(0);
+          exec.setSqlCode(SqlCodes.SUCCESS);
         }
       }
       // Print the results

@@ -70,7 +70,7 @@ public class UtlFileClass implements HplClass {
   }
 
   @Override
-  public UtlFile instantiate() {
+  public UtlFile newInstance() {
     return new UtlFile(this);
   }
 

@@ -484,12 +484,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   }
   
   public void signal(Signal.Type type, String value) {
-    setSqlCode(-1);
+    setSqlCode(SqlCodes.ERROR);
     signal(type, value, null);   
   }
   
   public void signal(Signal.Type type) {
-    setSqlCode(-1);
+    setSqlCode(SqlCodes.ERROR);
     signal(type, null, null);   
   }
   
@@ -703,7 +703,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       setSqlCode(((QueryException) exception).getErrorCode());
       setSqlState(((QueryException) exception).getSQLState());
     } else {
-      setSqlCode(-1);
+      setSqlCode(SqlCodes.ERROR);
       setSqlState("02000");
     }    
   }
@@ -736,7 +736,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Set successful execution for SQL
    */
   public void setSqlSuccess() {
-    setSqlCode(0);
+    setSqlCode(SqlCodes.SUCCESS);
     setSqlState("00000");
   }
   
@@ -744,7 +744,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Set SQL_NO_DATA as the result of SQL execution
    */
   public void setSqlNoData() {
-    setSqlCode(100);
+    setSqlCode(SqlCodes.NO_DATA_FOUND);
     setSqlState("01000");
   }
 
@@ -864,14 +864,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
 
   protected void registerBuiltins() {
     Var dbmVar = new Var(Type.HPL_OBJECT, "DBMS_OUTPUT");
-    DbmOutput dbms = DbmOutputClass.INSTANCE.instantiate();
+    DbmOutput dbms = DbmOutputClass.INSTANCE.newInstance();
     dbms.initialize(console);
     dbmVar.setValue(dbms);
     dbmVar.setConstant(true);
     addVariable(dbmVar);
 
     Var utlFileVar = new Var(Type.HPL_OBJECT, "UTL_FILE");
-    UtlFile utlFile = UtlFileClass.INSTANCE.instantiate();
+    UtlFile utlFile = UtlFileClass.INSTANCE.newInstance();
     utlFileVar.setValue(utlFile);
     utlFileVar.setConstant(true);
     addVariable(utlFileVar);
@@ -1255,7 +1255,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
 	    if (row == null) {
 	      Var var = new Var(name, type, len, scale, default_);
 	      if (userDefinedType != null && default_ == null) {
-	        var.setValue(userDefinedType.instantiate());
+	        var.setValue(userDefinedType.newInstance());
         }
 	      exec.addVariable(var);
 	      if (ctx.T_CONSTANT() != null) {
@@ -2226,7 +2226,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
         } 
       }
     } catch (Exception e) {
-      setSqlCode(-1);
+      setSqlCode(SqlCodes.ERROR);
       signal(Signal.Type.SQLEXCEPTION, e.getMessage(), e);
       return -1;
     }    

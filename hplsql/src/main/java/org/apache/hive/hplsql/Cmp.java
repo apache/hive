@@ -142,7 +142,7 @@ public class Cmp implements Runnable {
       return null;
     }
     if (query1 == null || query2 == null) {
-      exec.setSqlCode(-1);
+      exec.setSqlCode(SqlCodes.ERROR);
       return null;
     }
     boolean equal = true;

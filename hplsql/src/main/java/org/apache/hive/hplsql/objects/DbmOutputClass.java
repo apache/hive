@@ -32,7 +32,7 @@ public class DbmOutputClass implements HplClass {
   }
 
   @Override
-  public DbmOutput instantiate() {
+  public DbmOutput newInstance() {
     return new DbmOutput(this);
   }
 

@@ -23,9 +23,7 @@ import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-
 import org.apache.hive.hplsql.executor.QueryResult;
-
 
 /**
  * Variable or the result of expression 

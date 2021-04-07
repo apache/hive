@@ -176,7 +176,7 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
     TableClass hplClass = exec.getType(typeName);
     Var var =new Var(name, hplClass == null ? typeName : Var.Type.HPL_OBJECT.name(), len, scale, null);
     if (hplClass != null) {
-      var.setValue(hplClass.instantiate());
+      var.setValue(hplClass.newInstance());
     }
     var.cast(value);
     exec.addVariable(var);

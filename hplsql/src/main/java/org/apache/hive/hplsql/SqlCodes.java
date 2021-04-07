@@ -16,9 +16,11 @@
  *  limitations under the License.
  */
 
-package org.apache.hive.hplsql.objects;
+package org.apache.hive.hplsql;
 
-public interface HplClass {
-  HplObject newInstance();
-  MethodDictionary methodDictionary();
+public class SqlCodes {
+  public static int NO_DATA_FOUND = 100;
+  public static int TOO_MANY_ROWS = -1422;
+  public static int SUCCESS = 0;
+  public static int ERROR = -1;
 }

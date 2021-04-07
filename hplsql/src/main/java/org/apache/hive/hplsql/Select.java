@@ -117,11 +117,11 @@ public class Select {
             exec.incRowCount();
             exec.setSqlSuccess();
             if (query.next()) {
-              exec.setSqlCode(-1422);
+              exec.setSqlCode(SqlCodes.TOO_MANY_ROWS);
               exec.signal(Signal.Type.TOO_MANY_ROWS);
             }
           } else {
-            exec.setSqlCode(100);
+            exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
             exec.signal(Signal.Type.NOTFOUND);
           }
         }
@@ -152,7 +152,7 @@ public class Select {
           exec.setSqlSuccess();
         } else {
           evalNull();
-          exec.setSqlCode(100);
+          exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
         }
       }
     } catch (QueryException e) {
@@ -178,7 +178,7 @@ public class Select {
       }
       exec.trace(ctx, var, query.metadata(), columnIndex);
     } else {
-      trace(ctx, "Variable not found: " + intoName);
+      throw new UndefinedIdentException(ctx, intoName);
     }
   }
 

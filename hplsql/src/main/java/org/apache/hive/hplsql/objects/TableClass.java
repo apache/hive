@@ -124,7 +124,7 @@ public class TableClass implements HplClass {
   }
 
   @Override
-  public Table instantiate() {
+  public Table newInstance() {
     return new Table(this);
   }
 
