@@ -17,6 +17,6 @@ select grouping(a),count(distinct a) from t group by a with rollup;
 select grouping(a),count(distinct a) from t group by a with rollup;
 
 explain
-SELECT key, value, count(key) FROM src where key<10 GROUP BY key, value with rollup order by key;
+SELECT grouping(key) gk, grouping(value) gv, key, value, count(key) FROM src where key<10 GROUP BY key, value with rollup order by gk,gv,key;
 
-SELECT key, value, count(key) FROM src where key<10 GROUP BY key, value with rollup order by key;
+SELECT grouping(key) gk, grouping(value) gv, key, value, count(key) FROM src where key<10 GROUP BY key, value with rollup order by gk,gv,key;
