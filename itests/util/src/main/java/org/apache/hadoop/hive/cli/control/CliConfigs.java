@@ -64,9 +64,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
 
-        excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
-        excludeQuery("constprog_cast.q"); // TODO: Enable when we move to Calcite 1.23
-
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
@@ -245,14 +242,6 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
-
-        excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
-        excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
-        excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
-        excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
-        excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
-      	excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
-        excludeQuery("temp_table_multi_insert_partitioned.q"); // Disabled in HIVE-23565
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
