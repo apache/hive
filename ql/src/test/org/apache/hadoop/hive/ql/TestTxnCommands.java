@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -880,70 +877,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     }
     catch (InterruptedException e) {
     }
-  }
-//frogmethod i tried to move this
-  @Test
-  public void testPurgeCompactionHistory() throws Exception {
-
-//    insert2deltas("p=2");
-
-    // 3 successful compactions on p=1
-    insertDataAndCompact("(p=1)");
-    insertDataAndCompact("(p=1)");
-    insertDataAndCompact("(p=1)");
-
-
-    // 3 failed on p=1
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
-    insertDataAndCompact("(p=1)");
-    insertDataAndCompact("(p=1)");
-    insertDataAndCompact("(p=1)");
-    insertDataAndCompact("(p=1)");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
-
-    // 3 not initiated on p=1
-
-
-//    Initiator initiator = Mockito.spy(new Initiator());
-//    initiator.setThreadId((int) t.getId());
-//    initiator.setConf(conf);
-//    initiator.init(new AtomicBoolean(true));
-//    doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
-//            .when(initiator).resolveTable(any());
-//    initiator.run();
-
-
-
-    // 1 failed on p=2 ...
-
-
-    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 10, resp.getCompactsSize()); //frogmethod is this accurate?
-
-    txnHandler.purgeCompactionHistory();
-
-    resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history", 7, resp.getCompactsSize()); //frogmethod is this accurate?
-    // TODO check each compaction for type/service
-
-
-//    Assert.assertEquals("Unexpected 0 compaction state",
-//            TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
-//    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
-//    Assert.assertTrue(resp.getCompacts().get(0).getType().equals(CompactionType.MINOR));
-
-  }
-
-  private void insertDataAndCompact(String partition) throws Exception {
-    insert2deltas(partition);
-    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBLPART + " " + partition + " compact 'major'");
-    runWorker(hiveConf);
-  }
-
-  private void insert2deltas(String partition) throws Exception {
-    int[][] targetVals = {{1, 5}, {2, 6}};
-    runStatementOnDriver("insert into " + TestTxnCommands2.Table.ACIDTBLPART + " " + partition + makeValuesClause(targetVals));
-    runStatementOnDriver("insert into " + TestTxnCommands2.Table.ACIDTBLPART + " " + partition + makeValuesClause(targetVals));
   }
 
   @Test
