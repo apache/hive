@@ -135,13 +135,13 @@ class InsertEventRequestData
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->filesAdded = array();
-                        $_size752 = 0;
-                        $_etype755 = 0;
-                        $xfer += $input->readListBegin($_etype755, $_size752);
-                        for ($_i756 = 0; $_i756 < $_size752; ++$_i756) {
-                            $elem757 = null;
-                            $xfer += $input->readString($elem757);
-                            $this->filesAdded []= $elem757;
+                        $_size761 = 0;
+                        $_etype764 = 0;
+                        $xfer += $input->readListBegin($_etype764, $_size761);
+                        for ($_i765 = 0; $_i765 < $_size761; ++$_i765) {
+                            $elem766 = null;
+                            $xfer += $input->readString($elem766);
+                            $this->filesAdded []= $elem766;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -151,13 +151,13 @@ class InsertEventRequestData
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->filesAddedChecksum = array();
-                        $_size758 = 0;
-                        $_etype761 = 0;
-                        $xfer += $input->readListBegin($_etype761, $_size758);
-                        for ($_i762 = 0; $_i762 < $_size758; ++$_i762) {
-                            $elem763 = null;
-                            $xfer += $input->readString($elem763);
-                            $this->filesAddedChecksum []= $elem763;
+                        $_size767 = 0;
+                        $_etype770 = 0;
+                        $xfer += $input->readListBegin($_etype770, $_size767);
+                        for ($_i771 = 0; $_i771 < $_size767; ++$_i771) {
+                            $elem772 = null;
+                            $xfer += $input->readString($elem772);
+                            $this->filesAddedChecksum []= $elem772;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -167,13 +167,13 @@ class InsertEventRequestData
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->subDirectoryList = array();
-                        $_size764 = 0;
-                        $_etype767 = 0;
-                        $xfer += $input->readListBegin($_etype767, $_size764);
-                        for ($_i768 = 0; $_i768 < $_size764; ++$_i768) {
-                            $elem769 = null;
-                            $xfer += $input->readString($elem769);
-                            $this->subDirectoryList []= $elem769;
+                        $_size773 = 0;
+                        $_etype776 = 0;
+                        $xfer += $input->readListBegin($_etype776, $_size773);
+                        for ($_i777 = 0; $_i777 < $_size773; ++$_i777) {
+                            $elem778 = null;
+                            $xfer += $input->readString($elem778);
+                            $this->subDirectoryList []= $elem778;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -183,13 +183,13 @@ class InsertEventRequestData
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->partitionVal = array();
-                        $_size770 = 0;
-                        $_etype773 = 0;
-                        $xfer += $input->readListBegin($_etype773, $_size770);
-                        for ($_i774 = 0; $_i774 < $_size770; ++$_i774) {
-                            $elem775 = null;
-                            $xfer += $input->readString($elem775);
-                            $this->partitionVal []= $elem775;
+                        $_size779 = 0;
+                        $_etype782 = 0;
+                        $xfer += $input->readListBegin($_etype782, $_size779);
+                        for ($_i783 = 0; $_i783 < $_size779; ++$_i783) {
+                            $elem784 = null;
+                            $xfer += $input->readString($elem784);
+                            $this->partitionVal []= $elem784;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -221,8 +221,8 @@ class InsertEventRequestData
             }
             $xfer += $output->writeFieldBegin('filesAdded', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->filesAdded));
-            foreach ($this->filesAdded as $iter776) {
-                $xfer += $output->writeString($iter776);
+            foreach ($this->filesAdded as $iter785) {
+                $xfer += $output->writeString($iter785);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -233,8 +233,8 @@ class InsertEventRequestData
             }
             $xfer += $output->writeFieldBegin('filesAddedChecksum', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->filesAddedChecksum));
-            foreach ($this->filesAddedChecksum as $iter777) {
-                $xfer += $output->writeString($iter777);
+            foreach ($this->filesAddedChecksum as $iter786) {
+                $xfer += $output->writeString($iter786);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -245,8 +245,8 @@ class InsertEventRequestData
             }
             $xfer += $output->writeFieldBegin('subDirectoryList', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->subDirectoryList));
-            foreach ($this->subDirectoryList as $iter778) {
-                $xfer += $output->writeString($iter778);
+            foreach ($this->subDirectoryList as $iter787) {
+                $xfer += $output->writeString($iter787);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -257,8 +257,8 @@ class InsertEventRequestData
             }
             $xfer += $output->writeFieldBegin('partitionVal', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partitionVal));
-            foreach ($this->partitionVal as $iter779) {
-                $xfer += $output->writeString($iter779);
+            foreach ($this->partitionVal as $iter788) {
+                $xfer += $output->writeString($iter788);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

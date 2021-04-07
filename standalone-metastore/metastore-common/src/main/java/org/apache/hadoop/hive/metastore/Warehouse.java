@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -225,6 +226,9 @@ public class Warehouse {
    * file system.
    */
   public Path determineDatabasePath(Catalog cat, Database db) throws MetaException {
+    if (db.getType() == DatabaseType.REMOTE) {
+      return getDefaultDatabasePath(db.getName(), true);
+    }
     if (db.isSetLocationUri()) {
       return getDnsPath(new Path(db.getLocationUri()));
     }

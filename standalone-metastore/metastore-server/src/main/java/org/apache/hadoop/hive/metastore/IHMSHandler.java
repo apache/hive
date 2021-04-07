@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -105,4 +106,15 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
    * @return list of non-transactional listeners.
    */
   List<MetaStoreEventListener> getListeners();
+
+  /**
+   * Equivalent to get_connector, but does not write to audit logs, or fire pre-event listeners.
+   * Meant to be used for internal hive classes that don't use the thrift interface.
+   * @param name connector name
+   * @return DataConnector object
+   * @throws NoSuchObjectException If the connector does not exist.
+   * @throws MetaException If another error occurs.
+   */
+  DataConnector get_dataconnector_core(final String name)
+      throws NoSuchObjectException, MetaException;
 }
