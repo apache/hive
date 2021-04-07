@@ -154,7 +154,10 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
   protected static final Logger LOG = LoggerFactory.getLogger(
           HiveRelDecorrelator.class);
-
+  
+  private static final FilterFlattenCorrelatedConditionRule FLATTEN_CORRELATED_CONDITION_RULE =
+      new FilterFlattenCorrelatedConditionRule(HiveFilter.class, HiveRelFactories.HIVE_BUILDER,
+          "HiveFilterFlattenCorrelatedConditionRule");
   //~ Instance fields --------------------------------------------------------
 
   private final RelBuilder relBuilder;
@@ -239,17 +242,25 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
             .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
             .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
+            .addRuleInstance(FLATTEN_CORRELATED_CONDITION_RULE)
             // FilterCorrelateRule rule mistakenly pushes a FILTER, consiting of correlated vars,
             // on top of LogicalCorrelate to within  left input for scalar corr queries
             // which causes exception during decorrelation. This has been disabled for now.
             //.addRuleInstance(FilterCorrelateRule.INSTANCE)
             .build();
-
     HepPlanner planner = createPlanner(program);
 
     planner.setRoot(root);
     root = planner.findBestExp();
-
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan before extracting correlated computations:\n" + RelOptUtil.toString(root));
+    }
+    root = root.accept(new CorrelateProjectExtractor(HiveRelFactories.HIVE_BUILDER));
+    // Necessary to update cm (CorrelMap) since CorrelateProjectExtractor above may modify the plan
+    this.cm = new CorelMapBuilder().build(root);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after extracting correlated computations:\n" + RelOptUtil.toString(root));
+    }
     // Perform decorrelation.
     map.clear();
 
@@ -994,7 +1005,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       SortedMap<CorDef, Integer> coreMap = new TreeMap<>();
       for (CorRef correlation : corVarList) {
         final CorDef def = correlation.def();
-        if (corDefOutputs.containsKey(def) || coreMap.containsKey(def)) {
+        // If the correlation/variable is already provided by the input
+        // then we don't have to look for equivalent expressions and 
+        // we don't need to create value generator for them.
+        if (corDefOutputs.containsKey(def)) {
+          coreMap.put(def, corDefOutputs.get(def));
+          continue;
+        }
+        // If the correlation/variable is in the map then we already
+        // seen this before in this loop so we don't need to treat it again.
+        if (coreMap.containsKey(def)) {
           continue;
         }
         try {
