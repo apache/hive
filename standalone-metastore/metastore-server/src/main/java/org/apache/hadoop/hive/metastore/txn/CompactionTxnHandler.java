@@ -907,6 +907,8 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     List<Long> deleteSet = new ArrayList<>();
     RetentionCounters rc = null;
+    long timeoutThreshold = System.currentTimeMillis() -
+            MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS);
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -940,8 +942,7 @@ class CompactionTxnHandler extends TxnHandler {
                 getFailedCompactionRetention(),
                 MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
           }
-          checkForDeletion(deleteSet, ci, rc, System.currentTimeMillis() -
-                  MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS));
+          checkForDeletion(deleteSet, ci, rc, timeoutThreshold);
         }
         close(rs);
 
