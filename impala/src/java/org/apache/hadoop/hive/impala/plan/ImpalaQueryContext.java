@@ -26,9 +26,12 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.impala.exec.ImpalaSessionImpl;
+import org.apache.hadoop.hive.impala.exec.ImpalaSessionManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.engine.EngineSession;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -69,7 +72,7 @@ public class ImpalaQueryContext {
   private final Context calcitePlannerCtx;
 
   public ImpalaQueryContext(HiveConf conf, String dbname, String username,
-      TQueryOptions options, HiveTxnManager txnMgr, Context ctx) {
+      TQueryOptions options, HiveTxnManager txnMgr, Context ctx) throws HiveException {
     this.conf = conf;
     // TODO: replace hostname and port with configured parameter settings
     hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
@@ -118,31 +121,16 @@ public class ImpalaQueryContext {
   }
 
   private TQueryCtx createQueryContext(HiveConf conf, String defaultDb,
-      String user, TQueryOptions options, TNetworkAddress hostLocation) {
-    TQueryCtx queryCtx = new TQueryCtx();
+      String user, TQueryOptions options, TNetworkAddress hostLocation) throws HiveException {
+    ImpalaSessionImpl sessionImpl = ImpalaSessionManager.getInstance().getSession(getConf());
+    TQueryCtx queryCtx = sessionImpl.getQueryContext();
+
     queryCtx.setClient_request(new TClientRequest("Submitting Hive generate plan", options));
-    queryCtx.setQuery_id(new TUniqueId());
     queryCtx.setSession(new TSessionState(new TUniqueId(), TSessionType.HIVESERVER2,
         defaultDb, user, hostLocation));
 
-    // TODO: following fields need to be configured appropriately
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
-    Date now = Calendar.getInstance().getTime();
-    queryCtx.setNow_string(formatter.format(now));
-    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-    queryCtx.setUtc_timestamp_string(formatter.format(now));
-    queryCtx.setLocal_time_zone("UTC");
-    queryCtx.setStart_unix_millis(System.currentTimeMillis());
-    queryCtx.setPid(1000);
     String requestPool = conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_REQUEST_POOL);
     queryCtx.setRequest_pool(requestPool); // for admission control
-    queryCtx.setCoord_hostname("127.0.0.1");
-    queryCtx.setStatus_report_interval_ms(5000);
-
-    TNetworkAddress krpcCordAddr = new TNetworkAddress();
-    krpcCordAddr.setHostname("127.0.0.1");
-    krpcCordAddr.setPort(27000);
-    queryCtx.setCoord_ip_address(krpcCordAddr);
 
     return queryCtx;
   }

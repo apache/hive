@@ -54,6 +54,8 @@ import org.apache.impala.thrift.TPingImpalaHS2ServiceReq;
 import org.apache.impala.thrift.TPingImpalaHS2ServiceResp;
 import org.apache.impala.thrift.TGetExecutorMembershipReq;
 import org.apache.impala.thrift.TGetExecutorMembershipResp;
+import org.apache.impala.thrift.TInitQueryContextResp;
+import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.thrift.TUpdateExecutorMembershipRequest;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.TException;
@@ -448,6 +450,23 @@ public class ImpalaSessionImpl implements EngineSession {
             });
 
         return resp.getExecutor_membership();
+    }
+
+    /**
+     * Retrieve a new query context from Impala
+     */
+    public TQueryCtx getQueryContext() throws HiveException {
+        Preconditions.checkNotNull(client);
+        Preconditions.checkNotNull(sessionHandle);
+
+        TInitQueryContextResp resp = retryRPC("InitQueryContext", true,
+            (c, retryCount) -> {
+                TInitQueryContextResp respInternal = client.InitQueryContext();
+                checkThriftStatus(respInternal.getStatus());
+                return respInternal;
+            });
+
+        return resp.getQuery_ctx();
     }
 
     @Override
