@@ -90,6 +90,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_database\n");
   }
 
+  void create_dataconnector(const DataConnector& connector) {
+    // Your implementation goes here
+    printf("create_dataconnector\n");
+  }
+
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) {
+    // Your implementation goes here
+    printf("get_dataconnector_req\n");
+  }
+
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) {
+    // Your implementation goes here
+    printf("drop_dataconnector\n");
+  }
+
+  void get_dataconnectors(std::vector<std::string> & _return) {
+    // Your implementation goes here
+    printf("get_dataconnectors\n");
+  }
+
+  void alter_dataconnector(const std::string& name, const DataConnector& connector) {
+    // Your implementation goes here
+    printf("alter_dataconnector\n");
+  }
+
   void get_type(Type& _return, const std::string& name) {
     // Your implementation goes here
     printf("get_type\n");

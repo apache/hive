@@ -81,13 +81,13 @@ class ThriftHiveMetastore_partition_name_to_vals_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1609 = 0;
-                        $_etype1612 = 0;
-                        $xfer += $input->readListBegin($_etype1612, $_size1609);
-                        for ($_i1613 = 0; $_i1613 < $_size1609; ++$_i1613) {
-                            $elem1614 = null;
-                            $xfer += $input->readString($elem1614);
-                            $this->success []= $elem1614;
+                        $_size1634 = 0;
+                        $_etype1637 = 0;
+                        $xfer += $input->readListBegin($_etype1637, $_size1634);
+                        for ($_i1638 = 0; $_i1638 < $_size1634; ++$_i1638) {
+                            $elem1639 = null;
+                            $xfer += $input->readString($elem1639);
+                            $this->success []= $elem1639;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -122,8 +122,8 @@ class ThriftHiveMetastore_partition_name_to_vals_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRING, count($this->success));
-            foreach ($this->success as $iter1615) {
-                $xfer += $output->writeString($iter1615);
+            foreach ($this->success as $iter1640) {
+                $xfer += $output->writeString($iter1640);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

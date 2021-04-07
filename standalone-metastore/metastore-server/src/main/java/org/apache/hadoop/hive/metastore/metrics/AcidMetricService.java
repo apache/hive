@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,8 @@ import java.util.stream.Collectors;
 public class AcidMetricService  implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidMetricService.class);
+  private static final String NO_VAL = " --- ";
+
   private Configuration conf;
   private TxnStore txnHandler;
 
@@ -93,6 +96,12 @@ public class AcidMetricService  implements MetastoreTaskThread {
       metrics.getOldestOpenTxnId());
     Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE ).set(
         metrics.getOldestOpenTxnAge());
+    Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).set(
+        metrics.getAbortedTxnsCount());
+    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).set(
+            metrics.getOldestAbortedTxnId());
+    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).set(
+            metrics.getOldestAbortedTxnAge());
   }
 
   @VisibleForTesting
@@ -113,7 +122,7 @@ public class AcidMetricService  implements MetastoreTaskThread {
 
     // Get the current count for each state
     Map<String, Long> counts = lastElements.values().stream()
-        .collect(Collectors.groupingBy(e -> e.getState(), Collectors.counting()));
+        .collect(Collectors.groupingBy(ShowCompactResponseElement::getState, Collectors.counting()));
 
     // Update metrics
     for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
@@ -131,6 +140,20 @@ public class AcidMetricService  implements MetastoreTaskThread {
       Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
           .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
     }
+
+    long initiatorsCount = lastElements.values().stream()
+        .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
+    long workersCount = lastElements.values().stream()
+        .map(e -> getHostFromId(e.getWorkerid())).distinct().filter(e -> !NO_VAL.equals(e)).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKERS).set((int) workersCount);
+
+    long initiatorVersionsCount = lastElements.values().stream()
+        .map(ShowCompactResponseElement::getInitiatorVersion).distinct().filter(Objects::nonNull).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS).set((int) initiatorVersionsCount);
+    long workerVersionsCount = lastElements.values().stream()
+        .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
+    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
   }
 
   @Override
@@ -142,6 +165,14 @@ public class AcidMetricService  implements MetastoreTaskThread {
   @Override
   public Configuration getConf() {
     return this.conf;
+  }
+
+  private static String getHostFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    int lastDash = id.lastIndexOf('-');
+    return id.substring(0, lastDash > -1 ? lastDash : id.length());
   }
 
 }

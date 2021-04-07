@@ -4664,6 +4664,12 @@ public class HiveConf extends Configuration {
         "Whether LLAP cache for ORC should remember gaps in ORC compression buffer read\n" +
         "estimates, to avoid re-reading the data that was read once and discarded because it\n" +
         "is unneeded. This is only necessary for ORC files written before HIVE-9660."),
+    LLAP_CACHE_HYDRATION_STRATEGY_CLASS("hive.llap.cache.hydration.strategy.class", "", "Strategy class for managing the "
+        + "llap cache hydration. It's executed when the daemon starts and stops, and gives a chance to save and/or "
+        + "load the contens of the llap cache. If left empty the feature is disabled.\n" +
+        "The class should implement org.apache.hadoop.hive.llap.LlapCacheHydration interface."),
+    LLAP_CACHE_HYDRATION_SAVE_DIR("hive.llap.cache.hydration.save.dir", "/tmp/hive", "Directory to save the llap cache content\n"
+        + "info on shutdown, if BasicLlapCacheHydration is used as the hive.llap.cache.hydration.strategy.class."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
         "cases of file overwrites. This is supported on HDFS. Disabling this also turns off any\n" +
@@ -5449,6 +5455,9 @@ public class HiveConf extends Configuration {
         "Comma-separated list of class names extending EventConsumer," +
          "to handle the NotificationEvents retreived by the notification event poll."),
 
+    HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS("hive.describe.partitionedtable.ignore.stats", false,
+        "Disable partitioned table stats collection for 'DESCRIBE FORMATTED' or 'DESCRIBE EXTENDED' commands."),
+    
     /* BLOBSTORE section */
 
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",

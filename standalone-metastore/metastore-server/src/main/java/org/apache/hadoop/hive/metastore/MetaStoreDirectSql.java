@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -373,8 +374,9 @@ class MetaStoreDirectSql {
 
       String queryTextDbSelector= "select "
           + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
-          + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\""
-          + " FROM "+ DBS
+          + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\", "
+          + "\"TYPE\", \"DATACONNECTOR_NAME\", \"REMOTE_DBNAME\""
+          + "FROM "+ DBS
           + " where \"NAME\" = ? and \"CTLG_NAME\" = ? ";
       Object[] params = new Object[] { dbName, catName };
       queryDbSelector = pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector);
@@ -431,6 +433,14 @@ class MetaStoreDirectSql {
         db.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(dbline[7]));
       }
       db.setManagedLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[8]));
+      String dbType = MetastoreDirectSqlUtils.extractSqlString(dbline[9]);
+      if (dbType != null && dbType.equalsIgnoreCase(DatabaseType.REMOTE.name())) {
+        db.setType(DatabaseType.REMOTE);
+        db.setConnector_name(MetastoreDirectSqlUtils.extractSqlString(dbline[10]));
+        db.setRemote_dbname(MetastoreDirectSqlUtils.extractSqlString(dbline[11]));
+      } else {
+        db.setType(DatabaseType.NATIVE);
+      }
       db.setParameters(MetaStoreServerUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()

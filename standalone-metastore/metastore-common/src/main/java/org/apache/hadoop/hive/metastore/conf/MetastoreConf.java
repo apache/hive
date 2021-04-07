@@ -1399,6 +1399,8 @@ public class MetastoreConf {
         "hive.metastore.custom.database.product.classname", "none",
           "Hook for external RDBMS. This class will be instantiated only when " +
           "metastore.use.custom.database.product is set to true."),
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
+            "Comma-separated list of supported blobstore schemes."),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
@@ -2254,5 +2256,15 @@ public class MetastoreConf {
     }
     buf.append("Finished MetastoreConf object.\n");
     return buf.toString();
+  }
+
+  public static char[] getValueFromKeystore(String keystorePath, String key) throws IOException {
+    char[] valueCharArray = null;
+    if (keystorePath != null && key != null) {
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystorePath);
+      valueCharArray = conf.getPassword(key);
+    }
+    return valueCharArray;
   }
 }

@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -490,22 +492,27 @@ public class TestDbTxnManager {
     }
     Assert.assertNotNull("Txn should have been aborted", exception);
     Assert.assertEquals(ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
+    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).getCount());
   }
 
   @Before
   public void setUp() throws Exception {
     TestTxnDbUtil.prepDb(conf);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr.getLockManager();//init lock manager
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
     nextInput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.ACID_HOUSEKEEPER_SERVICE_START, 0, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
     houseKeeperService.setConf(conf);
+    // re-initialize metrics
+    Metrics.shutdown();
+    Metrics.initialize(conf);
   }
 
   @After

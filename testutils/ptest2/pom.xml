@@ -273,6 +273,7 @@ limitations under the License.
               </goals>
               <configuration>
                 <excludes>
+                  <exclude>*.patch/</exclude>
                   <exclude>.idea/</exclude>
                   <exclude>.git/</exclude>
                   <exclude>.gitignore</exclude>

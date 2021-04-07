@@ -37,6 +37,11 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_databases(std::vector<std::string> & _return, const std::string& pattern) = 0;
   virtual void get_all_databases(std::vector<std::string> & _return) = 0;
   virtual void alter_database(const std::string& dbname, const Database& db) = 0;
+  virtual void create_dataconnector(const DataConnector& connector) = 0;
+  virtual void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) = 0;
+  virtual void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) = 0;
+  virtual void get_dataconnectors(std::vector<std::string> & _return) = 0;
+  virtual void alter_dataconnector(const std::string& name, const DataConnector& connector) = 0;
   virtual void get_type(Type& _return, const std::string& name) = 0;
   virtual bool create_type(const Type& type) = 0;
   virtual bool drop_type(const std::string& type) = 0;
@@ -348,6 +353,21 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_database(const std::string& /* dbname */, const Database& /* db */) {
+    return;
+  }
+  void create_dataconnector(const DataConnector& /* connector */) {
+    return;
+  }
+  void get_dataconnector_req(DataConnector& /* _return */, const GetDataConnectorRequest& /* request */) {
+    return;
+  }
+  void drop_dataconnector(const std::string& /* name */, const bool /* ifNotExists */, const bool /* checkReferences */) {
+    return;
+  }
+  void get_dataconnectors(std::vector<std::string> & /* _return */) {
+    return;
+  }
+  void alter_dataconnector(const std::string& /* name */, const DataConnector& /* connector */) {
     return;
   }
   void get_type(Type& /* _return */, const std::string& /* name */) {
@@ -2730,6 +2750,599 @@ class ThriftHiveMetastore_alter_database_presult {
   NoSuchObjectException o2;
 
   _ThriftHiveMetastore_alter_database_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_create_dataconnector_args__isset {
+  _ThriftHiveMetastore_create_dataconnector_args__isset() : connector(false) {}
+  bool connector :1;
+} _ThriftHiveMetastore_create_dataconnector_args__isset;
+
+class ThriftHiveMetastore_create_dataconnector_args {
+ public:
+
+  ThriftHiveMetastore_create_dataconnector_args(const ThriftHiveMetastore_create_dataconnector_args&);
+  ThriftHiveMetastore_create_dataconnector_args& operator=(const ThriftHiveMetastore_create_dataconnector_args&);
+  ThriftHiveMetastore_create_dataconnector_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_args() noexcept;
+  DataConnector connector;
+
+  _ThriftHiveMetastore_create_dataconnector_args__isset __isset;
+
+  void __set_connector(const DataConnector& val);
+
+  bool operator == (const ThriftHiveMetastore_create_dataconnector_args & rhs) const
+  {
+    if (!(connector == rhs.connector))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_dataconnector_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_dataconnector_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_create_dataconnector_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_pargs() noexcept;
+  const DataConnector* connector;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_dataconnector_result__isset {
+  _ThriftHiveMetastore_create_dataconnector_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_dataconnector_result__isset;
+
+class ThriftHiveMetastore_create_dataconnector_result {
+ public:
+
+  ThriftHiveMetastore_create_dataconnector_result(const ThriftHiveMetastore_create_dataconnector_result&);
+  ThriftHiveMetastore_create_dataconnector_result& operator=(const ThriftHiveMetastore_create_dataconnector_result&);
+  ThriftHiveMetastore_create_dataconnector_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_result() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_dataconnector_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_create_dataconnector_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_dataconnector_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_dataconnector_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_dataconnector_presult__isset {
+  _ThriftHiveMetastore_create_dataconnector_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_dataconnector_presult__isset;
+
+class ThriftHiveMetastore_create_dataconnector_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_presult() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_dataconnector_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnector_req_args__isset {
+  _ThriftHiveMetastore_get_dataconnector_req_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_dataconnector_req_args__isset;
+
+class ThriftHiveMetastore_get_dataconnector_req_args {
+ public:
+
+  ThriftHiveMetastore_get_dataconnector_req_args(const ThriftHiveMetastore_get_dataconnector_req_args&);
+  ThriftHiveMetastore_get_dataconnector_req_args& operator=(const ThriftHiveMetastore_get_dataconnector_req_args&);
+  ThriftHiveMetastore_get_dataconnector_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_args() noexcept;
+  GetDataConnectorRequest request;
+
+  _ThriftHiveMetastore_get_dataconnector_req_args__isset __isset;
+
+  void __set_request(const GetDataConnectorRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnector_req_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnector_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnector_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_dataconnector_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_pargs() noexcept;
+  const GetDataConnectorRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnector_req_result__isset {
+  _ThriftHiveMetastore_get_dataconnector_req_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_dataconnector_req_result__isset;
+
+class ThriftHiveMetastore_get_dataconnector_req_result {
+ public:
+
+  ThriftHiveMetastore_get_dataconnector_req_result(const ThriftHiveMetastore_get_dataconnector_req_result&);
+  ThriftHiveMetastore_get_dataconnector_req_result& operator=(const ThriftHiveMetastore_get_dataconnector_req_result&);
+  ThriftHiveMetastore_get_dataconnector_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_result() noexcept;
+  DataConnector success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_dataconnector_req_result__isset __isset;
+
+  void __set_success(const DataConnector& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnector_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnector_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnector_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnector_req_presult__isset {
+  _ThriftHiveMetastore_get_dataconnector_req_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_dataconnector_req_presult__isset;
+
+class ThriftHiveMetastore_get_dataconnector_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_presult() noexcept;
+  DataConnector* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_dataconnector_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_dataconnector_args__isset {
+  _ThriftHiveMetastore_drop_dataconnector_args__isset() : name(false), ifNotExists(false), checkReferences(false) {}
+  bool name :1;
+  bool ifNotExists :1;
+  bool checkReferences :1;
+} _ThriftHiveMetastore_drop_dataconnector_args__isset;
+
+class ThriftHiveMetastore_drop_dataconnector_args {
+ public:
+
+  ThriftHiveMetastore_drop_dataconnector_args(const ThriftHiveMetastore_drop_dataconnector_args&);
+  ThriftHiveMetastore_drop_dataconnector_args& operator=(const ThriftHiveMetastore_drop_dataconnector_args&);
+  ThriftHiveMetastore_drop_dataconnector_args() : name(), ifNotExists(0), checkReferences(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_args() noexcept;
+  std::string name;
+  bool ifNotExists;
+  bool checkReferences;
+
+  _ThriftHiveMetastore_drop_dataconnector_args__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_ifNotExists(const bool val);
+
+  void __set_checkReferences(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_drop_dataconnector_args & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(ifNotExists == rhs.ifNotExists))
+      return false;
+    if (!(checkReferences == rhs.checkReferences))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_dataconnector_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_dataconnector_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_dataconnector_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_pargs() noexcept;
+  const std::string* name;
+  const bool* ifNotExists;
+  const bool* checkReferences;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_dataconnector_result__isset {
+  _ThriftHiveMetastore_drop_dataconnector_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_dataconnector_result__isset;
+
+class ThriftHiveMetastore_drop_dataconnector_result {
+ public:
+
+  ThriftHiveMetastore_drop_dataconnector_result(const ThriftHiveMetastore_drop_dataconnector_result&);
+  ThriftHiveMetastore_drop_dataconnector_result& operator=(const ThriftHiveMetastore_drop_dataconnector_result&);
+  ThriftHiveMetastore_drop_dataconnector_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_result() noexcept;
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_dataconnector_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_dataconnector_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_dataconnector_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_dataconnector_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_dataconnector_presult__isset {
+  _ThriftHiveMetastore_drop_dataconnector_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_dataconnector_presult__isset;
+
+class ThriftHiveMetastore_drop_dataconnector_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_presult() noexcept;
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_dataconnector_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_dataconnectors_args {
+ public:
+
+  ThriftHiveMetastore_get_dataconnectors_args(const ThriftHiveMetastore_get_dataconnectors_args&);
+  ThriftHiveMetastore_get_dataconnectors_args& operator=(const ThriftHiveMetastore_get_dataconnectors_args&);
+  ThriftHiveMetastore_get_dataconnectors_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_args() noexcept;
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnectors_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnectors_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnectors_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_dataconnectors_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnectors_result__isset {
+  _ThriftHiveMetastore_get_dataconnectors_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_dataconnectors_result__isset;
+
+class ThriftHiveMetastore_get_dataconnectors_result {
+ public:
+
+  ThriftHiveMetastore_get_dataconnectors_result(const ThriftHiveMetastore_get_dataconnectors_result&);
+  ThriftHiveMetastore_get_dataconnectors_result& operator=(const ThriftHiveMetastore_get_dataconnectors_result&);
+  ThriftHiveMetastore_get_dataconnectors_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_result() noexcept;
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_dataconnectors_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnectors_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnectors_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnectors_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnectors_presult__isset {
+  _ThriftHiveMetastore_get_dataconnectors_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_dataconnectors_presult__isset;
+
+class ThriftHiveMetastore_get_dataconnectors_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_presult() noexcept;
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_dataconnectors_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_dataconnector_args__isset {
+  _ThriftHiveMetastore_alter_dataconnector_args__isset() : name(false), connector(false) {}
+  bool name :1;
+  bool connector :1;
+} _ThriftHiveMetastore_alter_dataconnector_args__isset;
+
+class ThriftHiveMetastore_alter_dataconnector_args {
+ public:
+
+  ThriftHiveMetastore_alter_dataconnector_args(const ThriftHiveMetastore_alter_dataconnector_args&);
+  ThriftHiveMetastore_alter_dataconnector_args& operator=(const ThriftHiveMetastore_alter_dataconnector_args&);
+  ThriftHiveMetastore_alter_dataconnector_args() : name() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_args() noexcept;
+  std::string name;
+  DataConnector connector;
+
+  _ThriftHiveMetastore_alter_dataconnector_args__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_connector(const DataConnector& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_dataconnector_args & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(connector == rhs.connector))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_dataconnector_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_dataconnector_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_dataconnector_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_pargs() noexcept;
+  const std::string* name;
+  const DataConnector* connector;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_dataconnector_result__isset {
+  _ThriftHiveMetastore_alter_dataconnector_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_dataconnector_result__isset;
+
+class ThriftHiveMetastore_alter_dataconnector_result {
+ public:
+
+  ThriftHiveMetastore_alter_dataconnector_result(const ThriftHiveMetastore_alter_dataconnector_result&);
+  ThriftHiveMetastore_alter_dataconnector_result& operator=(const ThriftHiveMetastore_alter_dataconnector_result&);
+  ThriftHiveMetastore_alter_dataconnector_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_result() noexcept;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_alter_dataconnector_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_dataconnector_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_dataconnector_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_dataconnector_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_dataconnector_presult__isset {
+  _ThriftHiveMetastore_alter_dataconnector_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_dataconnector_presult__isset;
+
+class ThriftHiveMetastore_alter_dataconnector_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_presult() noexcept;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_alter_dataconnector_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -32034,6 +32647,21 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_database(const std::string& dbname, const Database& db);
   void send_alter_database(const std::string& dbname, const Database& db);
   void recv_alter_database();
+  void create_dataconnector(const DataConnector& connector);
+  void send_create_dataconnector(const DataConnector& connector);
+  void recv_create_dataconnector();
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request);
+  void send_get_dataconnector_req(const GetDataConnectorRequest& request);
+  void recv_get_dataconnector_req(DataConnector& _return);
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  void send_drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  void recv_drop_dataconnector();
+  void get_dataconnectors(std::vector<std::string> & _return);
+  void send_get_dataconnectors();
+  void recv_get_dataconnectors(std::vector<std::string> & _return);
+  void alter_dataconnector(const std::string& name, const DataConnector& connector);
+  void send_alter_dataconnector(const std::string& name, const DataConnector& connector);
+  void recv_alter_dataconnector();
   void get_type(Type& _return, const std::string& name);
   void send_get_type(const std::string& name);
   void recv_get_type(Type& _return);
@@ -32784,6 +33412,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_create_dataconnector(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_dataconnector_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_dataconnector(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_dataconnectors(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_dataconnector(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -33044,6 +33677,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_databases"] = &ThriftHiveMetastoreProcessor::process_get_databases;
     processMap_["get_all_databases"] = &ThriftHiveMetastoreProcessor::process_get_all_databases;
     processMap_["alter_database"] = &ThriftHiveMetastoreProcessor::process_alter_database;
+    processMap_["create_dataconnector"] = &ThriftHiveMetastoreProcessor::process_create_dataconnector;
+    processMap_["get_dataconnector_req"] = &ThriftHiveMetastoreProcessor::process_get_dataconnector_req;
+    processMap_["drop_dataconnector"] = &ThriftHiveMetastoreProcessor::process_drop_dataconnector;
+    processMap_["get_dataconnectors"] = &ThriftHiveMetastoreProcessor::process_get_dataconnectors;
+    processMap_["alter_dataconnector"] = &ThriftHiveMetastoreProcessor::process_alter_dataconnector;
     processMap_["get_type"] = &ThriftHiveMetastoreProcessor::process_get_type;
     processMap_["create_type"] = &ThriftHiveMetastoreProcessor::process_create_type;
     processMap_["drop_type"] = &ThriftHiveMetastoreProcessor::process_drop_type;
@@ -33450,6 +34088,53 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->alter_database(dbname, db);
     }
     ifaces_[i]->alter_database(dbname, db);
+  }
+
+  void create_dataconnector(const DataConnector& connector) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->create_dataconnector(connector);
+    }
+    ifaces_[i]->create_dataconnector(connector);
+  }
+
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_dataconnector_req(_return, request);
+    }
+    ifaces_[i]->get_dataconnector_req(_return, request);
+    return;
+  }
+
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_dataconnector(name, ifNotExists, checkReferences);
+    }
+    ifaces_[i]->drop_dataconnector(name, ifNotExists, checkReferences);
+  }
+
+  void get_dataconnectors(std::vector<std::string> & _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_dataconnectors(_return);
+    }
+    ifaces_[i]->get_dataconnectors(_return);
+    return;
+  }
+
+  void alter_dataconnector(const std::string& name, const DataConnector& connector) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_dataconnector(name, connector);
+    }
+    ifaces_[i]->alter_dataconnector(name, connector);
   }
 
   void get_type(Type& _return, const std::string& name) {
@@ -35840,6 +36525,21 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void alter_database(const std::string& dbname, const Database& db);
   int32_t send_alter_database(const std::string& dbname, const Database& db);
   void recv_alter_database(const int32_t seqid);
+  void create_dataconnector(const DataConnector& connector);
+  int32_t send_create_dataconnector(const DataConnector& connector);
+  void recv_create_dataconnector(const int32_t seqid);
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request);
+  int32_t send_get_dataconnector_req(const GetDataConnectorRequest& request);
+  void recv_get_dataconnector_req(DataConnector& _return, const int32_t seqid);
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  int32_t send_drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  void recv_drop_dataconnector(const int32_t seqid);
+  void get_dataconnectors(std::vector<std::string> & _return);
+  int32_t send_get_dataconnectors();
+  void recv_get_dataconnectors(std::vector<std::string> & _return, const int32_t seqid);
+  void alter_dataconnector(const std::string& name, const DataConnector& connector);
+  int32_t send_alter_dataconnector(const std::string& name, const DataConnector& connector);
+  void recv_alter_dataconnector(const int32_t seqid);
   void get_type(Type& _return, const std::string& name);
   int32_t send_get_type(const std::string& name);
   void recv_get_type(Type& _return, const int32_t seqid);

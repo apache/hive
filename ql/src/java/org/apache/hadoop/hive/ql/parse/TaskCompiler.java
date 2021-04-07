@@ -158,7 +158,7 @@ public abstract class TaskCompiler {
 
     if (!pCtx.getQueryProperties().isAnalyzeCommand()) {
       LOG.debug("Skipping optimize operator plan for analyze command.");
-      optimizeOperatorPlan(pCtx, inputs, outputs);
+      optimizeOperatorPlan(pCtx);
     }
 
     /*
@@ -663,8 +663,7 @@ public abstract class TaskCompiler {
   /*
    * Called at the beginning of the compile phase to have another chance to optimize the operator plan
    */
-  protected void optimizeOperatorPlan(ParseContext pCtxSet, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs) throws SemanticException {
+  protected void optimizeOperatorPlan(ParseContext pCtxSet) throws SemanticException {
   }
 
   /*

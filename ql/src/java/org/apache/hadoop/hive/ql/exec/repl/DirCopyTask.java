@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.utils.HdfsUtils.constructDistCpOptions;
 
@@ -127,12 +129,18 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
 
   @Override
   public int execute() {
+    LOG.info("Started DirCopyTask for source: {} to target: {}", work.getFullyQualifiedSourcePath(),
+        work.getFullyQualifiedTargetPath());
     String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     Retryable retryable = Retryable.builder()
       .withHiveConf(conf)
       .withRetryOnException(IOException.class).build();
+    long startTime = System.currentTimeMillis();
+    AtomicInteger retries = new AtomicInteger(-1);
+     AtomicBoolean result = new AtomicBoolean(false);
     try {
       return retryable.executeCallable(() -> {
+        retries.getAndIncrement();
         UserGroupInformation proxyUser = null;
         Path sourcePath = work.getFullyQualifiedSourcePath();
         Path targetPath = work.getFullyQualifiedTargetPath();
@@ -162,7 +170,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
           // do we create a new conf and only here provide this additional option so that we get away from
           // differences of data in two location for the same directories ?
           // basically add distcp.options.delete to hiveconf new object ?
-          FileUtils.distCp(
+          boolean response = FileUtils.distCp(
             sourcePath.getFileSystem(conf), // source file system
             Collections.singletonList(sourcePath),  // list of source paths
             targetPath,
@@ -170,6 +178,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
             proxyUser,
             conf,
             ShimLoader.getHadoopShims());
+          result.set(response);
           return 0;
         } finally {
           if (proxyUser != null) {
@@ -182,6 +191,12 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
       Exception ex = new SecurityException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
       setException(ex);
       return ReplUtils.handleException(true, ex, work.getDumpDirectory(), work.getMetricCollector(), getName(), conf);
+    } finally {
+      String jobId = conf.get(ReplUtils.DISTCP_JOB_ID_CONF, ReplUtils.DISTCP_JOB_ID_CONF_DEFAULT);
+      LOG.info("DirCopyTask status for source: {} to  target: {}. Took {}. DistCp JobId {}. Number of retries {}. "
+              + "Result: {}", work.getFullyQualifiedSourcePath(), work.getFullyQualifiedTargetPath(),
+          ReplUtils.convertToHumanReadableTime(System.currentTimeMillis() - startTime), jobId, retries.get(),
+          result.get() ? "SUCCEEDED" : "FAILED");
     }
   }
 

@@ -46,7 +46,8 @@ abstract class DescDatabaseFormatter {
   }
 
   abstract void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-      String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
+      String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
+      String connectorName, String remoteDbName)
       throws HiveException;
 
   // ------ Implementations ------
@@ -54,7 +55,8 @@ abstract class DescDatabaseFormatter {
   static class JsonDescDatabaseFormatter extends DescDatabaseFormatter {
     @Override
     void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-        String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
+        String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
+        String connectorName, String remoteDbName)
         throws HiveException {
       MapBuilder builder = MapBuilder.create()
           .put("database", database)
@@ -69,6 +71,12 @@ abstract class DescDatabaseFormatter {
       if (ownerType != null) {
         builder.put("ownerType", ownerType.name());
       }
+      if (connectorName != null) {
+        builder.put("connector_name", connectorName);
+      }
+      if (remoteDbName != null) {
+        builder.put("remote_dbname", remoteDbName);
+      }
       if (MapUtils.isNotEmpty(params)) {
         builder.put("params", params);
       }
@@ -79,7 +87,8 @@ abstract class DescDatabaseFormatter {
   static class TextDescDatabaseFormatter extends DescDatabaseFormatter {
     @Override
     void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
-        String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params)
+        String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
+        String connectorName, String remoteDbName)
         throws HiveException {
       try {
         out.write(database.getBytes(StandardCharsets.UTF_8));
@@ -102,6 +111,14 @@ abstract class DescDatabaseFormatter {
         out.write(Utilities.tabCode);
         if (ownerType != null) {
           out.write(ownerType.name().getBytes(StandardCharsets.UTF_8));
+        }
+        out.write(Utilities.tabCode);
+        if (connectorName != null) {
+          out.write(connectorName.getBytes(StandardCharsets.UTF_8));
+        }
+        out.write(Utilities.tabCode);
+        if (remoteDbName != null) {
+          out.write(remoteDbName.getBytes(StandardCharsets.UTF_8));
         }
         out.write(Utilities.tabCode);
         if (MapUtils.isNotEmpty(params)) {
