@@ -428,15 +428,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return loadTable(fromURI, tblDesc, replace, replicationSpec, x, writeId,stmtId, null, null);
   }
 
-    private static Task<?> loadTable(URI fromURI, ImportTableDesc tblDesc, boolean replace,
-                                     ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
-                                     Long writeId, int stmtId,
-                                     String dumpRoot, ReplicationMetricCollector metricCollector) {
-
+  private static Task<?> loadTable(URI fromURI, ImportTableDesc tblDesc, boolean replace,
+                                   ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
+                                   Long writeId, int stmtId,
+                                   String dumpRoot, ReplicationMetricCollector metricCollector) {
+    Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
     DelayExecUtil delayExecUtil = new DelayExecUtil(replace, writeId, stmtId, x.getHive(),
         x.getCtx(), tblDesc, replicationSpec.isInReplicationScope());
-
-    Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
 
     Task<?> copyTask;
     // Corresponding work objects are not complete yet. Some of the values will be assigned when task is
@@ -450,8 +448,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ((CopyWork) copyTask.getWork()).setDelayExecUtil(delayExecUtil);
 
-        MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false,
-                                         dumpRoot, metricCollector, true, delayExecUtil);
+    MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false,
+        dumpRoot, metricCollector, true, delayExecUtil);
 
     //if Importing into existing table, FileFormat is checked by
     // ImportSemanticAnalzyer.checked checkTable()
