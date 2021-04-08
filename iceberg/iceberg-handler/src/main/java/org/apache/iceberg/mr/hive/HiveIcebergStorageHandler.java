@@ -245,8 +245,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           // Check if we can convert the expression to a valid Iceberg filter
           SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) clone);
           HiveIcebergFilterFactory.generateFilterExpression(sarg);
-          LOG.debug("Found Iceberg partition column to prune with predicate {}",
-              syntheticFilterPredicate);
+          LOG.debug("Found Iceberg partition column to prune with predicate {}", syntheticFilterPredicate);
           return true;
         }
       }
