@@ -1,0 +1,37 @@
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+PREHOOK: query: explain SELECT FROM_TIMESTAMP('2001/01/06', 'yyyy/mm/dd') AS yyyy_mm_dd_hh_mm
+PREHOOK: type: QUERY
+PREHOOK: Output: streaming
+POSTHOOK: query: explain SELECT FROM_TIMESTAMP('2001/01/06', 'yyyy/mm/dd') AS yyyy_mm_dd_hh_mm
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: from_timestamp(casttotimestamp('2001/01/06'), 'yyyy/mm/dd')
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  00:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=1
+     in pipelines: <none>
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

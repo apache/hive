@@ -2088,7 +2088,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -2104,7 +2105,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -2120,7 +2122,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -2136,7 +2139,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -2152,7 +2156,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -2168,7 +2173,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -2183,7 +2189,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -2198,7 +2205,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -2213,7 +2221,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -2228,7 +2237,8 @@
             "BOOLEAN"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_10BooleanValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -2243,7 +2253,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -2259,7 +2270,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -2275,7 +2287,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -2291,7 +2304,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -2307,7 +2321,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -2323,7 +2338,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -2338,7 +2354,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -2353,7 +2370,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -2368,7 +2386,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -2383,7 +2402,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -2399,7 +2419,8 @@
             "TINYINT"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_10TinyIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -2414,7 +2435,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -2429,7 +2451,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -2445,7 +2468,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -2461,7 +2485,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -2477,7 +2502,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -2493,7 +2519,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -2508,7 +2535,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -2523,7 +2551,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -2538,7 +2567,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -2553,7 +2583,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -2569,7 +2600,8 @@
             "SMALLINT"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_11SmallIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -2584,7 +2616,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -2599,7 +2632,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -2614,7 +2648,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -2630,7 +2665,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -2646,7 +2682,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -2662,7 +2699,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -2677,7 +2715,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -2692,7 +2731,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -2707,7 +2747,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -2722,7 +2763,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -2738,7 +2780,8 @@
             "INT"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_6IntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -2753,7 +2796,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -2768,7 +2812,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -2783,7 +2828,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -2798,7 +2844,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -2814,7 +2861,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -2830,7 +2878,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -2845,7 +2894,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -2860,7 +2910,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -2875,7 +2926,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -2890,7 +2942,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -2906,7 +2959,8 @@
             "BIGINT"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_9BigIntValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -2921,7 +2975,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -2936,7 +2991,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -2951,7 +3007,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -2966,7 +3023,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -2981,7 +3039,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -2997,7 +3056,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -3012,7 +3072,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -3027,7 +3088,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -3042,7 +3104,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -3057,7 +3120,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -3073,7 +3137,8 @@
             "FLOAT"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_8FloatValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -3088,7 +3153,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -3103,7 +3169,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -3118,7 +3185,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -3133,7 +3201,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -3148,7 +3217,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -3163,7 +3233,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -3178,7 +3249,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -3193,7 +3265,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -3208,7 +3281,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -3223,7 +3297,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -3239,7 +3314,8 @@
             "DOUBLE"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_9DoubleValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -3254,7 +3330,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -3269,7 +3346,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -3284,7 +3362,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -3299,7 +3378,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -3314,7 +3394,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -3329,7 +3410,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -3344,7 +3426,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -3359,7 +3442,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions10CastToCharEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -3375,7 +3459,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -3390,7 +3475,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodate",
@@ -3406,7 +3492,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala13CastFunctions13CastToDateValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -3421,7 +3508,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -3436,7 +3524,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -3451,7 +3540,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -3466,7 +3556,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -3481,7 +3572,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -3496,7 +3588,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -3512,7 +3605,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -3527,7 +3621,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -3542,7 +3637,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions10CastToCharEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -3558,7 +3654,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -3573,7 +3670,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodate",
@@ -3589,7 +3687,8 @@
             "VARCHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions13CastToDateValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -3604,7 +3703,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -3619,7 +3719,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -3634,7 +3735,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -3649,7 +3751,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -3664,7 +3767,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -3679,7 +3783,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -3695,7 +3800,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -3710,7 +3816,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -3725,7 +3832,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions10CastToCharEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -3741,7 +3849,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -3756,7 +3865,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodate",
@@ -3772,7 +3882,8 @@
             "CHAR"
         ],
         "symbolName": "_ZN6impala13CastFunctions13CastToDateValEPN10impala_udf15FunctionContextERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -3787,7 +3898,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -3802,7 +3914,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -3817,7 +3930,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -3832,7 +3946,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions12CastToIntValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -3847,7 +3962,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -3862,7 +3978,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -3877,7 +3994,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -3892,7 +4010,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -3907,7 +4026,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -3922,7 +4042,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodate",
@@ -3937,7 +4058,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "_ZN6impala13CastFunctions13CastToDateValEPN10impala_udf15FunctionContextERKNS1_12TimestampValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -3952,7 +4074,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToBooleanValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotinyint",
@@ -3967,7 +4090,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToTinyIntValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -3982,7 +4106,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators17CastToSmallIntValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -3997,7 +4122,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators12CastToIntValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -4012,7 +4138,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators15CastToBigIntValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -4028,7 +4155,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators14CastToFloatValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -4044,7 +4172,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators15CastToDoubleValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -4059,7 +4188,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -4074,7 +4204,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -4089,7 +4220,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators15CastToStringValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -4104,7 +4236,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodecimal",
@@ -4119,7 +4252,8 @@
             "DECIMAL"
         ],
         "symbolName": "_ZN6impala16DecimalOperators16CastToDecimalValEPN10impala_udf15FunctionContextERKNS1_10DecimalValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -4134,7 +4268,8 @@
             "DATE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_7DateValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttovarchar",
@@ -4149,7 +4284,8 @@
             "DATE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_7DateValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttochar",
@@ -4164,7 +4300,8 @@
             "DATE"
         ],
         "symbolName": "_ZN6impala13CastFunctions15CastToStringValEPN10impala_udf15FunctionContextERKNS1_7DateValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -4180,7 +4317,8 @@
             "DATE"
         ],
         "symbolName": "_ZN6impala13CastFunctions18CastToTimestampValEPN10impala_udf15FunctionContextERKNS1_7DateValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "case",
@@ -8065,7 +8203,8 @@
             "STRING"
         ],
         "symbolName": "_ZN6impala18TimestampFunctions13FromTimestampEPN10impala_udf15FunctionContextERKNS1_12TimestampValERKNS1_9StringValE",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "monthname",
@@ -15786,7 +15925,8 @@
             "TINYINT"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttosmallint",
@@ -15797,7 +15937,8 @@
             "SMALLINT"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoint",
@@ -15808,7 +15949,8 @@
             "INT"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttobigint",
@@ -15819,7 +15961,8 @@
             "BIGINT"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttofloat",
@@ -15830,7 +15973,8 @@
             "FLOAT"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttodouble",
@@ -15841,7 +15985,8 @@
             "DOUBLE"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttostring",
@@ -15852,7 +15997,8 @@
             "STRING"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttotimestamp",
@@ -15863,7 +16009,8 @@
             "TIMESTAMP"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "casttoboolean",
@@ -15874,7 +16021,8 @@
             "BOOLEAN"
         ],
         "symbolName": "notsupported",
-        "hdfsUriLoc": ""
+        "hdfsUriLoc": "",
+        "retTypeAlwaysNullable": "true"
     },
     {
         "impalaFnName": "sq_count_check",

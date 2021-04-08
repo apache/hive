@@ -98,8 +98,8 @@ public class AggFunctionDetails implements FunctionDetails {
       if (afd.isAnalyticFn) {
         ANALYTIC_BUILTINS.add(afd.fnName.toUpperCase());
       }
-      ImpalaFunctionSignature ifs =
-          ImpalaFunctionSignature.create(afd.fnName, afd.getArgTypes(), afd.getRetType(), false);
+      ImpalaFunctionSignature ifs = ImpalaFunctionSignature.create(afd.fnName, afd.getArgTypes(),
+          afd.getRetType(), false, false);
       afd.ifs = ifs;
       AGG_BUILTINS_MAP.put(ifs, afd);
     }
@@ -238,7 +238,7 @@ public class AggFunctionDetails implements FunctionDetails {
       Type retType, boolean hasVarArgs) {
 
     ImpalaFunctionSignature sig = ImpalaFunctionSignature.create(name.toLowerCase(), operandTypes, retType,
-        hasVarArgs);
+        hasVarArgs, null);
 
     if (sig != null) {
       return AGG_BUILTINS_MAP.get(sig);

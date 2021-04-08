@@ -124,7 +124,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     // handle the return types with precision and scale separately.
     switch (relDataType.getSqlTypeName()) {
       case VARCHAR: {
-        boolean isNullable = false;
+        boolean isNullable = funcSig.retTypeAlwaysNullable();
         for (RexNode operand : operands) {
           isNullable = isNullable || operand.getType().isNullable();
         }
@@ -144,7 +144,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
         return op.inferReturnType(rexBuilder.getTypeFactory(), RexUtil.types(operands));
       // For the default case, we can just create a RelDataType.
       default: {
-        boolean isNullable = false;
+        boolean isNullable = funcSig.retTypeAlwaysNullable();
         for (RexNode operand : operands) {
           isNullable = isNullable || operand.getType().isNullable();
         }
@@ -439,9 +439,6 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
 
     RelDataType rdt;
     if (SqlTypeName.CHAR_TYPES.contains(postCastSqlTypeName)) {
-      // It should always be a string type.
-      Preconditions.checkState(postCastSqlTypeName == SqlTypeName.VARCHAR);
-      Preconditions.checkState(postCastRelType.getPrecision() == Integer.MAX_VALUE);
       rdt = dtFactory.createTypeWithCharsetAndCollation(
               dtFactory.createSqlType(postCastSqlTypeName, postCastRelType.getPrecision()),
               Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);

@@ -92,7 +92,7 @@ public class ImpalaFunctionSignature {
 
     for (ScalarFunctionDetails sfd : scalarDetails) {
       ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(sfd.fnName, sfd.getArgTypes(),
-          sfd.getRetType(), sfd.hasVarArgs);
+          sfd.getRetType(), sfd.hasVarArgs, sfd.retTypeAlwaysNullable);
       List<ImpalaFunctionSignature> castIfsList =
           CAST_CHECK_BUILTINS_INSTANCE.computeIfAbsent(sfd.fnName, k -> Lists.newArrayList());
       castIfsList.add(ifs);
@@ -100,7 +100,7 @@ public class ImpalaFunctionSignature {
 
     for (AggFunctionDetails afd : aggDetails) {
       ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.fnName, afd.getArgTypes(),
-          afd.getRetType(), false);
+          afd.getRetType(), false, false);
       List<ImpalaFunctionSignature> castIfsList =
           CAST_CHECK_BUILTINS_INSTANCE.computeIfAbsent(afd.fnName, k -> Lists.newArrayList());
       castIfsList.add(ifs);
@@ -124,8 +124,11 @@ public class ImpalaFunctionSignature {
 
   private final List<RelDataType> argRelDataTypes;
 
+  // flag to specify if the function
+  private final Boolean retTypeAlwaysNullable;
+
   private ImpalaFunctionSignature(String func, List<Type> argTypes, Type retType,
-      boolean hasVarArgs) {
+      boolean hasVarArgs, Boolean retTypeAlwaysNullable) {
     Preconditions.checkNotNull(func);
     this.func = func;
     this.argTypes = ImmutableList.copyOf(argTypes);
@@ -134,6 +137,10 @@ public class ImpalaFunctionSignature {
     this.retRelDataType =
         (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType, true);
     this.hasVarArgs = hasVarArgs;
+    // "from_timestamp" is a function that changes the input into a null if it cannot be processed.
+    // If we find other functions that can turn non-nulls into nulls, we probably should make
+    // this an attribute in the json file.
+    this.retTypeAlwaysNullable = retTypeAlwaysNullable;
   }
 
   private ImpalaFunctionSignature(String func, List<RelDataType> argTypes, RelDataType retType) {
@@ -145,6 +152,7 @@ public class ImpalaFunctionSignature {
     this.retRelDataType =
         (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType, true);
     this.hasVarArgs = false;
+    this.retTypeAlwaysNullable = null;
   }
 
   public String getFunc() {
@@ -161,6 +169,11 @@ public class ImpalaFunctionSignature {
 
   public boolean hasVarArgs() {
     return hasVarArgs;
+  }
+
+  public boolean retTypeAlwaysNullable() {
+    Preconditions.checkNotNull(retTypeAlwaysNullable);
+    return retTypeAlwaysNullable;
   }
 
   /**
@@ -425,8 +438,8 @@ public class ImpalaFunctionSignature {
   }
 
   public static ImpalaFunctionSignature create(String func, List<Type> argTypes, Type retType,
-      boolean hasVarArgs) {
-    return new ImpalaFunctionSignature(func, argTypes, retType, hasVarArgs);
+      boolean hasVarArgs, Boolean retTypeAlwaysNullable) {
+    return new ImpalaFunctionSignature(func, argTypes, retType, hasVarArgs, retTypeAlwaysNullable);
   }
 
   public static RelDataType getCastType(RelDataType dt1, RelDataType dt2, RelDataTypeFactory typeFactory) {

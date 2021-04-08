@@ -68,6 +68,7 @@ public class ScalarFunctionDetails implements FunctionDetails {
   public TFunctionBinaryType binaryType;
   public String hdfsUriLoc;
   public HdfsUri hdfsUri;
+  public boolean retTypeAlwaysNullable;
   public ImpalaFunctionSignature ifs;
 
   // Set of all scalar functions available in Impala
@@ -87,8 +88,8 @@ public class ScalarFunctionDetails implements FunctionDetails {
     for (ScalarFunctionDetails sfd : scalarDetails) {
       SCALAR_BUILTINS.add(sfd.fnName.toUpperCase());
       sfd.setDbName(BuiltinsDb.NAME);
-      ImpalaFunctionSignature ifs =
-          ImpalaFunctionSignature.create(sfd.fnName, sfd.getArgTypes(), sfd.getRetType(), sfd.hasVarArgs);
+      ImpalaFunctionSignature ifs = ImpalaFunctionSignature.create(sfd.fnName, sfd.getArgTypes(),
+          sfd.getRetType(), sfd.hasVarArgs, sfd.retTypeAlwaysNullable);
       sfd.ifs = ifs;
       SCALAR_BUILTINS_MAP.put(ifs, sfd);
     }
@@ -178,6 +179,10 @@ public class ScalarFunctionDetails implements FunctionDetails {
     this.hdfsUri = new HdfsUri(hdfsUriLoc);
   }
 
+  public void setRetTypeAlwaysAllowsNulls(boolean retTypeAlwaysNullable) {
+    this.retTypeAlwaysNullable = retTypeAlwaysNullable;
+  }
+
   @Override
   public ImpalaFunctionSignature getSignature() {
     return ifs;
@@ -191,7 +196,7 @@ public class ScalarFunctionDetails implements FunctionDetails {
        Type retType) {
 
     ImpalaFunctionSignature sig = ImpalaFunctionSignature.create(name,
-        operandTypes, retType, false);
+        operandTypes, retType, false, null);
 
     return SCALAR_BUILTINS_MAP.get(sig);
   }
