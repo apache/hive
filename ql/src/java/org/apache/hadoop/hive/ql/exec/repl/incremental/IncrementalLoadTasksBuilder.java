@@ -154,10 +154,6 @@ public class IncrementalLoadTasksBuilder {
         taskChainTail = barrierTask;
       }
       lastReplayedEvent = eventDmd.getEventTo();
-
-      if (mhContext.dmd.getDumpType() == DumpType.EVENT_DROP_TABLE) {
-        break;
-      }
     }
 
     if (!hasMoreWork()) {

@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -38,6 +41,7 @@ public class CopyWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
+  private ImportSemanticAnalyzer.DelayExecUtil delayExecUtil;
 
   public CopyWork() {
   }
@@ -135,5 +139,23 @@ public class CopyWork implements Serializable {
 
   public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
+  }
+
+  public ImportSemanticAnalyzer.DelayExecUtil getDelayExecUtil() {
+    return delayExecUtil;
+  }
+
+  public void setDelayExecUtil(ImportSemanticAnalyzer.DelayExecUtil delayExecUtil) {
+    this.delayExecUtil = delayExecUtil;
+  }
+
+  public void setValuesForDelayedExec() throws HiveException {
+    if (delayExecUtil == null) {
+      return;
+    }
+
+    Table table = delayExecUtil.getTableIfExists();
+    delayExecUtil.calculateValues(table);
+    this.toPath = new Path[] { delayExecUtil.getDestPath() };
   }
 }

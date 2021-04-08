@@ -19,13 +19,19 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -45,6 +51,7 @@ public class MoveWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
+  private ImportSemanticAnalyzer.DelayExecUtil delayExecUtil;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -99,6 +106,14 @@ public class MoveWork implements Serializable {
     this.dumpDirectory = dumpRoot;
     this.metricCollector = metricCollector;
     this.isReplication = isReplication;
+  }
+
+  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+      final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
+      boolean checkFileFormat, String dumpRoot, ReplicationMetricCollector metricCollector,
+      boolean isReplication, ImportSemanticAnalyzer.DelayExecUtil delayExecUtil) {
+    this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, dumpRoot, metricCollector, isReplication);
+    this.delayExecUtil = delayExecUtil;
   }
 
   public MoveWork(final MoveWork o) {
@@ -197,5 +212,29 @@ public class MoveWork implements Serializable {
 
   public boolean getIsInReplicationScope() {
     return this.isInReplicationScope;
+  }
+
+  public void setValuesForDelayedExec() throws HiveException {
+    if (delayExecUtil == null) {
+      return;
+    }
+
+    Table table = delayExecUtil.getTableIfExists();
+    delayExecUtil.calculateValues(table);
+
+    if (delayExecUtil.isInReplScope() && AcidUtils.isTransactionalTable(table)) {
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+          Collections.singletonList(delayExecUtil.getDestPath()),
+          Collections.singletonList(delayExecUtil.getTgtPath()),
+          true, null, null);
+      setMultiFilesDesc(loadFilesWork);
+      setNeedCleanTarget(delayExecUtil.isReplace());
+    } else {
+      LoadTableDesc loadTableWork = new LoadTableDesc(
+          delayExecUtil.getLoadPath(), Utilities.getTableDesc(table), new TreeMap<>(),
+          delayExecUtil.getLft(), delayExecUtil.getWriteId());
+      loadTableWork.setStmtId(delayExecUtil.getStmtId());
+      setLoadTableWork(loadTableWork);
+    }
   }
 }
