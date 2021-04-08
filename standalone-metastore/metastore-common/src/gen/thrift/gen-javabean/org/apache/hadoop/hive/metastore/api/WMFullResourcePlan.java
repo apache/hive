@@ -735,14 +735,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // POOLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1074 = iprot.readListBegin();
-                struct.pools = new java.util.ArrayList<WMPool>(_list1074.size);
-                @org.apache.thrift.annotation.Nullable WMPool _elem1075;
-                for (int _i1076 = 0; _i1076 < _list1074.size; ++_i1076)
+                org.apache.thrift.protocol.TList _list1090 = iprot.readListBegin();
+                struct.pools = new java.util.ArrayList<WMPool>(_list1090.size);
+                @org.apache.thrift.annotation.Nullable WMPool _elem1091;
+                for (int _i1092 = 0; _i1092 < _list1090.size; ++_i1092)
                 {
-                  _elem1075 = new WMPool();
-                  _elem1075.read(iprot);
-                  struct.pools.add(_elem1075);
+                  _elem1091 = new WMPool();
+                  _elem1091.read(iprot);
+                  struct.pools.add(_elem1091);
                 }
                 iprot.readListEnd();
               }
@@ -754,14 +754,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // MAPPINGS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1077 = iprot.readListBegin();
-                struct.mappings = new java.util.ArrayList<WMMapping>(_list1077.size);
-                @org.apache.thrift.annotation.Nullable WMMapping _elem1078;
-                for (int _i1079 = 0; _i1079 < _list1077.size; ++_i1079)
+                org.apache.thrift.protocol.TList _list1093 = iprot.readListBegin();
+                struct.mappings = new java.util.ArrayList<WMMapping>(_list1093.size);
+                @org.apache.thrift.annotation.Nullable WMMapping _elem1094;
+                for (int _i1095 = 0; _i1095 < _list1093.size; ++_i1095)
                 {
-                  _elem1078 = new WMMapping();
-                  _elem1078.read(iprot);
-                  struct.mappings.add(_elem1078);
+                  _elem1094 = new WMMapping();
+                  _elem1094.read(iprot);
+                  struct.mappings.add(_elem1094);
                 }
                 iprot.readListEnd();
               }
@@ -773,14 +773,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // TRIGGERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1080 = iprot.readListBegin();
-                struct.triggers = new java.util.ArrayList<WMTrigger>(_list1080.size);
-                @org.apache.thrift.annotation.Nullable WMTrigger _elem1081;
-                for (int _i1082 = 0; _i1082 < _list1080.size; ++_i1082)
+                org.apache.thrift.protocol.TList _list1096 = iprot.readListBegin();
+                struct.triggers = new java.util.ArrayList<WMTrigger>(_list1096.size);
+                @org.apache.thrift.annotation.Nullable WMTrigger _elem1097;
+                for (int _i1098 = 0; _i1098 < _list1096.size; ++_i1098)
                 {
-                  _elem1081 = new WMTrigger();
-                  _elem1081.read(iprot);
-                  struct.triggers.add(_elem1081);
+                  _elem1097 = new WMTrigger();
+                  _elem1097.read(iprot);
+                  struct.triggers.add(_elem1097);
                 }
                 iprot.readListEnd();
               }
@@ -792,14 +792,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 5: // POOL_TRIGGERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1083 = iprot.readListBegin();
-                struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1083.size);
-                @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1084;
-                for (int _i1085 = 0; _i1085 < _list1083.size; ++_i1085)
+                org.apache.thrift.protocol.TList _list1099 = iprot.readListBegin();
+                struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1099.size);
+                @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1100;
+                for (int _i1101 = 0; _i1101 < _list1099.size; ++_i1101)
                 {
-                  _elem1084 = new WMPoolTrigger();
-                  _elem1084.read(iprot);
-                  struct.poolTriggers.add(_elem1084);
+                  _elem1100 = new WMPoolTrigger();
+                  _elem1100.read(iprot);
+                  struct.poolTriggers.add(_elem1100);
                 }
                 iprot.readListEnd();
               }
@@ -830,9 +830,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(POOLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.pools.size()));
-          for (WMPool _iter1086 : struct.pools)
+          for (WMPool _iter1102 : struct.pools)
           {
-            _iter1086.write(oprot);
+            _iter1102.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -843,9 +843,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(MAPPINGS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.mappings.size()));
-            for (WMMapping _iter1087 : struct.mappings)
+            for (WMMapping _iter1103 : struct.mappings)
             {
-              _iter1087.write(oprot);
+              _iter1103.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -857,9 +857,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(TRIGGERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.triggers.size()));
-            for (WMTrigger _iter1088 : struct.triggers)
+            for (WMTrigger _iter1104 : struct.triggers)
             {
-              _iter1088.write(oprot);
+              _iter1104.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -871,9 +871,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(POOL_TRIGGERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.poolTriggers.size()));
-            for (WMPoolTrigger _iter1089 : struct.poolTriggers)
+            for (WMPoolTrigger _iter1105 : struct.poolTriggers)
             {
-              _iter1089.write(oprot);
+              _iter1105.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -900,9 +900,9 @@ package org.apache.hadoop.hive.metastore.api;
       struct.plan.write(oprot);
       {
         oprot.writeI32(struct.pools.size());
-        for (WMPool _iter1090 : struct.pools)
+        for (WMPool _iter1106 : struct.pools)
         {
-          _iter1090.write(oprot);
+          _iter1106.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -919,27 +919,27 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetMappings()) {
         {
           oprot.writeI32(struct.mappings.size());
-          for (WMMapping _iter1091 : struct.mappings)
+          for (WMMapping _iter1107 : struct.mappings)
           {
-            _iter1091.write(oprot);
+            _iter1107.write(oprot);
           }
         }
       }
       if (struct.isSetTriggers()) {
         {
           oprot.writeI32(struct.triggers.size());
-          for (WMTrigger _iter1092 : struct.triggers)
+          for (WMTrigger _iter1108 : struct.triggers)
           {
-            _iter1092.write(oprot);
+            _iter1108.write(oprot);
           }
         }
       }
       if (struct.isSetPoolTriggers()) {
         {
           oprot.writeI32(struct.poolTriggers.size());
-          for (WMPoolTrigger _iter1093 : struct.poolTriggers)
+          for (WMPoolTrigger _iter1109 : struct.poolTriggers)
           {
-            _iter1093.write(oprot);
+            _iter1109.write(oprot);
           }
         }
       }
@@ -952,56 +952,56 @@ package org.apache.hadoop.hive.metastore.api;
       struct.plan.read(iprot);
       struct.setPlanIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list1094 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.pools = new java.util.ArrayList<WMPool>(_list1094.size);
-        @org.apache.thrift.annotation.Nullable WMPool _elem1095;
-        for (int _i1096 = 0; _i1096 < _list1094.size; ++_i1096)
+        org.apache.thrift.protocol.TList _list1110 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.pools = new java.util.ArrayList<WMPool>(_list1110.size);
+        @org.apache.thrift.annotation.Nullable WMPool _elem1111;
+        for (int _i1112 = 0; _i1112 < _list1110.size; ++_i1112)
         {
-          _elem1095 = new WMPool();
-          _elem1095.read(iprot);
-          struct.pools.add(_elem1095);
+          _elem1111 = new WMPool();
+          _elem1111.read(iprot);
+          struct.pools.add(_elem1111);
         }
       }
       struct.setPoolsIsSet(true);
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1097 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.mappings = new java.util.ArrayList<WMMapping>(_list1097.size);
-          @org.apache.thrift.annotation.Nullable WMMapping _elem1098;
-          for (int _i1099 = 0; _i1099 < _list1097.size; ++_i1099)
+          org.apache.thrift.protocol.TList _list1113 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.mappings = new java.util.ArrayList<WMMapping>(_list1113.size);
+          @org.apache.thrift.annotation.Nullable WMMapping _elem1114;
+          for (int _i1115 = 0; _i1115 < _list1113.size; ++_i1115)
           {
-            _elem1098 = new WMMapping();
-            _elem1098.read(iprot);
-            struct.mappings.add(_elem1098);
+            _elem1114 = new WMMapping();
+            _elem1114.read(iprot);
+            struct.mappings.add(_elem1114);
           }
         }
         struct.setMappingsIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list1100 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.triggers = new java.util.ArrayList<WMTrigger>(_list1100.size);
-          @org.apache.thrift.annotation.Nullable WMTrigger _elem1101;
-          for (int _i1102 = 0; _i1102 < _list1100.size; ++_i1102)
+          org.apache.thrift.protocol.TList _list1116 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.triggers = new java.util.ArrayList<WMTrigger>(_list1116.size);
+          @org.apache.thrift.annotation.Nullable WMTrigger _elem1117;
+          for (int _i1118 = 0; _i1118 < _list1116.size; ++_i1118)
           {
-            _elem1101 = new WMTrigger();
-            _elem1101.read(iprot);
-            struct.triggers.add(_elem1101);
+            _elem1117 = new WMTrigger();
+            _elem1117.read(iprot);
+            struct.triggers.add(_elem1117);
           }
         }
         struct.setTriggersIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list1103 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1103.size);
-          @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1104;
-          for (int _i1105 = 0; _i1105 < _list1103.size; ++_i1105)
+          org.apache.thrift.protocol.TList _list1119 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1119.size);
+          @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1120;
+          for (int _i1121 = 0; _i1121 < _list1119.size; ++_i1121)
           {
-            _elem1104 = new WMPoolTrigger();
-            _elem1104.read(iprot);
-            struct.poolTriggers.add(_elem1104);
+            _elem1120 = new WMPoolTrigger();
+            _elem1120.read(iprot);
+            struct.poolTriggers.add(_elem1120);
           }
         }
         struct.setPoolTriggersIsSet(true);
