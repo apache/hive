@@ -87,7 +87,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       this.tableSchema = SchemaParser.fromJson((String) serDeProperties.get(InputFormatConfig.TABLE_SCHEMA));
       if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
         PartitionSpec spec =
-            PartitionSpecParser.fromJson(tableSchema, (String) serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
+            PartitionSpecParser.fromJson(tableSchema, serDeProperties.getProperty(InputFormatConfig.PARTITION_SPEC));
         this.partitionColumns = spec.fields().stream().map(PartitionField::name).collect(Collectors.toList());
       } else {
         this.partitionColumns = ImmutableList.of();
@@ -100,6 +100,9 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
       } catch (Exception e) {
+        // During table creation we might not have the schema information from the Iceberg table, nor from the HMS
+        // table. In this case we have to generate the schema using the serdeProperties which contains the info
+        // provided in the CREATE TABLE query.
         boolean autoConversion = configuration.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
         // If we can not load the table try the provided hive schema
         this.tableSchema = hiveSchemaOrThrow(serDeProperties, e, autoConversion);

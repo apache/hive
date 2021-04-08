@@ -231,22 +231,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         Collection<String> filterColumns = Lists.newArrayList();
         columns(syntheticFilterPredicate, filterColumns);
 
-        if (filterColumns.removeAll(partitionColumns)) {
-          // Replace dynamic values to dummy constants
+        if (filterColumns.stream().anyMatch(partitionColumns::contains)) {
+          // The filter predicate contains ExprNodeDynamicListDesc object(s) for places where we will substitute
+          // dynamic values later during execution. For Example:
+          // GenericUDFIn(Column[ss_sold_date_sk], RS[5] <-- This is an ExprNodeDynamicListDesc)
+          //
+          // We would like to check if we will be able to convert these expressions to Iceberg filters when the
+          // actual values will be available, so in this check we replace the ExprNodeDynamicListDesc with dummy
+          // values and check whether the conversion will be possible or not.
           ExprNodeDesc clone = syntheticFilterPredicate.clone();
-          replace(clone);
+          replaceWithDummyValues(clone);
 
           // Check if we can convert the expression to a valid Iceberg filter
           SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) clone);
           HiveIcebergFilterFactory.generateFilterExpression(sarg);
-          LOG.debug("Found Iceberg partition column to prune with predicate {}", filterColumns,
+          LOG.debug("Found Iceberg partition column to prune with predicate {}",
               syntheticFilterPredicate);
           return true;
         }
       }
     } catch (UnsupportedOperationException uoe) {
       // If we can not convert the filter, we do not prune
-      LOG.debug("Unsupported predicate {}", syntheticFilterPredicate);
+      LOG.debug(String.format("Unsupported predicate %s", syntheticFilterPredicate), uoe);
     }
 
     // There is nothing to prune, or we could not use the filter
@@ -358,7 +364,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * to change the input node (clone if needed)
    * @param node The node we are traversing
    */
-  private void replace(ExprNodeDesc node) {
+  private void replaceWithDummyValues(ExprNodeDesc node) {
     List<ExprNodeDesc> children = node.getChildren();
     if (children != null && !children.isEmpty()) {
       ListIterator<ExprNodeDesc> iterator = node.getChildren().listIterator();
@@ -400,7 +406,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           }
           iterator.set(new ExprNodeConstantDesc(child.getTypeInfo(), dummy));
         } else {
-          replace(child);
+          replaceWithDummyValues(child);
         }
       }
     }
