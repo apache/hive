@@ -121,7 +121,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       work.setRootTask(this);
       this.parentTasks = null;
       // Set distCp custom name corresponding to the replication policy.
-      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameToLoadIn);
       conf.set(JobContext.JOB_NAME, mapRedCustomName);
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
