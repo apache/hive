@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -154,6 +155,13 @@ public class TestHiveShell {
     }
   }
 
+  public String executeExplain(String statement) {
+    List<Object[]> objects = executeStatement(statement);
+    return objects.stream()
+        .map(o -> (String) o[0])
+        .collect(Collectors.joining("\n"));
+  }
+
   public Configuration getHiveConf() {
     if (session != null) {
       return session.getHiveConf();
@@ -199,6 +207,9 @@ public class TestHiveShell {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
     // set to true so that the Tez session will create an empty jar for localization
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_IDE, true);
+
+    // enables vectorization on Tez
+    hiveConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
 
     return hiveConf;
   }

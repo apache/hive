@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -33,6 +34,14 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.JobContextImpl;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -56,7 +65,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveIcebergMetaHook implements HiveMetaHook {
+public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME);
@@ -345,5 +354,44 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     private Schema schema;
     private PartitionSpec spec;
     private List<FieldSchema> partitionKeys;
+  }
+
+  @Override
+  public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    // construct the job context
+    JobConf jobConf = new JobConf(conf);
+    String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
+    jobConf.set(InputFormatConfig.TABLE_IDENTIFIER, tableName);
+    jobConf.set(InputFormatConfig.TABLE_LOCATION, table.getSd().getLocation());
+    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName));
+    JobContext jobContext = new JobContextImpl(jobConf, jobID, null);
+
+    // commit (or abort)
+    OutputCommitter committer = new HiveIcebergOutputCommitter();
+    try {
+      committer.commitJob(jobContext);
+    } catch (Exception commitExc) {
+      LOG.error("Error while trying to commit job. Will abort it now.", commitExc);
+      try {
+        committer.abortJob(jobContext, JobStatus.State.FAILED);
+        throw new MetaException("Unable to commit job: " + commitExc.getMessage());
+      } catch (IOException abortExc) {
+        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
+        throw new MetaException("Unable to commit and abort job: " + commitExc.getMessage());
+      }
+    }
+  }
+
+  @Override
+  public void preInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    // do nothing
+  }
+
+  @Override
+  public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    // do nothing
   }
 }

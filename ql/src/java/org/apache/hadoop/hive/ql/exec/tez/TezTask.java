@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -80,6 +81,7 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.DAGStatus;
+import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
@@ -97,6 +99,9 @@ import com.google.common.annotations.VisibleForTesting;
  */
 @SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
+
+  public static final String HIVE_TEZ_COMMIT_JOB_ID = "hive.tez.commit.job.id";
+  public static final String HIVE_TEZ_COMMIT_TASK_COUNT = "hive.tez.commit.task.count";
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
@@ -250,9 +255,32 @@ public class TezTask extends Task<TezWork> {
           this.setException(new HiveException(monitor.getDiagnostics()));
         }
 
-        // fetch the counters
         try {
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+          // save useful commit information into session conf, e.g. for custom commit hooks
+          List<BaseWork> allWork = work.getAllWork();
+          boolean hasReducer = allWork.stream().map(workToVertex::get).anyMatch(v -> v.getName().startsWith("Reducer"));
+          for (BaseWork baseWork : allWork) {
+            Vertex vertex = workToVertex.get(baseWork);
+            if (!hasReducer || vertex.getName().startsWith("Reducer")) {
+              // construct the parsable job id
+              VertexStatus status = dagClient.getVertexStatus(vertex.getName(), statusGetOpts);
+              String[] jobIdParts = status.getId().split("_");
+              // status.getId() returns something like: vertex_1617722404520_0001_1_00
+              // this should be transformed to a parsable JobID: job_16177224045200_0001
+              int vertexId = Integer.parseInt(jobIdParts[jobIdParts.length - 1]);
+              String jobId = String.format("job_%s%d_%s", jobIdParts[1], vertexId, jobIdParts[2]);
+              // prefix with table name (for multi-table inserts), if available
+              String tableName = Optional.ofNullable(workToConf.get(baseWork)).map(c -> c.get("name")).orElse(null);
+              String jobIdKey = HIVE_TEZ_COMMIT_JOB_ID + (tableName == null ? "" : "." + tableName);;
+              String taskCountKey = HIVE_TEZ_COMMIT_TASK_COUNT + (tableName == null ? "" : "." + tableName);
+              // save info into session conf
+              HiveConf sessionConf = SessionState.get().getConf();
+              sessionConf.set(jobIdKey, jobId);
+              sessionConf.setInt(taskCountKey, status.getProgress().getSucceededTaskCount());
+            }
+          }
+          // fetch the counters
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);

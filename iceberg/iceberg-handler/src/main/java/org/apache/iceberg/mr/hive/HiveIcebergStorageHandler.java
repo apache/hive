@@ -124,6 +124,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
       tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
       jobConf.set("mapred.output.committer.class", HiveIcebergOutputCommitter.class.getName());
+      // this will turn off job committing on the Tez AM side, so that we can commit the write jobs
+      // on HS2 side instead using the HiveIcebergMetaHook
+      jobConf.set("hive.tez.mapreduce.output.committer.class", "");
       jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
       String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
