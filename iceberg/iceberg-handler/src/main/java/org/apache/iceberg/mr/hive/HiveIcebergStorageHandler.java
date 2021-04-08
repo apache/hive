@@ -231,6 +231,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         Collection<String> filterColumns = Lists.newArrayList();
         columns(syntheticFilterPredicate, filterColumns);
 
+        // If the filter contains at least one partition column then it could be worthwhile to try dynamic partition
+        // pruning
         if (filterColumns.stream().anyMatch(partitionColumns::contains)) {
           // The filter predicate contains ExprNodeDynamicListDesc object(s) for places where we will substitute
           // dynamic values later during execution. For Example:
