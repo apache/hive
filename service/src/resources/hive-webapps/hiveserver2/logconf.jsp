@@ -134,7 +134,7 @@
 
                 <button id="log-level-submit" type="button" class="btn btn-primary">Submit</button>
             </form>
-            <% } %>
+            <% } else {%>
                 <p>Cannot configure logging rules unless user <%= hiveSession.getUserName() %> has admin privileges</p>
             <% }
              } %>
