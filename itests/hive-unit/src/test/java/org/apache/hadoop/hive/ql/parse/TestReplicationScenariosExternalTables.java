@@ -49,10 +49,17 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1605,5 +1612,72 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     ReplicationTestUtils.assertExternalFileList(Arrays
             .asList("a", "b", "c", "newin", "newout"), tuple.dumpLocation, primary);
+  }
+
+  @Test
+  public void testDataCopyEndLogAtSource() throws Throwable {
+    testDataCopyEndLog(false);
+  }
+
+  @Test
+  public void testDataCopyEndLogAtTarget() throws Throwable {
+    testDataCopyEndLog(true);
+  }
+
+  public void testDataCopyEndLog(boolean runCopyTasksOnTarget) throws Throwable {
+    // Get the logger at the root level.
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    Level oldLevel = logger.getLevel();
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
+    // Create a String Appender to capture log output
+
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+    appender.reset();
+
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + runCopyTasksOnTarget + "'");
+
+    // Perform bootstrap dump & load.
+    primary.run("use " + primaryDbName)
+        .run("create external table a (i int)")
+        .run("insert into a values (1),(2),(3),(4)")
+        .run("create external table b (i int)")
+        .run("insert into b values (5),(6),(7),(8)")
+        .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("show tables like 'a'")
+        .verifyResults(Collections.singletonList("a"))
+        .run("show tables like 'b'")
+        .verifyResults(Collections.singletonList("b"));
+
+    String logStr = appender.getOutput();
+    // Check the log contains DATA_COPY_END after Distcp
+    assertTrue(logStr.lastIndexOf("REPL::DATA_COPY_END:") > logStr.lastIndexOf("Completed DirCopyTask for source"));
+    appender.reset();
+
+    // Perform incremental dump & load.
+    primary.run("create table c (i int)")
+        .run("insert into c values (10),(11)")
+        .run("insert into a values (5),(6)")
+        .run("insert into b values (9),(10)").dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("select i From c")
+        .verifyResults(new String[] {"10", "11"});
+
+    logStr = appender.getOutput();
+    // Check the log contains DATA_COPY_END after Distcp
+    assertTrue(logStr.indexOf("REPL::DATA_COPY_END:") > logStr.lastIndexOf("Completed DirCopyTask for source:"));
+    loggerConfig.setLevel(oldLevel);
+    ctx.updateLoggers();
+    appender.removeFromLogger(logger.getName());
   }
 }

@@ -27,6 +27,9 @@ public class MetricsInfo {
   private int openTxnsCount;
   private int oldestOpenTxnId;
   private int oldestOpenTxnAge;
+  private int abortedTxnsCount;
+  private int oldestAbortedTxnId;
+  private int oldestAbortedTxnAge;
 
   public int getTxnToWriteIdCount() {
     return txnToWriteIdCount;
@@ -66,5 +69,29 @@ public class MetricsInfo {
 
   public void setOldestOpenTxnAge(int oldestOpenTxnAge) {
     this.oldestOpenTxnAge = oldestOpenTxnAge;
+  }
+
+  public int getAbortedTxnsCount() {
+    return abortedTxnsCount;
+  }
+
+  public void setAbortedTxnsCount(int abortedTxnsCount) {
+    this.abortedTxnsCount = abortedTxnsCount;
+  }
+
+  public int getOldestAbortedTxnId() {
+    return oldestAbortedTxnId;
+  }
+
+  public void setOldestAbortedTxnId(int oldestAbortedTxn) {
+    this.oldestAbortedTxnId = oldestAbortedTxn;
+  }
+
+  public int getOldestAbortedTxnAge() {
+    return oldestAbortedTxnAge;
+  }
+
+  public void setOldestAbortedTxnAge(int oldestAbortedTxnAge) {
+    this.oldestAbortedTxnAge = oldestAbortedTxnAge;
   }
 }

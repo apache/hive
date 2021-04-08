@@ -485,7 +485,7 @@ public class TestReplicationScenarios {
 
   private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
                                    Tuple tuple) throws Throwable {
-    HiveConf confTemp = new HiveConf();
+    HiveConf confTemp = driverMirror.getConf();
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ReplicationMetricCollector metricCollector;
     if (isIncrementalDump) {
@@ -4293,6 +4293,37 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testDatabaseInJobName() throws Throwable {
+    // Get the logger at the root level.
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    Level oldLevel = logger.getLevel();
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
+    // Create a String Appender to capture log output
+
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+    String testName = "testDatabaseInJobName";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".emp (id int)", driver);
+    run("insert into table " + dbName + ".emp values ('1')", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    assertTrue(appender.getOutput().contains("Using Repl#testDatabaseInJobName as job name for map-reduce jobs."));
+    assertTrue(appender.getOutput().contains("Using Repl#testDatabaseInJobName_dupe as job name for map-reduce jobs."));
+    loggerConfig.setLevel(oldLevel);
+    ctx.updateLoggers();
+    appender.removeFromLogger(logger.getName());
+  }
+
+  @Test
   public void testPolicyIdImplicitly() throws Exception {
     // Create a database.
     String name = testName.getMethodName();
@@ -4332,12 +4363,31 @@ public class TestReplicationScenarios {
     System.out.print(result);
     assertTrue(result.get(0),
         result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
+
+    // Remove SOURCE_OF_REPLICATION property after bootstrap dump.
+    run("ALTER DATABASE " + name + " Set DBPROPERTIES ( '"
+            + SOURCE_OF_REPLICATION + "' = '')", driver);
+    run("INSERT INTO TABLE " + dbName + ".dataTable values('a', 'b', 'c')", driver);
+
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replicatedDbName);
+    fs = new Path(incrementalDump.dumpLocation).getFileSystem(hconf);
+    dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+
+    // Check the value of SOURCE_OF_REPLICATION in the database, it should
+    // get set automatically.
+    run("DESCRIBE DATABASE EXTENDED " + dbName, driver);
+    result = getOutput(driver);
+    assertTrue(result.get(0),
+            result.get(0).contains("repl.source.for=default_REPL DUMP " + dbName));
   }
 
   @Test
   public void testAddPartition() throws Throwable{
     // Get the logger at the root level.
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    Level oldLevel = logger.getLevel();
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     Configuration config = ctx.getConfiguration();
     LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
@@ -4366,6 +4416,9 @@ public class TestReplicationScenarios {
     assertTrue(appender.getOutput().contains("Calling AddPartition for [Partition(values:[1]"));
     // Check the alter partition call doesn't get triggered
     assertFalse(appender.getOutput().contains("Calling AlterPartition for "));
+    loggerConfig.setLevel(oldLevel);
+    ctx.updateLoggers();
+    appender.removeFromLogger(logger.getName());
   }
 
   private static String createDB(String name, IDriver myDriver) {

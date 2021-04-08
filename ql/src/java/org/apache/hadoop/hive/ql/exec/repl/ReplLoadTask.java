@@ -121,7 +121,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       work.setRootTask(this);
       this.parentTasks = null;
       // Set distCp custom name corresponding to the replication policy.
-      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameToLoadIn);
       conf.set(JobContext.JOB_NAME, mapRedCustomName);
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
@@ -204,13 +204,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Context loadContext = new Context(work.dumpDirectory, conf, getHive(),
         work.sessionStateLineageState, context);
     TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
-    addLazyDataCopyTask(loadTaskTracker);
+    BootstrapEventsIterator iterator = work.bootstrapIterator();
+
+    addLazyDataCopyTask(loadTaskTracker, iterator.replLogger());
     /*
         for now for simplicity we are doing just one directory ( one database ), come back to use
         of multiple databases once we have the basic flow to chain creating of tasks in place for
         a database ( directory )
     */
-    BootstrapEventsIterator iterator = work.bootstrapIterator();
     ConstraintEventsIterator constraintIterator = work.constraintsIterator();
     /*
     This is used to get hold of a reference during the current creation of tasks and is initialized
@@ -364,7 +365,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 
-  private void addLazyDataCopyTask(TaskTracker loadTaskTracker) throws IOException {
+  private void addLazyDataCopyTask(TaskTracker loadTaskTracker, ReplLogger replLogger) throws IOException {
     boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (dataCopyAtLoad) {
       if (work.getExternalTableDataCopyItr() == null) {
@@ -376,7 +377,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (childTasks == null) {
         childTasks = new ArrayList<>();
       }
-      childTasks.addAll(work.externalTableCopyTasks(loadTaskTracker, conf));
+      List<Task<?>> externalTableCopyTasks = work.externalTableCopyTasks(loadTaskTracker, conf);
+      LOG.debug("Scheduled {} external table copy tasks", externalTableCopyTasks.size());
+      childTasks.addAll(externalTableCopyTasks);
+      // If external table data copy tasks are present add a task to mark the end of data copy
+      if (!externalTableCopyTasks.isEmpty() && !work.getExternalTableDataCopyItr().hasNext()) {
+        ReplUtils.addLoggerTask(replLogger, childTasks, conf);
+      }
     }
   }
 
@@ -604,6 +611,18 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
     }
+    if (!ReplUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
+      Map<String, String> props = new HashMap<>();
+      props.put(ReplUtils.TARGET_OF_REPLICATION, "true");
+      AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+      Task<?> addReplTargetPropTask =
+              TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,
+                      work.dumpDirectory, work.getMetricCollector()), conf);
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.add(addReplTargetPropTask);
+    }
     IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
     // If incremental events are already applied, then check and perform if need to bootstrap any tables.
     if (!builder.hasMoreWork() && work.isLastReplIDUpdated()) {
@@ -616,7 +635,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     List<Task<?>> childTasks = new ArrayList<>();
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     TaskTracker tracker = new TaskTracker(maxTasks);
-    addLazyDataCopyTask(tracker);
+    addLazyDataCopyTask(tracker, builder.getReplLogger());
     childTasks.add(builder.build(context, getHive(), LOG, tracker));
     // If there are no more events to be applied, add a task to update the last.repl.id of the
     // target database to the event id of the last event considered by the dump. Next

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
@@ -69,6 +70,7 @@ public class ReplDumpWork implements Serializable {
   private boolean shouldOverwrite;
   private transient ReplicationMetricCollector metricCollector;
   private ReplicationSpec replicationSpec;
+  private ReplLogger replLogger;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -309,5 +311,17 @@ public class ReplDumpWork implements Serializable {
 
   public void setReplicationSpec(ReplicationSpec replicationSpec) {
     this.replicationSpec = replicationSpec;
+  }
+
+  public Iterator<String> getExternalTblCopyPathIterator() {
+    return externalTblCopyPathIterator;
+  }
+
+  public ReplLogger getReplLogger() {
+    return replLogger;
+  }
+
+  public void setReplLogger(ReplLogger replLogger) {
+    this.replLogger = replLogger;
   }
 }
