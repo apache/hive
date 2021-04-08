@@ -598,13 +598,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // FILE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list936 = iprot.readListBegin();
-                struct.fileIds = new java.util.ArrayList<java.lang.Long>(_list936.size);
-                long _elem937;
-                for (int _i938 = 0; _i938 < _list936.size; ++_i938)
+                org.apache.thrift.protocol.TList _list952 = iprot.readListBegin();
+                struct.fileIds = new java.util.ArrayList<java.lang.Long>(_list952.size);
+                long _elem953;
+                for (int _i954 = 0; _i954 < _list952.size; ++_i954)
                 {
-                  _elem937 = iprot.readI64();
-                  struct.fileIds.add(_elem937);
+                  _elem953 = iprot.readI64();
+                  struct.fileIds.add(_elem953);
                 }
                 iprot.readListEnd();
               }
@@ -654,9 +654,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(FILE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.fileIds.size()));
-          for (long _iter939 : struct.fileIds)
+          for (long _iter955 : struct.fileIds)
           {
-            oprot.writeI64(_iter939);
+            oprot.writeI64(_iter955);
           }
           oprot.writeListEnd();
         }
@@ -698,9 +698,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fileIds.size());
-        for (long _iter940 : struct.fileIds)
+        for (long _iter956 : struct.fileIds)
         {
-          oprot.writeI64(_iter940);
+          oprot.writeI64(_iter956);
         }
       }
       oprot.writeBinary(struct.expr);
@@ -724,13 +724,13 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataByExprRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list941 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.fileIds = new java.util.ArrayList<java.lang.Long>(_list941.size);
-        long _elem942;
-        for (int _i943 = 0; _i943 < _list941.size; ++_i943)
+        org.apache.thrift.protocol.TList _list957 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.fileIds = new java.util.ArrayList<java.lang.Long>(_list957.size);
+        long _elem958;
+        for (int _i959 = 0; _i959 < _list957.size; ++_i959)
         {
-          _elem942 = iprot.readI64();
-          struct.fileIds.add(_elem942);
+          _elem958 = iprot.readI64();
+          struct.fileIds.add(_elem958);
         }
       }
       struct.setFileIdsIsSet(true);

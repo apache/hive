@@ -531,6 +531,10 @@ class ShowCompactResponseElement; end
 
 class ShowCompactResponse; end
 
+class GetLatestCommittedCompactionInfoRequest; end
+
+class GetLatestCommittedCompactionInfoResponse; end
+
 class AddDynamicPartitions; end
 
 class BasicTxnInfo; end
@@ -4468,6 +4472,45 @@ class ShowCompactResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compacts is unset!') unless @compacts
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetLatestCommittedCompactionInfoRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+  PARTITIONNAMES = 3
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
+    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetLatestCommittedCompactionInfoResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COMPACTIONS = 1
+
+  FIELDS = {
+    COMPACTIONS => {:type => ::Thrift::Types::LIST, :name => 'compactions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::CompactionInfoStruct}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactions is unset!') unless @compactions
   end
 
   ::Thrift::Struct.generate_accessors self
