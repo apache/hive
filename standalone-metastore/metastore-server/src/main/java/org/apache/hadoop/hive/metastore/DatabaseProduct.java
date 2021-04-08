@@ -203,7 +203,7 @@ public class DatabaseProduct implements Configurable {
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).
    */
   protected boolean needsInBatching() {
-    return isORACLE() || isSQLSERVER();
+    return isORACLE() || isSQLSERVER() || isPOSTGRES();
   }
 
   /**
