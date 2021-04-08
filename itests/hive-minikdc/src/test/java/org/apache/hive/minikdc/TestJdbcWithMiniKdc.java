@@ -257,12 +257,8 @@ public class TestJdbcWithMiniKdc {
   @Test(expected = HiveSQLException.class)
   public void testNegativeProxyAuth() throws Exception {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
-    try {
-      hs2Conn = DriverManager
-          .getConnection(miniHS2.getJdbcURL("default", ";hive.server2.proxy.user=" + MiniHiveKdc.HIVE_TEST_USER_2));
-    } finally {
-      hs2Conn.close();
-    }
+    hs2Conn = DriverManager
+        .getConnection(miniHS2.getJdbcURL("default", ";hive.server2.proxy.user=" + MiniHiveKdc.HIVE_TEST_USER_2));
   }
 
   /**
