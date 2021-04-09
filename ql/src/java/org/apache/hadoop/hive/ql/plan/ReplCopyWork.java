@@ -151,7 +151,10 @@ public class ReplCopyWork extends CopyWork {
       return;
     }
     super.setValuesForDelayedExec();
-    setAutoPurge(getDelayExecUtil().isSkipTrash());
-    setNeedRecycle(getDelayExecUtil().isNeedRecycle());
+    if (getDelayExecUtil().isReplace()) {
+      setDeleteDestIfExist(true);
+      setAutoPurge(getDelayExecUtil().isSkipTrash());
+      setNeedRecycle(getDelayExecUtil().isNeedRecycle());
+    }
   }
 }
