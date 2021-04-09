@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.impala.exec.ImpalaSessionImpl;
 import org.apache.hadoop.hive.impala.exec.ImpalaSessionManager;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -122,8 +123,13 @@ public class ImpalaQueryContext {
 
   private TQueryCtx createQueryContext(HiveConf conf, String defaultDb,
       String user, TQueryOptions options, TNetworkAddress hostLocation) throws HiveException {
-    ImpalaSessionImpl sessionImpl = ImpalaSessionManager.getInstance().getSession(getConf());
-    TQueryCtx queryCtx = sessionImpl.getQueryContext();
+    TQueryCtx queryCtx;
+    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      queryCtx = createTestQueryContext(conf, defaultDb, user, options, hostLocation);
+    } else {
+      ImpalaSessionImpl sessionImpl = ImpalaSessionManager.getInstance().getSession(getConf());
+      queryCtx = sessionImpl.getQueryContext();
+    }
 
     queryCtx.setClient_request(new TClientRequest("Submitting Hive generate plan", options));
     queryCtx.setSession(new TSessionState(new TUniqueId(), TSessionType.HIVESERVER2,
@@ -195,5 +201,37 @@ public class ImpalaQueryContext {
 
   private String getTableName(Table msTbl) {
     return msTbl.getDbName() + "." + msTbl.getTableName();
+  }
+
+  private TQueryCtx createTestQueryContext(HiveConf conf, String defaultDb,
+      String user, TQueryOptions options, TNetworkAddress hostLocation) {
+    // Note: Currently in the testing environment, i.e., conf.getBoolVar(ConfVars.HIVE_IN_TEST)
+    // evaluates to false, we create a mock TQueryCtx since we do not establish a session with
+    // Impala's coordinator.
+    TQueryCtx queryCtx = new TQueryCtx();
+    queryCtx.setClient_request(new TClientRequest("Submitting Hive generate plan", options));
+    queryCtx.setQuery_id(new TUniqueId());
+    queryCtx.setSession(new TSessionState(new TUniqueId(), TSessionType.HIVESERVER2,
+        defaultDb, user, hostLocation));
+
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+    Date now = Calendar.getInstance().getTime();
+    queryCtx.setNow_string(formatter.format(now));
+    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+    queryCtx.setUtc_timestamp_string(formatter.format(now));
+    queryCtx.setLocal_time_zone("UTC");
+    queryCtx.setStart_unix_millis(System.currentTimeMillis());
+    queryCtx.setPid(1000);
+    String requestPool = conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_REQUEST_POOL);
+    queryCtx.setRequest_pool(requestPool); // for admission control
+    queryCtx.setCoord_hostname("127.0.0.1");
+    queryCtx.setStatus_report_interval_ms(5000);
+
+    TNetworkAddress krpcCordAddr = new TNetworkAddress();
+    krpcCordAddr.setHostname("127.0.0.1");
+    krpcCordAddr.setPort(27000);
+    queryCtx.setCoord_ip_address(krpcCordAddr);
+
+    return queryCtx;
   }
 }
