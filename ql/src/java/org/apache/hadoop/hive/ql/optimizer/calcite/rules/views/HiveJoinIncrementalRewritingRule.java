@@ -30,6 +30,18 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * FROM (select mv.ROW__ID, mv.a, mv.b from mv) mv
+ * RIGHT OUTER JOIN (SELECT _source_.ROW__IS_DELETED,_source_.a, _source_.b FROM _source_) source
+ * ON (mv.a <=> source.a AND mv.b <=> source.b)
+ * INSERT INTO TABLE mv_delete_delta
+ *   SELECT mv.ROW__ID
+ *   WHERE source.ROW__IS__DELETED
+ * INSERT INTO TABLE mv
+ *   SELECT source.a, source.b
+ *   WHERE NOT source.ROW__IS__DELETED
+ *   SORT BY mv.ROW__ID;
+ */
 public class HiveJoinIncrementalRewritingRule extends RelOptRule {
 
   public static final HiveJoinIncrementalRewritingRule INSTANCE =
