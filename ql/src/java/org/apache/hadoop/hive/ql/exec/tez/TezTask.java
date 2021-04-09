@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -30,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -256,28 +256,10 @@ public class TezTask extends Task<TezWork> {
         }
 
         try {
-          Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           // save useful commit information into session conf, e.g. for custom commit hooks
-          for (BaseWork baseWork : work.getAllWork()) {
-            Vertex vertex = workToVertex.get(baseWork);
-            if (!vertex.getDataSinks().isEmpty()) {
-              // construct the parsable job id
-              VertexStatus status = dagClient.getVertexStatus(vertex.getName(), statusGetOpts);
-              String[] jobIdParts = status.getId().split("_");
-              // status.getId() returns something like: vertex_1617722404520_0001_1_00
-              // this should be transformed to a parsable JobID: job_16177224045200_0001
-              int vertexId = Integer.parseInt(jobIdParts[jobIdParts.length - 1]);
-              String jobId = String.format(JOB_ID_TEMPLATE, jobIdParts[1], vertexId, jobIdParts[2]);
-              // prefix with table name (for multi-table inserts), if available
-              String tableName = Optional.ofNullable(workToConf.get(baseWork)).map(c -> c.get("name")).orElse(null);
-              String jobIdKey = HIVE_TEZ_COMMIT_JOB_ID + (tableName == null ? "" : "." + tableName);
-              String taskCountKey = HIVE_TEZ_COMMIT_TASK_COUNT + (tableName == null ? "" : "." + tableName);
-              // save info into session conf
-              HiveConf sessionConf = SessionState.get().getConf();
-              sessionConf.set(jobIdKey, jobId);
-              sessionConf.setInt(taskCountKey, status.getProgress().getSucceededTaskCount());
-            }
-          }
+          // TODO: this is temporary, Iceberg-specific logic. Refactor when new Tez version has been released
+          collectCommitInformation(work);
+          Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           // fetch the counters
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
           // if initial counters exists, merge it with dag counters to get aggregated view
@@ -362,6 +344,41 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private void collectCommitInformation(TezWork work) throws IOException, TezException {
+    String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
+    for (BaseWork w : work.getAllWork()) {
+      JobConf jobConf = workToConf.get(w);
+      Vertex vertex = workToVertex.get(w);
+      // we should only consider jobs where an output committer is defined
+      if (!vertex.getDataSinks().isEmpty() && jobConf != null && "org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter"
+          .equals(jobConf.getOutputCommitter().getClass().getName())) {
+        String tableName = jobConf.get("name");
+        String tableLocationRoot = jobConf.get("location");
+        if (tableName != null && tableLocationRoot != null) {
+          Path path = new Path(tableLocationRoot + "/temp");
+          LOG.debug("Table temp directory path is: " + path);
+          // list the directories inside the temp directory
+          FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
+          LOG.debug("Listing the table temp directory yielded these files: " + Arrays.toString(children));
+          for (FileStatus child : children) {
+            // pick only directories that contain the correct jobID prefix
+            if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
+              // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
+              String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
+              HiveConf sessionConf = SessionState.get().getConf();
+              sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID + "." + tableName, jobIdStr);
+              VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
+              sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName,
+                  status.getProgress().getSucceededTaskCount());
+            }
+          }
+        } else {
+          LOG.warn("Table location or table name not found in config for base work: " + w.getName());
+        }
+      }
+    }
   }
 
   private void updateNumRows() {
