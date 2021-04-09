@@ -253,7 +253,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     } catch (UnsupportedOperationException uoe) {
       // If we can not convert the filter, we do not prune
-      LOG.debug(String.format("Unsupported predicate %s", syntheticFilterPredicate), uoe);
+      LOG.debug("Unsupported predicate {}", syntheticFilterPredicate, uoe);
     }
 
     // There is nothing to prune, or we could not use the filter
