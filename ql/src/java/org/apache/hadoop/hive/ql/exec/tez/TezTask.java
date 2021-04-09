@@ -81,7 +81,6 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.DAGStatus;
-import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
@@ -259,11 +258,9 @@ public class TezTask extends Task<TezWork> {
         try {
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           // save useful commit information into session conf, e.g. for custom commit hooks
-          List<BaseWork> allWork = work.getAllWork();
-          boolean hasReducer = allWork.stream().map(workToVertex::get).anyMatch(v -> v.getName().startsWith("Reducer"));
-          for (BaseWork baseWork : allWork) {
+          for (BaseWork baseWork : work.getAllWork()) {
             Vertex vertex = workToVertex.get(baseWork);
-            if (!hasReducer || vertex.getName().startsWith("Reducer")) {
+            if (!vertex.getDataSinks().isEmpty()) {
               // construct the parsable job id
               VertexStatus status = dagClient.getVertexStatus(vertex.getName(), statusGetOpts);
               String[] jobIdParts = status.getId().split("_");
@@ -273,7 +270,7 @@ public class TezTask extends Task<TezWork> {
               String jobId = String.format(JOB_ID_TEMPLATE, jobIdParts[1], vertexId, jobIdParts[2]);
               // prefix with table name (for multi-table inserts), if available
               String tableName = Optional.ofNullable(workToConf.get(baseWork)).map(c -> c.get("name")).orElse(null);
-              String jobIdKey = HIVE_TEZ_COMMIT_JOB_ID + (tableName == null ? "" : "." + tableName);;
+              String jobIdKey = HIVE_TEZ_COMMIT_JOB_ID + (tableName == null ? "" : "." + tableName);
               String taskCountKey = HIVE_TEZ_COMMIT_TASK_COUNT + (tableName == null ? "" : "." + tableName);
               // save info into session conf
               HiveConf sessionConf = SessionState.get().getConf();
