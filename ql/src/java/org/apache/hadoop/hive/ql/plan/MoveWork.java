@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.DelayExecUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -51,7 +52,7 @@ public class MoveWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
-  private ImportSemanticAnalyzer.DelayExecUtil delayExecUtil;
+  private DelayExecUtil delayExecUtil;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -111,7 +112,7 @@ public class MoveWork implements Serializable {
   public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, String dumpRoot, ReplicationMetricCollector metricCollector,
-      boolean isReplication, ImportSemanticAnalyzer.DelayExecUtil delayExecUtil) {
+      boolean isReplication, DelayExecUtil delayExecUtil) {
     this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, dumpRoot, metricCollector, isReplication);
     this.delayExecUtil = delayExecUtil;
   }

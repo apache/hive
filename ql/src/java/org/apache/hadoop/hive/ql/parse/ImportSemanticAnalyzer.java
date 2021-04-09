@@ -1158,7 +1158,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
+  public static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
       throws SemanticException {
     Table newTable = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
     //so that we know the type of table we are creating: acid/MM to match what was exported
@@ -1438,109 +1438,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       return db.getTable(tblDesc.getDatabaseName(),tblDesc.getTableName());
     } catch (InvalidTableException e) {
       return null;
-    }
-  }
-
-  public static class DelayExecUtil {
-    private final boolean inReplScope;
-    private final boolean replace;
-    private final Long writeId;
-    private final int stmtId;
-    private final Hive hive;
-    private final Context ctx;
-    private final ImportTableDesc tblDesc;
-    private Path destPath = null, loadPath = null;
-    private LoadFileType lft;
-    private boolean isSkipTrash = false;
-    private boolean needRecycle = false;
-    private final Path tgtPath;
-
-    public DelayExecUtil(boolean replace, Long writeId, int stmtId, Hive hive, Context ctx, ImportTableDesc tblDesc,
-        boolean inReplScope) {
-      this.replace = replace;
-      this.writeId = writeId;
-      this.stmtId = stmtId;
-      this.hive = hive;
-      this.ctx = ctx;
-      this.tblDesc = tblDesc;
-      this.inReplScope = inReplScope;
-      tgtPath = tblDesc == null ? null : new Path(tblDesc.getLocation());
-    }
-
-    public Table getTableIfExists() throws HiveException {
-      Table table = tableIfExists(tblDesc, hive);
-      if (table == null) {
-        table = createNewTableMetadataObject(tblDesc, true);
-      }
-
-      return table;
-    }
-
-    public void calculateValues(Table table) throws HiveException {
-      assert table != null;
-      assert table.getParameters() != null;
-
-      if (inReplScope) {
-        isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-        if (table.isTemporary()) {
-          needRecycle = false;
-        } else {
-          org.apache.hadoop.hive.metastore.api.Database db = hive.getDatabase(table.getDbName());
-          needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
-        }
-      }
-
-      if (AcidUtils.isTransactionalTable(table)) {
-        String mmSubdir = replace ? AcidUtils.baseDir(writeId)
-            : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-        destPath = new Path(tgtPath, mmSubdir);
-        loadPath = tgtPath;
-        lft = LoadFileType.KEEP_EXISTING;
-      } else {
-        destPath = loadPath = ctx.getExternalTmpPath(tgtPath);
-        lft = replace ? LoadFileType.REPLACE_ALL :
-            LoadFileType.OVERWRITE_EXISTING;
-      }
-    }
-
-    public Long getWriteId() {
-      return writeId;
-    }
-
-    public int getStmtId() {
-      return stmtId;
-    }
-
-    public boolean isReplace() {
-      return replace;
-    }
-
-    public Path getTgtPath() {
-      return tgtPath;
-    }
-
-    public boolean isInReplScope() {
-      return inReplScope;
-    }
-
-    public Path getDestPath() {
-      return destPath;
-    }
-
-    public Path getLoadPath() {
-      return loadPath;
-    }
-
-    public LoadFileType getLft() {
-      return lft;
-    }
-
-    public boolean isSkipTrash() {
-      return isSkipTrash;
-    }
-
-    public boolean isNeedRecycle() {
-      return needRecycle;
     }
   }
 }
