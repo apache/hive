@@ -469,14 +469,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
 
     for (int i = 0; i < k1.size(); i++) {
-      if (k1 == null && k2 == null) {
-        return nullsafes != null && nullsafes[i] ? 0 : -1; // just return k1 is smaller than k2
-      } else if (k1 == null) {
-        return -1;
-      } else if (k2 == null) {
-        return 1;
-      }
-      ret = HiveWritableComparator.get(k1).compare(k1, k2);
+      ret = HiveWritableComparator.get(k1.get(i), nullsafes[i], null).compare(k1.get(i), k2.get(i));
       if(ret != 0) {
         return ret;
       }

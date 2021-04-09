@@ -127,14 +127,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     foundNextKeyGroup = new boolean[maxAlias];
     keyComparators = new HiveWritableComparator[maxAlias][];
 
-    for (Entry<Byte, List<ExprNodeDesc>> entry : conf.getKeys().entrySet()) {
-      keyComparators[entry.getKey().intValue()] = new HiveWritableComparator[entry.getValue().size()];
-      for (int i = 0; i < entry.getValue().size(); i++) {
-        keyComparators[entry.getKey().intValue()][i] =
-                HiveWritableComparator.get(entry.getValue().get(i).getTypeInfo());
-      }
-    }
-
     int bucketSize;
 
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
@@ -189,6 +181,15 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         for (RecordSource source : sources) {
           ((ReduceRecordSource) source).setFlushLastRecord(true);
         }
+      }
+    }
+
+    for (Entry<Byte, List<ExprNodeDesc>> entry : conf.getKeys().entrySet()) {
+      int alias = entry.getKey().intValue();
+      keyComparators[alias] = new HiveWritableComparator[entry.getValue().size()];
+      for (int i = 0; i < entry.getValue().size(); i++) {
+        keyComparators[alias][i] =
+                HiveWritableComparator.get(entry.getValue().get(i).getTypeInfo(), nullsafes[i], nullOrdering);
       }
     }
   }
@@ -621,21 +622,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       final Object key_1,
       final Object key_2,
       final boolean nullsafe) {
-
-    if (key_1 == null && key_2 == null) {
-      if (nullsafe) {
-        return 0;
-      } else {
-        return -1;
-      }
-    } else if (key_1 == null) {
-      return nullOrdering.getNullValueOption().getCmpReturnValue();
-    } else if (key_2 == null) {
-      return -nullOrdering.getNullValueOption().getCmpReturnValue();
-    }
-
     if (comparators[pos] == null) {
-      comparators[pos] = HiveWritableComparator.get(key_1);
+      comparators[pos] = HiveWritableComparator.get(key_1, nullsafe, nullOrdering);
     }
     return comparators[pos].compare(key_1, key_2);
   }

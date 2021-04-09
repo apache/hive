@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.util.NullOrdering;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -27,8 +29,16 @@ class HiveListComparator extends HiveWritableComparator {
     // For List, all elements will have same type, so only one comparator is sufficient.
     HiveWritableComparator comparator = null;
 
+    HiveListComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
+    }
+
     @Override
     public int compare(Object key1, Object key2) {
+        int result = checkNull(key1, key2);
+        if (result != not_null) {
+            return result;
+        }
         ArrayList a1 = (ArrayList) key1;
         ArrayList a2 = (ArrayList) key2;
         if (a1.size() != a2.size()) {
@@ -40,10 +50,10 @@ class HiveListComparator extends HiveWritableComparator {
 
         if (comparator == null) {
             // For List, all elements should be of same type.
-            comparator = HiveWritableComparator.get(a1.get(0));
+            comparator = HiveWritableComparator.get(a1.get(0), nullSafe, nullOrdering);
         }
 
-        int result = 0;
+        result = 0;
         for (int i = 0; i < a1.size(); i++) {
             result = comparator.compare(a1.get(i), a2.get(i));
             if (result != 0) {
@@ -57,8 +67,17 @@ class HiveListComparator extends HiveWritableComparator {
 class HiveStructComparator extends HiveWritableComparator {
     HiveWritableComparator[] comparator = null;
 
+    HiveStructComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
+    }
+
     @Override
     public int compare(Object key1, Object key2) {
+        int result = checkNull(key1, key2);
+        if (result != not_null) {
+            return result;
+        }
+
         ArrayList a1 = (ArrayList) key1;
         ArrayList a2 = (ArrayList) key2;
         if (a1.size() != a2.size()) {
@@ -71,10 +90,10 @@ class HiveStructComparator extends HiveWritableComparator {
             comparator = new HiveWritableComparator[a1.size()];
             // For struct all elements may not be of same type, so create comparator for each entry.
             for (int i = 0; i < a1.size(); i++) {
-                comparator[i] = HiveWritableComparator.get(a1.get(i));
+                comparator[i] = HiveWritableComparator.get(a1.get(i), nullSafe, nullOrdering);
             }
         }
-        int result = 0;
+        result = 0;
         for (int i = 0; i < a1.size(); i++) {
             result = comparator[i].compare(a1.get(i), a2.get(i));
             if (result != 0) {
@@ -85,12 +104,50 @@ class HiveStructComparator extends HiveWritableComparator {
     }
 }
 
+class HiveUnionComparator extends HiveWritableComparator {
+    HiveWritableComparator comparator = null;
+
+    HiveUnionComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
+    }
+
+    @Override
+    public int compare(Object key1, Object key2) {
+        int result = checkNull(key1, key2);
+        if (result != not_null) {
+            return result;
+        }
+
+        StandardUnion u1 = (StandardUnion) key1;
+        StandardUnion u2 = (StandardUnion) key2;
+
+        if (u1.getTag() != u2.getTag()) {
+            // If tag is not same, the keys may be of different data types. So can not be compared.
+            return u1.getTag() > u2.getTag() ? 1 : -1;
+        }
+
+        if (comparator == null) {
+            comparator = HiveWritableComparator.get(u1.getObject(), nullSafe, nullOrdering);
+        }
+        return comparator.compare(u1.getObject(), u2.getObject());
+    }
+}
+
 class HiveMapComparator extends HiveWritableComparator {
     HiveWritableComparator comparatorValue = null;
     HiveWritableComparator comparatorKey = null;
 
+    HiveMapComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
+    }
+
     @Override
     public int compare(Object key1, Object key2) {
+        int result = checkNull(key1, key2);
+        if (result != not_null) {
+            return result;
+        }
+
         LinkedHashMap map1 = (LinkedHashMap) key1;
         LinkedHashMap map2 = (LinkedHashMap) key2;
         if (map1.entrySet().size() != map2.entrySet().size()) {
@@ -101,11 +158,11 @@ class HiveMapComparator extends HiveWritableComparator {
         }
 
         if (comparatorKey == null) {
-            comparatorKey = HiveWritableComparator.get(map1.keySet().iterator().next());
-            comparatorValue = HiveWritableComparator.get(map1.values().iterator().next());
+            comparatorKey = HiveWritableComparator.get(map1.keySet().iterator().next(), nullSafe, nullOrdering);
+            comparatorValue = HiveWritableComparator.get(map1.values().iterator().next(), nullSafe, nullOrdering);
         }
 
-        int result = comparatorKey.compare(map1.keySet().iterator().next(),
+        result = comparatorKey.compare(map1.keySet().iterator().next(),
                 map2.keySet().iterator().next());
         if (result != 0) {
             return result;
@@ -116,34 +173,67 @@ class HiveMapComparator extends HiveWritableComparator {
 
 public class HiveWritableComparator extends WritableComparator {
     private WritableComparator comparator = null;
-    public static HiveWritableComparator get(TypeInfo typeInfo) {
+    protected transient boolean nullSafe;
+    transient NullOrdering nullOrdering;
+    protected transient int not_null = 2;
+
+    HiveWritableComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        this.nullSafe = nullSafe;
+        this.nullOrdering = nullOrdering;
+    }
+
+    public static HiveWritableComparator get(TypeInfo typeInfo, boolean nullSafe, NullOrdering nullOrdering) {
         switch (typeInfo.getCategory()) {
             case PRIMITIVE:
-                return new HiveWritableComparator();
+                return new HiveWritableComparator(nullSafe, nullOrdering);
             case LIST:
-                return new HiveListComparator();
+                return new HiveListComparator(nullSafe, nullOrdering);
             case MAP:
-                return new HiveMapComparator();
+                return new HiveMapComparator(nullSafe, nullOrdering);
             case STRUCT:
-                return new HiveStructComparator();
+                return new HiveStructComparator(nullSafe, nullOrdering);
             case UNION:
+                return new HiveUnionComparator(nullSafe, nullOrdering);
             default:
                 throw new IllegalStateException("Unexpected value: " + typeInfo.getCategory());
         }
     }
 
-    public static HiveWritableComparator get(Object key) {
+    public static HiveWritableComparator get(Object key, boolean nullSafe, NullOrdering nullOrdering) {
         if (key instanceof ArrayList) {
             // For array type struct is used as we do not know if all elements of array are of same type.
-            return new HiveStructComparator();
+            return new HiveStructComparator(nullSafe, nullOrdering);
         } else if (key instanceof LinkedHashMap) {
-            return new HiveMapComparator();
+            return new HiveMapComparator(nullSafe, nullOrdering);
+        } else if (key instanceof StandardUnion) {
+            return new HiveUnionComparator(nullSafe, nullOrdering);
         } else {
-            return new HiveWritableComparator();
+            return new HiveWritableComparator(nullSafe, nullOrdering);
+        }
+    }
+
+    protected int checkNull(Object key1, Object key2) {
+        if (key1 == null && key2 == null) {
+            if (nullSafe) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else if (key1 == null) {
+            return nullOrdering == null ? -1 : nullOrdering.getNullValueOption().getCmpReturnValue();
+        } else if (key2 == null) {
+            return nullOrdering == null ? 1 : -nullOrdering.getNullValueOption().getCmpReturnValue();
+        } else {
+            return not_null;
         }
     }
 
     public int compare(Object key1, Object key2) {
+        int result = checkNull(key1, key2);
+        if (result != not_null) {
+            return result;
+        }
+
         if (comparator == null) {
             comparator = WritableComparator.get(((WritableComparable) key1).getClass());
         }
