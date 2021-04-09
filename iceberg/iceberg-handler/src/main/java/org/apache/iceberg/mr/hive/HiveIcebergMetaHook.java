@@ -382,6 +382,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
         LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
         throw new MetaException("Unable to commit and abort job: " + commitExc.getMessage());
       }
+    } finally {
+      conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName);
+      conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName);
     }
   }
 
