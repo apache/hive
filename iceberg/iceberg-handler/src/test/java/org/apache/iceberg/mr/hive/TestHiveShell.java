@@ -155,6 +155,11 @@ public class TestHiveShell {
     }
   }
 
+  /**
+   * Used for debugging. Please do not remove even if unused in the codebase.
+   * @param statement EXPLAIN statement
+   * @return EXPLAIN statement output in a single String which is IDE friendly for viewing
+   */
   public String executeExplain(String statement) {
     List<Object[]> objects = executeStatement(statement);
     return objects.stream()

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -123,10 +124,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
       tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
-      jobConf.set("mapred.output.committer.class", HiveIcebergOutputCommitter.class.getName());
       // this will turn off job committing on the Tez AM side, so that we can commit the write jobs
       // on HS2 side instead using the HiveIcebergMetaHook
-      jobConf.set("hive.tez.mapreduce.output.committer.class", "");
+      jobConf.set(HiveConf.ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER.varname, "");
       jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
       String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);

@@ -33,7 +33,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
@@ -360,11 +359,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     // If there are reducers, then every reducer will generate a result file.
     // If this is a map only task, then every mapper will generate a result file.
     int expectedFiles = conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
-    // For Tez, we can only reliably get the number of tasks from the Tez AM, not the job conf
-    if ("tez".equals(conf.get(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
-      expectedFiles = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT +
-          "." + conf.get(InputFormatConfig.TABLE_IDENTIFIER), -1);
-    }
 
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
 

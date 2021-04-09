@@ -104,6 +104,7 @@ public class TezTask extends Task<TezWork> {
   public static final String HIVE_TEZ_COMMIT_TASK_COUNT = "hive.tez.commit.task.count";
 
   private static final String CLASS_NAME = TezTask.class.getName();
+  private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
@@ -269,7 +270,7 @@ public class TezTask extends Task<TezWork> {
               // status.getId() returns something like: vertex_1617722404520_0001_1_00
               // this should be transformed to a parsable JobID: job_16177224045200_0001
               int vertexId = Integer.parseInt(jobIdParts[jobIdParts.length - 1]);
-              String jobId = String.format("job_%s%d_%s", jobIdParts[1], vertexId, jobIdParts[2]);
+              String jobId = String.format(JOB_ID_TEMPLATE, jobIdParts[1], vertexId, jobIdParts[2]);
               // prefix with table name (for multi-table inserts), if available
               String tableName = Optional.ofNullable(workToConf.get(baseWork)).map(c -> c.get("name")).orElse(null);
               String jobIdKey = HIVE_TEZ_COMMIT_JOB_ID + (tableName == null ? "" : "." + tableName);;

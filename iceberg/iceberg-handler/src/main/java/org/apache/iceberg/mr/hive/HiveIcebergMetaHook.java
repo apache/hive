@@ -365,6 +365,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     jobConf.set(InputFormatConfig.TABLE_IDENTIFIER, tableName);
     jobConf.set(InputFormatConfig.TABLE_LOCATION, table.getSd().getLocation());
     JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName));
+    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName, -1);
+    jobConf.setNumReduceTasks(numTasks);
     JobContext jobContext = new JobContextImpl(jobConf, jobID, null);
 
     // commit (or abort)
