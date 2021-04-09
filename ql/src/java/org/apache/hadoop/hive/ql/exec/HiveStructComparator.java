@@ -17,46 +17,48 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import java.util.ArrayList;
 
-public class HiveWritableComparator extends WritableComparator {
-    private WritableComparator comparator = null;
-    protected transient boolean nullSafe;
-    transient NullOrdering nullOrdering;
-    protected transient int not_null = 2;
+class HiveStructComparator extends HiveWritableComparator {
+    WritableComparator[] comparator = null;
 
-    HiveWritableComparator(boolean nullSafe, NullOrdering nullOrdering) {
-        this.nullSafe = nullSafe;
-        this.nullOrdering = nullOrdering;
+    HiveStructComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
     }
 
-    protected int checkNull(Object key1, Object key2) {
-        if (key1 == null && key2 == null) {
-            if (nullSafe) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else if (key1 == null) {
-            return nullOrdering == null ? -1 : nullOrdering.getNullValueOption().getCmpReturnValue();
-        } else if (key2 == null) {
-            return nullOrdering == null ? 1 : -nullOrdering.getNullValueOption().getCmpReturnValue();
-        } else {
-            return not_null;
-        }
-    }
-
+    @Override
     public int compare(Object key1, Object key2) {
         int result = checkNull(key1, key2);
         if (result != not_null) {
             return result;
         }
 
-        if (comparator == null) {
-            comparator = WritableComparator.get(((WritableComparable) key1).getClass());
+        ArrayList a1 = (ArrayList) key1;
+        ArrayList a2 = (ArrayList) key2;
+        if (a1.size() != a2.size()) {
+            return a1.size() > a2.size() ? 1 : -1;
         }
-        return comparator.compare((WritableComparable)key1, (WritableComparable)key2);
+        if (a1.size() == 0) {
+            return 0;
+        }
+        if (comparator == null) {
+            comparator = new WritableComparator[a1.size()];
+            // For struct all elements may not be of same type, so create comparator for each entry.
+            for (int i = 0; i < a1.size(); i++) {
+                comparator[i] = WritableComparatorFactory.get(a1.get(i), nullSafe, nullOrdering);
+            }
+        }
+        result = 0;
+        for (int i = 0; i < a1.size(); i++) {
+            result = comparator[i].compare(a1.get(i), a2.get(i));
+            if (result != 0) {
+                return result;
+            }
+        }
+        return result;
     }
 }

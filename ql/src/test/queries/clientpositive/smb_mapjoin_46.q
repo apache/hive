@@ -9,19 +9,19 @@ set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
 
-CREATE TABLE aux1 (key INT, value array<int>, col_1 STRING);
-INSERT INTO aux1 VALUES (99, array(0,0), 'Alice'), (99, array(2,2), 'Mat'), (100, array(0,0), 'Bob'), (101, array(2,2), 'Car');
--- INSERT INTO aux1 VALUES (NULL, array(null,null), 'None');
+CREATE TABLE aux1 (key INT, value INT, col_1 STRING);
+INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+    (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car');
 
-CREATE TABLE test1_n5 (key INT, value array<int>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+CREATE TABLE test1_n5 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
 INSERT OVERWRITE TABLE test1_n5
 SELECT * FROM aux1;
 
-CREATE TABLE aux2 (key INT, value array<int>, col_2 STRING);
-INSERT INTO aux2 VALUES (102, array(2,2), 'Del'), (103, array(2,2), 'Ema'), (104, array(3,3), 'Fli');
--- INSERT INTO aux2 VALUES (105, array(null,null), 'None');
+CREATE TABLE aux2 (key INT, value INT, col_2 STRING);
+INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+    (104, 3, 'Fli'), (105, NULL, 'None');
 
-CREATE TABLE test2_n3 (key INT, value array<int>, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+CREATE TABLE test2_n3 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
 INSERT OVERWRITE TABLE test2_n3
 SELECT * FROM aux2;
 

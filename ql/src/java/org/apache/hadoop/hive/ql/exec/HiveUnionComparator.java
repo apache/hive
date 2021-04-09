@@ -18,45 +18,35 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.util.NullOrdering;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
-public class HiveWritableComparator extends WritableComparator {
-    private WritableComparator comparator = null;
-    protected transient boolean nullSafe;
-    transient NullOrdering nullOrdering;
-    protected transient int not_null = 2;
+public class HiveUnionComparator extends HiveWritableComparator {
+    WritableComparator comparator = null;
 
-    HiveWritableComparator(boolean nullSafe, NullOrdering nullOrdering) {
-        this.nullSafe = nullSafe;
-        this.nullOrdering = nullOrdering;
+    HiveUnionComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
     }
 
-    protected int checkNull(Object key1, Object key2) {
-        if (key1 == null && key2 == null) {
-            if (nullSafe) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else if (key1 == null) {
-            return nullOrdering == null ? -1 : nullOrdering.getNullValueOption().getCmpReturnValue();
-        } else if (key2 == null) {
-            return nullOrdering == null ? 1 : -nullOrdering.getNullValueOption().getCmpReturnValue();
-        } else {
-            return not_null;
-        }
-    }
-
+    @Override
     public int compare(Object key1, Object key2) {
         int result = checkNull(key1, key2);
         if (result != not_null) {
             return result;
         }
 
-        if (comparator == null) {
-            comparator = WritableComparator.get(((WritableComparable) key1).getClass());
+        StandardUnion u1 = (StandardUnion) key1;
+        StandardUnion u2 = (StandardUnion) key2;
+
+        if (u1.getTag() != u2.getTag()) {
+            // If tag is not same, the keys may be of different data types. So can not be compared.
+            return u1.getTag() > u2.getTag() ? 1 : -1;
         }
-        return comparator.compare((WritableComparable)key1, (WritableComparable)key2);
+
+        if (comparator == null) {
+            comparator = WritableComparatorFactory.get(u1.getObject(), nullSafe, nullOrdering);
+        }
+        return comparator.compare(u1.getObject(), u2.getObject());
     }
 }

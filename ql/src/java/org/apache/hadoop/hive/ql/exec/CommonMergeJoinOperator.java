@@ -84,7 +84,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient List<Object> otherKey = null;
   transient List<Object> values = null;
   transient RecordSource[] sources;
-  transient HiveWritableComparator[][] keyComparators;
+  transient WritableComparator[][] keyComparators;
 
   transient List<Operator<? extends OperatorDesc>> originalParents =
       new ArrayList<Operator<? extends OperatorDesc>>();
@@ -125,7 +125,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     nextKeyWritables = new ArrayList[maxAlias];
     fetchDone = new boolean[maxAlias];
     foundNextKeyGroup = new boolean[maxAlias];
-    keyComparators = new HiveWritableComparator[maxAlias][];
+    keyComparators = new WritableComparator[maxAlias][];
 
     int bucketSize;
 
@@ -186,10 +186,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     for (Entry<Byte, List<ExprNodeDesc>> entry : conf.getKeys().entrySet()) {
       int alias = entry.getKey().intValue();
-      keyComparators[alias] = new HiveWritableComparator[entry.getValue().size()];
+      keyComparators[alias] = new WritableComparator[entry.getValue().size()];
       for (int i = 0; i < entry.getValue().size(); i++) {
         keyComparators[alias][i] =
-                HiveWritableComparator.get(entry.getValue().get(i).getTypeInfo(), nullsafes[i], nullOrdering);
+                WritableComparatorFactory.get(entry.getValue().get(i).getTypeInfo(),
+                        nullsafes != null ? nullsafes[i] : false, nullOrdering);
       }
     }
   }
@@ -559,7 +560,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (keyWritable == null) {
       // the first group.
       keyWritables[alias] = key;
-      keyComparators[alias] = new HiveWritableComparator[key.size()];
+      keyComparators[alias] = new WritableComparator[key.size()];
       return false;
     } else {
       int cmp = compareKeys(alias, key, keyWritable);
@@ -577,7 +578,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   @SuppressWarnings("rawtypes")
   private int compareKeys(byte alias, List<Object> k1, List<Object> k2) {
-    final HiveWritableComparator[] comparators = keyComparators[alias];
+    final WritableComparator[] comparators = keyComparators[alias];
 
     // join keys have difference sizes?
     if (k1.size() != k2.size()) {
@@ -601,7 +602,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   @SuppressWarnings("rawtypes")
-  private int compareKeysMany(HiveWritableComparator[] comparators,
+  private int compareKeysMany(WritableComparator[] comparators,
       final List<Object> k1,
       final List<Object> k2) {
     // invariant: k1.size == k2.size
@@ -618,12 +619,12 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   @SuppressWarnings("rawtypes")
-  private int compareKey(final HiveWritableComparator comparators[], final int pos,
+  private int compareKey(final WritableComparator comparators[], final int pos,
       final Object key_1,
       final Object key_2,
       final boolean nullsafe) {
     if (comparators[pos] == null) {
-      comparators[pos] = HiveWritableComparator.get(key_1, nullsafe, nullOrdering);
+      comparators[pos] = WritableComparatorFactory.get(key_1, nullsafe, nullOrdering);
     }
     return comparators[pos].compare(key_1, key_2);
   }

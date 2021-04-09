@@ -17,46 +17,48 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import java.util.ArrayList;
 
-public class HiveWritableComparator extends WritableComparator {
-    private WritableComparator comparator = null;
-    protected transient boolean nullSafe;
-    transient NullOrdering nullOrdering;
-    protected transient int not_null = 2;
+public class HiveListComparator extends HiveWritableComparator {
+    // For List, all elements will have same type, so only one comparator is sufficient.
+    WritableComparator comparator = null;
 
-    HiveWritableComparator(boolean nullSafe, NullOrdering nullOrdering) {
-        this.nullSafe = nullSafe;
-        this.nullOrdering = nullOrdering;
+    HiveListComparator(boolean nullSafe, NullOrdering nullOrdering) {
+        super(nullSafe, nullOrdering);
     }
 
-    protected int checkNull(Object key1, Object key2) {
-        if (key1 == null && key2 == null) {
-            if (nullSafe) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else if (key1 == null) {
-            return nullOrdering == null ? -1 : nullOrdering.getNullValueOption().getCmpReturnValue();
-        } else if (key2 == null) {
-            return nullOrdering == null ? 1 : -nullOrdering.getNullValueOption().getCmpReturnValue();
-        } else {
-            return not_null;
-        }
-    }
-
+    @Override
     public int compare(Object key1, Object key2) {
         int result = checkNull(key1, key2);
         if (result != not_null) {
             return result;
         }
+        ArrayList a1 = (ArrayList) key1;
+        ArrayList a2 = (ArrayList) key2;
+        if (a1.size() != a2.size()) {
+            return a1.size() > a2.size() ? 1 : -1;
+        }
+        if (a1.size() == 0) {
+            return 0;
+        }
 
         if (comparator == null) {
-            comparator = WritableComparator.get(((WritableComparable) key1).getClass());
+            // For List, all elements should be of same type.
+            comparator = WritableComparatorFactory.get(a1.get(0), nullSafe, nullOrdering);
         }
-        return comparator.compare((WritableComparable)key1, (WritableComparable)key2);
+
+        result = 0;
+        for (int i = 0; i < a1.size(); i++) {
+            result = comparator.compare(a1.get(i), a2.get(i));
+            if (result != 0) {
+                return result;
+            }
+        }
+        return result;
     }
 }
+
