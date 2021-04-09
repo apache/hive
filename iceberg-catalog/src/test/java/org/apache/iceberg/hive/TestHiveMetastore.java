@@ -56,14 +56,14 @@ public class TestHiveMetastore {
   // create the metastore handlers based on whether we're working with Hive2 or Hive3 dependencies
   // we need to do this because there is a breaking API change between Hive2 and Hive3
   private static final DynConstructors.Ctor<HMSHandler> HMS_HANDLER_CTOR = DynConstructors.builder()
-      .impl(HMSHandler.class, String.class, Configuration.class)
-      .impl(HMSHandler.class, String.class, HiveConf.class)
-      .build();
+          .impl(HMSHandler.class, String.class, Configuration.class)
+          .impl(HMSHandler.class, String.class, HiveConf.class)
+          .build();
 
   private static final DynMethods.StaticMethod GET_BASE_HMS_HANDLER = DynMethods.builder("getProxy")
-      .impl(RetryingHMSHandler.class, Configuration.class, IHMSHandler.class, boolean.class)
-      .impl(RetryingHMSHandler.class, HiveConf.class, IHMSHandler.class, boolean.class)
-      .buildStatic();
+          .impl(RetryingHMSHandler.class, Configuration.class, IHMSHandler.class, boolean.class)
+          .impl(RetryingHMSHandler.class, HiveConf.class, IHMSHandler.class, boolean.class)
+          .buildStatic();
 
   // Hive3 introduces background metastore tasks (MetastoreTaskThread) for performing various cleanup duties. These
   // threads are scheduled and executed in a static thread pool (org.apache.hadoop.hive.metastore.ThreadPool).
@@ -72,9 +72,9 @@ public class TestHiveMetastore {
   // threads from our previous test suite will be stuck in the pool with stale config, and keep on being scheduled.
   // This can lead to issues, e.g. accidental Persistence Manager closure by ScheduledQueryExecutionsMaintTask.
   private static final DynMethods.StaticMethod METASTORE_THREADS_SHUTDOWN = DynMethods.builder("shutdown")
-      .impl("org.apache.hadoop.hive.metastore.ThreadPool")
-      .orNoop()
-      .buildStatic();
+          .impl("org.apache.hadoop.hive.metastore.ThreadPool")
+          .orNoop()
+          .buildStatic();
 
   private File hiveLocalDir;
   private File hiveWarehouseDir;
@@ -113,7 +113,7 @@ public class TestHiveMetastore {
       File derbyLogFile = new File(hiveLocalDir, "derby.log");
       System.setProperty("derby.stream.error.file", derbyLogFile.getAbsolutePath());
 
-      // setup metastore DB with acid tables
+      // create and initialize HMS backend DB for ACID and non-ACID tables as well
       MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY,
           "jdbc:derby:" + getDerbyPath() + ";create=true");
       TestTxnDbUtil.prepDb(conf);
