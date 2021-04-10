@@ -79,7 +79,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-client</artifactId>
+      <artifactId>hbase-shaded-client-byo-hadoop</artifactId>
+      <version>${hbase.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
