@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -4294,6 +4295,9 @@ public class TestReplicationScenarios {
 
   @Test
   public void testDatabaseInJobName() throws Throwable {
+    // Clean up configurations
+    driver.getConf().set(JobContext.JOB_NAME, "");
+    driverMirror.getConf().set(JobContext.JOB_NAME, "");
     // Get the logger at the root level.
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
     Level oldLevel = logger.getLevel();
