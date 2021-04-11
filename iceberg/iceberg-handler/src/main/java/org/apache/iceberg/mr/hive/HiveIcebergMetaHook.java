@@ -359,8 +359,12 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
-    // construct the job context
+    // check status to determine whether we need to commit or to abort
     JobConf jobConf = new JobConf(conf);
+    String queryIdKey = jobConf.get("hive.query.id") + ".result";
+    boolean success = jobConf.getBoolean(queryIdKey, false);
+
+    // construct the job context
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
     jobConf.set(InputFormatConfig.TABLE_IDENTIFIER, tableName);
     jobConf.set(InputFormatConfig.TABLE_LOCATION, table.getSd().getLocation());
@@ -369,23 +373,38 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     jobConf.setNumReduceTasks(numTasks);
     JobContext jobContext = new JobContextImpl(jobConf, jobID, null);
 
-    // commit (or abort)
     OutputCommitter committer = new HiveIcebergOutputCommitter();
-    try {
-      committer.commitJob(jobContext);
-    } catch (Exception commitExc) {
-      LOG.error("Error while trying to commit job. Will abort it now.", commitExc);
+    if (success) {
+      try {
+        committer.commitJob(jobContext);
+      } catch (Exception commitExc) {
+        LOG.error("Error while trying to commit job. Will abort it now.", commitExc);
+        try {
+          committer.abortJob(jobContext, JobStatus.State.FAILED);
+          throw new MetaException("Unable to commit job: " + commitExc.getMessage());
+        } catch (IOException abortExc) {
+          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
+          throw new MetaException("Unable to commit and abort job: " + commitExc.getMessage());
+        }
+      } finally {
+        cleanCommitConfig(queryIdKey, tableName);
+      }
+    } else {
       try {
         committer.abortJob(jobContext, JobStatus.State.FAILED);
-        throw new MetaException("Unable to commit job: " + commitExc.getMessage());
       } catch (IOException abortExc) {
         LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
-        throw new MetaException("Unable to commit and abort job: " + commitExc.getMessage());
+        throw new MetaException("Unable to abort job: " + abortExc.getMessage());
+      } finally {
+        cleanCommitConfig(queryIdKey, tableName);
       }
-    } finally {
-      conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName);
-      conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName);
     }
+  }
+
+  private void cleanCommitConfig(String queryIdKey, String tableName) {
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName);
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName);
+    conf.unset(queryIdKey);
   }
 
   @Override

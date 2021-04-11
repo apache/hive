@@ -258,7 +258,7 @@ public class TezTask extends Task<TezWork> {
         try {
           // save useful commit information into session conf, e.g. for custom commit hooks
           // TODO: this is temporary, Iceberg-specific logic. Refactor when new Tez version has been released
-          collectCommitInformation(work);
+          collectCommitInformation(work, rc == 0);
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           // fetch the counters
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
@@ -346,11 +346,13 @@ public class TezTask extends Task<TezWork> {
     return rc;
   }
 
-  private void collectCommitInformation(TezWork work) throws IOException, TezException {
-    String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
+  private void collectCommitInformation(TezWork work, boolean success) throws IOException, TezException {
+    HiveConf sessionConf = SessionState.get().getConf();
     for (BaseWork w : work.getAllWork()) {
       JobConf jobConf = workToConf.get(w);
       Vertex vertex = workToVertex.get(w);
+      sessionConf.setBoolean(jobConf.get("hive.query.id") + ".result", success);
+      String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
       // we should only consider jobs where an output committer is defined
       if (!vertex.getDataSinks().isEmpty() && jobConf != null && "org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter"
           .equals(jobConf.getOutputCommitter().getClass().getName())) {
@@ -367,7 +369,6 @@ public class TezTask extends Task<TezWork> {
             if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
               // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
               String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
-              HiveConf sessionConf = SessionState.get().getConf();
               sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID + "." + tableName, jobIdStr);
               VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
               sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName,
