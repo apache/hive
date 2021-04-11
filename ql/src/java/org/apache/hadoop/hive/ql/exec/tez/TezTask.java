@@ -351,7 +351,6 @@ public class TezTask extends Task<TezWork> {
     for (BaseWork w : work.getAllWork()) {
       JobConf jobConf = workToConf.get(w);
       Vertex vertex = workToVertex.get(w);
-      sessionConf.setBoolean(jobConf.get("hive.query.id") + ".result", success);
       String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
       // we should only consider jobs where an output committer is defined
       if (!vertex.getDataSinks().isEmpty() && jobConf != null && "org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter"
@@ -373,6 +372,7 @@ public class TezTask extends Task<TezWork> {
               VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
               sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName,
                   status.getProgress().getSucceededTaskCount());
+              sessionConf.setBoolean(jobConf.get("hive.query.id") + ".result", success);
             }
           }
         } else {
