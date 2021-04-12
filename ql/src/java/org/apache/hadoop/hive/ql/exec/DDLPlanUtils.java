@@ -92,7 +92,6 @@ public class DDLPlanUtils {
   private static final String PROPERTIES = "properties";
   private static final String TABLE_NAME = "TABLE_NAME";
   private static final String DATABASE_NAME = "DATABASE_NAME";
-  private static final String SQL = "SQL";
   private static final String DATABASE_NAME_FR = "DATABASE_NAME_FR";
   private static final String PARTITION = "PARTITION";
   private static final String COLUMN_NAME = "COLUMN_NAME";
@@ -131,10 +130,9 @@ public class DDLPlanUtils {
           "TBLPROPERTIES (\n" +
           "<" + PROPERTIES + ">)";
 
-  private final String CREATE_VIEW_TEMPLATE =
-      "CREATE VIEW IF NOT EXISTS<if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>"
-          + "`<" + TABLE_NAME + ">`(\n" +
-          "<" + LIST_COLUMNS + ">) \n<" + PARTITION + "> AS <" + SQL + ">";
+  private static final String CREATE_VIEW_TEMPLATE =
+      "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME +
+          ">`<" + PARTITIONS + "> AS <SQL>";
 
   private final String CREATE_TABLE_TEMPLATE_LOCATION = "LOCATION\n" +
       "<" + LOCATION + ">\n";

@@ -525,7 +525,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           outputAST(work.getAstStringTree(), out, work.isFormatted(), 0);
         }
       }else if (work.isDDL()) {
-
+          getDDLPlan(out);
       } else {
         if (work.isUserLevelExplain()) {
           // Because of the implementation of the JsonParserFactory, we are sure

@@ -1,0 +1,4877 @@
+PREHOOK: query: CREATE TABLE `customer_removal_n0`(
+  `c_custkey` bigint,
+  `c_name` string,
+  `c_address` string,
+  `c_city` string,
+  `c_nation` string,
+  `c_region` string,
+  `c_phone` string,
+  `c_mktsegment` string,
+primary key (`c_custkey`) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_removal_n0
+POSTHOOK: query: CREATE TABLE `customer_removal_n0`(
+  `c_custkey` bigint,
+  `c_name` string,
+  `c_address` string,
+  `c_city` string,
+  `c_nation` string,
+  `c_region` string,
+  `c_phone` string,
+  `c_mktsegment` string,
+primary key (`c_custkey`) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_removal_n0
+PREHOOK: query: CREATE TABLE `dates_removal_n0`(
+  `d_datekey` bigint,
+  `d_id` bigint,
+  `d_date` string,
+  `d_dayofweek` string,
+  `d_month` string,
+  `d_year` int,
+  `d_yearmonthnum` int,
+  `d_yearmonth` string,
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int,
+primary key (`d_datekey`, `d_id`) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dates_removal_n0
+POSTHOOK: query: CREATE TABLE `dates_removal_n0`(
+  `d_datekey` bigint,
+  `d_id` bigint,
+  `d_date` string,
+  `d_dayofweek` string,
+  `d_month` string,
+  `d_year` int,
+  `d_yearmonthnum` int,
+  `d_yearmonth` string,
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int,
+primary key (`d_datekey`, `d_id`) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dates_removal_n0
+PREHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`customer_removal_n0`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE;
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`customer_removal_n0`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE;
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dates_removal_n0`(
+  `d_datekey` bigint, 
+  `d_id` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int, 
+  `d_daynuminmonth` int, 
+  `d_daynuminyear` int, 
+  `d_monthnuminyear` int, 
+  `d_weeknuminyear` int, 
+  `d_sellingseason` string, 
+  `d_lastdayinweekfl` int, 
+  `d_lastdayinmonthfl` int, 
+  `d_holidayfl` int, 
+  `d_weekdayfl` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE;
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
+order by d_datekey limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
+order by d_datekey limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dates_removal_n0`(
+  `d_datekey` bigint, 
+  `d_id` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int, 
+  `d_daynuminmonth` int, 
+  `d_daynuminyear` int, 
+  `d_monthnuminyear` int, 
+  `d_weeknuminyear` int, 
+  `d_sellingseason` string, 
+  `d_lastdayinweekfl` int, 
+  `d_lastdayinmonthfl` int, 
+  `d_holidayfl` int, 
+  `d_weekdayfl` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE;
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
+d_sellingseason order by d_datekey limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
+d_sellingseason order by d_datekey limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dates_removal_n0`(
+  `d_datekey` bigint, 
+  `d_id` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int, 
+  `d_daynuminmonth` int, 
+  `d_daynuminyear` int, 
+  `d_monthnuminyear` int, 
+  `d_weeknuminyear` int, 
+  `d_sellingseason` string, 
+  `d_lastdayinweekfl` int, 
+  `d_lastdayinmonthfl` int, 
+  `d_holidayfl` int, 
+  `d_weekdayfl` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE;
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
+d_sellingseason order by d_datekey limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
+d_sellingseason order by d_datekey limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dates_removal_n0`(
+  `d_datekey` bigint, 
+  `d_id` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int, 
+  `d_daynuminmonth` int, 
+  `d_daynuminyear` int, 
+  `d_monthnuminyear` int, 
+  `d_weeknuminyear` int, 
+  `d_sellingseason` string, 
+  `d_lastdayinweekfl` int, 
+  `d_lastdayinmonthfl` int, 
+  `d_holidayfl` int, 
+  `d_weekdayfl` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE;
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: insert into dates_removal_n0(d_datekey, d_id)  values(3, 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dates_removal_n0
+POSTHOOK: query: insert into dates_removal_n0(d_datekey, d_id)  values(3, 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dates_removal_n0
+POSTHOOK: Lineage: dates_removal_n0.d_date SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_datekey SCRIPT []
+POSTHOOK: Lineage: dates_removal_n0.d_daynuminmonth SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_daynuminweek SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_daynuminyear SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_dayofweek SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_holidayfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_id SCRIPT []
+POSTHOOK: Lineage: dates_removal_n0.d_lastdayinmonthfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_lastdayinweekfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_month SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_monthnuminyear SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_sellingseason SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_weekdayfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_weeknuminyear SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_year SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_yearmonth SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_yearmonthnum SIMPLE []
+PREHOOK: query: insert into dates_removal_n0(d_datekey, d_id)  values(3, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dates_removal_n0
+POSTHOOK: query: insert into dates_removal_n0(d_datekey, d_id)  values(3, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dates_removal_n0
+POSTHOOK: Lineage: dates_removal_n0.d_date SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_datekey SCRIPT []
+POSTHOOK: Lineage: dates_removal_n0.d_daynuminmonth SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_daynuminweek SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_daynuminyear SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_dayofweek SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_holidayfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_id SCRIPT []
+POSTHOOK: Lineage: dates_removal_n0.d_lastdayinmonthfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_lastdayinweekfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_month SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_monthnuminyear SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_sellingseason SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_weekdayfl SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_weeknuminyear SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_year SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_yearmonth SIMPLE []
+POSTHOOK: Lineage: dates_removal_n0.d_yearmonthnum SIMPLE []
+PREHOOK: query: insert into customer_removal_n0 (c_custkey) values(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@customer_removal_n0
+POSTHOOK: query: insert into customer_removal_n0 (c_custkey) values(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@customer_removal_n0
+POSTHOOK: Lineage: customer_removal_n0.c_address SIMPLE []
+POSTHOOK: Lineage: customer_removal_n0.c_city SIMPLE []
+POSTHOOK: Lineage: customer_removal_n0.c_custkey SCRIPT []
+POSTHOOK: Lineage: customer_removal_n0.c_mktsegment SIMPLE []
+POSTHOOK: Lineage: customer_removal_n0.c_name SIMPLE []
+POSTHOOK: Lineage: customer_removal_n0.c_nation SIMPLE []
+POSTHOOK: Lineage: customer_removal_n0.c_phone SIMPLE []
+POSTHOOK: Lineage: customer_removal_n0.c_region SIMPLE []
+PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`customer_removal_n0`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`dates_removal_n0`(
+  `d_datekey` bigint, 
+  `d_id` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int, 
+  `d_daynuminmonth` int, 
+  `d_daynuminyear` int, 
+  `d_monthnuminyear` int, 
+  `d_weeknuminyear` int, 
+  `d_sellingseason` string, 
+  `d_lastdayinweekfl` int, 
+  `d_lastdayinmonthfl` int, 
+  `d_holidayfl` int, 
+  `d_weekdayfl` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE;
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
+ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE;
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_address SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_address BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_city SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_city BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_custkey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_custkey BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_mktsegment SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_mktsegment BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_name SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_name BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_nation SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_nation BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_phone SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_phone BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_region SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_region BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_date SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_date BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_datekey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_datekey BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminmonth SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminmonth BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminweek SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminweek BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminyear BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_dayofweek SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_dayofweek BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_holidayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_holidayfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_id SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinmonthfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinmonthfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinweekfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinweekfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_month SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_month BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_monthnuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_monthnuminyear BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_sellingseason SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_sellingseason BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weekdayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weekdayfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weeknuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weeknuminyear BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_year SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonth SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonth BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonthnum SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonthnum BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
+order by d_datekey limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
+order by d_datekey limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dates_removal_n0`(
+  `d_datekey` bigint, 
+  `d_id` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int, 
+  `d_daynuminmonth` int, 
+  `d_daynuminyear` int, 
+  `d_monthnuminyear` int, 
+  `d_weeknuminyear` int, 
+  `d_sellingseason` string, 
+  `d_lastdayinweekfl` int, 
+  `d_lastdayinmonthfl` int, 
+  `d_holidayfl` int, 
+  `d_weekdayfl` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE;
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_date SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_date BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_datekey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_datekey BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminmonth SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminmonth BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminweek SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminweek BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminyear BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_dayofweek SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_dayofweek BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_holidayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_holidayfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_id SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinmonthfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinmonthfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinweekfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinweekfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_month SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_month BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_monthnuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_monthnuminyear BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_sellingseason SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_sellingseason BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weekdayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weekdayfl BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weeknuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weeknuminyear BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_year SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonth SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonth BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonthnum SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonthnum BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
+group by c_custkey, c_nation
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
+group by c_custkey, c_nation
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`customer_removal_n0`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE;
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_address SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_address BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_city SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_city BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_custkey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_custkey BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_mktsegment SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_mktsegment BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_name SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_name BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_nation SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_nation BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_phone SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_phone BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_region SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_region BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: DROP TABLE customer_removal_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Output: default@customer_removal_n0
+POSTHOOK: query: DROP TABLE customer_removal_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Output: default@customer_removal_n0
+PREHOOK: query: DROP TABLE dates_removal_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Output: default@dates_removal_n0
+POSTHOOK: query: DROP TABLE dates_removal_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Output: default@dates_removal_n0
+PREHOOK: query: create table dest_g21 (key1 int, value1 double, primary key(key1) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_g21
+POSTHOOK: query: create table dest_g21 (key1 int, value1 double, primary key(key1) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_g21
+PREHOOK: query: insert into dest_g21 values(1, 2), (2,2), (3, 1), (4,4), (5, null), (6, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dest_g21
+POSTHOOK: query: insert into dest_g21 values(1, 2), (2,2), (3, 1), (4,4), (5, null), (6, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dest_g21
+POSTHOOK: Lineage: dest_g21.key1 SCRIPT []
+POSTHOOK: Lineage: dest_g21.value1 SCRIPT []
+PREHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select key1 from dest_g21 where value1 > 1 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1 from dest_g21 where value1 > 1 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select key1 from dest_g21 where key1 > 1 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1 from dest_g21 where key1 > 1 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select count(key1) from dest_g21 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select count(key1) from dest_g21 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select count(key1) from dest_g21 where value1 > 1 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select count(key1) from dest_g21 where value1 > 1 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: DROP table dest_g21
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest_g21
+PREHOOK: Output: default@dest_g21
+POSTHOOK: query: DROP table dest_g21
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest_g21
+POSTHOOK: Output: default@dest_g21
+PREHOOK: query: CREATE TABLE tconst(i int NOT NULL disable rely, j INT NOT NULL disable norely, d_year string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tconst
+POSTHOOK: query: CREATE TABLE tconst(i int NOT NULL disable rely, j INT NOT NULL disable norely, d_year string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tconst
+PREHOOK: query: INSERT INTO tconst values(1, 1, '2001'), (2, null, '2002'), (3, 3, '2010')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tconst
+POSTHOOK: query: INSERT INTO tconst values(1, 1, '2001'), (2, null, '2002'), (3, 3, '2010')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tconst
+POSTHOOK: Lineage: tconst.d_year SCRIPT []
+POSTHOOK: Lineage: tconst.i SCRIPT []
+POSTHOOK: Lineage: tconst.j SCRIPT []
+PREHOOK: query: explain ddl select i, j from tconst where i is not null group by i,j, d_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tconst
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select i, j from tconst where i is not null group by i,j, d_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tconst
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`tconst`(
+  `i` int, 
+  `j` int, 
+  `d_year` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tconst
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tconst
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`tconst`(
+  `i` int, 
+  `j` int, 
+  `d_year` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tconst
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tconst
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`tconst`(
+  `i` int, 
+  `j` int, 
+  `d_year` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tconst
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tconst
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`tconst`(
+  `i` int, 
+  `j` int, 
+  `d_year` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tconst
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tconst
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`tconst`(
+  `i` int, 
+  `j` int, 
+  `d_year` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: DROP TABLE tconst
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tconst
+PREHOOK: Output: default@tconst
+POSTHOOK: query: DROP TABLE tconst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tconst
+POSTHOOK: Output: default@tconst
+PREHOOK: query: create table dest_g21 (key1 int NOT NULL disable rely, value1 double, UNIQUE(key1) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_g21
+POSTHOOK: query: create table dest_g21 (key1 int NOT NULL disable rely, value1 double, UNIQUE(key1) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_g21
+PREHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g21`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### UNIQUE (key1) DISABLE NOVALIDATE;
+ALTER TABLE default.dest_g21 CHANGE COLUMN key1 key1 int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+
+PREHOOK: query: create table dest_g24 (key1 int , value1 double, UNIQUE(key1) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_g24
+POSTHOOK: query: create table dest_g24 (key1 int , value1 double, UNIQUE(key1) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_g24
+PREHOOK: query: explain ddl select key1 from dest_g24 group by key1, value1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g24
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select key1 from dest_g24 group by key1, value1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g24
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`dest_g24`(
+  `key1` int, 
+  `value1` double)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.dest_g24 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.dest_g24 ADD CONSTRAINT #### A masked pattern was here #### UNIQUE (key1) DISABLE NOVALIDATE;
+
+PREHOOK: query: DROP TABLE dest_g21
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest_g21
+PREHOOK: Output: default@dest_g21
+POSTHOOK: query: DROP TABLE dest_g21
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest_g21
+POSTHOOK: Output: default@dest_g21
+PREHOOK: query: DROP TABLE dest_g24
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest_g24
+PREHOOK: Output: default@dest_g24
+POSTHOOK: query: DROP TABLE dest_g24
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest_g24
+POSTHOOK: Output: default@dest_g24
+PREHOOK: query: CREATE TABLE `customer`(
+  `c_customer_sk` int,
+  `c_customer_id` string,
+  `c_current_cdemo_sk` int,
+  `c_current_hdemo_sk` int,
+  `c_current_addr_sk` int,
+  `c_first_shipto_date_sk` int,
+  `c_first_sales_date_sk` int,
+  `c_salutation` string,
+  `c_first_name` string,
+  `c_last_name` string,
+  `c_preferred_cust_flag` string,
+  `c_birth_day` int,
+  `c_birth_month` int,
+  `c_birth_year` int,
+  `c_birth_country` string,
+  `c_login` string,
+  `c_email_address` string,
+  `c_last_review_date` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer
+POSTHOOK: query: CREATE TABLE `customer`(
+  `c_customer_sk` int,
+  `c_customer_id` string,
+  `c_current_cdemo_sk` int,
+  `c_current_hdemo_sk` int,
+  `c_current_addr_sk` int,
+  `c_first_shipto_date_sk` int,
+  `c_first_sales_date_sk` int,
+  `c_salutation` string,
+  `c_first_name` string,
+  `c_last_name` string,
+  `c_preferred_cust_flag` string,
+  `c_birth_day` int,
+  `c_birth_month` int,
+  `c_birth_year` int,
+  `c_birth_country` string,
+  `c_login` string,
+  `c_email_address` string,
+  `c_last_review_date` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer
+PREHOOK: query: CREATE TABLE `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_sold_time_sk` int,
+  `ss_item_sk` int,
+  `ss_customer_sk` int,
+  `ss_cdemo_sk` int,
+  `ss_hdemo_sk` int,
+  `ss_addr_sk` int,
+  `ss_store_sk` int,
+  `ss_promo_sk` int,
+  `ss_ticket_number` int,
+  `ss_quantity` int,
+  `ss_wholesale_cost` decimal(7,2),
+  `ss_list_price` decimal(7,2),
+  `ss_sales_price` decimal(7,2),
+  `ss_ext_discount_amt` decimal(7,2),
+  `ss_ext_sales_price` decimal(7,2),
+  `ss_ext_wholesale_cost` decimal(7,2),
+  `ss_ext_list_price` decimal(7,2),
+  `ss_ext_tax` decimal(7,2),
+  `ss_coupon_amt` decimal(7,2),
+  `ss_net_paid` decimal(7,2),
+  `ss_net_paid_inc_tax` decimal(7,2),
+  `ss_net_profit` decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: CREATE TABLE `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_sold_time_sk` int,
+  `ss_item_sk` int,
+  `ss_customer_sk` int,
+  `ss_cdemo_sk` int,
+  `ss_hdemo_sk` int,
+  `ss_addr_sk` int,
+  `ss_store_sk` int,
+  `ss_promo_sk` int,
+  `ss_ticket_number` int,
+  `ss_quantity` int,
+  `ss_wholesale_cost` decimal(7,2),
+  `ss_list_price` decimal(7,2),
+  `ss_sales_price` decimal(7,2),
+  `ss_ext_discount_amt` decimal(7,2),
+  `ss_ext_sales_price` decimal(7,2),
+  `ss_ext_wholesale_cost` decimal(7,2),
+  `ss_ext_list_price` decimal(7,2),
+  `ss_ext_tax` decimal(7,2),
+  `ss_coupon_amt` decimal(7,2),
+  `ss_net_paid` decimal(7,2),
+  `ss_net_paid_inc_tax` decimal(7,2),
+  `ss_net_profit` decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table customer change column c_customer_id c_customer_id string constraint cid_nn not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@customer
+PREHOOK: Output: default@customer
+POSTHOOK: query: alter table customer change column c_customer_id c_customer_id string constraint cid_nn not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@customer
+POSTHOOK: Output: default@customer
+PREHOOK: query: alter table customer add constraint uk1 UNIQUE(c_customer_id) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table customer add constraint uk1 UNIQUE(c_customer_id) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table store_sales add constraint pk_ss primary key (ss_item_sk, ss_ticket_number) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table store_sales add constraint pk_ss primary key (ss_item_sk, ss_ticket_number) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table store_sales add constraint ss_c foreign key  (ss_customer_sk) references customer (c_customer_sk) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table store_sales add constraint ss_c foreign key  (ss_customer_sk) references customer (c_customer_sk) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: explain ddl
+select c_customer_id
+from customer
+,store_sales
+where c_customer_sk = ss_customer_sk
+group by c_customer_id
+,c_first_name
+,c_last_name
+,c_preferred_cust_flag
+,c_birth_country
+,c_login
+,c_email_address
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+select c_customer_id
+from customer
+,store_sales
+where c_customer_sk = ss_customer_sk
+group by c_customer_id
+,c_first_name
+,c_last_name
+,c_preferred_cust_flag
+,c_birth_country
+,c_login
+,c_email_address
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl
+select c_customer_id
+from store_sales
+,customer
+where c_customer_sk = ss_customer_sk
+group by c_customer_id
+,c_first_name
+,c_last_name
+,c_preferred_cust_flag
+,c_birth_country
+,c_login
+,c_email_address
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+select c_customer_id
+from store_sales
+,customer
+where c_customer_sk = ss_customer_sk
+group by c_customer_id
+,c_first_name
+,c_last_name
+,c_preferred_cust_flag
+,c_birth_country
+,c_login
+,c_email_address
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl with year_total as (
+  select c_customer_id customer_id
+  ,c_first_name customer_first_name
+  ,c_last_name customer_last_name
+  ,c_preferred_cust_flag customer_preferred_cust_flag
+  ,c_birth_country customer_birth_country
+  ,c_login customer_login
+  ,c_email_address customer_email_address
+  ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+  ,'s' sale_type
+  from customer
+  ,store_sales
+  where c_customer_sk = ss_customer_sk
+  group by c_customer_id
+  ,c_first_name
+  ,c_last_name
+  ,c_preferred_cust_flag
+  ,c_birth_country
+  ,c_login
+  ,c_email_address
+)
+select  t_s_secyear.customer_preferred_cust_flag
+from
+year_total t_s_secyear
+where t_s_secyear.sale_type = 's'
+order by t_s_secyear.customer_preferred_cust_flag
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl with year_total as (
+  select c_customer_id customer_id
+  ,c_first_name customer_first_name
+  ,c_last_name customer_last_name
+  ,c_preferred_cust_flag customer_preferred_cust_flag
+  ,c_birth_country customer_birth_country
+  ,c_login customer_login
+  ,c_email_address customer_email_address
+  ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+  ,'s' sale_type
+  from customer
+  ,store_sales
+  where c_customer_sk = ss_customer_sk
+  group by c_customer_id
+  ,c_first_name
+  ,c_last_name
+  ,c_preferred_cust_flag
+  ,c_birth_country
+  ,c_login
+  ,c_email_address
+)
+select  t_s_secyear.customer_preferred_cust_flag
+from
+year_total t_s_secyear
+where t_s_secyear.sale_type = 's'
+order by t_s_secyear.customer_preferred_cust_flag
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl
+with year_total as (
+  select c_customer_id customer_id
+  ,c_first_name customer_first_name
+  ,c_last_name customer_last_name
+  ,c_preferred_cust_flag customer_preferred_cust_flag
+  ,c_birth_country customer_birth_country
+  ,c_login customer_login
+  ,c_email_address customer_email_address
+  ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+  ,'s' sale_type
+  from store_sales
+  ,customer
+  where c_customer_sk = ss_customer_sk
+  group by c_customer_id
+  ,c_first_name
+  ,c_last_name
+  ,c_preferred_cust_flag
+  ,c_birth_country
+  ,c_login
+  ,c_email_address
+)
+select  t_s_secyear.customer_preferred_cust_flag
+from
+year_total t_s_secyear
+where t_s_secyear.sale_type = 's'
+order by t_s_secyear.customer_preferred_cust_flag
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+with year_total as (
+  select c_customer_id customer_id
+  ,c_first_name customer_first_name
+  ,c_last_name customer_last_name
+  ,c_preferred_cust_flag customer_preferred_cust_flag
+  ,c_birth_country customer_birth_country
+  ,c_login customer_login
+  ,c_email_address customer_email_address
+  ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+  ,'s' sale_type
+  from store_sales
+  ,customer
+  where c_customer_sk = ss_customer_sk
+  group by c_customer_id
+  ,c_first_name
+  ,c_last_name
+  ,c_preferred_cust_flag
+  ,c_birth_country
+  ,c_login
+  ,c_email_address
+)
+select  t_s_secyear.customer_preferred_cust_flag
+from
+year_total t_s_secyear
+where t_s_secyear.sale_type = 's'
+order by t_s_secyear.customer_preferred_cust_flag
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: CREATE TABLE `date_dim`(
+  `d_date_sk` int,
+  `d_date_id` string,
+  `d_date` string,
+  `d_month_seq` int,
+  `d_week_seq` int,
+  `d_quarter_seq` int,
+  `d_year` int,
+  `d_dow` int,
+  `d_moy` int,
+  `d_dom` int,
+  `d_qoy` int,
+  `d_fy_year` int,
+  `d_fy_quarter_seq` int,
+  `d_fy_week_seq` int,
+  `d_day_name` string,
+  `d_quarter_name` string,
+  `d_holiday` string,
+  `d_weekend` string,
+  `d_following_holiday` string,
+  `d_first_dom` int,
+  `d_last_dom` int,
+  `d_same_day_ly` int,
+  `d_same_day_lq` int,
+  `d_current_day` string,
+  `d_current_week` string,
+  `d_current_month` string,
+  `d_current_quarter` string,
+  `d_current_year` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: CREATE TABLE `date_dim`(
+  `d_date_sk` int,
+  `d_date_id` string,
+  `d_date` string,
+  `d_month_seq` int,
+  `d_week_seq` int,
+  `d_quarter_seq` int,
+  `d_year` int,
+  `d_dow` int,
+  `d_moy` int,
+  `d_dom` int,
+  `d_qoy` int,
+  `d_fy_year` int,
+  `d_fy_quarter_seq` int,
+  `d_fy_week_seq` int,
+  `d_day_name` string,
+  `d_quarter_name` string,
+  `d_holiday` string,
+  `d_weekend` string,
+  `d_following_holiday` string,
+  `d_first_dom` int,
+  `d_last_dom` int,
+  `d_same_day_ly` int,
+  `d_same_day_lq` int,
+  `d_current_day` string,
+  `d_current_week` string,
+  `d_current_month` string,
+  `d_current_quarter` string,
+  `d_current_year` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim
+PREHOOK: query: explain ddl
+with year_total as (
+  select c_customer_id customer_id
+  ,c_first_name customer_first_name
+  ,c_last_name customer_last_name
+  ,c_preferred_cust_flag customer_preferred_cust_flag
+  ,c_birth_country customer_birth_country
+  ,c_login customer_login
+  ,c_email_address customer_email_address
+  ,d_year dyear
+  ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+  ,'s' sale_type
+  from customer
+  ,store_sales
+  ,date_dim
+  where c_customer_sk = ss_customer_sk
+  and ss_sold_date_sk = d_date_sk
+  group by c_customer_id
+  ,c_first_name
+  ,c_last_name
+  ,c_preferred_cust_flag
+  ,c_birth_country
+  ,c_login
+  ,c_email_address
+  ,d_year
+)
+select  t_s_secyear.customer_preferred_cust_flag
+from year_total t_s_firstyear
+,year_total t_s_secyear
+where t_s_secyear.customer_id = t_s_firstyear.customer_id
+and t_s_firstyear.sale_type = 's'
+and t_s_secyear.sale_type = 's'
+and t_s_firstyear.dyear =  2001
+and t_s_secyear.dyear = 2001+1
+and t_s_firstyear.year_total > 0
+order by t_s_secyear.customer_preferred_cust_flag
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+with year_total as (
+  select c_customer_id customer_id
+  ,c_first_name customer_first_name
+  ,c_last_name customer_last_name
+  ,c_preferred_cust_flag customer_preferred_cust_flag
+  ,c_birth_country customer_birth_country
+  ,c_login customer_login
+  ,c_email_address customer_email_address
+  ,d_year dyear
+  ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+  ,'s' sale_type
+  from customer
+  ,store_sales
+  ,date_dim
+  where c_customer_sk = ss_customer_sk
+  and ss_sold_date_sk = d_date_sk
+  group by c_customer_id
+  ,c_first_name
+  ,c_last_name
+  ,c_preferred_cust_flag
+  ,c_birth_country
+  ,c_login
+  ,c_email_address
+  ,d_year
+)
+select  t_s_secyear.customer_preferred_cust_flag
+from year_total t_s_firstyear
+,year_total t_s_secyear
+where t_s_secyear.customer_id = t_s_firstyear.customer_id
+and t_s_firstyear.sale_type = 's'
+and t_s_secyear.sale_type = 's'
+and t_s_firstyear.dyear =  2001
+and t_s_secyear.dyear = 2001+1
+and t_s_firstyear.year_total > 0
+order by t_s_secyear.customer_preferred_cust_flag
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`date_dim`(
+  `d_date_sk` int, 
+  `d_date_id` string, 
+  `d_date` string, 
+  `d_month_seq` int, 
+  `d_week_seq` int, 
+  `d_quarter_seq` int, 
+  `d_year` int, 
+  `d_dow` int, 
+  `d_moy` int, 
+  `d_dom` int, 
+  `d_qoy` int, 
+  `d_fy_year` int, 
+  `d_fy_quarter_seq` int, 
+  `d_fy_week_seq` int, 
+  `d_day_name` string, 
+  `d_quarter_name` string, 
+  `d_holiday` string, 
+  `d_weekend` string, 
+  `d_following_holiday` string, 
+  `d_first_dom` int, 
+  `d_last_dom` int, 
+  `d_same_day_ly` int, 
+  `d_same_day_lq` int, 
+  `d_current_day` string, 
+  `d_current_week` string, 
+  `d_current_month` string, 
+  `d_current_quarter` string, 
+  `d_current_year` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.date_dim UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl
+SELECT
+C_CUSTOMER_SK
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_CUSTOMER_SK
+,	C_CUSTOMER_ID
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+SELECT
+C_CUSTOMER_SK
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_CUSTOMER_SK
+,	C_CUSTOMER_ID
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl
+SELECT
+C_CUSTOMER_ID
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_CUSTOMER_SK
+,	C_CUSTOMER_ID
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+SELECT
+C_CUSTOMER_ID
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_CUSTOMER_SK
+,	C_CUSTOMER_ID
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl
+SELECT
+C_FIRST_NAME
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_CUSTOMER_SK
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+SELECT
+C_FIRST_NAME
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_CUSTOMER_SK
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl
+SELECT
+C_CUSTOMER_ID
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_EMAIL_ADDRESS
+,	C_LAST_NAME
+,	C_FIRST_NAME
+,	C_CUSTOMER_ID
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl
+SELECT
+C_CUSTOMER_ID
+FROM
+CUSTOMER
+,	STORE_SALES
+WHERE
+C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+C_EMAIL_ADDRESS
+,	C_LAST_NAME
+,	C_FIRST_NAME
+,	C_CUSTOMER_ID
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE;
+ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
+ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE;
+ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE;
+
+PREHOOK: query: create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
+constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
+constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_sales
+PREHOOK: query: insert into web_sales values(1, 1, 1.2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: insert into web_sales values(1, 1, 1.2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@web_sales
+POSTHOOK: Lineage: web_sales.ws_item_sk SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_order_number SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_price SCRIPT []
+PREHOOK: query: insert into web_sales values(1, 1, 1.2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: insert into web_sales values(1, 1, 1.2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@web_sales
+POSTHOOK: Lineage: web_sales.ws_item_sk SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_order_number SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_price SCRIPT []
+PREHOOK: query: explain ddl select count(distinct ws_order_number) from web_sales
+PREHOOK: type: QUERY
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select count(distinct ws_order_number) from web_sales
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`web_sales`(
+  `ws_order_number` int, 
+  `ws_item_sk` int, 
+  `ws_price` float)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.web_sales ADD CONSTRAINT pk1 PRIMARY KEY (ws_order_number,ws_item_sk) DISABLE NOVALIDATE;
+ALTER TABLE default.web_sales UPDATE STATISTICS SET('numRows'='2','rawDataSize'='14' );
+ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_item_sk SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.web_sales FOR COLUMN ws_item_sk BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_order_number SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR default.web_sales FOR COLUMN ws_order_number BUT THEY ARE NOT SUPPORTED YET
+ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_price SET('numNulls'='0','numDVs'='1','highValue'='1.2000000476837158','lowValue'='1.2000000476837158' );
+-- BIT VECTORS PRESENT FOR default.web_sales FOR COLUMN ws_price BUT THEY ARE NOT SUPPORTED YET
+
+PREHOOK: query: drop table web_sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: drop table web_sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: default@web_sales
+PREHOOK: query: CREATE TABLE table1_n13 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1_n13
+POSTHOOK: query: CREATE TABLE table1_n13 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1_n13
+PREHOOK: query: CREATE TABLE table2_n8 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2_n8
+POSTHOOK: query: CREATE TABLE table2_n8 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2_n8
+PREHOOK: query: CREATE TABLE table3_n1 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table3_n1
+POSTHOOK: query: CREATE TABLE table3_n1 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table3_n1
+PREHOOK: query: CREATE TABLE table4_n0 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE,
+CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2_n8(a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table4_n0
+POSTHOOK: query: CREATE TABLE table4_n0 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE,
+CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2_n8(a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table4_n0
+PREHOOK: query: CREATE TABLE table5_n4 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table5_n4
+POSTHOOK: query: CREATE TABLE table5_n4 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table5_n4
+PREHOOK: query: CREATE TABLE table6_n3 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE,
+CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table6_n3
+POSTHOOK: query: CREATE TABLE table6_n3 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE,
+CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table6_n3
+PREHOOK: query: CREATE TABLE table7_n3 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table7_n3
+POSTHOOK: query: CREATE TABLE table7_n3 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table7_n3
+PREHOOK: query: CREATE TABLE table8 (a STRING, b STRING, CONSTRAINT pk8 PRIMARY KEY (a) DISABLE NORELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table8
+POSTHOOK: query: CREATE TABLE table8 (a STRING, b STRING, CONSTRAINT pk8 PRIMARY KEY (a) DISABLE NORELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table8
+PREHOOK: query: CREATE TABLE table9 (a STRING, b STRING, PRIMARY KEY (a, b) DISABLE RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table9
+POSTHOOK: query: CREATE TABLE table9 (a STRING, b STRING, PRIMARY KEY (a, b) DISABLE RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table9
+PREHOOK: query: CREATE TABLE table10 (a STRING, b STRING, CONSTRAINT pk10 PRIMARY KEY (a) DISABLE NORELY, FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table10
+POSTHOOK: query: CREATE TABLE table10 (a STRING, b STRING, CONSTRAINT pk10 PRIMARY KEY (a) DISABLE NORELY, FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table10
+PREHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, CONSTRAINT pk11 PRIMARY KEY (a) DISABLE RELY, CONSTRAINT fk11_1 FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE,
+CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4_n0(x) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table11
+POSTHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, CONSTRAINT pk11 PRIMARY KEY (a) DISABLE RELY, CONSTRAINT fk11_1 FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE,
+CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4_n0(x) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table11
+PREHOOK: query: CREATE TABLE table12 (a STRING CONSTRAINT nn12_1 NOT NULL DISABLE NORELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table12
+POSTHOOK: query: CREATE TABLE table12 (a STRING CONSTRAINT nn12_1 NOT NULL DISABLE NORELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table12
+PREHOOK: query: CREATE TABLE table13 (b STRING) PARTITIONED BY (a STRING NOT NULL DISABLE RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table13
+POSTHOOK: query: CREATE TABLE table13 (b STRING) PARTITIONED BY (a STRING NOT NULL DISABLE RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table13
+PREHOOK: query: CREATE TABLE table14 (a STRING CONSTRAINT nn14_1 NOT NULL DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table14
+POSTHOOK: query: CREATE TABLE table14 (a STRING CONSTRAINT nn14_1 NOT NULL DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table14
+PREHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4_n0(x) DISABLE, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table15
+POSTHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4_n0(x) DISABLE, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table15
+PREHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4_n0(x) DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table16
+POSTHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4_n0(x) DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table16
+PREHOOK: query: CREATE TABLE table17 (a STRING CONSTRAINT uk17_1 UNIQUE DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table17
+POSTHOOK: query: CREATE TABLE table17 (a STRING CONSTRAINT uk17_1 UNIQUE DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table17
+PREHOOK: query: CREATE TABLE table18 (a STRING, CONSTRAINT uk18_1 UNIQUE (b) DISABLE RELY) PARTITIONED BY (b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table18
+POSTHOOK: query: CREATE TABLE table18 (a STRING, CONSTRAINT uk18_1 UNIQUE (b) DISABLE RELY) PARTITIONED BY (b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table18
+PREHOOK: query: CREATE TABLE table19 (a STRING, b STRING, CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE RELY, CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES table19(b) DISABLE RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table19
+POSTHOOK: query: CREATE TABLE table19 (a STRING, b STRING, CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE RELY, CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES table19(b) DISABLE RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table19
+PREHOOK: query: CREATE TABLE table20 (a STRING, b STRING, CONSTRAINT uk20_1 UNIQUE (b) DISABLE RELY, CONSTRAINT fk20_2 FOREIGN KEY (a) REFERENCES table20(b) DISABLE RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table20
+POSTHOOK: query: CREATE TABLE table20 (a STRING, b STRING, CONSTRAINT uk20_1 UNIQUE (b) DISABLE RELY, CONSTRAINT fk20_2 FOREIGN KEY (a) REFERENCES table20(b) DISABLE RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table20
+PREHOOK: query: CREATE TABLE table21 (a STRING, CONSTRAINT uk21_1 UNIQUE (a,b) DISABLE) PARTITIONED BY (b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table21
+POSTHOOK: query: CREATE TABLE table21 (a STRING, CONSTRAINT uk21_1 UNIQUE (a,b) DISABLE) PARTITIONED BY (b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table21
+PREHOOK: query: CREATE TABLE table22 (a STRING, b STRING, CONSTRAINT fk22_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table22
+POSTHOOK: query: CREATE TABLE table22 (a STRING, b STRING, CONSTRAINT fk22_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table22
+PREHOOK: query: explain ddl select * from table1_n13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n13
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table1_n13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n13
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table1_n13`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table1_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table2_n8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table2_n8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table2_n8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table3_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table3_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table3_n1`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table4_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table4_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table4_n0`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table5_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table5_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table5_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table5_n4
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table5_n4`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table5_n4 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table6_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table6_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table6_n3`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table7_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table7_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table7_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table7_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table7_n3`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table7_n3 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a) DISABLE NOVALIDATE;
+ALTER TABLE default.table7_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table9
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table9
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table9`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table9 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a,b) DISABLE NOVALIDATE;
+ALTER TABLE default.table9 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table10
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table10
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table10`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table10 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table11
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table11
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table11`(
+  `a` string, 
+  `b` string, 
+  `c` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table11 ADD CONSTRAINT pk11 PRIMARY KEY (a) DISABLE NOVALIDATE;
+ALTER TABLE default.table11 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table12
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table12
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table12`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table13
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table13
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table13`(
+  `b` string)
+PARTITIONED BY ( 
+  `a` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl select * from table14
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table14
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table14
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table14
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table14`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table14 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table14 CHANGE COLUMN a a string CONSTRAINT nn14_1 NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl select * from table15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table15
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table15
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table15`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table15 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table16
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table16
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table16`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table17
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table17
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table17`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table17 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table17 ADD CONSTRAINT uk17_1 UNIQUE (a) DISABLE NOVALIDATE;
+
+PREHOOK: query: explain ddl select * from table18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table18
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table18
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table18`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table18 ADD CONSTRAINT uk18_1 UNIQUE (b) DISABLE NOVALIDATE;
+
+PREHOOK: query: explain ddl select * from table19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table19
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table19
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table19`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table19 ADD CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE NOVALIDATE;
+ALTER TABLE default.table19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table19 ADD CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES default.table19(b) DISABLE NOVALIDATE RELY;
+
+PREHOOK: query: explain ddl select * from table20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table20
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table20
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table20`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table20 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table20 ADD CONSTRAINT uk20_1 UNIQUE (b) DISABLE NOVALIDATE;
+
+PREHOOK: query: explain ddl select * from table21
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table21
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table21`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table22
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table22
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table22`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table22 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table1_n13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n13
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table1_n13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n13
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table1_n13`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table1_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table2_n8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table2_n8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table2_n8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table3_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table3_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table3_n1`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table4_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table4_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table4_n0`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table5_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table5_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table5_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table5_n4
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table5_n4`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table5_n4 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table6_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table6_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table6_n3`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table7_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table7_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table7_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table7_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table7_n3`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table7_n3 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a) DISABLE NOVALIDATE;
+ALTER TABLE default.table7_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table9
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table9
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table9`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table9 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a,b) DISABLE NOVALIDATE;
+ALTER TABLE default.table9 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table10
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table10
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table10`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table10 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table11
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table11
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table11`(
+  `a` string, 
+  `b` string, 
+  `c` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table11 ADD CONSTRAINT pk11 PRIMARY KEY (a) DISABLE NOVALIDATE;
+ALTER TABLE default.table11 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table12
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table12
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table12`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table13
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table13
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table13`(
+  `b` string)
+PARTITIONED BY ( 
+  `a` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl select * from table14
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table14
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table14
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table14
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table14`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table14 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table14 CHANGE COLUMN a a string CONSTRAINT nn14_1 NOT NULL DISABLE;
+
+PREHOOK: query: explain ddl select * from table15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table15
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table15
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table15`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table15 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table16
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table16
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table16`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table17
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table17
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table17`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table17 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table17 ADD CONSTRAINT uk17_1 UNIQUE (a) DISABLE NOVALIDATE;
+
+PREHOOK: query: explain ddl select * from table18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table18
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table18
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table18`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table18 ADD CONSTRAINT uk18_1 UNIQUE (b) DISABLE NOVALIDATE;
+
+PREHOOK: query: explain ddl select * from table19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table19
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table19
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table19`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table19 ADD CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE NOVALIDATE;
+ALTER TABLE default.table19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table19 ADD CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES default.table19(b) DISABLE NOVALIDATE RELY;
+
+PREHOOK: query: explain ddl select * from table20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table20
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table20
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table20`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table20 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table20 ADD CONSTRAINT uk20_1 UNIQUE (b) DISABLE NOVALIDATE;
+
+PREHOOK: query: explain ddl select * from table21
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table21
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table21
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table21
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table21`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table22
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table22
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table22`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table22 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: explain ddl select * from table2_n8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table2_n8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table2_n8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table3_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table3_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table3_n1`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table4_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table4_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table4_n0`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table6_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table6_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table6_n3`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table16
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table16
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table16`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table18
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table18
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table18`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table2_n8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table2_n8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table2_n8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table3_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table3_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table3_n1`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table4_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table4_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table4_n0
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table4_n0`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table6_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table6_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table6_n3`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table16
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table16
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table16`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table18
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table18
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table18`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4_n0(x) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table16
+PREHOOK: Output: default@table16
+POSTHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4_n0(x) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table16
+POSTHOOK: Output: default@table16
+PREHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: explain ddl select * from table2_n8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table2_n8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table2_n8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table3_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table3_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table3_n1
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table3_n1`(
+  `x` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table6_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table6_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table6_n3
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table6_n3`(
+  `x` string, 
+  `y` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table8
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table8`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a,b) DISABLE NOVALIDATE;
+ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table16
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table16
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table16`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table18
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table18
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table18`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: ALTER TABLE table12 CHANGE COLUMN b b STRING CONSTRAINT nn12_2 NOT NULL DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table12
+PREHOOK: Output: default@table12
+POSTHOOK: query: ALTER TABLE table12 CHANGE COLUMN b b STRING CONSTRAINT nn12_2 NOT NULL DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table12
+POSTHOOK: Output: default@table12
+PREHOOK: query: ALTER TABLE table13 CHANGE b b STRING NOT NULL DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table13
+PREHOOK: Output: default@table13
+POSTHOOK: query: ALTER TABLE table13 CHANGE b b STRING NOT NULL DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table13
+POSTHOOK: Output: default@table13
+PREHOOK: query: explain ddl select * from table12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table12
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table12
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table12`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from table13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table13
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table13
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table13`(
+  `b` string)
+PARTITIONED BY ( 
+  `a` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE;
+
+PREHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: explain ddl select * from table12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table12
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table12
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table12`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: CREATE DATABASE DbConstraint
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:DbConstraint
+POSTHOOK: query: CREATE DATABASE DbConstraint
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:DbConstraint
+PREHOOK: query: USE DbConstraint
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dbconstraint
+POSTHOOK: query: USE DbConstraint
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dbconstraint
+PREHOOK: query: CREATE TABLE Table2 (a STRING, b STRING NOT NULL DISABLE, CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: DbConstraint@Table2
+PREHOOK: Output: database:dbconstraint
+POSTHOOK: query: CREATE TABLE Table2 (a STRING, b STRING NOT NULL DISABLE, CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: DbConstraint@Table2
+POSTHOOK: Output: database:dbconstraint
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: explain ddl select * from DbConstraint.Table2
+PREHOOK: type: QUERY
+PREHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from DbConstraint.Table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+CREATE DATABASE dbconstraint;
+CREATE TABLE `dbconstraint`.`table2`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from DbConstraint.Table2
+PREHOOK: type: QUERY
+PREHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from DbConstraint.Table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+CREATE DATABASE dbconstraint;
+CREATE TABLE `dbconstraint`.`table2`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: explain ddl select * from DbConstraint.Table2
+PREHOOK: type: QUERY
+PREHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from DbConstraint.Table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+CREATE DATABASE dbconstraint;
+CREATE TABLE `dbconstraint`.`table2`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: explain ddl select * from DbConstraint.Table2
+PREHOOK: type: QUERY
+PREHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from DbConstraint.Table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+CREATE DATABASE dbconstraint;
+CREATE TABLE `dbconstraint`.`table2`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: explain ddl select * from DbConstraint.Table2
+PREHOOK: type: QUERY
+PREHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from DbConstraint.Table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+CREATE DATABASE dbconstraint;
+CREATE TABLE `dbconstraint`.`table2`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: explain ddl select * from DbConstraint.Table2
+PREHOOK: type: QUERY
+PREHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from DbConstraint.Table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: dbconstraint@table2
+#### A masked pattern was here ####
+CREATE DATABASE dbconstraint;
+CREATE TABLE `dbconstraint`.`table2`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
+PREHOOK: query: CREATE TABLE table23 (a STRING) PARTITIONED BY (b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table23
+POSTHOOK: query: CREATE TABLE table23 (a STRING) PARTITIONED BY (b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table23
+PREHOOK: query: ALTER TABLE table23 ADD CONSTRAINT fk23_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table23 ADD CONSTRAINT fk23_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: explain ddl select * from table23
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table23
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select * from table23
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table23
+#### A masked pattern was here ####
+
+CREATE TABLE `default`.`table23`(
+  `a` string)
+PARTITIONED BY ( 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE default.table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE NOVALIDATE;
+ALTER TABLE default.table23 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+
