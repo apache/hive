@@ -167,7 +167,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvid
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagationException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveRowIsDeletedPropagatorRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveRowIsDeletedPropagator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2523,9 +2523,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
       } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
         try {
-          program = new HepProgramBuilder();
-          generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, new HiveRowIsDeletedPropagatorRule());
-          basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+          basePlan = new HiveRowIsDeletedPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
+              .propagate(basePlan);
         }
         catch (ColumnPropagationException ex) {
           LOG.warn("Exception while propagating column " + VirtualColumn.ROWISDELETED.getName(), ex);
