@@ -18,6 +18,8 @@
 
 package org.apache.hive.hplsql.udf;
 
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
+import org.apache.hadoop.hive.metastore.api.StoredProcedureRequest;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -25,22 +27,27 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hive.hplsql.Arguments;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.Scope;
 import org.apache.hive.hplsql.Var;
+import org.apache.hive.hplsql.executor.QueryExecutor;
+import org.apache.thrift.TException;
 
 @Description(name = "hplsql", value = "_FUNC_('query' [, :1, :2, ...n]) - Execute HPL/SQL query", extended = "Example:\n" + " > SELECT _FUNC_('CURRENT_DATE') FROM src LIMIT 1;\n")
 @UDFType(deterministic = false)
 public class Udf extends GenericUDF {
-
+  public static String NAME = "hplsql";
   transient Exec exec;
   StringObjectInspector queryOI;
   ObjectInspector[] argumentsOI;
+  private String functionDefinition;
 
   public Udf() {
   }
@@ -60,15 +67,34 @@ public class Udf extends GenericUDF {
     if (!(arguments[0] instanceof StringObjectInspector)) {
       throw new UDFArgumentException("First argument must be a string");
     }
+    SessionState sessionState = SessionState.get();
+    if (sessionState != null) {
+      // we are still in HiveServer, get the source of the HplSQL function and store it.
+      functionDefinition = loadSource(sessionState, functionName(arguments[0]));
+    }
     queryOI = (StringObjectInspector)arguments[0];
     argumentsOI = arguments;
-    if (exec == null) {
-      exec = SessionState.get() == null ? null : SessionState.get().getDynamicVar(Exec.class);
-    }
-    if (exec == null) {
-      throw new UDFArgumentException("Cannot be used in non HPL/SQL mode.");
-    }
     return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+  }
+
+  protected String loadSource(SessionState sessionState, String functionName) throws UDFArgumentException {
+    Exec exec = sessionState.getDynamicVar(Exec.class);
+    try {
+      StoredProcedure storedProcedure = exec.getMsc().getStoredProcedure(
+              new StoredProcedureRequest(
+                      SessionState.get().getCurrentCatalog(),
+                      SessionState.get().getCurrentDatabase(),
+                      functionName));
+      return storedProcedure != null ? storedProcedure.getSource() : null;
+    } catch (TException e) {
+      throw new UDFArgumentException(e);
+    }
+  }
+
+  protected String functionName(ObjectInspector argument) {
+    ConstantObjectInspector inspector = (ConstantObjectInspector) (argument);
+    String functionCall = inspector.getWritableConstantValue().toString();
+    return functionCall.split("\\(")[0].toUpperCase();
   }
 
   /**
@@ -76,16 +102,24 @@ public class Udf extends GenericUDF {
    */
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    String query = queryOI.getPrimitiveJavaObject(arguments[0].get());
-    exec.enterScope(Scope.Type.ROUTINE);
-    if (arguments.length > 1) {
-      setParameters(arguments);
+    if (exec == null) {
+      exec = new Exec();
+      exec.setQueryExecutor(QueryExecutor.DISABLED);
+      exec.init();
+      if (functionDefinition != null) { // if it's null, it can be a built-in function
+        exec.parseAndEval(Arguments.script(functionDefinition));
+      }
     }
+    exec.enterScope(Scope.Type.ROUTINE);
     setParameters(arguments);
-    Var result = exec.eval(query);
-    exec.callStackPop();
-    exec.leaveScope();
-    return result != null ? result.toString() : null;
+    String query = queryOI.getPrimitiveJavaObject(arguments[0].get());
+    try {
+      Var result = exec.parseAndEval(Arguments.script(query));
+      exec.callStackPop();
+      return result != null ? result.toString() : null;
+    } finally {
+      exec.close();
+    }
   }
 
   /**

@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -52,6 +53,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hive.hplsql.Var.Type;
 import org.apache.hive.hplsql.executor.JdbcQueryExecutor;
@@ -761,10 +763,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     return getProgramReturnCode();
   }
 
-  public void parseAndEval(Arguments arguments) throws IOException {
+  public Var parseAndEval(Arguments arguments)  {
     ParseTree tree;
     try (InputStream input = sourceStream(arguments)) {
       tree = parse(input);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
     Var result = null;
     try {
@@ -775,6 +779,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     if (result != null) {
       console.printLine(result.toString());
     }
+    return result;
   }
 
   private Var evaluate(ParseTree tree, String execMain) {
@@ -984,15 +989,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     return rc;
   }
 
-  public Var eval(String source) {
-    HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(source));
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-    HplsqlParser parser = newParser(tokens);
-    HplsqlParser.ProgramContext program = parser.program();
-    visit(program);
-    return !exec.stack.isEmpty() ? exec.stackPop() : null;
-  }
-
   /**
    * Free resources before exit
    */
@@ -1020,7 +1016,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       } else if (sig.type == Signal.Type.UNSUPPORTED_OPERATION) {
         console.printError(sig.value == null ? "Unsupported operation" : sig.value);
       } else if (sig.exception != null) {
-        sig.exception.printStackTrace(); 
+        console.printError("HPL/SQL error: " + ExceptionUtils.getStackTrace(sig.exception));
       } else if (sig.value != null) {
         console.printError(sig.value);
       } else {
@@ -2860,5 +2856,13 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
 
   public Console getConsole() {
     return console;
+  }
+
+  public void setQueryExecutor(QueryExecutor queryExecutor) {
+    this.queryExecutor = queryExecutor;
+  }
+
+  public IMetaStoreClient getMsc() {
+    return msc;
   }
 }

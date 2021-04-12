@@ -170,6 +170,18 @@ public class TestHplSqlViaBeeLine {
       "SELECT * FROM result;\n";
     testScriptFile(SCRIPT_TEXT, args(), "12345");
   }
+  
+  @Test
+  public void testUdf() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+                    "CREATE TABLE result (s string);\n" +
+                    "INSERT INTO result VALUES('alice');\n" +
+                    "INSERT INTO result VALUES('bob');\n" +
+                    "CREATE FUNCTION hello(p STRING) RETURNS STRING BEGIN RETURN 'hello ' || p; END;\n" +
+                    "SELECT hello(s) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "hello alice.*hello bob");
+  }
 
   @Test
     public void testDbChange() throws Throwable {
