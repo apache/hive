@@ -140,7 +140,7 @@ public class ReplUtils {
 
   public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
 
-  public static final String TARGET_OF_REPLICATION = "repl.target.for";
+  public static final String TARGET_OF_REPLICATION = ReplConst.TARGET_OF_REPLICATION;
 
   // Service name for hive.
   public static final String REPL_HIVE_SERVICE = "hive";
