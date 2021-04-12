@@ -5678,7 +5678,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     for (ASTNode node : fieldDescList) {
       Map<ASTNode, String> map = translateFieldDesc(node);
       for (Entry<ASTNode, String> entry : map.entrySet()) {
-        unparseTranslator.addTranslation(entry.getKey(), entry.getValue());
+        unparseTranslator.addTranslation(entry.getKey(), entry.getValue().toLowerCase());
       }
     }
 
