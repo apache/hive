@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
@@ -72,6 +71,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -702,7 +702,6 @@ public class DDLPlanUtils {
    */
   public List<String> populateConstraints(Table tb, Set<String> all_tbl) {
     List<String> constraints = new ArrayList<>();
-    //getAlterTableStmtPrimaryKeyConstraint(tb.getPrimaryKeyInfo(), constraints);
     getAlterTableStmtForeignKeyConstraint(tb.getForeignKeyInfo(), constraints, all_tbl);
     getAlterTableStmtUniqueConstraint(tb.getUniqueKeyInfo(), constraints);
     getAlterTableStmtDefaultConstraint(tb.getDefaultConstraint(), tb, constraints);
@@ -718,11 +717,26 @@ public class DDLPlanUtils {
    * @return create view statement.
    */
   public String getCreateViewStmt(Table table) {
-    return getViewCommand(table, false) + ";";
+    return getCreateViewCommand(table, false) + ";";
   }
+
+  public String getCreateViewCommand(Table table, boolean isRelative) {
+    ST command = new ST(CREATE_VIEW_TEMPLATE);
+
+    if (!isRelative) {
+      command.add(DATABASE_NAME, table.getDbName());
+    }
+    command.add(TABLE_NAME, table.getTableName());
+    command.add(PARTITIONS, getPartitionsForView(table));
+    command.add("SQL", table.getViewExpandedText());
+
+    return command.render();
+  }
+
 
   public String getCreateTableCommand(Table table, boolean isRelative) {
     ST command = new ST(CREATE_TABLE_TEMPLATE);
+
     if (!isRelative) {
       command.add(DATABASE_NAME, table.getDbName());
     }
@@ -738,18 +752,6 @@ public class DDLPlanUtils {
     command.add(LOCATION_BLOCK, getLocationBlock(table));
     command.add(PROPERTIES, getProperties(table));
 
-    return command.render();
-  }
-
-  public String getViewCommand(Table table, boolean isRelative) {
-    ST command = new ST(CREATE_VIEW_TEMPLATE);
-    if (!isRelative) {
-      command.add(DATABASE_NAME, table.getDbName());
-    }
-    command.add(TABLE_NAME, table.getTableName());
-    command.add(LIST_COLUMNS, getColumns(table));
-    command.add(PARTITION, getPartitionsView(table));
-    command.add(SQL, table.getViewOriginalText());
     return command.render();
   }
 
@@ -774,9 +776,7 @@ public class DDLPlanUtils {
     return StringUtils.join(columnDescs, ", \n");
   }
 
-  /**
-   * Struct fields are identifiers, need to be put between ``.
-   */
+  /** Struct fields are identifiers, need to be put between ``. */
   private String formatType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
@@ -784,7 +784,7 @@ public class DDLPlanUtils {
     case STRUCT:
       StringBuilder structFormattedType = new StringBuilder();
 
-      StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+      StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
       for (int i = 0; i < structTypeInfo.getAllStructFieldNames().size(); i++) {
         if (structFormattedType.length() != 0) {
           structFormattedType.append(", ");
@@ -797,18 +797,18 @@ public class DDLPlanUtils {
       }
       return "struct<" + structFormattedType.toString() + ">";
     case LIST:
-      ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
+      ListTypeInfo listTypeInfo = (ListTypeInfo)typeInfo;
       String elementType = formatType(listTypeInfo.getListElementTypeInfo());
       return "array<" + elementType + ">";
     case MAP:
-      MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+      MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
       String keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo().getTypeName();
       String valueTypeInfo = formatType(mapTypeInfo.getMapValueTypeInfo());
       return "map<" + keyTypeInfo + "," + valueTypeInfo + ">";
     case UNION:
       StringBuilder unionFormattedType = new StringBuilder();
 
-      UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+      UnionTypeInfo unionTypeInfo = (UnionTypeInfo)typeInfo;
       for (TypeInfo unionElementTypeInfo : unionTypeInfo.getAllUnionObjectTypeInfos()) {
         if (unionFormattedType.length() != 0) {
           unionFormattedType.append(", ");
@@ -828,6 +828,18 @@ public class DDLPlanUtils {
     return (comment != null) ? "COMMENT '" + HiveStringUtils.escapeHiveCommand(comment) + "'" : "";
   }
 
+  private String getPartitionsForView(Table table) {
+    List<FieldSchema> partitionKeys = table.getPartCols();
+    if (partitionKeys.isEmpty()) {
+      return "";
+    }
+    List<String> partitionCols = new ArrayList<String>();
+    for(String col:table.getPartColNames()) {
+      partitionCols.add('`' + col + '`');
+    }
+    return " PARTITIONED ON (" + StringUtils.join(partitionCols, ", ") + ")";
+  }
+
   private String getPartitions(Table table) {
     List<FieldSchema> partitionKeys = table.getPartitionKeys();
     if (partitionKeys.isEmpty()) {
@@ -843,23 +855,6 @@ public class DDLPlanUtils {
       partitionDescs.add(partitionDesc);
     }
     return "PARTITIONED BY ( \n" + StringUtils.join(partitionDescs, ", \n") + ")";
-  }
-
-  private String getPartitionsView(Table table) {
-    List<FieldSchema> partitionKeys = table.getPartitionKeys();
-    if (partitionKeys.isEmpty()) {
-      return "";
-    }
-
-    List<String> partitionDescs = new ArrayList<String>();
-    for (FieldSchema partitionKey : partitionKeys) {
-      String partitionDesc = "  `" + partitionKey.getName() + "` " + partitionKey.getType();
-      if (partitionKey.getComment() != null) {
-        partitionDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(partitionKey.getComment()) + "'";
-      }
-      partitionDescs.add(partitionDesc);
-    }
-    return "PARTITIONED ON ( \n" + StringUtils.join(partitionDescs, ", \n") + ")";
   }
 
   private String getBuckets(Table table) {
@@ -941,7 +936,7 @@ public class DDLPlanUtils {
   public static void appendSerdeParams(StringBuilder builder, Map<String, String> serdeParams) {
     SortedMap<String, String> sortedSerdeParams = new TreeMap<String, String>(serdeParams);
     List<String> serdeCols = new ArrayList<String>();
-    for (Map.Entry<String, String> entry : sortedSerdeParams.entrySet()) {
+    for (Entry<String, String> entry : sortedSerdeParams.entrySet()) {
       serdeCols.add("  '" + entry.getKey() + "'='" +
           HiveStringUtils.escapeUnicode(HiveStringUtils.escapeHiveCommand(entry.getValue())) + "'");
     }
@@ -966,5 +961,4 @@ public class DDLPlanUtils {
   private String getProperties(Table table) {
     return ShowUtils.propertiesToString(table.getParameters(), PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES);
   }
-
 }
