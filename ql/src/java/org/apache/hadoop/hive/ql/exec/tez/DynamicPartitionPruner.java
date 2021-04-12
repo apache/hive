@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,9 +42,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -94,6 +91,7 @@ public class DynamicPartitionPruner {
 
   private InputInitializerContext context;
   private MapWork work;
+  private JobConf jobConf;
 
   private final Map<String, List<SourceInfo>> sourceInfoMap = new HashMap<>();
 
@@ -115,7 +113,7 @@ public class DynamicPartitionPruner {
 
   private int totalEventCount = 0;
 
-  public void prune(JobConf jobConf) throws SerDeException, IOException, InterruptedException, HiveException {
+  public void prune() throws SerDeException, IOException, InterruptedException, HiveException {
     if (sourcesWaitingForEvents.isEmpty()) {
       return;
     }
@@ -132,7 +130,7 @@ public class DynamicPartitionPruner {
     // synchronous event processing loop. Won't return until all events have
     // been processed.
     this.processEvents();
-    this.prunePartitions(jobConf);
+    this.prunePartitions();
     LOG.info("Ok to proceed.");
   }
 
@@ -145,6 +143,8 @@ public class DynamicPartitionPruner {
     this.clear();
     this.context = context;
     this.work = work;
+    this.jobConf = jobConf;
+
     Map<String, SourceInfo> columnMap = new HashMap<String, SourceInfo>();
     // sources represent vertex names
     Set<String> sources = work.getEventSourceTableDescMap().keySet();
@@ -203,7 +203,7 @@ public class DynamicPartitionPruner {
     }
   }
 
-  private void prunePartitions(JobConf jobConf) throws HiveException {
+  private void prunePartitions() throws HiveException {
     int expectedEvents = 0;
     List<ExprNodeDesc> prunerExprs = new LinkedList<>();
     for (Map.Entry<String, List<SourceInfo>> entry : this.sourceInfoMap.entrySet()) {

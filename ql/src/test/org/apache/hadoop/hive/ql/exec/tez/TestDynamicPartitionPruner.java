@@ -474,7 +474,7 @@ public class TestDynamicPartitionPruner {
         } finally {
           lock.unlock();
         }
-        pruner.prune(null);
+        pruner.prune();
       } catch (Exception e) {
         inError.set(true);
         exception = e;

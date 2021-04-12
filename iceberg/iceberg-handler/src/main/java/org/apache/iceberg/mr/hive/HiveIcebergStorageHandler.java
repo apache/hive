@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
@@ -61,8 +62,8 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
-import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -228,8 +229,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       Collection<String> partitionColumns = ((HiveIcebergSerDe) table.getDeserializer()).partitionColumns();
       if (partitionColumns.size() > 0) {
         // Collect the column names from the predicate
-        Collection<String> filterColumns = Lists.newArrayList();
+        Set<String> filterColumns = Sets.newHashSet();
         columns(syntheticFilterPredicate, filterColumns);
+
+        // While Iceberg could handle multiple columns the current pruning only able to handle filters for a
+        // single column. We keep the logic below to handle multiple columns so if pruning is available on executor
+        // side the we can easily adapt to it as well.
+        if (filterColumns.size() > 1) {
+          // We expect that the compilation logic will prevent us to reach this point in the code
+          LOG.warn("Wrong number of columns to filter for {}", filterColumns);
+          return false;
+        }
 
         // If the filter contains at least one partition column then it could be worthwhile to try dynamic partition
         // pruning
@@ -348,7 +358,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @param node The node we are traversing
    * @param columns The already collected column names
    */
-  private void columns(ExprNodeDesc node, Collection<String> columns) {
+  private void columns(ExprNodeDesc node, Set<String> columns) {
     if (node instanceof ExprNodeColumnDesc) {
       columns.add(((ExprNodeColumnDesc) node).getColumn());
     } else {

@@ -171,7 +171,7 @@ public class HiveSplitGenerator extends InputInitializer {
       // perform dynamic partition pruning
       if (pruner != null) {
         pruner.initialize(getContext(), work, jobConf);
-        pruner.prune(jobConf);
+        pruner.prune();
       }
 
       InputSplitInfoMem inputSplitInfo = null;
