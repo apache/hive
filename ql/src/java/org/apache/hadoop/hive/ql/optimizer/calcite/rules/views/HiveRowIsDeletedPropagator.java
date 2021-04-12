@@ -19,14 +19,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
@@ -66,44 +64,31 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
   public RelNode visit(HiveTableScan scan) {
     RelDataType tableRowType = scan.getTable().getRowType();
     RelDataTypeField column = tableRowType.getField(
-            VirtualColumn.ROWISDELETED.getName(), false, false);
+        VirtualColumn.ROWISDELETED.getName(), false, false);
+    if (column == null) {
+      // This should not happen since Virtual columns are propagated for all native table scans in
+      // CalcitePlanner.genTableLogicalPlan()
+      throw new ColumnPropagationException("TableScan " + scan + " row schema does not contain " +
+          VirtualColumn.ROWISDELETED.getName() + " virtual column");
+    }
+
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
 
-    List<RexNode> projects;
-    List<String> projectNames;
-    HiveTableScan newScan;
-    if (column == null) {
-      RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-      RexNode propagatedColumn = rexBuilder.makeLiteral(
-          Boolean.FALSE,
-          typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BOOLEAN), true),
-          false);
-      projects = new ArrayList<>(tableRowType.getFieldCount() + 1);
-      projectNames = new ArrayList<>(tableRowType.getFieldCount() + 1);
-      populateProjects(rexBuilder, tableRowType, projects, projectNames);
-      projects.add(propagatedColumn);
-      projectNames.add("rowIsDeleted");
-
-      newScan = scan;
-    } else {
-      projects = new ArrayList<>(tableRowType.getFieldCount());
-      projectNames = new ArrayList<>(tableRowType.getFieldCount());
-      populateProjects(rexBuilder, tableRowType, projects, projectNames);
-      // Propagated column is already in the TS move it to the end
-      RexNode propagatedColumn = projects.remove(column.getIndex());
-      projects.add(propagatedColumn);
-      String propagatedColumnName = projectNames.remove(column.getIndex());
-      projectNames.add(propagatedColumnName);
-
-      newScan = scan.enableFetchDeletedRows();
-    }
+    List<RexNode> projects = new ArrayList<>(tableRowType.getFieldCount());
+    List<String> projectNames = new ArrayList<>(tableRowType.getFieldCount());
+    populateProjects(rexBuilder, tableRowType, projects, projectNames);
+    // Propagated column is already in the TS move it to the end
+    RexNode propagatedColumn = projects.remove(column.getIndex());
+    projects.add(propagatedColumn);
+    String propagatedColumnName = projectNames.remove(column.getIndex());
+    projectNames.add(propagatedColumnName);
 
     // Note: as a nature of Calcite if row schema of TS and the new Project would be exactly the same no
     // Project is created.
     return relBuilder
-            .push(newScan)
-            .project(projects, projectNames)
-            .build();
+        .push(scan.enableFetchDeletedRows())
+        .project(projects, projectNames)
+        .build();
   }
 
   /**
