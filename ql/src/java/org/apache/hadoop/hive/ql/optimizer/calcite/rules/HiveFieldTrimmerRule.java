@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -45,11 +44,8 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
   }
 
   protected HiveFieldTrimmerRule(boolean fetchStats, String description) {
-    this(operand(RelNode.class, any()), fetchStats, description);
-  }
-
-  protected HiveFieldTrimmerRule(RelOptRuleOperand operand, boolean fetchStats, String description) {
-    super(operand, HiveRelFactories.HIVE_BUILDER, description);
+    super(operand(RelNode.class, any()),
+        HiveRelFactories.HIVE_BUILDER, description);
     this.fetchStats = fetchStats;
     this.triggered = false;
   }
@@ -62,7 +58,8 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     }
 
     RelNode node = call.rel(0);
-    if (!shouldRun(call, node)) {
+    final HepRelVertex root = (HepRelVertex) call.getPlanner().getRoot();
+    if (root.getCurrentRel() != node) {
       // Bail out
       return;
     }
@@ -72,11 +69,6 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     node = tmpPlanner.findBestExp();
     call.transformTo(trim(call, node));
     triggered = true;
-  }
-
-  protected boolean shouldRun(RelOptRuleCall call, RelNode node) {
-    final HepRelVertex root = (HepRelVertex) call.getPlanner().getRoot();
-    return root.getCurrentRel() == node;
   }
 
   protected RelNode trim(RelOptRuleCall call, RelNode node) {
