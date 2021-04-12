@@ -26,11 +26,21 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This rule will perform a rewriting to prepare the plan for incremental
+ * view maintenance in case there is no aggregation operator but some of the
+ * source tables has delete operations, so we can avoid the INSERT OVERWRITE and use a
+ * MULTI INSERT statement instead: one insert branch for inserted rows
+ * and another for inserting deleted rows to delete delta.
+ * Since CBO plan does not contain the INSERT branches we focus on the SELECT part of the plan in this rule.
+ * See also {@link CalcitePlanner#fixUpASTJoinInsertDeleteIncrementalRebuild(ASTNode)}
+ *
  * FROM (select mv.ROW__ID, mv.a, mv.b from mv) mv
  * RIGHT OUTER JOIN (SELECT _source_.ROW__IS_DELETED,_source_.a, _source_.b FROM _source_) source
  * ON (mv.a <=> source.a AND mv.b <=> source.b)
@@ -50,7 +60,7 @@ public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
   private HiveJoinInsertDeleteIncrementalRewritingRule() {
     super(operand(Union.class, any()),
             HiveRelFactories.HIVE_BUILDER,
-            "HiveJoinIncrementalRewritingRule");
+            "HiveJoinInsertDeleteIncrementalRewritingRule");
   }
 
   @Override

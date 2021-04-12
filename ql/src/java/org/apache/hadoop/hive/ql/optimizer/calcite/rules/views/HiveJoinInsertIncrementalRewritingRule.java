@@ -36,7 +36,7 @@ public class HiveJoinInsertIncrementalRewritingRule extends RelOptRule {
 
   private HiveJoinInsertIncrementalRewritingRule() {
     super(operand(Union.class, any()),
-        HiveRelFactories.HIVE_BUILDER, "HiveNoAggregateIncrementalRewritingRule");
+        HiveRelFactories.HIVE_BUILDER, "HiveJoinInsertIncrementalRewritingRule");
   }
 
   @Override

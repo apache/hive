@@ -587,9 +587,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD) {
               fixUpASTAggregateIncrementalRebuild(newAST);
             } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_REBUILD) {
-              fixUpASTNoAggregateIncrementalRebuild(newAST);
+              fixUpASTJoinInsertIncrementalRebuild(newAST);
             } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
-              fixUpASTJoinIncrementalRebuild(newAST);
+              fixUpASTJoinInsertDeleteIncrementalRebuild(newAST);
             }
 
             // 2. Regen OP plan from optimized AST
@@ -1290,7 +1290,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
   }
 
-  private void fixUpASTJoinIncrementalRebuild(ASTNode newAST) throws SemanticException {
+  private void fixUpASTJoinInsertDeleteIncrementalRebuild(ASTNode newAST) throws SemanticException {
     // Replace INSERT OVERWRITE by MERGE equivalent rewriting.
     // Here we need to do this complex AST rewriting that generates the same plan
     // that a MERGE clause would generate because CBO does not support MERGE yet.
@@ -1465,7 +1465,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
   }
 
-  private void fixUpASTNoAggregateIncrementalRebuild(ASTNode newAST) throws SemanticException {
+  private void fixUpASTJoinInsertIncrementalRebuild(ASTNode newAST) throws SemanticException {
     // Replace INSERT OVERWRITE by INSERT INTO
     // AST tree will have this shape:
     // TOK_QUERY
