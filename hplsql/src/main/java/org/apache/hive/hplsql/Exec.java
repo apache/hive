@@ -1010,7 +1010,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   /**
    * Output information about unhandled exceptions
    */
-  void printExceptions() {
+  public void printExceptions() {
     while (!signals.empty()) {
       Signal sig = signals.pop();
       if (sig.type == Signal.Type.VALIDATION) {
