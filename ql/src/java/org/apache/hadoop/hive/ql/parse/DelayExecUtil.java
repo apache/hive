@@ -42,6 +42,7 @@ public class DelayExecUtil {
   private boolean isSkipTrash = false;
   private boolean needRecycle = false;
   private final Path tgtPath;
+  private boolean isCalculated = false;
 
   public DelayExecUtil(boolean replace, Long writeId, int stmtId, Hive hive, Context ctx, ImportTableDesc tblDesc,
       boolean inReplScope) {
@@ -68,26 +69,28 @@ public class DelayExecUtil {
     assert table != null;
     assert table.getParameters() != null;
 
-    if (inReplScope) {
-      isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-      if (table.isTemporary()) {
-        needRecycle = false;
-      } else {
-        org.apache.hadoop.hive.metastore.api.Database db = hive.getDatabase(table.getDbName());
-        needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
+    if (!isCalculated) {
+      if (inReplScope) {
+        isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
+        if (table.isTemporary()) {
+          needRecycle = false;
+        } else {
+          org.apache.hadoop.hive.metastore.api.Database db = hive.getDatabase(table.getDbName());
+          needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
+        }
       }
-    }
 
-    if (AcidUtils.isTransactionalTable(table)) {
-      String mmSubdir = replace ? AcidUtils.baseDir(writeId)
-          : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-      destPath = new Path(tgtPath, mmSubdir);
-      loadPath = tgtPath;
-      lft = LoadTableDesc.LoadFileType.KEEP_EXISTING;
-    } else {
-      destPath = loadPath = ctx.getExternalTmpPath(tgtPath);
-      lft = replace ? LoadTableDesc.LoadFileType.REPLACE_ALL :
-          LoadTableDesc.LoadFileType.OVERWRITE_EXISTING;
+      if (AcidUtils.isTransactionalTable(table)) {
+        String mmSubdir = replace ? AcidUtils.baseDir(writeId) : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
+        destPath = new Path(tgtPath, mmSubdir);
+        loadPath = tgtPath;
+        lft = LoadTableDesc.LoadFileType.KEEP_EXISTING;
+      } else {
+        destPath = loadPath = ctx.getExternalTmpPath(tgtPath);
+        lft = replace ? LoadTableDesc.LoadFileType.REPLACE_ALL : LoadTableDesc.LoadFileType.OVERWRITE_EXISTING;
+      }
+
+      isCalculated = true;
     }
   }
 
@@ -129,5 +132,9 @@ public class DelayExecUtil {
 
   public boolean isNeedRecycle() {
     return needRecycle;
+  }
+
+  public boolean isCalculated() {
+    return isCalculated;
   }
 }
