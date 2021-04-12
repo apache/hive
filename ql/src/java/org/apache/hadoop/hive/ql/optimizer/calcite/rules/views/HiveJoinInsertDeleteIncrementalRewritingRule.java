@@ -42,12 +42,12 @@ import java.util.List;
  *   WHERE NOT source.ROW__IS__DELETED
  *   SORT BY mv.ROW__ID;
  */
-public class HiveJoinIncrementalRewritingRule extends RelOptRule {
+public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
 
-  public static final HiveJoinIncrementalRewritingRule INSTANCE =
-          new HiveJoinIncrementalRewritingRule();
+  public static final HiveJoinInsertDeleteIncrementalRewritingRule INSTANCE =
+          new HiveJoinInsertDeleteIncrementalRewritingRule();
 
-  private HiveJoinIncrementalRewritingRule() {
+  private HiveJoinInsertDeleteIncrementalRewritingRule() {
     super(operand(Union.class, any()),
             HiveRelFactories.HIVE_BUILDER,
             "HiveJoinIncrementalRewritingRule");

@@ -168,7 +168,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraints
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagationException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveRowIsDeletedPropagator;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
@@ -275,7 +275,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncr
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
@@ -2470,7 +2470,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
               program = new HepProgramBuilder();
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveJoinIncrementalRewritingRule.INSTANCE);
+                  HiveJoinInsertDeleteIncrementalRewritingRule.INSTANCE);
               mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD;
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             } else {
@@ -2482,7 +2482,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD;
               } else {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                    HiveNoAggregateIncrementalRewritingRule.INSTANCE);
+                    HiveJoinInsertIncrementalRewritingRule.INSTANCE);
                 mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_REBUILD;
               }
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
