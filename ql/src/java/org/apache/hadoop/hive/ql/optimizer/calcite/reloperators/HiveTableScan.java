@@ -290,7 +290,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public String computeDigest() {
     String digest = super.computeDigest() +
         "[" + this.neededColIndxsFrmReloptHT + "]" +
-        "[" + this.isInsideView() + "]";
+        "[" + this.isInsideView() + "]" +
+        "[" + this.isFetchDeletedRows() + "]";
     String partitionListKey = ((RelOptHiveTable) table).getPartitionListKey();
     if (partitionListKey != null) {
       return digest + "[" + partitionListKey + "]";
