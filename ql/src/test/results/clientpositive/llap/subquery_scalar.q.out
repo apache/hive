@@ -4317,10 +4317,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null_n0
-                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_name is not null and p_type is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_type is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
