@@ -62,7 +62,7 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     }
 
     RelNode node = call.rel(0);
-    if (!canGo(call, node)) {
+    if (!shouldRun(call, node)) {
       // Bail out
       return;
     }
@@ -74,7 +74,7 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     triggered = true;
   }
 
-  protected boolean canGo(RelOptRuleCall call, RelNode node) {
+  protected boolean shouldRun(RelOptRuleCall call, RelNode node) {
     final HepRelVertex root = (HepRelVertex) call.getPlanner().getRoot();
     return root.getCurrentRel() == node;
   }

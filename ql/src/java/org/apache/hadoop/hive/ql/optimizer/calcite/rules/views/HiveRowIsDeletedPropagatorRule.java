@@ -43,7 +43,7 @@ public class HiveRowIsDeletedPropagatorRule extends HiveFieldTrimmerRule {
   }
 
   @Override
-  protected boolean canGo(RelOptRuleCall call, RelNode node) {
+  protected boolean shouldRun(RelOptRuleCall call, RelNode node) {
     return ((Join) node).getJoinType() == JoinRelType.RIGHT;
   }
 
