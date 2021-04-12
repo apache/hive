@@ -294,7 +294,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -328,7 +328,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -364,7 +364,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -401,7 +401,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE EXTERNAL TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -438,7 +438,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -475,7 +475,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -514,7 +514,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE alter1_db;
+CREATE DATABASE IF NOT EXISTS alter1_db;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -895,7 +895,7 @@ POSTHOOK: query: explain ddl select * from alter2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
-CREATE DATABASE alter2_db;
+CREATE DATABASE IF NOT EXISTS alter2_db;
 CREATE TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -940,7 +940,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
-CREATE DATABASE alter2_db;
+CREATE DATABASE IF NOT EXISTS alter2_db;
 CREATE TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -989,7 +989,7 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
-CREATE DATABASE alter2_db;
+CREATE DATABASE IF NOT EXISTS alter2_db;
 CREATE TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1044,7 +1044,7 @@ POSTHOOK: query: explain ddl select * from alter2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
-CREATE DATABASE alter2_db;
+CREATE DATABASE IF NOT EXISTS alter2_db;
 CREATE EXTERNAL TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1090,7 +1090,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
-CREATE DATABASE alter2_db;
+CREATE DATABASE IF NOT EXISTS alter2_db;
 CREATE EXTERNAL TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1140,7 +1140,7 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
-CREATE DATABASE alter2_db;
+CREATE DATABASE IF NOT EXISTS alter2_db;
 CREATE EXTERNAL TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)

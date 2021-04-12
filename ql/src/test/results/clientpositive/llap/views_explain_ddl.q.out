@@ -152,7 +152,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v1_n17
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -180,7 +180,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v2_n10
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -210,7 +210,7 @@ POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@table2_n13
 POSTHOOK: Input: db1@v3_n3
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table2_n13`(
   `key` string, 
   `value` string)
@@ -253,7 +253,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v4_n3
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -281,7 +281,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v5_n1
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -311,7 +311,7 @@ POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@table2_n13
 POSTHOOK: Input: db1@v6
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table2_n13`(
   `key` string, 
   `value` string)
@@ -354,7 +354,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v7
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -382,7 +382,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v8
 #### A masked pattern was here ####
-CREATE DATABASE db1;
+CREATE DATABASE IF NOT EXISTS db1;
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)

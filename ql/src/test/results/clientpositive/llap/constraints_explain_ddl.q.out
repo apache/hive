@@ -4671,7 +4671,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE dbconstraint;
+CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -4697,7 +4697,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE dbconstraint;
+CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -4727,7 +4727,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE dbconstraint;
+CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -4753,7 +4753,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE dbconstraint;
+CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -4783,7 +4783,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE dbconstraint;
+CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -4813,7 +4813,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE dbconstraint;
+CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)

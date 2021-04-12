@@ -300,7 +300,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: add_part_test_db@add_part_test
 POSTHOOK: Input: add_part_test_db@add_part_test@ds=2010-01-01
 #### A masked pattern was here ####
-CREATE DATABASE add_part_test_db;
+CREATE DATABASE IF NOT EXISTS add_part_test_db;
 CREATE TABLE `add_part_test_db`.`add_part_test`(
   `key` string, 
   `value` string)
@@ -385,7 +385,7 @@ POSTHOOK: Input: add_part_test_db@add_part_test@ds=2010-01-01
 POSTHOOK: Input: add_part_test_db@add_part_test@ds=2010-01-02
 POSTHOOK: Input: add_part_test_db@add_part_test@ds=2010-01-03
 #### A masked pattern was here ####
-CREATE DATABASE add_part_test_db;
+CREATE DATABASE IF NOT EXISTS add_part_test_db;
 CREATE TABLE `add_part_test_db`.`add_part_test`(
   `key` string, 
   `value` string)

@@ -115,7 +115,7 @@ public class DDLPlanUtils {
   private static final String avgColLen = "'avgColLen'='";
   private static final String maxColLen = "'maxColLen'='";
   private static final String[] req = {"numRows", "rawDataSize"};
-  private static final String CREATE_DATABASE_STMT = "CREATE DATABASE <" + DATABASE_NAME + ">;";
+  private static final String CREATE_DATABASE_STMT = "CREATE DATABASE IF NOT EXISTS <" + DATABASE_NAME + ">;";
 
   private final String CREATE_TABLE_TEMPLATE =
       "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>"
