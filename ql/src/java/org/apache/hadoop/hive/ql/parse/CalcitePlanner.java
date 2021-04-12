@@ -583,11 +583,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
 
             // 1.2. Fix up the query for materialization rebuild
-            if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
+            if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD) {
               fixUpASTAggregateIncrementalRebuild(newAST);
-            } else if (mvRebuildMode == MaterializationRebuildMode.NO_AGGREGATE_REBUILD) {
+            } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_REBUILD) {
               fixUpASTNoAggregateIncrementalRebuild(newAST);
-            } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_REBUILD) {
+            } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
               fixUpASTJoinIncrementalRebuild(newAST);
             }
 
@@ -2470,7 +2470,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               program = new HepProgramBuilder();
               generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                   HiveJoinIncrementalRewritingRule.INSTANCE);
-              mvRebuildMode = MaterializationRebuildMode.JOIN_REBUILD;
+              mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD;
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             } else {
               program = new HepProgramBuilder();
@@ -2478,11 +2478,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
               if (visitor.isContainsAggregate()) {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                     HiveAggregateIncrementalRewritingRule.INSTANCE);
-                mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
+                mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD;
               } else {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                     HiveNoAggregateIncrementalRewritingRule.INSTANCE);
-                mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
+                mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_REBUILD;
               }
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             }
@@ -2505,7 +2505,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Now we trigger some needed optimization rules again
       basePlan = applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
 
-      if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
+      if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD) {
         // Make a cost-based decision factoring the configuration property
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(HiveMaterializationRelMetadataProvider.DEFAULT);
@@ -2520,7 +2520,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
-      } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_REBUILD) {
+      } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
         program = new HepProgramBuilder();
         generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, new HiveRowIsDeletedPropagatorRule());
         basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);

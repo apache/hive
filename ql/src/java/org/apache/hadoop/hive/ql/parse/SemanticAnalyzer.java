@@ -15282,9 +15282,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected enum MaterializationRebuildMode {
     NONE,
     INSERT_OVERWRITE_REBUILD,
-    AGGREGATE_REBUILD,
-    NO_AGGREGATE_REBUILD,
-    JOIN_REBUILD
+    AGGREGATE_INSERT_REBUILD,
+    JOIN_INSERT_REBUILD,
+    JOIN_INSERT_DELETE_REBUILD
   }
 
   /**
