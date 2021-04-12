@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.base.Joiner;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -49,6 +50,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -84,6 +88,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.TreeSet;
 
 /**
  * ExplainTask implementation.
@@ -422,6 +429,64 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonObject;
   }
 
+  public void getDDLPlan(PrintStream out) throws HiveException, MetaException {
+    DDLPlanUtils ddlUtils = new DDLPlanUtils();
+    Set<String> createDatabase = new TreeSet<String>();
+    List<String> tableCreateStmt = new LinkedList<String>();
+    List<String> tableBasicDef = new LinkedList<String>();
+    List<String> createViewList = new LinkedList<String>();
+    List<String> alterTableStmt = new LinkedList<String>();
+    Map<String, Table> tableMap = new HashMap<>();
+    Map<String, List<Partition>> tableToPartitionList = new HashMap<>();
+    for (ReadEntity ent : work.getInputs()) {
+      switch (ent.getType()) {
+      // Views are also covered in table
+      case TABLE:
+        Table tbl = ent.getTable();
+        createDatabase.add(tbl.getDbName());
+        tableMap.put(tbl.getTableName(), tbl);
+        if (!tableToPartitionList.containsKey(tbl.getTableName())) {
+          tableToPartitionList.put(tbl.getTableName(), new ArrayList<Partition>());
+        }
+        break;
+      case PARTITION:
+        tableToPartitionList.get(ent.getTable().getTableName()).add(ent.getPartition());
+        break;
+      default:
+        break;
+      }
+    }
+    //process the databases
+    List<String> createDatabaseStmt = ddlUtils.getCreateDatabaseStmt(createDatabase);
+    //process the tables
+    for (String tableName : tableMap.keySet()) {
+      Table table = tableMap.get(tableName);
+      if (table.isView()) {
+        createViewList.add(ddlUtils.getCreateViewStmt(table));
+        continue;
+      } else {
+        tableCreateStmt.add(ddlUtils.getCreateTableCommand(table, false) + ";");
+        String primaryKeyStmt = ddlUtils.getAlterTableStmtPrimaryKeyConstraint(table.getPrimaryKeyInfo());
+        if (primaryKeyStmt != null) {
+          tableBasicDef.add(primaryKeyStmt);
+        }
+        tableBasicDef.add(ddlUtils.getAlterTableStmtTableStatsBasic(table));
+        alterTableStmt.addAll(ddlUtils.populateConstraints(table, tableMap.keySet()));
+        if (table.isPartitioned()) {
+          alterTableStmt.addAll(ddlUtils.getDDLPlanForPartitionWithStats(table, tableToPartitionList));
+        } else {
+          alterTableStmt.addAll(ddlUtils.getAlterTableStmtTableStatsColsAll(table));
+        }
+      }
+    }
+    Joiner jn = Joiner.on("\n");
+    out.println(jn.join(createDatabaseStmt));
+    out.println(jn.join(tableCreateStmt));
+    out.println(jn.join(tableBasicDef));
+    out.println(jn.join(alterTableStmt));
+    out.println(jn.join(createViewList));
+  }
+
   @Override
   public int execute() {
 
@@ -459,6 +524,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (work.getAstStringTree() != null) {
           outputAST(work.getAstStringTree(), out, work.isFormatted(), 0);
         }
+      }else if (work.isDDL()) {
+
       } else {
         if (work.isUserLevelExplain()) {
           // Because of the implementation of the JsonParserFactory, we are sure
