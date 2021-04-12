@@ -76,9 +76,14 @@ public class HmsFunctionRegistry implements FunctionRegistry {
     }
   }
 
-  protected boolean isCached(String name) {
+  private boolean isCached(String name) {
     return cache.containsKey(qualified(name));
   }
+
+  private String qualified(String name) {
+    return (hplSqlSession.currentDatabase() + "." + name).toUpperCase();
+  }
+
 
   @Override
   public boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx) {
@@ -99,14 +104,6 @@ public class HmsFunctionRegistry implements FunctionRegistry {
       return true;
     }
     return false;
-  }
-
-  protected void saveInCache(String name, ParserRuleContext procCtx) {
-    cache.put(qualified(name), procCtx);
-  }
-
-  private String qualified(String name) {
-    return (hplSqlSession.currentDatabase() + "." + name).toUpperCase();
   }
 
   /**
@@ -196,6 +193,10 @@ public class HmsFunctionRegistry implements FunctionRegistry {
     StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx));
     saveInCache(name, ctx);
     saveStoredProcInHMS(proc);
+  }
+
+  private void saveInCache(String name, ParserRuleContext procCtx) {
+    cache.put(qualified(name), procCtx);
   }
 
   private void saveStoredProcInHMS(StoredProcedure proc) {

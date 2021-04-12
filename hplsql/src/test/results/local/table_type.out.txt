@@ -1,0 +1,99 @@
+Ln:1 CREATE TABLE TYPE: T_TABLE TYPE: STRING INDEX: BINARY_INTEGER
+Ln:3 CREATE FUNCTION ITERATE_FORWARD
+Ln:14 CREATE FUNCTION ITERATE_BACKWARD
+Ln:25 CREATE FUNCTION INIT
+EXEC FUNCTION INIT
+Ln:27 DECLARE t HPL_OBJECT
+Ln:35 RETURN
+Ln:38 DECLARE tbl HPL_OBJECT = Table{hplClass=class org.apache.hive.hplsql.objects.TableClass, size=7, lastKey=7, firstKey=1}
+Ln:40 PRINT
+C=7
+Ln:42 PRINT
+Ln:42 EXEC FUNCTION ITERATE_FORWARD
+Ln:42 SET PARAM tbl = Table{hplClass=class org.apache.hive.hplsql.objects.TableClass, size=7, lastKey=7, firstKey=1}
+Ln:5 DECLARE s STRING = ''
+Ln:6 DECLARE idx INT = 1
+Ln:7 WHILE - ENTERED
+Ln:8 SET s = 'A'
+Ln:9 SET idx = 2
+Ln:8 SET s = 'AB'
+Ln:9 SET idx = 3
+Ln:8 SET s = 'ABC'
+Ln:9 SET idx = 4
+Ln:8 SET s = 'ABCD'
+Ln:9 SET idx = 5
+Ln:8 SET s = 'ABCDE'
+Ln:9 SET idx = 6
+Ln:8 SET s = 'ABCDEF'
+Ln:9 SET idx = 7
+Ln:8 SET s = 'ABCDEFG'
+Ln:9 SET idx = NULL
+Ln:7 WHILE - LEFT
+Ln:11 RETURN
+S1=ABCDEFG
+Ln:46 PRINT
+true
+Ln:48 PRINT
+false
+Ln:51 PRINT
+Ln:51 EXEC FUNCTION ITERATE_FORWARD
+Ln:51 SET PARAM tbl = Table{hplClass=class org.apache.hive.hplsql.objects.TableClass, size=5, lastKey=7, firstKey=1}
+Ln:5 DECLARE s STRING = ''
+Ln:6 DECLARE idx INT = 1
+Ln:7 WHILE - ENTERED
+Ln:8 SET s = 'A'
+Ln:9 SET idx = 2
+Ln:8 SET s = 'AX'
+Ln:9 SET idx = 3
+Ln:8 SET s = 'AXY'
+Ln:9 SET idx = 5
+Ln:8 SET s = 'AXYE'
+Ln:9 SET idx = 7
+Ln:8 SET s = 'AXYEG'
+Ln:9 SET idx = NULL
+Ln:7 WHILE - LEFT
+Ln:11 RETURN
+S2=AXYEG
+Ln:52 PRINT
+Ln:52 EXEC FUNCTION ITERATE_BACKWARD
+Ln:52 SET PARAM tbl = Table{hplClass=class org.apache.hive.hplsql.objects.TableClass, size=5, lastKey=7, firstKey=1}
+Ln:16 DECLARE s STRING = ''
+Ln:17 DECLARE idx INT = 7
+Ln:18 WHILE - ENTERED
+Ln:19 SET s = 'G'
+Ln:20 SET idx = 5
+Ln:19 SET s = 'GE'
+Ln:20 SET idx = 3
+Ln:19 SET s = 'GEY'
+Ln:20 SET idx = 2
+Ln:19 SET s = 'GEYX'
+Ln:20 SET idx = 1
+Ln:19 SET s = 'GEYXA'
+Ln:20 SET idx = NULL
+Ln:18 WHILE - LEFT
+Ln:22 RETURN
+S3=GEYXA
+Ln:57 PRINT
+Ln:57 EXEC FUNCTION ITERATE_FORWARD
+Ln:57 SET PARAM tbl = Table{hplClass=class org.apache.hive.hplsql.objects.TableClass, size=2, lastKey=7, firstKey=5}
+Ln:5 DECLARE s STRING = ''
+Ln:6 DECLARE idx INT = 5
+Ln:7 WHILE - ENTERED
+Ln:8 SET s = 'E'
+Ln:9 SET idx = 7
+Ln:8 SET s = 'EG'
+Ln:9 SET idx = NULL
+Ln:7 WHILE - LEFT
+Ln:11 RETURN
+S4=EG
+Ln:60 PRINT
+Ln:60 EXEC FUNCTION ITERATE_FORWARD
+Ln:60 SET PARAM tbl = Table{hplClass=class org.apache.hive.hplsql.objects.TableClass, size=0, lastKey=null, firstKey=null}
+Ln:5 DECLARE s STRING = ''
+Ln:6 DECLARE idx INT = NULL
+Ln:7 WHILE - ENTERED
+Ln:7 WHILE - LEFT
+Ln:11 RETURN
+S5=
+Ln:61 PRINT
+C=0

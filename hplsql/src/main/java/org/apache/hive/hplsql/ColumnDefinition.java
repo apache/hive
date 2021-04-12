@@ -18,18 +18,28 @@
 
 package org.apache.hive.hplsql;
 
-import org.antlr.v4.runtime.ParserRuleContext;
+public class ColumnDefinition {
+  private final String name;
+  private final ColumnType type;
 
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+  public static ColumnDefinition unnamed(ColumnType type) {
+    return new ColumnDefinition("__UNNAMED__", type);
   }
 
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+  public ColumnDefinition(String name, ColumnType type) {
+    this.name = name;
+    this.type = type;
   }
 
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
+  public String columnName() {
+    return name;
+  }
+
+  public ColumnType columnType() {
+    return type;
+  }
+
+  public String columnTypeString() {
+    return type.typeString();
   }
 }

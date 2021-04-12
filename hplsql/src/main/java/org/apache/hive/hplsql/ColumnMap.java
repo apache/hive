@@ -18,18 +18,34 @@
 
 package org.apache.hive.hplsql;
 
-import org.antlr.v4.runtime.ParserRuleContext;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+public class ColumnMap {
+  private List<Column> columns = new ArrayList<>();
+  private Map<String, Column> columnMap = new HashMap<>();
+
+  public void add(Column column) {
+    columns.add(column);
+    columnMap.put(column.getName().toUpperCase(), column);
   }
 
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+  public Column get(String name) {
+    return columnMap.get(name.toUpperCase());
   }
 
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
+  public Column at(int index) {
+    return columns.get(index);
+  }
+
+  public List<Column> columns() {
+    return Collections.unmodifiableList(columns);
+  }
+
+  public int size() {
+    return columns.size();
   }
 }

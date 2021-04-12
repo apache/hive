@@ -16,20 +16,28 @@
  *  limitations under the License.
  */
 
-package org.apache.hive.hplsql;
+package org.apache.hive.hplsql.objects;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.hive.hplsql.NoSuchHplMethodException;
 
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+public class MethodDictionary<T extends HplObject> {
+  public static final String __GETITEM__ = "__GETITEM__";
+  public static final String __SETITEM__ = "__SETITEM__";
+  private final Map<String, Method<T>> dict = new HashMap<>();
+
+  public void put(String methodName, Method<T> method) {
+    dict.put(methodName.toUpperCase(), method);
   }
 
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
-  }
-
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
+  public Method<T> get(ParserRuleContext ctx, String methodName) {
+    Method<T> result = dict.get(methodName.toUpperCase());
+    if (result == null) {
+      throw new NoSuchHplMethodException(ctx, "No such method " + methodName);
+    }
+    return result;
   }
 }

@@ -24,7 +24,6 @@ import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.Q
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.hive.service.cli.operation.hplsql.BeelineConsole;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -32,9 +31,9 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.hplsql.Conf;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplSqlSessionState;
-import org.apache.hive.hplsql.ResultListener;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationType;
+import org.apache.hive.service.cli.operation.hplsql.BeelineConsole;
 import org.apache.hive.service.cli.operation.hplsql.HplSqlOperation;
 import org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -67,11 +66,11 @@ public abstract class ExecuteStatementOperation extends Operation {
         Exec interpreter = new Exec(
                 new Conf(),
                 new BeelineConsole(),
-                ResultListener.NONE,
                 new HplSqlQueryExecutor(parentSession),
                 parentSession.getMetaStoreClient(),
                 new HiveHplSqlSessionState(SessionState.get())
         );
+        interpreter.init();
         SessionState.get().addDynamicVar(interpreter);
       }
       return new HplSqlOperation(parentSession, statement, confOverlay, runAsync, SessionState.get().getDynamicVar(Exec.class));
