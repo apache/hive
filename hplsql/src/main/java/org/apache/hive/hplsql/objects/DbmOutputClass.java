@@ -16,20 +16,28 @@
  *  limitations under the License.
  */
 
-package org.apache.hive.hplsql;
+package org.apache.hive.hplsql.objects;
 
-import org.antlr.v4.runtime.ParserRuleContext;
+import static org.apache.hive.hplsql.objects.MethodParams.Arity.UNARY;
 
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+public class DbmOutputClass implements HplClass {
+  public static final DbmOutputClass INSTANCE = new DbmOutputClass();
+  private final MethodDictionary<DbmOutput> methodDictionary = new MethodDictionary();
+
+  private DbmOutputClass() {
+    methodDictionary.put("put_line", (self, args) -> {
+      UNARY.check("put_line", args);
+      return self.putLine(args);
+    });
   }
 
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
+  @Override
+  public DbmOutput newInstance() {
+    return new DbmOutput(this);
   }
 
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
+  @Override
+  public MethodDictionary methodDictionary() {
+    return methodDictionary;
   }
 }

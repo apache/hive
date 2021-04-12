@@ -19,9 +19,7 @@
 package org.apache.hive.hplsql;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.hive.hplsql.executor.Metadata;
@@ -144,7 +142,7 @@ public class Cmp implements Runnable {
       return null;
     }
     if (query1 == null || query2 == null) {
-      exec.setSqlCode(-1);
+      exec.setSqlCode(SqlCodes.ERROR);
       return null;
     }
     boolean equal = true;
@@ -229,7 +227,7 @@ public class Cmp implements Runnable {
       query = evalPop(ctx.cmp_source(idx).select_stmt()).toString();
     }
     if (ctx.cmp_source(idx).T_AT() != null) {
-      conn.append(ctx.cmp_source(idx).ident().getText());
+      conn.append(ctx.cmp_source(idx).qident().getText());
     }
     else if (table != null) {
       conn.append(exec.getObjectConnection(ctx.cmp_source(idx).table_name().getText()));
@@ -263,7 +261,7 @@ public class Cmp implements Runnable {
     if (ctx.T_SUM() != null && table != null) {
       Row row = exec.meta.getRowDataType(ctx, conn, table);
       if (row != null) {
-        ArrayList<Column> cols = row.getColumns();
+        List<Column> cols = row.getColumns();
         int cnt = row.size();
         sql.append(",\n");
         for (int i = 0; i < cnt; i++) {

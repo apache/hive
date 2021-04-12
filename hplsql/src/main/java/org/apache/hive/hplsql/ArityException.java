@@ -25,4 +25,8 @@ public class ArityException extends HplValidationException {
     super(ctx, "wrong number of arguments in call to '" + procName
             + "'. Expected " + formalCount + " got " + actualCount + ".");
   }
+
+  public ArityException(ParserRuleContext ctx, String message) {
+    super(ctx, message);
+  }
 }

@@ -18,18 +18,9 @@
 
 package org.apache.hive.hplsql;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
-  }
-
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
-  }
-
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
-  }
+public class SqlCodes {
+  public static int NO_DATA_FOUND = 100;
+  public static int TOO_MANY_ROWS = -1422;
+  public static int SUCCESS = 0;
+  public static int ERROR = -1;
 }

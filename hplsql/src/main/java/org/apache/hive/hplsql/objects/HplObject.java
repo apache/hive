@@ -16,20 +16,8 @@
  *  limitations under the License.
  */
 
-package org.apache.hive.hplsql;
+package org.apache.hive.hplsql.objects;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
-public class TypeException extends HplValidationException {
-  public TypeException(ParserRuleContext ctx, Var.Type expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
-  }
-
-  public TypeException(ParserRuleContext ctx, Class<?> expectedType, Var.Type actualType, Object value) {
-    super(ctx, "cannot convert '" + value + "' with type " + actualType + " to " + expectedType);
-  }
-
-  public TypeException(ParserRuleContext ctx, String message) {
-    super(ctx, message);
-  }
+public interface HplObject {
+  HplClass hplClass();
 }
