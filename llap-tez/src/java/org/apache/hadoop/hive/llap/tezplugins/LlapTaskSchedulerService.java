@@ -1386,6 +1386,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    */
   private SelectHostResult selectHost(TaskInfo request) {
     String[] requestedHosts = request.requestedHosts;
+    // The requestedHostsDebugStr is merely used by debug-logging calls,
+    //   and it is properly assigned in the following isDebugEnabled block.
     String requestedHostsDebugStr = null;
     if (LOG.isDebugEnabled()) {
       requestedHostsDebugStr = Arrays.toString(requestedHosts);
