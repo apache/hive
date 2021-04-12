@@ -76,22 +76,22 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(TableScan scan) {
-    if (scan instanceof HiveTableScan) {
-      HiveTableScan hiveScan = (HiveTableScan) scan;
-      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) hiveScan.getTable();
-      Table tab = relOptHiveTable.getHiveTableMD();
-      if (tab.isTemporary()) {
-        fail(tab.getTableName() + " is a temporary table");
-      }
-      if (tab.getTableType() == TableType.EXTERNAL_TABLE) {
-        fail(tab.getFullyQualifiedName() + " is an external table");
-      }
-      return scan;
-    }
-
     // TableScan of a non-Hive table - don't support for materializations.
     fail(scan.getTable().getQualifiedName() + " is a table scan of a non-Hive table.");
     return scan;
+  }
+
+  @Override
+  public RelNode visit(HiveTableScan hiveScan) {
+    RelOptHiveTable relOptHiveTable = (RelOptHiveTable) hiveScan.getTable();
+    Table tab = relOptHiveTable.getHiveTableMD();
+    if (tab.isTemporary()) {
+      fail(tab.getTableName() + " is a temporary table");
+    }
+    if (tab.getTableType() == TableType.EXTERNAL_TABLE) {
+      fail(tab.getFullyQualifiedName() + " is an external table");
+    }
+    return hiveScan;
   }
 
   @Override
