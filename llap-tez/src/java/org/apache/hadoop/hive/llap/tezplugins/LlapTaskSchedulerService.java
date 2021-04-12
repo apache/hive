@@ -1822,7 +1822,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       readLock.unlock();
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("GetTotalResources: numInstancesFound={}, totalMem={}, totalVcores={} availableHosts: {}",
+      LOG.debug("ResourceAvail: numInstancesFound={}, totalMem={}, totalVcores={} availableHosts: {}",
           numInstancesFound, memory, vcores, availableHostMap.size());
     }
     return new ImmutablePair<>(Resource.newInstance(memory, vcores), availableHostMap);
