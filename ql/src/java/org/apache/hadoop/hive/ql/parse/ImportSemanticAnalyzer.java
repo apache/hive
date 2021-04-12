@@ -534,8 +534,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ((CopyWork) copyTask.getWork()).setDelayExecUtil(delayExecUtil);
 
-//    DelayExecUtil delayExecUtil2 = new DelayExecUtil(replace, writeId, stmtId, x.getHive(),
-//        x.getCtx(), tblDesc, replicationSpec.isInReplicationScope());
     MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false,
         dumpRoot, metricCollector, true, delayExecUtil);
 
