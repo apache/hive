@@ -54,6 +54,52 @@
             <artifactId>impala-frontend</artifactId>
             <version>${impala.version}</version>
             <scope>test</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.kudu</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.orc</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.sentry</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.ranger</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.knox</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>com.google.guava</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <!-- Some of the tests need test utils defined in Impala source code -->
         <dependency>
@@ -63,6 +109,52 @@
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.kudu</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.orc</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.sentry</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.ranger</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.knox</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>com.google.guava</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
