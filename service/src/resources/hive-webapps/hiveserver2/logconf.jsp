@@ -112,7 +112,9 @@
                     </tbody>
                 </table>
             </div>
-
+            <% Collection<HiveSession> hiveSessions = sessionManager.getSessions();
+            for (HiveSession hiveSession: hiveSessions) {
+            if( hiveSessions.size() > 0 && HttpServer.hasAccess(remoteUser, hiveSession.getUserName(), ctx, request) ) { %>
             <h2>Set new logging rules</h2>
 
             <form class="form-inline">
@@ -132,7 +134,10 @@
 
                 <button id="log-level-submit" type="button" class="btn btn-primary">Submit</button>
             </form>
-
+            <% } else {%>
+                <p>Cannot configure logging rules unless user <%= hiveSession.getUserName() %> has admin privileges</p>
+            <% }
+             } %>
         </div>
     </div>
 
