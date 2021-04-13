@@ -100,6 +100,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
                   Types.TimestampType.withoutZone(), Types.StringType.get(), Types.BinaryType.get(),
                   Types.DecimalType.of(3, 1), Types.UUIDType.get(), Types.FixedType.ofLength(5),
                   Types.TimeType.get());
+
   private static final Map<String, String> STATS_MAPPING = ImmutableMap.of(
       StatsSetupConst.NUM_FILES, SnapshotSummary.TOTAL_DATA_FILES_PROP,
       StatsSetupConst.ROW_COUNT, SnapshotSummary.TOTAL_RECORDS_PROP

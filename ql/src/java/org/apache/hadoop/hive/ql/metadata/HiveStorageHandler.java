@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -201,10 +202,10 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Return some basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
    * implementation.
-   * @param tableDesc a valid table description, used to load the table
+   * @param partish a partish wrapper class
    * @return map of basic statistics, can be null
    */
-  default Map<String, String> getBasicStatistics(TableDesc tableDesc) {
+  default Map<String, String> getBasicStatistics(Partish partish) {
     return null;
   }
 

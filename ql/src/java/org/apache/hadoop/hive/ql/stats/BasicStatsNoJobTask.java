@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.FileSplit;
@@ -91,12 +91,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     console = new LogHelper(LOG);
   }
 
-  public static boolean canUseStats(
+  public static boolean canUseBasicStats(
       Table table, Class<? extends InputFormat> inputFormat) {
-      return canUseColumnStats(table, inputFormat) || useBasicStatsFromStorageHandler(table);
+      return canUseFooterScan(table, inputFormat) || useBasicStatsFromStorageHandler(table);
   }
 
-  public static boolean canUseColumnStats(Table table, Class<? extends InputFormat> inputFormat) {
+  public static boolean canUseFooterScan(Table table, Class<? extends InputFormat> inputFormat) {
     return (OrcInputFormat.class.isAssignableFrom(inputFormat) && !AcidUtils.isFullAcidTable(table))
         || MapredParquetInputFormat.class.isAssignableFrom(inputFormat);
   }
@@ -136,16 +136,19 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     protected LogHelper console;
 
     public static Function<StatCollector, String> SIMPLE_NAME_FUNCTION =
-        sc -> String.format("%s#%s", sc.partish().getTable().getCompleteName(), sc.partish().getPartishType());
+        sc -> String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
 
-    public static Function<StatCollector, Partition> EXTRACT_RESULT_FUNCTION = sc -> (Partition) sc.result();
+    public static Function<StatCollector, Partition> EXTRACT_RESULT_FUNCTION = sc -> (Partition) sc.result;
 
-    abstract Partish partish();
-    abstract boolean isValid();
-    abstract Object result();
-    abstract void init(HiveConf conf, LogHelper console) throws IOException;
+    protected void init(HiveConf conf, LogHelper console) throws IOException {
+      this.console = console;
+    }
 
-    protected String toString(Map<String, String> parameters) {
+    protected final boolean isValid() {
+      return result != null;
+    }
+
+    protected final String toString(Map<String, String> parameters) {
       return StatsSetupConst.SUPPORTED_STATS.stream().map(st -> st + "=" + parameters.get(st))
           .collect(Collectors.joining(", "));
     }
@@ -158,27 +161,20 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     }
 
     @Override
-    public void init(HiveConf conf, LogHelper console) throws IOException {
-      this.console = console;
-    }
-
-    @Override
     public void run() {
       try {
         Table table = partish.getTable();
-        Map<String, String> parameters = partish.getPartParameters();
-        TableDesc tableDesc = Utilities.getTableDesc(table);
-        Map<String, String> basicStatistics = table.getStorageHandler().getBasicStatistics(tableDesc);
-
-        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
-        parameters.putAll(basicStatistics);
-
+        Map<String, String> parameters;
+        Map<String, String> basicStatistics = table.getStorageHandler().getBasicStatistics(partish);
         if (partish.getPartition() != null) {
-          result = new Partition(partish.getTable(), partish.getPartition().getTPartition());
+          parameters = partish.getPartParameters();
+          result = new Partition(table, partish.getPartition().getTPartition());
         } else {
-          result = new Table(partish.getTable().getTTable());
+          parameters = table.getParameters();
+          result = new Table(table.getTTable());
         }
-
+        parameters.putAll(basicStatistics);
+        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
         String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
         LOG.debug(msg);
         console.printInfo(msg);
@@ -186,21 +182,6 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".",
             "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
       }
-    }
-
-    @Override
-    public Partish partish() {
-      return partish;
-    }
-
-    @Override
-    public boolean isValid() {
-      return result != null;
-    }
-
-    @Override
-    public Object result() {
-      return result;
     }
   }
 
@@ -214,20 +195,6 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     public FooterStatCollector(JobConf jc, Partish partish) {
       this.jc = jc;
       this.partish = partish;
-    }
-
-    @Override
-    public Partish partish() {
-      return partish;
-    }
-
-    @Override
-    public boolean isValid() {
-      return result != null;
-    }
-
-    @Override public Object result() {
-      return result;
     }
 
     @Override
@@ -353,11 +320,13 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
       List<Partish> partishes = getPartishes(table);
 
-      List<StatCollector> scs;
-      if (useBasicStatsFromStorageHandler(table)) {
-        scs = partishes.stream().map(HiveStorageHandlerStatCollector::new).collect(Collectors.toList());
-      } else {
-        scs = partishes.stream().map(p -> new FooterStatCollector(jc, p)).collect(Collectors.toList());
+      List<StatCollector> scs = new ArrayList();
+      for (Partish partish : partishes) {
+        if (useBasicStatsFromStorageHandler(table)) {
+          scs.add(new HiveStorageHandlerStatCollector(partish));
+        } else {
+          scs.add(new FooterStatCollector(jc, partish));
+        }
       }
 
       for (StatCollector sc : scs) {
@@ -393,8 +362,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     }
     if (work.isStatsReliable()) {
       for (StatCollector statsCollection : scs) {
-        if (statsCollection.result() == null) {
-          LOG.debug("Stats requested to be reliable. Empty stats found: {}", statsCollection.partish().getSimpleName());
+        if (!statsCollection.isValid()) {
+          LOG.debug("Stats requested to be reliable. Empty stats found: {}", statsCollection.partish.getSimpleName());
           return -1;
         }
       }

@@ -28,12 +28,14 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
@@ -167,7 +169,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public Map<String, String> getBasicStatistics(TableDesc tableDesc) {
+  public Map<String, String> getBasicStatistics(Partish partish) {
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
     Map<String, String> stats = new HashMap<>();
     if (table.currentSnapshot() != null) {
