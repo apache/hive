@@ -13,7 +13,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.TreeSet;
+
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -232,7 +235,7 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
     // to reach the current distribution version.
     String[] cdhSchemaVersions = loadAllCDHUpgradeScripts(dbType);
     CDHVersion fromCdhVersion = null;
-    if (StringUtils.countMatches(from, ".") >= 6) {
+    if (StringUtils.countMatches(CDHVersion.convertToUnifiedVersionString(from), ".") >= 6) {
       // If a version contains CDH version, the version will contains 7 numbers and be separated by "."
       // ex: 3.1.2000.7.1.0.0
       fromCdhVersion = new CDHVersion(from);
@@ -411,12 +414,14 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
      *
      * @return cdh version string
      */
-    private String getCdhVersionString() {
-      if (StringUtils.countMatches(version, ".") < 6) {
+    String getCdhVersionString() {
+      String unifiedVer = convertToUnifiedVersionString(version);
+      LOG.info("the version is "+ unifiedVer);
+      if (StringUtils.countMatches(unifiedVer, ".") < 6) {
         throw new IllegalArgumentException("Invalid format of cdh version string " + version);
       }
-      String[] array = version.split("\\.", 4);
-      return array[array.length - 1];
+      String[] array = unifiedVer.split("\\.", 4);
+      return array[array.length - 1].split("-", 2)[0];  //need to remove build number
     }
 
     public String toString() {
@@ -449,8 +454,26 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
       return compareVersionStrings(aVersionParts, bVersionParts);
     }
 
+    // This method will convert hiveversion.YYYY.Major.Minor-hNum1-bNum
+    // To the hiveversion.YYYY.Major.Minor.Num1-bNum, in order to compare with
+    // old style version like hiveversion.7.2.1.0-79
+    public static String convertToUnifiedVersionString(String cdpVersion) {
+      String hfVersion = ".*\\d{4}(\\.\\d+){2}-h\\d+(-b\\d+)?";
+      String normalVersion = ".*\\d{4}(\\.\\d+){2}-b\\d+";
+      if (Pattern.matches(hfVersion, cdpVersion)) {
+        return cdpVersion.replaceAll("-h", ".");
+      } else if (Pattern.matches(normalVersion, cdpVersion)) {
+        return cdpVersion.replace("-b", ".0-b");
+      } else if (StringUtils.countMatches(cdpVersion, ".") == 5) { //The version after -SNAPSHOT is removed.
+        return cdpVersion + ".0";
+      }
+      return cdpVersion;
+    }
     private static int compareVersionStrings(String aVersion, String bVersion) {
-      return compareVersionStrings(aVersion.split("\\."), bVersion.split("\\."));
+      String aUnifiedVer = convertToUnifiedVersionString(aVersion);
+      String bUnifiedVer = convertToUnifiedVersionString(bVersion);
+
+      return compareVersionStrings(aUnifiedVer.split("\\."), bUnifiedVer.split("\\."));
     }
 
     private static int compareVersionStrings(String[] aVersionParts, String[] bVersionParts) {
