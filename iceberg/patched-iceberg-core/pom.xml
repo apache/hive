@@ -67,6 +67,8 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <excludes>
+                                        **/SnapshotProducer.class
+                                        **/SnapshotSummary.class
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
