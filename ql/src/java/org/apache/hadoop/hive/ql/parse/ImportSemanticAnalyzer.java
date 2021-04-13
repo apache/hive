@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -89,6 +88,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 
 /**
  * ImportSemanticAnalyzer.
@@ -424,7 +424,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                    Long writeId, int stmtId) throws HiveException {
     return loadTable(fromURI, table, replace, tgtPath, replicationSpec, x, writeId,stmtId, null, null);
   }
-
   private static Task<?> loadTable(URI fromURI, Table table, boolean replace, Path tgtPath,
                                    ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
                                    Long writeId, int stmtId,
@@ -446,7 +445,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
       }
     }
-
     if (AcidUtils.isTransactionalTable(table)) {
       String mmSubdir = replace ? AcidUtils.baseDir(writeId)
               : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
@@ -470,7 +468,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("adding import work for table with source location: " +
-              dataPath + "; table: " + tgtPath + "; copy destination " + destPath /*if null then will be decided during execTime*/ + "; mm " +
+              dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm " +
               writeId +
               " for " + table.getTableName() + ": " +
               (AcidUtils.isFullAcidTable(table) ? "acid" :
@@ -524,7 +522,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<?> copyTask;
     // Corresponding work objects are not complete yet. Some of the values will be assigned when task is
-    // being executed
+    // being executed.
     if (replicationSpec.isInReplicationScope()) {
       boolean copyAtLoad = x.getConf().getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, null, x.getConf(),
@@ -1156,7 +1154,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  public static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
+  static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
       throws SemanticException {
     Table newTable = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
     //so that we know the type of table we are creating: acid/MM to match what was exported
@@ -1411,7 +1409,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!replicationSpec.isMetadataOnly()) {
           // repl-imports are replace-into unless the event is insert-into
           loadTable(fromURI, tblDesc, replicationSpec.isReplace(),
-              replicationSpec, x, writeId, stmtId, dumpRoot, metricCollector);
+            replicationSpec, x, writeId, stmtId, dumpRoot, metricCollector);
         } else {
           x.getTasks().add(alterTableTask(tblDesc, x, replicationSpec, true, dumpRoot, metricCollector));
         }
@@ -1438,4 +1436,5 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       return null;
     }
   }
+
 }
