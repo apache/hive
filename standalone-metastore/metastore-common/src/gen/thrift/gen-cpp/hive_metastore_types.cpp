@@ -31801,11 +31801,6 @@ void GetTablesRequest::__set_projectionSpec(const GetProjectionsSpec& val) {
   this->projectionSpec = val;
 __isset.projectionSpec = true;
 }
-
-void GetTablesRequest::__set_tablesPattern(const std::string& val) {
-  this->tablesPattern = val;
-__isset.tablesPattern = true;
-}
 std::ostream& operator<<(std::ostream& out, const GetTablesRequest& obj)
 {
   obj.printTo(out);
@@ -31915,14 +31910,6 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 8:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->tablesPattern);
-          this->__isset.tablesPattern = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -31992,11 +31979,6 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += this->projectionSpec.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.tablesPattern) {
-    xfer += oprot->writeFieldBegin("tablesPattern", ::apache::thrift::protocol::T_STRING, 8);
-    xfer += oprot->writeString(this->tablesPattern);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -32011,14 +31993,9 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
   swap(a.projectionSpec, b.projectionSpec);
-  swap(a.tablesPattern, b.tablesPattern);
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> rebase hive_metastore_types.cpp
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1192) {
   dbName = other1192.dbName;
   tblNames = other1192.tblNames;
@@ -32027,42 +32004,6 @@ GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1192) {
   processorCapabilities = other1192.processorCapabilities;
   processorIdentifier = other1192.processorIdentifier;
   projectionSpec = other1192.projectionSpec;
-<<<<<<< HEAD
-  tablesPattern = other1192.tablesPattern;
-  __isset = other1192.__isset;
-}
-GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1193) {
-  dbName = other1193.dbName;
-  tblNames = other1193.tblNames;
-  capabilities = other1193.capabilities;
-  catName = other1193.catName;
-  processorCapabilities = other1193.processorCapabilities;
-  processorIdentifier = other1193.processorIdentifier;
-  projectionSpec = other1193.projectionSpec;
-  tablesPattern = other1193.tablesPattern;
-  __isset = other1193.__isset;
-=======
-GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1164) {
-  dbName = other1164.dbName;
-  tblNames = other1164.tblNames;
-  capabilities = other1164.capabilities;
-  catName = other1164.catName;
-  processorCapabilities = other1164.processorCapabilities;
-  processorIdentifier = other1164.processorIdentifier;
-  projectionSpec = other1164.projectionSpec;
-  __isset = other1164.__isset;
-}
-GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1165) {
-  dbName = other1165.dbName;
-  tblNames = other1165.tblNames;
-  capabilities = other1165.capabilities;
-  catName = other1165.catName;
-  processorCapabilities = other1165.processorCapabilities;
-  processorIdentifier = other1165.processorIdentifier;
-  projectionSpec = other1165.projectionSpec;
-  __isset = other1165.__isset;
->>>>>>> revert: hive_metastore_types.cpp
-=======
   __isset = other1192.__isset;
 }
 GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1193) {
@@ -32074,7 +32015,6 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1193)
   processorIdentifier = other1193.processorIdentifier;
   projectionSpec = other1193.projectionSpec;
   __isset = other1193.__isset;
->>>>>>> rebase hive_metastore_types.cpp
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -32087,7 +32027,6 @@ void GetTablesRequest::printTo(std::ostream& out) const {
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
   out << ", " << "projectionSpec="; (__isset.projectionSpec ? (out << to_string(projectionSpec)) : (out << "<null>"));
-  out << ", " << "tablesPattern="; (__isset.tablesPattern ? (out << to_string(tablesPattern)) : (out << "<null>"));
   out << ")";
 }
 
