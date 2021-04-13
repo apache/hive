@@ -56,6 +56,11 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
     return relNode.accept(this);
   }
 
+  public RelNode propagate2(RelNode relNode) {
+    foundTopRightJoin = true;
+    return relNode.accept(this);
+  }
+
   /**
    * Create a Projection on top of TS that contains all columns from TS.
    * Let rowIsDeleted the last column in the new Project.

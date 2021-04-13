@@ -167,6 +167,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvid
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagationException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveRowIsDeletedPropagator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
@@ -2464,14 +2465,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
           visitor.go(basePlan);
           if (visitor.isRewritingAllowed()) {
             if (materialization.isSourceTablesUpdateDeleteModified()) {
-              if (visitor.isContainsAggregate()) {
-                return calcitePreMVRewritingPlan;
-              }
-
               program = new HepProgramBuilder();
-              generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                  HiveJoinInsertDeleteIncrementalRewritingRule.INSTANCE);
-              mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD;
+              if (visitor.isContainsAggregate()) {
+                generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                    HiveAggregateInsertDeleteIncrementalRewritingRule.INSTANCE);
+                mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD;
+              } else {
+                generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                    HiveJoinInsertDeleteIncrementalRewritingRule.INSTANCE);
+                mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD;
+              }
               basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
             } else {
               program = new HepProgramBuilder();
