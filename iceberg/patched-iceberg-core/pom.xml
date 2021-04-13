@@ -74,6 +74,7 @@
                                         **/StaticTableOperations.class
                                         **/CatalogProperties.class
                                         **/BaseMetastoreCatalog.class
+                                        **/BaseMetastoreTableOperations.class
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
