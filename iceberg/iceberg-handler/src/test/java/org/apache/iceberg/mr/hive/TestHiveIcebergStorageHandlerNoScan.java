@@ -61,7 +61,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -485,7 +484,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     }
   }
 
-  @Ignore("Ignored until HMS-Iceberg property sync patches are released in Iceberg 0.12.0")
   @Test
   public void testIcebergAndHmsTableProperties() throws TException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -570,21 +568,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), newSnapshot);
     } else {
       Assert.assertEquals(7, hmsParams.size());
-    }
-
-    // Remove some Iceberg props and see if they're removed from HMS table props as well
-    if (Catalogs.hiveCatalog(shell.getHiveConf())) {
-      icebergTable.updateProperties()
-          .remove("custom_property")
-          .remove("new_prop_1")
-          .commit();
-      hmsParams = shell.metastore().getTable("default", "customers").getParameters()
-          .entrySet().stream()
-          .filter(e -> !IGNORED_PARAMS.contains(e.getKey()))
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-      Assert.assertFalse(hmsParams.containsKey("custom_property"));
-      Assert.assertFalse(hmsParams.containsKey("new_prop_1"));
-      Assert.assertTrue(hmsParams.containsKey("new_prop_2"));
     }
   }
 
