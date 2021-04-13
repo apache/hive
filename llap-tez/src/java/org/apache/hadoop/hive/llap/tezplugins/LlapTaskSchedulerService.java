@@ -1504,11 +1504,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
         // rollover
         if (nextSlot == null) nextSlot = activeNodesWithFreeSlots.stream().findFirst().get();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
-                  + " requestedHosts={}", nextSlot.toShortString(), availableHostMap.size(),
-              ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
-        }
+        LOG.info("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
+                + " requestedHosts={}", nextSlot.toShortString(), availableHostMap.size(),
+            ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
         return new SelectHostResult(nextSlot);
       }
 
@@ -1822,7 +1820,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       readLock.unlock();
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("ResourceAvail: numInstancesFound={}, totalMem={}, totalVcores={} availableHosts: {}",
+      LOG.debug("Available resources: numInstancesFound={}, totalMem={}, totalVcores={} availableHosts: {}",
           numInstancesFound, memory, vcores, availableHostMap.size());
     }
     return new ImmutablePair<>(Resource.newInstance(memory, vcores), availableHostMap);
