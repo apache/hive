@@ -83,11 +83,6 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       addElement(lcv, valueList, category, index);
       index++;
     }
-
-    // Decode the value if necessary
-    if (isCurrentPageDictionaryEncoded) {
-      valueList = decodeDictionaryIds(category, valueList);
-    }
     // Convert valueList to array for the ListColumnVector.child
     convertValueListToListColumnVector(category, lcv, valueList, index);
   }
@@ -140,6 +135,10 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
 
     do {
       // add all data for an element in ListColumnVector, get out the loop if there is no data or the data is for new element
+      if (isCurrentPageDictionaryEncoded) {
+        // Decode the value if necessary
+        lastValue = decodeDictionaryValue(category, lastValue);
+      }
       elements.add(lastValue);
     } while (fetchNextValue(category) && (repetitionLevel != 0));
 
@@ -181,79 +180,37 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     }
   }
 
-  private List decodeDictionaryIds(PrimitiveObjectInspector.PrimitiveCategory category, List
-      valueList) {
-    int total = valueList.size();
-    List resultList;
-    List<Integer> intList = (List<Integer>) valueList;
-
+  private Object decodeDictionaryValue(PrimitiveObjectInspector.PrimitiveCategory category, Object encVal) {
+    Integer intVal = (Integer) encVal;
     switch (category) {
     case INT:
     case BYTE:
     case SHORT:
-      resultList = new ArrayList<Integer>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readInteger(intList.get(i)));
-      }
-      break;
+        return dictionary.readInteger(intVal);
     case DATE:
     case INTERVAL_YEAR_MONTH:
     case LONG:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readLong(intList.get(i)));
-      }
-      break;
+        return dictionary.readLong(intVal);
     case BOOLEAN:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readBoolean(intList.get(i)) ? 1 : 0);
-      }
-      break;
+      return dictionary.readBoolean(intVal) ? 1 : 0;
     case DOUBLE:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readDouble(intList.get(i)));
-      }
-      break;
+      return dictionary.readDouble(intVal);
     case BINARY:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readBytes(intList.get(i)));
-      }
-      break;
+      return dictionary.readBytes(intVal);
     case STRING:
     case CHAR:
     case VARCHAR:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readString(intList.get(i)));
-      }
-      break;
+      return dictionary.readString(intVal);
     case FLOAT:
-      resultList = new ArrayList<Float>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readFloat(intList.get(i)));
-      }
-      break;
+      return dictionary.readFloat(intVal);
     case DECIMAL:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readDecimal(intList.get(i)));
-      }
-      break;
+       return dictionary.readDecimal(intVal);
     case TIMESTAMP:
-      resultList = new ArrayList<Long>(total);
-      for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readTimestamp(intList.get(i)));
-      }
-      break;
+      return dictionary.readTimestamp(intVal);
     case INTERVAL_DAY_TIME:
     default:
       throw new RuntimeException("Unsupported type in the list: " + type);
     }
-
-    return resultList;
   }
 
   /**
