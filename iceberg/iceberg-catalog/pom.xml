@@ -61,27 +61,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-<!--    <profiles>-->
-<!--        <profile>-->
-<!--            <id>jdk8</id>-->
-<!--            <activation>-->
-<!--                <jdk>1.8</jdk>-->
-<!--            </activation>-->
-<!--            <build>-->
-<!--                <plugins>-->
-<!--                    <plugin>-->
-<!--                        <groupId>org.apache.maven.plugins</groupId>-->
-<!--                        <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                        <configuration>-->
-<!--                            <fork>true</fork>-->
-<!--                            <compilerArgs combine.children="append">-->
-<!--                                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>-->
-<!--                            </compilerArgs>-->
-<!--                        </configuration>-->
-<!--                    </plugin>-->
-<!--                </plugins>-->
-<!--            </build>-->
-<!--        </profile>-->
-<!--    </profiles>-->
 </project>
