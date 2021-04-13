@@ -106,6 +106,7 @@ public class DDLPlanUtils {
   private static final String CHECK_EXPRESSION = "CHECK_EXPRESSION";
   private static final String DEFAULT_VALUE = "DEFAULT_VALUE";
   private static final String COL_TYPE = "COL_TYPE";
+  private static final String SQL = "SQL";
   private static final String numNulls = "'numNulls'='";
   private static final String numDVs = "'numDVs'='";
   private static final String numTrues = "'numTrues'='";
@@ -132,7 +133,7 @@ public class DDLPlanUtils {
 
   private static final String CREATE_VIEW_TEMPLATE =
       "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME +
-          ">`<" + PARTITIONS + "> AS <SQL>";
+          ">`<" + PARTITIONS + "> AS <" + SQL +">";
 
   private final String CREATE_TABLE_TEMPLATE_LOCATION = "LOCATION\n" +
       "<" + LOCATION + ">\n";
@@ -593,14 +594,14 @@ public class DDLPlanUtils {
     return command.render();
   }
 
-  public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints, Set<String> all_tbl) {
+  public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints, Set<String> allTableNames) {
     if (!ForeignKeyInfo.isForeignKeyInfoNotEmpty(fr)) {
       return;
     }
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
     for (String key : all.keySet()) {
       for (ForeignKeyInfo.ForeignKeyCol fkc : all.get(key)) {
-        if (!all_tbl.contains(fkc.parentTableName)) {
+        if (!allTableNames.contains(fkc.parentTableName)) {
           continue;
         }
         ST command = new ST(ALTER_TABLE_ADD_FOREIGN_KEY);
@@ -698,9 +699,9 @@ public class DDLPlanUtils {
    *
    * @param tb
    */
-  public List<String> populateConstraints(Table tb, Set<String> all_tbl) {
+  public List<String> populateConstraints(Table tb, Set<String> allTableNames) {
     List<String> constraints = new ArrayList<>();
-    getAlterTableStmtForeignKeyConstraint(tb.getForeignKeyInfo(), constraints, all_tbl);
+    getAlterTableStmtForeignKeyConstraint(tb.getForeignKeyInfo(), constraints, allTableNames);
     getAlterTableStmtUniqueConstraint(tb.getUniqueKeyInfo(), constraints);
     getAlterTableStmtDefaultConstraint(tb.getDefaultConstraint(), tb, constraints);
     getAlterTableStmtCheckConstraint(tb.getCheckConstraint(), constraints);
@@ -726,7 +727,7 @@ public class DDLPlanUtils {
     }
     command.add(TABLE_NAME, table.getTableName());
     command.add(PARTITIONS, getPartitionsForView(table));
-    command.add("SQL", table.getViewExpandedText());
+    command.add(SQL, table.getViewExpandedText());
 
     return command.render();
   }

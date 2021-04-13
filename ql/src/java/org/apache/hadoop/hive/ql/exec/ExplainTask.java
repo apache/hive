@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.Context;
@@ -429,15 +430,45 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonObject;
   }
 
+  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils){
+    tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
+  }
+  
+  public void addPKandBasicStats(Table tbl, List<String> basicDef, DDLPlanUtils ddlPlanUtils){
+    String primaryKeyStmt = ddlPlanUtils.getAlterTableStmtPrimaryKeyConstraint(tbl.getPrimaryKeyInfo());
+    if (primaryKeyStmt != null) {
+      basicDef.add(primaryKeyStmt);
+    }
+    basicDef.add(ddlPlanUtils.getAlterTableStmtTableStatsBasic(tbl));
+  }
+
+  public void addConstraints(Table tbl, List<String> constraints, Set<String> allTableNames,
+      DDLPlanUtils ddlPlanUtils){
+    constraints.addAll(ddlPlanUtils.populateConstraints(tbl, allTableNames));
+  }
+
+  public void addStats(Table table,List<String> alterTableStmt ,Map<String, List<Partition>> tablePartitionsMap,
+      DDLPlanUtils ddlPlanUtils)
+      throws HiveException, MetaException{
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(conf, false);
+    perfLogger.perfLogBegin(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+    if (table.isPartitioned()) {
+      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(table, tablePartitionsMap));
+    } else {
+      alterTableStmt.addAll(ddlPlanUtils.getAlterTableStmtTableStatsColsAll(table));
+    }
+    perfLogger.perfLogEnd(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+  }
+
   public void getDDLPlan(PrintStream out) throws HiveException, MetaException {
-    DDLPlanUtils ddlUtils = new DDLPlanUtils();
+    DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
     Set<String> createDatabase = new TreeSet<String>();
     List<String> tableCreateStmt = new LinkedList<String>();
     List<String> tableBasicDef = new LinkedList<String>();
     List<String> createViewList = new LinkedList<String>();
     List<String> alterTableStmt = new LinkedList<String>();
     Map<String, Table> tableMap = new HashMap<>();
-    Map<String, List<Partition>> tableToPartitionList = new HashMap<>();
+    Map<String, List<Partition>> tablePartitionsMap = new HashMap<>();
     for (ReadEntity ent : work.getInputs()) {
       switch (ent.getType()) {
       // Views are also covered in table
@@ -445,38 +476,28 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         Table tbl = ent.getTable();
         createDatabase.add(tbl.getDbName());
         tableMap.put(tbl.getTableName(), tbl);
-        if (!tableToPartitionList.containsKey(tbl.getTableName())) {
-          tableToPartitionList.put(tbl.getTableName(), new ArrayList<Partition>());
-        }
+        tablePartitionsMap.putIfAbsent(tbl.getTableName(), new ArrayList<Partition>());
         break;
       case PARTITION:
-        tableToPartitionList.get(ent.getTable().getTableName()).add(ent.getPartition());
+        tablePartitionsMap.get(ent.getTable().getTableName()).add(ent.getPartition());
         break;
       default:
         break;
       }
     }
     //process the databases
-    List<String> createDatabaseStmt = ddlUtils.getCreateDatabaseStmt(createDatabase);
+    List<String> createDatabaseStmt = ddlPlanUtils.getCreateDatabaseStmt(createDatabase);
     //process the tables
     for (String tableName : tableMap.keySet()) {
       Table table = tableMap.get(tableName);
       if (table.isView()) {
-        createViewList.add(ddlUtils.getCreateViewStmt(table));
+        createViewList.add(ddlPlanUtils.getCreateViewStmt(table));
         continue;
       } else {
-        tableCreateStmt.add(ddlUtils.getCreateTableCommand(table, false) + ";");
-        String primaryKeyStmt = ddlUtils.getAlterTableStmtPrimaryKeyConstraint(table.getPrimaryKeyInfo());
-        if (primaryKeyStmt != null) {
-          tableBasicDef.add(primaryKeyStmt);
-        }
-        tableBasicDef.add(ddlUtils.getAlterTableStmtTableStatsBasic(table));
-        alterTableStmt.addAll(ddlUtils.populateConstraints(table, tableMap.keySet()));
-        if (table.isPartitioned()) {
-          alterTableStmt.addAll(ddlUtils.getDDLPlanForPartitionWithStats(table, tableToPartitionList));
-        } else {
-          alterTableStmt.addAll(ddlUtils.getAlterTableStmtTableStatsColsAll(table));
-        }
+        addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
+        addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
+        addConstraints(table, alterTableStmt, tableMap.keySet(), ddlPlanUtils);
+        addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
       }
     }
     Joiner jn = Joiner.on("\n");
