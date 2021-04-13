@@ -67,7 +67,7 @@ public class ImpalaPlannerUtils {
     if (hasLimit && !disableTopN) {
       if (topNBytesLimit <= 0) {
         sortNode =
-            SortNode.createTopNSortNode(planCtx.getNextNodeId(), root, sortInfo, offset);
+            SortNode.createTopNSortNode(planCtx.getQueryOptions(), planCtx.getNextNodeId(), root, sortInfo, offset, limit, false);
       } else {
         long topNCardinality = PlanNode.capCardinalityAtLimit(root.getCardinality(), limit);
         long estimatedTopNMaterializedSize =
@@ -75,7 +75,7 @@ public class ImpalaPlannerUtils {
 
         if (estimatedTopNMaterializedSize < topNBytesLimit) {
           sortNode =
-              SortNode.createTopNSortNode(planCtx.getNextNodeId(), root, sortInfo, offset);
+              SortNode.createTopNSortNode(planCtx.getQueryOptions(), planCtx.getNextNodeId(), root, sortInfo, offset, limit, false);
         } else {
           sortNode =
               SortNode.createTotalSortNode(planCtx.getNextNodeId(), root, sortInfo, offset);
@@ -143,7 +143,7 @@ public class ImpalaPlannerUtils {
     if (pushdownLimit) {
       Preconditions.checkArgument(analyticNode != null);
       Preconditions.checkArgument(analyticNode.getChild(0) instanceof SortNode);
-      analyticNodeSort.convertToTopN(limit, partitioningExprs, analyzer);
+      analyticNodeSort.tryConvertToTopN(limit, analyzer, false);
       // after the limit is pushed down, update stats for the analytic eval node
       // and intermediate nodes
       analyticNode.computeStats(analyzer);
