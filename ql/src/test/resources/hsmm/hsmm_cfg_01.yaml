@@ -1,0 +1,9 @@
+databaseIncludeLists:
+  default:
+    - "manwhwh"
+    - "manwhnone"
+  emptydb:
+  unknowndb:
+    - "unknowntable1"
+  custdb:
+    - "custextwhwh"
