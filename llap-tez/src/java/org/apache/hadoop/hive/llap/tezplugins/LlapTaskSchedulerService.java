@@ -1949,7 +1949,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
            // 2. is currently assigned 3. no preemption pending on that Host
           if (toPreempt.getState() == TaskInfo.State.ASSIGNED &&
               (pendingPreemptionsPerHost.get(host) == null || pendingPreemptionsPerHost.get(host).intValue() == 0)) {
-            LOG.debug("Preempting task took {} ms {}", (clock.getTime() - toPreempt.getPreemptedTime()), toPreempt);
             dagStats.registerTaskPreempted(toPreempt.getAssignedNode().getHost());
             registerPendingPreemption(toPreempt.getAssignedNode().getHost());
             toPreempt.setPreemptedInfo(clock.getTime());
@@ -2326,7 +2325,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     public Void call() {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         try {
-          TaskInfo taskInfo = getNextTask();
+          TaskInfo taskInfo = highPriorityTaskQueue.take();
           // Tasks can exist in the queue even after they have been scheduled.
           // Process task Preemption only if the task is still in PENDING state.
           processTaskPreemption(taskInfo);
@@ -2405,10 +2404,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     public void shutdown() {
       isShutdown.set(true);
-    }
-
-    public TaskInfo getNextTask() throws InterruptedException {
-      return highPriorityTaskQueue.take();
     }
 
     public boolean shouldAttemptTask(TaskInfo taskInfo) {
@@ -3163,7 +3158,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       return isPendingUpdate;
     }
 
-    synchronized TezTaskAttemptID getAttemptId() {
+    TezTaskAttemptID getAttemptId() {
       return attemptId;
     }
   }
