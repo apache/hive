@@ -17,38 +17,49 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.metrics;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
-import org.apache.tez.common.counters.TezCounter;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.common.util.Ref;
 import org.apache.tez.common.counters.TezCounters;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Comparator;
 
+import java.util.Map;
 import java.util.Queue;
-import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_DELTAS;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_SMALL_DELTAS;
 
 /**
  * Collects and publishes ACID compaction related metrics.
@@ -59,17 +70,17 @@ public class DeltaFilesMetricReporter {
 
   public static final String NUM_OBSOLETE_DELTAS = "HIVE_ACID_NUM_OBSOLETE_DELTAS";
   public static final String NUM_DELTAS = "HIVE_ACID_NUM_DELTAS";
+  public static final String NUM_SMALL_DELTAS = "HIVE_ACID_NUM_SMALL_DELTAS";
 
   private int deltasThreshold;
   private int obsoleteDeltasThreshold;
 
   private int maxCacheSize;
-  private static long checkThresholdInSec;
 
-  private Cache<String, Integer> deltaCache;
+  private Cache<String, Integer> deltaCache, smallDeltaCache;
   private Cache<String, Integer> obsoleteDeltaCache;
 
-  private BlockingQueue<Pair<String, Integer>> deltaTopN;
+  private BlockingQueue<Pair<String, Integer>> deltaTopN, smallDeltaTopN;
   private BlockingQueue<Pair<String, Integer>> obsoleteDeltaTopN;
 
   private ScheduledExecutorService executorService;
@@ -90,24 +101,36 @@ public class DeltaFilesMetricReporter {
   }
 
   public void submit(TezCounters counters) {
-    updateMetrics(counters.getGroup(NUM_OBSOLETE_DELTAS),
-        obsoleteDeltaCache, obsoleteDeltaTopN, obsoleteDeltasThreshold);
-    updateMetrics(counters.getGroup(NUM_DELTAS),
-        deltaCache, deltaTopN, deltasThreshold);
+    updateMetrics(NUM_OBSOLETE_DELTAS,
+        obsoleteDeltaCache, obsoleteDeltaTopN, obsoleteDeltasThreshold, counters);
+    updateMetrics(NUM_DELTAS,
+        deltaCache, deltaTopN, deltasThreshold, counters);
+    updateMetrics(NUM_SMALL_DELTAS,
+        smallDeltaCache, smallDeltaTopN, deltasThreshold, counters);
   }
 
-  public static int getNumDeltas(AcidDirectory dir) throws IOException {
+  public static Pair<Integer, Integer> getNumDeltas(AcidDirectory dir, long checkThresholdInSec,
+        float deltaPctThreshold) throws IOException {
+    long baseSize = getBaseSize(dir);
+
     int numDeltas = 0;
+    int numSmallDeltas = 0;
+
     for (AcidUtils.ParsedDelta delta : dir.getCurrentDirectories()) {
       FileStatus stat = dir.getFs().getFileStatus(delta.getPath());
       if (System.currentTimeMillis() - stat.getModificationTime() >= checkThresholdInSec * 1000) {
         numDeltas++;
+
+        long deltaSize = getDirSize(delta, dir.getFs());
+        if (baseSize != 0 && deltaSize / (float) baseSize < deltaPctThreshold) {
+          numSmallDeltas++;
+        }
       }
     }
-    return numDeltas;
+    return Pair.of(numDeltas, numSmallDeltas);
   }
 
-  public static int getNumObsoleteDeltas(AcidDirectory dir) throws IOException {
+  public static int getNumObsoleteDeltas(AcidDirectory dir, long checkThresholdInSec) throws IOException {
     int numObsoleteDeltas = 0;
     for (Path obsolete : dir.getObsolete()) {
       FileStatus stat = dir.getFs().getFileStatus(obsolete);
@@ -118,17 +141,64 @@ public class DeltaFilesMetricReporter {
     return numObsoleteDeltas;
   }
 
+  public static void createCountersForAcidMetrics(TezCounters tezCounters, JobConf jobConf) {
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+      Stream.of(
+        NUM_OBSOLETE_DELTAS, NUM_DELTAS, NUM_SMALL_DELTAS)
+        .filter(metric -> jobConf.get(metric) != null)
+        .forEach(metric ->
+            Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(metric)).forEach(
+              (key, value) -> tezCounters.findCounter(metric, key).setValue(Long.parseLong(value))
+            )
+        );
+    }
+  }
+
+  public static void addAcidMetricsToConfObj(Map<String, Map<String, Integer>> deltas, Configuration conf) {
+    deltas.forEach((key, value) ->
+        conf.set(key, Joiner.on(",").withKeyValueSeparator("->").join(value))
+    );
+  }
+
+  public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+      Stream.of(
+        NUM_OBSOLETE_DELTAS, NUM_DELTAS, NUM_SMALL_DELTAS)
+        .filter(metric -> conf.get(metric) != null)
+        .forEach(metric ->
+            jobConf.set(metric, conf.get(metric))
+        );
+    }
+  }
+
   public static void close() {
     if (getInstance() != null) {
       getInstance().executorService.shutdownNow();
     }
   }
 
+  private static long getBaseSize(AcidDirectory dir) throws IOException {
+    long baseSize = 0;
+    if (dir.getBase() != null) {
+      baseSize = getDirSize(dir.getBase(), dir.getFs());
+    } else {
+      for (HadoopShims.HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
+        baseSize += origStat.getFileStatus().getLen();
+      }
+    }
+    return baseSize;
+  }
+
+  private static long getDirSize(AcidUtils.ParsedDirectory dir, FileSystem fs) throws IOException {
+    return dir.getFiles(fs, Ref.from(false)).stream()
+      .map(HadoopShims.HdfsFileStatusWithId::getFileStatus)
+      .mapToLong(FileStatus::getLen)
+      .sum();
+  }
+
   private void configure(HiveConf conf){
     deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
     obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
-    checkThresholdInSec = HiveConf.getTimeVar(conf,
-        HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
 
     initMetricsCache(conf);
     long reportingInterval = HiveConf.getTimeVar(conf,
@@ -151,13 +221,22 @@ public class DeltaFilesMetricReporter {
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_CACHE_DURATION, TimeUnit.SECONDS);
 
     Comparator<Pair<String, Integer>> c = Comparator.comparing(Pair::getValue);
+
     deltaTopN = new PriorityBlockingQueue<>(maxCacheSize, c);
+    smallDeltaTopN = new PriorityBlockingQueue<>(maxCacheSize, c);
     obsoleteDeltaTopN = new PriorityBlockingQueue<>(maxCacheSize, c);
 
     deltaCache = CacheBuilder.newBuilder()
       .expireAfterWrite(duration, TimeUnit.SECONDS)
       .maximumSize(maxCacheSize)
       .removalListener(notification -> removalPredicate(deltaTopN, notification))
+      .softValues()
+      .build();
+
+    smallDeltaCache = CacheBuilder.newBuilder()
+      .expireAfterWrite(duration, TimeUnit.SECONDS)
+      .maximumSize(maxCacheSize)
+      .removalListener(notification -> removalPredicate(smallDeltaTopN, notification))
       .softValues()
       .build();
 
@@ -169,8 +248,8 @@ public class DeltaFilesMetricReporter {
       .build();
   }
 
-  private boolean removalPredicate(BlockingQueue<Pair<String, Integer>> deltaTopN, RemovalNotification notification) {
-    return deltaTopN.removeIf(item -> item.getKey().equals(notification.getKey()));
+  private void removalPredicate(BlockingQueue<Pair<String, Integer>> topN, RemovalNotification notification) {
+    topN.removeIf(item -> item.getKey().equals(notification.getKey()));
   }
 
   private final class ReportingTask implements Runnable {
@@ -178,33 +257,38 @@ public class DeltaFilesMetricReporter {
     public void run() {
       Metrics metrics = MetricsFactory.getInstance();
       if (metrics != null) {
-          obsoleteDeltaCache.cleanUp();
-          metrics.addGauge(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS,
-              () -> new TreeMap<>(obsoleteDeltaCache.asMap()));
-          deltaCache.cleanUp();
-          metrics.addGauge(MetricsConstants.COMPACTION_NUM_DELTAS,
-              () -> new TreeMap<>(deltaCache.asMap()));
+        obsoleteDeltaCache.cleanUp();
+        metrics.addGauge(COMPACTION_NUM_OBSOLETE_DELTAS, getVariable(obsoleteDeltaCache));
+        deltaCache.cleanUp();
+        metrics.addGauge(COMPACTION_NUM_DELTAS, getVariable(deltaCache));
+        smallDeltaCache.cleanUp();
+        metrics.addGauge(COMPACTION_NUM_SMALL_DELTAS, getVariable(smallDeltaCache));
       }
+    }
+
+    @NotNull
+    private MetricsVariable<String> getVariable(Cache<String, Integer> cache) {
+      return () -> Joiner.on(",").withKeyValueSeparator("->").join(cache.asMap());
     }
   }
 
-  private void updateMetrics(Iterable<TezCounter> counterGroup, Cache<String, Integer> deltaCache,
-          Queue<Pair<String, Integer>> deltaTopN, int deltaThreshold) {
-    counterGroup.forEach(counter -> {
-      Integer prev = deltaCache.getIfPresent(counter.getName());
+  private void updateMetrics(String metric, Cache<String, Integer> cache, Queue<Pair<String, Integer>> topN,
+        int threshold, TezCounters counters) {
+    counters.getGroup(metric).forEach(counter -> {
+      Integer prev = cache.getIfPresent(counter.getName());
       if (prev != null && prev != counter.getValue()) {
-        deltaCache.invalidate(counter.getName());
+        cache.invalidate(counter.getName());
       }
-      if (counter.getValue() > deltaThreshold) {
-        if (deltaTopN.size() == maxCacheSize) {
-          Pair<String, Integer> lowest = deltaTopN.peek();
+      if (counter.getValue() > threshold) {
+        if (topN.size() == maxCacheSize) {
+          Pair<String, Integer> lowest = topN.peek();
           if (lowest != null && counter.getValue() > lowest.getValue()) {
-            deltaCache.invalidate(lowest.getKey());
+            cache.invalidate(lowest.getKey());
           }
         }
-        if (deltaTopN.size() < maxCacheSize) {
-          deltaTopN.add(Pair.of(counter.getName(), (int) counter.getValue()));
-          deltaCache.put(counter.getName(), (int) counter.getValue());
+        if (topN.size() < maxCacheSize) {
+          topN.add(Pair.of(counter.getName(), (int) counter.getValue()));
+          cache.put(counter.getName(), (int) counter.getValue());
         }
       }
     });

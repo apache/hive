@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.codahale.metrics.Gauge;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
@@ -11,10 +12,13 @@ import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactionMetrics.equivalent;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactionMetrics.gaugeToMap;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 
 public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
@@ -31,6 +35,7 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD, 0);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, 1, TimeUnit.SECONDS);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, 0, TimeUnit.SECONDS);
+    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD, 0.2f);
     DeltaFilesMetricReporter.init(conf);
 
     String dbName = "default", tableName = "test_metrics";
@@ -45,13 +50,16 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
     Map<String, Gauge> gauges = metrics.getMetricRegistry().getGauges();
 
-    Assert.assertEquals(new TreeMap() {{
-      put(tableName + Path.SEPARATOR + partitionTomorrow, 3);
-      put(tableName + Path.SEPARATOR + partitionYesterday, 4);
-      put(tableName + Path.SEPARATOR + partitionToday, 5);
-    }}, gauges.get(MetricsConstants.COMPACTION_NUM_DELTAS).getValue());
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
+          put(tableName + Path.SEPARATOR + partitionYesterday, "4");
+          put(tableName + Path.SEPARATOR + partitionToday, "5");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
 
-    Assert.assertEquals(((Map)gauges.get(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).getValue()).size(), 0);
+    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges).size(), 0);
+    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges).size(), 0);
 
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true,
         partitionToday, partitionTomorrow, partitionYesterday);
@@ -59,13 +67,34 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     executeStatementOnDriver("select avg(b) from " + tableName, driver);
     Thread.sleep(1000);
 
-    Assert.assertEquals(new TreeMap() {{
-      put(tableName + Path.SEPARATOR + partitionTomorrow, 3);
-      put(tableName + Path.SEPARATOR + partitionYesterday, 4);
-      put(tableName + Path.SEPARATOR + partitionToday, 5);
-    }}, gauges.get(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).getValue());
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
+          put(tableName + Path.SEPARATOR + partitionYesterday, "4");
+          put(tableName + Path.SEPARATOR + partitionToday, "5");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges)));
 
-    Assert.assertEquals(((Map)gauges.get(MetricsConstants.COMPACTION_NUM_DELTAS).getValue()).size(), 0);
+    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges).size(), 0);
+
+    String insertQry = MessageFormat.format("insert into " + tableName + " partition (ds=''today'') values " +
+      "(''{0}'',1),(''{0}'',2),(''{0}'',3),(''{0}'',4),(''{0}'',5),(''{0}'',6),(''{0}'',7), (''{0}'',8),(''{0}'',9)," +
+      "(''{0}'',10),(''{0}'',11),(''{0}'',12)", RandomStringUtils.random(4096, false, true));
+    for (int i = 0; i < 10; i++) {
+      executeStatementOnDriver(insertQry, driver);
+    }
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true,
+        partitionToday);
+    executeStatementOnDriver("insert into " + tableName + " values('1',2, 'today')", driver);
+
+    executeStatementOnDriver("select avg(b) from " + tableName, driver);
+    Thread.sleep(1000);
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put(tableName + Path.SEPARATOR + partitionToday, "1");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges)));
 
     DeltaFilesMetricReporter.close();
   }

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
@@ -90,9 +91,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.lang.Integer.min;
-
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_DELTAS;
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_OBSOLETE_DELTAS;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -830,12 +828,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
           currentTable, result);
     }
-    if (newjob.get(NUM_OBSOLETE_DELTAS) != null) {
-      job.set(NUM_OBSOLETE_DELTAS, newjob.get(NUM_OBSOLETE_DELTAS));
-    }
-    if (newjob.get(NUM_DELTAS) != null) {
-      job.set(NUM_DELTAS, newjob.get(NUM_DELTAS));
-    }
+    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, newjob);
 
     Utilities.clearWorkMapForConf(job);
     if (LOG.isInfoEnabled()) {

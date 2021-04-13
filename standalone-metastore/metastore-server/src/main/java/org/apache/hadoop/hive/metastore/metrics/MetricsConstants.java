@@ -39,6 +39,7 @@ public class MetricsConstants {
 
   public static final String COMPACTION_NUM_OBSOLETE_DELTAS = COMPACTION_STATUS_PREFIX + "obsolete_deltas";
   public static final String COMPACTION_NUM_DELTAS = COMPACTION_STATUS_PREFIX + "deltas";
+  public static final String COMPACTION_NUM_SMALL_DELTAS = COMPACTION_STATUS_PREFIX + "small_deltas";
 
   public static final String NUM_LOCKS = "num_locks";
   public static final String OLDEST_LOCK_AGE = "oldest_lock_age_in_sec";

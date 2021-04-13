@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -46,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -95,6 +97,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -138,7 +141,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.CodedInputStream;
@@ -147,8 +149,7 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileType.ORIGINAL_B
 
 import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_OBSOLETE_DELTAS;
 import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_DELTAS;
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.getNumObsoleteDeltas;
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.getNumDeltas;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_SMALL_DELTAS;
 
 /**
  * A MapReduce/Hive input format for ORC files.
@@ -1787,8 +1788,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         " ACID scan property " + isAcidTableScan);
     }
     boolean metricsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED);
-    Map<String, Integer> obsoleteDeltas = new HashMap<>();
-    Map<String, Integer> deltas = new HashMap<>();
+    long checkThresholdInSec = HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
+    float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
+
+    Map<String, Map<String, Integer>> deltas = new HashMap<>();
+    Stream.of(NUM_OBSOLETE_DELTAS, NUM_DELTAS, NUM_SMALL_DELTAS).forEach(
+      metric -> deltas.put(metric, new HashMap<>()));
 
     // complete path futures and schedule split generation
     try {
@@ -1817,10 +1823,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         if (metricsEnabled && directory instanceof AcidDirectory) {
           String relPath = directory.getPath().getName().contains("=") ?
-              directory.getPath().getParent().getName() + Path.SEPARATOR + directory.getPath().getName() :
-              directory.getPath().getName();
-          obsoleteDeltas.put(relPath, getNumObsoleteDeltas((AcidDirectory) directory));
-          deltas.put(relPath, getNumDeltas((AcidDirectory) directory));
+            directory.getPath().getParent().getName() + Path.SEPARATOR + directory.getPath().getName() :
+            directory.getPath().getName();
+
+          deltas.get(NUM_OBSOLETE_DELTAS).put(relPath,
+            DeltaFilesMetricReporter.getNumObsoleteDeltas((AcidDirectory) directory, checkThresholdInSec));
+
+          Pair<Integer, Integer> numDeltas = DeltaFilesMetricReporter.getNumDeltas((AcidDirectory) directory,
+            checkThresholdInSec, deltaPctThreshold);
+          deltas.get(NUM_DELTAS).put(relPath, numDeltas.getLeft());
+          deltas.get(NUM_SMALL_DELTAS).put(relPath, numDeltas.getRight());
         }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
@@ -1853,7 +1865,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      addAcidMetricsToConfObj(obsoleteDeltas, deltas, conf);
+      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltas, conf);
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {
@@ -1888,15 +1900,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
     }
     return splits;
-  }
-
-  private static void addAcidMetricsToConfObj(Map<String, Integer> obsoleteDeltas, Map<String, Integer> deltas, Configuration conf) {
-    if (!obsoleteDeltas.isEmpty()) {
-      conf.set(NUM_OBSOLETE_DELTAS, Joiner.on(",").withKeyValueSeparator("->").join(obsoleteDeltas));
-    }
-    if (!deltas.isEmpty()) {
-      conf.set(NUM_DELTAS, Joiner.on(",").withKeyValueSeparator("->").join(deltas));
-    }
   }
 
   @VisibleForTesting
@@ -1971,12 +1974,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));
-    if (conf.get(NUM_OBSOLETE_DELTAS) != null) {
-      job.set(NUM_OBSOLETE_DELTAS, conf.get(NUM_OBSOLETE_DELTAS));
-    }
-    if (conf.get(NUM_DELTAS) != null) {
-      job.set(NUM_DELTAS, conf.get(NUM_DELTAS));
-    }
+    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, conf);
 
     long end = System.currentTimeMillis();
     LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));

@@ -30,7 +30,6 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
-import com.google.common.base.Splitter;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -38,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,9 +75,6 @@ import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_DELTAS;
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_OBSOLETE_DELTAS;
 
 /**
  * This class is used to generate splits inside the AM on the cluster. It
@@ -298,7 +295,7 @@ public class HiveSplitGenerator extends InputInitializer {
           }
           counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
           tezCounters.findCounter(groupName, counterName).increment(files.size());
-          addAcidCounters(tezCounters);
+          DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
         }
 
         if (work.getIncludedBuckets() != null) {
@@ -338,21 +335,6 @@ public class HiveSplitGenerator extends InputInitializer {
       return createEventList(sendSerializedEvents, inputSplitInfo);
     } finally {
       Utilities.clearWork(jobConf);
-    }
-  }
-
-  private void addAcidCounters(TezCounters tezCounters) {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
-      if (jobConf.get(NUM_OBSOLETE_DELTAS) != null) {
-        Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(NUM_OBSOLETE_DELTAS)).forEach(
-          (k, v) -> tezCounters.findCounter(NUM_OBSOLETE_DELTAS, k).setValue(Long.parseLong(v))
-        );
-      }
-      if (jobConf.get(NUM_DELTAS) != null) {
-        Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(NUM_DELTAS)).forEach(
-          (k, v) -> tezCounters.findCounter(NUM_DELTAS, k).setValue(Long.parseLong(v))
-        );
-      }
     }
   }
 
