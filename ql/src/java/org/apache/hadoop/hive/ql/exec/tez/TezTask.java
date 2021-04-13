@@ -256,11 +256,8 @@ public class TezTask extends Task<TezWork> {
         }
 
         try {
-          // save useful commit information into session conf, e.g. for custom commit hooks
-          // TODO: this is temporary, Iceberg-specific logic. Refactor when new Tez version has been released
-          collectCommitInformation(work, rc == 0);
-          Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           // fetch the counters
+          Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
@@ -270,6 +267,10 @@ public class TezTask extends Task<TezWork> {
           LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
           counters = null;
         }
+
+        // save useful commit information into session conf, e.g. for custom commit hooks
+        // TODO: this is temporary, Iceberg-specific logic. Refactor when new Tez version has been released
+        collectCommitInformation(work, rc == 0);
       } finally {
         // Note: due to TEZ-3846, the session may actually be invalid in case of some errors.
         //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
