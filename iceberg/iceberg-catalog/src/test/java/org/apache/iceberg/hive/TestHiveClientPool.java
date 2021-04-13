@@ -44,7 +44,7 @@ public class TestHiveClientPool {
     conf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, "file:/mywarehouse/");
     conf.setInt("iceberg.hive.client-pool-size", 10);
 
-    HiveClientPool clientPool = new HiveClientPool(conf);
+    HiveClientPool clientPool = new HiveClientPool(10, conf);
     HiveConf clientConf = clientPool.hiveConf();
 
     Assert.assertEquals(conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname),
