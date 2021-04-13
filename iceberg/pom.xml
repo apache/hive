@@ -40,6 +40,7 @@
     </properties>
 
     <modules>
+        <module>patched-iceberg-core</module>
         <module>iceberg-catalog</module>
         <module>iceberg-handler</module>
     </modules>
@@ -54,7 +55,7 @@
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-core</artifactId>
-                <version>${iceberg-api.version}</version>
+                <version>patched-${iceberg-api.version}-${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
