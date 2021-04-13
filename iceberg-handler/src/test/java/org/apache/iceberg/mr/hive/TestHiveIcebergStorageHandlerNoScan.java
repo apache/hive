@@ -354,7 +354,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
   }
 
-  @Ignore("Ignored until iceberg-hive-metastore module is migrated over to Hive repo as well")
   @Test
   public void testCreateTableWithColumnSpecificationHierarchy() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");

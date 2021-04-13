@@ -16,12 +16,7 @@
 
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
-        <iceberg.avro.version>1.9.2</iceberg.avro.version>
         <iceberg.kryo.version>4.0.2</iceberg.kryo.version>
-        <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
-        <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
-        <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
-        <google.errorprone.version>2.5.1</google.errorprone.version>
         <shade.relocation.package.prefix>org.apache.hive.iceberg</shade.relocation.package.prefix>
     </properties>
 
@@ -35,12 +30,6 @@
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-core</artifactId>
-            <version>${iceberg.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.iceberg</groupId>
-            <artifactId>iceberg-hive-metastore</artifactId>
             <version>${iceberg.version}</version>
             <optional>true</optional>
         </dependency>
@@ -75,6 +64,11 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-iceberg-catalog</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
@@ -168,6 +162,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-iceberg-catalog</artifactId>
+            <classifier>tests</classifier>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -185,7 +186,7 @@
                         <path>
                             <groupId>com.google.errorprone</groupId>
                             <artifactId>error_prone_core</artifactId>
-                            <version>${google.errorprone.version}</version>
+                            <version>${iceberg.google.errorprone.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -194,7 +195,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>${spotless.maven.plugin.version}</version>
+                <version>${iceberg.spotless.maven.plugin.version}</version>
                 <configuration>
                     <java>
                         <removeUnusedImports />
@@ -261,7 +262,7 @@
                         <configuration>
                             <fork>true</fork>
                             <compilerArgs combine.children="append">
-                                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>
+                                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${iceberg.google.errorprone.javac.version}/javac-${iceberg.google.errorprone.javac.version}.jar</arg>
                             </compilerArgs>
                         </configuration>
                     </plugin>
@@ -330,6 +331,7 @@
                                     <artifactSet>
                                         <includes>
                                             <include>org.apache.iceberg:*</include>
+                                            <include>org.apache.hive:hive-iceberg-catalog</include>
                                             <include>org.apache.avro:*</include>
                                             <include>org.apache.orc:*</include>
                                             <include>org.apache.parquet:*</include>

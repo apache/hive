@@ -69,6 +69,7 @@
         <include>data/**/*</include>
         <include>dev-support/**/*</include>
         <include>druid-handler/**/*</include>
+        <include>iceberg-catalog/**/*</include>
         <include>iceberg-handler/**/*</include>
         <include>jdbc-handler/**/*</include>
         <include>kafka-handler/**/*</include>

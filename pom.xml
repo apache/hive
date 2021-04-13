@@ -65,6 +65,7 @@
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
     <module>iceberg-handler</module>
+    <module>iceberg-catalog</module>
   </modules>
 
   <properties>
@@ -152,6 +153,11 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <iceberg.version>0.11.0</iceberg.version>
+    <iceberg.avro.version>1.9.2</iceberg.avro.version>
+    <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
+    <iceberg.google.errorprone.javac.version>9+181-r4173-1</iceberg.google.errorprone.javac.version>
+    <iceberg.google.errorprone.version>2.5.1</iceberg.google.errorprone.version>
+    <iceberg.spotless.maven.plugin.version>2.5.0</iceberg.spotless.maven.plugin.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>2.10.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
