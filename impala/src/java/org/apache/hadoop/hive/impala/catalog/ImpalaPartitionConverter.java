@@ -36,7 +36,7 @@ import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsPartitionLocationCompressor;
 import org.apache.impala.catalog.HdfsPartition.FileDescriptor;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
-import org.apache.impala.catalog.metastore.CatalogHMSClientUtils;
+import org.apache.impala.catalog.metastore.CatalogHmsClientUtils;
 import org.apache.impala.util.ListMap;
 import org.apache.impala.thrift.TAccessLevel;
 import org.apache.impala.thrift.TNetworkAddress;
@@ -137,7 +137,7 @@ public class ImpalaPartitionConverter implements HMSPartitionConverter {
       // class has a method called getIndex. This method checks for a given host, and will add it
       // if it isn't present in the ListMap.
       Map<Partition, List<FileDescriptor>> partitionFds =
-          CatalogHMSClientUtils.extractFileDescriptors(missingNamesResult,
+          CatalogHmsClientUtils.extractFileDescriptors(missingNamesResult,
               impalaCacheValue.hostIndex);
 
       // Convert the newly fetched partitions and put them in the result

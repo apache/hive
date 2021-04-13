@@ -39,7 +39,6 @@ import org.apache.impala.catalog.HdfsPartitionLocationCompressor;
 import org.apache.impala.catalog.HdfsPartition.FileDescriptor;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
 import org.apache.impala.catalog.PrunablePartition;
-import org.apache.impala.catalog.metastore.CatalogHMSClientUtils;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.util.ListMap;
 import org.apache.impala.thrift.TAccessLevel;

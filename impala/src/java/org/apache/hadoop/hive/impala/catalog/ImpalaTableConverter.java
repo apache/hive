@@ -30,7 +30,7 @@ import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.HdfsPartitionLocationCompressor;
 import org.apache.impala.catalog.HdfsPartition.FileDescriptor;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
-import org.apache.impala.catalog.metastore.CatalogHMSClientUtils;
+import org.apache.impala.catalog.metastore.CatalogHmsClientUtils;
 import org.apache.impala.util.ListMap;
 import org.apache.impala.thrift.TAccessLevel;
 import org.apache.impala.thrift.TNetworkAddress;
@@ -80,7 +80,7 @@ public class ImpalaTableConverter implements HMSTableConverter {
       List<LiteralExpr> keyValues = new ArrayList<>();
       ListMap<TNetworkAddress> hostIndex = new ListMap<>();
       List<FileDescriptor> fds =
-          CatalogHMSClientUtils.extractFileDescriptors(hmsTable, hostIndex);
+          CatalogHmsClientUtils.extractFileDescriptors(hmsTable, hostIndex);
 
       String name = ImpalaHdfsPartition.DUMMY_PARTITION;
       // Put in the dummy partition.
