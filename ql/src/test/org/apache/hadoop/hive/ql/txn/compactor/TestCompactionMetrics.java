@@ -416,7 +416,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     String tblName = "dcamc";
     Table t = newTable(dbName, tblName, false);
 
-    long start = System.currentTimeMillis() - 1000L;
+    long start = System.currentTimeMillis();
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
