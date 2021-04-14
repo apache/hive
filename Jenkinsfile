@@ -52,6 +52,58 @@ def executorNode(run) {
   }
 }
 
+// returns a map like: {tez: {user: "CDH", branch: "cdpd-master", component: "tez"}, hadoop: {user: "CDH", branch: "cdpd-master", component: "hadoop"}, ...}
+def parseCustomComponentsBuilds(description) {
+  if (!description?.trim()) {
+    return false
+  }
+  def customComponents = [:]
+  def supportedComponents = ["HADOOP", "TEZ", "ORC", "CALCITE"];
+
+  for(String word : description.split(" ")){
+    if (word.startsWith("BUILD_CUSTOM_")){
+      component = word.split(":")[0].split("_")[2]; //BUILD_CUSTOM_TEZ:user:branch -> TEZ
+      if (!supportedComponents.contains(component)){
+          throw new Exception("Not supported custom component '" + component +"', supported components are: " + supportedComponents)
+      }
+      if (word.split(":").length < 3){
+          throw new Exception ("Not enough parts found to describe custom component build from string: " + word)
+      }
+      customComponents[component.toLowerCase()] = [component: component.toLowerCase(), user: word.split(":")[1], branch: word.split(":")[2]]
+    }
+  }
+
+  println ("Precommit will attempt to build custom components: " + customComponents)
+  return customComponents;
+}
+
+def buildCustomComponent(info, mavenOpts, buildSubDir=".") {
+  if (!info){
+    println ("skipping custom component build, info is not found...")
+    return
+  }
+  configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
+    withEnv(["BUILD_SUB_DIR=$buildSubDir", "COMPONENT=$info.component", "GIT_USER=$info.user", "GIT_BRANCH=$info.branch"]) {
+      sh '''#!/bin/bash -e
+. /etc/profile.d/confs.sh
+set -x
+
+HIVE_DIR=$PWD
+cd ..
+
+git clone --branch $GIT_BRANCH --single-branch http://github.infra.cloudera.com/$GIT_USER/$COMPONENT
+cd $COMPONENT/$BUILD_SUB_DIR
+git branch
+git status
+git log -1 --pretty="%h %B"
+http_proxy=http://sustwork.bdp.cloudera.com:3128 cdpd-patcher $COMPONENT
+cp $SETTINGS $HIVE_DIR/.git/settings.xml
+mvn clean install -DskipTests -Dmaven.repo.local=$HIVE_DIR/.git/m2 -s $HIVE_DIR/.git/settings.xml -q '''+mavenOpts+'''
+'''
+    }
+  }
+}
+
 def buildHive(args,wrapper="") {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
@@ -230,6 +282,23 @@ http_proxy=http://sustwork.bdp.cloudera.com:3128 cdpd-patcher hive
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
+        //description = 'TICKET-1234: my commit message BUILD_CUSTOM_HADOOP:CDH:cdpd-master BUILD_CUSTOM_TEZ:CDH:cdpd-master BUILD_CUSTOM_ORC:CDH:cdpd-master BUILD_CUSTOM_CALCITE:CDH:cdpd-master'
+        description = env.GERRIT_CHANGE_SUBJECT
+
+        customComponentBuilds = parseCustomComponentsBuilds(description)
+
+        println ("Attempting to build hadoop: ")
+        buildCustomComponent(customComponentBuilds.get("hadoop"), "")
+
+        println ("Attempting to build tez: ")
+        buildCustomComponent(customComponentBuilds.get("tez"), "-pl '!tez-ui'")
+
+        println ("Attempting to build orc: ")
+        buildCustomComponent(customComponentBuilds.get("orc"), "", "java")
+
+        println ("Attempting to build calcite: ")
+        buildCustomComponent(customComponentBuilds.get("calcite"), "")
+
         buildHive("install -Dtest=TestParseDriver#nonExistent","retry 3")
         buildHive("org.apache.maven.plugins:maven-dependency-plugin:get -Dartifact=org.apache.maven.plugins:maven-antrun-plugin:1.8","retry 3")
       }
