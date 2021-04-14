@@ -500,7 +500,8 @@ public abstract class BaseSemanticAnalyzer {
     if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
       return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
     }
-    return getSimpleTableNameBase(node);
+    String alias = getSimpleTableNameBase(node);
+    return alias != null ? alias.toLowerCase() : null;
   }
 
   protected static String getSimpleTableNameBase(ASTNode n) throws SemanticException {
