@@ -37,6 +37,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.*;
+
 /**
  * Collect and publish ACID and compaction related metrics.
  */
@@ -86,22 +88,21 @@ public class AcidMetricService  implements MetastoreTaskThread {
 
   private void updateDBMetrics() throws MetaException {
     MetricsInfo metrics = txnHandler.getMetricsInfo();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").set(
-        metrics.getTxnToWriteIdCount());
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").set(
-        metrics.getCompletedTxnsCount());
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "open_txn").set(
-        metrics.getOpenTxnsCount());
-    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID ).set(
-      metrics.getOldestOpenTxnId());
-    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE ).set(
-        metrics.getOldestOpenTxnAge());
-    Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).set(
-        metrics.getAbortedTxnsCount());
-    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).set(
-            metrics.getOldestAbortedTxnId());
-    Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).set(
-            metrics.getOldestAbortedTxnAge());
+    Metrics.getOrCreateGauge(NUM_TXN_TO_WRITEID).set(metrics.getTxnToWriteIdCount());
+    Metrics.getOrCreateGauge(NUM_COMPLETED_TXN_COMPONENTS).set(metrics.getCompletedTxnsCount());
+
+    // NOTE: AcidOpenTxnsCounterService has a duplicate countOpenTxns() functionality and could be disabled.
+    // PS: make sure to update `numOpenTxns` counter in TxnHandler.
+    Metrics.getOrCreateGauge(NUM_OPEN_TXNS).set(metrics.getOpenTxnsCount());
+    Metrics.getOrCreateGauge(OLDEST_OPEN_TXN_ID).set(metrics.getOldestOpenTxnId());
+    Metrics.getOrCreateGauge(OLDEST_OPEN_TXN_AGE).set(metrics.getOldestOpenTxnAge());
+
+    Metrics.getOrCreateGauge(NUM_ABORTED_TXNS).set(metrics.getAbortedTxnsCount());
+    Metrics.getOrCreateGauge(OLDEST_ABORTED_TXN_ID).set(metrics.getOldestAbortedTxnId());
+    Metrics.getOrCreateGauge(OLDEST_ABORTED_TXN_AGE).set(metrics.getOldestAbortedTxnAge());
+
+    Metrics.getOrCreateGauge(NUM_LOCKS).set(metrics.getLocksCount());
+    Metrics.getOrCreateGauge(OLDEST_LOCK_AGE).set(metrics.getOldestLockAge());
   }
 
   @VisibleForTesting
@@ -126,7 +127,7 @@ public class AcidMetricService  implements MetastoreTaskThread {
 
     // Update metrics
     for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
-      String key = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
+      String key = COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
       Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
       if (count != null) {
         Metrics.getOrCreateGauge(key).set(count.intValue());
@@ -135,25 +136,25 @@ public class AcidMetricService  implements MetastoreTaskThread {
       }
     }
     if (oldestEnqueueTime == Long.MAX_VALUE) {
-      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
+      Metrics.getOrCreateGauge(COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
     } else {
-      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
+      Metrics.getOrCreateGauge(COMPACTION_OLDEST_ENQUEUE_AGE)
           .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
     }
 
     long initiatorsCount = lastElements.values().stream()
         .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
     long workersCount = lastElements.values().stream()
         .map(e -> getHostFromId(e.getWorkerid())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKERS).set((int) workersCount);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKERS).set((int) workersCount);
 
     long initiatorVersionsCount = lastElements.values().stream()
         .map(ShowCompactResponseElement::getInitiatorVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS).set((int) initiatorVersionsCount);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATOR_VERSIONS).set((int) initiatorVersionsCount);
     long workerVersionsCount = lastElements.values().stream()
         .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
   }
 
   @Override

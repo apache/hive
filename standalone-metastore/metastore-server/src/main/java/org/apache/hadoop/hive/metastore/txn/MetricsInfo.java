@@ -30,6 +30,8 @@ public class MetricsInfo {
   private int abortedTxnsCount;
   private int oldestAbortedTxnId;
   private int oldestAbortedTxnAge;
+  private int locksCount;
+  private int oldestLockAge;
 
   public int getTxnToWriteIdCount() {
     return txnToWriteIdCount;
@@ -93,5 +95,21 @@ public class MetricsInfo {
 
   public void setOldestAbortedTxnAge(int oldestAbortedTxnAge) {
     this.oldestAbortedTxnAge = oldestAbortedTxnAge;
+  }
+
+  public void setLocksCount(int locksCount) {
+    this.locksCount = locksCount;
+  }
+
+  public int getLocksCount() {
+    return locksCount;
+  }
+
+  public void setOldestLockAge(int oldestLockAge) {
+    this.oldestLockAge = oldestLockAge;
+  }
+
+  public int getOldestLockAge() {
+    return oldestLockAge;
   }
 }
