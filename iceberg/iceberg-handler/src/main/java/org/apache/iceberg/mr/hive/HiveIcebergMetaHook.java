@@ -235,13 +235,23 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
       catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(preAlterTableProperties.spec));
+      setFileFormat();
       if (Catalogs.hiveCatalog(conf, catalogProperties)) {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
-      icebergTable = Catalogs.createTable(conf, catalogProperties);
-
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
-          partitionSpecProxy, preAlterTableProperties.partitionKeys, icebergTable, conf);
+          partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
+    }
+  }
+
+  private void setFileFormat() {
+    String format = preAlterTableProperties.format.toLowerCase();
+    if (format.contains("orc")) {
+      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "orc");
+    } else if (format.contains("parquet")) {
+      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "parquet");
+    } else if (format.contains("avro")) {
+      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "avro");
     }
   }
 

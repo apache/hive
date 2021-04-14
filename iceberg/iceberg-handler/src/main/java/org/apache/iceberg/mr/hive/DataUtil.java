@@ -60,6 +60,7 @@ public class DataUtil {
      *
      * For Parquet and ORC partitions, this will read metrics from the file footer. For Avro partitions,
      * metrics are set to null.
+     * @deprecated use org.apache.iceberg.data.DataUtil#listPartition() once Iceberg 0.12 is released.
      *
      * @param partitionKeys partition key, e.g., "a=1/b=2"
      * @param uri partition location URI
@@ -69,6 +70,7 @@ public class DataUtil {
      * @param metricsConfig a metrics conf
      * @return a List of DataFile
      */
+  @Deprecated
   public static List<DataFile> listPartition(Map<String, String> partitionKeys, String uri, String format,
                                              PartitionSpec spec, Configuration conf, MetricsConfig metricsConfig) {
     return listPartition(partitionKeys, uri, format, spec, conf, metricsConfig, null);
