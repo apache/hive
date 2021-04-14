@@ -108,6 +108,8 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
       } else {
         throw new HiveSQLException("Error running HPL/SQL operation", e);
       }
+    } finally {
+      exec.printExceptions();
     }
   }
 
