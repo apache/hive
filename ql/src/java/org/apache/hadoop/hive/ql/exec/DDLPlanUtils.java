@@ -107,6 +107,8 @@ public class DDLPlanUtils {
   private static final String DEFAULT_VALUE = "DEFAULT_VALUE";
   private static final String COL_TYPE = "COL_TYPE";
   private static final String SQL = "SQL";
+  private static final String COMMENT_SQL = "COMMENT_SQL";
+  private static final String HIVE_DEFAULT_PARTITION = "__HIVE_DEFAULT_PARTITION__";
   private static final String numNulls = "'numNulls'='";
   private static final String numDVs = "'numDVs'='";
   private static final String numTrues = "'numTrues'='";
@@ -142,7 +144,7 @@ public class DDLPlanUtils {
       ImmutableSet.of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE),
       new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
 
-  private final String ALTER_TABLE_CREATE_PARTITION = "ALTER TABLE <"
+  private final String ALTER_TABLE_CREATE_PARTITION = "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
       + DATABASE_NAME + ">.<" + TABLE_NAME +
       "> ADD IF NOT EXISTS PARTITION (<" + PARTITION +
       ">);";
@@ -152,7 +154,7 @@ public class DDLPlanUtils {
       TABLE_NAME + "> UPDATE STATISTICS FOR COLUMN <"
       + COLUMN_NAME + "> SET(<" + TBLPROPERTIES + "> );";
 
-  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN = "ALTER TABLE <"
+  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN = "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
       + DATABASE_NAME + ">.<" + TABLE_NAME +
       "> PARTITION (<" + PARTITION_NAME +
       ">) UPDATE STATISTICS FOR COLUMN <"
@@ -162,10 +164,9 @@ public class DDLPlanUtils {
       + DATABASE_NAME + ">.<" + TABLE_NAME +
       "> UPDATE STATISTICS SET(<" + TBLPROPERTIES + "> );";
 
-  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC = "ALTER TABLE <"
+  private final String ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC = "<if(" + COMMENT_SQL + ")><" + COMMENT_SQL + "> <endif>" + "ALTER TABLE <"
       + DATABASE_NAME + ">.<" + TABLE_NAME + "> PARTITION (<" +
       PARTITION_NAME + ">) UPDATE STATISTICS SET(<" + TBLPROPERTIES + "> );";
-
   private final String ALTER_TABLE_ADD_PRIMARY_KEY = "ALTER TABLE <"
       + DATABASE_NAME + ">.<" + TABLE_NAME + "> ADD CONSTRAINT <" +
       CONSTRAINT_NAME + "> PRIMARY KEY (<" + COL_NAMES + ">) DISABLE NOVALIDATE;";
@@ -249,6 +250,17 @@ public class DDLPlanUtils {
     return StringUtils.join(ptParam, ",");
   }
 
+  public boolean checkIfDefaultPartition(String pt){
+    String[] partColsDef = pt.split(",");
+    for (String ptcol : partColsDef){
+      String[] colValue = ptcol.split("=");
+      if (colValue[1].equals(HIVE_DEFAULT_PARTITION)){
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Creates the alter table command to add a partition to the given table.
    *
@@ -262,6 +274,9 @@ public class DDLPlanUtils {
     command.add(DATABASE_NAME, tb.getDbName());
     command.add(TABLE_NAME, tb.getTableName());
     command.add(PARTITION, getPartitionActualName(pt));
+    if(checkIfDefaultPartition(pt.getName())){
+      command.add(COMMENT_SQL, "--");
+    }
     return command.render();
   }
 
@@ -339,12 +354,16 @@ public class DDLPlanUtils {
       return;
     }
     DecimalColumnStatsData dc = cd.getDecimalStats();
+    if(dc.isSetHighValue()) {
+      byte[] highValArr = setByteArrayToLongSize(dc.getHighValue().getUnscaled());
+      ls.add(highValue + ByteBuffer.wrap(highValArr).getLong() + "E" + dc.getHighValue().getScale() + "'");
+    }
+    if(dc.isSetLowValue()) {
+      byte[] lowValArr = setByteArrayToLongSize(dc.getLowValue().getUnscaled());
+      ls.add(lowValue + ByteBuffer.wrap(lowValArr).getLong() + "E" + dc.getLowValue().getScale() + "'");
+    }
     ls.add(numNulls + dc.getNumNulls() + "'");
     ls.add(numDVs + dc.getNumDVs() + "'");
-    byte[] highValArr = setByteArrayToLongSize(dc.getHighValue().getUnscaled());
-    byte[] lowValArr = setByteArrayToLongSize(dc.getLowValue().getUnscaled());
-    ls.add(highValue + ByteBuffer.wrap(highValArr).getLong() + "E" + dc.getHighValue().getScale() + "'");
-    ls.add(lowValue + ByteBuffer.wrap(lowValArr).getLong() + "E" + dc.getLowValue().getScale() + "'");
   }
 
   public void addDoubleStats(ColumnStatisticsData cd, List<String> ls) {
@@ -466,6 +485,9 @@ public class DDLPlanUtils {
     addDoubleStats(columnStatisticsData, temp);
     addDecimalStats(columnStatisticsData, temp);
     command.add(TBLPROPERTIES, Joiner.on(",").join(temp));
+    if(checkIfDefaultPartition(ptName)){
+      command.add(COMMENT_SQL, "--");
+    }
     return command.render();
   }
 
@@ -502,6 +524,33 @@ public class DDLPlanUtils {
       }
     }
     return alterTableStmt;
+  }
+
+  /**
+   * Parses the basic table statistics for the given table.
+   *
+   * @param pt
+   * @return Returns the alter table .... update statistics for partititon.
+   */
+  public String getAlterTableStmtPartitionStatsBasic(Partition pt) {
+    Map<String, String> parameters = pt.getParameters();
+    List<String> paramsToValues = new ArrayList<>();
+    for (String s : req) {
+      String p = parameters.get(s);
+      if (p == null) {
+        p = "0";
+      }
+      paramsToValues.add("'" + s + "'='" + p + "'");
+    }
+    ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC);
+    command.add(DATABASE_NAME, pt.getTable().getDbName());
+    command.add(TABLE_NAME, pt.getTable().getTableName());
+    command.add(PARTITION_NAME, getPartitionActualName(pt));
+    command.add(TBLPROPERTIES, Joiner.on(",").join(paramsToValues));
+    if(checkIfDefaultPartition(pt.getName())){
+      command.add(COMMENT_SQL, "--");
+    }
+    return command.render();
   }
 
   public List<String> getDDLPlanForPartitionWithStats(Table table,
@@ -554,30 +603,6 @@ public class DDLPlanUtils {
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_TABLE_BASIC);
     command.add(TABLE_NAME, tbl.getTableName());
     command.add(DATABASE_NAME, tbl.getDbName());
-    command.add(TBLPROPERTIES, Joiner.on(",").join(paramsToValues));
-    return command.render();
-  }
-
-  /**
-   * Parses the basic table statistics for the given table.
-   *
-   * @param pt
-   * @return Returns the alter table .... update statistics for partititon.
-   */
-  public String getAlterTableStmtPartitionStatsBasic(Partition pt) {
-    Map<String, String> parameters = pt.getParameters();
-    List<String> paramsToValues = new ArrayList<>();
-    for (String s : req) {
-      String p = parameters.get(s);
-      if (p == null) {
-        p = "0";
-      }
-      paramsToValues.add("'" + s + "'='" + p + "'");
-    }
-    ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC);
-    command.add(DATABASE_NAME, pt.getTable().getDbName());
-    command.add(TABLE_NAME, pt.getTable().getTableName());
-    command.add(PARTITION_NAME, getPartitionActualName(pt));
     command.add(TBLPROPERTIES, Joiner.on(",").join(paramsToValues));
     return command.render();
   }
