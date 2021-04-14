@@ -43,6 +43,10 @@ import org.apache.iceberg.parquet.ParquetUtil;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 
+/**
+ * @deprecated use org.apache.iceberg.data.DataUtil once Iceberg 0.12 is released.
+ */
+@Deprecated
 public class DataUtil {
 
   private DataUtil() {
@@ -51,24 +55,23 @@ public class DataUtil {
   private static final PathFilter HIDDEN_PATH_FILTER =
       p -> !p.getName().startsWith("_") && !p.getName().startsWith(".");
 
-
     /**
      * Returns the data files in a partition by listing the partition location.
      *
      * For Parquet and ORC partitions, this will read metrics from the file footer. For Avro partitions,
      * metrics are set to null.
      *
-     * @param partition partition key, e.g., "a=1/b=2"
+     * @param partitionKeys partition key, e.g., "a=1/b=2"
      * @param uri partition location URI
-     * @param format partition format, avro or parquet
+     * @param format partition format, avro, parquet or orc
      * @param spec a partition spec
      * @param conf a Hadoop conf
      * @param metricsConfig a metrics conf
      * @return a List of DataFile
      */
-  public static List<DataFile> listPartition(Map<String, String> partition, String uri, String format,
+  public static List<DataFile> listPartition(Map<String, String> partitionKeys, String uri, String format,
                                              PartitionSpec spec, Configuration conf, MetricsConfig metricsConfig) {
-    return listPartition(partition, uri, format, spec, conf, metricsConfig, null);
+    return listPartition(partitionKeys, uri, format, spec, conf, metricsConfig, null);
   }
 
     /**
@@ -81,9 +84,9 @@ public class DataUtil {
      * will not be populated.
      * @deprecated use org.apache.iceberg.data.DataUtil#listPartition() once Iceberg 0.12 is released.
      *
-     * @param partition partition key, e.g., "a=1/b=2"
+     * @param partitionKeys partition key, e.g., "a=1/b=2"
      * @param uri partition location URI
-     * @param format partition format, avro or parquet
+     * @param format partition format, avro, parquet or orc
      * @param spec a partition spec
      * @param conf a Hadoop conf
      * @param metricsConfig a metrics conf
@@ -91,15 +94,15 @@ public class DataUtil {
      * @return a List of DataFile
      */
   @Deprecated
-  public static List<DataFile> listPartition(Map<String, String> partition, String uri, String format,
+  public static List<DataFile> listPartition(Map<String, String> partitionKeys, String uri, String format,
                                              PartitionSpec spec, Configuration conf, MetricsConfig metricsConfig,
                                              NameMapping mapping) {
     if (format.contains("avro")) {
-      return listAvroPartition(partition, uri, spec, conf);
+      return listAvroPartition(partitionKeys, uri, spec, conf);
     } else if (format.contains("parquet")) {
-      return listParquetPartition(partition, uri, spec, conf, metricsConfig, mapping);
+      return listParquetPartition(partitionKeys, uri, spec, conf, metricsConfig, mapping);
     } else if (format.contains("orc")) {
-      return listOrcPartition(partition, uri, spec, conf, metricsConfig, mapping);
+      return listOrcPartition(partitionKeys, uri, spec, conf, metricsConfig, mapping);
     } else {
       throw new UnsupportedOperationException("Unknown partition format: " + format);
     }
@@ -113,6 +116,8 @@ public class DataUtil {
       return Arrays.stream(fs.listStatus(partition, HIDDEN_PATH_FILTER))
               .filter(FileStatus::isFile)
               .map(stat -> {
+                // Avro file statistics cannot be calculated without reading the file.
+                // Setting the rowCount to 0 is just a workaround so that the DataFiles.Builder.build() doesn't fail.
                 Metrics metrics = new Metrics(0L, null, null, null);
                 String partitionKey = spec.fields().stream()
                         .map(PartitionField::name)

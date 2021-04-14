@@ -209,7 +209,7 @@ public class HiveAlterHandler implements AlterHandler {
       boolean partKeysPartiallyEqual = checkPartialPartKeysEqual(oldt.getPartitionKeys(),
           newt.getPartitionKeys());
 
-      if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString()) &&
+      if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString()) && environmentContext.getProperties() != null &&
           !Boolean.valueOf(environmentContext.getProperties().getOrDefault(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE,
               "false"))) {
         if (!partKeysPartiallyEqual) {

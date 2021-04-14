@@ -75,7 +75,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private boolean deleteIcebergTable;
   private FileIO deleteIo;
   private TableMetadata deleteMetadata;
-  private boolean generateMetadata;
+  private boolean canMigrateHiveTable;
+  private PreAlterTableProperties preAlterTableProperties;
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -118,14 +119,15 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     Schema schema = schema(catalogProperties, hmsTable);
     PartitionSpec spec = spec(schema, catalogProperties, hmsTable);
-    catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
-    catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+
     // If there are partition keys specified remove them from the HMS table and add them to the column list
     if (hmsTable.isSetPartitionKeys()) {
       hmsTable.getSd().getCols().addAll(hmsTable.getPartitionKeys());
       hmsTable.setPartitionKeysIsSet(false);
     }
 
+    catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
+    catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
     updateHmsTableProperties(hmsTable);
   }
 
@@ -194,20 +196,22 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     try {
       icebergTable = Catalogs.loadTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
-      // If the iceberg table does not exist, and the hms table is external and not temporary, not acid,
-      // and not bucketed, we will create it in commitAlterTable
+      // If the iceberg table does not exist, and the hms table is external and not temporary and not acid
+      // we will create it in commitAlterTable
       StorageDescriptor sd = hmsTable.getSd();
-      generateMetadata = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
-          !(sd.getNumBuckets() > 0) && !AcidUtils.isTransactionalTable(hmsTable);
-      if (!generateMetadata) {
-        throw new MetaException("Converting non-external, temporary, bucketed or transactional hive table to iceberg " +
+      canMigrateHiveTable = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
+          !AcidUtils.isTransactionalTable(hmsTable);
+      if (!canMigrateHiveTable) {
+        throw new MetaException("Converting non-external, temporary or transactional hive table to iceberg " +
             "table is not allowed.");
       }
 
-      PreAlterTableProperties.tableLocation = sd.getLocation();
-      PreAlterTableProperties.format = sd.getInputFormat();
-      PreAlterTableProperties.schema = schema(catalogProperties, hmsTable);
-      PreAlterTableProperties.spec = spec(PreAlterTableProperties.schema, catalogProperties, hmsTable);
+      preAlterTableProperties = new PreAlterTableProperties();
+      preAlterTableProperties.tableLocation = sd.getLocation();
+      preAlterTableProperties.format = sd.getInputFormat();
+      preAlterTableProperties.schema = schema(catalogProperties, hmsTable);
+      preAlterTableProperties.spec = spec(preAlterTableProperties.schema, catalogProperties, hmsTable);
+      preAlterTableProperties.partitionKeys = hmsTable.getPartitionKeys();
 
       context.getProperties().put(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE, "true");
       // If there are partition keys specified remove them from the HMS table and add them to the column list
@@ -227,16 +231,17 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       PartitionSpecProxy partitionSpecProxy) throws MetaException {
     HiveMetaHook.super.commitAlterTable(hmsTable, partitionSpecProxy);
-    if (generateMetadata) {
+    if (canMigrateHiveTable) {
       catalogProperties = getCatalogProperties(hmsTable);
-      catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(PreAlterTableProperties.schema));
-      catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(PreAlterTableProperties.spec));
+      catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
+      catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(preAlterTableProperties.spec));
       if (Catalogs.hiveCatalog(conf, catalogProperties)) {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
       icebergTable = Catalogs.createTable(conf, catalogProperties);
-      HiveTableUtil.importFiles(PreAlterTableProperties.tableLocation, PreAlterTableProperties.format,
-          partitionSpecProxy, icebergTable, conf);
+
+      HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
+          partitionSpecProxy, preAlterTableProperties.partitionKeys, icebergTable, conf);
     }
   }
 
@@ -324,10 +329,11 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  private static class PreAlterTableProperties {
-    private static String tableLocation;
-    private static String format;
-    private static Schema schema;
-    private static PartitionSpec spec;
+  private class PreAlterTableProperties {
+    private String tableLocation;
+    private String format;
+    private Schema schema;
+    private PartitionSpec spec;
+    private List<FieldSchema> partitionKeys;
   }
 }

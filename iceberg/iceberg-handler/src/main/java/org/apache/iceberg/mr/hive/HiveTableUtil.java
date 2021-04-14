@@ -40,6 +40,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.iceberg.AppendFiles;
@@ -51,12 +53,8 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HiveTableUtil {
-
-  private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
 
   private static class DataFileFilter implements PathFilter {
     private final FileSystem fileSystem;
@@ -84,13 +82,14 @@ public class HiveTableUtil {
    * @param sourceLocation location of the HMS table
    * @param format inputformat class name of the HMS table
    * @param partitionSpecProxy  list of HMS table partitions wrapped in partitionSpecProxy
+   * @param partitionKeys list of partition keys
    * @param icebergTable destination iceberg table
    * @param conf a Hadoop configuration
    */
   public static void importFiles(String sourceLocation, String format, PartitionSpecProxy partitionSpecProxy,
-      Table icebergTable, Configuration conf) {
-    AppendFiles append = icebergTable.newAppend();
+      List<FieldSchema> partitionKeys, Table icebergTable, Configuration conf) throws MetaException {
     try {
+      AppendFiles append = icebergTable.newAppend();
       URI uri = new URI(sourceLocation);
       FileSystem fileSystem = FileSystem.get(uri, conf);
       PartitionSpec spec = icebergTable.spec();
@@ -108,7 +107,8 @@ public class HiveTableUtil {
           Partition partition = iterator.next();
           Callable<List<DataFile>> task = () -> {
             Path partitionPath = new Path(partition.getSd().getLocation());
-            Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partitionPath.toString());
+            String partitionName = Warehouse.makePartName(partitionKeys, partition.getValues());
+            Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partitionName);
             return getDataFiles(fileSystem, partitionPath, partitionSpec, format.toLowerCase(), spec, metricsConfig,
                 nameMapping, conf);
           };
@@ -116,18 +116,17 @@ public class HiveTableUtil {
         }
         int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_SERVER2_ICEBERG_METADATA_GENERATOR_THREADS);
         ExecutorService executor = Executors.newFixedThreadPool(numThreads,
-            new ThreadFactoryBuilder().setNameFormat("Iceberg metadata generator").setDaemon(true).build());
+            new ThreadFactoryBuilder().setNameFormat("iceberg-metadata-generator-%d").setDaemon(true).build());
         List<Future<List<DataFile>>> futures = executor.invokeAll(tasks);
         for (Future<List<DataFile>> future : futures) {
           List<DataFile> dataFiles = future.get();
           dataFiles.forEach(append::appendFile);
         }
+        executor.shutdown();
       }
-
-    } catch (URISyntaxException | IOException | InterruptedException | ExecutionException e) {
-      LOG.error("Cannot import hive data into iceberg table", e);
-    } finally {
       append.commit();
+    } catch (URISyntaxException | IOException | InterruptedException | ExecutionException e) {
+      throw new MetaException("Cannot import hive data into iceberg table.\n" + e.getMessage());
     }
   }
 

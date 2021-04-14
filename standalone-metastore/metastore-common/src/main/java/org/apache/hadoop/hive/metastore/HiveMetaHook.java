@@ -128,7 +128,7 @@ public interface HiveMetaHook {
    * @param table new table definition
    * @param partitionSpecProxy list of partitions wrapped in {@link PartitionSpecProxy}
    */
-  default void commitAlterTable(Table table, PartitionSpecProxy partitionSpecProxy) {
+  default void commitAlterTable(Table table, PartitionSpecProxy partitionSpecProxy) throws MetaException {
     // Do nothing
   }
 
