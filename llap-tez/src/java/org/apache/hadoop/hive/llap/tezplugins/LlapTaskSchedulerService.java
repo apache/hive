@@ -1949,6 +1949,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
            // 2. is currently assigned 3. no preemption pending on that Host
           if (toPreempt.getState() == TaskInfo.State.ASSIGNED &&
               (pendingPreemptionsPerHost.get(host) == null || pendingPreemptionsPerHost.get(host).intValue() == 0)) {
+            LOG.info("preempting {} running at Host={}", toPreempt, host);
             dagStats.registerTaskPreempted(toPreempt.getAssignedNode().getHost());
             registerPendingPreemption(toPreempt.getAssignedNode().getHost());
             toPreempt.setPreemptedInfo(clock.getTime());
