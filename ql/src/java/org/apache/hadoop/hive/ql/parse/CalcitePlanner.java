@@ -84,6 +84,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
@@ -122,10 +123,12 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.dialect.HiveSqlDialect;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.Frameworks;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -2451,6 +2454,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       // A rewriting was produced, we will check whether it was part of an incremental rebuild
       // to try to replace INSERT OVERWRITE by INSERT or MERGE
+      int countIndex = -1;
       if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
           // in case of rebuild this list should contain exactly one element
@@ -2467,6 +2471,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (materialization.isSourceTablesUpdateDeleteModified()) {
               program = new HepProgramBuilder();
               if (visitor.isContainsAggregate()) {
+                countIndex = visitor.getCountIndex();
+                if (countIndex < 0) {
+                  return calcitePreMVRewritingPlan;
+                }
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                     HiveAggregateInsertDeleteIncrementalRewritingRule.INSTANCE);
                 mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD;
@@ -2524,6 +2532,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+      } else if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD) {
+        RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(this.cluster, null);
+        RexBuilder rexBuilder = relBuilder.getRexBuilder();
+        Project project = (Project) basePlan;
+        RexNode countExpr = project.getChildExps().get(countIndex);
+
+        RexNode deleteRow = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countExpr, relBuilder.literal(0));
+
+        RexNode filterCond = rexBuilder.makeCall(
+                SqlStdOperatorTable.OR, deleteRow,
+                rexBuilder.makeCall(SqlStdOperatorTable.OR, rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, deleteRow),
+                        rexBuilder.makeCall(SqlStdOperatorTable.NOT, deleteRow)));
+
+        basePlan = relBuilder.push(basePlan.getInput(0))
+                .filter(filterCond)
+                .project(((Project) basePlan).getProjects())
+                .build();
       } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
         try {
           basePlan = new HiveRowIsDeletedPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))

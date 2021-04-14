@@ -265,15 +265,9 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     RexNode filterCond = rexBuilder.makeCall(
             SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, countStarCase, relBuilder.literal(0));
 
-    RexNode countSum = ((RexCall) countStarCase).getOperands().get(((RexCall) countStarCase).getOperands().size() - 1);
-    RexNode deleteRow = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countSum, relBuilder.literal(0));
-    RexNode filterCond2 = rexBuilder.makeCall(
-            SqlStdOperatorTable.OR, deleteRow, rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, deleteRow));
-
     RelNode newNode = relBuilder
         .push(join)
         .filter(filterCond)
-//        .filter(filterCond2)
         .project(projExprs)
         .build();
     call.transformTo(newNode);
