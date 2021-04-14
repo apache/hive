@@ -896,6 +896,13 @@ class CompactionTxnHandler extends TxnHandler {
    * history such that a configurable number of each type of state is present.  Any other entries
    * can be purged.  This scheme has advantage of always retaining the last failure/success even if
    * it's not recent.
+   *
+   * Also, "not initiated" and "failed" compactions are purged if they are older than
+   * metastore.compactor.history.retention.timeout and there is a newer "succeeded"
+   * compaction on the table and either (1) the "succeeded" compaction is major or (2) it is minor
+   * and the "not initiated" or "failed" compaction is also minor –– so a minor succeeded compaction
+   * will not cause the deletion of a major "not initiated" or "failed" compaction.
+   *
    * @throws MetaException
    */
   @Override
@@ -909,6 +916,9 @@ class CompactionTxnHandler extends TxnHandler {
     RetentionCounters rc = null;
     long timeoutThreshold = System.currentTimeMillis() -
             MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS);
+    int didNotInitiateRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE);
+    int failedRetention = getFailedCompactionRetention();
+    int succeededRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED);
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -922,12 +932,7 @@ class CompactionTxnHandler extends TxnHandler {
         String lastCompactedEntity = null;
         /* In each group, walk from most recent and count occurrences of each state type.  Once you
         * have counted enough (for each state) to satisfy retention policy, delete all other
-        * instances of this status.
-        * Also, "not initiated" and "failed" compactions are cleaned up if they are older than
-        * metastore.compactor.history.retention.timeout and there is a newer "succeeded"
-        * compaction on the table and either (1) the "succeeded" compaction is major or (2) it is minor
-        * and the "not initiated" or "failed" compaction is also minor –– so a minor succeeded compaction
-        * will not cause the deletion of a major "not initiated" or "failed" compaction.
+        * instances of this status, plus timed-out entries (see this method's JavaDoc).
         */
         while(rs.next()) {
           CompactionInfo ci = new CompactionInfo(
@@ -937,10 +942,7 @@ class CompactionTxnHandler extends TxnHandler {
           ci.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
-            rc = new RetentionCounters(
-                MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
-                getFailedCompactionRetention(),
-                MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
+            rc = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention);
           }
           checkForDeletion(deleteSet, ci, rc, timeoutThreshold);
         }
