@@ -503,7 +503,16 @@ public abstract class BaseSemanticAnalyzer {
     if (node.getChildCount() == 1) {
       return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
     }
-    return unescapeIdentifier(node.getChild(node.getChildCount() - 1).getText().toLowerCase());
+    for (int i = node.getChildCount() - 1; i >= 0; --i) {
+      Tree child = node.getChild(i);
+      if (child.getType() == HiveParser.TOK_TABNAME) {
+        return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
+      } else if (child.getType() == HiveParser.Identifier) {
+        return unescapeIdentifier(child.getText().toLowerCase());
+      }
+    }
+
+    throw new SemanticException("No table alias or table name found.");
   }
 
 
