@@ -1994,8 +1994,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       sb.append("[p=").append(entry.getKey().toString()).append(",c=").append(count).append("]");
       totalCount += count;
     }
-    int runningTasks = guaranteedTasks.values().stream().mapToInt( t -> t.size()).sum() +
-        speculativeTasks.values().stream().mapToInt( t -> t.size()).sum();
+    int runningTasks = guaranteedTasks.values().stream().mapToInt(t -> t.size()).sum() +
+        speculativeTasks.values().stream().mapToInt(t -> t.size()).sum();
     sb.append(". runningTasks=").append(runningTasks);
     sb.append(". totalPendingTasks=").append(totalCount);
     sb.append(". delayedTaskQueueSize=").append(delayedTaskQueue.size());
