@@ -1429,8 +1429,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     }
     String[] requestedHosts = request.requestedHosts;
-    String requestedHostsDebugStr = Arrays.toString(requestedHosts);
+    // The requestedHostsDebugStr is merely used by debug-logging calls,
+    //   and it is properly assigned in the following isDebugEnabled block.
+    String requestedHostsDebugStr = null;
     if (LOG.isDebugEnabled()) {
+      requestedHostsDebugStr = Arrays.toString(requestedHosts);
       LOG.debug("selectingHost for task={} on hosts={}", request.task,
           requestedHostsDebugStr);
     }
