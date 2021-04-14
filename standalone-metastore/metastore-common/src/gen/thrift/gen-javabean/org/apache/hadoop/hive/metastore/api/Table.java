@@ -36,7 +36,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField REQUIRED_READ_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("requiredReadCapabilities", org.apache.thrift.protocol.TType.LIST, (short)23);
   private static final org.apache.thrift.protocol.TField REQUIRED_WRITE_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("requiredWriteCapabilities", org.apache.thrift.protocol.TType.LIST, (short)24);
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)25);
-  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)26);
+  private static final org.apache.thrift.protocol.TField VISIBILITY_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("visibilityId", org.apache.thrift.protocol.TType.I64, (short)26);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableTupleSchemeFactory();
@@ -66,7 +66,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> requiredReadCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> requiredWriteCapabilities; // optional
   private long id; // optional
-  private long txnId; // optional
+  private long visibilityId; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -99,7 +99,7 @@ package org.apache.hadoop.hive.metastore.api;
     REQUIRED_READ_CAPABILITIES((short)23, "requiredReadCapabilities"),
     REQUIRED_WRITE_CAPABILITIES((short)24, "requiredWriteCapabilities"),
     ID((short)25, "id"),
-    TXN_ID((short)26, "txnId");
+    VISIBILITY_ID((short)26, "visibilityId");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -165,8 +165,8 @@ package org.apache.hadoop.hive.metastore.api;
           return REQUIRED_WRITE_CAPABILITIES;
         case 25: // ID
           return ID;
-        case 26: // TXN_ID
-          return TXN_ID;
+        case 26: // VISIBILITY_ID
+          return VISIBILITY_ID;
         default:
           return null;
       }
@@ -217,9 +217,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ISSTATSCOMPLIANT_ISSET_ID = 6;
   private static final int __ACCESSTYPE_ISSET_ID = 7;
   private static final int __ID_ISSET_ID = 8;
-  private static final int __TXNID_ISSET_ID = 9;
+  private static final int __VISIBILITYID_ISSET_ID = 9;
   private short __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.CAT_NAME,_Fields.OWNER_TYPE,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS,_Fields.ACCESS_TYPE,_Fields.REQUIRED_READ_CAPABILITIES,_Fields.REQUIRED_WRITE_CAPABILITIES,_Fields.ID,_Fields.TXN_ID};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.CAT_NAME,_Fields.OWNER_TYPE,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS,_Fields.ACCESS_TYPE,_Fields.REQUIRED_READ_CAPABILITIES,_Fields.REQUIRED_WRITE_CAPABILITIES,_Fields.ID,_Fields.VISIBILITY_ID};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -278,7 +278,7 @@ package org.apache.hadoop.hive.metastore.api;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.VISIBILITY_ID, new org.apache.thrift.meta_data.FieldMetaData("visibilityId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
@@ -394,7 +394,7 @@ package org.apache.hadoop.hive.metastore.api;
       this.requiredWriteCapabilities = __this__requiredWriteCapabilities;
     }
     this.id = other.id;
-    this.txnId = other.txnId;
+    this.visibilityId = other.visibilityId;
   }
 
   public Table deepCopy() {
@@ -438,8 +438,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.requiredWriteCapabilities = null;
     setIdIsSet(false);
     this.id = 0;
-    setTxnIdIsSet(false);
-    this.txnId = 0;
+    setVisibilityIdIsSet(false);
+    this.visibilityId = 0;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -1091,26 +1091,26 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
   }
 
-  public long getTxnId() {
-    return this.txnId;
+  public long getVisibilityId() {
+    return this.visibilityId;
   }
 
-  public void setTxnId(long txnId) {
-    this.txnId = txnId;
-    setTxnIdIsSet(true);
+  public void setVisibilityId(long visibilityId) {
+    this.visibilityId = visibilityId;
+    setVisibilityIdIsSet(true);
   }
 
-  public void unsetTxnId() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
+  public void unsetVisibilityId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __VISIBILITYID_ISSET_ID);
   }
 
-  /** Returns true if field txnId is set (has been assigned a value) and false otherwise */
-  public boolean isSetTxnId() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
+  /** Returns true if field visibilityId is set (has been assigned a value) and false otherwise */
+  public boolean isSetVisibilityId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __VISIBILITYID_ISSET_ID);
   }
 
-  public void setTxnIdIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
+  public void setVisibilityIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __VISIBILITYID_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
@@ -1315,11 +1315,11 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case TXN_ID:
+    case VISIBILITY_ID:
       if (value == null) {
-        unsetTxnId();
+        unsetVisibilityId();
       } else {
-        setTxnId((java.lang.Long)value);
+        setVisibilityId((java.lang.Long)value);
       }
       break;
 
@@ -1404,8 +1404,8 @@ package org.apache.hadoop.hive.metastore.api;
     case ID:
       return getId();
 
-    case TXN_ID:
-      return getTxnId();
+    case VISIBILITY_ID:
+      return getVisibilityId();
 
     }
     throw new java.lang.IllegalStateException();
@@ -1468,8 +1468,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetRequiredWriteCapabilities();
     case ID:
       return isSetId();
-    case TXN_ID:
-      return isSetTxnId();
+    case VISIBILITY_ID:
+      return isSetVisibilityId();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1714,12 +1714,12 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_txnId = true && this.isSetTxnId();
-    boolean that_present_txnId = true && that.isSetTxnId();
-    if (this_present_txnId || that_present_txnId) {
-      if (!(this_present_txnId && that_present_txnId))
+    boolean this_present_visibilityId = true && this.isSetVisibilityId();
+    boolean that_present_visibilityId = true && that.isSetVisibilityId();
+    if (this_present_visibilityId || that_present_visibilityId) {
+      if (!(this_present_visibilityId && that_present_visibilityId))
         return false;
-      if (this.txnId != that.txnId)
+      if (this.visibilityId != that.visibilityId)
         return false;
     }
 
@@ -1824,9 +1824,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (isSetId())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(id);
 
-    hashCode = hashCode * 8191 + ((isSetTxnId()) ? 131071 : 524287);
-    if (isSetTxnId())
-      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(txnId);
+    hashCode = hashCode * 8191 + ((isSetVisibilityId()) ? 131071 : 524287);
+    if (isSetVisibilityId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(visibilityId);
 
     return hashCode;
   }
@@ -2089,12 +2089,12 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.valueOf(isSetTxnId()).compareTo(other.isSetTxnId());
+    lastComparison = java.lang.Boolean.valueOf(isSetVisibilityId()).compareTo(other.isSetVisibilityId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTxnId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnId, other.txnId);
+    if (isSetVisibilityId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.visibilityId, other.visibilityId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2309,10 +2309,10 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.id);
       first = false;
     }
-    if (isSetTxnId()) {
+    if (isSetVisibilityId()) {
       if (!first) sb.append(", ");
-      sb.append("txnId:");
-      sb.append(this.txnId);
+      sb.append("visibilityId:");
+      sb.append(this.visibilityId);
       first = false;
     }
     sb.append(")");
@@ -2619,10 +2619,10 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 26: // TXN_ID
+          case 26: // VISIBILITY_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.txnId = iprot.readI64();
-              struct.setTxnIdIsSet(true);
+              struct.visibilityId = iprot.readI64();
+              struct.setVisibilityIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2802,9 +2802,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.id);
         oprot.writeFieldEnd();
       }
-      if (struct.isSetTxnId()) {
-        oprot.writeFieldBegin(TXN_ID_FIELD_DESC);
-        oprot.writeI64(struct.txnId);
+      if (struct.isSetVisibilityId()) {
+        oprot.writeFieldBegin(VISIBILITY_ID_FIELD_DESC);
+        oprot.writeI64(struct.visibilityId);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -2900,7 +2900,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetId()) {
         optionals.set(24);
       }
-      if (struct.isSetTxnId()) {
+      if (struct.isSetVisibilityId()) {
         optionals.set(25);
       }
       oprot.writeBitSet(optionals, 26);
@@ -3004,8 +3004,8 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetId()) {
         oprot.writeI64(struct.id);
       }
-      if (struct.isSetTxnId()) {
-        oprot.writeI64(struct.txnId);
+      if (struct.isSetVisibilityId()) {
+        oprot.writeI64(struct.visibilityId);
       }
     }
 
@@ -3157,8 +3157,8 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setIdIsSet(true);
       }
       if (incoming.get(25)) {
-        struct.txnId = iprot.readI64();
-        struct.setTxnIdIsSet(true);
+        struct.visibilityId = iprot.readI64();
+        struct.setVisibilityIdIsSet(true);
       }
     }
   }

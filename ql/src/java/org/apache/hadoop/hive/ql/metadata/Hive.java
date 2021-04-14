@@ -1234,7 +1234,7 @@ public class Hive {
           && AcidUtils.isTransactionalTable(tbl);
 
         if (nonBlockingDropTable) {
-          tTbl.setTxnId(ss.getTxnMgr().getCurrentTxnId());
+          tTbl.setVisibilityId(ss.getTxnMgr().getCurrentTxnId());
         }
       }
       // Set table snapshot to api.Table to make it persistent. A transactional table being

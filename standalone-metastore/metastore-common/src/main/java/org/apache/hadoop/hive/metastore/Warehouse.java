@@ -385,7 +385,8 @@ public class Warehouse {
   }
 
   public Path getDefaultTablePath(Database db, Table table) throws MetaException {
-    return getDefaultTablePath(db, table.getTableName(), MetaStoreUtils.isExternalTable(table));
+    String vTableName = table.getTableName() + (table.isSetVisibilityId() ? "_v" + table.getVisibilityId() : "");
+    return getDefaultTablePath(db, vTableName, MetaStoreUtils.isExternalTable(table));
   }
 
   @Deprecated // Use TableName
