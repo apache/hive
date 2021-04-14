@@ -175,7 +175,6 @@
                 <classifier>tests</classifier>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.hive</groupId>
                 <artifactId>hive-iceberg-catalog</artifactId>
