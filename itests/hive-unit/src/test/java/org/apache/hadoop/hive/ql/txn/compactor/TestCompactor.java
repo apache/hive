@@ -2315,7 +2315,7 @@ public class TestCompactor {
   /**
    * convenience method to execute a select stmt and dump results to log file
    */
-  public static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
+  static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
     throws Exception {
     executeStatementOnDriver(selectStmt, driver);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
