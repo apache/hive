@@ -101,6 +101,15 @@ public class ImpalaQueryContext {
     return analyzer;
   }
 
+  public ImpalaQueryContext(ImpalaQueryContext queryContext) throws HiveException {
+    this(queryContext.conf,
+        queryContext.queryCtx.getSession().getDatabase(),
+        queryContext.queryCtx.getSession().getConnected_user(),
+        queryContext.queryCtx.getClient_request().getQuery_options(),
+        queryContext.txnMgr,
+        queryContext.calcitePlannerCtx);
+  }
+
   public HiveConf getConf() {
     return conf;
   }

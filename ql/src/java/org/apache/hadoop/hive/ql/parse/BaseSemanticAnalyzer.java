@@ -330,6 +330,14 @@ public abstract class BaseSemanticAnalyzer {
 
   protected void reset(boolean clearPartsCache) {
     rootTasks = new ArrayList<Task<? extends Serializable>>();
+    //TODO: clean up Impala reference, make it more generic.
+    try {
+      impalaHelper = isImpalaPlan(conf) && impalaHelper != null
+          ? EngineCompileHelper.getInstance(conf).resetQueryHelper(impalaHelper)
+          : null;
+    } catch (SemanticException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static String stripIdentifierQuotes(String val) {

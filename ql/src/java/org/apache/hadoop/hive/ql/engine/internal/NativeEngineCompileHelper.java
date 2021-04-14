@@ -51,6 +51,11 @@ public class NativeEngineCompileHelper implements EngineCompileHelper {
     return null;
   }
 
+  public EngineQueryHelper resetQueryHelper(
+      EngineQueryHelper queryHelper) throws SemanticException {
+    return null;
+  }
+
   public RelDataTypeSystem getRelDataTypeSystem() {
     return new HiveTypeSystemImpl();
   }

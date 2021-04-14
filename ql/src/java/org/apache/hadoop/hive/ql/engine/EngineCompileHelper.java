@@ -45,6 +45,9 @@ public interface EngineCompileHelper {
                                              HiveTxnManager txnMgr, Context ctx,
                                              QueryState queryState) throws SemanticException;
 
+  public EngineQueryHelper resetQueryHelper(
+      EngineQueryHelper queryHelper) throws SemanticException;
+
   public RelDataTypeSystem getRelDataTypeSystem();
 
   public TaskCompiler getCompiler(HiveConf conf);

@@ -52,6 +52,11 @@ public class ImpalaCompileHelper implements EngineCompileHelper {
     return new ImpalaQueryHelperImpl(conf, dbname, username, txnMgr, ctx, queryState);
   }
 
+  public EngineQueryHelper resetQueryHelper(
+      EngineQueryHelper queryHelper) throws SemanticException {
+    return new ImpalaQueryHelperImpl((ImpalaQueryHelperImpl) queryHelper);
+  }
+
   public RelDataTypeSystem getRelDataTypeSystem() {
     return new ImpalaTypeSystemImpl();
   }

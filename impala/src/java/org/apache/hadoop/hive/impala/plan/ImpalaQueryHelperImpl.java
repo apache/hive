@@ -93,6 +93,17 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
     }
   }
 
+  public ImpalaQueryHelperImpl(ImpalaQueryHelperImpl queryHelper) throws SemanticException {
+    Preconditions.checkNotNull(queryHelper.timeline);
+    this.timeline = queryHelper.timeline;
+    this.queryState = queryHelper.queryState;
+    try {
+      this.queryContext = new ImpalaQueryContext(queryHelper.queryContext);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
+  }
+
   public ImpalaQueryContext getQueryContext() {
     return queryContext;
   }
