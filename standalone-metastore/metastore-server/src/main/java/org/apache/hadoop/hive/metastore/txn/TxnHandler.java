@@ -286,8 +286,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final String SELECT_METRICS_INFO_QUERY =
       "SELECT * FROM (SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\") \"TTWID\" CROSS JOIN (" +
       "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\") \"CTC\" CROSS JOIN (" +
-      "SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\" " +
-      "CROSS JOIN (SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.ABORTED + ") \"A\" ";
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
+        TxnStatus.OPEN + "') \"T\" CROSS JOIN (" +
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
+        TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
+      "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\"";
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -3737,7 +3740,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       MetricsInfo metrics = new MetricsInfo();
-      String s = String.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct), getEpochFn(dbProduct));
+      String s = MessageFormat.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
@@ -3752,6 +3755,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           metrics.setAbortedTxnsCount(rs.getInt(6));
           metrics.setOldestAbortedTxnId(rs.getInt(7));
           metrics.setOldestAbortedTxnAge(rs.getInt(8));
+          metrics.setLocksCount(rs.getInt(9));
+          metrics.setOldestLockAge(rs.getInt(10));
         }
         return metrics;
       } catch (SQLException e) {
