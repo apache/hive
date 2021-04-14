@@ -3249,13 +3249,13 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
-  public void testNonBlockingDropAndReCreateTable() throws Exception {
+  public void testDropAndReCreateTable() throws Exception {
     dropTable(new String[] {"tab_acid"});
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_NON_BLOCKING_DROP_TABLE, true);
     driver2.getConf().setBoolVar( HiveConf.ConfVars.HIVE_TXN_NON_BLOCKING_DROP_TABLE, true);
 
-    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+    driver.run("create table tab_acid (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
 
@@ -3287,7 +3287,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     }
 
     //re-create table with the same name
-    driver.compileAndRespond("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+    driver.compileAndRespond("create table tab_acid (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     long txnId = txnMgr.getCurrentTxnId();
     driver.run();
@@ -3296,14 +3296,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("select * from tab_acid ");
     res = new ArrayList();
     driver.getFetchTask().fetch(res);
-    Assert.assertEquals("No records found", 2, res.size());
+    Assert.assertEquals("Missing records", 2, res.size());
 
     String tblLocation = TestTxnDbUtil.queryToString(conf,
       "select \"LOCATION\" from \"SDS\" where \"SD_ID\" = (select \"SD_ID\" from \"TBLS\" where \"TBL_NAME\"='tab_acid')");
 
     Assert.assertEquals(tblLocation.substring(
       tblLocation.lastIndexOf("/") + 1).trim(), "tab_acid_v" + txnId);
-t
+
     stat = fs.listStatus(new Path(Paths.get("target/warehouse").toUri()),
       p -> p.getName().startsWith("tab_acid_v"));
 
