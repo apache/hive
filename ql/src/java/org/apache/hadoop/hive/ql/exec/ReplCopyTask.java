@@ -21,10 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -67,8 +64,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Path toPath = null;
 
     try {
-      // delay exec part
-      work.setValuesForDelayedExec();
+      work.setValuesBeforeExec();
 
       // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
       //       Not clear of ReplCopyWork should inherit from CopyWork.

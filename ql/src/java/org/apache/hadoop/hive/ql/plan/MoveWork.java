@@ -31,8 +31,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.DelayExecUtil;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.LoadTableStateWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -52,7 +51,7 @@ public class MoveWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
-  private DelayExecUtil delayExecUtil;
+  private LoadTableStateWrapper loadTableStateWrapper;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -112,9 +111,9 @@ public class MoveWork implements Serializable {
   public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, String dumpRoot, ReplicationMetricCollector metricCollector,
-      boolean isReplication, DelayExecUtil delayExecUtil) {
+      boolean isReplication, LoadTableStateWrapper loadTableStateWrapper) {
     this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, dumpRoot, metricCollector, isReplication);
-    this.delayExecUtil = delayExecUtil;
+    this.loadTableStateWrapper = loadTableStateWrapper;
   }
 
   public MoveWork(final MoveWork o) {
@@ -215,26 +214,26 @@ public class MoveWork implements Serializable {
     return this.isInReplicationScope;
   }
 
-  public void setValuesForDelayedExec() throws HiveException {
-    if (delayExecUtil == null) {
+  public void setValuesBeforeExec() throws HiveException {
+    if (loadTableStateWrapper == null) {
       return;
     }
 
-    Table table = delayExecUtil.getTableIfExists();
-    delayExecUtil.calculateValues(table);
+    Table table = loadTableStateWrapper.getTableIfExists();
+    loadTableStateWrapper.calculateValues(table);
 
-    if (delayExecUtil.isInReplScope() && AcidUtils.isTransactionalTable(table)) {
+    if (loadTableStateWrapper.isInReplScope() && AcidUtils.isTransactionalTable(table)) {
       LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-          Collections.singletonList(delayExecUtil.getDestPath()),
-          Collections.singletonList(delayExecUtil.getTgtPath()),
+          Collections.singletonList(loadTableStateWrapper.getDestPath()),
+          Collections.singletonList(loadTableStateWrapper.getTgtPath()),
           true, null, null);
       setMultiFilesDesc(loadFilesWork);
-      setNeedCleanTarget(delayExecUtil.isReplace());
+      setNeedCleanTarget(loadTableStateWrapper.isReplace());
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
-          delayExecUtil.getLoadPath(), Utilities.getTableDesc(table), new TreeMap<>(),
-          delayExecUtil.getLft(), delayExecUtil.getWriteId());
-      loadTableWork.setStmtId(delayExecUtil.getStmtId());
+          loadTableStateWrapper.getLoadPath(), Utilities.getTableDesc(table), new TreeMap<>(),
+          loadTableStateWrapper.getLft(), loadTableStateWrapper.getWriteId());
+      loadTableWork.setStmtId(loadTableStateWrapper.getStmtId());
       setLoadTableWork(loadTableWork);
     }
   }

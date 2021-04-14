@@ -19,13 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -146,15 +140,15 @@ public class ReplCopyWork extends CopyWork {
   }
 
   @Override
-  public void setValuesForDelayedExec() throws HiveException {
-    if (getDelayExecUtil() == null) {
+  public void setValuesBeforeExec() throws HiveException {
+    if (loadTableStateWrapper == null) {
       return;
     }
-    super.setValuesForDelayedExec();
-    if (getDelayExecUtil().isReplace()) {
+    super.setValuesBeforeExec();
+    if (loadTableStateWrapper.isReplace()) {
       setDeleteDestIfExist(true);
-      setAutoPurge(getDelayExecUtil().isSkipTrash());
-      setNeedRecycle(getDelayExecUtil().isNeedRecycle());
+      setAutoPurge(loadTableStateWrapper.isSkipTrash());
+      setNeedRecycle(loadTableStateWrapper.isNeedRecycle());
     }
   }
 }

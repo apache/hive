@@ -2478,7 +2478,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testTransactionalTableReplWithSameNameAsDroppedNonTransactionalTable() throws Throwable {
+  public void testTxnTblReplWithSameNameAsDroppedNonTxnTbl() throws Throwable {
     List<String> withClauseOptions = new LinkedList<>();
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname
         + "'='" + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -2516,7 +2516,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testTransactionalTableReplWithSameNameAsDroppedExternalTable() throws Throwable {
+  public void testTxnTblReplWithSameNameAsDroppedExtTbl() throws Throwable {
     List<String> withClauseOptions = new LinkedList<>();
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname
         + "'='" + UserGroupInformation.getCurrentUser().getUserName() + "'");

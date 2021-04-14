@@ -23,8 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.DelayExecUtil;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.LoadTableStateWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -42,7 +41,7 @@ public class CopyWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
-  private DelayExecUtil delayExecUtil;
+  protected LoadTableStateWrapper loadTableStateWrapper;
 
   public CopyWork() {
   }
@@ -142,21 +141,17 @@ public class CopyWork implements Serializable {
     this.overwrite = overwrite;
   }
 
-  public DelayExecUtil getDelayExecUtil() {
-    return delayExecUtil;
+  public void setLoadTableStateWrapper(LoadTableStateWrapper loadTableStateWrapper) {
+    this.loadTableStateWrapper = loadTableStateWrapper;
   }
 
-  public void setDelayExecUtil(DelayExecUtil delayExecUtil) {
-    this.delayExecUtil = delayExecUtil;
-  }
-
-  public void setValuesForDelayedExec() throws HiveException {
-    if (delayExecUtil == null) {
+  public void setValuesBeforeExec() throws HiveException {
+    if (loadTableStateWrapper == null) {
       return;
     }
 
-    Table table = delayExecUtil.getTableIfExists();
-    delayExecUtil.calculateValues(table);
-    this.toPath = new Path[] { delayExecUtil.getDestPath() };
+    Table table = loadTableStateWrapper.getTableIfExists();
+    loadTableStateWrapper.calculateValues(table);
+    this.toPath = new Path[] { loadTableStateWrapper.getDestPath() };
   }
 }

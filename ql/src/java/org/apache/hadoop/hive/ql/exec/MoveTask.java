@@ -74,11 +74,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Optional;
 
 /**
@@ -307,7 +305,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      work.setValuesForDelayedExec();
+      work.setValuesBeforeExec();
     } catch (HiveException he) {
       return processHiveException(he);
     }
