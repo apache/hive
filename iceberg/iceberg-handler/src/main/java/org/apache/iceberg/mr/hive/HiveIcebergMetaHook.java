@@ -367,7 +367,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
     boolean failure = false;
     try {
       OutputCommitter committer = new HiveIcebergOutputCommitter();
@@ -389,7 +389,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
     OutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
       LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
@@ -410,11 +410,12 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     conf.unset(InputFormatConfig.OUTPUT_TABLES);
   }
 
-  private JobContext getJobContextForCommitOrAbort(String tableName) {
+  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(conf);
     JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
     int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
     jobConf.setNumReduceTasks(numTasks);
+    jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
     // we should only commit this current table because
     // for multi-table inserts, this hook method will be called sequentially for each target table
