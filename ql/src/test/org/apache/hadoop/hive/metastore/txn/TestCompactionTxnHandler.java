@@ -285,6 +285,8 @@ public class TestCompactionTxnHandler {
     assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
     lci = response.getCompactions().get(0);
     assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
+    assertEquals(dbName, lci.getDbname());
+    assertEquals(tableName, lci.getTablename());
     assertNull("Expecting null partitionname for a non-partitioned table", lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
   }
