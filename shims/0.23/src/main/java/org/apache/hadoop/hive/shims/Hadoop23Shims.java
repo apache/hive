@@ -30,6 +30,7 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1127,8 +1128,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         params.add(distCpVal);
       }
     }
-    if (needToAddPreserveOption) {
-      params.add("-pbx");
+    String fsScheme = dst.toUri().getScheme();
+    if (needToAddPreserveOption ) {
+      if (fsScheme != null && isBlobStorageScheme(conf, fsScheme)) {
+        params.add("-pb");
+      } else {
+        params.add("-pbx");
+      }
     }
     if (!params.contains("-update")) {
       params.add("-update");
@@ -1142,6 +1148,17 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     params.add(dst.toString());
     return params;
   }
+
+  private static boolean isBlobStorageScheme(Configuration conf, String scheme) {
+    final String uriScheme = scheme == null ? FileSystem.getDefaultUri(conf).getScheme() : scheme;
+    String blobSchemes = conf.get("hive.blobstore.supported.schemes");
+    if (blobSchemes != null && !blobSchemes.isEmpty()) {
+      return Arrays.stream(blobSchemes.split(",")).anyMatch(each -> each.equalsIgnoreCase(uriScheme));
+    } else {
+      return false;
+    }
+  }
+
 
   @Override
   public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf,
@@ -1164,11 +1181,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
             .withSyncFolder(true)
             .withDeleteMissing(true)
             .preserve(FileAttribute.BLOCKSIZE);
-
-    String fsScheme = dst.getFileSystem(conf).getScheme();
-    if (!fsScheme.matches("abfs|s3a")) {
-      options.preserve(FileAttribute.XATTR);
-    }
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);

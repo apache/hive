@@ -91,7 +91,20 @@ public class TestHadoop23Shims {
 
     assertEquals(copySrc.toString(), paramsWithCustomParamInjection.get(6));
     assertEquals(copyDst.toString(), paramsWithCustomParamInjection.get(7));
+  }
 
+  @Test
+  public void testConstructDistCpParamsWithBlobstore() {
+    Configuration conf = new Configuration();
+    conf.set("hive.blobstore.supported.schemes","s3,s3a,s3n,abfs");
+    Hadoop23Shims shims = new Hadoop23Shims();
+    Path copySrc = new Path("copySrc");
+    Path newCopyDst = new Path("s3a://bucket/path");
+    List<String> params = shims.constructDistCpParams(Collections.singletonList(copySrc), newCopyDst, conf);
+
+    assertEquals(5, params.size());
+    // for blob storage does not support XATTR so we omit the -x from the configs
+    assertTrue("Distcp -pb set for blobstore", params.contains("-pb"));
   }
 
   @Test(expected = FileNotFoundException.class)
