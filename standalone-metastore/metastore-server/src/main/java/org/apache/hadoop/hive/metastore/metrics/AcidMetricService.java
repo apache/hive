@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.metrics;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -32,11 +33,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.metastore.api.CompactionType.MAJOR;
+import static org.apache.hadoop.hive.metastore.api.CompactionType.MINOR;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.*;
 
 /**
@@ -108,18 +112,55 @@ public class AcidMetricService  implements MetastoreTaskThread {
   @VisibleForTesting
   public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse) {
     Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
+    Map<String, Long> lastUnsuccessfulMajor = new HashMap<>();
+    Map<String, Long> lastUnsuccessfulMinor = new HashMap<>();
     long oldestEnqueueTime = Long.MAX_VALUE;
 
-    // Get the last compaction for each db/table/partition
-    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
+    // sort compactions by ID. This is not done in TxnHandler.
+    List<ShowCompactResponseElement> compactions = showCompactResponse.getCompacts().stream()
+            .sorted((o1, o2) -> (int) (o1.getId() - o2.getId())).collect(Collectors.toList());
+    for (ShowCompactResponseElement element : compactions) {
       String key = element.getDbname() + "/" + element.getTablename() +
           (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
+
+      // Get the last compaction for each db/table/partition
       // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
       lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
       if (TxnStore.INITIATED_RESPONSE.equals(element.getState()) && oldestEnqueueTime > element.getEnqueueTime()) {
         oldestEnqueueTime = element.getEnqueueTime();
       }
+
+      // Count incomplete compactions
+      CompactionType type = element.getType();
+      lastUnsuccessfulMajor.compute(key, (k, old) -> {
+        // Add newest unsuccessful compaction to the map
+        if (wasUnsuccessful(element) && type == MAJOR) {
+          return element.getId();
+        }
+        // Remove unsuccessful compaction from the map if a newer successful compaction has rendered it obsolete.
+        // The successful compaction must be major to render an unsuccessful major one obsolete.
+        if (wasSuccessful(element) && type == MAJOR) {
+          return null;
+        }
+        return old;
+      });
+      lastUnsuccessfulMinor.compute(key, (k, old) -> {
+        // Add newest unsuccessful compaction to the map
+        if (wasUnsuccessful(element) && type == MINOR) {
+          return element.getId();
+        }
+        // Remove unsuccessful compaction from the map if a newer successful compaction has rendered it obsolete.
+        // Either a major or minor successful compaction will render an unsuccessful minor one obsolete.
+        if (wasSuccessful(element)) {
+          return null;
+        }
+        return old;
+      });
     }
+
+    // Get total number incomplete compactions
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INCOMPLETE_COMPACTIONS)
+            .set(lastUnsuccessfulMajor.size() + lastUnsuccessfulMinor.size());
 
     // Get the current count for each state
     Map<String, Long> counts = lastElements.values().stream()
@@ -155,6 +196,15 @@ public class AcidMetricService  implements MetastoreTaskThread {
     long workerVersionsCount = lastElements.values().stream()
         .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
     Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
+  }
+
+  private static boolean wasUnsuccessful(ShowCompactResponseElement element) {
+    return TxnStore.FAILED_RESPONSE.equals(element.getState())
+            || TxnStore.DID_NOT_INITIATE_RESPONSE.equals(element.getState());
+  }
+
+  private static boolean wasSuccessful(ShowCompactResponseElement element) {
+    return TxnStore.SUCCEEDED_RESPONSE.equals(element.getState());
   }
 
   @Override

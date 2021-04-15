@@ -353,6 +353,101 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS).intValue());
   }
 
+  /**
+   * Tests for COMPACTION_NUM_INCOMPLETE_COMPACTIONS.
+   */
+  @Test
+  public void testUpdateCompactionMetricsIncompleteCompactions() {
+    List<ShowCompactResponseElement> elements = new ArrayList<>();
+    int id = 1;
+
+    // incomplete compaction because last compaction on the table has state=initiated, but last completed compaction has state=failed
+    String table = "tb1";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 1);
+
+    // complete compaction because last compaction on the table has state=working, but last completed compaction has state=succeeded
+    table = "tb2";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
+    checkNumIncompleteCompactions(elements, 1);
+
+    // complete because only compaction is succeeded
+    table = "tb3";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 1);
+
+    // incomplete because last compaction on the table has state=succeeded but it was minor compaction and is preceded by failed major compaction
+    table = "tb4";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.INITIATED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.WORKING_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.INITIATED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 2);
+
+    // complete, since succeeded makes unsuccessful minor obsolete
+    table = "tb5";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.SUCCEEDED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 2);
+
+    // complete
+    table = "tb6";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 2);
+
+    // incomplete as compaction status="did not initiate" was last
+    table = "tb7";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE));
+    checkNumIncompleteCompactions(elements, 3);
+
+    // incomplete
+    table = "tb8";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE));
+    checkNumIncompleteCompactions(elements, 4);
+
+
+    // complete
+    table = "tbl9";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 4);
+
+    // incomplete
+    table = "tbl10";
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.SUCCEEDED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(id++, "db", table, null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
+    checkNumIncompleteCompactions(elements, 5);
+  }
+
+  private void checkNumIncompleteCompactions(List<ShowCompactResponseElement> elements, int expected) {
+    ShowCompactResponse scr = new ShowCompactResponse();
+    scr.setCompacts(elements);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
+    Assert.assertEquals(expected,
+            Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INCOMPLETE_COMPACTIONS).intValue());
+  }
+
   @Test
   public void testAgeMetricsNotSet() {
     ShowCompactResponse scr = new ShowCompactResponse();
