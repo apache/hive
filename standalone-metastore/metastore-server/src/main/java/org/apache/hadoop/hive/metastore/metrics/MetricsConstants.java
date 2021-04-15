@@ -23,7 +23,9 @@ public class MetricsConstants {
   public static final String COMPACTION_STATUS_PREFIX = "compaction_num_";
   public static final String COMPACTION_OLDEST_ENQUEUE_AGE = "compaction_oldest_enqueue_age_in_sec";
   public static final String COMPACTION_INITIATOR_CYCLE = "compaction_initiator_cycle";
+  public static final String COMPACTION_FAILED_INITIATOR_CYCLE = "compaction_failed_initiator_cycle";
   public static final String COMPACTION_CLEANER_CYCLE = "compaction_cleaner_cycle";
+  public static final String COMPACTION_FAILED_CLEANER_CYCLE = "compaction_failed_cleaner_cycle";
   public static final String COMPACTION_WORKER_CYCLE = "compaction_worker_cycle";
 
   public static final String OLDEST_OPEN_TXN_ID = "oldest_open_txn_id";
