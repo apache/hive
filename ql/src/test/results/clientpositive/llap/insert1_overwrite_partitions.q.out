@@ -214,7 +214,7 @@ STAGE PLANS:
                         Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -563,7 +563,7 @@ STAGE PLANS:
                         Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -885,7 +885,7 @@ STAGE PLANS:
                         Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

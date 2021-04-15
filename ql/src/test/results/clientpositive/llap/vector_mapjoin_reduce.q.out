@@ -35,7 +35,7 @@ STAGE PLANS:
                 TableScan
                   alias: li
                   filterExpr: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_51_container, bigKeyColName:l_partkey, smallTablePos:1, keyRatio:0.07
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_51_container, bigKeyColName:l_orderkey, smallTablePos:1, keyRatio:0.07
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -303,7 +303,7 @@ STAGE PLANS:
                 TableScan
                   alias: li
                   filterExpr: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_51_container, bigKeyColName:l_partkey, smallTablePos:1, keyRatio:0.01
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_51_container, bigKeyColName:l_orderkey, smallTablePos:1, keyRatio:0.01
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
