@@ -385,7 +385,7 @@ public class EximUtil {
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE));
       Path dbDerivedLoc = new Path(whLocatoion, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
       String defaultDbLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedLoc);
-      database.getParameters().put(ReplUtils.REPL_IS_CUSTOM_DB_LOC,
+      database.putToParameters(ReplUtils.REPL_IS_CUSTOM_DB_LOC,
               Boolean.toString(!defaultDbLoc.equals(database.getLocationUri())));
       String whManagedLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
       Path dbDerivedManagedLoc = new Path(whManagedLocatoion, database.getName().toLowerCase()

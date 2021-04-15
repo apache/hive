@@ -305,6 +305,17 @@ public class TestReplicationScenarios {
     return new Tuple(dumpLocation, lastReplId);
   }
 
+  private Tuple replDumpAllDbs(List<String> withClauseOptions) throws IOException {
+    String withClause = getWithClause(withClauseOptions);
+    advanceDumpDir();
+    String dumpCmd = "REPL DUMP `*` " + withClause;
+    run(dumpCmd, driver);
+    String dumpLocation = getResult(0, 0, driver);
+    String lastReplId = getResult(0, 1, true, driver);
+    LOG.info("Dumped to {} with id {} for command: {}", dumpLocation, lastReplId, dumpCmd);
+    return new Tuple(dumpLocation, lastReplId);
+  }
+
   private String getWithClause(List<String> withClauseOptions) {
     if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
       return  " with (" + StringUtils.join(withClauseOptions, ",") + ")";
@@ -3071,7 +3082,54 @@ public class TestReplicationScenarios {
     verifySetupSteps = verifySetupOriginal;
   }
 
+  @Test
+  public void testMultipleDbMetadataOnlyDump() throws IOException {
+    verifySetupSteps = true;
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    //create one extra db for bootstrap
+    String bootstrapDb = dbName + "_boot";
 
+    //insert data in the additional db
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    createTestDataFile(unptn_locn, unptn_data);
+    run("CREATE DATABASE " + bootstrapDb, driver);
+    run("CREATE TABLE " + bootstrapDb + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + bootstrapDb + ".unptned", true, driver);
+    verifySetup("SELECT * from " + bootstrapDb + ".unptned", unptn_data, driver);
+    List<String> metadataOnlyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname + "'='true'");
+
+    //dump all dbs and create load-marker
+    Tuple bootstrapDump = replDumpAllDbs(metadataOnlyClause);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path hiveDumpPath = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(hiveDumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    fs.create(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
+    assertTrue(fs.exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+
+    //create new database and dump all databases again
+    String incDbName1 = dbName + "_inc1";
+    run("CREATE DATABASE " + incDbName1 , driver);
+    run("CREATE TABLE " + incDbName1 + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName1 + ".unptned", true, driver);
+    verifySetup("SELECT * from " + incDbName1 + ".unptned", unptn_data, driver);
+    Tuple incrementalDump = replDumpAllDbs(metadataOnlyClause);
+
+    //create load-marker
+    hiveDumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(hiveDumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    fs.create(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString()));
+    assertTrue(fs.exists(new Path(hiveDumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+
+    //create new database and dump all databases again
+    String incDbName2 = dbName + "_inc2";
+    run("CREATE DATABASE " + incDbName2 , driver);
+    run("CREATE TABLE " + incDbName2 + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName2 + ".unptned", true, driver);
+    verifySetup("SELECT * from " + incDbName2 + ".unptned", unptn_data, driver);
+    replDumpAllDbs(metadataOnlyClause);
+  }
 
   @Test
   public void testExchangePartition() throws IOException {
