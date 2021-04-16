@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -43,6 +44,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -62,6 +64,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.*;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -159,9 +163,9 @@ public class CachedStore implements RawStore, Configurable {
     }
   }
 
-  private static synchronized void triggerPreWarm(RawStore rawStore) {
+  private static synchronized void triggerPreWarm(RawStore rawStore, TxnStore txnStore) {
     lastEventId = rawStore.getCurrentNotificationEventId().getEventId();
-    prewarm(rawStore);
+    prewarm(rawStore, txnStore );
   }
 
   private void setConfInternal(Configuration conf) {
@@ -434,7 +438,7 @@ public class CachedStore implements RawStore, Configurable {
    * This initializes the caches in SharedCache by getting the objects from Metastore DB via
    * ObjectStore and populating the respective caches
    */
-  static void prewarm(RawStore rawStore) {
+  static void prewarm(RawStore rawStore, TxnStore txnStore) {
     if (isCachePrewarmed.get()) {
       return;
     }
@@ -574,6 +578,18 @@ public class CachedStore implements RawStore, Configurable {
               SQLAllTableConstraints tableConstraints = rawStore.getAllTableConstraints(catName, dbName, tblName);
               Deadline.stopTimer();
               cacheObjects.setTableConstraints(tableConstraints);
+
+              try
+              {
+                Deadline.startTimer("getValidWriteIds");
+                ValidWriteIdList validWriteIdList = TxnCommonUtils.createValidReaderWriteIdList(txnStore.getValidWriteIds(new GetValidWriteIdsRequest(
+                    Collections.singletonList(TableName.getDbTable(dbName,tblName)))).getTblValidWriteIds().get(0));
+                Deadline.stopTimer();
+                cacheObjects.setValidWriteIdList(validWriteIdList);
+              } catch (Exception e) {
+                LOG.debug(ExceptionUtils.getStackTrace(e));
+              }
+
 
               // If the table could not cached due to memory limit, stop prewarm
               boolean isSuccess = sharedCache
@@ -734,6 +750,7 @@ public class CachedStore implements RawStore, Configurable {
   static class CacheUpdateMasterWork implements Runnable {
     private boolean shouldRunPrewarm = true;
     private final RawStore rawStore;
+    private final TxnStore txnStore;
 
     CacheUpdateMasterWork(Configuration conf, boolean shouldRunPrewarm) {
       this.shouldRunPrewarm = shouldRunPrewarm;
@@ -742,6 +759,7 @@ public class CachedStore implements RawStore, Configurable {
       try {
         rawStore = JavaUtils.getClass(rawStoreClassName, RawStore.class).newInstance();
         rawStore.setConf(conf);
+        txnStore = TxnUtils.getTxnStore(conf);
       } catch (InstantiationException | IllegalAccessException | MetaException e) {
         // MetaException here really means ClassNotFound (see the utility method).
         // So, if any of these happen, that means we can never succeed.
@@ -767,7 +785,7 @@ public class CachedStore implements RawStore, Configurable {
         }
       } else {
         try {
-          triggerPreWarm(rawStore);
+          triggerPreWarm(rawStore, txnStore);
           shouldRunPrewarm = false;
         } catch (Exception e) {
           LOG.error("Prewarm failure", e);
@@ -810,6 +828,8 @@ public class CachedStore implements RawStore, Configurable {
               updateTableAggregatePartitionColStats(rawStore, catName, dbName, tblName);
               // Update Table Constraint
               updateAllTableConstraints(rawStore, catName, dbName, tblName);
+              // Update ValidWriteIdList
+              updateValidWriteIdList(txnStore, catName, dbName, tblName);
             }
           }
         }
@@ -920,6 +940,28 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
 
+    private void updateValidWriteIdList(TxnStore txnStore, String catName, String dbName, String tblName) {
+      catName = StringUtils.normalizeIdentifier(catName);
+      dbName = StringUtils.normalizeIdentifier(dbName);
+      tblName = StringUtils.normalizeIdentifier(tblName);
+      LOG.debug("CachedStore: updating cached table validWriteIdlist for catalog: {}, database: {}, table: {}", catName,
+          dbName, tblName);
+      ValidWriteIdList validWriteIdList = null;
+      try {
+        Deadline.startTimer("getValidWriteIds");
+         validWriteIdList = TxnCommonUtils.createValidReaderWriteIdList(txnStore.getValidWriteIds(new GetValidWriteIdsRequest(
+            Collections.singletonList(TableName.getDbTable(dbName,tblName)))).getTblValidWriteIds().get(0));
+        Deadline.stopTimer();
+      } catch (Exception e) {
+        LOG.info("Updating CachedStore: unable to update table validWriteIdList of catalog: " + catName + ", database: " + dbName
+            + ", table: " + tblName, e);
+      }
+      if (validWriteIdList != null) {
+        sharedCache.refreshValidWriteIdListInCache(catName, dbName, tblName, validWriteIdList);
+        LOG.debug("CachedStore: updated cached table validWriteIdList for catalog: {}, database: {}, table: {}", catName,
+            dbName, tblName);
+      }
+    }
 
     private void updateTablePartitions(RawStore rawStore, String catName, String dbName, String tblName) {
       LOG.debug("CachedStore: updating cached partition objects for catalog: {}, database: {}, table: {}", catName,
@@ -1272,7 +1314,7 @@ public class CachedStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
-    if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
+    if (shouldGetTableFromRawStore(catName, dbName, tblName, validWriteIds)) {
       return rawStore.getTable(catName, dbName, tblName, validWriteIds);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
@@ -3242,5 +3284,10 @@ public class CachedStore implements RawStore, Configurable {
   private boolean shouldGetConstraintFromRawStore(String catName, String dbName, String tblName) {
     return !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())
         || !sharedCache.isTableConstraintValid(catName, dbName, tblName);
+  }
+
+  private boolean shouldGetTableFromRawStore(String catName, String dbName, String tblName, String validWriteIdList) {
+    return !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())
+        || sharedCache.isTableCacheStale(catName, dbName, tblName, validWriteIdList);
   }
 }

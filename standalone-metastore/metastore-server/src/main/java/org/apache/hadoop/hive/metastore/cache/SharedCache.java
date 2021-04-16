@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
+import org.apache.hive.common.util.TxnIdUtils;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -282,6 +283,7 @@ public class SharedCache {
     private Map<String, String> parameters;
     private byte[] sdHash;
     private int otherSize;
+    private ValidWriteIdList validWriteIds = null;
 
     // Arrays to hold the size/updated bit of cached objects.
     // These arrays are to be referenced using MemberName enum only.
@@ -770,6 +772,16 @@ public class SharedCache {
                 constraints.getDefaultConstraints(), MemberName.DEFAULT_CONSTRAINT_CACHE) && refreshConstraint(
                 constraints.getNotNullConstraints(), MemberName.NOTNULL_CONSTRAINT_CACHE) && refreshConstraint(
                 constraints.getCheckConstraints(), MemberName.CHECK_CONSTRAINT_CACHE);
+        tableToUpdateSize.add(getTblKey());
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void refreshValidWriteIdList(ValidWriteIdList validWriteIdList) {
+      try {
+        tableLock.writeLock().lock();
+        this.validWriteIds = new ValidReaderWriteIdList(validWriteIdList.toString());
         tableToUpdateSize.add(getTblKey());
       } finally {
         tableLock.writeLock().unlock();
@@ -1442,6 +1454,17 @@ public class SharedCache {
       }
       return wrapper;
     }
+
+    public ValidWriteIdList getValidWriteIds() {
+      try{
+        tableLock.readLock().lock();
+        return validWriteIds;
+      } finally {
+        tableLock.readLock().unlock();
+      }
+
+    }
+
   }
 
   static class PartitionWrapper {
@@ -2476,6 +2499,25 @@ public class SharedCache {
     return isValid;
   }
 
+  public boolean isTableCacheStale(String catName, String dbName, String tblName, String validWriteIdList) {
+    boolean isStale = true;
+
+    if (StringUtils.isEmpty(validWriteIdList))
+      return isStale;
+
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        isStale = TxnIdUtils.compare(new ValidReaderWriteIdList(validWriteIdList), tblWrapper.getValidWriteIds()) == 1;
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+    return isStale;
+  }
+
+
   public void refreshAllTableConstraintsInCache(String catName, String dbName, String tblName,
       SQLAllTableConstraints constraints) {
     try {
@@ -2483,6 +2525,19 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.refreshAllTableConstraints(constraints);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void refreshValidWriteIdListInCache(String catName, String dbName, String tblName,
+      ValidWriteIdList validWriteIdList) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.refreshValidWriteIdList(validWriteIdList);
       }
     } finally {
       cacheLock.readLock().unlock();

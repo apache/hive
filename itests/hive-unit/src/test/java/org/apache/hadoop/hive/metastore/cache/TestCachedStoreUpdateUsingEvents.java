@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -144,10 +146,10 @@ public class TestCachedStoreUpdateUsingEvents {
   @Test
   public void testDatabaseOpsForUpdateUsingEvents() throws Exception {
     RawStore rawStore = hmsHandler.getMS();
-
+    TxnStore txnStore = TxnUtils.getTxnStore(conf);
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
-    CachedStore.prewarm(rawStore);
+    CachedStore.prewarm(rawStore, txnStore);
 
     // Add a db via rawStore
     String dbName = "testDatabaseOps";
@@ -223,10 +225,11 @@ public class TestCachedStoreUpdateUsingEvents {
   public void testTableOpsForUpdateUsingEvents() throws Exception {
     long lastEventId = -1;
     RawStore rawStore = hmsHandler.getMS();
+    TxnStore txnStore = TxnUtils.getTxnStore(conf);
 
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
-    CachedStore.prewarm(rawStore);
+    CachedStore.prewarm(rawStore, txnStore );
 
     // Add a db via rawStore
     String dbName = "test_table_ops";
@@ -302,10 +305,11 @@ public class TestCachedStoreUpdateUsingEvents {
   public void testConstraintsForUpdateUsingEvents() throws Exception {
     long lastEventId = -1;
     RawStore rawStore = hmsHandler.getMS();
+    TxnStore txnStore = TxnUtils.getTxnStore(conf);
 
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
-    CachedStore.prewarm(rawStore);
+    CachedStore.prewarm(rawStore, txnStore);
 
     // Add a db via rawStore
     String dbName = "Test_Table_Ops";
@@ -446,10 +450,11 @@ public class TestCachedStoreUpdateUsingEvents {
   public void testPartitionOpsForUpdateUsingEvents() throws Exception {
     long lastEventId = -1;
     RawStore rawStore = hmsHandler.getMS();
+    TxnStore txnStore = TxnUtils.getTxnStore(conf);
 
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
-    CachedStore.prewarm(rawStore);
+    CachedStore.prewarm(rawStore, txnStore);
 
     // Add a db via rawStore
     String dbName = "Test_Partition_ops";
@@ -738,10 +743,10 @@ public class TestCachedStoreUpdateUsingEvents {
 
   private void setUpBeforeTest(String dbName, String tblName, String[] colName, boolean isTxnTable) throws Throwable {
     String dbOwner = "user1";
-
+    TxnStore txnStore = TxnUtils.getTxnStore(conf);
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
-    CachedStore.prewarm(rawStore);
+    CachedStore.prewarm(rawStore, txnStore);
 
     // Add a db via rawStore
     Database db = createTestDb(dbName, dbOwner);

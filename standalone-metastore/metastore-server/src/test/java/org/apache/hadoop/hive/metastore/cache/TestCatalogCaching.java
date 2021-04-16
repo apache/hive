@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,6 +51,7 @@ public class TestCatalogCaching {
   private ObjectStore objectStore;
   private Configuration conf;
   private CachedStore cachedStore;
+  private TxnStore txnStore;
 
   @Before
   public void createObjectStore() throws MetaException, InvalidOperationException {
@@ -57,6 +60,7 @@ public class TestCatalogCaching {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
+    txnStore = TxnUtils.getTxnStore(conf);
 
     // Create three catalogs
     HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
@@ -87,7 +91,7 @@ public class TestCatalogCaching {
     CachedStore.stopCacheUpdateService(1);
     cachedStore.resetCatalogCache();
 
-    CachedStore.prewarm(objectStore);
+    CachedStore.prewarm(objectStore, txnStore);
 
     // Only the hive catalog should be cached
     List<String> cachedCatalogs = cachedStore.getCatalogs();
@@ -107,7 +111,7 @@ public class TestCatalogCaching {
                                   // prewarm gets the conf object
     cachedStore.resetCatalogCache();
 
-    CachedStore.prewarm(objectStore);
+    CachedStore.prewarm(objectStore, txnStore );
 
     // All the catalogs should be cached
     List<String> cachedCatalogs = cachedStore.getCatalogs();
@@ -130,7 +134,7 @@ public class TestCatalogCaching {
                                   // prewarm gets the conf object
     cachedStore.resetCatalogCache();
 
-    CachedStore.prewarm(objectStore);
+    CachedStore.prewarm(objectStore, txnStore );
 
     // All the catalogs should be cached
     List<String> cachedCatalogs = cachedStore.getCatalogs();

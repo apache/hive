@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.metastore.cache;
 
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -17,6 +18,7 @@ public class TableCacheObjects {
   private List<ColumnStatistics> partitionColStats;
   private AggrStats aggrStatsAllPartitions;
   private AggrStats aggrStatsAllButDefaultPartition;
+  private ValidWriteIdList validWriteIdList;
 
   public ColumnStatistics getTableColStats() {
     return tableColStats;
@@ -64,5 +66,13 @@ public class TableCacheObjects {
 
   public void setTableConstraints(SQLAllTableConstraints tableConstraints) {
     this.tableConstraints = tableConstraints;
+  }
+
+  public ValidWriteIdList getValidWriteIdList() {
+    return validWriteIdList;
+  }
+
+  public void setValidWriteIdList(ValidWriteIdList validWriteIdList) {
+    this.validWriteIdList = validWriteIdList;
   }
 }
