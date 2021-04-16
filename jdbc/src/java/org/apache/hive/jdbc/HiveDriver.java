@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -32,6 +33,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import sun.net.www.protocol.jar.JarURLConnection;
 
 
 /**
