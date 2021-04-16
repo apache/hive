@@ -268,7 +268,11 @@ public class HiveDriver implements Driver {
         .getLocation().toString();
     URL manifestUrl = new URL("jar:" + classContainer
         + "!/META-INF/MANIFEST.MF");
-    Manifest manifest = new Manifest(manifestUrl.openStream());
+    URLConnection connection = manifestUrl.openConnection();
+    if (connection instanceof JarURLConnection){
+      connection.setUseCaches(false);
+    }
+    Manifest manifest = new Manifest(connection.getInputStream());
     manifestAttributes = manifest.getMainAttributes();
   }
 
