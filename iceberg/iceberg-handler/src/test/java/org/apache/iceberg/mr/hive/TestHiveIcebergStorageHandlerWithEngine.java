@@ -25,12 +25,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -48,6 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -134,6 +137,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
+
+  @Rule
+  public Timeout timeout = new Timeout(100000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
@@ -244,7 +250,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[] {102L, 1L, 33.33d}, rows.get(2));
   }
 
-  @Test
+  @Test(timeout = 100000)
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -267,7 +273,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     }
   }
 
-  @Test
+  @Test(timeout = 100000)
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -310,7 +316,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
   }
 
-  @Test
+  @Test(timeout = 100000)
   public void testInsertSupportedTypes() throws IOException {
     Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
@@ -620,6 +626,72 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat, records);
 
     HiveIcebergTestUtils.validateData(table, records, 0);
+  }
+
+  @Test
+  public void testMultiTableInsert() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    Schema target1Schema = new Schema(
+        optional(1, "customer_id", Types.LongType.get()),
+        optional(2, "first_name", Types.StringType.get())
+    );
+
+    Schema target2Schema = new Schema(
+        optional(1, "last_name", Types.StringType.get()),
+        optional(2, "customer_id", Types.LongType.get())
+    );
+
+    List<Record> target1Records = TestHelper.RecordsBuilder.newInstance(target1Schema)
+                                      .add(0L, "Alice")
+                                      .add(1L, "Bob")
+                                      .add(2L, "Trudy")
+                                      .build();
+
+    List<Record> target2Records = TestHelper.RecordsBuilder.newInstance(target2Schema)
+                                      .add("Brown", 0L)
+                                      .add("Green", 1L)
+                                      .add("Pink", 2L)
+                                      .build();
+
+    Table target1 = testTables.createTable(shell, "target1", target1Schema, fileFormat, ImmutableList.of());
+    Table target2 = testTables.createTable(shell, "target2", target2Schema, fileFormat, ImmutableList.of());
+
+    shell.executeStatement("FROM customers " +
+                               "INSERT INTO target1 SELECT customer_id, first_name " +
+                               "INSERT INTO target2 SELECT last_name, customer_id");
+
+    // Check that everything is as expected
+    HiveIcebergTestUtils.validateData(target1, target1Records, 0);
+    HiveIcebergTestUtils.validateData(target2, target2Records, 1);
+  }
+
+  @Test
+  public void testWriteWithDefaultWriteFormat() {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Assume.assumeTrue("Testing the default file format is enough for a single scenario.",
+        executionEngine.equals("tez") && testTableType == TestTables.TestTableType.HIVE_CATALOG &&
+            fileFormat == FileFormat.ORC);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    // create Iceberg table without specifying a write format in the tbl properties
+    // it should fall back to using the default file format
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (id bigint, name string) STORED BY '%s' %s",
+        identifier,
+        HiveIcebergStorageHandler.class.getName(),
+        testTables.locationForCreateTableSQL(identifier)));
+
+    shell.executeStatement(String.format("INSERT INTO %s VALUES (10, 'Linda')", identifier));
+    List<Object[]> results = shell.executeStatement(String.format("SELECT * FROM %s", identifier));
+
+    Assert.assertEquals(1, results.size());
+    Assert.assertEquals(10L, results.get(0)[0]);
+    Assert.assertEquals("Linda", results.get(0)[1]);
   }
 
   @Test

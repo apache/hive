@@ -20,7 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.Serializable;
-import java.util.Locale;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
@@ -36,27 +36,20 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.encryption.EncryptionManager;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SerializationUtil;
 
-import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
-import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
-import static org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES;
-import static org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT;
-
 public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
+  private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
+  private static final String TABLE_NAME_SEPARATOR = "..";
 
   static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
@@ -120,7 +113,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     if (tableDesc != null && tableDesc.getProperties() != null &&
         tableDesc.getProperties().get(WRITE_KEY) != null) {
+      String tableName = tableDesc.getTableName();
+      Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
+          "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
+      String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
+      tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
       jobConf.set("mapred.output.committer.class", HiveIcebergOutputCommitter.class.getName());
+      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
+
+      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+      if (catalogName != null) {
+        jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
+      }
     }
   }
 
@@ -154,30 +158,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Returns the Table FileIO serialized to the configuration.
+   * Returns the Table serialized to the configuration based on the table name.
    * @param config The configuration used to get the data from
-   * @return The Table FileIO object
+   * @param name The name of the table we need as returned by TableDesc.getTableName()
+   * @return The Table
    */
-  public static FileIO io(Configuration config) {
-    return SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.FILE_IO));
+  public static Table table(Configuration config, String name) {
+    return SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
   }
 
   /**
-   * Returns the Table LocationProvider serialized to the configuration.
+   * Returns the names of the output tables stored in the configuration.
    * @param config The configuration used to get the data from
-   * @return The Table LocationProvider object
+   * @return The collection of the table names as returned by TableDesc.getTableName()
    */
-  public static LocationProvider location(Configuration config) {
-    return SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.LOCATION_PROVIDER));
+  public static Collection<String> outputTables(Configuration config) {
+    return TABLE_NAME_SPLITTER.splitToList(config.get(InputFormatConfig.OUTPUT_TABLES));
   }
 
   /**
-   * Returns the Table EncryptionManager serialized to the configuration.
+   * Returns the catalog name serialized to the configuration.
    * @param config The configuration used to get the data from
-   * @return The Table EncryptionManager object
+   * @param name The name of the table we neeed as returned by TableDesc.getTableName()
+   * @return catalog name
    */
-  public static EncryptionManager encryption(Configuration config) {
-    return SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.ENCRYPTION_MANAGER));
+  public static String catalogName(Configuration config, String name) {
+    return config.get(InputFormatConfig.TABLE_CATALOG_PREFIX + name);
   }
 
   /**
@@ -187,15 +193,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static Schema schema(Configuration config) {
     return SchemaParser.fromJson(config.get(InputFormatConfig.TABLE_SCHEMA));
-  }
-
-  /**
-   * Returns the Table PartitionSpec serialized to the configuration.
-   * @param config The configuration used to get the data from
-   * @return The Table PartitionSpec object
-   */
-  public static PartitionSpec spec(Configuration config) {
-    return PartitionSpecParser.fromJson(schema(config), config.get(InputFormatConfig.PARTITION_SPEC));
   }
 
   /**
@@ -227,21 +224,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
     map.put(InputFormatConfig.TABLE_LOCATION, table.location());
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-    map.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
-    String formatString = PropertyUtil.propertyAsString(table.properties(), DEFAULT_FILE_FORMAT,
-        DEFAULT_FILE_FORMAT_DEFAULT);
-    map.put(InputFormatConfig.WRITE_FILE_FORMAT, formatString.toUpperCase(Locale.ENGLISH));
-    map.put(InputFormatConfig.WRITE_TARGET_FILE_SIZE,
-        table.properties().getOrDefault(WRITE_TARGET_FILE_SIZE_BYTES,
-            String.valueOf(WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT)));
 
     if (table instanceof Serializable) {
-      map.put(InputFormatConfig.SERIALIZED_TABLE, SerializationUtil.serializeToBase64(table));
+      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+          SerializationUtil.serializeToBase64(table));
     }
 
-    map.put(InputFormatConfig.FILE_IO, SerializationUtil.serializeToBase64(table.io()));
-    map.put(InputFormatConfig.LOCATION_PROVIDER, SerializationUtil.serializeToBase64(table.locationProvider()));
-    map.put(InputFormatConfig.ENCRYPTION_MANAGER, SerializationUtil.serializeToBase64(table.encryption()));
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
     map.remove("columns.comments");

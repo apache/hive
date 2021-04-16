@@ -67,6 +67,14 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <excludes>
+                                        **/SnapshotProducer.class
+                                        **/SnapshotSummary.class
+                                        **/BaseMeta.class
+                                        **/BaseMetadataTable.class
+                                        **/StaticTableOperations.class
+                                        **/CatalogProperties.class
+                                        **/BaseMetastoreCatalog.class
+                                        **/BaseMetastoreTableOperations.class
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
