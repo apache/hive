@@ -64,7 +64,7 @@
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
-    <module>iceberg-handler</module>
+    <module>iceberg</module>
   </modules>
 
   <properties>
@@ -151,7 +151,6 @@
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
-    <iceberg.version>0.11.0</iceberg.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>2.10.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -1571,6 +1570,7 @@
         </executions>
         <configuration>
 	  <excludes>
+	    <exclude>*.patch</exclude>
 	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
@@ -1617,6 +1617,8 @@
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
             <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>hcatalog/core/mapred/**/part-m*</exclude>
+            <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
 	  </excludes>
 	</configuration>
       </plugin>

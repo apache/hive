@@ -75,9 +75,7 @@ public class HiveRemoveSqCountCheck extends RelOptRule {
     if(filter instanceof HiveFilter) {
       HiveFilter hiveFilter = (HiveFilter)filter;
       // check if it has sq_count_check
-      if(isSqlCountCheck(hiveFilter)) {
-        return true;
-      }
+      return isSqlCountCheck(hiveFilter);
     }
     return false;
   }
@@ -86,21 +84,13 @@ public class HiveRemoveSqCountCheck extends RelOptRule {
     // look at hivesubqueryremoverule to see how is this filter created
     if(filter.getCondition() instanceof RexCall) {
       final RexCall condition = (RexCall)filter.getCondition();
-      if(condition.getKind() == SqlKind.LESS_THAN_OR_EQUAL) {
-        final List<RexNode> operands = condition.getOperands();
-        if(operands.get(0) instanceof RexCall) {
-          final RexCall op = (RexCall)operands.get(0);
-          if(op.getOperator().getName().equals("sq_count_check")) {
-            return true;
-          }
-        }
-      }
+      return condition.getOperator().getName().equals("sq_count_check");
     }
     return false;
   }
 
   private boolean isAggregateWithoutGbyKeys(final Aggregate agg) {
-    return agg.getGroupCount() == 0 ? true : false;
+    return agg.getGroupCount() == 0;
   }
 
   private boolean isAggWithConstantGbyKeys(final Aggregate aggregate, RelOptRuleCall call) {

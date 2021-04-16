@@ -1031,6 +1031,10 @@ public class MetastoreConf {
     REPL_METRICS_MAX_AGE("metastore.repl.metrics.max.age",
       "hive.metastore.repl.metrics.max.age", 7, TimeUnit.DAYS,
       "Maximal age of a replication metrics entry before it is removed."),
+    REPL_TXN_TIMEOUT("metastore.repl.txn.timeout", "hive.repl.txn.timeout", 11, TimeUnit.DAYS,
+      "Time after which replication transactions are declared aborted if the client has not sent a " +
+              "heartbeat. If this is a target cluster, value must be greater than" +
+              "hive.repl.event.db.listener.timetolive on the source cluster (!), ideally by 1 day."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
@@ -1395,6 +1399,8 @@ public class MetastoreConf {
         "hive.metastore.custom.database.product.classname", "none",
           "Hook for external RDBMS. This class will be instantiated only when " +
           "metastore.use.custom.database.product is set to true."),
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
+            "Comma-separated list of supported blobstore schemes."),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
@@ -2250,5 +2256,15 @@ public class MetastoreConf {
     }
     buf.append("Finished MetastoreConf object.\n");
     return buf.toString();
+  }
+
+  public static char[] getValueFromKeystore(String keystorePath, String key) throws IOException {
+    char[] valueCharArray = null;
+    if (keystorePath != null && key != null) {
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystorePath);
+      valueCharArray = conf.getPassword(key);
+    }
+    return valueCharArray;
   }
 }

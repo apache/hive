@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -502,7 +503,16 @@ public abstract class BaseSemanticAnalyzer {
     if (node.getChildCount() == 1) {
       return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
     }
-    return unescapeIdentifier(node.getChild(node.getChildCount() - 1).getText().toLowerCase());
+    for (int i = node.getChildCount() - 1; i >= 0; --i) {
+      Tree child = node.getChild(i);
+      if (child.getType() == HiveParser.TOK_TABNAME) {
+        return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
+      } else if (child.getType() == HiveParser.Identifier) {
+        return unescapeIdentifier(child.getText().toLowerCase());
+      }
+    }
+
+    throw new SemanticException("No table alias or table name found.");
   }
 
 
@@ -1717,6 +1727,23 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
     }
     return database;
+  }
+
+  protected DataConnector getDataConnector(String dbName) throws SemanticException {
+    return getDataConnector(dbName, true);
+  }
+
+  protected DataConnector getDataConnector(String dcName, boolean throwException) throws SemanticException {
+    DataConnector connector;
+    try {
+      connector = db.getDataConnector(dcName);
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+    if (connector == null && throwException) {
+      throw new SemanticException(ErrorMsg.DATACONNECTOR_NOT_EXISTS.getMsg(dcName));
+    }
+    return connector;
   }
 
   protected Table getTable(TableName tn) throws SemanticException {

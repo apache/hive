@@ -1114,6 +1114,74 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Create a new DataConnector // TODO
+   *
+   * @param connector
+   * @throws AlreadyExistsException
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_dataconnector(DataConnector)
+   */
+  @Override
+  public void createDataConnector(DataConnector connector)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    client.create_dataconnector(connector);
+  }
+
+  /**
+   * Drop an existing DataConnector by name // TODO
+   * @param name name of the dataconnector to drop.
+   * @throws NoSuchObjectException
+   * @throws InvalidOperationException
+   * @throws MetaException
+   * @throws TException
+   */
+  @Override
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    client.drop_dataconnector(name, ifNotExists, checkReferences);
+  }
+
+  /**
+   * Alter an existing dataconnector.
+   * @param name dataconnector name.
+   * @param connector new dataconnector object.
+   * @throws NoSuchObjectException No dataconnector with this name exists.
+   * @throws MetaException Operation could not be completed, usually in the RDBMS.
+   * @throws TException thrift transport layer error.
+   */
+  @Override
+  public void alterDataConnector(String name, DataConnector connector)
+      throws NoSuchObjectException, MetaException, TException {
+    client.alter_dataconnector(name, connector);
+  }
+
+  /**
+   * Get the dataconnector by name
+   * @return DataConnector if there is a match
+   * @throws MetaException error complete the operation
+   * @throws TException thrift transport error
+   */
+  @Override
+  public DataConnector getDataConnector(String name)
+      throws MetaException, TException {
+    GetDataConnectorRequest request = new GetDataConnectorRequest(name);
+    return client.get_dataconnector_req(request);
+  }
+
+  /**
+   * Get the names of all dataconnectors in the MetaStore.
+   * @return List of dataconnector names.
+   * @throws MetaException error accessing RDBMS.
+   * @throws TException thrift transport error
+   */
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException, TException {
+    return client.get_dataconnectors();
+  }
+
+  /**
    * @param tbl
    * @throws MetaException
    * @throws NoSuchObjectException
@@ -2488,8 +2556,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern)
       throws TException {
-    List<String> tables = client.get_tables(prependCatalogToDbName(catName, dbName, conf), tablePattern);
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
+    List<String> tables = new ArrayList<>();
+    GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
+    projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
+    GetTablesRequest req = new GetTablesRequest(dbName);
+    req.setCatName(catName);
+    req.setCapabilities(version);
+    req.setTblNames(null);
+    if(tablePattern == null){
+      tablePattern = ".*";
+    }
+    req.setTablesPattern(tablePattern);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    req.setProjectionSpec(projectionsSpec);
+    List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
+    tableObjects = deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
+    for (Table tbl : tableObjects) {
+      tables.add(tbl.getTableName());
+    }
+    return tables;
   }
 
   @Override
@@ -3901,6 +3989,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
             filterHook, getDefaultCatalog(conf), response.getCompacts()));
     return response;
+  }
+
+  @Override
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest request)
+      throws TException {
+    GetLatestCommittedCompactionInfoResponse response = client.get_latest_committed_compaction_info(request);
+    return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isClientFilterEnabled, filterHook,
+        getDefaultCatalog(conf), request.getDbname(), request.getTablename(), response);
   }
 
   @Deprecated

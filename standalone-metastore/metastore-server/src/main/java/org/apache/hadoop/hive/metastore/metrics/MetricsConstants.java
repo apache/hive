@@ -26,6 +26,24 @@ public class MetricsConstants {
   public static final String COMPACTION_CLEANER_CYCLE = "compaction_cleaner_cycle";
   public static final String COMPACTION_WORKER_CYCLE = "compaction_worker_cycle";
 
+  public static final String OLDEST_OPEN_TXN_ID = "oldest_open_txn_id";
+  public static final String OLDEST_OPEN_TXN_AGE = "oldest_open_txn_age_in_sec";
+  // number of aborted txns in TXNS table
+  public static final String NUM_ABORTED_TXNS = "num_aborted_transactions";
+  public static final String OLDEST_ABORTED_TXN_ID = "oldest_aborted_txn_id";
+  public static final String OLDEST_ABORTED_TXN_AGE = "oldest_aborted_txn_age_in_sec";
+
+  public static final String NUM_LOCKS = "num_locks";
+  public static final String OLDEST_LOCK_AGE = "oldest_lock_age_in_sec";
+
+  public static final String NUM_TXN_TO_WRITEID = MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid";
+  public static final String NUM_COMPLETED_TXN_COMPONENTS = MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components";
+
+  public static final String COMPACTION_NUM_INITIATORS = COMPACTION_STATUS_PREFIX + "initiators";
+  public static final String COMPACTION_NUM_WORKERS = COMPACTION_STATUS_PREFIX + "workers";
+  public static final String COMPACTION_NUM_INITIATOR_VERSIONS = COMPACTION_STATUS_PREFIX + "initiator_versions";
+  public static final String COMPACTION_NUM_WORKER_VERSIONS = COMPACTION_STATUS_PREFIX + "worker_versions";
+
   public static final String TOTAL_API_CALLS = "total_api_calls";
 
   public static final String CREATE_TOTAL_DATABASES = "create_total_count_dbs";
@@ -43,7 +61,9 @@ public class MetricsConstants {
   public static final String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
 
   public static final String NUM_OPEN_TXNS = "num_open_transactions";
-  public static final String NUM_TIMED_OUT_TXNS = "num_timed_out_transactions";
+  public static final String TOTAL_NUM_ABORTED_TXNS = "total_num_aborted_transactions";
+  public static final String TOTAL_NUM_COMMITTED_TXNS = "total_num_committed_transactions";
+  public static final String TOTAL_NUM_TIMED_OUT_TXNS = "total_num_timed_out_transactions";
 
   public static final String OPEN_CONNECTIONS = "open_connections";
 

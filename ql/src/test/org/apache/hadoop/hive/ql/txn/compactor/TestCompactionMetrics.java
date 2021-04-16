@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
@@ -43,11 +44,16 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TestCompactionMetrics  extends CompactorTest {
 
@@ -56,10 +62,16 @@ public class TestCompactionMetrics  extends CompactorTest {
   private static final String CLEANER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_CLEANER_CYCLE;
   private static final String WORKER_CYCLE_KEY = MetricsConstants.API_PREFIX + MetricsConstants.COMPACTION_WORKER_CYCLE;
 
+  @Before
+  public void setUp() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    // re-initialize metrics
+    Metrics.shutdown();
+    Metrics.initialize(conf);
+  }
+
   @Test
   public void testInitiatorPerfMetricsEnabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
     Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).set(0);
     long initiatorCycles = Objects.requireNonNull(Metrics.getOrCreateTimer(INITIATOR_CYCLE_KEY)).getCount();
     Table t = newTable("default", "ime", true);
@@ -152,9 +164,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testCleanerPerfMetricsEnabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
-
     long cleanerCyclesMinor = Objects.requireNonNull(
         Metrics.getOrCreateTimer(CLEANER_CYCLE_KEY + "_" + CompactionType.MINOR)).getCount();
     long cleanerCyclesMajor = Objects.requireNonNull(
@@ -293,7 +302,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testUpdateCompactionMetrics() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     elements.add(generateElement(1,"db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE));
@@ -334,11 +342,19 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.WORKING_RESPONSE).intValue());
     Assert.assertEquals(0,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.CLEANING_RESPONSE).intValue());
+
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).intValue());
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKERS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS).intValue());
   }
 
   @Test
   public void testAgeMetricsNotSet() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     elements.add(generateElement(1, "db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE, 1L));
@@ -355,7 +371,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testAgeMetricsAge() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     long start = System.currentTimeMillis() - 1000L;
@@ -371,7 +386,6 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testAgeMetricsOrder() {
-    Metrics.initialize(conf);
     ShowCompactResponse scr = new ShowCompactResponse();
     long start = System.currentTimeMillis();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
@@ -398,40 +412,86 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   @Test
   public void testDBMetrics() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
-    Metrics.initialize(conf);
+    String dbName = "default";
+    String tblName = "dcamc";
+    Table t = newTable(dbName, tblName, false);
 
-    Table t = newTable("default", "dcamc", false);
-    burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
+    long start = System.currentTimeMillis();
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
     comp.setOperationType(DataOperationType.UPDATE);
 
-    long txnid = openTxn();
-
     LockRequest req = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
-    req.setTxnid(txnid);
+    req.setTxnid(22);
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
+    txnHandler.commitTxn(new CommitTxnRequest(22));
 
-    long writeid = allocateWriteId(t.getDbName(), t.getTableName(), txnid);
-    Assert.assertEquals(25, writeid);
-    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    req.setTxnid(23);
+    res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+    Thread.sleep(1000);
 
     runAcidMetricService();
+    long diff = (System.currentTimeMillis() - start) / 1000;
 
-    Assert.assertEquals(25,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
+    Assert.assertEquals(24,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
     Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS).intValue());
+
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS).intValue());
+    Assert.assertEquals(23,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
+
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_LOCKS).intValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_LOCK_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_LOCK_AGE).intValue() >= 1);
 
     txnHandler.cleanTxnToWriteIdTable();
     runAcidMetricService();
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
-    // As there are no open or aborted txns in the system, then max(TXNS.txn_id) would be min_uncommitted_txnid
-    Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
+    start = System.currentTimeMillis();
+    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(25L, 27L)));
+    Thread.sleep(1000);
+
+    runAcidMetricService();
+    diff = (System.currentTimeMillis() - start) / 1000;
+
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() >= 1);
+
+    Assert.assertEquals(25,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
+  }
+
+  @Test
+  public void testTxnHandlerCounters() throws Exception {
+    String dbName = "default";
+    String tblName = "txnhandlercounters";
+    Table t = newTable(dbName, tblName, false);
+
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Arrays.asList(2L, 3L)));
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_ABORTED_TXNS + " value incorrect",
+            2, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS + " value incorrect",
+            1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
+
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 3, null, new HashSet<>(Collections.singletonList(4L)));
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_ABORTED_TXNS + " value incorrect",
+            3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
+    Assert.assertEquals(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS + " value incorrect",
+            3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
@@ -445,6 +505,12 @@ public class TestCompactionMetrics  extends CompactorTest {
     element.setId(id);
     element.setPartitionname(partition);
     element.setEnqueueTime(enqueueTime);
+
+    String runtimeId = ServerUtils.hostname() + "-" + ThreadLocalRandom.current().nextInt();
+    element.setInitiatorId(runtimeId);
+    element.setWorkerid(runtimeId);
+    element.setInitiatorVersion("4.0.0");
+    element.setWorkerVersion("4.0.0");
     return element;
   }
 
