@@ -49,6 +49,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -644,8 +645,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testMultiTableInsert() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
@@ -685,11 +684,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteWithDefaultWriteFormat() {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     Assume.assumeTrue("Testing the default file format is enough for a single scenario.",
-        executionEngine.equals("tez") && testTableType == TestTables.TestTableType.HIVE_CATALOG &&
-            fileFormat == FileFormat.ORC);
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
