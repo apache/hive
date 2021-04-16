@@ -38,6 +38,7 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -79,7 +80,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
-    if (!Catalogs.hiveCatalog(conf)) {
+    if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       // For non-HiveCatalog tables too, we should set the input and output format
       // so that the table can be read by other engines like Impala
       hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getCanonicalName());
@@ -124,7 +125,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     // If the table is not managed by Hive catalog then the location should be set
-    if (!Catalogs.hiveCatalog(conf)) {
+    if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       Preconditions.checkArgument(hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null,
           "Table location not set");
     }
@@ -141,7 +142,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (icebergTable == null) {
-      if (Catalogs.hiveCatalog(conf)) {
+      if (Catalogs.hiveCatalog(conf, catalogProperties)) {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
 
@@ -155,7 +156,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     this.deleteIcebergTable = hmsTable.getParameters() != null &&
         "TRUE".equalsIgnoreCase(hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
 
-    if (deleteIcebergTable && Catalogs.hiveCatalog(conf)) {
+    if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties)) {
       // Store the metadata and the id for deleting the actual table data
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       this.deleteIo = Catalogs.loadTable(conf, catalogProperties).io();
@@ -172,7 +173,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   public void commitDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean deleteData) {
     if (deleteData && deleteIcebergTable) {
       try {
-        if (!Catalogs.hiveCatalog(conf)) {
+        if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
           LOG.info("Dropping with purge all the data for table {}.{}", hmsTable.getDbName(), hmsTable.getTableName());
           Catalogs.dropTable(conf, catalogProperties);
         } else {
@@ -203,7 +204,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
    */
   private static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     Properties properties = new Properties();
-    properties.putAll(hmsTable.getParameters());
+
+    hmsTable.getParameters().forEach((key, value) -> {
+      // translate key names between HMS and Iceberg where needed
+      String icebergKey = HiveTableOperations.translateToIcebergProp(key);
+      properties.put(icebergKey, value);
+    });
 
     if (properties.get(Catalogs.LOCATION) == null &&
         hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null) {

@@ -36,6 +36,7 @@ import org.apache.iceberg.TestHelpers.Row;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -193,7 +194,8 @@ public class TestHiveIcebergStorageHandlerLocalScan {
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name', " +
         "last_name STRING COMMENT 'This is last name')" +
         " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
-        testTables.locationForCreateTableSQL(identifier);
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), data);
   }
@@ -211,7 +213,8 @@ public class TestHiveIcebergStorageHandlerLocalScan {
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name') " +
         "PARTITIONED BY (last_name STRING COMMENT 'This is last name') STORED BY " +
          "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
-        testTables.locationForCreateTableSQL(identifier);
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, data);
   }
 
@@ -229,7 +232,8 @@ public class TestHiveIcebergStorageHandlerLocalScan {
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.PARTITION_SPEC + "'='" + PartitionSpecParser.toJson(spec) + "', " +
         "'" + InputFormatConfig.TABLE_SCHEMA + "'='" +
-        SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "')";
+        SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', "  +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')";
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, data);
   }
 
@@ -246,7 +250,8 @@ public class TestHiveIcebergStorageHandlerLocalScan {
         "PARTITIONED BY (first_name STRING COMMENT 'This is first name', " +
         "last_name STRING COMMENT 'This is last name') " +
         "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
-        testTables.locationForCreateTableSQL(identifier);
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, data);
   }
 
