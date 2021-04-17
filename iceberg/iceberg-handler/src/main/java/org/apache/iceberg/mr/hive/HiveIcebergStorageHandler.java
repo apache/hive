@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.hive;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
@@ -183,9 +182,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
           stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
         }
-        // TODO: add TOTAL_SIZE when iceberg 0.12 is released
-        if (summary.containsKey("total-files-size")) {
-          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get("total-files-size"));
+        if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
+          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
         }
       }
     } else {

@@ -103,8 +103,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   private static final Map<String, String> STATS_MAPPING = ImmutableMap.of(
       StatsSetupConst.NUM_FILES, SnapshotSummary.TOTAL_DATA_FILES_PROP,
-      StatsSetupConst.ROW_COUNT, SnapshotSummary.TOTAL_RECORDS_PROP
-      // TODO: add TOTAL_SIZE -> TOTAL_FILE_SIZE_PROP mapping after iceberg 0.12 is released
+      StatsSetupConst.ROW_COUNT, SnapshotSummary.TOTAL_RECORDS_PROP,
+      StatsSetupConst.TOTAL_SIZE, SnapshotSummary.TOTAL_FILE_SIZE_PROP
   );
 
   @Parameters(name = "fileFormat={0}, engine={1}, catalog={2}")
