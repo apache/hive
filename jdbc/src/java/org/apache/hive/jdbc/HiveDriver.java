@@ -270,6 +270,7 @@ public class HiveDriver implements Driver {
         .getLocation().toString();
     URL manifestUrl = new URL("jar:" + classContainer
         + "!/META-INF/MANIFEST.MF");
+    //HIVE-25023
     URLConnection connection = manifestUrl.openConnection();
     if (connection instanceof JarURLConnection){
       connection.setUseCaches(false);
