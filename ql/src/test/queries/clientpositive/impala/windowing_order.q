@@ -35,5 +35,11 @@ select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1;
 explain cbo physical
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1;
 
+explain
+select row_number() over(partition by ss_sold_date_sk order by ss_quantity) from tab_sales_n1;
+
+explain
+select row_number() over(order by ss_quantity) from tab_sales_n1;
+
 
 drop table if exists tab_sales_n1;

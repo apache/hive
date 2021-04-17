@@ -244,7 +244,7 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     // the window frame as part of the AnalyticExpr's standardization.
     AnalyticWindow window = null;
     if ((!partitionExprs.isEmpty() || !orderByElements.isEmpty()) &&
-        !AnalyticExpr.isOffsetFn(fn)) {
+        !skipWindowGeneration(fn)) {
       Boundary lBoundary = getWindowBoundary(rexWindow.getLowerBound(),
           ctx, inputRel);
       Boundary rBoundary = getWindowBoundary(rexWindow.getUpperBound(),
@@ -255,6 +255,11 @@ abstract public class ImpalaProjectRelBase extends ImpalaPlanRel {
     }
 
     return new ImpalaAnalyticExpr(ctx.getRootAnalyzer(), fnCall, partitionExprs, orderByElements, window);
+  }
+
+  private boolean skipWindowGeneration(Function fn) {
+    return fn.functionName().equals("lag") || fn.functionName().equals("lead") ||
+        fn.functionName().equals("row_number");
   }
 
   private Boundary getWindowBoundary(RexWindowBound wb, ImpalaPlannerContext ctx, ImpalaPlanRel inputRel) {

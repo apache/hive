@@ -148,7 +148,8 @@ public class ImpalaAnalyticExpr extends AnalyticExpr {
 
   private boolean isStandardizationNeeded(String fname) {
     return fname.equals("lag") || fname.equals("lead") ||
-        fname.equals("first_value") || fname.equals("last_value");
+        fname.equals("first_value") || fname.equals("last_value") ||
+        fname.equals("row_number");
   }
 
   private boolean isResetNeeded(String fname) {
