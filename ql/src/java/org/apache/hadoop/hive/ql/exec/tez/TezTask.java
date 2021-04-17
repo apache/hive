@@ -373,9 +373,14 @@ public class TezTask extends Task<TezWork> {
               VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
               sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName,
                   status.getProgress().getSucceededTaskCount());
-              sessionConf.setBoolean(jobConf.get("hive.query.id") + ".result", success);
             }
           }
+          sessionConf.setBoolean(jobConf.get("hive.query.id") + ".result", success);
+          jobConf.forEach(e -> {
+            if (e.getKey().startsWith("iceberg.mr.")) {
+              sessionConf.set(e.getKey(), e.getValue());
+            }
+          });
         } else {
           LOG.warn("Table location or table name not found in config for base work: " + w.getName());
         }

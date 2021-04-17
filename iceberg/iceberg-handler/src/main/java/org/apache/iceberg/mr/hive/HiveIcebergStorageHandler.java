@@ -124,10 +124,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
       tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
+      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
       // this will turn off job committing on the Tez AM side, so that we can commit the write jobs
       // on HS2 side instead using the HiveIcebergMetaHook
       jobConf.set(HiveConf.ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER.varname, "");
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
       String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
       if (catalogName != null) {
