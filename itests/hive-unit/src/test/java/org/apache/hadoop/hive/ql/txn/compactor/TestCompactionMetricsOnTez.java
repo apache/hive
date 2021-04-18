@@ -52,7 +52,7 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD, 0);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, 1, TimeUnit.SECONDS);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, 0, TimeUnit.SECONDS);
-    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD, 0.3f);
+    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD, 0.7f);
     DeltaFilesMetricReporter.init(conf);
 
     String dbName = "default", tableName = "test_metrics";
@@ -102,7 +102,7 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     }
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true,
         partitionToday);
-    executeStatementOnDriver("insert into " + tableName + " values('1',2, 'today')", driver);
+    executeStatementOnDriver("insert into " + tableName + " partition (ds='today') values('1',2)", driver);
 
     executeStatementOnDriver("select avg(b) from " + tableName, driver);
     Thread.sleep(1000);
