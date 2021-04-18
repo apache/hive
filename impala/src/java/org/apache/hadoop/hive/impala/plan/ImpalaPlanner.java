@@ -26,11 +26,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ResultMethod;
 import org.apache.hadoop.hive.impala.ImpalaEventSequence;
-import org.apache.hadoop.hive.impala.node.ImpalaUnionNode;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -46,6 +46,7 @@ import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.JoinOperator;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.analysis.NullLiteral;
+import org.apache.impala.analysis.SortInfo;
 import org.apache.impala.analysis.StatementBase;
 import org.apache.impala.catalog.FeTable;
 import org.apache.impala.catalog.HdfsTable;
@@ -66,6 +67,7 @@ import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.planner.SingleNodePlanner;
 import org.apache.impala.planner.SingularRowSrcNode;
+import org.apache.impala.planner.SortNode;
 import org.apache.impala.planner.SubplanNode;
 import org.apache.impala.planner.TableSink;
 import org.apache.impala.service.Frontend;
@@ -532,8 +534,6 @@ public class ImpalaPlanner {
       boolean inputIsClustered = false; // !hasNoClusteredHint_ || !sortExprs_.isEmpty();
       boolean isUpsert = false; // Kudu only upsert
       List<Integer> sortColumns = new ArrayList<>(); // Sort column positions
-      TSortingOrder sortingOrder = TSortingOrder.LEXICAL;
-      Pair<List<Integer>, TSortingOrder> sortProperties = new Pair<>(sortColumns, sortingOrder);
       if (targetTable instanceof HdfsTable && ((HdfsTable)targetTable).isPartitioned()) {
         Partition part = ctx_.getTargetPartition();
         if (part != null) { // Static partition case
@@ -563,6 +563,33 @@ public class ImpalaPlanner {
           int numDynamicColumns = numPartitionColumns - numStaticColumns;
           // partition columns are at the end of resultExprs
           partitionKeyExprs.addAll(ctx_.getResultExprs().subList(numResultExprs - numDynamicColumns, numResultExprs));
+
+          if (!ctx_.isSingleNodeExec()) {
+            // This InsertStmt is a mock that just provides the necessary information to be able to rely
+            // on the distributed planner createInsertFragment method.
+            ImpalaInsertStmt insertStmt = new ImpalaInsertStmt(targetTable, partitionKeyExprs);
+            // repartition on partition keys
+            rootFragment = distributedPlanner.createInsertFragment(
+                rootFragment, insertStmt, ctx_.getRootAnalyzer(), fragments);
+          }
+          // Add sort node to the plan for partitioned tables.
+          // TODO: We could rely on Impala's Planner.createPreInsertSort instead (needs to be static)
+          List<Expr> orderingExprs = new ArrayList<>(partitionKeyExprs);
+          List<Boolean> isAscOrder = Collections.nCopies(orderingExprs.size(), true);
+          List<Boolean> nullsFirstParams = Collections.nCopies(orderingExprs.size(), false);
+          SortInfo sortInfo = new SortInfo(orderingExprs, isAscOrder, nullsFirstParams);
+          sortInfo.createSortTupleInfo(ctx_.getResultExprs(), ctx_.getRootAnalyzer());
+          sortInfo.getSortTupleDescriptor().materializeSlots();
+          ctx_.setResultExprs(Expr.substituteList(ctx_.getResultExprs(), sortInfo.getOutputSmap(), ctx_.getRootAnalyzer(), true));
+          resultExprs = Expr.substituteList(resultExprs, sortInfo.getOutputSmap(), ctx_.getRootAnalyzer(), true);
+          partitionKeyExprs = Expr.substituteList(partitionKeyExprs, sortInfo.getOutputSmap(), ctx_.getRootAnalyzer(), true);
+          PlanNode node = SortNode.createTotalSortNode(this.ctx_.getNextNodeId(), rootFragment.getPlanRoot(), sortInfo, 0L);
+          node.init(ctx_.getRootAnalyzer());
+          rootFragment.setPlanRoot(node);
+
+          inputIsClustered = true;
+
+          IntStream.range(numResultExprs - numDynamicColumns, numResultExprs).forEach(sortColumns::add); // Sort column positions
         }
       }
 
@@ -574,7 +601,8 @@ public class ImpalaPlanner {
       TableSink sink = TableSink.create(ctx_.getTargetTable(),
             isUpsert ? TableSink.Op.UPSERT : TableSink.Op.INSERT,
             partitionKeyExprs, resultExprs, referencedColumns,
-            isOverwrite, inputIsClustered, sortProperties, writeId, 0);
+            isOverwrite, inputIsClustered, new Pair<>(sortColumns, TSortingOrder.LEXICAL),
+            writeId, 0);
       Preconditions.checkState(sink instanceof HdfsTableSink, "Currently only HDFS table sinks are supported");
       Preconditions.checkNotNull(destination, "Invalid destination for Impala sink");
       HdfsTableSink s = (HdfsTableSink) sink;

@@ -342,11 +342,17 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=20B mem-reservation=0B thread-reservation=1
-  WRITE TO HDFS [default.tab1_imp0_part, OVERWRITE=false, PARTITION-KEYS=(default.emps_imp0.name)]
+Per-Host Resources: mem-estimate=12.00MB mem-reservation=12.00MB thread-reservation=1
+  WRITE TO HDFS [default.tab1_imp0_part, OVERWRITE=false, PARTITION-KEYS=(name)]
   |  partitions=unavailable
-  |  output exprs: default.emps_imp0.empid, default.emps_imp0.deptno, default.emps_imp0.name
+  |  output exprs: empid, deptno, name
   |  mem-estimate=20B mem-reservation=0B thread-reservation=0
+  |
+  01:SORT
+  |  order by: name ASC NULLS LAST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=2 row-size=20B cardinality=0
+  |  in pipelines: 01(GETNEXT), 00(OPEN)
   |
   00:SCAN HDFS [default.emps_imp0, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
@@ -401,11 +407,17 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=24.02KB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=12.02MB mem-reservation=12.00MB thread-reservation=1
   WRITE TO HDFS [default.tab1_imp0_part, OVERWRITE=false, PARTITION-KEYS=(default.emps_imp0.name)]
   |  partitions=unavailable
   |  output exprs: default.emps_imp0.empid, default.emps_imp0.deptno, default.emps_imp0.name
   |  mem-estimate=20B mem-reservation=0B thread-reservation=0
+  |
+  03:SORT
+  |  order by: default.emps_imp0.name ASC NULLS LAST
+  |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=3 row-size=20B cardinality=0
+  |  in pipelines: 03(GETNEXT), 01(OPEN)
   |
   02:EXCHANGE [UNPARTITIONED]
      limit: 10
