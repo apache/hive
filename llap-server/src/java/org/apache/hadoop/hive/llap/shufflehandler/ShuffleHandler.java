@@ -115,6 +115,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
@@ -812,9 +813,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       timeoutHandler.setEnabledTimeout(false);
 
       String user = userRsrc.get(jobId);
-      if (keepAliveParam || connectionKeepAliveEnabled){
-        pipeline.replace(pipeline.get("encoder"), "encoder", new HttpResponseEncoder());
-      }
       try {
         populateHeaders(mapIds, jobId, dagId, user, reduceId,
             response, keepAliveParam, mapOutputInfoMap);
@@ -832,7 +830,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         sendError(ctx, errorMessage, INTERNAL_SERVER_ERROR);
         return;
       }
-      ch.writeAndFlush(response);
+      ch.write(response);
       // TODO refactor the following into the pipeline
       ChannelFuture lastMap = null;
       for (String mapId : mapIds) {
@@ -853,10 +851,12 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         } catch (IOException e) {
           LOG.error("Shuffle error :", e);
           String errorMessage = getErrorMessage(e);
-          sendError(ctx,errorMessage , INTERNAL_SERVER_ERROR);
+          sendError(ctx, errorMessage, INTERNAL_SERVER_ERROR);
           return;
         }
       }
+      // by this special message flushed, we can make sure the whole response is finished
+      ch.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
       // If Keep alive is enabled, do not close the connection.
       if (!keepAliveParam && !connectionKeepAliveEnabled) {
         lastMap.addListener(ChannelFutureListener.CLOSE);
@@ -1019,7 +1019,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         new ShuffleHeader(mapId, info.getPartLength(), info.getRawLength(), reduce);
       final DataOutputBuffer dob = new DataOutputBuffer();
       header.write(dob);
-      ch.writeAndFlush(wrappedBuffer(dob.getData(), 0, dob.getLength()));
+      ch.write(wrappedBuffer(dob.getData(), 0, dob.getLength()));
       final File spillfile =
           new File(mapOutputInfo.mapOutputFileName.toString());
       RandomAccessFile spill;
@@ -1039,14 +1039,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
             info.getStartOffset(), info.getPartLength(), manageOsCache, readaheadLength,
             readaheadPool, spillfile.getAbsolutePath(), 
             shuffleBufferSize, shuffleTransferToAllowed, canEvictAfterTransfer);
-        writeFuture = ch.writeAndFlush(partition);
+        writeFuture = ch.write(partition);
       } else {
         // HTTPS cannot be done with zero copy.
         final FadvisedChunkedFile chunk = new FadvisedChunkedFile(spill,
             info.getStartOffset(), info.getPartLength(), sslFileBufferSize,
             manageOsCache, readaheadLength, readaheadPool,
             spillfile.getAbsolutePath());
-        writeFuture = ch.writeAndFlush(chunk);
+        writeFuture = ch.write(chunk);
       }
       return writeFuture;
     }
