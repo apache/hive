@@ -231,7 +231,7 @@ public class TestMetaStoreEventListener {
         .addCol("a", "string")
         .addPartCol("b", "string")
         .create(msc, conf);
-    PreCreateTableEvent preTblEvent = (PreCreateTableEvent)(preNotifyList.get(preNotifyList.size() - 1));
+    PreCreateTableEvent preTblEvent = (PreCreateTableEvent) (preNotifyList.get(preNotifyList.size() - 1));
     listSize++;
     Table tbl = msc.getTable(dbName, tblName);
     validateCreateTable(tbl, preTblEvent.getTable());
