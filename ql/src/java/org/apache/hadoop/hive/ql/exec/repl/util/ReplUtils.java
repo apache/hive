@@ -463,17 +463,20 @@ public class ReplUtils {
     return null;
   }
 
-  public static String getDistCpCustomName(HiveConf conf) {
+  public static String getDistCpCustomName(HiveConf conf, String dbName) {
     String userChosenName = conf.get(JobContext.JOB_NAME);
     if (StringUtils.isEmpty(userChosenName)) {
-      String policyName = conf.get(SCHEDULED_QUERY_SCHEDULENAME, "POLICY_NAME");
-      String policyId =
-          conf.get(SCHEDULED_QUERY_EXECUTIONID, "QUERY_EXECUTION_ID");
-      userChosenName = "Repl#" + policyName + "#" + policyId;
+      String policyName = conf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
+      if (policyName.isEmpty()) {
+        userChosenName = "Repl#" + dbName;
+      } else {
+        String executionId = conf.get(SCHEDULED_QUERY_EXECUTIONID, "");
+
+        userChosenName = "Repl#" + policyName + "#" + executionId + "#" + dbName;
+      }
       LOG.info("Using {} as job name for map-reduce jobs.", userChosenName);
     } else {
-      LOG.info("Job Name is explicitly configured as {}, not using "
-          + "replication job custom name.", userChosenName);
+      LOG.info("Job Name is explicitly configured as {}, not using " + "replication job custom name.", userChosenName);
     }
     return userChosenName;
   }

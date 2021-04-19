@@ -168,7 +168,12 @@ public class TestHplsqlLocal {
   public void testDatatypes() throws Exception {
     run("datatypes");
   }
-  
+
+  @Test
+  public void testTableType() throws Exception {
+    run("table_type");
+  }
+
   @Test
   public void testDate() throws Exception {
     run("date");
@@ -457,7 +462,6 @@ public class TestHplsqlLocal {
   public void testConversion() throws Exception {
     run("conversion");
   }
-
 
   /**
    * Run a test file

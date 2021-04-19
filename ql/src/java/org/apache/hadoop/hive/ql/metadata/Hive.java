@@ -52,7 +52,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,7 +73,6 @@ import javax.jdo.JDODataStoreException;
 
 import com.google.common.collect.ImmutableList;
 
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -103,7 +101,6 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -128,6 +125,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -218,7 +216,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -843,6 +840,110 @@ public class Hive {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Create a dataconnector
+   * @param connector
+   * @param ifNotExist if true, will ignore AlreadyExistsException exception
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createDataConnector(DataConnector connector, boolean ifNotExist)
+      throws AlreadyExistsException, HiveException {
+    try {
+      getMSC().createDataConnector(connector);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExist) {
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Create a DataConnector. Raise an error if a dataconnector with the same name already exists.
+   * @param connector
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createDataConnector(DataConnector connector) throws AlreadyExistsException, HiveException {
+    createDataConnector(connector, false);
+  }
+
+  /**
+   * Drop a dataconnector.
+   * @param name
+   * @throws NoSuchObjectException
+   * @throws HiveException
+   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDataConnector(java.lang.String, boolean, boolean)
+   */
+  public void dropDataConnector(String name, boolean ifNotExists) throws HiveException, NoSuchObjectException {
+    dropDataConnector(name, ifNotExists, true);
+  }
+
+  /**
+   * Drop a dataconnector
+   * @param name
+   * @param checkReferences drop only if there are no dbs referencing this connector
+   * @throws HiveException
+   * @throws NoSuchObjectException
+   */
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().dropDataConnector(name, ifNotExists, checkReferences);
+    } catch (NoSuchObjectException e) {
+      if (!ifNotExists)
+        throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get the dataconnector by name.
+   * @param dcName the name of the dataconnector.
+   * @return a DataConnector object if this dataconnector exists, null otherwise.
+   * @throws HiveException
+   */
+  public DataConnector getDataConnector(String dcName) throws HiveException {
+    try {
+      return getMSC().getDataConnector(dcName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get all dataconnector names.
+   * @return List of all dataconnector names.
+   * @throws HiveException
+   */
+  public List<String> getAllDataConnectorNames() throws HiveException {
+    try {
+      return getMSC().getAllDataConnectorNames();
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterDataConnector(String dcName, DataConnector connector)
+      throws HiveException {
+    try {
+      getMSC().alterDataConnector(dcName, connector);
+    } catch (MetaException e) {
+      throw new HiveException("Unable to alter dataconnector " + dcName + ". " + e.getMessage(), e);
+    } catch (NoSuchObjectException e) {
+      throw new HiveException("DataConnector " + dcName + " does not exists.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to alter dataconnector " + dcName + ". " + e.getMessage(), e);
     }
   }
 
@@ -1904,6 +2005,7 @@ public class Hive {
         }
 
         final CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
+        Materialization invalidationInfo = null;
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           boolean ignore;
@@ -1916,10 +2018,9 @@ public class Hive {
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
             // We will not try partial rewriting if there were update/delete/compaction operations on source tables
-            Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
+            invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                 creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
-            ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted() ||
-                invalidationInfo.isSourceTablesUpdateDeleteModified();
+            ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted();
           }
           if (ignore) {
             LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
@@ -1943,11 +2044,7 @@ public class Hive {
                   relOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                       creationMetadata.getValidTxnList()));
             }
-            if (expandGroupingSets) {
-              result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization));
-            } else {
-              result.add(relOptMaterialization);
-            }
+            addToMaterializationList(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
             continue;
           }
         }
@@ -1970,16 +2067,30 @@ public class Hive {
                     hiveRelOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                     creationMetadata.getValidTxnList()));
           }
-          if (expandGroupingSets) {
-            result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization));
-          } else {
-            result.add(relOptMaterialization);
-          }
+          addToMaterializationList(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
         }
       }
       return result;
     } catch (Exception e) {
       throw new HiveException(e);
+    }
+  }
+
+  private void addToMaterializationList(
+          boolean expandGroupingSets, Materialization invalidationInfo, HiveRelOptMaterialization relOptMaterialization,
+          List<HiveRelOptMaterialization> result) {
+    if (expandGroupingSets) {
+      List<HiveRelOptMaterialization> hiveRelOptMaterializationList =
+              HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(relOptMaterialization);
+      if (invalidationInfo != null) {
+        for (HiveRelOptMaterialization materialization : hiveRelOptMaterializationList) {
+          result.add(materialization.updateInvalidation(invalidationInfo));
+        }
+      } else {
+        result.addAll(hiveRelOptMaterializationList);
+      }
+    } else {
+      result.add(invalidationInfo == null ? relOptMaterialization : relOptMaterialization.updateInvalidation(invalidationInfo));
     }
   }
 

@@ -174,7 +174,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           // Set distCp custom name corresponding to the replication policy.
-          String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+          String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameOrPattern);
           conf.set(JobContext.JOB_NAME, mapRedCustomName);
           work.setCurrentDumpPath(currentDumpPath);
           work.setMetricCollector(initMetricCollection(isBootstrap, hiveDumpRoot));
@@ -676,40 +676,42 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK)
                 && work.replScope.includeAllTables();
         boolean isExternalTablePresent = false;
-        for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
-          try {
-            Table table = hiveDb.getTable(dbName, tableName);
+        for(String matchedDbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
+          for (String tableName : Utils.matchesTbl(hiveDb, matchedDbName, work.replScope)) {
+            try {
+              Table table = hiveDb.getTable(matchedDbName, tableName);
 
-            // Dump external table locations if required.
-            if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
-                    && shouldDumpExternalTableLocation()) {
-              dbPath = new Path(hiveDb.getDatabase(dbName).getLocationUri());
-              externalTablesWriter.dataLocationDump(table, extTableFileList, dbPath,
-                  !isSingleCopyTaskForExternalTables, conf);
-              isExternalTablePresent=true;
+              // Dump external table locations if required.
+              if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
+                      && shouldDumpExternalTableLocation()) {
+                dbPath = new Path(hiveDb.getDatabase(matchedDbName).getLocationUri());
+                externalTablesWriter.dataLocationDump(table, extTableFileList, dbPath,
+                        !isSingleCopyTaskForExternalTables, conf);
+                isExternalTablePresent = true;
+              }
+
+              // Dump the table to be bootstrapped if required.
+              if (shouldBootstrapDumpTable(table)) {
+                HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, matchedDbName).table(table);
+                dumpTable(matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
+                        hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
+              }
+              if (tableList != null && isTableSatifiesConfig(table)) {
+                tableList.add(tableName);
+              }
+            } catch (InvalidTableException te) {
+              // Repl dump shouldn't fail if the table is dropped/renamed while dumping it.
+              // Just log a debug message and skip it.
+              LOG.debug(te.getMessage());
             }
-            
-            // Dump the table to be bootstrapped if required.
-            if (shouldBootstrapDumpTable(table)) {
-              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-              dumpTable(dbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
-                      hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
+            // if it is not a table level replication, add a single task for
+            // the database default location for external tables...
+            if (isExternalTablePresent && shouldDumpExternalTableLocation()
+                    && isSingleCopyTaskForExternalTables) {
+              // Using the lower case of the database name, to keep it
+              // consistent with the name used during bootstrap.
+              externalTablesWriter.dbLocationDump(matchedDbName.toLowerCase(), dbPath, extTableFileList, conf);
             }
-            if (tableList != null && isTableSatifiesConfig(table)) {
-              tableList.add(tableName);
-            }
-          } catch (InvalidTableException te) {
-            // Repl dump shouldn't fail if the table is dropped/renamed while dumping it.
-            // Just log a debug message and skip it.
-            LOG.debug(te.getMessage());
-          }
-          // if it is not a table level replication, add a single task for
-          // the database default location for external tables...
-          if (isExternalTablePresent && shouldDumpExternalTableLocation()
-              && isSingleCopyTaskForExternalTables) {
-            // Using the lower case of the database name, to keep it
-            // consistent with the name used during bootstrap.
-            externalTablesWriter.dbLocationDump(dbName.toLowerCase(), dbPath, extTableFileList, conf);
           }
         }
         dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);

@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -92,6 +93,8 @@ import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -283,8 +286,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final String SELECT_METRICS_INFO_QUERY =
       "SELECT * FROM (SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\") \"TTWID\" CROSS JOIN (" +
       "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\") \"CTC\" CROSS JOIN (" +
-      "SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN + ") \"T\" " +
-      "CROSS JOIN (SELECT COUNT(*), MIN(\"TXN_ID\"), (%s - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.ABORTED + ") \"A\" ";
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
+        TxnStatus.OPEN + "') \"T\" CROSS JOIN (" +
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
+        TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
+      "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\"";
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -3649,12 +3655,94 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  /**
+   * We assume this is only called by metadata cache server to know if there are new base/delta files should be read.
+   * The query filters compactions by state and only returns SUCCEEDED or READY_FOR_CLEANING compactions because
+   * only these two states means there are new files ready to be read.
+   */
+  @RetrySemantics.ReadOnly
+  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException {
+    GetLatestCommittedCompactionInfoResponse response = new GetLatestCommittedCompactionInfoResponse(new ArrayList<>());
+    Connection dbConn = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+
+        List<String> params = new ArrayList<>();
+        // This query combines the result sets of SUCCEEDED compactions and READY_FOR_CLEANING compactions
+        // We also sort the result by CC_ID in descending order so that we can keep only the latest record
+        // according to the order in result set
+        StringBuilder sb = new StringBuilder()
+            .append("SELECT * FROM (")
+            .append("   SELECT")
+            .append("   \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_TYPE\"")
+            .append("   FROM \"COMPLETED_COMPACTIONS\"")
+            .append("     WHERE \"CC_STATE\" = " + quoteChar(SUCCEEDED_STATE))
+            .append("   UNION ALL")
+            .append("   SELECT")
+            .append("   \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\"")
+            .append("   ,\"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\"")
+            .append("   ,\"CQ_TYPE\" AS \"CC_TYPE\"")
+            .append("   FROM \"COMPACTION_QUEUE\"")
+            .append("     WHERE \"CQ_STATE\" = " + quoteChar(READY_FOR_CLEANING))
+            .append(") AS compactions ")
+            .append(" WHERE \"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
+        params.add(rqst.getDbname());
+        params.add(rqst.getTablename());
+        if (rqst.getPartitionnamesSize() > 0) {
+          sb.append(" AND \"CC_PARTITION\" IN (");
+          sb.append(String.join(",",
+              Collections.nCopies(rqst.getPartitionnamesSize(), "?")));
+          sb.append(")");
+          params.addAll(rqst.getPartitionnames());
+        } else {
+          sb.append(" AND \"CC_PARTITION\" IS NULL");
+        }
+        sb.append(" ORDER BY \"CC_ID\" DESC");
+
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
+        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        rs = pst.executeQuery();
+        Set<String> partitionSet = new HashSet<>();
+        while (rs.next()) {
+          CompactionInfoStruct lci = new CompactionInfoStruct();
+          lci.setId(rs.getLong(1));
+          lci.setDbname(rs.getString(2));
+          lci.setTablename(rs.getString(3));
+          String partition = rs.getString(4);
+          if (!rs.wasNull()) {
+            lci.setPartitionname(partition);
+          }
+          lci.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+          // Only put the latest record of each partition into response
+          if (!partitionSet.contains(partition)) {
+            response.addToCompactions(lci);
+            partitionSet.add(partition);
+          }
+        }
+      } catch (SQLException e) {
+        LOG.error("Unable to execute query " + e.getMessage());
+        checkRetryable(dbConn, e, "getLatestCommittedCompactionInfo");
+      } finally {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        close(rs, pst, dbConn);
+      }
+      return response;
+    } catch (RetryException e) {
+      return getLatestCommittedCompactionInfo(rqst);
+    }
+  }
+
   public MetricsInfo getMetricsInfo() throws MetaException {
     Connection dbConn = null;
     Statement stmt = null;
     try {
       MetricsInfo metrics = new MetricsInfo();
-      String s = String.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct), getEpochFn(dbProduct));
+      String s = MessageFormat.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
@@ -3669,6 +3757,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           metrics.setAbortedTxnsCount(rs.getInt(6));
           metrics.setOldestAbortedTxnId(rs.getInt(7));
           metrics.setOldestAbortedTxnAge(rs.getInt(8));
+          metrics.setLocksCount(rs.getInt(9));
+          metrics.setOldestLockAge(rs.getInt(10));
         }
         return metrics;
       } catch (SQLException e) {

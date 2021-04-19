@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField CATALOG_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catalogName", org.apache.thrift.protocol.TType.STRING, (short)8);
   private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)9);
   private static final org.apache.thrift.protocol.TField MANAGED_LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("managedLocationUri", org.apache.thrift.protocol.TType.STRING, (short)10);
+  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)11);
+  private static final org.apache.thrift.protocol.TField CONNECTOR_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("connector_name", org.apache.thrift.protocol.TType.STRING, (short)12);
+  private static final org.apache.thrift.protocol.TField REMOTE_DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("remote_dbname", org.apache.thrift.protocol.TType.STRING, (short)13);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DatabaseStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DatabaseTupleSchemeFactory();
@@ -35,6 +38,9 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String catalogName; // optional
   private int createTime; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String managedLocationUri; // optional
+  private @org.apache.thrift.annotation.Nullable DatabaseType type; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String connector_name; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String remote_dbname; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -51,7 +57,14 @@ package org.apache.hadoop.hive.metastore.api;
     OWNER_TYPE((short)7, "ownerType"),
     CATALOG_NAME((short)8, "catalogName"),
     CREATE_TIME((short)9, "createTime"),
-    MANAGED_LOCATION_URI((short)10, "managedLocationUri");
+    MANAGED_LOCATION_URI((short)10, "managedLocationUri"),
+    /**
+     * 
+     * @see DatabaseType
+     */
+    TYPE((short)11, "type"),
+    CONNECTOR_NAME((short)12, "connector_name"),
+    REMOTE_DBNAME((short)13, "remote_dbname");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -87,6 +100,12 @@ package org.apache.hadoop.hive.metastore.api;
           return CREATE_TIME;
         case 10: // MANAGED_LOCATION_URI
           return MANAGED_LOCATION_URI;
+        case 11: // TYPE
+          return TYPE;
+        case 12: // CONNECTOR_NAME
+          return CONNECTOR_NAME;
+        case 13: // REMOTE_DBNAME
+          return REMOTE_DBNAME;
         default:
           return null;
       }
@@ -130,7 +149,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI,_Fields.TYPE,_Fields.CONNECTOR_NAME,_Fields.REMOTE_DBNAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -155,6 +174,12 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.MANAGED_LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("managedLocationUri", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, DatabaseType.class)));
+    tmpMap.put(_Fields.CONNECTOR_NAME, new org.apache.thrift.meta_data.FieldMetaData("connector_name", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.REMOTE_DBNAME, new org.apache.thrift.meta_data.FieldMetaData("remote_dbname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Database.class, metaDataMap);
@@ -210,6 +235,15 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetManagedLocationUri()) {
       this.managedLocationUri = other.managedLocationUri;
     }
+    if (other.isSetType()) {
+      this.type = other.type;
+    }
+    if (other.isSetConnector_name()) {
+      this.connector_name = other.connector_name;
+    }
+    if (other.isSetRemote_dbname()) {
+      this.remote_dbname = other.remote_dbname;
+    }
   }
 
   public Database deepCopy() {
@@ -229,6 +263,9 @@ package org.apache.hadoop.hive.metastore.api;
     setCreateTimeIsSet(false);
     this.createTime = 0;
     this.managedLocationUri = null;
+    this.type = null;
+    this.connector_name = null;
+    this.remote_dbname = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -488,6 +525,86 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  /**
+   * 
+   * @see DatabaseType
+   */
+  @org.apache.thrift.annotation.Nullable
+  public DatabaseType getType() {
+    return this.type;
+  }
+
+  /**
+   * 
+   * @see DatabaseType
+   */
+  public void setType(@org.apache.thrift.annotation.Nullable DatabaseType type) {
+    this.type = type;
+  }
+
+  public void unsetType() {
+    this.type = null;
+  }
+
+  /** Returns true if field type is set (has been assigned a value) and false otherwise */
+  public boolean isSetType() {
+    return this.type != null;
+  }
+
+  public void setTypeIsSet(boolean value) {
+    if (!value) {
+      this.type = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getConnector_name() {
+    return this.connector_name;
+  }
+
+  public void setConnector_name(@org.apache.thrift.annotation.Nullable java.lang.String connector_name) {
+    this.connector_name = connector_name;
+  }
+
+  public void unsetConnector_name() {
+    this.connector_name = null;
+  }
+
+  /** Returns true if field connector_name is set (has been assigned a value) and false otherwise */
+  public boolean isSetConnector_name() {
+    return this.connector_name != null;
+  }
+
+  public void setConnector_nameIsSet(boolean value) {
+    if (!value) {
+      this.connector_name = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getRemote_dbname() {
+    return this.remote_dbname;
+  }
+
+  public void setRemote_dbname(@org.apache.thrift.annotation.Nullable java.lang.String remote_dbname) {
+    this.remote_dbname = remote_dbname;
+  }
+
+  public void unsetRemote_dbname() {
+    this.remote_dbname = null;
+  }
+
+  /** Returns true if field remote_dbname is set (has been assigned a value) and false otherwise */
+  public boolean isSetRemote_dbname() {
+    return this.remote_dbname != null;
+  }
+
+  public void setRemote_dbnameIsSet(boolean value) {
+    if (!value) {
+      this.remote_dbname = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case NAME:
@@ -570,6 +687,30 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case TYPE:
+      if (value == null) {
+        unsetType();
+      } else {
+        setType((DatabaseType)value);
+      }
+      break;
+
+    case CONNECTOR_NAME:
+      if (value == null) {
+        unsetConnector_name();
+      } else {
+        setConnector_name((java.lang.String)value);
+      }
+      break;
+
+    case REMOTE_DBNAME:
+      if (value == null) {
+        unsetRemote_dbname();
+      } else {
+        setRemote_dbname((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -606,6 +747,15 @@ package org.apache.hadoop.hive.metastore.api;
     case MANAGED_LOCATION_URI:
       return getManagedLocationUri();
 
+    case TYPE:
+      return getType();
+
+    case CONNECTOR_NAME:
+      return getConnector_name();
+
+    case REMOTE_DBNAME:
+      return getRemote_dbname();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -637,6 +787,12 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetCreateTime();
     case MANAGED_LOCATION_URI:
       return isSetManagedLocationUri();
+    case TYPE:
+      return isSetType();
+    case CONNECTOR_NAME:
+      return isSetConnector_name();
+    case REMOTE_DBNAME:
+      return isSetRemote_dbname();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -746,6 +902,33 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_type = true && this.isSetType();
+    boolean that_present_type = true && that.isSetType();
+    if (this_present_type || that_present_type) {
+      if (!(this_present_type && that_present_type))
+        return false;
+      if (!this.type.equals(that.type))
+        return false;
+    }
+
+    boolean this_present_connector_name = true && this.isSetConnector_name();
+    boolean that_present_connector_name = true && that.isSetConnector_name();
+    if (this_present_connector_name || that_present_connector_name) {
+      if (!(this_present_connector_name && that_present_connector_name))
+        return false;
+      if (!this.connector_name.equals(that.connector_name))
+        return false;
+    }
+
+    boolean this_present_remote_dbname = true && this.isSetRemote_dbname();
+    boolean that_present_remote_dbname = true && that.isSetRemote_dbname();
+    if (this_present_remote_dbname || that_present_remote_dbname) {
+      if (!(this_present_remote_dbname && that_present_remote_dbname))
+        return false;
+      if (!this.remote_dbname.equals(that.remote_dbname))
+        return false;
+    }
+
     return true;
   }
 
@@ -792,6 +975,18 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetManagedLocationUri()) ? 131071 : 524287);
     if (isSetManagedLocationUri())
       hashCode = hashCode * 8191 + managedLocationUri.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetType()) ? 131071 : 524287);
+    if (isSetType())
+      hashCode = hashCode * 8191 + type.getValue();
+
+    hashCode = hashCode * 8191 + ((isSetConnector_name()) ? 131071 : 524287);
+    if (isSetConnector_name())
+      hashCode = hashCode * 8191 + connector_name.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetRemote_dbname()) ? 131071 : 524287);
+    if (isSetRemote_dbname())
+      hashCode = hashCode * 8191 + remote_dbname.hashCode();
 
     return hashCode;
   }
@@ -904,6 +1099,36 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetType()).compareTo(other.isSetType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, other.type);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetConnector_name()).compareTo(other.isSetConnector_name());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetConnector_name()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.connector_name, other.connector_name);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetRemote_dbname()).compareTo(other.isSetRemote_dbname());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRemote_dbname()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.remote_dbname, other.remote_dbname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1009,6 +1234,36 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.managedLocationUri);
+      }
+      first = false;
+    }
+    if (isSetType()) {
+      if (!first) sb.append(", ");
+      sb.append("type:");
+      if (this.type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type);
+      }
+      first = false;
+    }
+    if (isSetConnector_name()) {
+      if (!first) sb.append(", ");
+      sb.append("connector_name:");
+      if (this.connector_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.connector_name);
+      }
+      first = false;
+    }
+    if (isSetRemote_dbname()) {
+      if (!first) sb.append(", ");
+      sb.append("remote_dbname:");
+      if (this.remote_dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.remote_dbname);
       }
       first = false;
     }
@@ -1153,6 +1408,30 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 11: // TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.type = org.apache.hadoop.hive.metastore.api.DatabaseType.findByValue(iprot.readI32());
+              struct.setTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 12: // CONNECTOR_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.connector_name = iprot.readString();
+              struct.setConnector_nameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 13: // REMOTE_DBNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.remote_dbname = iprot.readString();
+              struct.setRemote_dbnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1234,6 +1513,27 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.type != null) {
+        if (struct.isSetType()) {
+          oprot.writeFieldBegin(TYPE_FIELD_DESC);
+          oprot.writeI32(struct.type.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.connector_name != null) {
+        if (struct.isSetConnector_name()) {
+          oprot.writeFieldBegin(CONNECTOR_NAME_FIELD_DESC);
+          oprot.writeString(struct.connector_name);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.remote_dbname != null) {
+        if (struct.isSetRemote_dbname()) {
+          oprot.writeFieldBegin(REMOTE_DBNAME_FIELD_DESC);
+          oprot.writeString(struct.remote_dbname);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1282,7 +1582,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetManagedLocationUri()) {
         optionals.set(9);
       }
-      oprot.writeBitSet(optionals, 10);
+      if (struct.isSetType()) {
+        optionals.set(10);
+      }
+      if (struct.isSetConnector_name()) {
+        optionals.set(11);
+      }
+      if (struct.isSetRemote_dbname()) {
+        optionals.set(12);
+      }
+      oprot.writeBitSet(optionals, 13);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -1320,12 +1629,21 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetManagedLocationUri()) {
         oprot.writeString(struct.managedLocationUri);
       }
+      if (struct.isSetType()) {
+        oprot.writeI32(struct.type.getValue());
+      }
+      if (struct.isSetConnector_name()) {
+        oprot.writeString(struct.connector_name);
+      }
+      if (struct.isSetRemote_dbname()) {
+        oprot.writeString(struct.remote_dbname);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Database struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(10);
+      java.util.BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -1377,6 +1695,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(9)) {
         struct.managedLocationUri = iprot.readString();
         struct.setManagedLocationUriIsSet(true);
+      }
+      if (incoming.get(10)) {
+        struct.type = org.apache.hadoop.hive.metastore.api.DatabaseType.findByValue(iprot.readI32());
+        struct.setTypeIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.connector_name = iprot.readString();
+        struct.setConnector_nameIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.remote_dbname = iprot.readString();
+        struct.setRemote_dbnameIsSet(true);
       }
     }
   }

@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.hadoop.hive.metastore.metrics.AcidMetricService.replaceWhitespace;
+
 public class TestCompactionMetrics  extends CompactorTest {
 
   private static final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
@@ -331,7 +333,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     AcidMetricService.updateMetricsFromShowCompact(scr);
 
     Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.DID_NOT_INITIATE_RESPONSE).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
+            replaceWhitespace(TxnStore.DID_NOT_INITIATE_RESPONSE)).intValue());
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
     Assert.assertEquals(3,
@@ -341,7 +344,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(5,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.WORKING_RESPONSE).intValue());
     Assert.assertEquals(0,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.CLEANING_RESPONSE).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
+            replaceWhitespace(TxnStore.CLEANING_RESPONSE)).intValue());
 
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).intValue());
@@ -415,60 +419,64 @@ public class TestCompactionMetrics  extends CompactorTest {
     String dbName = "default";
     String tblName = "dcamc";
     Table t = newTable(dbName, tblName, false);
-    burnThroughTransactions(t.getDbName(), t.getTableName(), 24);
 
-    // create and commit txn with non-empty txn_components
+    long start = System.currentTimeMillis();
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
+
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
     comp.setOperationType(DataOperationType.UPDATE);
-    long txnid = openTxn();
 
     LockRequest req = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
-    req.setTxnid(txnid);
+    req.setTxnid(22);
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
+    txnHandler.commitTxn(new CommitTxnRequest(22));
 
-    long writeid = allocateWriteId(t.getDbName(), t.getTableName(), txnid);
-    Assert.assertEquals(25, writeid);
-    txnHandler.commitTxn(new CommitTxnRequest(txnid));
-
-    // create an open txn record
-    long start = System.currentTimeMillis() - 1000L;
-    txnid = openTxn();
+    req.setTxnid(23);
+    res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
     Thread.sleep(1000);
 
     runAcidMetricService();
     long diff = (System.currentTimeMillis() - start) / 1000;
 
-    Assert.assertEquals(25,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
+    Assert.assertEquals(24,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
     Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "completed_txn_components").intValue());
-    Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "open_txn").intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS).intValue());
 
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS).intValue());
+    Assert.assertEquals(23,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue());
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
+
     Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue(), txnid);
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_LOCKS).intValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_LOCK_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_LOCK_AGE).intValue() >= 1);
 
     txnHandler.cleanTxnToWriteIdTable();
     runAcidMetricService();
-
-    Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + "txn_to_writeid").intValue());
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
     start = System.currentTimeMillis();
-    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(27L, 29L)));
+    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(25L, 27L)));
     Thread.sleep(1000);
+
     runAcidMetricService();
     diff = (System.currentTimeMillis() - start) / 1000;
+
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() >= 1);
 
-    Assert.assertEquals(27L, Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
-
-    Assert.assertEquals(2, Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
+    Assert.assertEquals(25,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
+    Assert.assertEquals(2,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
   }
 
   @Test

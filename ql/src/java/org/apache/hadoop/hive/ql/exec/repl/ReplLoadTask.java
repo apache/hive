@@ -121,7 +121,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       work.setRootTask(this);
       this.parentTasks = null;
       // Set distCp custom name corresponding to the replication policy.
-      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+      String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameToLoadIn);
       conf.set(JobContext.JOB_NAME, mapRedCustomName);
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
@@ -610,6 +610,18 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     // that are excluded in the new replication policy.
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
+    }
+    if (!ReplUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
+      Map<String, String> props = new HashMap<>();
+      props.put(ReplUtils.TARGET_OF_REPLICATION, "true");
+      AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+      Task<?> addReplTargetPropTask =
+              TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,
+                      work.dumpDirectory, work.getMetricCollector()), conf);
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.add(addReplTargetPropTask);
     }
     IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
     // If incremental events are already applied, then check and perform if need to bootstrap any tables.

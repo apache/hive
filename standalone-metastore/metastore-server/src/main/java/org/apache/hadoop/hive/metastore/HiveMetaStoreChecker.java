@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -140,7 +141,12 @@ public class HiveMetaStoreChecker {
       if (tableName == null || "".equals(tableName)) {
         // TODO: I do not think this is used by anything other than tests
         // no table specified, check all tables and all partitions.
-        List<String> tables = getMsc().getTables(catName, dbName, ".*");
+        List<String> tables = new ArrayList<>();
+        try{
+          tables = getMsc().getTables(catName, dbName, ".*");
+        }catch(UnknownDBException ex){
+          //ignore database exception.
+        }
         for (String currentTableName : tables) {
           checkTable(catName, dbName, currentTableName, null, null, result);
         }

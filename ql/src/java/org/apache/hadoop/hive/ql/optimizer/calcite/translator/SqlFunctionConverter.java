@@ -276,7 +276,7 @@ public class SqlFunctionConverter {
           // Handle COUNT/SUM/AVG function for the case of COUNT(*) and COUNT(DISTINCT)
           if (op instanceof HiveSqlCountAggFunction ||
               op instanceof HiveSqlSumAggFunction ||
-              (op instanceof CalciteUDAF && op.getName().equalsIgnoreCase(SqlStdOperatorTable.AVG.getName()))) {
+              op instanceof HiveSqlAverageAggFunction) {
             if (children.size() == 0) {
               node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR,
                 "TOK_FUNCTIONSTAR");
@@ -634,6 +634,7 @@ public class SqlFunctionConverter {
         break;
       case "avg":
         calciteAggFn = new HiveSqlAverageAggFunction(
+            isDistinct,
             udfInfo.returnTypeInference,
             udfInfo.operandTypeInference,
             udfInfo.operandTypeChecker);

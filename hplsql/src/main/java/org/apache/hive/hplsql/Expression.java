@@ -68,7 +68,7 @@ public class Expression {
       exec.signal(e);
     }
   }
-  
+
   /**
    * Evaluate an expression in executable SQL statement
    */
