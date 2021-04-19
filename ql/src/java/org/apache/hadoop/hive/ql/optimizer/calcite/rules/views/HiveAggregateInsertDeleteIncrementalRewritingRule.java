@@ -79,17 +79,24 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFieldTrimmerRule;
  * To be precise, we need to convert it into a MERGE rewritten as:
  * FROM (select *, true flag from mv) mv right outer join _source_ source
  * ON (mv.a <=> source.a AND mv.b <=> source.b)
- * INSERT INTO TABLE mv
+ * INSERT INTO TABLE mv                                       <- (insert new rows into the view)
  *   SELECT source.a, source.b, s, c
  *   WHERE mv.flag IS NULL
- * INSERT INTO TABLE mv
+ * INSERT INTO TABLE mv                                       <- (update existing rows in the view)
  *   SELECT mv.ROW__ID, source.a, source.b,
  *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL
  *          WHEN mv.s IS NULL THEN source.s
  *          WHEN source.s IS NULL THEN mv.s
  *          ELSE mv.s + source.s END,
- *          &lt;same CASE statement for mv.c + source.c like above&gt;
- *   WHERE mv.flag
+ *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL
+ *          WHEN mv.s IS NULL THEN source.s
+ *          WHEN source.s IS NULL THEN mv.s
+ *          ELSE mv.s + source.s END countStar,
+ *   WHERE mv.flag AND countStar > 0
+ *   SORT BY mv.ROW__ID;
+ * INSERT INTO TABLE mv                                       <- (delete delta)
+ *   SELECT mv.ROW__ID
+ *   WHERE mv.flag AND countStar = 0
  *   SORT BY mv.ROW__ID;
  */
 public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRule {
@@ -173,7 +180,6 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     // - null means not exists
     // Project also needed to encapsulate the view scan by a subquery -> this is required by
     // CalcitePlanner.fixUpASTAggregateIncrementalRebuild
-    // TODO: search for count(*)
     List<RexNode> mvCols = new ArrayList<>(joinLeftInput.getRowType().getFieldCount());
     for (int i = 0; i < joinLeftInput.getRowType().getFieldCount(); ++i) {
       mvCols.add(rexBuilder.makeInputRef(
@@ -217,6 +223,10 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
             .push(joinRightInput)
             .join(JoinRelType.RIGHT, joinCond)
             .build();
+
+    int flagIndex = joinLeftInput.getRowType().getFieldCount() - 1;
+    RexNode flagNode = rexBuilder.makeInputRef(
+            join.getRowType().getFieldList().get(flagIndex).getType(), flagIndex);
 
     // 5) Add the expressions that correspond to the aggregation
     // functions
@@ -262,12 +272,19 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     // Split this filter condition in CalcitePlanner.fixUpASTAggregateIncrementalRebuild:
     // First disjunct for update branch
     // Second disjunct for insert branch
-    RexNode filterCond = rexBuilder.makeCall(
-            SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, countStarCase, relBuilder.literal(0));
+//    RexNode filterCond = rexBuilder.makeCall(
+//            SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, countStarCase, relBuilder.literal(0));
+
+    RexNode countStarGT0 = rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN, countStarCase, relBuilder.literal(0));
+    RexNode countStarEq0 = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countStarCase, relBuilder.literal(0));
+    RexNode insert = rexBuilder.makeCall(SqlStdOperatorTable.AND,
+            rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, flagNode), countStarGT0);
+    RexNode update = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, countStarGT0);
+    RexNode delete = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, countStarEq0);
 
     RelNode newNode = relBuilder
         .push(join)
-        .filter(filterCond)
+        .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR, insert, update, delete))
         .project(projExprs)
         .build();
     call.transformTo(newNode);
