@@ -654,7 +654,12 @@ public final class FileUtils {
                 HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES) + ")");
         LOG.info("Launch distributed copy (distcp) job.");
         triedDistcp = true;
-        copied = distCp(srcFS, Collections.singletonList(src), dst, deleteSource, null, conf, shims);
+        Path dstDistcp = dst;
+        FileStatus srcFileStatus = srcFS.getFileStatus(src);
+        if(srcFileStatus.isDirectory()){
+          dstDistcp = new Path(dst, srcFileStatus.getPath().getName());
+        }
+        copied = distCp(srcFS, Collections.singletonList(src), dstDistcp, deleteSource, null, conf, shims);
       }
     }
     if (!triedDistcp) {
