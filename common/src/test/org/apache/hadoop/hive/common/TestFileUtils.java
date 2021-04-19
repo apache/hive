@@ -218,14 +218,19 @@ public class TestFileUtils {
 
     FileSystem mockFs = mock(FileSystem.class);
     when(mockFs.getUri()).thenReturn(URI.create("hdfs:///"));
+    when(mockFs.getUri()).thenReturn(URI.create("hdfs:///"));
 
     ContentSummary mockContentSummary = mock(ContentSummary.class);
     when(mockContentSummary.getFileCount()).thenReturn(Long.MAX_VALUE);
     when(mockContentSummary.getLength()).thenReturn(Long.MAX_VALUE);
     when(mockFs.getContentSummary(any(Path.class))).thenReturn(mockContentSummary);
 
-    HadoopShims shims = mock(HadoopShims.class);
-    when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(true);
+     Path dstDistcp = dst;
+     FileStatus srcFileStatus = srcFS.getFileStatus(src);
+     if(copySrc.isDirectory()){
+        dstDistcp = new Path(dst, srcFileStatus.getPath().getName());
+     }
+    when(shims.runDistCp(Collections.singletonList(copySrc), dstDistcp, conf)).thenReturn(true);
 
     Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims));
     verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
