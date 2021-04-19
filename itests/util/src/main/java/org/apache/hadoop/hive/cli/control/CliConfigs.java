@@ -756,4 +756,40 @@ public class CliConfigs {
       }
     }
   }
+
+  public static class IcebergCliConfig extends AbstractCliConfig {
+
+    public IcebergCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/java/queries/positive");
+        setResultsDir("iceberg/iceberg-handler/src/test/java/results/positive");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+        setHiveConfDir("data/conf/tez");
+        setClusterType(MiniClusterType.TEZ);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class IcebergNegativeCliConfig extends AbstractCliConfig {
+
+    public IcebergNegativeCliConfig() {
+      super(CoreNegativeCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/java/queries/negative");
+        setResultsDir("iceberg/iceberg-handler/src/test/java/results/negative");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/negative");
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+        setHiveConfDir("data/conf/tez");
+        setClusterType(MiniClusterType.TEZ);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
 }

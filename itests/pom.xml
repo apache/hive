@@ -46,6 +46,7 @@
    <module>hive-minikdc</module>
    <module>qtest-druid</module>
    <module>qtest-kudu</module>
+   <module>qtest-iceberg</module>
   </modules>
 
   <dependencyManagement>
@@ -245,6 +246,17 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-hbase-handler</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-iceberg-handler</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-iceberg-handler</artifactId>
         <version>${project.version}</version>
         <classifier>tests</classifier>
       </dependency>
