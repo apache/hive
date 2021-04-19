@@ -417,6 +417,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return taskState.ordinal() < TaskState.INITIALIZED.ordinal();
   }
 
+  public synchronized boolean isNotRunning() {
+    return taskState.ordinal() < TaskState.RUNNING.ordinal();
+  }
+
 
   public boolean isRunnable() {
     boolean isrunnable = true;

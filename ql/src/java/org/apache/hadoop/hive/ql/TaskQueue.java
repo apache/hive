@@ -159,7 +159,7 @@ public class TaskQueue {
   public static boolean isLaunchable(Task<?> tsk) {
     // A launchable task is one that hasn't been queued, hasn't been
     // initialized, and is runnable.
-    return tsk.isNotInitialized() && tsk.isRunnable();
+    return tsk.isNotRunning() && tsk.isNotInitialized() && tsk.isRunnable();
   }
 
   public synchronized boolean addToRunnable(Task<?> tsk) throws HiveException {
