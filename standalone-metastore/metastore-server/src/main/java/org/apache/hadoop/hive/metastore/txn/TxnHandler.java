@@ -3710,6 +3710,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         while (rs.next()) {
           CompactionInfoStruct lci = new CompactionInfoStruct();
           lci.setId(rs.getLong(1));
+          lci.setDbname(rs.getString(2));
+          lci.setTablename(rs.getString(3));
           String partition = rs.getString(4);
           if (!rs.wasNull()) {
             lci.setPartitionname(partition);
