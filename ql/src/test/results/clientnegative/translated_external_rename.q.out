@@ -1,0 +1,7 @@
+Warning: Value had a \n character in it.
+PREHOOK: query: create table t (a integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+#### A masked pattern was here ####
+set hive.fetch.task.conversion=none)

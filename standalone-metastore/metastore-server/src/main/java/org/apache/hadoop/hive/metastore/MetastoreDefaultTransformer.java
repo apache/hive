@@ -703,7 +703,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   }
 
   private Path getLocation(Table table) {
-    if (table.isSetSd()) {
+    if (table.isSetSd() && table.getSd().getLocation() != null) {
       return new Path(table.getSd().getLocation());
     }
     return null;
