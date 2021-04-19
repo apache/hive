@@ -127,7 +127,7 @@ public class AcidMetricService  implements MetastoreTaskThread {
 
     // Update metrics
     for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
-      String key = COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
+      String key = COMPACTION_STATUS_PREFIX + replaceWhitespace(TxnStore.COMPACTION_STATES[i]);
       Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
       if (count != null) {
         Metrics.getOrCreateGauge(key).set(count.intValue());
@@ -174,6 +174,14 @@ public class AcidMetricService  implements MetastoreTaskThread {
     }
     int lastDash = id.lastIndexOf('-');
     return id.substring(0, lastDash > -1 ? lastDash : id.length());
+  }
+
+  @VisibleForTesting
+  public static String replaceWhitespace(String input) {
+    if (input == null) {
+      return input;
+    }
+    return input.replaceAll("\\s+", "_");
   }
 
 }

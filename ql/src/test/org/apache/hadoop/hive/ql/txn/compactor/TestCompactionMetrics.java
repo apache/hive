@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.hadoop.hive.metastore.metrics.AcidMetricService.replaceWhitespace;
+
 public class TestCompactionMetrics  extends CompactorTest {
 
   private static final String INITIATED_METRICS_KEY = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE;
@@ -331,7 +333,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     AcidMetricService.updateMetricsFromShowCompact(scr);
 
     Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.DID_NOT_INITIATE_RESPONSE).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
+            replaceWhitespace(TxnStore.DID_NOT_INITIATE_RESPONSE)).intValue());
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
     Assert.assertEquals(3,
@@ -341,7 +344,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertEquals(5,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.WORKING_RESPONSE).intValue());
     Assert.assertEquals(0,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.CLEANING_RESPONSE).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
+            replaceWhitespace(TxnStore.CLEANING_RESPONSE)).intValue());
 
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).intValue());
