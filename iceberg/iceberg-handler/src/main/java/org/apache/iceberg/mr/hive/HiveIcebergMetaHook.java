@@ -359,19 +359,22 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
+    String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
+
     // check status to determine whether we need to commit or to abort
     JobConf jobConf = new JobConf(conf);
-    String queryIdKey = jobConf.get("hive.query.id") + ".result";
+    String queryIdKey = jobConf.get("hive.query.id") + "." + tableName + ".result";
     boolean success = jobConf.getBoolean(queryIdKey, false);
 
     // construct the job context
-    String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    jobConf.set(InputFormatConfig.TABLE_IDENTIFIER, tableName);
-    jobConf.set(InputFormatConfig.TABLE_LOCATION, table.getSd().getLocation());
     JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName));
     int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName, -1);
     jobConf.setNumReduceTasks(numTasks);
     JobContext jobContext = new JobContextImpl(jobConf, jobID, null);
+
+    // we should only commit this current table because
+    // for multi-table inserts, this hook method will be called sequentially for each target table
+    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
     OutputCommitter committer = new HiveIcebergOutputCommitter();
     if (success) {
@@ -387,6 +390,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           throw new MetaException("Unable to commit and abort job: " + commitExc.getMessage());
         }
       } finally {
+        // avoid config pollution with prefixed/suffixed keys
         cleanCommitConfig(queryIdKey, tableName);
       }
     } else {
@@ -396,6 +400,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
         LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
         throw new MetaException("Unable to abort job: " + abortExc.getMessage());
       } finally {
+        // avoid config pollution with prefixed/suffixed keys
         cleanCommitConfig(queryIdKey, tableName);
       }
     }
@@ -404,6 +409,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private void cleanCommitConfig(String queryIdKey, String tableName) {
     conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName);
     conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName);
+    conf.unset(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableName);
     conf.unset(queryIdKey);
   }
 
