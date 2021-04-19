@@ -377,31 +377,32 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
     OutputCommitter committer = new HiveIcebergOutputCommitter();
-    if (success) {
-      try {
-        committer.commitJob(jobContext);
-      } catch (Exception commitExc) {
-        LOG.error("Error while trying to commit job. Will abort it now.", commitExc);
+    try {
+      if (success) {
         try {
-          committer.abortJob(jobContext, JobStatus.State.FAILED);
+          committer.commitJob(jobContext);
+        } catch (Exception commitExc) {
+          LOG.error("Error while trying to commit job (table: {}, jobID: {}). Will abort it now.",
+              tableName, jobID, commitExc);
+          abortJob(jobContext, committer, true);
           throw new MetaException("Unable to commit job: " + commitExc.getMessage());
-        } catch (IOException abortExc) {
-          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
-          throw new MetaException("Unable to commit and abort job: " + commitExc.getMessage());
         }
-      } finally {
-        // avoid config pollution with prefixed/suffixed keys
-        cleanCommitConfig(queryIdKey, tableName);
+      } else {
+        abortJob(jobContext, committer, false);
       }
-    } else {
-      try {
-        committer.abortJob(jobContext, JobStatus.State.FAILED);
-      } catch (IOException abortExc) {
-        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
+    } finally {
+      // avoid config pollution with prefixed/suffixed keys
+      cleanCommitConfig(queryIdKey, tableName);
+    }
+  }
+
+  private void abortJob(JobContext jobContext, OutputCommitter committer, boolean suppressExc) throws MetaException {
+    try {
+      committer.abortJob(jobContext, JobStatus.State.FAILED);
+    } catch (IOException abortExc) {
+      LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
+      if (!suppressExc) {
         throw new MetaException("Unable to abort job: " + abortExc.getMessage());
-      } finally {
-        // avoid config pollution with prefixed/suffixed keys
-        cleanCommitConfig(queryIdKey, tableName);
       }
     }
   }
