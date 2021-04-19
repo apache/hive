@@ -360,6 +360,7 @@ public class TezTask extends Task<TezWork> {
         String tableName = jobConf.get("name");
         String tableLocationRoot = jobConf.get("location");
         if (tableName != null && tableLocationRoot != null) {
+          VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
           Path path = new Path(tableLocationRoot + "/temp");
           LOG.debug("Table temp directory path is: " + path);
           // list the directories inside the temp directory
@@ -370,7 +371,6 @@ public class TezTask extends Task<TezWork> {
             if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
               // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
               String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
-              VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
               // get all target tables this vertex wrote to
               List<String> tables = new ArrayList<>();
               for (Map.Entry<String, String> entry : jobConf) {
