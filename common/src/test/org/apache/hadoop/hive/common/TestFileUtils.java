@@ -225,10 +225,10 @@ public class TestFileUtils {
     when(mockContentSummary.getLength()).thenReturn(Long.MAX_VALUE);
     when(mockFs.getContentSummary(any(Path.class))).thenReturn(mockContentSummary);
 
-     Path dstDistcp = dst;
-     FileStatus srcFileStatus = srcFS.getFileStatus(src);
-     if(copySrc.isDirectory()){
-        dstDistcp = new Path(dst, srcFileStatus.getPath().getName());
+     Path dstDistcp = copyDst;
+     FileStatus srcFileStatus = mockFs.getFileStatus(copySrc);
+     if(srcFileStatus.isDirectory()){
+        dstDistcp = new Path(copyDst, srcFileStatus.getPath().getName());
      }
     when(shims.runDistCp(Collections.singletonList(copySrc), dstDistcp, conf)).thenReturn(true);
 
