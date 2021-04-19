@@ -22,8 +22,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspecto
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
-public class HiveUnionComparator extends HiveWritableComparator {
-    WritableComparator comparator = null;
+final class HiveUnionComparator extends HiveWritableComparator {
+    private WritableComparator comparator = null;
 
     HiveUnionComparator(boolean nullSafe, NullOrdering nullOrdering) {
         super(nullSafe, nullOrdering);

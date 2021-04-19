@@ -22,32 +22,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspecto
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class WritableComparatorFactory {
-    public static WritableComparator get(TypeInfo typeInfo, boolean nullSafe, NullOrdering nullOrdering) {
-        switch (typeInfo.getCategory()) {
-            case PRIMITIVE:
-                return new HiveWritableComparator(nullSafe, nullOrdering);
-            case LIST:
-                return new HiveListComparator(nullSafe, nullOrdering);
-            case MAP:
-                return new HiveMapComparator(nullSafe, nullOrdering);
-            case STRUCT:
-                return new HiveStructComparator(nullSafe, nullOrdering);
-            case UNION:
-                return new HiveUnionComparator(nullSafe, nullOrdering);
-            default:
-                throw new IllegalStateException("Unexpected value: " + typeInfo.getCategory());
-        }
-    }
-
     public static WritableComparator get(Object key, boolean nullSafe, NullOrdering nullOrdering) {
-        if (key instanceof ArrayList) {
+        if (key instanceof List) {
             // For array type struct is used as we do not know if all elements of array are of same type.
             return new HiveStructComparator(nullSafe, nullOrdering);
-        } else if (key instanceof LinkedHashMap) {
+        } else if (key instanceof Map) {
             return new HiveMapComparator(nullSafe, nullOrdering);
         } else if (key instanceof StandardUnion) {
             return new HiveUnionComparator(nullSafe, nullOrdering);

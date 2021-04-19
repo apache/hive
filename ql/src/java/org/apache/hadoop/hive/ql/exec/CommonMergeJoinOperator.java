@@ -127,6 +127,10 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     foundNextKeyGroup = new boolean[maxAlias];
     keyComparators = new WritableComparator[maxAlias][];
 
+    for (Entry<Byte, List<ExprNodeDesc>> entry : conf.getKeys().entrySet()) {
+      keyComparators[entry.getKey().intValue()] = new WritableComparator[entry.getValue().size()];
+    }
+
     int bucketSize;
 
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
@@ -181,16 +185,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         for (RecordSource source : sources) {
           ((ReduceRecordSource) source).setFlushLastRecord(true);
         }
-      }
-    }
-
-    for (Entry<Byte, List<ExprNodeDesc>> entry : conf.getKeys().entrySet()) {
-      int alias = entry.getKey().intValue();
-      keyComparators[alias] = new WritableComparator[entry.getValue().size()];
-      for (int i = 0; i < entry.getValue().size(); i++) {
-        keyComparators[alias][i] =
-                WritableComparatorFactory.get(entry.getValue().get(i).getTypeInfo(),
-                        nullsafes != null ? nullsafes[i] : false, nullOrdering);
       }
     }
   }

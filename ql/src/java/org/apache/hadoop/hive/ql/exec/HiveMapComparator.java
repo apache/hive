@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
-import java.util.LinkedHashMap;
 
-public class HiveMapComparator extends HiveWritableComparator {
-    WritableComparator comparatorValue = null;
-    WritableComparator comparatorKey = null;
+import java.util.Iterator;
+import java.util.Map;
+
+final class HiveMapComparator extends HiveWritableComparator {
+    private WritableComparator comparatorValue = null;
+    private WritableComparator comparatorKey = null;
 
     HiveMapComparator(boolean nullSafe, NullOrdering nullOrdering) {
         super(nullSafe, nullOrdering);
@@ -37,15 +39,8 @@ public class HiveMapComparator extends HiveWritableComparator {
             return result;
         }
 
-        LinkedHashMap map1 = (LinkedHashMap) key1;
-        LinkedHashMap map2 = (LinkedHashMap) key2;
-        if (map1.entrySet().size() != map2.entrySet().size()) {
-            return map1.entrySet().size() > map2.entrySet().size() ? 1 : -1;
-        }
-        if (map1.entrySet().size() == 0) {
-            return 0;
-        }
-
+        Map map1 = (Map) key1;
+        Map map2 = (Map) key2;
         if (comparatorKey == null) {
             comparatorKey =
                     WritableComparatorFactory.get(map1.keySet().iterator().next(), nullSafe, nullOrdering);
@@ -53,12 +48,25 @@ public class HiveMapComparator extends HiveWritableComparator {
                     WritableComparatorFactory.get(map1.values().iterator().next(), nullSafe, nullOrdering);
         }
 
-        result = comparatorKey.compare(map1.keySet().iterator().next(),
-                map2.keySet().iterator().next());
-        if (result != 0) {
-            return result;
+        Iterator map1KeyIterator = map1.keySet().iterator();
+        Iterator map2KeyIterator = map2.keySet().iterator();
+        Iterator map1ValueIterator = map1.values().iterator();
+        Iterator map2ValueIterator = map2.values().iterator();
+
+        // For map of size greater than 1, the ordering is based on the key value. If key values are same till the
+        // size of smaller map, then the size is checked for ordering.
+        int size = map1.size() > map2.size() ? map2.size() : map1.size();
+        for (int i = 0; i < size; i++) {
+            result = comparatorKey.compare(map1KeyIterator.next(), map2KeyIterator.next());
+            if (result != 0) {
+                return result;
+            }
+            result = comparatorValue.compare(map1ValueIterator.next(), map2ValueIterator.next());
+            if (result != 0) {
+                return result;
+            }
         }
-        return comparatorValue.compare(map1.values().iterator().next(), map2.values().iterator().next());
+        return map1.size() == map2.size() ? 0 : map1.size() > map2.size() ? 1 : -1;
     }
 }
 

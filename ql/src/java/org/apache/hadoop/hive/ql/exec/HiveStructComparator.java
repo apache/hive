@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
-import java.util.ArrayList;
+import java.util.List;
 
-class HiveStructComparator extends HiveWritableComparator {
-    WritableComparator[] comparator = null;
+final class HiveStructComparator extends HiveWritableComparator {
+    private WritableComparator[] comparator = null;
 
     HiveStructComparator(boolean nullSafe, NullOrdering nullOrdering) {
         super(nullSafe, nullOrdering);
@@ -37,8 +37,8 @@ class HiveStructComparator extends HiveWritableComparator {
             return result;
         }
 
-        ArrayList a1 = (ArrayList) key1;
-        ArrayList a2 = (ArrayList) key2;
+        List a1 = (List) key1;
+        List a2 = (List) key2;
         if (a1.size() != a2.size()) {
             return a1.size() > a2.size() ? 1 : -1;
         }

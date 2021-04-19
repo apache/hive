@@ -21,11 +21,11 @@ import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
-public class HiveWritableComparator extends WritableComparator {
+class HiveWritableComparator extends WritableComparator {
     private WritableComparator comparator = null;
-    protected transient boolean nullSafe;
-    transient NullOrdering nullOrdering;
-    protected transient int not_null = 2;
+    protected final transient boolean nullSafe;
+    protected final transient NullOrdering nullOrdering;
+    protected final int not_null = 2;
 
     HiveWritableComparator(boolean nullSafe, NullOrdering nullOrdering) {
         this.nullSafe = nullSafe;
