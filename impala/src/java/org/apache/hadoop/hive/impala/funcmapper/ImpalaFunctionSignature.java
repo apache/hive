@@ -33,6 +33,8 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
+import org.apache.impala.analysis.TypesUtil;
+import org.apache.impala.catalog.ScalarType;
 import org.apache.impala.catalog.Type;
 
 import java.io.InputStreamReader;
@@ -446,17 +448,21 @@ public class ImpalaFunctionSignature {
           outputFields.add(new RelDataTypeFieldImpl(
               dt1Fields.get(i).getName(), i, fieldType));
         }
-        for (List<RelDataTypeField> dtFields:
-            Arrays.asList(dt1.getFieldList(), dt2.getFieldList())) {
-          while (outputFields.size() < dtFields.size()) {
-            int fieldNum = outputFields.size();
-            RelDataType fieldType = dtFields.get(fieldNum).getType();
-            outputFields.add(new RelDataTypeFieldImpl(
-                  dtFields.get(fieldNum).getName(), fieldNum, fieldType));
-          }
+
+        List<RelDataTypeField> smallerDtFields =
+            dt1Fields.size() < dt2Fields.size() ? dt1Fields : dt2Fields;
+        while (outputFields.size() < smallerDtFields.size()) {
+          int fieldNum = outputFields.size();
+          RelDataType fieldType = smallerDtFields.get(fieldNum).getType();
+          outputFields.add(new RelDataTypeFieldImpl(
+                smallerDtFields.get(fieldNum).getName(), fieldNum, fieldType));
         }
         return new RelRecordType(outputFields);
       } else if (canCastUp(dt1, dt2)) {
+        // canCastUp checks castability across different datatypes. If the datatypes
+        // are the same, it will return true. The precision and scale of the datatype
+        // (if decimal) are ignored in the canCastUp function and are dealt with in
+        // the adjustCastType method.
         return adjustCastType(dt1, dt2, typeFactory);
       } else if (canCastUp(dt2, dt1)) {
         return adjustCastType(dt2, dt1, typeFactory);
@@ -467,14 +473,32 @@ public class ImpalaFunctionSignature {
     throw new RuntimeException("Cannot derive common cast type for " + dt1.getFullTypeString() + " and " + dt2.getFullTypeString());
   }
 
-    // Handle cases where the return type must be different than the from and to type
-    // i.e. integer->decimal(1,0)
-    static RelDataType adjustCastType(RelDataType fromType, RelDataType toType, RelDataTypeFactory typeFactory) {
-      return (toType.getSqlTypeName() == SqlTypeName.DECIMAL)
-          ? ImpalaTypeConverter.createDecimalType(typeFactory, fromType)
-          : toType;
-    }
+  // Handle cases where the return type must be different than the from and to type
+  // i.e. integer->decimal(1,0).  If either the from or to type is a decimal, then the least common
+  // shared datatype will be a decimal as defined by Impala's typecasting rules.
+  static RelDataType adjustCastType(RelDataType fromType, RelDataType toType, RelDataTypeFactory typeFactory) {
+    return toType.getSqlTypeName() == SqlTypeName.DECIMAL
+        ? getDecimalAssignmentCompatibleType(fromType, toType, typeFactory)
+        : toType;
+  }
 
+  static RelDataType getDecimalAssignmentCompatibleType(RelDataType dt1, RelDataType dt2,
+      RelDataTypeFactory typeFactory) {
+    boolean isNullable = dt1.isNullable() || dt2.isNullable();
+    ScalarType impalaType1 = (ScalarType) ImpalaTypeConverter.createImpalaType(dt1);
+    ScalarType decimalType1 = impalaType1.getMinResolutionDecimal();
+    ScalarType impalaType2 = (ScalarType) ImpalaTypeConverter.createImpalaType(dt2);
+    ScalarType decimalType2 = impalaType2.getMinResolutionDecimal();
+    ScalarType commonScalarType =
+        TypesUtil.getDecimalAssignmentCompatibleType(decimalType1, decimalType2, false);
+    RelDataType retType = typeFactory.createSqlType(SqlTypeName.DECIMAL,
+        commonScalarType.decimalPrecision(), commonScalarType.decimalScale());
+    return typeFactory.createTypeWithNullability(retType, isNullable);
+  }
+
+
+  // Check to see if the "from" type can be cast up to the "to" type. In the case
+  // where both are decimals, this will return true.
   public static boolean canCastUp(RelDataType castFrom, RelDataType castTo) {
     if (castFrom.getSqlTypeName() == SqlTypeName.NULL) {
       return true;
