@@ -85,7 +85,7 @@ public class GenMRTableScan1 implements SemanticNodeProcessor {
 
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
-          if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
+          if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
