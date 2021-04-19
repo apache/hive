@@ -324,9 +324,9 @@ public class TestCachedStoreUpdateUsingEvents {
     String parentTableName = "Ptbl";
     String tblName = "Tbl";
     String tblOwner = "user1";
-    FieldSchema col1 = new FieldSchema("Col1", "int", "integer column");
-    FieldSchema col2 = new FieldSchema("Col2", "string", "string column");
-    FieldSchema col3 = new FieldSchema("Col3", "int", "integer column");
+    FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
+    FieldSchema col2 = new FieldSchema("col2", "string", "string column");
+    FieldSchema col3 = new FieldSchema("col3", "int", "integer column");
     List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
