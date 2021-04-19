@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
@@ -565,6 +566,39 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     return ret;
   }
 
+  static enum TableLocationStrategy {
+    seqsuffix {
+      @Override
+      Path getLocation(IHMSHandler hmsHandler, Database db, Table table, int idx) throws MetaException {
+        if (idx == 0) {
+          return getDefaultPath(hmsHandler, db, table.getTableName());
+        }
+        return getDefaultPath(hmsHandler, db, table.getTableName() + "-" + idx);
+
+      }
+    },
+    prohibit {
+      @Override
+      Path getLocation(IHMSHandler hmsHandler, Database db, Table table, int idx) throws MetaException {
+        Path p = getDefaultPath(hmsHandler, db, table.getTableName());
+
+        if (idx == 0) {
+          return p;
+        }
+        throw new MetaException("Default location is not available for table: " + p);
+      }
+
+    };
+
+    private static final Path getDefaultPath(IHMSHandler hmsHandler, Database db, String tableName)
+        throws MetaException {
+      return hmsHandler.getWh().getDefaultTablePath(db, tableName, true);
+    }
+
+    abstract Path getLocation(IHMSHandler hmsHandler, Database db, Table table, int idx) throws MetaException;
+
+  }
+
   @Override
   public Table transformCreateTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
     if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
@@ -612,17 +646,28 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           newTable.setParameters(params);
           LOG.info("Modified table params are:" + params.toString());
 
-          if (!table.isSetSd() || table.getSd().getLocation() == null) {
+          Path location = getLocation(table);
+          if (location == null) {
             try {
-              Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
-              if (hmsHandler.getWh().isDir(newPath)) {
-
+              String strategyVar =
+                  MetastoreConf.getVar(hmsHandler.getConf(), ConfVars.METASTORE_METADATA_TRANSFORMER_LOCATION_MODE);
+              TableLocationStrategy strategy = TableLocationStrategy.valueOf(strategyVar);
+              int idx = 0;
+              while (true) {
+                location = strategy.getLocation(hmsHandler, db, newTable, idx++);
+                if (!hmsHandler.getWh().isDir(location)) {
+                  break;
+                }
               }
-              newTable.getSd().setLocation(newPath.toString());
-              LOG.info("Modified location from null to " + newPath);
+              LOG.info("Using location from {} for table {}", location, table.getTableName());
+              newTable.getSd().setLocation(location.toString());
             } catch (Exception e) {
               throw new MetaException("Exception determining external table location:" + e.getMessage());
             }
+          } else {
+            // table with explicitly set location
+            // has "translated" properties and will be removed on drop
+            // should we check tbl directory existence?
           }
         }
       } else { // ACID table
@@ -655,6 +700,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
+  }
+
+  private Path getLocation(Table table) {
+    if (table.isSetSd()) {
+      return new Path(table.getSd().getLocation());
+    }
+    return null;
   }
 
   @Override
