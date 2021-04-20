@@ -271,7 +271,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCJoinPushDownRu
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCProjectPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCSortPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
@@ -2736,7 +2736,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               // Trigger rewriting to remove UNION branch with MV
               if (visitor.isContainsAggregate()) {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                    HiveAggregateIncrementalRewritingRule.INSTANCE);
+                    HiveAggregateInsertIncrementalRewritingRule.INSTANCE);
                 mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD;
               } else {
                 generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,

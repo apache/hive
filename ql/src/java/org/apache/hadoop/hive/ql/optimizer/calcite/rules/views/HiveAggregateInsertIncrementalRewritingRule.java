@@ -82,12 +82,12 @@ import java.util.List;
  *   WHERE mv.flag
  *   SORT BY mv.ROW__ID;
  */
-public class HiveAggregateIncrementalRewritingRule extends RelOptRule {
+public class HiveAggregateInsertIncrementalRewritingRule extends RelOptRule {
 
-  public static final HiveAggregateIncrementalRewritingRule INSTANCE =
-      new HiveAggregateIncrementalRewritingRule();
+  public static final HiveAggregateInsertIncrementalRewritingRule INSTANCE =
+      new HiveAggregateInsertIncrementalRewritingRule();
 
-  private HiveAggregateIncrementalRewritingRule() {
+  private HiveAggregateInsertIncrementalRewritingRule() {
     super(operand(Aggregate.class, operand(Union.class, any())),
         HiveRelFactories.HIVE_BUILDER,
         "HiveAggregateIncrementalRewritingRule");
