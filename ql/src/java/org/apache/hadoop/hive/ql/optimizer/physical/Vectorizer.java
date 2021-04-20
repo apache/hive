@@ -3011,7 +3011,8 @@ public class Vectorizer implements PhysicalPlanResolver {
          * basically: 1. bounded start 2. bounded end which is not current row
          */
         if (windowFrameDef.getWindowType() == WindowType.RANGE
-            && (!windowFrameDef.isStartUnbounded() || !windowFrameDef.getEnd().isCurrentRow())) {
+            && (!windowFrameDef.isStartUnbounded()
+                || !(windowFrameDef.getEnd().isCurrentRow() || windowFrameDef.isEndUnbounded()))) {
           setOperatorIssue(
               "Multi-column ordered RANGE boundary scanner is not supported in vectorized mode (window: "
                   + windowFrameDef + ")");
