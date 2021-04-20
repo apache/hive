@@ -209,10 +209,15 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
     projectNames.add("rowIsDeleted");
 
-    // Shift column references refers columns coming from right input by one in join condition since the new left input
-    // has a new column
-    RexNode newJoinCondition = new InputRefShifter(leftRowType.getFieldCount() - 1, relBuilder)
-        .apply(join.getCondition());
+    RexNode newJoinCondition;
+    if (leftInput.getRowType().getFieldCount() != join.getInput(0).getRowType().getFieldCount()) {
+      // Shift column references refers columns coming from right input by one in join condition since the new left input
+      // has a new column
+      newJoinCondition = new InputRefShifter(leftRowType.getFieldCount() - 1, relBuilder)
+          .apply(join.getCondition());
+    } else {
+      newJoinCondition = join.getCondition();
+    }
 
     return relBuilder
             .push(leftInput)
