@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -1085,7 +1086,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // Bootstrap Repl B -> C
     WarehouseInstance.Tuple tupleReplica = replica.run("alter database " + replicatedDbName
-            + " set dbproperties ('" + ReplUtils.TARGET_OF_REPLICATION + "' = '')").dump(replicatedDbName);
+            + " set dbproperties ('" + ReplConst.TARGET_OF_REPLICATION + "' = '')").dump(replicatedDbName);
     String replDbFromReplica = replicatedDbName + "_dupe";
     replica.load(replDbFromReplica, replicatedDbName)
             .run("use " + replDbFromReplica)
@@ -1120,7 +1121,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimaryInc.lastReplicationId)
             .run("alter database " + replicatedDbName
-                    + " set dbproperties ('" + ReplUtils.TARGET_OF_REPLICATION + "' = '')")
+                    + " set dbproperties ('" + ReplConst.TARGET_OF_REPLICATION + "' = '')")
             .dump(replicatedDbName, Collections.emptyList());
 
     // Check if DB in B have ckpt property is set to bootstrap dump location used in B and missing for table/partition.

@@ -140,8 +140,6 @@ public class ReplUtils {
 
   public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
 
-  public static final String TARGET_OF_REPLICATION = ReplConst.TARGET_OF_REPLICATION;
-
   // Service name for hive.
   public static final String REPL_HIVE_SERVICE = "hive";
 
@@ -263,8 +261,8 @@ public class ReplUtils {
   public static boolean isTargetOfReplication(Database db) {
     assert (db != null);
     Map<String, String> m = db.getParameters();
-    if ((m != null) && (m.containsKey(TARGET_OF_REPLICATION))) {
-      return !StringUtils.isEmpty(m.get(TARGET_OF_REPLICATION));
+    if ((m != null) && (m.containsKey(ReplConst.TARGET_OF_REPLICATION))) {
+      return !StringUtils.isEmpty(m.get(ReplConst.TARGET_OF_REPLICATION));
     }
     return false;
   }
