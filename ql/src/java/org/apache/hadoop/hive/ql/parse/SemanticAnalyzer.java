@@ -6482,73 +6482,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return qb.getParseInfo().getDistinctFuncExprsForClause(dest).isEmpty();
   }
 
-  private void extractColumns(Set<String> colNamesExprs, ExprNodeDesc exprNode) {
-    if (exprNode instanceof ExprNodeColumnDesc) {
-      colNamesExprs.add(((ExprNodeColumnDesc) exprNode).getColumn());
-      return;
-    }
-
-    if (exprNode instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) exprNode;
-      for (ExprNodeDesc childExpr : funcDesc.getChildren()) {
-        extractColumns(colNamesExprs, childExpr);
-      }
-    }
-  }
-
-  private boolean hasCommonElement(Set<String> set1, Set<String> set2) {
-    return set1.stream().anyMatch(set2::contains);
-  }
-
-  void checkExpressionsForGroupingSet(List<ASTNode> grpByExprs,
-                                      List<ASTNode> distinctGrpByExprs,
-                                      Map<String, ASTNode> aggregationTrees,
-                                      RowResolver inputRowResolver) throws SemanticException {
-
-    Set<String> colNamesGroupByExprs = new HashSet<String>();
-    Set<String> colNamesGroupByDistinctExprs = new HashSet<String>();
-    Set<String> colNamesAggregateParameters = new HashSet<String>();
-
-    // The columns in the group by expressions should not intersect with the columns in the
-    // distinct expressions
-    for (ASTNode grpByExpr : grpByExprs) {
-      extractColumns(colNamesGroupByExprs, genExprNodeDesc(grpByExpr, inputRowResolver));
-    }
-
-    // If there is a distinctFuncExp, add all parameters to the reduceKeys.
-    if (!distinctGrpByExprs.isEmpty()) {
-      for (ASTNode value : distinctGrpByExprs) {
-        // 0 is function name
-        for (int i = 1; i < value.getChildCount(); i++) {
-          ASTNode parameter = (ASTNode) value.getChild(i);
-          ExprNodeDesc distExprNode = genExprNodeDesc(parameter, inputRowResolver);
-          // extract all the columns
-          extractColumns(colNamesGroupByDistinctExprs, distExprNode);
-        }
-
-        if (hasCommonElement(colNamesGroupByExprs, colNamesGroupByDistinctExprs)) {
-          throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_EXPRESSION_INVALID.getMsg());
-        }
-      }
-    }
-
-    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
-      ASTNode value = entry.getValue();
-      // 0 is the function name
-      for (int i = 1; i < value.getChildCount(); i++) {
-        ASTNode paraExpr = (ASTNode) value.getChild(i);
-        ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr, inputRowResolver);
-
-        // extract all the columns
-        extractColumns(colNamesAggregateParameters, paraExprNode);
-      }
-
-      if (hasCommonElement(colNamesGroupByExprs, colNamesAggregateParameters)) {
-        throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_EXPRESSION_INVALID.getMsg());
-      }
-    }
-  }
-
   /**
    * Generate a Group-By plan using 1 map-reduce job. First perform a map-side
    * partial aggregation (to reduce the amount of data), at this point of time,
@@ -6610,13 +6543,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     int newMRJobGroupingSetsThreshold =
         conf.getIntVar(HiveConf.ConfVars.HIVE_NEW_JOB_GROUPING_SET_CARDINALITY);
-
-    if (groupingSetsPresent) {
-      checkExpressionsForGroupingSet(grpByExprs,
-          parseInfo.getDistinctFuncExprsForClause(dest),
-          parseInfo.getAggregationExprsForClause(dest),
-          opParseCtx.get(inputOperatorInfo).getRowResolver());
-    }
 
     // ////// Generate GroupbyOperator for a map-side partial aggregation
     Map<String, GenericUDAFEvaluator> genericUDAFEvaluators =
@@ -6775,10 +6701,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean groupingSetsPresent = !groupingSets.isEmpty();
 
     if (groupingSetsPresent) {
-      checkExpressionsForGroupingSet(grpByExprs,
-          parseInfo.getDistinctFuncExprsForClause(dest),
-          parseInfo.getAggregationExprsForClause(dest),
-          opParseCtx.get(inputOperatorInfo).getRowResolver());
 
       int newMRJobGroupingSetsThreshold =
           conf.getIntVar(HiveConf.ConfVars.HIVE_NEW_JOB_GROUPING_SET_CARDINALITY);
