@@ -100,8 +100,9 @@ import com.google.common.annotations.VisibleForTesting;
 @SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
 
-  public static final String HIVE_TEZ_COMMIT_JOB_ID = "hive.tez.commit.job.id";
-  public static final String HIVE_TEZ_COMMIT_TASK_COUNT = "hive.tez.commit.task.count";
+  public static final String HIVE_TEZ_COMMIT_JOB_ID_PREFIX = "hive.tez.commit.job.id.";
+  public static final String HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX = "hive.tez.commit.job.result.";
+  public static final String HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX = "hive.tez.commit.task.count.";
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
@@ -380,10 +381,10 @@ public class TezTask extends Task<TezWork> {
               }
               // save information for each target table (jobID, task num, query state)
               for (String table : tables) {
-                sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID + "." + table, jobIdStr);
-                sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT + "." + table,
+                sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID_PREFIX + table, jobIdStr);
+                sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + table,
                     status.getProgress().getSucceededTaskCount());
-                sessionConf.setBoolean(jobConf.get("hive.query.id") + "." + table + ".result", success);
+                sessionConf.setBoolean(HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX + table, success);
               }
             }
           }

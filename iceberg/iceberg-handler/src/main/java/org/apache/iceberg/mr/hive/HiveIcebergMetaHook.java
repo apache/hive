@@ -363,12 +363,11 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
     // check status to determine whether we need to commit or to abort
     JobConf jobConf = new JobConf(conf);
-    String queryIdKey = jobConf.get("hive.query.id") + "." + tableName + ".result";
-    boolean success = jobConf.getBoolean(queryIdKey, false);
+    boolean success = jobConf.getBoolean(TezTask.HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX + tableName, false);
 
     // construct the job context
-    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName));
-    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName, -1);
+    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
+    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
     jobConf.setNumReduceTasks(numTasks);
     JobContext jobContext = new JobContextImpl(jobConf, jobID, null);
 
@@ -392,7 +391,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       }
     } finally {
       // avoid config pollution with prefixed/suffixed keys
-      cleanCommitConfig(queryIdKey, tableName);
+      cleanCommitConfig(tableName);
     }
   }
 
@@ -407,11 +406,11 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     }
   }
 
-  private void cleanCommitConfig(String queryIdKey, String tableName) {
-    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID + "." + tableName);
-    conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT + "." + tableName);
+  private void cleanCommitConfig(String tableName) {
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName);
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName);
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX + tableName);
     conf.unset(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableName);
-    conf.unset(queryIdKey);
   }
 
   @Override
