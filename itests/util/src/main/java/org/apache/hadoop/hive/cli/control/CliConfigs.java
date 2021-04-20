@@ -767,7 +767,7 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
-        setHiveConfDir("data/conf/tez");
+        setHiveConfDir("data/conf/iceberg");
         setClusterType(MiniClusterType.TEZ);
       } catch (Exception e) {
         throw new RuntimeException("can't contruct cliconfig", e);
@@ -785,7 +785,7 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/negative");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
-        setHiveConfDir("data/conf/tez");
+        setHiveConfDir("data/conf/iceberg");
         setClusterType(MiniClusterType.TEZ);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
