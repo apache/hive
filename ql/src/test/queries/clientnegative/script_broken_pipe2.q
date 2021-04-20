@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-25036
 --! qt:dataset:src
 set hive.llap.execution.mode=auto;
 set hive.exec.script.allow.partial.consumption = false;
