@@ -63,8 +63,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_DELTAS;
@@ -686,6 +689,33 @@ public class TestCompactionMetrics  extends CompactorTest {
     String value = (String) gauges.get(metric).getValue();
     return value.isEmpty()? Collections.emptyMap() : Splitter.on(',').withKeyValueSeparator("->").split(value);
   }
+
+  @Test
+  public void testTablesWithXAbortedTxns() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD, 14);
+
+    String dbName = "default";
+    String tblName1 = "table1";
+    String tblName2 = "table2";
+    String tblName3 = "table3";
+    Table t1 = newTable(dbName, tblName1, false);
+    Table t2 = newTable(dbName, tblName2, false);
+    Table t3 = newTable(dbName, tblName3, false);
+    Set<Long> abort1 = LongStream.range(1, 16).boxed().collect(Collectors.toSet());
+    Set<Long> abort2 = LongStream.range(21, 31).boxed().collect(Collectors.toSet());
+    Set<Long> abort3 = LongStream.range(41, 61).boxed().collect(Collectors.toSet());
+
+    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1);
+    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2);
+    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3);
+
+    runAcidMetricService();
+
+    Assert.assertEquals(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
+  }
+
+
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state) {

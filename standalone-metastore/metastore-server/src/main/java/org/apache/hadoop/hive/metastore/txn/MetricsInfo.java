@@ -35,6 +35,7 @@ public class MetricsInfo {
   private int oldestAbortedTxnAge;
   private int locksCount;
   private int oldestLockAge;
+  private int tablesWithXAbortedTxns;
 
   public int getTxnToWriteIdCount() {
     return txnToWriteIdCount;
@@ -138,5 +139,13 @@ public class MetricsInfo {
 
   public int getOldestLockAge() {
     return oldestLockAge;
+  }
+
+  public int getTablesWithXAbortedTxns() {
+    return tablesWithXAbortedTxns;
+  }
+
+  public void setTablesWithXAbortedTxns(int tablesWithXAbortedTxns) {
+    this.tablesWithXAbortedTxns = tablesWithXAbortedTxns;
   }
 }

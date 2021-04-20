@@ -292,7 +292,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         TxnStatus.OPEN + "' AND \"TXN_TYPE\" != "+ TxnType.REPL_CREATED.getValue() +") \"T\" CROSS JOIN (" +
       "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
         TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
-      "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\"";
+      "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\" CROSS JOIN (" +
+      "SELECT COUNT(*) FROM (SELECT COUNT(\"TXN_ID\"), \"T2W_DATABASE\", \"T2W_TABLE\" FROM \"TXN_TO_WRITE_ID\" " +
+          "INNER JOIN \"TXNS\" ON \"T2W_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\"='" + TxnStatus.ABORTED + "' " +
+          "GROUP BY \"T2W_DATABASE\", \"T2W_TABLE\" HAVING COUNT(\"TXN_ID\") > ?) \"L\") \"L\"";
+
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -3744,29 +3748,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   public MetricsInfo getMetricsInfo() throws MetaException {
     Connection dbConn = null;
-    Statement stmt = null;
     try {
       MetricsInfo metrics = new MetricsInfo();
       String s = MessageFormat.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-
-        ResultSet rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          metrics.setTxnToWriteIdCount(rs.getInt(1));
-          metrics.setCompletedTxnsCount(rs.getInt(2));
-          metrics.setOpenReplTxnsCount(rs.getInt(3));
-          metrics.setOldestOpenReplTxnId(rs.getInt(4));
-          metrics.setOldestOpenReplTxnAge(rs.getInt(5));
-          metrics.setOpenNonReplTxnsCount(rs.getInt(6));
-          metrics.setOldestOpenNonReplTxnId(rs.getInt(7));
-          metrics.setOldestOpenNonReplTxnAge(rs.getInt(8));
-          metrics.setAbortedTxnsCount(rs.getInt(9));
-          metrics.setOldestAbortedTxnId(rs.getInt(10));
-          metrics.setOldestAbortedTxnAge(rs.getInt(11));
-          metrics.setLocksCount(rs.getInt(12));
-          metrics.setOldestLockAge(rs.getInt(13));
+        try(PreparedStatement pstmt = dbConn.prepareStatement(s)){
+          pstmt.setInt(1, MetastoreConf.getIntVar(conf, ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD));
+          ResultSet rs = pstmt.executeQuery();
+          if (rs.next()) {
+            metrics.setTxnToWriteIdCount(rs.getInt(1));
+            metrics.setCompletedTxnsCount(rs.getInt(2));
+            metrics.setOpenReplTxnsCount(rs.getInt(3));
+            metrics.setOldestOpenReplTxnId(rs.getInt(4));
+            metrics.setOldestOpenReplTxnAge(rs.getInt(5));
+            metrics.setOpenNonReplTxnsCount(rs.getInt(6));
+            metrics.setOldestOpenNonReplTxnId(rs.getInt(7));
+            metrics.setOldestOpenNonReplTxnAge(rs.getInt(8));
+            metrics.setAbortedTxnsCount(rs.getInt(9));
+            metrics.setOldestAbortedTxnId(rs.getInt(10));
+            metrics.setOldestAbortedTxnAge(rs.getInt(11));
+            metrics.setLocksCount(rs.getInt(12));
+            metrics.setOldestLockAge(rs.getInt(13));
+            metrics.setTablesWithXAbortedTxns(rs.getInt(14));
+          }
         }
         return metrics;
       } catch (SQLException e) {
@@ -3774,7 +3779,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         checkRetryable(dbConn, e, "getMetricsInfo");
         throw new MetaException("Unable to execute getMetricsInfo() " + StringUtils.stringifyException(e));
       } finally {
-        closeStmt(stmt);
         closeDbConn(dbConn);
       }
     } catch (RetryException e) {
