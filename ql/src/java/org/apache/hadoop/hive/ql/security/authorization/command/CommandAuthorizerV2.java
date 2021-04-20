@@ -54,11 +54,14 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Command authorization, new type.
  */
 final class CommandAuthorizerV2 {
+  private static final Logger LOG = LoggerFactory.getLogger(CommandAuthorizerV2.class.getName());
   private CommandAuthorizerV2() {
     throw new UnsupportedOperationException("CommandAuthorizerV2 should not be instantiated");
   }
@@ -213,7 +216,7 @@ final class CommandAuthorizerV2 {
                       HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
             }
           }catch(Exception ex){
-            ex.printStackTrace();
+            LOG.error("Exception occured while getting the URI from storage handler: "+ex.getMessage(), ex);
           }
           hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
                   actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));

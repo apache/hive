@@ -13767,7 +13767,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         storageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(storageFormat.getStorageHandler()), SessionState.get().getConf());
       } catch (ClassNotFoundException ex) {
-        System.out.println("Class not found. Storage handler will be set to null: " + ex);
+        LOG.error("Class not found. Storage handler will be set to null: "+ex.getMessage() , ex);
       }
     }
     t.setStorageHandler(storageHandler);
