@@ -107,7 +107,6 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-//    final Aggregate topAgg = call.rel(0);
     final Union union = call.rel(1);
     final Aggregate queryAgg = call.rel(2);
     RelBuilder relBuilder = call.builder();
@@ -261,9 +260,6 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     // Split this filter condition in CalcitePlanner.fixUpASTAggregateIncrementalRebuild:
     // First disjunct for update branch
     // Second disjunct for insert branch
-//    RexNode filterCond = rexBuilder.makeCall(
-//            SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, countStarCase, relBuilder.literal(0));
-
     RexNode countStarGT0 = rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN, countStarCase, relBuilder.literal(0));
     RexNode countStarEq0 = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countStarCase, relBuilder.literal(0));
     RexNode insert = rexBuilder.makeCall(SqlStdOperatorTable.AND,
