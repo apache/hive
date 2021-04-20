@@ -98,7 +98,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     try {
       boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
       Pair<AtomicInteger, AtomicInteger> ratio =
-          Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_CYCLE);
+          Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;

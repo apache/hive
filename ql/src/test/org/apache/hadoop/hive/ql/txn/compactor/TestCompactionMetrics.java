@@ -169,7 +169,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   public void  testInitiatorNoFailure() throws Exception {
     startInitiator();
     Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_CYCLE);
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
     Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
     Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
   }
@@ -178,7 +178,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   public void  testCleanerNoFailure() throws Exception {
     startCleaner();
     Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_CYCLE);
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
     Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
     Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
   }
@@ -189,7 +189,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
     startInitiator();
     Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_CYCLE);
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
     Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
     Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
   }
@@ -200,7 +200,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
     startCleaner();
     Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_CYCLE);
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
     Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
     Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
   }
@@ -220,7 +220,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     }
     // the lock timeout on AUX lock, should be ignored.
     Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_CYCLE);
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
     Assert.assertEquals(0, ratio.getLeft().get());
     Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
     Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
@@ -241,7 +241,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     }
     // the lock timeout on AUX lock, should be ignored.
     Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_CYCLE);
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
     Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
     Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
   }
