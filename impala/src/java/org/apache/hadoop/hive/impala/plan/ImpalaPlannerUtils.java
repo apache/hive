@@ -357,15 +357,18 @@ public class ImpalaPlannerUtils {
     // Restrict the pushdown for =, <, <= predicates because these ensure the
     // qualifying rows are fully 'contained' within the LIMIT value. Other
     // types of predicates would select rows that fall outside the LIMIT range.
-    if (!(pred.getOp() == BinaryPredicate.Operator.EQ ||
-        pred.getOp() == BinaryPredicate.Operator.LT ||
-        pred.getOp() == BinaryPredicate.Operator.LE)) {
+    // NOTE: Changes compared to Impala's implementation
+    // We currently restrict the predicate to <, <=. The other i.e '=' requires
+    // backporting the logic of IMPALA-10296
+    if(!(pred.getOp() == BinaryPredicate.Operator.LT ||
+         pred.getOp() == BinaryPredicate.Operator.LE)) {
       return falseStatus;
     }
     // Rhs of the predicate must be a numeric literal and its value
-    // must be less than or equal to the limit.
+    // must be equal to limit.
+    // TODO: This criteria can be relaxed once IMPALA-10296 is backported
     if (!(rhs instanceof NumericLiteral) ||
-        ((NumericLiteral)rhs).getLongValue() > limit) {
+        ((NumericLiteral)rhs).getLongValue() != limit) {
       return falseStatus;
     }
     double selectivity = Expr.DEFAULT_SELECTIVITY;
