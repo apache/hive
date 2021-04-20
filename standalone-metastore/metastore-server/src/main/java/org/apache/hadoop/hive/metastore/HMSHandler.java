@@ -1691,6 +1691,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ListStoredProcedureRequest request = new ListStoredProcedureRequest(catName);
       request.setDbName(name);
       List<String> allProcedures = get_all_stored_procedures(request);
+      ListPackageRequest pkgRequest = new ListPackageRequest(catName);
+      pkgRequest.setDbName(name);
+      List<String> allPackages = get_all_packages(pkgRequest);
 
       if (!cascade) {
         if (!uniqueTableNames.isEmpty()) {
@@ -1704,6 +1707,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (!allProcedures.isEmpty()) {
           throw new InvalidOperationException(
               "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
+        }
+        if (!allPackages.isEmpty()) {
+          throw new InvalidOperationException(
+                  "Database " + db.getName() + " is not empty. One or more packages exist.");
         }
       }
       Path path = new Path(db.getLocationUri()).getParent();
@@ -1722,6 +1729,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       for (String procName : allProcedures) {
         drop_stored_procedure(new StoredProcedureRequest(catName, name, procName));
+      }
+      for (String pkgName : allPackages) {
+        drop_package(new DropPackageRequest(catName, name, pkgName));
       }
 
       final int tableBatchSize = MetastoreConf.getIntVar(conf,
@@ -10504,13 +10514,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException {
+  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
     startFunction("get_stored_procedure");
     Exception ex = null;
     try {
-      return getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+      StoredProcedure proc = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+        if (proc == null) {
+          throw new NoSuchObjectException(
+                  "HPL/SQL StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
+        }
+        return proc;
     } catch (Exception e) {
-      LOG.error("Caught exception", e);
+      if (!(e instanceof NoSuchObjectException)) {
+        LOG.error("Caught exception", e);
+      }
       ex = e;
       throw e;
     } finally {
@@ -10548,13 +10565,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-public Package find_package(GetPackageRequest request) throws MetaException {
+public Package find_package(GetPackageRequest request) throws MetaException, NoSuchObjectException {
     startFunction("find_package");
     Exception ex = null;
     try {
-      return getMS().findPackage(request);
+      Package pkg = getMS().findPackage(request);
+      if (pkg == null) {
+        throw new NoSuchObjectException(
+                "HPL/SQL package " + request.getDbName() + "." + request.getPackageName() + " does not exist");
+      }
+      return pkg;
     } catch (Exception e) {
-      LOG.error("Caught exception", e);
+      if (!(e instanceof NoSuchObjectException)) {
+        LOG.error("Caught exception", e);
+      }
       ex = e;
       throw e;
     } finally {
