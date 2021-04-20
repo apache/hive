@@ -19,23 +19,18 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRule;
 
 /**
@@ -94,7 +89,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  *   WHERE mv.flag AND countStar = 0
  *   SORT BY mv.ROW__ID;
  */
-public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRule {
+public class HiveAggregateInsertDeleteIncrementalRewritingRule
+        extends HiveAggregateIncrementalRewritingRuleBase<HiveAggregateInsertDeleteIncrementalRewritingRule.RightInputWithDeletedRows> {
 
   public static final HiveAggregateInsertDeleteIncrementalRewritingRule INSTANCE =
       new HiveAggregateInsertDeleteIncrementalRewritingRule();
@@ -102,20 +98,13 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
   private HiveAggregateInsertDeleteIncrementalRewritingRule() {
     super(operand(Aggregate.class, operand(Union.class, operand(Aggregate.class, any()))),
         HiveRelFactories.HIVE_BUILDER,
-        "HiveAggregateInsertDeleteIncrementalRewritingRule");
+        "HiveAggregateInsertDeleteIncrementalRewritingRule", 2);
   }
 
   @Override
-  public void onMatch(RelOptRuleCall call) {
-    final Union union = call.rel(1);
-    final Aggregate queryAgg = call.rel(2);
-    RelBuilder relBuilder = call.builder();
-    final RexBuilder rexBuilder = relBuilder.getRexBuilder();
-
-    // 1) First branch is query, second branch is MV
-    RelNode joinLeftInput = union.getInput(1);
-
-    RelNode aggInput = queryAgg.getInput();
+  protected RightInputWithDeletedRows createJoinRightInput(Aggregate aggregate, RelBuilder relBuilder) {
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelNode aggInput = aggregate.getInput();
     aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
 
     aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate(aggInput);
@@ -125,11 +114,11 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
             aggInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(), rowIsDeletedIdx);
 
     int countIdx = -1;
-    List<RelBuilder.AggCall> newAggregateCalls = new ArrayList<>(queryAgg.getAggCallList().size());
-    for (int i = 0; i < queryAgg.getAggCallList().size(); ++i) {
-      AggregateCall aggregateCall = queryAgg.getAggCallList().get(i);
+    List<RelBuilder.AggCall> newAggregateCalls = new ArrayList<>(aggregate.getAggCallList().size());
+    for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
+      AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
       if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().size() == 0) {
-        countIdx = i + queryAgg.getGroupCount();
+        countIdx = i + aggregate.getGroupCount();
       }
 
       RexNode argument;
@@ -157,121 +146,38 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     }
 
     if (countIdx == -1) {
-      // Count(*) not found. It is required to determine if a group should be deleted from the view.
+      // count(*) not found. It is required to determine if a group should be deleted from the view.
       // Can not rewrite, bail out;
-      return;
+      return null;
     }
 
-    // 2) Introduce a Project on top of MV scan having all columns from the view plus a boolean literal which indicates
-    // whether the row with the key values coming from the joinRightInput exists in the view:
-    // - true means exist
-    // - null means not exists
-    // Project also needed to encapsulate the view scan by a subquery -> this is required by
-    // CalcitePlanner.fixUpASTAggregateIncrementalRebuild
-    List<RexNode> mvCols = new ArrayList<>(joinLeftInput.getRowType().getFieldCount());
-    for (int i = 0; i < joinLeftInput.getRowType().getFieldCount(); ++i) {
-      mvCols.add(rexBuilder.makeInputRef(
-              joinLeftInput.getRowType().getFieldList().get(i).getType(), i));
-    }
-    mvCols.add(rexBuilder.makeLiteral(true));
-
-    joinLeftInput = relBuilder
-            .push(joinLeftInput)
-            .project(mvCols)
-            .build();
-
-    RelNode joinRightInput = relBuilder
+    return new RightInputWithDeletedRows(relBuilder
             .push(aggInput)
-            .aggregate(relBuilder.groupKey(queryAgg.getGroupSet()), newAggregateCalls)
-            .build();
+            .aggregate(relBuilder.groupKey(aggregate.getGroupSet()), newAggregateCalls)
+            .build(),
+            countIdx);
+  }
 
-    // 3) Build conditions for join and start adding
-    // expressions for project operator
-    List<RexNode> projExprs = new ArrayList<>();
-    List<RexNode> joinConjs = new ArrayList<>();
-    int groupCount = queryAgg.getGroupCount();
-    int totalCount = queryAgg.getGroupCount() + queryAgg.getAggCallList().size();
-    for (int leftPos = 0, rightPos = totalCount + 1;
-         leftPos < groupCount; leftPos++, rightPos++) {
-      RexNode leftRef = rexBuilder.makeInputRef(
-          joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
-      RexNode rightRef = rexBuilder.makeInputRef(
-          joinRightInput.getRowType().getFieldList().get(leftPos).getType(), rightPos);
-      projExprs.add(rightRef);
-
-      RexNode nsEqExpr = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM,
-              ImmutableList.of(leftRef, rightRef));
-      joinConjs.add(nsEqExpr);
-    }
-
-    // 4) Create join node
-    RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
-    RelNode join = relBuilder
-            .push(joinLeftInput)
-            .push(joinRightInput)
-            .join(JoinRelType.RIGHT, joinCond)
-            .build();
-
-    int flagIndex = joinLeftInput.getRowType().getFieldCount() - 1;
-    RexNode flagNode = rexBuilder.makeInputRef(
-            join.getRowType().getFieldList().get(flagIndex).getType(), flagIndex);
-
-    // 5) Add the expressions that correspond to the aggregation
-    // functions
-    for (int i = 0, leftPos = groupCount, rightPos = totalCount + 1 + groupCount;
-         leftPos < totalCount; i++, leftPos++, rightPos++) {
-      // case when source.s is null and mv2.s is null then null
-      // case when source.s IS null then mv2.s
-      // case when mv2.s IS null then source.s
-      // else source.s + mv2.s end
-      RexNode leftRef = rexBuilder.makeInputRef(
-          joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
-      RexNode rightRef = rexBuilder.makeInputRef(
-          joinRightInput.getRowType().getFieldList().get(leftPos).getType(), rightPos);
-      // Generate SQLOperator for merging the aggregations
-      RexNode elseReturn;
-      SqlAggFunction aggCall = queryAgg.getAggCallList().get(i).getAggregation();
-      switch (aggCall.getKind()) {
-      case SUM:
-      case COUNT:
-        // SUM and COUNT are rolled up as SUM, hence SUM represents both here
-        elseReturn = rexBuilder.makeCall(SqlStdOperatorTable.PLUS,
-            ImmutableList.of(rightRef, leftRef));
-        break;
-      default:
-        throw new AssertionError("Found an aggregation that could not be"
-            + " recognized: " + aggCall);
-      }
-      // According to SQL standard (and Hive) Aggregate functions eliminates null values however operators used in
-      // elseReturn expressions returns null if one of their operands is null
-      // hence we need a null check of both operands.
-      // Note: If both are null, we will fall into branch    WHEN leftNull THEN rightRef
-      RexNode leftNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, leftRef);
-      RexNode rightNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, rightRef);
-      projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-              leftNull, rightRef,
-              rightNull, leftRef,
-              elseReturn));
-    }
-
-    RexNode countStarCase = projExprs.get(countIdx);
-
-    // 6) Build plan
-    // Split this filter condition in CalcitePlanner.fixUpASTAggregateIncrementalRebuild:
-    // First disjunct for update branch
-    // Second disjunct for insert branch
+  @Override
+  protected RexNode createFilterCondition(
+          RightInputWithDeletedRows rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RexNode countStarCase = projExprs.get(rightInput.countStarIndex);
     RexNode countStarGT0 = rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN, countStarCase, relBuilder.literal(0));
     RexNode countStarEq0 = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countStarCase, relBuilder.literal(0));
     RexNode insert = rexBuilder.makeCall(SqlStdOperatorTable.AND,
             rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, flagNode), countStarGT0);
     RexNode update = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, countStarGT0);
     RexNode delete = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, countStarEq0);
+    return rexBuilder.makeCall(SqlStdOperatorTable.OR, insert, update, delete);
+  }
 
-    RelNode newNode = relBuilder
-        .push(join)
-        .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR, insert, update, delete))
-        .project(projExprs)
-        .build();
-    call.transformTo(newNode);
+  protected static class RightInputWithDeletedRows extends RightInput {
+    private final int countStarIndex;
+
+    public RightInputWithDeletedRows(RelNode rightInput, int countStarIndex) {
+      super(rightInput);
+      this.countStarIndex = countStarIndex;
+    }
   }
 }

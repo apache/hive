@@ -17,20 +17,15 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
-import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -82,7 +77,8 @@ import java.util.List;
  *   WHERE mv.flag
  *   SORT BY mv.ROW__ID;
  */
-public class HiveAggregateInsertIncrementalRewritingRule extends RelOptRule {
+public class HiveAggregateInsertIncrementalRewritingRule
+        extends HiveAggregateIncrementalRewritingRuleBase<HiveAggregateIncrementalRewritingRuleBase.RightInput> {
 
   public static final HiveAggregateInsertIncrementalRewritingRule INSTANCE =
       new HiveAggregateInsertIncrementalRewritingRule();
@@ -90,130 +86,40 @@ public class HiveAggregateInsertIncrementalRewritingRule extends RelOptRule {
   private HiveAggregateInsertIncrementalRewritingRule() {
     super(operand(Aggregate.class, operand(Union.class, any())),
         HiveRelFactories.HIVE_BUILDER,
-        "HiveAggregateIncrementalRewritingRule");
+        "HiveAggregateIncrementalRewritingRule", 0);
   }
 
   @Override
-  public void onMatch(RelOptRuleCall call) {
-    final Aggregate agg = call.rel(0);
-    final Union union = call.rel(1);
-    final RexBuilder rexBuilder =
-        agg.getCluster().getRexBuilder();
-    // 1) First branch is query, second branch is MV
-    RelNode joinLeftInput = union.getInput(1);
-    final RelNode joinRightInput = union.getInput(0);
+  protected RightInput createJoinRightInput(Aggregate aggregate, RelBuilder relBuilder) {
+    return new RightInput(aggregate.getInput().getInput(1));
+  }
 
-    // 2) Introduce a Project on top of MV scan having all columns from the view plus a boolean literal which indicates
-    // whether the row with the key values coming from the joinRightInput exists in the view:
-    // - true means exist
-    // - null means not exists
-    // Project also needed to encapsulate the view scan by a subquery -> this is required by
-    // CalcitePlanner.fixUpASTAggregateIncrementalRebuild
-    List<RexNode> mvCols = new ArrayList<>(joinLeftInput.getRowType().getFieldCount());
-    for (int i = 0; i < joinLeftInput.getRowType().getFieldCount(); ++i) {
-      mvCols.add(rexBuilder.makeInputRef(
-              joinLeftInput.getRowType().getFieldList().get(i).getType(), i));
-    }
-    mvCols.add(rexBuilder.makeLiteral(true));
+  @Override
+  protected RexNode createFilterCondition(RightInput rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    return rexBuilder.makeCall(
+            SqlStdOperatorTable.OR, flagNode, rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, flagNode));
+  }
 
-    joinLeftInput = call.builder()
-            .push(joinLeftInput)
-            .project(mvCols)
-            .build();
+  @Override
+  protected RexNode createAggregateNode(
+          SqlAggFunction aggCall, RexNode leftRef, RexNode rightRef, RexBuilder rexBuilder) {
 
-    // 3) Build conditions for join and start adding
-    // expressions for project operator
-    List<RexNode> projExprs = new ArrayList<>();
-    List<RexNode> joinConjs = new ArrayList<>();
-    int groupCount = agg.getGroupCount();
-    int totalCount = agg.getGroupCount() + agg.getAggCallList().size();
-    for (int leftPos = 0, rightPos = totalCount + 1;
-         leftPos < groupCount; leftPos++, rightPos++) {
-      RexNode leftRef = rexBuilder.makeInputRef(
-          joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
-      RexNode rightRef = rexBuilder.makeInputRef(
-          joinRightInput.getRowType().getFieldList().get(leftPos).getType(), rightPos);
-      projExprs.add(rightRef);
-
-      RexNode nsEqExpr = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM,
-              ImmutableList.of(leftRef, rightRef));
-      joinConjs.add(nsEqExpr);
-    }
-
-    // 4) Create join node
-    RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
-    RelNode join = call.builder()
-            .push(joinLeftInput)
-            .push(joinRightInput)
-            .join(JoinRelType.RIGHT, joinCond)
-            .build();
-
-    int flagIndex = joinLeftInput.getRowType().getFieldCount() - 1;
-    RexNode flagNode = rexBuilder.makeInputRef(
-            join.getRowType().getFieldList().get(flagIndex).getType(), flagIndex);
-
-    // 5) Add the expressions that correspond to the aggregation
-    // functions
-    for (int i = 0, leftPos = groupCount, rightPos = totalCount + 1 + groupCount;
-         leftPos < totalCount; i++, leftPos++, rightPos++) {
-      // case when source.s is null and mv2.s is null then null
-      // case when source.s IS null then mv2.s
-      // case when mv2.s IS null then source.s
-      // else source.s + mv2.s end
-      RexNode leftRef = rexBuilder.makeInputRef(
-          joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
-      RexNode rightRef = rexBuilder.makeInputRef(
-          joinRightInput.getRowType().getFieldList().get(leftPos).getType(), rightPos);
-      // Generate SQLOperator for merging the aggregations
-      RexNode elseReturn;
-      SqlAggFunction aggCall = agg.getAggCallList().get(i).getAggregation();
-      switch (aggCall.getKind()) {
-      case SUM:
-        // SUM and COUNT are rolled up as SUM, hence SUM represents both here
-        elseReturn = rexBuilder.makeCall(SqlStdOperatorTable.PLUS,
-            ImmutableList.of(rightRef, leftRef));
-        break;
+    switch (aggCall.getKind()) {
       case MIN: {
         RexNode condInnerCase = rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN,
-            ImmutableList.of(rightRef, leftRef));
-        elseReturn = rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-            ImmutableList.of(condInnerCase, rightRef, leftRef));
-        }
-        break;
+                ImmutableList.of(rightRef, leftRef));
+        return rexBuilder.makeCall(SqlStdOperatorTable.CASE,
+                ImmutableList.of(condInnerCase, rightRef, leftRef));
+      }
       case MAX: {
         RexNode condInnerCase = rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN,
-            ImmutableList.of(rightRef, leftRef));
-        elseReturn = rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-            ImmutableList.of(condInnerCase, rightRef, leftRef));
-        }
-        break;
-      default:
-        throw new AssertionError("Found an aggregation that could not be"
-            + " recognized: " + aggCall);
+                ImmutableList.of(rightRef, leftRef));
+        return rexBuilder.makeCall(SqlStdOperatorTable.CASE,
+                ImmutableList.of(condInnerCase, rightRef, leftRef));
       }
-      // According to SQL standard (and Hive) Aggregate functions eliminates null values however operators used in
-      // elseReturn expressions returns null if one of their operands is null
-      // hence we need a null check of both operands.
-      // Note: If both are null, we will fall into branch    WHEN leftNull THEN rightRef
-      RexNode leftNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, leftRef);
-      RexNode rightNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, rightRef);
-      projExprs.add(rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-              leftNull, rightRef,
-              rightNull, leftRef,
-              elseReturn));
+      default:
+        return super.createAggregateNode(aggCall, leftRef, rightRef, rexBuilder);
     }
-
-    // 6) Build plan
-    // Split this filter condition in CalcitePlanner.fixUpASTAggregateIncrementalRebuild:
-    // First disjunct for update branch
-    // Second disjunct for insert branch
-    RexNode filterCond = rexBuilder.makeCall(
-            SqlStdOperatorTable.OR, flagNode, rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, flagNode));
-    RelNode newNode = call.builder()
-        .push(join)
-        .filter(filterCond)
-        .project(projExprs)
-        .build();
-    call.transformTo(newNode);
   }
 }
