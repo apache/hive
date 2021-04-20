@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -422,6 +423,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     long start = System.currentTimeMillis();
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
+    openTxn(TxnType.REPL_CREATED);
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
@@ -447,11 +449,19 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS).intValue());
 
     Assert.assertEquals(2,
-        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_NON_REPL_TXNS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_REPL_TXNS).intValue());
+
     Assert.assertEquals(23,
-        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue());
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_AGE).intValue() >= 1);
+
+    Assert.assertEquals(25,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_AGE).intValue() >= 1);
 
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_LOCKS).intValue());
@@ -464,7 +474,7 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
     start = System.currentTimeMillis();
-    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(25L, 27L)));
+    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(26L, 28L)));
     Thread.sleep(1000);
 
     runAcidMetricService();
@@ -473,7 +483,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() >= 1);
 
-    Assert.assertEquals(25,
+    Assert.assertEquals(26,
         Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
