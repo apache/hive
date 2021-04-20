@@ -21,17 +21,12 @@ import java.util.List;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.hep.HepPlanner;
-import org.apache.calcite.plan.hep.HepProgram;
-import org.apache.calcite.plan.hep.HepProgramBuilder;
-import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
@@ -41,7 +36,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFieldTrimmerRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRule;
 
 /**
  * This rule will perform a rewriting to prepare the plan for incremental
@@ -101,10 +96,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFieldTrimmerRule;
  */
 public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRule {
 
-  private static final HepProgram PROGRAM = new HepProgramBuilder()
-          .addRuleInstance(HiveHepExtractRelNodeRule.INSTANCE)
-          .build();
-
   public static final HiveAggregateInsertDeleteIncrementalRewritingRule INSTANCE =
       new HiveAggregateInsertDeleteIncrementalRewritingRule();
 
@@ -126,9 +117,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     RelNode joinLeftInput = union.getInput(1);
 
     RelNode aggInput = queryAgg.getInput();
-    final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
-    tmpPlanner.setRoot(aggInput);
-    aggInput = tmpPlanner.findBestExp();
+    aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
 
     aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate2(aggInput);
 
@@ -289,21 +278,4 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
         .build();
     call.transformTo(newNode);
   }
-
-  private static class HiveHepExtractRelNodeRule extends RelOptRule {
-
-    private static final HiveHepExtractRelNodeRule INSTANCE =
-            new HiveHepExtractRelNodeRule();
-
-    private HiveHepExtractRelNodeRule() {
-      super(operand(HepRelVertex.class, any()));
-    }
-
-    @Override
-    public void onMatch(RelOptRuleCall call) {
-      final HepRelVertex rel = call.rel(0);
-      call.transformTo(rel.getCurrentRel());
-    }
-  }
-
 }
