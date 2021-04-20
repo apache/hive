@@ -136,7 +136,7 @@ public class HiveTableUtil {
 
   public static RemoteIterator<LocatedFileStatus> getFilesIterator(Path path, Configuration conf) throws MetaException {
     try {
-      FileSystem fileSystem = FileSystem.get(conf);
+      FileSystem fileSystem = FileSystem.get(path.toUri(), conf);
       return fileSystem.listFiles(path, true);
     } catch (IOException e) {
       throw new MetaException("Exception happened during the collection of file statuses.\n" + e.getMessage());
