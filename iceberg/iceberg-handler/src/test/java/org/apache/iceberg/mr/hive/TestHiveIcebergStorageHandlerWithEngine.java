@@ -150,7 +150,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Rule
-  public Timeout timeout = new Timeout(200000, TimeUnit.MILLISECONDS);
+  public Timeout timeout = new Timeout(200_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
