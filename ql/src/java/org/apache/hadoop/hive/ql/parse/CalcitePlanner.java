@@ -84,7 +84,6 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
@@ -123,12 +122,10 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.dialect.HiveSqlDialect;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.Frameworks;
-import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -171,7 +168,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraints
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagationException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveRowIsDeletedPropagator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2783,27 +2779,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
-//      } else if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD) {
-//        RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(this.cluster, null);
-//        RexBuilder rexBuilder = relBuilder.getRexBuilder();
-//        Project project = (Project) basePlan;
-//        RexNode countExpr = project.getChildExps().get(countIndex);
-//
-//        RexNode deleteRow = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countExpr, relBuilder.literal(0));
-//
-//        RexNode filterCond = rexBuilder.makeCall(
-//                SqlStdOperatorTable.OR, deleteRow,
-//                rexBuilder.makeCall(SqlStdOperatorTable.OR, rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, deleteRow),
-//                        rexBuilder.makeCall(SqlStdOperatorTable.NOT, deleteRow)));
-//
-//        basePlan = relBuilder.push(basePlan.getInput(0))
-//                .filter(filterCond)
-//                .project(((Project) basePlan).getProjects())
-//                .build();
       } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
         try {
-          basePlan = new HiveRowIsDeletedPropagator(HiveRelFactories.HIVE_BUILDER.create(this.cluster, null))
-              .propagate(basePlan);
+          basePlan = new HiveJoinInsertDeleteIncrementalRewritingRule.FilterPropagator(
+                  HiveRelFactories.HIVE_BUILDER.create(this.cluster, null)).propagate(basePlan);
         }
         catch (ColumnPropagationException ex) {
           LOG.warn("Exception while propagating column " + VirtualColumn.ROWISDELETED.getName(), ex);

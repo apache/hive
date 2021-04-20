@@ -119,7 +119,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends RelOptRul
     RelNode aggInput = queryAgg.getInput();
     aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
 
-    aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate2(aggInput);
+    aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate(aggInput);
 
     int rowIsDeletedIdx = aggInput.getRowType().getFieldCount() - 1;
     RexNode rowIsDeletedNode = rexBuilder.makeInputRef(
