@@ -406,7 +406,6 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private void cleanCommitConfig(String tableName) {
     conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName);
     conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName);
-    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX + tableName);
     conf.unset(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableName);
   }
 

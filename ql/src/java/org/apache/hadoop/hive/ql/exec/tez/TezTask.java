@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -101,7 +102,6 @@ import com.google.common.annotations.VisibleForTesting;
 public class TezTask extends Task<TezWork> {
 
   public static final String HIVE_TEZ_COMMIT_JOB_ID_PREFIX = "hive.tez.commit.job.id.";
-  public static final String HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX = "hive.tez.commit.job.result.";
   public static final String HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX = "hive.tez.commit.task.count.";
 
   private static final String CLASS_NAME = TezTask.class.getName();
@@ -270,9 +270,10 @@ public class TezTask extends Task<TezWork> {
           counters = null;
         }
 
-        // save useful commit information into session conf, e.g. for custom commit hooks
-        // TODO: this is temporary, Iceberg-specific logic. Refactor when new Tez version has been released
-        collectCommitInformation(work, rc == 0);
+        // save useful commit information into session conf, e.g. for custom commit hooks, like Iceberg
+        if (rc == 0) {
+          collectCommitInformation(work);
+        }
       } finally {
         // Note: due to TEZ-3846, the session may actually be invalid in case of some errors.
         //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
@@ -349,22 +350,24 @@ public class TezTask extends Task<TezWork> {
     return rc;
   }
 
-  private void collectCommitInformation(TezWork work, boolean success) throws IOException, TezException {
+  private void collectCommitInformation(TezWork work) throws IOException, TezException {
     HiveConf sessionConf = SessionState.get().getConf();
     for (BaseWork w : work.getAllWork()) {
       JobConf jobConf = workToConf.get(w);
       Vertex vertex = workToVertex.get(w);
       String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
-      // we should only consider jobs where an output committer is defined
-      if (!vertex.getDataSinks().isEmpty() && jobConf != null && "org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter"
-          .equals(jobConf.getOutputCommitter().getClass().getName())) {
-        String tableName = jobConf.get("name");
+      boolean hasIcebergCommitter = Optional.ofNullable(jobConf).map(JobConf::getOutputCommitter)
+          .map(Object::getClass).map(Class::getName)
+          .filter(name -> name.endsWith("HiveIcebergNoJobCommitter")).isPresent();
+      // we should only consider jobs with Iceberg output committer and a data sink
+      if (hasIcebergCommitter && !vertex.getDataSinks().isEmpty()) {
         String tableLocationRoot = jobConf.get("location");
-        if (tableName != null && tableLocationRoot != null) {
+        if (tableLocationRoot != null) {
           VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
           Path path = new Path(tableLocationRoot + "/temp");
           LOG.debug("Table temp directory path is: " + path);
           // list the directories inside the temp directory
+          // TODO: this is temporary, refactor when new Tez version has been released
           FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
           LOG.debug("Listing the table temp directory yielded these files: " + Arrays.toString(children));
           for (FileStatus child : children) {
@@ -384,7 +387,6 @@ public class TezTask extends Task<TezWork> {
                 sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID_PREFIX + table, jobIdStr);
                 sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + table,
                     status.getProgress().getSucceededTaskCount());
-                sessionConf.setBoolean(HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX + table, success);
               }
             }
           }
@@ -395,7 +397,7 @@ public class TezTask extends Task<TezWork> {
             }
           });
         } else {
-          LOG.warn("Table location or table name not found in config for base work: " + w.getName());
+          LOG.warn("Table location not found in config for base work: " + w.getName());
         }
       }
     }
