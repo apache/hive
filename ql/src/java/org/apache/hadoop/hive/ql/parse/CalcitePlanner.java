@@ -4193,9 +4193,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
-          checkExpressionsForGroupingSet(groupByNodes,
-              qb.getParseInfo().getDistinctFuncExprsForClause(destClauseName),
-              aggregationTrees, relToHiveRR.get(srcRel));
 
           if (qbp.getDestGroupingSets().size() > conf
               .getIntVar(HiveConf.ConfVars.HIVE_NEW_JOB_GROUPING_SET_CARDINALITY)) {

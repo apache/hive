@@ -64,7 +64,6 @@
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
-    <module>iceberg</module>
   </modules>
 
   <properties>
@@ -189,7 +188,7 @@
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.48.Final</netty.version>
-    <netty3.version>3.10.5.Final</netty3.version>
+    <netty3.version>3.10.5.Final</netty3.version> <!-- used by druid storage handler -->
     <pac4j-saml.version>4.0.3</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.11.1</parquet.version>
@@ -541,6 +540,10 @@
           <exclusion>
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
           </exclusion>
         </exclusions>
      </dependency>
@@ -925,6 +928,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -943,10 +952,14 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
           </exclusion>
-            <exclusion>
-              <groupId>io.netty</groupId>
-              <artifactId>netty-all</artifactId>
-            </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -966,6 +979,10 @@
              <groupId>io.netty</groupId>
              <artifactId>netty-all</artifactId>
            </exclusion>
+           <exclusion>
+             <groupId>io.netty</groupId>
+             <artifactId>netty</artifactId>
+           </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -984,6 +1001,10 @@
            <exclusion>
              <groupId>io.netty</groupId>
              <artifactId>netty-all</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>io.netty</groupId>
+             <artifactId>netty</artifactId>
            </exclusion>
         </exclusions>
       </dependency>
@@ -1183,6 +1204,12 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-library</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1198,6 +1225,12 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-mapreduce</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1213,11 +1246,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty</artifactId>
-      <version>${netty3.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -1836,6 +1864,12 @@
       <id>itests</id>
       <modules>
         <module>itests</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>iceberg</id>
+      <modules>
+        <module>iceberg</module>
       </modules>
     </profile>
     <profile>
