@@ -18,4 +18,10 @@
 -->
 
 <configuration>
+
+<property>
+  <name>metastore.metadata.transformer.class</name>
+  <value> </value>
+</property>
+
 </configuration>

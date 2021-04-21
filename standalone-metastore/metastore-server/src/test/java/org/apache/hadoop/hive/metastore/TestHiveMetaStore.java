@@ -140,6 +140,7 @@ public abstract class TestHiveMetaStore {
     conf.set("hive.key4", "0");
     conf.set("datanucleus.autoCreateTables", "false");
     conf.set("hive.in.test", "true");
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
