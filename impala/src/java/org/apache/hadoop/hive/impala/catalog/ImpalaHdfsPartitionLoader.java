@@ -171,7 +171,9 @@ public class ImpalaHdfsPartitionLoader {
     if (writeIdList != null) {
       request.setValidWriteIdList(writeIdList.toString());
     }
-    request.setGetFileMetadata(fetchFileMetadata);
+    if (fetchFileMetadata) {
+      request.setGetFileMetadata(fetchFileMetadata);
+    }
     request.basicHdfsTable = basicHdfsTable;
     return request;
   }
