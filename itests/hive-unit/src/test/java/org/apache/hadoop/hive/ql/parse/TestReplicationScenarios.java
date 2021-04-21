@@ -4485,6 +4485,61 @@ public class TestReplicationScenarios {
     appender.removeFromLogger(logger.getName());
   }
 
+  @Test
+  public void testDropPartitionSingleEvent() throws IOException {
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    Level oldLevel = logger.getLevel();
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
+
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+
+    String testName = "testDropPartitionSingleEvent";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    // Create a partitioned table.
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    ArrayList<String> partitions = new ArrayList<>();
+
+    // Create around 10 partitoins.
+    for (int i = 0; i < 10; i++) {
+      run("ALTER TABLE " + dbName + ".ptned ADD PARTITION(b=" + i + ")", driver);
+      partitions.add("b=" + i);
+    }
+
+    // Verify that the partitions got created, then do a dump & load cycle.
+    verifyRun("SHOW PARTITIONS " + dbName + ".ptned", partitions.toArray(new String[] {}), driver);
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    verifyRun("SHOW PARTITIONS " + replDbName + ".ptned", partitions.toArray(new String[] {}), driverMirror);
+
+    // Drop 3 partitions in one go, at source.
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(b<3)", driver);
+
+    partitions.remove("b=0");
+    partitions.remove("b=1");
+    partitions.remove("b=2");
+
+    appender.reset();
+
+    // Do an incremntal load and see the partitions got deleted and the normal drop partition flow was used.
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+    assertTrue(appender.getOutput().contains("Replication calling normal drop partitions for regular partition drops"));
+    assertTrue(appender.getOutput().contains("Dropped 3 partitions for replication."));
+    verifyRun("SHOW PARTITIONS " + replDbName + ".ptned", partitions.toArray(new String[] {}), driverMirror);
+
+    // Clean up
+    loggerConfig.setLevel(oldLevel);
+    ctx.updateLoggers();
+    appender.removeFromLogger(logger.getName());
+  }
+
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
