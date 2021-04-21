@@ -596,7 +596,9 @@ public class TestPartitionManagement {
     // table property is set to true, but the table is marked as replication target. The new
     // partitions should not be created
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.TARGET_OF_REPLICATION, "true");
+    client.alterDatabase(table.getDbName(), db);
     client.alter_table(dbName, tableName, table);
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
@@ -640,8 +642,10 @@ public class TestPartitionManagement {
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
     table.getParameters().put(PartitionManagementTask.PARTITION_RETENTION_PERIOD_TBLPROPERTY,
             partitionRetentionPeriodMs + "ms");
-    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
     client.alter_table(dbName, tableName, table);
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.TARGET_OF_REPLICATION, "true");
+    client.alterDatabase(table.getDbName(), db);
 
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
