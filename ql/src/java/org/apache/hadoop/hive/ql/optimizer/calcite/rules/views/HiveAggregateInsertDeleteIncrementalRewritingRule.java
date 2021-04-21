@@ -172,7 +172,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
     return rexBuilder.makeCall(SqlStdOperatorTable.OR, insert, update, delete);
   }
 
-  protected static class RightInputWithDeletedRows extends RightInput {
+  static class RightInputWithDeletedRows extends HiveAggregateIncrementalRewritingRuleBase.RightInput {
     private final int countStarIndex;
 
     public RightInputWithDeletedRows(RelNode rightInput, int countStarIndex) {
