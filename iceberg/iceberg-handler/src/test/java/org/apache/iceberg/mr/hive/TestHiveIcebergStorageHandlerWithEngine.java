@@ -675,8 +675,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // simple insert: should create a single vertex writing to both target tables
     shell.executeStatement("FROM customers " +
-       "INSERT INTO target1 SELECT customer_id, first_name " +
-       "INSERT INTO target2 SELECT last_name, customer_id");
+        "INSERT INTO target1 SELECT customer_id, first_name " +
+        "INSERT INTO target2 SELECT last_name, customer_id");
 
     // Check that everything is as expected
     HiveIcebergTestUtils.validateData(target1, target1Records, 0);
