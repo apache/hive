@@ -460,6 +460,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     perfLogger.perfLogEnd(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
   }
 
+  public void addExplain(String sql , List<String> explainStmt, DDLPlanUtils ddlPlanUtils){
+    explainStmt.addAll(ddlPlanUtils.addExplainPlans(sql));
+    return;
+  }
+
   public void getDDLPlan(PrintStream out) throws HiveException, MetaException {
     DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
     Set<String> createDatabase = new TreeSet<String>();
@@ -467,6 +472,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     List<String> tableBasicDef = new LinkedList<String>();
     List<String> createViewList = new LinkedList<String>();
     List<String> alterTableStmt = new LinkedList<String>();
+    List<String> explainStmt = new LinkedList<String>();
     Map<String, Table> tableMap = new HashMap<>();
     Map<String, List<Partition>> tablePartitionsMap = new HashMap<>();
     for (ReadEntity ent : work.getInputs()) {
@@ -500,6 +506,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
       }
     }
+    addExplain(conf.getQueryString(), explainStmt, ddlPlanUtils);
     Joiner jn = Joiner.on("\n");
     out.println(jn.join(createDatabaseStmt));
     out.println(jn.join(tableCreateStmt));

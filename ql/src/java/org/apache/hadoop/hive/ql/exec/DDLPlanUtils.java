@@ -67,9 +67,11 @@ import org.stringtemplate.v4.ST;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -109,6 +111,8 @@ public class DDLPlanUtils {
   private static final String SQL = "SQL";
   private static final String COMMENT_SQL = "COMMENT_SQL";
   private static final String HIVE_DEFAULT_PARTITION = "__HIVE_DEFAULT_PARTITION__";
+  private static final String BASE_64_VALUE = "BASE_64";
+  private static final String explain = "EXPLAIN";
   private static final String numNulls = "'numNulls'='";
   private static final String numDVs = "'numDVs'='";
   private static final String numTrues = "'numTrues'='";
@@ -118,6 +122,8 @@ public class DDLPlanUtils {
   private static final String avgColLen = "'avgColLen'='";
   private static final String maxColLen = "'maxColLen'='";
   private static final String[] req = {"numRows", "rawDataSize"};
+  private static final String[] explain_plans = {" ", " CBO ", " VECTORIZED "};
+
   private static final String CREATE_DATABASE_STMT = "CREATE DATABASE IF NOT EXISTS <" + DATABASE_NAME + ">;";
 
   private final String CREATE_TABLE_TEMPLATE =
@@ -196,11 +202,13 @@ public class DDLPlanUtils {
       "> <" + COL_TYPE + "> CONSTRAINT <" + CONSTRAINT_NAME + "> DEFAULT <" + DEFAULT_VALUE + "> DISABLE;";
 
   private final String EXIST_BIT_VECTORS = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" + TABLE_NAME + "> " +
-      "FOR COLUMN <" + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET";
+      "FOR COLUMN <" + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS <" +
+      BASE_64_VALUE +"> ";
 
   private final String EXIST_BIT_VECTORS_PARTITIONED = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" +
       TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
-      + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET.";
+      + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS <" +
+      BASE_64_VALUE +"> ";
 
   /**
    * Returns the create database query for a give database name.
@@ -377,29 +385,29 @@ public class DDLPlanUtils {
     ls.add(lowValue + dc.getLowValue() + "'");
   }
 
-  public boolean checkBitVectors(ColumnStatisticsData cd) {
+  public String checkBitVectors(ColumnStatisticsData cd) {
     if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetBitVectors()) {
-      return true;
+      return Base64.getEncoder().encodeToString(cd.getDoubleStats().getBitVectors());
     }
     if (cd.isSetBinaryStats() && cd.getBinaryStats().isSetBitVectors()) {
-      return true;
+      return Base64.getEncoder().encodeToString(cd.getBinaryStats().getBitVectors());
     }
     if (cd.isSetStringStats() && cd.getStringStats().isSetBitVectors()) {
-      return true;
+      return Base64.getEncoder().encodeToString(cd.getStringStats().getBitVectors());
     }
     if (cd.isSetDateStats() && cd.getDateStats().isSetBitVectors()) {
-      return true;
+      return Base64.getEncoder().encodeToString(cd.getDateStats().getBitVectors());
     }
     if (cd.isSetLongStats() && cd.getLongStats().isSetBitVectors()) {
-      return true;
+      return Base64.getEncoder().encodeToString(cd.getLongStats().getBitVectors());
     }
     if (cd.isSetDecimalStats() && cd.getDecimalStats().isSetBitVectors()) {
-      return true;
+      return Base64.getEncoder().encodeToString(cd.getDecimalStats().getBitVectors());
     }
-    if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetBitVectors()) {
-      return true;
+    if (cd.isSetDoubleStats() && cd.getBooleanStats().isSetBitVectors()) {
+      return Base64.getEncoder().encodeToString(cd.getBooleanStats().getBitVectors());
     }
-    return false;
+    return null;
   }
 
   /**
@@ -447,11 +455,13 @@ public class DDLPlanUtils {
       alterTblStmt.add(getAlterTableStmtCol(columnStatisticsObj[i].getStatsData(),
           columnStatisticsObj[i].getColName(),
           tbl.getTableName(), tbl.getDbName()));
-      if (checkBitVectors(columnStatisticsObj[i].getStatsData())) {
+      String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
+      if (base64 != null) {
         ST command = new ST(EXIST_BIT_VECTORS);
         command.add(DATABASE_NAME, tbl.getDbName());
         command.add(TABLE_NAME, tbl.getTableName());
         command.add(COLUMN_NAME, columnStatisticsObj[i].getColName());
+        command.add(BASE_64_VALUE, base64);
         alterTblStmt.add(command.render());
       }
     }
@@ -514,12 +524,14 @@ public class DDLPlanUtils {
           tblName,
           ptName,
           dbName));
-      if (checkBitVectors(columnStatisticsObj[i].getStatsData())) {
+      String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
+      if (base64 != null) {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
         command.add(DATABASE_NAME, dbName);
         command.add(TABLE_NAME, tblName);
         command.add(PARTITION_NAME, ptName);
         command.add(COLUMN_NAME, columnStatisticsObj[i].getColName());
+        command.add(BASE_64_VALUE, base64);
         alterTableStmt.add(command.render());
       }
     }
@@ -732,6 +744,25 @@ public class DDLPlanUtils {
     getAlterTableStmtCheckConstraint(tb.getCheckConstraint(), constraints);
     getAlterTableStmtNotNullConstraint(tb.getNotNullConstraint(), tb, constraints);
     return constraints;
+  }
+
+  /**
+   * Removes the "explain ddl" from the query and return the statement.
+   * @return
+   */
+  public String trimQuery(String query){
+    int ind = query.toUpperCase(Locale.ROOT).indexOf("DDL");
+    String newQuery = query.substring(ind + 4);
+    return newQuery;
+  }
+
+  public List<String> addExplainPlans(String sql){
+    sql = trimQuery(sql);
+    List<String> exp = new ArrayList<String>();
+    for(String ex : explain_plans){
+      exp.add(explain + ex + sql +";");
+    }
+    return exp;
   }
 
   /**
