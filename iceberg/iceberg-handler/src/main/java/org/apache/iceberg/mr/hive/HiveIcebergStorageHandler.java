@@ -363,7 +363,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       columns.add(((ExprNodeColumnDesc) node).getColumn());
     } else {
       List<ExprNodeDesc> children = node.getChildren();
-      if (children != null && !children.isEmpty()) {
+      if (children != null) {
         children.forEach(child -> columns(child, columns));
       }
     }
