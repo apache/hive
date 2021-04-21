@@ -277,6 +277,18 @@ import com.google.common.annotations.VisibleForTesting;
 
   private HiveVectorIfStmtMode hiveVectorIfStmtMode;
 
+  private List<String> allowCustomUDFList;
+
+  private List<String> getAllowCustomUDFList(HiveConf hiveConf) {
+    String udfs = HiveConf.getVar(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LISt);
+    if (udfs != null && !udfs.isEmpty()) {
+      return Arrays.asList(udfs.split(","));
+    }
+
+    return null;
+  }
+
   //when set to true use the overflow checked vector expressions
   private boolean useCheckedVectorExpressions;
 
@@ -298,6 +310,7 @@ import com.google.common.annotations.VisibleForTesting;
     adaptorSuppressEvaluateExceptions =
         HiveConf.getBoolVar(
             hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS);
+    this.allowCustomUDFList = getAllowCustomUDFList(hiveConf);
   }
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
@@ -1010,7 +1023,7 @@ import com.google.common.annotations.VisibleForTesting;
                 "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=none");
           case CHOSEN:
-            if (isNonVectorizedPathUDF(expr, mode)) {
+            if (isNonVectorizedPathUDF(expr, mode, allowCustomUDFList)) {
               ve = getCustomUDFExpression(expr, mode);
             } else {
               throw new HiveException(
@@ -1417,7 +1430,7 @@ import com.google.common.annotations.VisibleForTesting;
    * may be implemented in the future with an optimized VectorExpression.
    */
   public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
-      VectorExpressionDescriptor.Mode mode) {
+      VectorExpressionDescriptor.Mode mode, List<String> allowCustomUDFList) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
@@ -1451,6 +1464,10 @@ import com.google.common.annotations.VisibleForTesting;
                (arg0Type(expr).equals("timestamp")
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
+      return true;
+    } else if (allowCustomUDFList != null
+        && !allowCustomUDFList.isEmpty()
+        && allowCustomUDFList.contains(gudf.getClass().getName())) {
       return true;
     } else {
       return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
