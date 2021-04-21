@@ -26,9 +26,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -224,7 +226,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
             jobLocations.add(jobLocation);
             // list jobLocation to get number of forCommit files
-            int numTasks = listForCommits(jobConf, jobLocation).length;
+            int numTasks = listForCommits(jobConf, jobLocation).size();
             Collection<DataFile> dataFiles =
                 dataFiles(numTasks, fileExecutor, table.location(), jobContext, table.io(), false);
 
@@ -250,12 +252,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     cleanup(jobContext, jobLocations);
   }
 
-  private FileStatus[] listForCommits(JobConf jobConf, String jobLocation) throws IOException {
+  private Set<FileStatus> listForCommits(JobConf jobConf, String jobLocation) throws IOException {
     Path path = new Path(jobLocation);
     LOG.debug("Listing job location to get forCommits for abort: {}", jobLocation);
     FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
-    LOG.debug("Listing the table temp directory yielded these files: {}", Arrays.toString(children));
-    return children;
+    LOG.debug("Listing the job location: {} yielded these files: {}", jobLocation, Arrays.toString(children));
+    return Arrays.stream(children)
+        .filter(child -> !child.isDirectory() && child.getPath().getName().endsWith(FOR_COMMIT_EXTENSION))
+        .collect(Collectors.toSet());
   }
 
   /**
