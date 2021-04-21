@@ -762,8 +762,8 @@ public class CliConfigs {
     public IcebergCliConfig() {
       super(CoreCliDriver.class);
       try {
-        setQueryDir("iceberg/iceberg-handler/src/test/java/queries/positive");
-        setResultsDir("iceberg/iceberg-handler/src/test/java/results/positive");
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
@@ -780,8 +780,8 @@ public class CliConfigs {
     public IcebergNegativeCliConfig() {
       super(CoreNegativeCliDriver.class);
       try {
-        setQueryDir("iceberg/iceberg-handler/src/test/java/queries/negative");
-        setResultsDir("iceberg/iceberg-handler/src/test/java/results/negative");
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/negative");
+        setResultsDir("iceberg/iceberg-handler/src/test/results/negative");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/negative");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
