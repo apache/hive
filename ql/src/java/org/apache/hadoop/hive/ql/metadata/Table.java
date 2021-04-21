@@ -349,6 +349,10 @@ public class Table implements Serializable {
     return storageHandler;
   }
 
+  public void setStorageHandler(HiveStorageHandler sh){
+    storageHandler = sh;
+  }
+
   public StorageHandlerInfo getStorageHandlerInfo() {
     return storageHandlerInfo;
   }
@@ -465,7 +469,7 @@ public class Table implements Serializable {
   }
 
   public String getProperty(String name) {
-    return tTable.getParameters().get(name);
+    return tTable.getParameters() != null ? tTable.getParameters().get(name) : null;
   }
 
   public boolean isImmutable(){

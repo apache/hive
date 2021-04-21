@@ -111,7 +111,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     // used to give service actions a name. This is used by kill query command so it can
     // be authorized specifically to a service if necessary.
     SERVICE_NAME,
-    SCHEDULED_QUERY,
+    SCHEDULED_QUERY, STORAGEHANDLER_URI
   }
 
   /**
@@ -280,6 +280,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     case COLUMN:
     case LOCAL_URI:
     case DFS_URI:
+    case STORAGEHANDLER_URI:
       name = objectName;
       break;
     case COMMAND_PARAMS:
