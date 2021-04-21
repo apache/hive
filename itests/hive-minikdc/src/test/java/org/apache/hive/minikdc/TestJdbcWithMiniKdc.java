@@ -254,7 +254,7 @@ public class TestJdbcWithMiniKdc {
    * impersonate the given user
    * @throws Exception
    */
-  @Test(expected = HiveSQLException.class)
+  @Test(expected = SQLException.class)
   public void testNegativeProxyAuth() throws Exception {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
     hs2Conn = DriverManager
