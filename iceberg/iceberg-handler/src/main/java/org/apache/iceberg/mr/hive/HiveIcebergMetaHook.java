@@ -33,9 +33,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -357,52 +358,48 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   }
 
   @Override
+  public void preInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    // do nothing
+  }
+
+  @Override
   public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-
-    // check status to determine whether we need to commit or to abort
-    JobConf jobConf = new JobConf(conf);
-    boolean success = jobConf.getBoolean(TezTask.HIVE_TEZ_COMMIT_JOB_RESULT_PREFIX + tableName, false);
-
-    // construct the job context
-    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
-    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
-    jobConf.setNumReduceTasks(numTasks);
-    JobContext jobContext = new JobContextImpl(jobConf, jobID, null);
-
-    // we should only commit this current table because
-    // for multi-table inserts, this hook method will be called sequentially for each target table
-    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
-
-    OutputCommitter committer = new HiveIcebergOutputCommitter();
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    boolean failure = false;
     try {
-      if (success) {
-        try {
-          committer.commitJob(jobContext);
-        } catch (Exception commitExc) {
-          LOG.error("Error while trying to commit job (table: {}, jobID: {}). Will abort it now.",
-              tableName, jobID, commitExc);
-          abortJob(jobContext, committer, true);
-          throw new MetaException("Unable to commit job: " + commitExc.getMessage());
-        }
-      } else {
-        abortJob(jobContext, committer, false);
-      }
+      OutputCommitter committer = new HiveIcebergOutputCommitter();
+      committer.commitJob(jobContext);
+    } catch (Exception e) {
+      failure = true;
+      LOG.error("Error while trying to commit job", e);
+      throw new MetaException(StringUtils.stringifyException(e));
     } finally {
-      // avoid config pollution with prefixed/suffixed keys
-      cleanCommitConfig(tableName);
+      // if there's a failure, the configs will still be needed in rollbackInsertTable
+      if (!failure) {
+        // avoid config pollution with prefixed/suffixed keys
+        cleanCommitConfig(tableName);
+      }
     }
   }
 
-  private void abortJob(JobContext jobContext, OutputCommitter committer, boolean suppressExc) throws MetaException {
+  @Override
+  public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    OutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
+      LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
       committer.abortJob(jobContext, JobStatus.State.FAILED);
-    } catch (IOException abortExc) {
-      LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", abortExc);
-      if (!suppressExc) {
-        throw new MetaException("Unable to abort job: " + abortExc.getMessage());
-      }
+    } catch (IOException e) {
+      LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
+      // no throwing here because the original commitInsertTable exception should be propagated
+    } finally {
+      // avoid config pollution with prefixed/suffixed keys
+      cleanCommitConfig(tableName);
     }
   }
 
@@ -413,15 +410,16 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     conf.unset(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableName);
   }
 
-  @Override
-  public void preInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
-      throws MetaException {
-    // do nothing
-  }
+  private JobContext getJobContextForCommitOrAbort(String tableName) {
+    JobConf jobConf = new JobConf(conf);
+    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
+    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
+    jobConf.setNumReduceTasks(numTasks);
 
-  @Override
-  public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
-      throws MetaException {
-    // do nothing
+    // we should only commit this current table because
+    // for multi-table inserts, this hook method will be called sequentially for each target table
+    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+
+    return new JobContextImpl(jobConf, jobID, null);
   }
 }
