@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -40,7 +42,7 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
  * (providing something which appears to be a non-native table with respect to
  * metadata even though its behavior is otherwise identical to a native table).
  */
-public class DefaultStorageHandler implements HiveStorageHandler {
+public class DefaultStorageHandler implements HiveStorageHandler, HiveStorageAuthorizationHandler {
   private Configuration conf;
 
   @Override
@@ -62,6 +64,12 @@ public class DefaultStorageHandler implements HiveStorageHandler {
   public HiveMetaHook getMetaHook() {
     // no hook by default
     return null;
+  }
+
+  @Override
+  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+    // Empty URI by default
+    return new URI("");
   }
 
   public HiveAuthorizationProvider getAuthorizationProvider()

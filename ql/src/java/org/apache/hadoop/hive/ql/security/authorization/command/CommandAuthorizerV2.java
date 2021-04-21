@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.command;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -37,21 +37,28 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Command authorization, new type.
  */
 final class CommandAuthorizerV2 {
+  private static final Logger LOG = LoggerFactory.getLogger(CommandAuthorizerV2.class.getName());
   private CommandAuthorizerV2() {
     throw new UnsupportedOperationException("CommandAuthorizerV2 should not be instantiated");
   }
@@ -70,8 +77,8 @@ final class CommandAuthorizerV2 {
     List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
     addPermanentFunctionEntities(ss, inputList);
 
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols);
+    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols, hiveOpType);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols, hiveOpType);
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
     authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
@@ -96,7 +103,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(List<? extends Entity> privObjects,
-      Map<String, List<String>> tableName2Cols) {
+      Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if (privObjects == null){
       return hivePrivobjs;
@@ -137,7 +144,7 @@ final class CommandAuthorizerV2 {
         continue;
       }
 
-      addHivePrivObject(privObject, tableName2Cols, hivePrivobjs);
+      addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);
     }
     return hivePrivobjs;
   }
@@ -169,7 +176,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,
-      List<HivePrivilegeObject> hivePrivObjs) {
+      List<HivePrivilegeObject> hivePrivObjs, HiveOperationType hiveOpType) {
     HivePrivilegeObjectType privObjType = AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
     HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
     HivePrivilegeObject hivePrivObject = null;
@@ -185,6 +192,34 @@ final class CommandAuthorizerV2 {
           tableName2Cols.get(Table.getCompleteName(table.getDbName(), table.getTableName()));
       hivePrivObject = new HivePrivilegeObject(privObjType, table.getDbName(), table.getTableName(),
           null, columns, actionType, null, null, table.getOwner(), table.getOwnerType());
+      if(table.getStorageHandler() != null){
+        //TODO: add hive privilege object for storage based handlers for create and alter table commands.
+        if(hiveOpType == HiveOperationType.CREATETABLE ||
+                hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES ||
+                hiveOpType == HiveOperationType.CREATETABLE_AS_SELECT ||
+                hiveOpType == HiveOperationType.DROPTABLE){
+          String storageuri = null;
+          Map<String, String> tableProperties = new HashMap<>();
+          Configuration conf = new Configuration();
+          tableProperties.putAll(table.getSd().getSerdeInfo().getParameters());
+          tableProperties.putAll(table.getParameters());
+          try {
+            if(table.getStorageHandler() instanceof HiveStorageAuthorizationHandler) {
+              HiveStorageAuthorizationHandler authorizationHandler = (HiveStorageAuthorizationHandler) ReflectionUtils.newInstance(
+                      conf.getClassByName(table.getStorageHandler().getClass().getName()), SessionState.get().getConf());
+              storageuri = authorizationHandler.getURIForAuth(tableProperties).toString();
+            }else{
+              //Custom storage handler that has not implemented the HiveStorageAuthorizationHandler
+              storageuri = table.getStorageHandler().getClass().getName()+"://"+
+                      HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
+            }
+          }catch(Exception ex){
+            LOG.error("Exception occured while getting the URI from storage handler: "+ex.getMessage(), ex);
+          }
+          hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
+                  actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
+        }
+      }
       break;
     case DFS_DIR:
     case LOCAL_DIR:

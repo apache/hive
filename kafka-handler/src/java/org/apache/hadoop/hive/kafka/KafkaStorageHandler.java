@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
@@ -53,6 +54,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,12 +68,15 @@ import java.util.function.Predicate;
 /**
  * Hive Kafka storage handler to allow user to read and write from/to Kafka message bus.
  */
-@SuppressWarnings("ALL") public class KafkaStorageHandler extends DefaultHiveMetaHook implements HiveStorageHandler {
+@SuppressWarnings("ALL") public class KafkaStorageHandler extends DefaultHiveMetaHook implements HiveStorageHandler, HiveStorageAuthorizationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaStorageHandler.class);
   private static final String KAFKA_STORAGE_HANDLER = "org.apache.hadoop.hive.kafka.KafkaStorageHandler";
 
   private Configuration configuration;
+
+  /** Kafka prefix to form the URI for authentication */
+  private static final String KAFKA_PREFIX = "kafka:";
 
   @Override public Class<? extends InputFormat> getInputFormatClass() {
     return KafkaInputFormat.class;
@@ -190,6 +196,17 @@ import java.util.function.Predicate;
           properties.put(key, entry.getValue());
         });
     return new KafkaStorageHandlerInfo(topic, properties);
+  }
+
+  @Override
+  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+    String host_name = tableProperties.get(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName()) != null ?
+            tableProperties.get(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName()) :
+            configuration.get(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
+    Preconditions.checkNotNull(host_name, "Set Table property " + KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
+    String table_name = tableProperties.get(KafkaTableProperties.HIVE_KAFKA_TOPIC.getName());
+    Preconditions.checkNotNull(table_name, "Set Table property " + KafkaTableProperties.HIVE_KAFKA_TOPIC.getName());
+    return new URI(KAFKA_PREFIX+"//"+host_name+"/"+table_name);
   }
 
   private Properties buildProducerProperties(Table table) {
