@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -217,11 +218,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .executeWith(tableExecutor)
           .onFailure((output, exc) -> LOG.warn("Failed cleanup table {} on abort job", output, exc))
           .run(output -> {
-            LOG.info("Cleaning job for table {}", jobContext.getJobID(), output);
+            LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
 
             Table table = HiveIcebergStorageHandler.table(jobConf, output);
-            jobLocations.add(generateJobLocation(table.location(), jobConf, jobContext.getJobID()));
-            Collection<DataFile> dataFiles = dataFiles(fileExecutor, table.location(), jobContext, table.io(), false);
+            String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+            jobLocations.add(jobLocation);
+            // list jobLocation to get number of forCommit files
+            int numTasks = listForCommits(jobConf, jobLocation).length;
+            Collection<DataFile> dataFiles =
+                dataFiles(numTasks, fileExecutor, table.location(), jobContext, table.io(), false);
 
             // Check if we have files already committed and remove data files if there are any
             if (dataFiles.size() > 0) {
@@ -232,7 +237,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   .onFailure((file, exc) -> LOG.warn("Failed to remove data file {} on abort job", file.path(), exc))
                   .run(file -> table.io().deleteFile(file.path().toString()));
             }
-          });
+          }, IOException.class);
     } finally {
       fileExecutor.shutdown();
       if (tableExecutor != null) {
@@ -243,6 +248,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Job {} is aborted. Data file cleaning finished", jobContext.getJobID());
 
     cleanup(jobContext, jobLocations);
+  }
+
+  private FileStatus[] listForCommits(JobConf jobConf, String jobLocation) throws IOException {
+    Path path = new Path(jobLocation);
+    LOG.debug("Listing job location to get forCommits for abort: {}", jobLocation);
+    FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
+    LOG.debug("Listing the table temp directory yielded these files: {}", Arrays.toString(children));
+    return children;
   }
 
   /**
@@ -269,7 +282,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Committing job has started for table: {}, using location: {}",
         table, generateJobLocation(location, conf, jobContext.getJobID()));
 
-    Collection<DataFile> dataFiles = dataFiles(executor, location, jobContext, io, true);
+    // If there are reducers, then every reducer will generate a result file.
+    // If this is a map only task, then every mapper will generate a result file.
+    int numTasks = conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
+    Collection<DataFile> dataFiles = dataFiles(numTasks, executor, location, jobContext, io, true);
 
     if (dataFiles.size() > 0) {
       // Appending data files to the table
@@ -352,6 +368,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
   /**
    * Get the committed data files for this table and job.
+   *
+   * @param numTasks Number of writer tasks that produced a forCommit file
    * @param executor The executor used for reading the forCommit files parallel
    * @param location The location of the table
    * @param jobContext The job context
@@ -359,18 +377,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param throwOnFailure If <code>true</code> then it throws an exception on failure
    * @return The list of the committed data files
    */
-  private static Collection<DataFile> dataFiles(ExecutorService executor, String location, JobContext jobContext,
-      FileIO io, boolean throwOnFailure) {
+  private static Collection<DataFile> dataFiles(int numTasks, ExecutorService executor, String location,
+                                                JobContext jobContext, FileIO io, boolean throwOnFailure) {
     JobConf conf = jobContext.getJobConf();
-    // If there are reducers, then every reducer will generate a result file.
-    // If this is a map only task, then every mapper will generate a result file.
-    int expectedFiles = conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
-
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
 
     // Reading the committed files. The assumption here is that the taskIds are generated in sequential order
     // starting from 0.
-    Tasks.range(expectedFiles)
+    Tasks.range(numTasks)
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
         .retry(3)
