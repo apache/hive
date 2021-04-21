@@ -226,6 +226,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
             jobLocations.add(jobLocation);
             // list jobLocation to get number of forCommit files
+            // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
             int numTasks = listForCommits(jobConf, jobLocation).size();
             Collection<DataFile> dataFiles =
                 dataFiles(numTasks, fileExecutor, table.location(), jobContext, table.io(), false);
@@ -252,6 +253,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     cleanup(jobContext, jobLocations);
   }
 
+  /**
+   * Lists the forCommit files under a job location. This should only be used by {@link #abortJob(JobContext, int)},
+   * since on the Tez AM-side it will have no access to the correct number of writer tasks otherwise. The commitJob
+   * should not need to use this listing as it should have access to the vertex status info on the HS2-side.
+   * @param jobConf jobConf used for getting the FS
+   * @param jobLocation The job location that we should list
+   * @return The set of forCommit files under the job location
+   * @throws IOException if the listing fails
+   */
   private Set<FileStatus> listForCommits(JobConf jobConf, String jobLocation) throws IOException {
     Path path = new Path(jobLocation);
     LOG.debug("Listing job location to get forCommits for abort: {}", jobLocation);
