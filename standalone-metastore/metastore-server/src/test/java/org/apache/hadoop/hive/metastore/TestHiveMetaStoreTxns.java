@@ -76,7 +76,7 @@ import java.util.List;
 @Category(MetastoreUnitTest.class)
 public class TestHiveMetaStoreTxns {
 
-  private static Configuration conf = MetastoreConf.newMetastoreConf();
+  private static Configuration conf;
   private static IMetaStoreClient client;
   private Connection conn;
 
@@ -321,9 +321,13 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(2, validTxns.getInvalidTransactions().length);
     boolean sawThree = false, sawFive = false;
     for (long tid : validTxns.getInvalidTransactions()) {
-      if (tid == 3)  sawThree = true;
-      else if (tid == 5) sawFive = true;
-      else  Assert.fail("Unexpected value " + tid);
+      if (tid == 3) {
+        sawThree = true;
+      } else if (tid == 5) {
+        sawFive = true;
+      } else {
+        Assert.fail("Unexpected value " + tid);
+      }
     }
     Assert.assertTrue(sawThree);
     Assert.assertTrue(sawFive);
@@ -443,6 +447,8 @@ public class TestHiveMetaStoreTxns {
 
   @BeforeClass
   public static void setUpDB() throws Exception {
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TestTxnDbUtil.setConfValues(conf);

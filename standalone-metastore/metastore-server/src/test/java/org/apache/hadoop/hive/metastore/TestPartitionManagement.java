@@ -69,6 +69,7 @@ public class TestPartitionManagement {
     conf = MetastoreConf.newMetastoreConf();
     conf.setClass(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
       MsckPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     conf.setBoolean(ConfVars.MULTITHREADED.getVarname(), false);
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);

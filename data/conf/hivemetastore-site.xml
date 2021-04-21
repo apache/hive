@@ -38,5 +38,9 @@
   <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
 </property>
 
+<property>
+  <name>metastore.metadata.transformer.class</name>
+  <value>  </value>
+</property>
 
 </configuration>
