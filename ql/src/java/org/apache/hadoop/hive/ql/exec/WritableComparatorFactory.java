@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 import java.util.List;
@@ -31,7 +30,8 @@ public final class WritableComparatorFactory {
             // For array type struct is used as we do not know if all elements of array are of same type.
             return new HiveStructComparator(nullSafe, nullOrdering);
         } else if (key instanceof Map) {
-            return new HiveMapComparator(nullSafe, nullOrdering);
+            // TODO : https://issues.apache.org/jira/browse/HIVE-25042
+            throw new RuntimeException("map datatype is not supported for SMB and Merge Join");
         } else if (key instanceof StandardUnion) {
             return new HiveUnionComparator(nullSafe, nullOrdering);
         } else {

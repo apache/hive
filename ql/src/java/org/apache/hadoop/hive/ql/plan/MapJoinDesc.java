@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationT
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hive.common.util.ReflectionUtil;
 
 /**
@@ -778,6 +779,15 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
           Objects.equals(getKeyCountsExplainDesc(), otherDesc.getKeyCountsExplainDesc()) &&
           getPosBigTable() == otherDesc.getPosBigTable() &&
           isBucketMapJoin() == otherDesc.isBucketMapJoin();
+    }
+    return false;
+  }
+
+  public static boolean hasMapTypeColumns(List<ExprNodeDesc> keys) {
+    for (ExprNodeDesc key : keys) {
+      if (key.getTypeInfo().getCategory() == ObjectInspector.Category.MAP) {
+        return true;
+      }
     }
     return false;
   }
