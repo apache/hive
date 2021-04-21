@@ -281,7 +281,7 @@ import com.google.common.annotations.VisibleForTesting;
 
   private List<String> getAllowCustomUDFList(HiveConf hiveConf) {
     String udfs = HiveConf.getVar(hiveConf,
-        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LISt);
+        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LIST);
     if (udfs != null && !udfs.isEmpty()) {
       return Arrays.asList(udfs.split(","));
     }
