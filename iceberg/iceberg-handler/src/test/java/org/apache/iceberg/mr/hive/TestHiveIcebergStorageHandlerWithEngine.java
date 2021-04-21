@@ -116,17 +116,17 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
       for (String engine : EXECUTION_ENGINES) {
         // include Tez tests only for Java 8
-        if (javaVersion.equals("1.8") || "mr".equals(engine)) {
+        if (javaVersion.equals("1.8")) {
           testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG});
         }
       }
     }
 
-    // Run tests for every Catalog for a single FileFormat (PARQUET) and execution engine (mr)
+    // Run tests for every Catalog for a single FileFormat (PARQUET) and execution engine (tez)
     // skip HiveCatalog tests as they are added before
     for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
       if (!TestTables.TestTableType.HIVE_CATALOG.equals(testTableType)) {
-        testParams.add(new Object[]{FileFormat.PARQUET, "mr", testTableType});
+        testParams.add(new Object[]{FileFormat.PARQUET, "tez", testTableType});
       }
     }
 
@@ -150,7 +150,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Rule
-  public Timeout timeout = new Timeout(100000, TimeUnit.MILLISECONDS);
+  public Timeout timeout = new Timeout(200_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
