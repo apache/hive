@@ -619,20 +619,20 @@ public class TestCompactionMetrics  extends CompactorTest {
     DeltaFilesMetricReporter.init(conf);
 
     TezCounters tezCounters = new TezCounters();
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS, "acid/p=1").setValue(200);
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS, "acid/p=2").setValue(100);
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS, "acid/p=3").setValue(150);
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS, "acid_v2").setValue(250);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=1").setValue(200);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=2").setValue(100);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=3").setValue(150);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid_v2").setValue(250);
 
-    tezCounters.findCounter(NUM_DELTAS, "acid/p=1").setValue(150);
-    tezCounters.findCounter(NUM_DELTAS, "acid/p=2").setValue(100);
-    tezCounters.findCounter(NUM_DELTAS, "acid/p=3").setValue(250);
-    tezCounters.findCounter(NUM_DELTAS, "acid_v2").setValue(200);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=1").setValue(150);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(100);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=3").setValue(250);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid_v2").setValue(200);
 
-    tezCounters.findCounter(NUM_SMALL_DELTAS, "acid/p=1").setValue(250);
-    tezCounters.findCounter(NUM_SMALL_DELTAS, "acid/p=2").setValue(200);
-    tezCounters.findCounter(NUM_SMALL_DELTAS, "acid/p=3").setValue(150);
-    tezCounters.findCounter(NUM_SMALL_DELTAS, "acid_v2").setValue(100);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=1").setValue(250);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=2").setValue(200);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=3").setValue(150);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid_v2").setValue(100);
 
     DeltaFilesMetricReporter.getInstance().submit(tezCounters);
     Thread.sleep(1000);
@@ -665,7 +665,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Thread.sleep(5000);
 
     tezCounters = new TezCounters();
-    tezCounters.findCounter(NUM_DELTAS, "acid/p=2").setValue(150);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(150);
     DeltaFilesMetricReporter.getInstance().submit(tezCounters);
     Thread.sleep(1000);
 

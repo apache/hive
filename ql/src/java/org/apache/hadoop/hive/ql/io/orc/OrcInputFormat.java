@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -31,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -98,6 +97,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -146,10 +146,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.CodedInputStream;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileType.ORIGINAL_BASE;
-
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_OBSOLETE_DELTAS;
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_DELTAS;
-import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.NUM_SMALL_DELTAS;
 
 /**
  * A MapReduce/Hive input format for ORC files.
@@ -1792,9 +1788,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
     float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
 
-    Map<String, Map<String, Integer>> deltas = new HashMap<>();
-    Stream.of(NUM_OBSOLETE_DELTAS, NUM_DELTAS, NUM_SMALL_DELTAS).forEach(
-      metric -> deltas.put(metric, new HashMap<>()));
+    EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats = new EnumMap<>(DeltaFilesMetricType.class);
 
     // complete path futures and schedule split generation
     try {
@@ -1822,17 +1816,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
 
         if (metricsEnabled && directory instanceof AcidDirectory) {
-          String relPath = directory.getPath().getName().contains("=") ?
-            directory.getPath().getParent().getName() + Path.SEPARATOR + directory.getPath().getName() :
-            directory.getPath().getName();
-
-          deltas.get(NUM_OBSOLETE_DELTAS).put(relPath,
-            DeltaFilesMetricReporter.getNumObsoleteDeltas((AcidDirectory) directory, checkThresholdInSec));
-
-          Pair<Integer, Integer> numDeltas = DeltaFilesMetricReporter.getNumDeltas((AcidDirectory) directory,
-            checkThresholdInSec, deltaPctThreshold);
-          deltas.get(NUM_DELTAS).put(relPath, numDeltas.getLeft());
-          deltas.get(NUM_SMALL_DELTAS).put(relPath, numDeltas.getRight());
+          DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
+              deltaPctThreshold, deltaFilesStats);
         }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
@@ -1865,7 +1850,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltas, conf);
+      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {

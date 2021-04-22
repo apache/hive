@@ -3022,14 +3022,15 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Reporting period for ACID metrics in seconds."),
     HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.delta.num.threshold", 100,
-        "The minimum number of active delta files a table/partition must be included in the ACID metrics report."),
+        "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
     HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.obsolete.delta.num.threshold", 100,
-        "The minimum number of obsolete delta files a table/partition must be included in the ACID metrics report."),
+        "The minimum number of obsolete delta files a table/partition must have in order to be included in the ACID metrics report."),
     HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD("hive.txn.acid.metrics.delta.check.threshold", "300s",
         new TimeValidator(TimeUnit.SECONDS),
         "Deltas not older than this value will not be included in the ACID metrics report."),
     HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD("hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
-        "Percentage (fractional) size of the delta files relative to the base. Default 0.01 = 1%.)"),
+        "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
+        "count as small deltas. Default 0.01 = 1%.)"),
 
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT
