@@ -2,11 +2,11 @@ PREHOOK: query: drop table if exists tbl_orc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_orc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create external table tbl_orc(a int) partitioned by (b string) stored as orc
+PREHOOK: query: create external table tbl_orc(a int, b string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_orc
-POSTHOOK: query: create external table tbl_orc(a int) partitioned by (b string) stored as orc
+POSTHOOK: query: create external table tbl_orc(a int, b string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_orc
@@ -18,9 +18,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
 b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -30,12 +27,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -51,67 +46,29 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into table tbl_orc partition (b='one') values (1), (2), (3)
+PREHOOK: query: insert into table tbl_orc values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_orc@b=one
-POSTHOOK: query: insert into table tbl_orc partition (b='one') values (1), (2), (3)
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: insert into table tbl_orc values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_orc@b=one
-POSTHOOK: Lineage: tbl_orc PARTITION(b=one).a SCRIPT []
-PREHOOK: query: insert into table tbl_orc partition (b='two') values (4), (5)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_orc@b=two
-POSTHOOK: query: insert into table tbl_orc partition (b='two') values (4), (5)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_orc@b=two
-POSTHOOK: Lineage: tbl_orc PARTITION(b=two).a SCRIPT []
-PREHOOK: query: insert into table tbl_orc partition (b='three') values (6), (7), (8)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_orc@b=three
-POSTHOOK: query: insert into table tbl_orc partition (b='three') values (6), (7), (8)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_orc@b=three
-POSTHOOK: Lineage: tbl_orc PARTITION(b=three).a SCRIPT []
-PREHOOK: query: insert into table tbl_orc partition (b='four') values (9)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_orc@b=four
-POSTHOOK: query: insert into table tbl_orc partition (b='four') values (9)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_orc@b=four
-POSTHOOK: Lineage: tbl_orc PARTITION(b=four).a SCRIPT []
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Lineage: tbl_orc.a SCRIPT []
+POSTHOOK: Lineage: tbl_orc.b SCRIPT []
 PREHOOK: query: select * from tbl_orc order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_orc
-PREHOOK: Input: default@tbl_orc@b=four
-PREHOOK: Input: default@tbl_orc@b=one
-PREHOOK: Input: default@tbl_orc@b=three
-PREHOOK: Input: default@tbl_orc@b=two
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tbl_orc order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_orc
-POSTHOOK: Input: default@tbl_orc@b=four
-POSTHOOK: Input: default@tbl_orc@b=one
-POSTHOOK: Input: default@tbl_orc@b=three
-POSTHOOK: Input: default@tbl_orc@b=two
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one
-2	one
-3	one
-4	two
-5	two
-6	three
-7	three
-8	three
-9	four
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tbl_orc
@@ -137,21 +94,29 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
+	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	1                   
+	numRows             	5                   
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	455                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
+	totalSize           	322                 
 #### A masked pattern was here ####
+	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
+Num Buckets:        	0                   	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from tbl_orc order by a
@@ -163,14 +128,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_orc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one
-2	one
-3	one
-4	two
-5	two
-6	three
-7	three
-8	three
-9	four
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: drop table tbl_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_orc
@@ -183,11 +144,11 @@ PREHOOK: query: drop table if exists tbl_parquet
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_parquet
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create external table tbl_parquet(a int) partitioned by (b string) stored as parquet
+PREHOOK: query: create external table tbl_parquet(a int, b string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_parquet
-POSTHOOK: query: create external table tbl_parquet(a int) partitioned by (b string) stored as parquet
+POSTHOOK: query: create external table tbl_parquet(a int, b string) stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parquet
@@ -199,9 +160,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
 b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -211,12 +169,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -232,67 +188,29 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into table tbl_parquet partition (b='one') values (1), (2), (3)
+PREHOOK: query: insert into table tbl_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_parquet@b=one
-POSTHOOK: query: insert into table tbl_parquet partition (b='one') values (1), (2), (3)
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_parquet@b=one
-POSTHOOK: Lineage: tbl_parquet PARTITION(b=one).a SCRIPT []
-PREHOOK: query: insert into table tbl_parquet partition (b='two') values (4), (5)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_parquet@b=two
-POSTHOOK: query: insert into table tbl_parquet partition (b='two') values (4), (5)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_parquet@b=two
-POSTHOOK: Lineage: tbl_parquet PARTITION(b=two).a SCRIPT []
-PREHOOK: query: insert into table tbl_parquet partition (b='three') values (6), (7), (8)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_parquet@b=three
-POSTHOOK: query: insert into table tbl_parquet partition (b='three') values (6), (7), (8)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_parquet@b=three
-POSTHOOK: Lineage: tbl_parquet PARTITION(b=three).a SCRIPT []
-PREHOOK: query: insert into table tbl_parquet partition (b='four') values (9)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_parquet@b=four
-POSTHOOK: query: insert into table tbl_parquet partition (b='four') values (9)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_parquet@b=four
-POSTHOOK: Lineage: tbl_parquet PARTITION(b=four).a SCRIPT []
+POSTHOOK: Output: default@tbl_parquet
+POSTHOOK: Lineage: tbl_parquet.a SCRIPT []
+POSTHOOK: Lineage: tbl_parquet.b SCRIPT []
 PREHOOK: query: select * from tbl_parquet order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_parquet
-PREHOOK: Input: default@tbl_parquet@b=four
-PREHOOK: Input: default@tbl_parquet@b=one
-PREHOOK: Input: default@tbl_parquet@b=three
-PREHOOK: Input: default@tbl_parquet@b=two
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tbl_parquet order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_parquet
-POSTHOOK: Input: default@tbl_parquet@b=four
-POSTHOOK: Input: default@tbl_parquet@b=one
-POSTHOOK: Input: default@tbl_parquet@b=three
-POSTHOOK: Input: default@tbl_parquet@b=two
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one
-2	one
-3	one
-4	two
-5	two
-6	three
-7	three
-8	three
-9	four
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tbl_parquet
@@ -318,21 +236,29 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
+	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	1                   
+	numRows             	5                   
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	116                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
+	totalSize           	568                 
 #### A masked pattern was here ####
+	write.format.default	parquet             
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
+Num Buckets:        	0                   	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from tbl_parquet order by a
@@ -344,14 +270,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_parquet
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one
-2	one
-3	one
-4	two
-5	two
-6	three
-7	three
-8	three
-9	four
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: drop table tbl_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_parquet
@@ -364,11 +286,11 @@ PREHOOK: query: drop table if exists tbl_avro
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_avro
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create external table tbl_avro(a int) partitioned by (b string) stored as avro
+PREHOOK: query: create external table tbl_avro(a int, b string) stored as avro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_avro
-POSTHOOK: query: create external table tbl_avro(a int) partitioned by (b string) stored as avro
+POSTHOOK: query: create external table tbl_avro(a int, b string) stored as avro
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_avro
@@ -380,9 +302,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
 b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -392,12 +311,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -413,67 +330,29 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into table tbl_avro partition (b='one') values (1), (2), (3)
+PREHOOK: query: insert into table tbl_avro values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_avro@b=one
-POSTHOOK: query: insert into table tbl_avro partition (b='one') values (1), (2), (3)
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: insert into table tbl_avro values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_avro@b=one
-POSTHOOK: Lineage: tbl_avro PARTITION(b=one).a SCRIPT []
-PREHOOK: query: insert into table tbl_avro partition (b='two') values (4), (5)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_avro@b=two
-POSTHOOK: query: insert into table tbl_avro partition (b='two') values (4), (5)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_avro@b=two
-POSTHOOK: Lineage: tbl_avro PARTITION(b=two).a SCRIPT []
-PREHOOK: query: insert into table tbl_avro partition (b='three') values (6), (7), (8)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_avro@b=three
-POSTHOOK: query: insert into table tbl_avro partition (b='three') values (6), (7), (8)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_avro@b=three
-POSTHOOK: Lineage: tbl_avro PARTITION(b=three).a SCRIPT []
-PREHOOK: query: insert into table tbl_avro partition (b='four') values (9)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl_avro@b=four
-POSTHOOK: query: insert into table tbl_avro partition (b='four') values (9)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl_avro@b=four
-POSTHOOK: Lineage: tbl_avro PARTITION(b=four).a SCRIPT []
+POSTHOOK: Output: default@tbl_avro
+POSTHOOK: Lineage: tbl_avro.a SCRIPT []
+POSTHOOK: Lineage: tbl_avro.b SCRIPT []
 PREHOOK: query: select * from tbl_avro order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_avro
-PREHOOK: Input: default@tbl_avro@b=four
-PREHOOK: Input: default@tbl_avro@b=one
-PREHOOK: Input: default@tbl_avro@b=three
-PREHOOK: Input: default@tbl_avro@b=two
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tbl_avro order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_avro
-POSTHOOK: Input: default@tbl_avro@b=four
-POSTHOOK: Input: default@tbl_avro@b=one
-POSTHOOK: Input: default@tbl_avro@b=three
-POSTHOOK: Input: default@tbl_avro@b=two
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one
-2	one
-3	one
-4	two
-5	two
-6	three
-7	three
-8	three
-9	four
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tbl_avro
@@ -499,21 +378,29 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
+	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	1                   
+	numRows             	0                   
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
+	totalSize           	315                 
 #### A masked pattern was here ####
+	write.format.default	avro                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
+Num Buckets:        	0                   	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from tbl_avro order by a
@@ -525,14 +412,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_avro
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one
-2	one
-3	one
-4	two
-5	two
-6	three
-7	three
-8	three
-9	four
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: drop table tbl_avro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_avro
