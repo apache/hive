@@ -18,8 +18,6 @@
 
 package org.apache.hive.service.cli;
 
-import java.util.Collections;
-
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
 import org.junit.Assert;
