@@ -8,24 +8,31 @@ set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.autho
 
 create table masking_test_subq_n3 as select cast(key as int) as key, value from src;
 
+explain cbo select * from masking_test_subq_n3;
 explain select * from masking_test_subq_n3;
 select * from masking_test_subq_n3;
 
+explain cbo select * from masking_test_subq_n3 where key > 0;
 explain select * from masking_test_subq_n3 where key > 0;
 select * from masking_test_subq_n3 where key > 0;
 
+explain cbo select key from masking_test_subq_n3 where key > 0;
 explain select key from masking_test_subq_n3 where key > 0;
 select key from masking_test_subq_n3 where key > 0;
 
+explain cbo select value from masking_test_subq_n3 where key > 0;
 explain select value from masking_test_subq_n3 where key > 0;
 select value from masking_test_subq_n3 where key > 0;
 
+explain cbo select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key);
 explain select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key);
 select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key);
 
+explain cbo select * from default.masking_test_subq_n3 where key > 0;
 explain select * from default.masking_test_subq_n3 where key > 0;
 select * from default.masking_test_subq_n3 where key > 0;
 
+explain cbo select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0;
 explain select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0;
 select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0;
 
