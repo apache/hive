@@ -500,21 +500,55 @@ public abstract class BaseSemanticAnalyzer {
     if (node.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
       return unescapeIdentifier(node.getChild(1).getText().toLowerCase());
     }
-    if (node.getChildCount() == 1) {
-      return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
-    }
-    for (int i = node.getChildCount() - 1; i >= 0; --i) {
-      Tree child = node.getChild(i);
-      if (child.getType() == HiveParser.TOK_TABNAME) {
-        return getUnescapedUnqualifiedTableName((ASTNode) node.getChild(0)).toLowerCase();
-      } else if (child.getType() == HiveParser.Identifier) {
-        return unescapeIdentifier(child.getText().toLowerCase());
-      }
-    }
-
-    throw new SemanticException("No table alias or table name found.");
+    String alias = getSimpleTableNameBase(node);
+    return alias != null ? alias.toLowerCase() : null;
   }
 
+  protected static String getSimpleTableNameBase(ASTNode n) throws SemanticException {
+    switch (n.getType()) {
+    case HiveParser.TOK_TABREF:
+      int aliasIndex = findTabRefIdxs(n)[0];
+      if (aliasIndex != 0) {
+        return n.getChild(aliasIndex).getText(); //the alias
+      }
+      return getSimpleTableNameBase((ASTNode) n.getChild(0));
+    case HiveParser.TOK_TABNAME:
+      if (n.getChildCount() == 2) {
+        //db.table -> return table
+        return n.getChild(1).getText();
+      }
+      return n.getChild(0).getText();
+    case HiveParser.TOK_SUBQUERY:
+      return n.getChild(1).getText(); //the alias
+    default:
+      throw raiseWrongType("TOK_TABREF|TOK_TABNAME|TOK_SUBQUERY", n);
+    }
+  }
+
+  protected static IllegalArgumentException raiseWrongType(String expectedTokName, ASTNode n) {
+    return new IllegalArgumentException("Expected " + expectedTokName + "; got " + n.getType());
+  }
+
+  protected static int[] findTabRefIdxs(ASTNode tabref) {
+    assert tabref.getType() == HiveParser.TOK_TABREF;
+    int aliasIndex = 0;
+    int propsIndex = -1;
+    int tsampleIndex = -1;
+    int ssampleIndex = -1;
+    for (int index = 1; index < tabref.getChildCount(); index++) {
+      ASTNode ct = (ASTNode) tabref.getChild(index);
+      if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE) {
+        tsampleIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE) {
+        ssampleIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TABLEPROPERTIES) {
+        propsIndex = index;
+      } else {
+        aliasIndex = index;
+      }
+    }
+    return new int[] {aliasIndex, propsIndex, tsampleIndex, ssampleIndex};
+  }
 
   /**
    * Remove the encapsulating "`" pair from the identifier. We allow users to
