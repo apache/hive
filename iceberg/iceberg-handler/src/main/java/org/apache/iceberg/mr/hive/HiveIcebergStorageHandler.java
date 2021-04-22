@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
@@ -63,7 +62,6 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -228,32 +226,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       Collection<String> partitionColumns = ((HiveIcebergSerDe) table.getDeserializer()).partitionColumns();
       if (partitionColumns.size() > 0) {
-        // Collect the column names from the predicate
-        Set<String> filterColumns = Sets.newHashSet();
-        columns(syntheticFilterPredicate, filterColumns);
+        // The filter predicate contains ExprNodeDynamicListDesc object(s) for places where we will substitute
+        // dynamic values later during execution. For Example:
+        // GenericUDFIn(Column[ss_sold_date_sk], RS[5] <-- This is an ExprNodeDynamicListDesc)
+        //
+        // We would like to check if we will be able to convert these expressions to Iceberg filters when the
+        // actual values will be available, so in this check we replace the ExprNodeDynamicListDesc with dummy
+        // values and check whether the conversion will be possible or not.
+        ExprNodeDesc clone = syntheticFilterPredicate.clone();
 
-        // While Iceberg could handle multiple columns the current pruning only able to handle filters for a
-        // single column. We keep the logic below to handle multiple columns so if pruning is available on executor
-        // side the we can easily adapt to it as well.
-        if (filterColumns.size() > 1) {
-          // We expect that the compilation logic will prevent us to reach this point in the code
-          LOG.warn("Wrong number of columns to filter for {}", filterColumns);
-          return false;
-        }
+        String filterColumn = collectColumnAndReplaceDummyValues(clone, null);
 
-        // If the filter contains at least one partition column then it could be worthwhile to try dynamic partition
-        // pruning
-        if (filterColumns.stream().anyMatch(partitionColumns::contains)) {
-          // The filter predicate contains ExprNodeDynamicListDesc object(s) for places where we will substitute
-          // dynamic values later during execution. For Example:
-          // GenericUDFIn(Column[ss_sold_date_sk], RS[5] <-- This is an ExprNodeDynamicListDesc)
-          //
-          // We would like to check if we will be able to convert these expressions to Iceberg filters when the
-          // actual values will be available, so in this check we replace the ExprNodeDynamicListDesc with dummy
-          // values and check whether the conversion will be possible or not.
-          ExprNodeDesc clone = syntheticFilterPredicate.clone();
-          replaceWithDummyValues(clone);
-
+        // If the filter is for a partition column then it could be worthwhile to try dynamic partition pruning
+        if (partitionColumns.contains(filterColumn)) {
           // Check if we can convert the expression to a valid Iceberg filter
           SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) clone);
           HiveIcebergFilterFactory.generateFilterExpression(sarg);
@@ -354,31 +339,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Recursively collects the column names from the predicate.
-   * @param node The node we are traversing
-   * @param columns The already collected column names
-   */
-  private void columns(ExprNodeDesc node, Set<String> columns) {
-    if (node instanceof ExprNodeColumnDesc) {
-      columns.add(((ExprNodeColumnDesc) node).getColumn());
-    } else {
-      List<ExprNodeDesc> children = node.getChildren();
-      if (children != null) {
-        children.forEach(child -> columns(child, columns));
-      }
-    }
-  }
-
-  /**
    * Recursively replaces the ExprNodeDynamicListDesc nodes by a dummy ExprNodeConstantDesc so we can test if we can
-   * convert the predicate to an Iceberg predicate when pruning the partitions later. Please make sure that it is ok
-   * to change the input node (clone if needed)
+   * convert the predicate to an Iceberg predicate when pruning the partitions later. Also collects the column names
+   * in the filter.
+   * <p>
+   * Please make sure that it is ok to change the input node (clone if needed)
    * @param node The node we are traversing
+   * @param foundColumn The column we already found
    */
-  private void replaceWithDummyValues(ExprNodeDesc node) {
+  private String collectColumnAndReplaceDummyValues(ExprNodeDesc node, String foundColumn) {
+    String column = foundColumn;
     List<ExprNodeDesc> children = node.getChildren();
     if (children != null && !children.isEmpty()) {
-      ListIterator<ExprNodeDesc> iterator = node.getChildren().listIterator();
+      ListIterator<ExprNodeDesc> iterator = children.listIterator();
       while (iterator.hasNext()) {
         ExprNodeDesc child = iterator.next();
         if (child instanceof ExprNodeDynamicListDesc) {
@@ -413,13 +386,29 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               break;
             default:
               throw new UnsupportedOperationException("Not supported primitive type in partition pruning: " +
-                                                          child.getTypeInfo());
+                  child.getTypeInfo());
           }
+
           iterator.set(new ExprNodeConstantDesc(child.getTypeInfo(), dummy));
         } else {
-          replaceWithDummyValues(child);
+          String newColumn;
+          if (child instanceof ExprNodeColumnDesc) {
+            newColumn = ((ExprNodeColumnDesc) child).getColumn();
+          } else {
+            newColumn = collectColumnsAndReplaceDummyValues(child, column);
+          }
+
+          if (column != null && newColumn != null && !newColumn.equals(column)) {
+            throw new UnsupportedOperationException("Partition pruning does not support filtering for more columns");
+          }
+
+          if (column == null) {
+            column = newColumn;
+          }
         }
       }
     }
+
+    return column;
   }
 }
