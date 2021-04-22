@@ -103,7 +103,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  
@@ -267,7 +266,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  
