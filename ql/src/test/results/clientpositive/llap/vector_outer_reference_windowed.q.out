@@ -367,28 +367,16 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: decimal(25,2))
         Reducer 3 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(25,2)
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(35,2), bigint, bigint]
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(25,2))
                 outputColumnNames: _col0
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [1]
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -408,35 +396,14 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-                  PTF Vectorization:
-                      allEvaluatorsAreStreaming: false
-                      className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
-                      functionInputExpressions: [col 1:decimal(25,2)]
-                      functionNames: [sum]
-                      keyInputColumns: []
-                      native: true
-                      nonKeyInputColumns: [1]
-                      orderExpressions: [ConstantVectorExpression(val 0) -> 4:int]
-                      outputColumns: [2, 1]
-                      outputTypes: [decimal(35,2), decimal(25,2)]
-                      partitionExpressions: [ConstantVectorExpression(val 0) -> 3:int]
-                      streamingColumns: []
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: decimal(35,2))
                     outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2]
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      File Sink Vectorization:
-                          className: VectorFileSinkOperator
-                          native: false
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1725,28 +1692,16 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: decimal(17,2))
         Reducer 3 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(17,2)/DECIMAL_64
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(27,2), bigint, bigint, decimal(17,2)]
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(17,2))
                 outputColumnNames: _col0
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [1]
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -1766,35 +1721,14 @@ STAGE PLANS:
                               arguments: _col0
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-                  PTF Vectorization:
-                      allEvaluatorsAreStreaming: false
-                      className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
-                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 1:decimal(17,2)/DECIMAL_64) -> 5:decimal(17,2)]
-                      functionNames: [sum]
-                      keyInputColumns: []
-                      native: true
-                      nonKeyInputColumns: [1]
-                      orderExpressions: [ConstantVectorExpression(val 0) -> 4:int]
-                      outputColumns: [2, 1]
-                      outputTypes: [decimal(27,2), decimal(17,2)]
-                      partitionExpressions: [ConstantVectorExpression(val 0) -> 3:int]
-                      streamingColumns: []
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: decimal(27,2))
                     outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2]
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      File Sink Vectorization:
-                          className: VectorFileSinkOperator
-                          native: false
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
