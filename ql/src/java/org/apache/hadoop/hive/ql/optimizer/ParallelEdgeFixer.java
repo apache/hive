@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -94,8 +96,74 @@ public class ParallelEdgeFixer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     OperatorGraph og = new OperatorGraph(pctx);
-    fixParallelEdges(og);
+    try (AutoCloseable ac = new MaterializeSemiJoinEdges(pctx)) {
+      fixParallelEdges(og);
+    } catch (Exception e) {
+      if (e instanceof SemanticException) {
+        throw (SemanticException) e;
+      }
+      throw new SemanticException(e);
+
+    }
     return pctx;
+  }
+
+  /**
+   * This {@link AutoCloseable} class makes it possible to show SemiJoin edges as normal operator edges temporarily.
+   */
+  static class MaterializeSemiJoinEdges implements AutoCloseable {
+
+    private ParseContext pctx;
+
+    public MaterializeSemiJoinEdges(ParseContext pctx) {
+      this.pctx = pctx;
+
+      addSJEdges();
+
+    }
+
+    private void addSJEdges() {
+      LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rs2sj = pctx.getRsToSemiJoinBranchInfo();
+      for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e : rs2sj.entrySet()) {
+        ReduceSinkOperator rs = e.getKey();
+        SemiJoinBranchInfo sji = e.getValue();
+        TableScanOperator ts = sji.getTsOp();
+
+        rs.getChildOperators().add(ts);
+        ts.getParentOperators().add(rs);
+      }
+    }
+
+    private void removeSJEdges() throws SemanticException {
+      LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rs2sj = new LinkedHashMap<>();
+      for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e : pctx.getRsToSemiJoinBranchInfo().entrySet()) {
+        Operator<?> rs = e.getKey();
+        SemiJoinBranchInfo sji = e.getValue();
+        TableScanOperator ts = sji.getTsOp();
+
+        while (true) {
+          if (rs.getChildOperators().size() != 1) {
+            throw new SemanticException("Unexpected number of children");
+          }
+          Operator<?> child = rs.getChildOperators().get(0);
+          if (child == ts) {
+            break;
+          }
+          rs = child;
+        }
+
+        rs.getChildOperators().clear();
+        ts.getParentOperators().remove(rs);
+        rs2sj.put((ReduceSinkOperator) rs, sji);
+      }
+      pctx.setRsToSemiJoinBranchInfo(rs2sj);
+    }
+
+    @Override
+    public void close() throws Exception {
+      removeSJEdges();
+    }
+
   }
 
   /**
@@ -114,19 +182,32 @@ public class ParallelEdgeFixer extends Transform {
 
   private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
+
     // Identify edge operators
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
         new ArrayListValuedHashMap<>();
+    //    ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators2 =
+    //        new ArrayListValuedHashMap<>();
     for (Cluster c : og.getClusters()) {
       for (Operator<?> o : c.getMembers()) {
-        for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
+        for (Operator<? extends OperatorDesc> p : o.getChildOperators()) {
           Cluster parentCluster = og.clusterOf(p);
           if (parentCluster == c) {
             continue;
           }
-          edgeOperators.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
+          edgeOperators.put(new Pair<>(c, parentCluster), new Pair<>(o, p));
         }
       }
+
+      //      for (Operator<?> o : c.getMembers()) {
+      //        for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
+      //          Cluster parentCluster = og.clusterOf(p);
+      //          if (parentCluster == c) {
+      //            continue;
+      //          }
+      //          edgeOperators2.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
+      //        }
+      //      }
     }
 
     // process all edges and fix parallel edges if there are any
