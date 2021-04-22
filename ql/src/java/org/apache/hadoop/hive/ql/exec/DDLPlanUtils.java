@@ -112,7 +112,6 @@ public class DDLPlanUtils {
   private static final String COMMENT_SQL = "COMMENT_SQL";
   private static final String HIVE_DEFAULT_PARTITION = "__HIVE_DEFAULT_PARTITION__";
   private static final String BASE_64_VALUE = "BASE_64";
-  private static final String explain = "EXPLAIN";
   private static final String numNulls = "'numNulls'='";
   private static final String numDVs = "'numDVs'='";
   private static final String numTrues = "'numTrues'='";
@@ -122,7 +121,7 @@ public class DDLPlanUtils {
   private static final String avgColLen = "'avgColLen'='";
   private static final String maxColLen = "'maxColLen'='";
   private static final String[] req = {"numRows", "rawDataSize"};
-  private static final String[] explain_plans = {" ", " CBO ", " VECTORIZED "};
+  private static final String[] explain_plans = {"EXPLAIN", "EXPLAIN CBO", "EXPLAIN VECTORIZED"};
 
   private static final String CREATE_DATABASE_STMT = "CREATE DATABASE IF NOT EXISTS <" + DATABASE_NAME + ">;";
 
@@ -249,7 +248,7 @@ public class DDLPlanUtils {
     List<String> ptParam = new ArrayList<>();
     for (String partCol : partColsDef) {
       String[] colValue = partCol.split("=");
-      if (colTypeMap.get(colValue[0]).equals("string")) {
+      if (colTypeMap.get(colValue[0]).equalsIgnoreCase("string")) {
         ptParam.add(colValue[0] + "='" + colValue[1] + "'");
       } else {
         ptParam.add(colValue[0] + "=" + colValue[1]);
@@ -746,21 +745,10 @@ public class DDLPlanUtils {
     return constraints;
   }
 
-  /**
-   * Removes the "explain ddl" from the query and return the statement.
-   * @return
-   */
-  public String trimQuery(String query){
-    int ind = query.toUpperCase(Locale.ROOT).indexOf("DDL");
-    String newQuery = query.substring(ind + 4);
-    return newQuery;
-  }
-
   public List<String> addExplainPlans(String sql){
-    sql = trimQuery(sql);
     List<String> exp = new ArrayList<String>();
     for(String ex : explain_plans){
-      exp.add(explain + ex + sql +";");
+      exp.add(sql.replace("(?i)explain ddl", ex));
     }
     return exp;
   }

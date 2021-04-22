@@ -99,4 +99,44 @@ insert into add_part_test_db.add_part_test partition(ds='2010-01-03')  values ('
 
 explain ddl select * from add_part_test_db.add_part_test where ds>='2010-01-01';
 
+analyze table  add_part_test_db.add_part_test compute statistics for columns;
+
+explain ddl select * from add_part_test_db.add_part_test;
+
 DROP DATABASE add_part_test_db cascade;
+
+create database db_bdpbase;
+
+CREATE TABLE db_bdpbase.emp_sports(
+  id INT,
+  firstname STRING,
+  lastname STRING,
+  sports STRING,
+  city STRING,
+  country STRING
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES("skip.header.line.count"="1");
+
+LOAD DATA INPATH '${hiveconf:test.data.dir}/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports;
+
+CREATE TABLE DB_BDPBASE.DEFAULT_PARTITION_TEST(
+  ID    INT,
+  FIRSTNAME   STRING,
+  LASTNAME STRING,
+  CITY STRING,
+  COUNTRY  STRING
+) PARTITIONED BY (
+  SPORTS STRING
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED  BY  ',';
+
+INSERT OVERWRITE TABLE DB_BDPBASE.DEFAULT_PARTITION_TEST PARTITION (SPORTS)
+  SELECT ID, FIRSTNAME, LASTNAME, CITY, COUNTRY, SPORTS FROM DB_BDPBASE.EMP_SPORTS;
+
+analyze table db_bdpbase.default_partition_test compute statistics for columns;
+
+explain ddl select * from db_bdpbase.default_partition_test;
+
+drop database db_bdpbase cascade;
