@@ -104,7 +104,7 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
     final RexBuilder rexBuilder = relBuilder.getRexBuilder();
     // 1) First branch is query, second branch is MV
     RelNode joinLeftInput = union.getInput(1);
-    final T joinRightInput = createJoinRightInput(agg, relBuilder);
+    final T joinRightInput = createJoinRightInput(call);
     if (joinRightInput == null) {
       return;
     }
@@ -194,7 +194,7 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
     call.transformTo(newNode);
   }
 
-  protected abstract T createJoinRightInput(Aggregate aggregate, RelBuilder relBuilder);
+  protected abstract T createJoinRightInput(RelOptRuleCall call);
 
   protected abstract RexNode createFilterCondition(T rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder);
 

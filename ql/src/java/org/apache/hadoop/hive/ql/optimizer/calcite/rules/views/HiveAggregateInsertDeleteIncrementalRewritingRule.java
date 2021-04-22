@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -102,7 +103,9 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
   }
 
   @Override
-  protected RightInputWithDeletedRows createJoinRightInput(Aggregate aggregate, RelBuilder relBuilder) {
+  protected RightInputWithDeletedRows createJoinRightInput(RelOptRuleCall call) {
+    RelBuilder relBuilder = call.builder();
+    Aggregate aggregate = call.rel(2);
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
     RelNode aggInput = aggregate.getInput();
     aggInput = HiveHepExtractRelNodeRule.execute(aggInput);

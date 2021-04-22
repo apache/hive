@@ -17,6 +17,8 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rex.RexBuilder;
@@ -90,8 +92,9 @@ public class HiveAggregateInsertIncrementalRewritingRule
   }
 
   @Override
-  protected RightInput createJoinRightInput(Aggregate aggregate, RelBuilder relBuilder) {
-    return new RightInput(aggregate.getInput().getInput(1));
+  protected RightInput createJoinRightInput(RelOptRuleCall call) {
+    RelNode union = call.rel(1);
+    return new RightInput(union.getInput(0));
   }
 
   @Override
