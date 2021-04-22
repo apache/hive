@@ -450,7 +450,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
-  'bucketing_version'='2',
+  'bucketing_version'='2', 
   'external.table.purge'='false', 
 #### A masked pattern was here ####
 PREHOOK: query: alter table etp_2 add partition (p1='part1')
