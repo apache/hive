@@ -21,11 +21,11 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.impala.catalog.ImpalaTableConverter.ImpalaGetTableRequest;
 import org.apache.hadoop.hive.impala.catalog.ImpalaTableConverter.ImpalaGetTableResult;
@@ -60,11 +60,11 @@ public class ImpalaHdfsPartitionLoader {
    */
   public static PartitionInfo fetchPartitionInfoFromHMS (
       HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, Set<String> partitionNames,
-      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList) throws HiveException {
+      ValidWriteIdList compileTimeWriteIdList) throws HiveException {
     return (basicHdfsTable.getNumClusteringCols() > 0)
-        ? getPartitionInfoFromPartitionedTable(conf, basicHdfsTable, partitionNames, client,
+        ? getPartitionInfoFromPartitionedTable(conf, basicHdfsTable, partitionNames,
             compileTimeWriteIdList)
-        : getPartitionInfoFromNonPartitionedTable(conf, basicHdfsTable, client,
+        : getPartitionInfoFromNonPartitionedTable(conf, basicHdfsTable,
             compileTimeWriteIdList);
   }
 
@@ -73,7 +73,7 @@ public class ImpalaHdfsPartitionLoader {
    */
   private static PartitionInfo getPartitionInfoFromPartitionedTable(
       HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, Set<String> partitionNames,
-      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList) throws HiveException {
+      ValidWriteIdList compileTimeWriteIdList) throws HiveException {
     try {
       GetPartitionsByNamesRequest request = getPartitionsByNamesRequest(
           partitionNames, basicHdfsTable, conf, true, compileTimeWriteIdList);
@@ -81,7 +81,7 @@ public class ImpalaHdfsPartitionLoader {
       // an empty partition list.
       ImpalaGetPartitionsByNamesResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
           ? getTestPartitionsByNamesResult(basicHdfsTable)
-          : (ImpalaGetPartitionsByNamesResult) client.getPartitionsByNames(request);
+          : (ImpalaGetPartitionsByNamesResult) Hive.get().getMSC().getPartitionsByNames(request);
 
       return result.partitionInfo;
     } catch (TException e) {
@@ -93,14 +93,14 @@ public class ImpalaHdfsPartitionLoader {
    * Load and return the dummy partition for an unpartitioned table.
    */
   private static PartitionInfo getPartitionInfoFromNonPartitionedTable(
-      HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, IMetaStoreClient client,
+      HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable,
       ValidWriteIdList compileTimeWriteIdList) throws HiveException {
     ImpalaGetTableRequest request = getTableRequest(basicHdfsTable, compileTimeWriteIdList);
     try {
       // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return an empty table.
       ImpalaGetTableResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
           ? getTestTableResult(basicHdfsTable)
-          : (ImpalaGetTableResult) client.getTable(request);
+          : (ImpalaGetTableResult) Hive.get().getMSC().getTable(request);
 
       return result.partitionInfo;
     } catch (TException e) {

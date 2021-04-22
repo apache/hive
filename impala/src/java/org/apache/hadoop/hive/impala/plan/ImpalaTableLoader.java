@@ -99,7 +99,7 @@ public class ImpalaTableLoader {
           validWriteIdList = txnWriteIdList.getTableValidWriteIdList(basicTable.getFullName());
         }
         tableMap.put(basicTable.getMetaStoreTable(), ImpalaHdfsTable.create(queryContext.getConf(),
-            basicTable, tableWithNames.getPartitionNames(), db.getMSC(), validWriteIdList));
+            basicTable, tableWithNames.getPartitionNames(), validWriteIdList));
       } catch (ImpalaException|MetaException e) {
         timeline.markEvent("Metadata load failed for table " + basicTable.getName() + ". Completed" +
             " for " + tableMap.entrySet().size() + " tables.");

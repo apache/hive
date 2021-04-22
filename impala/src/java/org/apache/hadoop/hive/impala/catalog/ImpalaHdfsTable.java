@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.impala.catalog.ImpalaPartitionConverter.PartitionInfo;
 import org.apache.hadoop.hive.impala.prune.ImpalaBasicHdfsTable;
@@ -82,7 +83,7 @@ public class ImpalaHdfsTable extends HdfsTable {
   }
 
   private ImpalaHdfsTable(ImpalaBasicHdfsTable basicHdfsTable,
-      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList,
+      ValidWriteIdList compileTimeWriteIdList,
       PartitionInfo partitionInfo, HiveConf conf)
       throws HiveException, ImpalaException, MetaException {
     super(basicHdfsTable.getMetaStoreTable(), basicHdfsTable.getDb(),
@@ -97,8 +98,9 @@ public class ImpalaHdfsTable extends HdfsTable {
       loadSchema(msTbl);
       // CDPD-16908 the initial msTbl should have all column stats and metadata info,
       // there should be no need to refetch these.
-      loadAllColumnStats(client);
-      loadConstraintsInfo(client, msTbl);
+      IMetaStoreClient msc = Hive.get().getMSC();
+      loadAllColumnStats(msc);
+      loadConstraintsInfo(msc, msTbl);
       validWriteIds_ = compileTimeWriteIdList;
       initializePartitionMetadata(msTbl);
       updateMdFromHmsTable(msTbl);
@@ -160,11 +162,12 @@ public class ImpalaHdfsTable extends HdfsTable {
     return true;
   }
 
-  public static ImpalaHdfsTable create(HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable,
-      Set<String> partitionNames, IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList)
+  public static ImpalaHdfsTable create(HiveConf conf,
+      ImpalaBasicHdfsTable basicHdfsTable, Set<String> partitionNames,
+      ValidWriteIdList compileTimeWriteIdList)
       throws HiveException, ImpalaException, MetaException {
     PartitionInfo partitionInfo = ImpalaHdfsPartitionLoader.fetchPartitionInfoFromHMS(conf,
-        basicHdfsTable, partitionNames, client, compileTimeWriteIdList);
-    return new ImpalaHdfsTable(basicHdfsTable, client, compileTimeWriteIdList, partitionInfo, conf);
+        basicHdfsTable, partitionNames, compileTimeWriteIdList);
+    return new ImpalaHdfsTable(basicHdfsTable, compileTimeWriteIdList, partitionInfo, conf);
   }
 }

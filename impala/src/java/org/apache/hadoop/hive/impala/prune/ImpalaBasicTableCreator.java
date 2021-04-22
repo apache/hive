@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.impala.prune;
 
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
@@ -44,7 +43,7 @@ public class ImpalaBasicTableCreator {
   }
 
   public static ImpalaBasicHdfsTable createPartitionedTable(RelOptHiveTable table,
-      ImpalaQueryContext context, IMetaStoreClient client) throws HiveException {
+      ImpalaQueryContext context) throws HiveException {
     try {
       Table msTbl = table.getHiveTableMD().getTTable();
       Database msDb = context.getDb(table);
@@ -56,7 +55,7 @@ public class ImpalaBasicTableCreator {
       GetPartitionNamesPsRequest request = new ImpalaPartitionNamesRequest(msTbl, msDb,
         validWriteIdList, conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
         table.getPartColumns().size());
-      GetPartitionNamesPsResponse psResponse = client.listPartitionNamesRequest(request);
+      GetPartitionNamesPsResponse psResponse = table.getMSC().listPartitionNamesRequest(request);
       ImpalaPartitionNamesResult impalaResult = (ImpalaPartitionNamesResult) psResponse;
       return impalaResult.basicTable;
     } catch (Exception e) {

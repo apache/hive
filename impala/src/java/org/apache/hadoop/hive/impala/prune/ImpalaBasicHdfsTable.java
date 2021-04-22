@@ -28,11 +28,11 @@ import java.util.Set;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -87,7 +87,7 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
     this.basicPartitionMap.put(ImpalaHdfsPartition.DUMMY_PARTITION, null);
   }
 
-  public ImpalaBasicHdfsTable(HiveConf conf, IMetaStoreClient client,
+  public ImpalaBasicHdfsTable(HiveConf conf,
       org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
       ValidWriteIdList validWriteIdList) throws HiveException {
     super(msTbl, new Db(msTbl.getDbName(), msDb), msTbl.getTableName(), msTbl.getOwner());
@@ -174,7 +174,7 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
     return partitions;
   }
 
-  public Set<Partition> fetchPartitions(IMetaStoreClient client, Table tableMD,
+  public Set<Partition> fetchPartitions(Table tableMD,
       Collection<ImpalaBasicPartition> partitions, HiveConf conf) throws HiveException {
     Set<Partition> msPartitions = Sets.newHashSet();
     Set<String> namesToFetch = Sets.newHashSet();
@@ -182,14 +182,14 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       namesToFetch.add(partition.getPartitionName());
     }
 
-    List<Partition> newPartitions = fetchPartitionsFromHMS(client, tableMD, namesToFetch, conf);
+    List<Partition> newPartitions = fetchPartitionsFromHMS(tableMD, namesToFetch, conf);
     for (Partition p : newPartitions) {
       msPartitions.add(p);
     }
     return msPartitions;
   }
 
-  public List<Partition> fetchPartitionsFromHMS(IMetaStoreClient client,
+  public List<Partition> fetchPartitionsFromHMS(
       Table table, Set<String> partitionNames, HiveConf conf) throws HiveException {
     try {
       GetPartitionsByNamesRequest request = ImpalaHdfsPartitionLoader.getPartitionsByNamesRequest(
@@ -198,7 +198,7 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       // an empty partition list.
       GetPartitionsByNamesResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
         ? new GetPartitionsByNamesResult()
-        : client.getPartitionsByNames(request);
+        : Hive.get().getMSC().getPartitionsByNames(request);
       List<Partition> partitions = Lists.newArrayList();
       if (result.getPartitions() != null) {
         for (org.apache.hadoop.hive.metastore.api.Partition p : result.getPartitions()) {

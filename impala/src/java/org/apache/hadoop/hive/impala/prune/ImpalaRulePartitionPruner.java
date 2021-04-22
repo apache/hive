@@ -24,6 +24,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -85,7 +86,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
     ImpalaBasicHdfsTable tmpTable = queryContext.getBasicTable(msTbl);
     this.impalaTable = (tmpTable != null)
         ? tmpTable
-        : ImpalaBasicTableCreator.createPartitionedTable(table, queryContext, table.getMSC());
+        : ImpalaBasicTableCreator.createPartitionedTable(table, queryContext);
     if (tmpTable == null) {
       queryContext.cacheBasicTable(msTbl, impalaTable);
     }
@@ -148,7 +149,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       queryContext.addBasicTableNewNames(table.getHiveTableMD().getTTable(), impalaTable,
           prunedPartitions);
 
-      Set<Partition> msPartitions = impalaTable.fetchPartitions(table.getMSC(),
+      Set<Partition> msPartitions = impalaTable.fetchPartitions(
           table.getHiveTableMD(), prunedPartitions, conf);
 
       if (prunedExprs.size() < impalaConjuncts.getImpalaPartitionConjuncts().size()) {
@@ -167,7 +168,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       partitionCache.put(partitionConjunctsKey, ppl);
       partitionCache.put(PrunerUtils.getConditionKey(table.getHiveTableMD(), filter), ppl);
       return ppl;
-    } catch (ImpalaException|MetaException e) {
+    } catch (ImpalaException e) {
       throw new HiveException(e);
     }
   }
