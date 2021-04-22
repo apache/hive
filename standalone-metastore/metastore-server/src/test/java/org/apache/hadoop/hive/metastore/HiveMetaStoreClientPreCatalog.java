@@ -3304,7 +3304,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                         String validWriteIdList) throws TException {
     throw new UnsupportedOperationException();
   }
-  
+
   @Override
   public Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList, boolean getColumnStats, String engine) throws TException {

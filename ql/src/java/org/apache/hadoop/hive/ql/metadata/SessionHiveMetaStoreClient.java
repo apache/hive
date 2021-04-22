@@ -233,19 +233,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   @Override
   public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name) throws MetaException,
   TException, NoSuchObjectException {
-    return getTable(dbname, name, false, null);
+    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
+    return getTable(getTableRequest);
   }
 
   @Override
   public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name,
       boolean getColStats, String engine) throws MetaException, TException, NoSuchObjectException {
-    // First check temp tables
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, name);
-    if (table != null) {
-      return deepCopy(table);  // Original method used deepCopy(), do the same here.
-    }
-    // Try underlying client
-    return super.getTable(getDefaultCatalog(conf), dbname, name, getColStats, engine);
+    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
+    getTableRequest.setGetColumnStats(getColStats);
+    getTableRequest.setEngine(engine);
+    return getTable(getTableRequest);
   }
 
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks
@@ -262,11 +260,25 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbName,
           String tableName, boolean getColStats, String engine)
           throws TException {
+    GetTableRequest getTableRequest = new GetTableRequest(dbName,tableName);
+    getTableRequest.setGetColumnStats(getColStats);
+    getTableRequest.setEngine(engine);
     if (!DEFAULT_CATALOG_NAME.equals(catName)) {
-      return super.getTable(catName, dbName, tableName, getColStats, engine);
+      getTableRequest.setCatName(catName);
+      return super.getTable(getTableRequest);
     } else {
-      return getTable(dbName, tableName, getColStats, engine);
+      return getTable(getTableRequest);
     }
+  }
+
+  public org.apache.hadoop.hive.metastore.api.Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
+    // First check temp tables
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(getTableRequest.getDbName(), getTableRequest.getTblName());
+    if (table != null) {
+      return deepCopy(table);  // Original method used deepCopy(), do the same here.
+    }
+    // Try underlying client
+    return super.getTable(getTableRequest);
   }
 
   @Override
@@ -2079,11 +2091,21 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
+      CacheKey cacheKeyTableId = new CacheKey(KeyType.TABLE_ID,req.getCatName(),req.getDbName(),req.getTblName());
+      long tableId = -1;
+
+      if(queryCache.get(cacheKeyTableId) != null)
+          tableId = (long)queryCache.get(cacheKeyTableId);
+
+      req.setId(tableId);
       CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
       GetTableResult v = (GetTableResult) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getTableInternal(req);
-        queryCache.put(cacheKey, v);
+        if (tableId == -1)
+          queryCache.put(cacheKeyTableId, v.getTable().getId());
+        else
+          queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
             "Query level HMS cache: method=getTableInternal, dbName={}, tblName={}",

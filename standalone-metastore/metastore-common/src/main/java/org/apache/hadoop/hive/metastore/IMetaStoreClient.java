@@ -635,7 +635,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object in the default catalog.
-   *
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -654,7 +654,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object in the default catalog.
-   *
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -676,6 +676,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -688,6 +689,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -702,6 +704,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.

@@ -2381,6 +2381,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopy(FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param dbname
+   * @param name
+   * @return
+   * @throws TException
+   */
   @Override
   @Deprecated
   public Table getTable(String dbname, String name) throws TException {
@@ -2389,6 +2396,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param dbname
+   * @param name
+   * @param getColumnStats
+   *          get the column stats, if available, when true
+   * @param engine engine sending the request
+   * @return
+   * @throws TException
+   */
   @Override
   @Deprecated
   public Table getTable(String dbname, String name, boolean getColumnStats, String engine) throws TException {
@@ -2401,6 +2418,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @return
+   * @throws TException
+   */
   @Override
   @Deprecated
   public Table getTable(String catName, String dbName, String tableName) throws TException {
@@ -2409,6 +2434,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName
+   * @param dbName
+   * @param tableName
+   * @param getColumnStats
+   * @param engine
+   * @return
+   * @throws TException
+   */
   @Deprecated
   public Table getTable(String catName, String dbName, String tableName,
       boolean getColumnStats, String engine) throws TException {
@@ -2425,6 +2460,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_table_req(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param validWriteIdList applicable snapshot
+   * @return
+   * @throws TException
+   */
   @Override
   @Deprecated
   public Table getTable(String catName, String dbName, String tableName,
@@ -2435,6 +2479,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getTable(req);
   }
 
+  /**
+   * @deprecated use getTable(GetTableRequest getTableRequest)
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param validWriteIdList applicable snapshot
+   * @param getColumnStats get the column stats, if available, when true
+   * @param engine engine sending the request
+   * @return
+   * @throws TException
+   */
   @Override
   @Deprecated
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
