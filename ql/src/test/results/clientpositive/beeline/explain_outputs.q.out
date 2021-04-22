@@ -56,37 +56,37 @@ STAGE PLANS:
           TableScan
             alias: t1_n22
             filterExpr: id is not null (type: boolean)
-            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: id is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: t2_n14
             filterExpr: id is not null (type: boolean)
-            Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: id is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -95,13 +95,13 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: sum(_col0)
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -116,7 +116,7 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -124,10 +124,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -161,37 +161,37 @@ STAGE PLANS:
           TableScan
             alias: t1_n22
             filterExpr: id is not null (type: boolean)
-            Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: id is not null (type: boolean)
-              Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: t2_n14
             filterExpr: id is not null (type: boolean)
-            Statistics: Num rows: 5/5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5/5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: id is not null (type: boolean)
-              Statistics: Num rows: 5/5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5/5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5/5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5/5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 5/5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5/5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -200,13 +200,13 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 5/1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: sum(_col0)
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -221,7 +221,7 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -229,10 +229,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -280,37 +280,37 @@ STAGE PLANS:
           TableScan
             alias: t1_n22
             filterExpr: id is not null (type: boolean)
-            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: id is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: t2_n14
             filterExpr: id is not null (type: boolean)
-            Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: id is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: id (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -319,13 +319,13 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: sum(_col0)
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -340,7 +340,7 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -348,10 +348,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
