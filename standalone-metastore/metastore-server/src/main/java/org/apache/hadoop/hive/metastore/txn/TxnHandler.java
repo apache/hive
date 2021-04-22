@@ -970,8 +970,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
-    boolean isReplayedReplTxn = rqst.getTxn_type() == TxnType.REPL_CREATED;
-    boolean isHiveReplTxn = rqst.isSetReplPolicy() && rqst.getTxn_type() == TxnType.DEFAULT;
+    boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -1293,8 +1293,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     char isUpdateDelete = 'N';
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
-    boolean isReplayedReplTxn = rqst.getTxn_type() == TxnType.REPL_CREATED;
-    boolean isHiveReplTxn = rqst.isSetReplPolicy() && rqst.getTxn_type() == TxnType.DEFAULT;
+    boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     try {
       Connection dbConn = null;
       Statement stmt = null;

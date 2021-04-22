@@ -8592,7 +8592,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
     OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
     List<Long> txnIds = response.getTxn_ids();
-    boolean isHiveReplTxn = rqst.isSetReplPolicy() && rqst.getTxn_type() == TxnType.DEFAULT;
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     if (txnIds != null && listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.OPEN_TXN,
           new OpenTxnEvent(txnIds, this));
@@ -8603,7 +8603,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void abort_txn(AbortTxnRequest rqst) throws TException {
     getTxnHandler().abortTxn(rqst);
-    boolean isHiveReplTxn = rqst.isSetReplPolicy() && rqst.getTxn_type() == TxnType.DEFAULT;
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     if (listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
           new AbortTxnEvent(rqst.getTxnid(), this));
@@ -8628,8 +8628,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void commit_txn(CommitTxnRequest rqst) throws TException {
-    boolean isReplayedReplTxn = rqst.getTxn_type() == TxnType.REPL_CREATED;
-    boolean isHiveReplTxn = rqst.isSetReplPolicy() && rqst.getTxn_type() == TxnType.DEFAULT;
+    boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     // in replication flow, the write notification log table will be updated here.
     if (rqst.isSetWriteEventInfos() && isReplayedReplTxn) {
       assert (rqst.isSetReplPolicy());
