@@ -258,14 +258,12 @@ public class DDLPlanUtils {
   }
 
   public boolean checkIfDefaultPartition(String pt){
-    String[] partColsDef = pt.split(",");
-    for (String ptcol : partColsDef){
-      String[] colValue = ptcol.split("=");
-      if (colValue[1].equals(HIVE_DEFAULT_PARTITION)){
-        return true;
-      }
+    if(pt.contains(HIVE_DEFAULT_PARTITION)){
+      return true;
     }
-    return false;
+    else {
+      return false;
+    }
   }
 
   /**
