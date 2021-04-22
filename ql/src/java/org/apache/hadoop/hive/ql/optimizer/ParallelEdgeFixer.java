@@ -163,7 +163,6 @@ public class ParallelEdgeFixer extends Transform {
     public void close() throws Exception {
       removeSJEdges();
     }
-
   }
 
   /**
@@ -182,12 +181,9 @@ public class ParallelEdgeFixer extends Transform {
 
   private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
-
     // Identify edge operators
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
         new ArrayListValuedHashMap<>();
-    //    ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators2 =
-    //        new ArrayListValuedHashMap<>();
     for (Cluster c : og.getClusters()) {
       for (Operator<?> o : c.getMembers()) {
         for (Operator<? extends OperatorDesc> p : o.getChildOperators()) {
@@ -198,16 +194,6 @@ public class ParallelEdgeFixer extends Transform {
           edgeOperators.put(new Pair<>(c, parentCluster), new Pair<>(o, p));
         }
       }
-
-      //      for (Operator<?> o : c.getMembers()) {
-      //        for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
-      //          Cluster parentCluster = og.clusterOf(p);
-      //          if (parentCluster == c) {
-      //            continue;
-      //          }
-      //          edgeOperators2.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
-      //        }
-      //      }
     }
 
     // process all edges and fix parallel edges if there are any
