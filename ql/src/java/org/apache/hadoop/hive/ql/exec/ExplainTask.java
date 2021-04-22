@@ -513,6 +513,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     out.println(jn.join(tableBasicDef));
     out.println(jn.join(alterTableStmt));
     out.println(jn.join(createViewList));
+    out.println(jn.join(explainStmt));
   }
 
   @Override

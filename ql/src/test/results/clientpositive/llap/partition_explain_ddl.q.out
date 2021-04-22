@@ -34,6 +34,12 @@ TBLPROPERTIES (
 ALTER TABLE default.add_part_test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from add_part_test;
+
+EXPLAIN CBO select * from add_part_test;
+
+EXPLAIN VECTORIZED select * from add_part_test;
 PREHOOK: query: ALTER TABLE add_part_test ADD PARTITION (ds='2010-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@add_part_test
@@ -122,6 +128,18 @@ ALTER TABLE default.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS 
 ALTER TABLE default.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS FOR COLUMN value SET('avgColLen'='7.526315789473684','maxColLen'='8','numNulls'='0','numDVs'='19' );
 -- BIT VECTORS PRESENT FOR default.add_part_test PARTITION ds='2010-01-01' FOR COLUMN value BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS SExMoBMTgZnEIYCNq4gBgKCIGoD61AHBjs4N/7WjogGBquoE/9ScS4HyxCf/keJOxMnVP4GwwUn7+oEgwNzHBsCeqgOAmb1QguH/Cb7p83LA3Z9B 
 
+
+
+
+EXPLAIN select * from add_part_test where ds='2010-01-01';
+
+
+
+EXPLAIN CBO select * from add_part_test where ds='2010-01-01';
+
+
+
+EXPLAIN VECTORIZED select * from add_part_test where ds='2010-01-01';
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@add_part_test
@@ -215,6 +233,15 @@ ALTER TABLE default.add_part_test PARTITION (ds='2010-01-03') UPDATE STATISTICS 
 ALTER TABLE default.add_part_test PARTITION (ds='2010-01-03') UPDATE STATISTICS FOR COLUMN key SET('avgColLen'='6.0','maxColLen'='6','numNulls'='0','numDVs'='15' );
 -- BIT VECTORS PRESENT FOR default.add_part_test PARTITION ds='2010-01-03' FOR COLUMN key BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS SExMoA8Pwoy4S4DjsC2Cy/cxvYTEDsGjtQqBy7Yi/8DaQb+/pBPAjbjoAYHXgA2/h9yDAcKsjyi+usGNAcHK9T/CzrU/ 
 
+
+
+EXPLAIN select * from add_part_test where ds>='2010-01-01';
+
+
+EXPLAIN CBO select * from add_part_test where ds>='2010-01-01';
+
+
+EXPLAIN VECTORIZED select * from add_part_test where ds>='2010-01-01';
 PREHOOK: query: DROP TABLE add_part_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@add_part_test
@@ -325,6 +352,18 @@ ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-01') UPDATE ST
 ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-01') UPDATE STATISTICS FOR COLUMN value SET('avgColLen'='7.526315789473684','maxColLen'='8','numNulls'='0','numDVs'='19' );
 -- BIT VECTORS PRESENT FOR add_part_test_db.add_part_test PARTITION ds='2010-01-01' FOR COLUMN value BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS SExMoBMTgZnEIYCNq4gBgKCIGoD61AHBjs4N/7WjogGBquoE/9ScS4HyxCf/keJOxMnVP4GwwUn7+oEgwNzHBsCeqgOAmb1QguH/Cb7p83LA3Z9B 
 
+
+
+
+EXPLAIN select * from add_part_test_db.add_part_test where ds='2010-01-01';
+
+
+
+EXPLAIN CBO select * from add_part_test_db.add_part_test where ds='2010-01-01';
+
+
+
+EXPLAIN VECTORIZED select * from add_part_test_db.add_part_test where ds='2010-01-01';
 PREHOOK: query: ALTER TABLE add_part_test_db.add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: add_part_test_db@add_part_test
@@ -418,6 +457,15 @@ ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-03') UPDATE ST
 ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-03') UPDATE STATISTICS FOR COLUMN key SET('avgColLen'='6.0','maxColLen'='6','numNulls'='0','numDVs'='15' );
 -- BIT VECTORS PRESENT FOR add_part_test_db.add_part_test PARTITION ds='2010-01-03' FOR COLUMN key BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS SExMoA8Pwoy4S4DjsC2Cy/cxvYTEDsGjtQqBy7Yi/8DaQb+/pBPAjbjoAYHXgA2/h9yDAcKsjyi+usGNAcHK9T/CzrU/ 
 
+
+
+EXPLAIN select * from add_part_test_db.add_part_test where ds>='2010-01-01';
+
+
+EXPLAIN CBO select * from add_part_test_db.add_part_test where ds>='2010-01-01';
+
+
+EXPLAIN VECTORIZED select * from add_part_test_db.add_part_test where ds>='2010-01-01';
 PREHOOK: query: analyze table  add_part_test_db.add_part_test compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: add_part_test_db@add_part_test
@@ -487,6 +535,15 @@ ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-03') UPDATE ST
 ALTER TABLE add_part_test_db.add_part_test PARTITION (ds='2010-01-03') UPDATE STATISTICS FOR COLUMN key SET('avgColLen'='6.0','maxColLen'='6','numNulls'='0','numDVs'='15' );
 -- BIT VECTORS PRESENT FOR add_part_test_db.add_part_test PARTITION ds='2010-01-03' FOR COLUMN key BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS SExMoA8Pwoy4S4DjsC2Cy/cxvYTEDsGjtQqBy7Yi/8DaQb+/pBPAjbjoAYHXgA2/h9yDAcKsjyi+usGNAcHK9T/CzrU/ 
 
+
+
+EXPLAIN select * from add_part_test_db.add_part_test;
+
+
+EXPLAIN CBO select * from add_part_test_db.add_part_test;
+
+
+EXPLAIN VECTORIZED select * from add_part_test_db.add_part_test;
 PREHOOK: query: DROP DATABASE add_part_test_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:add_part_test_db
@@ -531,11 +588,11 @@ TBLPROPERTIES("skip.header.line.count"="1")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db_bdpbase
 POSTHOOK: Output: db_bdpbase@emp_sports
-PREHOOK: query: LOAD DATA INPATH '/Users/harshit.gupta/work_new/hive/itests/qtest/../..//data/files/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: db_bdpbase@emp_sports
-POSTHOOK: query: LOAD DATA INPATH '/Users/harshit.gupta/work_new/hive/itests/qtest/../..//data/files/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db_bdpbase@emp_sports
@@ -762,6 +819,15 @@ ALTER TABLE db_bdpbase.default_partition_test PARTITION (sports='Badminton') UPD
 ALTER TABLE db_bdpbase.default_partition_test PARTITION (sports='Badminton') UPDATE STATISTICS FOR COLUMN city SET('avgColLen'='7.961538461538462','maxColLen'='15','numNulls'='0','numDVs'='26' );
 -- BIT VECTORS PRESENT FOR db_bdpbase.default_partition_test PARTITION sports='Badminton' FOR COLUMN city BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS SExMoBoagrWZAv/9s07Bs+0B//2kJsD8PIKP1SP+2PIEgfG2EoDcziH/jeLHAcD+zy2Bw8wOgLrAXL+8myOA1LEOwfzSIIK3mAO9rYMCwY+1R4PVp1CB3L4ngfaAFfqJzAHA/JA/wZrqAb/2q0E= 
 
+
+
+EXPLAIN select * from db_bdpbase.default_partition_test;
+
+
+EXPLAIN CBO select * from db_bdpbase.default_partition_test;
+
+
+EXPLAIN VECTORIZED select * from db_bdpbase.default_partition_test;
 PREHOOK: query: drop database db_bdpbase cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:db_bdpbase

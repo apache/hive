@@ -119,7 +119,7 @@ FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
 TBLPROPERTIES("skip.header.line.count"="1");
 
-LOAD DATA INPATH '${hiveconf:test.data.dir}/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports;
+LOAD DATA LOCAL INPATH '../../data/files/part_data_explain_ddl.csv' INTO table db_bdpbase.emp_sports;
 
 CREATE TABLE DB_BDPBASE.DEFAULT_PARTITION_TEST(
   ID    INT,

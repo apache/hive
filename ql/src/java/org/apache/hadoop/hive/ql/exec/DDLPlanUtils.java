@@ -746,7 +746,7 @@ public class DDLPlanUtils {
   public List<String> addExplainPlans(String sql){
     List<String> exp = new ArrayList<String>();
     for(String ex : explain_plans){
-      exp.add(sql.replace("(?i)explain ddl", ex));
+      exp.add(sql.replaceAll("(?i)explain ddl", ex) + ";");
     }
     return exp;
   }

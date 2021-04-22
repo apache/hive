@@ -170,6 +170,15 @@ TBLPROPERTIES (
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v1_n17` AS SELECT `table1_n19`.`key`, `table1_n19`.`value` FROM `db1`.`table1_n19`;
+
+
+EXPLAIN select  * FROM db1.v1_n17;
+
+
+EXPLAIN CBO select  * FROM db1.v1_n17;
+
+
+EXPLAIN VECTORIZED select  * FROM db1.v1_n17;
 PREHOOK: query: explain ddl select  * FROM db1.v2_n10
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -198,6 +207,12 @@ TBLPROPERTIES (
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v2_n10` AS SELECT `t1`.`key`, `t1`.`value` FROM `db1`.`table1_n19` `t1`;
+
+EXPLAIN select  * FROM db1.v2_n10;
+
+EXPLAIN CBO select  * FROM db1.v2_n10;
+
+EXPLAIN VECTORIZED select  * FROM db1.v2_n10;
 PREHOOK: query: explain ddl select  * FROM db1.v3_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -243,6 +258,12 @@ ALTER TABLE db1.table2_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0'
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v3_n3` AS SELECT `t1`.`key`, `t1`.`value`, `t2`.`key` `k` FROM `db1`.`table1_n19` `t1` JOIN `db1`.`table2_n13` `t2` ON `t1`.`key` = `t2`.`key`;
+
+EXPLAIN select  * FROM db1.v3_n3;
+
+EXPLAIN CBO select  * FROM db1.v3_n3;
+
+EXPLAIN VECTORIZED select  * FROM db1.v3_n3;
 PREHOOK: query: explain ddl select  * FROM db1.v4_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -271,6 +292,12 @@ TBLPROPERTIES (
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v4_n3` AS SELECT `table1_n19`.`key`, `table1_n19`.`value` FROM `db1`.`table1_n19`;
+
+EXPLAIN select  * FROM db1.v4_n3;
+
+EXPLAIN CBO select  * FROM db1.v4_n3;
+
+EXPLAIN VECTORIZED select  * FROM db1.v4_n3;
 PREHOOK: query: explain ddl select  * FROM db1.v5_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -299,6 +326,12 @@ TBLPROPERTIES (
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v5_n1` AS SELECT `t1`.`key`, `t1`.`value` FROM `db1`.`table1_n19` `t1`;
+
+EXPLAIN select  * FROM db1.v5_n1;
+
+EXPLAIN CBO select  * FROM db1.v5_n1;
+
+EXPLAIN VECTORIZED select  * FROM db1.v5_n1;
 PREHOOK: query: explain ddl select  * FROM db1.v6
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -344,6 +377,12 @@ ALTER TABLE db1.table2_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0'
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v6` AS SELECT `t1`.`key`, `t1`.`value`, `t2`.`key` `k` FROM `db1`.`table1_n19` `t1` JOIN `db1`.`table2_n13` `t2` ON `t1`.`key` = `t2`.`key`;
+
+EXPLAIN select  * FROM db1.v6;
+
+EXPLAIN CBO select  * FROM db1.v6;
+
+EXPLAIN VECTORIZED select  * FROM db1.v6;
 PREHOOK: query: explain ddl select  * FROM db1.v7
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -372,6 +411,12 @@ TBLPROPERTIES (
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v7` AS SELECT `table1_n19`.`key` from `db1`.`table1_n19`;
+
+EXPLAIN select  * FROM db1.v7;
+
+EXPLAIN CBO select  * FROM db1.v7;
+
+EXPLAIN VECTORIZED select  * FROM db1.v7;
 PREHOOK: query: explain ddl select  * FROM db1.v8
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -400,6 +445,12 @@ TBLPROPERTIES (
 ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v8` AS SELECT `table1_n19`.`key` from `db1`.`table1_n19`;
+
+EXPLAIN select  * FROM db1.v8;
+
+EXPLAIN CBO select  * FROM db1.v8;
+
+EXPLAIN VECTORIZED select  * FROM db1.v8;
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

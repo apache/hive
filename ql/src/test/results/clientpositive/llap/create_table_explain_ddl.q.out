@@ -32,6 +32,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -68,6 +74,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -105,6 +117,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -142,6 +160,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -179,6 +203,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@alter1
@@ -218,6 +248,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@alter1
@@ -258,6 +294,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1;
+
+EXPLAIN CBO select * from alter1;
+
+EXPLAIN VECTORIZED select * from alter1;
 PREHOOK: query: drop table alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter1
@@ -312,6 +354,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -348,6 +396,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -385,6 +439,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -422,6 +482,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -459,6 +525,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -498,6 +570,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -538,6 +616,12 @@ TBLPROPERTIES (
 ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter1_db.alter1;
+
+EXPLAIN CBO select * from alter1_db.alter1;
+
+EXPLAIN VECTORIZED select * from alter1_db.alter1;
 PREHOOK: query: DROP TABLE alter1_db.alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter1_db@alter1
@@ -590,6 +674,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -636,6 +726,12 @@ ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0'
 ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
 ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -687,6 +783,12 @@ ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS
 ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
 ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -740,6 +842,12 @@ TBLPROPERTIES (
 ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -787,6 +895,12 @@ ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0'
 ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
 ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -839,6 +953,12 @@ ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS
 ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
 ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -915,6 +1035,12 @@ TBLPROPERTIES (
 ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -961,6 +1087,12 @@ ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='
 ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
 ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1012,6 +1144,12 @@ ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTI
 ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
 ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1065,6 +1203,12 @@ TBLPROPERTIES (
 ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1112,6 +1256,12 @@ ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='
 ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
 ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1164,6 +1314,12 @@ ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTI
 ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
 ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
+
+EXPLAIN select * from alter2;
+
+EXPLAIN CBO select * from alter2;
+
+EXPLAIN VECTORIZED select * from alter2;
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
