@@ -59,6 +59,7 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -788,6 +789,8 @@ public class ASTConverter {
           }
         }
         break;
+      case IS_DISTINCT_FROM:
+        return visitCall((RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.getOperands())));
       case CAST:
         assert(call.getOperands().size() == 1);
         if (call.getType().isStruct() ||
