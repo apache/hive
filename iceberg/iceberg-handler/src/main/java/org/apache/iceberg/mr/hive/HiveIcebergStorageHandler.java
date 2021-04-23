@@ -395,7 +395,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           if (child instanceof ExprNodeColumnDesc) {
             newColumn = ((ExprNodeColumnDesc) child).getColumn();
           } else {
-            newColumn = collectColumnsAndReplaceDummyValues(child, column);
+            newColumn = collectColumnAndReplaceDummyValues(child, column);
           }
 
           if (column != null && newColumn != null && !newColumn.equals(column)) {
