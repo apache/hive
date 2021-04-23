@@ -3721,41 +3721,37 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public Table get_table_core(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
     Preconditions.checkArgument(!getTableRequest.isGetColumnStats() || getTableRequest.getEngine() != null,
         "To retrieve column statistics with a table, engine parameter cannot be null");
-
+    String catName = getTableRequest.getCatName();
+    String dbName = getTableRequest.getDbName();
+    String tblName = getTableRequest.getTblName();
     Database db = null;
     Table t = null;
     try {
-      db = get_database_core(getTableRequest.getCatName(), getTableRequest.getDbName());
+      db = get_database_core(catName, dbName);
     } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
     if (db != null) {
       if (db.getType().equals(DatabaseType.REMOTE)) {
-        t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(getTableRequest.getTblName());
+        t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
         if (t == null) {
-          throw new NoSuchObjectException(TableName
-              .getQualified(getTableRequest.getCatName(), getTableRequest.getDbName(), getTableRequest.getTblName())
-              + " table not found");
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
         }
-        t.setDbName(getTableRequest.getDbName());
+        t.setDbName(dbName);
         return t;
       }
     }
 
     try {
-      t = getMS().getTable(getTableRequest.getCatName(), getTableRequest.getDbName(), getTableRequest.getTblName(),
-          getTableRequest.getValidWriteIdList(), getTableRequest.getId());
+      t = getMS().getTable(catName, dbName, tblName, getTableRequest.getValidWriteIdList(), getTableRequest.getId());
       if (t == null) {
-        throw new NoSuchObjectException(TableName
-            .getQualified(getTableRequest.getCatName(), getTableRequest.getDbName(), getTableRequest.getTblName())
-            + " table not found");
+        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
       }
 
       // If column statistics was requested and is valid fetch it.
       if (getTableRequest.isGetColumnStats()) {
-        ColumnStatistics colStats = getMS()
-            .getTableColumnStatistics(getTableRequest.getCatName(), getTableRequest.getDbName(),
-                getTableRequest.getTblName(), StatsSetupConst.getColumnsHavingStats(t.getParameters()),
-                getTableRequest.getEngine(), getTableRequest.getValidWriteIdList());
+        ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbName, tblName,
+            StatsSetupConst.getColumnsHavingStats(t.getParameters()), getTableRequest.getEngine(),
+            getTableRequest.getValidWriteIdList());
         if (colStats != null) {
           t.setColStats(colStats);
         }

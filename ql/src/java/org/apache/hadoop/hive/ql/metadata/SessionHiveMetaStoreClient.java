@@ -238,9 +238,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
-  public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name,
-      boolean getColStats, String engine) throws MetaException, TException, NoSuchObjectException {
-    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name, boolean getColStats,
+      String engine) throws MetaException, TException, NoSuchObjectException {
+    GetTableRequest getTableRequest = new GetTableRequest(dbname, name);
     getTableRequest.setGetColumnStats(getColStats);
     getTableRequest.setEngine(engine);
     return getTable(getTableRequest);
@@ -257,10 +257,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks
   // before the drop.
   @Override
-  public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbName,
-          String tableName, boolean getColStats, String engine)
-          throws TException {
-    GetTableRequest getTableRequest = new GetTableRequest(dbName,tableName);
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbName, String tableName,
+      boolean getColStats, String engine) throws TException {
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, tableName);
     getTableRequest.setGetColumnStats(getColStats);
     getTableRequest.setEngine(engine);
     if (!DEFAULT_CATALOG_NAME.equals(catName)) {
@@ -2091,25 +2090,26 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKeyTableId = new CacheKey(KeyType.TABLE_ID,req.getCatName(),req.getDbName(),req.getTblName());
+      CacheKey cacheKeyTableId = new CacheKey(KeyType.TABLE_ID, req.getCatName(), req.getDbName(), req.getTblName());
       long tableId = -1;
 
-      if(queryCache.get(cacheKeyTableId) != null)
-          tableId = (long)queryCache.get(cacheKeyTableId);
+      if (queryCache.containsKey(cacheKeyTableId))
+        tableId = (long) queryCache.get(cacheKeyTableId);
 
       req.setId(tableId);
       CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
       GetTableResult v = (GetTableResult) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getTableInternal(req);
-        if (tableId == -1)
+        if (tableId == -1) {
           queryCache.put(cacheKeyTableId, v.getTable().getId());
-        else
-          queryCache.put(cacheKey, v);
+          req.setId(v.getTable().getId());
+          cacheKey = new CacheKey(KeyType.TABLE, req);
+        }
+        queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getTableInternal, dbName={}, tblName={}",
-            req.getDbName(), req.getTblName());
+        LOG.debug("Query level HMS cache: method=getTableInternal, dbName={}, tblName={}", req.getDbName(),
+            req.getTblName());
       }
       return v;
     }
