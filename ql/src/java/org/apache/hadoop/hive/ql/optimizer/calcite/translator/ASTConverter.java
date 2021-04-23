@@ -790,6 +790,7 @@ public class ASTConverter {
         }
         break;
       case IS_DISTINCT_FROM:
+        // convert IS DISTINCT FROM to NOT (IS NOT DISTINCT FROM)
         return visitCall((RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.getOperands())));
       case CAST:
         assert(call.getOperands().size() == 1);
