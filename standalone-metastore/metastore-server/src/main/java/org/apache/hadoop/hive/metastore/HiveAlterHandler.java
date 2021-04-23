@@ -210,8 +210,13 @@ public class HiveAlterHandler implements AlterHandler {
           newt.getPartitionKeys());
 
       if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())){
-        if (!partKeysPartiallyEqual) {
-          throw new InvalidOperationException("partition keys can not be changed.");
+        Map<String, String> properties = environmentContext.getProperties();
+        if (properties == null || (properties != null &&
+            !Boolean.parseBoolean(properties.getOrDefault(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE,
+                "false")))) {
+          if (!partKeysPartiallyEqual) {
+            throw new InvalidOperationException("partition keys can not be changed.");
+          }
         }
       }
 
