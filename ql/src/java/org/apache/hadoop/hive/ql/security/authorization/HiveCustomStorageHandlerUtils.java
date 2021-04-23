@@ -22,10 +22,10 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class HiveCustomStorageHandlerUtils {
 
-    public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties){
+    public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
         StringBuilder properties = new StringBuilder();
-        for(Map.Entry<String,String> serdeMap : tableProperties.entrySet()){
-            if(!serdeMap.getKey().equalsIgnoreCase(serdeConstants.SERIALIZATION_FORMAT)) {
+        for (Map.Entry<String,String> serdeMap : tableProperties.entrySet()) {
+            if (!serdeMap.getKey().equalsIgnoreCase(serdeConstants.SERIALIZATION_FORMAT)) {
                 properties.append(serdeMap.getValue());
                 properties.append("/");
             }

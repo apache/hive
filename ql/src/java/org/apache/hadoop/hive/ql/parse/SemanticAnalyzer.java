@@ -13762,7 +13762,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     t.setTableType(type);
     t.setTemporary(isTemporary);
     HiveStorageHandler storageHandler = null;
-    if(storageFormat.getStorageHandler() != null) {
+    if (storageFormat.getStorageHandler() != null) {
       try {
         storageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(storageFormat.getStorageHandler()), SessionState.get().getConf());
