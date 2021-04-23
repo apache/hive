@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -178,11 +179,11 @@ public abstract class DatabaseRule extends ExternalResource {
       throw new RuntimeException(
           "Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
     }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8));
     final StringBuilder lines = new StringBuilder();
     reader.lines().forEach(s -> lines.append(s).append('\n'));
 
-    reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+    reader = new BufferedReader(new InputStreamReader(proc.getErrorStream(), StandardCharsets.UTF_8));
     final StringBuilder errLines = new StringBuilder();
     reader.lines().forEach(s -> errLines.append(s).append('\n'));
     return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
