@@ -337,18 +337,14 @@
       <id>kudu-mac</id>
       <activation>
         <os>
-          <family>Mac</family>
+          <family>mac</family>
         </os>
       </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.kudu</groupId>
-          <artifactId>kudu-binary</artifactId>
-          <version>${kudu.version}</version>
-          <classifier>osx-x86_64</classifier>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
+      <properties>
+        <!-- The CDP Kudu build does not publish an OSX binary jar like the
+             upstream release process does. Disable the tests when building on OSX. -->
+        <exclude.tests>**/*.java</exclude.tests>
+      </properties>
     </profile>
     <profile>
       <id>kudu-windows</id>
