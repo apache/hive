@@ -16,6 +16,8 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.query.results.cache.enabled=false;
 
+set hive.metastore.acid.truncate.usebase=true;
+
 -- test truncate
 
 create table stats_nonpart(key int,value string) tblproperties ("transactional"="true", "transactional_properties"="insert_only");

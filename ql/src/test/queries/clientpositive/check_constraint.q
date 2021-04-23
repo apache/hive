@@ -2,6 +2,8 @@ set hive.stats.autogather=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
+set hive.metastore.acid.truncate.usebase=true;
+
 CREATE TABLE table1_n0(i int CHECK (-i > -10),
     j int CHECK (+j > 10),
     ij boolean CHECK (ij IS NOT NULL),
