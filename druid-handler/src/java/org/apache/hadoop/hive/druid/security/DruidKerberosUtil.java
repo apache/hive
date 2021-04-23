@@ -77,7 +77,7 @@ public final class DruidKerberosUtil {
       // Base64 encoded and stringified token for server
       LOG.debug("Got valid challenge for host {}", serverName);
       return Base64.getEncoder().encodeToString(outToken);
-    } catch (GSSException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
+    } catch (GSSException | NoSuchFieldException  e) {
       throw new AuthenticationException(e);
     } finally {
       KERBEROS_LOCK.unlock();
