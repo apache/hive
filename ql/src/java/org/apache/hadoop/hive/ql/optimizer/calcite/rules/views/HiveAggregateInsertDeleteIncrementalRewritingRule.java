@@ -66,16 +66,17 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  *   THEN UPDATE SET mv.s = mv.s + source.s, mv.c = mv.c + source.c
  * WHEN NOT MATCHED
  *   THEN INSERT VALUES (source.a, source.b, s, c);
+ * WHEN MATCHED AND countStar = 0 THEN DELETE
  *
  * To be precise, we need to convert it into a MERGE rewritten as:
  * FROM (select *, true flag from mv) mv right outer join _source_ source
  * ON (mv.a <=> source.a AND mv.b <=> source.b)
- * INSERT INTO TABLE mv                                       <- (insert new rows into the view)
+ * INSERT INTO TABLE mv                                       &lt- (insert new rows into the view)
  *   SELECT source.a, source.b, s, c
  *   WHERE mv.flag IS NULL
- * INSERT INTO TABLE mv                                       <- (update existing rows in the view)
+ * INSERT INTO TABLE mv                                       &lt- (update existing rows in the view)
  *   SELECT mv.ROW__ID, source.a, source.b,
- *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL
+ *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL  &lt- (use case expression to handle nulls from both sides)
  *          WHEN mv.s IS NULL THEN source.s
  *          WHEN source.s IS NULL THEN mv.s
  *          ELSE mv.s + source.s END,
@@ -83,12 +84,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  *          WHEN mv.s IS NULL THEN source.s
  *          WHEN source.s IS NULL THEN mv.s
  *          ELSE mv.s + source.s END countStar,
- *   WHERE mv.flag AND countStar > 0
+ *   WHERE mv.flag AND countStar &lt;&gt; 0
  *   SORT BY mv.ROW__ID;
- * INSERT INTO TABLE mv                                       <- (delete delta)
+ * INSERT INTO TABLE mv                                       &lt- (delete from the views)
  *   SELECT mv.ROW__ID
  *   WHERE mv.flag AND countStar = 0
  *   SORT BY mv.ROW__ID;
+ *
+ * {@see CalcitePlanner#fixUpASTAggregateInsertDeleteIncrementalRebuild}
  */
 public class HiveAggregateInsertDeleteIncrementalRewritingRule
         extends HiveAggregateIncrementalRewritingRuleBase<HiveAggregateInsertDeleteIncrementalRewritingRule.RightInputWithDeletedRows> {
@@ -108,14 +111,21 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
     Aggregate aggregate = call.rel(2);
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
     RelNode aggInput = aggregate.getInput();
-    aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
 
+    // Propagate rowIsDeleted column
+    aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
     aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate(aggInput);
 
     int rowIsDeletedIdx = aggInput.getRowType().getFieldCount() - 1;
     RexNode rowIsDeletedNode = rexBuilder.makeInputRef(
             aggInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(), rowIsDeletedIdx);
 
+    // Search for count(*)
+    // and create case expression to aggregate inserted/deleted values:
+    //
+    // SELECT
+    //   sum(case when t1.ROW__IS__DELETED then -b else b end) sumb,
+    //   sum(case when t1.ROW__IS__DELETED then -1 else 1 end) countStar
     int countIdx = -1;
     List<RelBuilder.AggCall> newAggregateCalls = new ArrayList<>(aggregate.getAggCallList().size());
     for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
@@ -161,6 +171,19 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
             countIdx);
   }
 
+  /**
+   * Extend {@link HiveAggregateIncrementalRewritingRuleBase.RightInput} with countStarIndex. It is
+   * required for building the filter condition that distribute the rows to the insert/update/delete branches.
+   */
+  static class RightInputWithDeletedRows extends HiveAggregateIncrementalRewritingRuleBase.RightInput {
+    private final int countStarIndex;
+
+    public RightInputWithDeletedRows(RelNode rightInput, int countStarIndex) {
+      super(rightInput);
+      this.countStarIndex = countStarIndex;
+    }
+  }
+
   @Override
   protected RexNode createFilterCondition(
           RightInputWithDeletedRows rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
@@ -173,14 +196,5 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
     RexNode update = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, countStarGT0);
     RexNode delete = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, countStarEq0);
     return rexBuilder.makeCall(SqlStdOperatorTable.OR, insert, update, delete);
-  }
-
-  static class RightInputWithDeletedRows extends HiveAggregateIncrementalRewritingRuleBase.RightInput {
-    private final int countStarIndex;
-
-    public RightInputWithDeletedRows(RelNode rightInput, int countStarIndex) {
-      super(rightInput);
-      this.countStarIndex = countStarIndex;
-    }
   }
 }

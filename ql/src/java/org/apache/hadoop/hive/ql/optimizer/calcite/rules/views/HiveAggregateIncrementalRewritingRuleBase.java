@@ -36,53 +36,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This rule will perform a rewriting to prepare the plan for incremental
+ * This class implements the main algorithm of rewriting an MV maintenance plan to incremental.
+ * Subclasses are represents Calcite rules which performs a rewriting to prepare the plan for incremental
  * view maintenance in case there exist aggregation operator, so we can
  * avoid the INSERT OVERWRITE and use a MERGE statement instead.
  *
- * In particular, the INSERT OVERWRITE maintenance will look like this
- * (in SQL):
- * INSERT OVERWRITE mv
- * SELECT a, b, SUM(s) as s, SUM(c) AS c
- * FROM (
- *   SELECT * from mv --OLD DATA
- *   UNION ALL
- *   SELECT a, b, SUM(x) AS s, COUNT(*) AS c --NEW DATA
- *   FROM TAB_A
- *   JOIN TAB_B ON (TAB_A.a = TAB_B.z)
- *   WHERE TAB_A.ROW_ID &gt; 5
- *   GROUP BY a, b) inner_subq
- * GROUP BY a, b;
+ * See subclasses for examples:
+ *   {@link HiveAggregateInsertIncrementalRewritingRule},
+ *   {@link HiveAggregateInsertDeleteIncrementalRewritingRule}
  *
- * We need to transform that into:
- * MERGE INTO mv
- * USING (
- *   SELECT a, b, SUM(x) AS s, COUNT(*) AS c --NEW DATA
- *   FROM TAB_A
- *   JOIN TAB_B ON (TAB_A.a = TAB_B.z)
- *   WHERE TAB_A.ROW_ID &gt; 5
- *   GROUP BY a, b) source
- * ON (mv.a <=> source.a AND mv.b <=> source.b)
- * WHEN MATCHED AND mv.c + source.c &lt;&gt; 0
- *   THEN UPDATE SET mv.s = mv.s + source.s, mv.c = mv.c + source.c
- * WHEN NOT MATCHED
- *   THEN INSERT VALUES (source.a, source.b, s, c);
- *
- * To be precise, we need to convert it into a MERGE rewritten as:
- * FROM (select *, true flag from mv) mv right outer join _source_ source
- * ON (mv.a <=> source.a AND mv.b <=> source.b)
- * INSERT INTO TABLE mv
- *   SELECT source.a, source.b, s, c
- *   WHERE mv.flag IS NULL
- * INSERT INTO TABLE mv
- *   SELECT mv.ROW__ID, source.a, source.b,
- *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL
- *          WHEN mv.s IS NULL THEN source.s
- *          WHEN source.s IS NULL THEN mv.s
- *          ELSE mv.s + source.s END,
- *          &lt;same CASE statement for mv.c + source.c like above&gt;
- *   WHERE mv.flag
- *   SORT BY mv.ROW__ID;
+ * @param <T> Should be a class that wraps the right input of the top right outer join: the union branch
+ *           which represents the plan which produces the delta records since the last view rebuild.
  */
 public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAggregateIncrementalRewritingRuleBase.RightInput>
         extends RelOptRule {
@@ -102,6 +66,7 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
     final Union union = call.rel(1);
     final RelBuilder relBuilder = call.builder();
     final RexBuilder rexBuilder = relBuilder.getRexBuilder();
+
     // 1) First branch is query, second branch is MV
     RelNode joinLeftInput = union.getInput(1);
     final T joinRightInput = createJoinRightInput(call);
@@ -114,7 +79,8 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
     // - true means exist
     // - null means not exists
     // Project also needed to encapsulate the view scan by a subquery -> this is required by
-    // CalcitePlanner.fixUpASTAggregateIncrementalRebuild
+    // CalcitePlanner.fixUpASTAggregateInsertIncrementalRebuild
+    // CalcitePlanner.fixUpASTAggregateInsertDeleteIncrementalRebuild
     List<RexNode> mvCols = new ArrayList<>(joinLeftInput.getRowType().getFieldCount());
     for (int i = 0; i < joinLeftInput.getRowType().getFieldCount(); ++i) {
       mvCols.add(rexBuilder.makeInputRef(
@@ -154,10 +120,6 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
             .join(JoinRelType.RIGHT, joinCond)
             .build();
 
-    int flagIndex = joinLeftInput.getRowType().getFieldCount() - 1;
-    RexNode flagNode = rexBuilder.makeInputRef(
-            join.getRowType().getFieldList().get(flagIndex).getType(), flagIndex);
-
     // 5) Add the expressions that correspond to the aggregation
     // functions
     for (int i = 0, leftPos = groupCount, rightPos = totalCount + 1 + groupCount;
@@ -185,6 +147,10 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
               elseReturn));
     }
 
+    int flagIndex = joinLeftInput.getRowType().getFieldCount() - 1;
+    RexNode flagNode = rexBuilder.makeInputRef(
+            join.getRowType().getFieldList().get(flagIndex).getType(), flagIndex);
+
     // 6) Build plan
     RelNode newNode = relBuilder
         .push(join)
@@ -195,8 +161,6 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
   }
 
   protected abstract T createJoinRightInput(RelOptRuleCall call);
-
-  protected abstract RexNode createFilterCondition(T rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder);
 
   protected static class RightInput {
     protected final RelNode rightInput;
@@ -219,4 +183,6 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
                 + " recognized: " + aggCall);
     }
   }
+
+  protected abstract RexNode createFilterCondition(T rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder);
 }

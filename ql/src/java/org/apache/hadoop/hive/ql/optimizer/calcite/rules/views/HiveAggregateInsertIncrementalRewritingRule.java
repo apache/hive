@@ -78,6 +78,8 @@ import java.util.List;
  *          &lt;same CASE statement for mv.c + source.c like above&gt;
  *   WHERE mv.flag
  *   SORT BY mv.ROW__ID;
+ *
+ * {@see CalcitePlanner#fixUpASTAggregateInsertIncrementalRebuild}
  */
 public class HiveAggregateInsertIncrementalRewritingRule
         extends HiveAggregateIncrementalRewritingRuleBase<HiveAggregateIncrementalRewritingRuleBase.RightInput> {

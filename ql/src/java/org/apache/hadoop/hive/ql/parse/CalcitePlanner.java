@@ -1189,19 +1189,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     ASTNode selectExprNodeInUpdate = (ASTNode) ParseDriver.adaptor.dupNode(selectExprNodeInputROJ);
     ParseDriver.adaptor.addChild(selectExprNodeInUpdate, createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
     selectNodeInUpdate.insertChild(0, selectExprNodeInUpdate);
-    // 4.2) Modifying filter condition. The incremental rewriting rule generated an OR
-    // clause where first disjunct contains the condition for the UPDATE branch and the second for the INSERT
+    // 4.2) Modifying filter condition.
     ASTNode whereClauseInUpdate = findWhereClause(updateNode);
     if (whereClauseInUpdate.getChild(0).getType() != HiveParser.KW_OR) {
       throw new SemanticException("OR clause expected below TOK_WHERE in incremental rewriting");
     }
-    // We bypass the OR clause and select the first disjunct
+    // We bypass the OR clause and select the first disjunct for the Update branch
     ParseDriver.adaptor.setChild(whereClauseInUpdate, 0, disjuncts.get(Context.DestClausePrefix.UPDATE));
     // 4.3) Finally, we add SORT clause, this is needed for the UPDATE.
     ASTNode sortExprNode = createSortNode(createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
     ParseDriver.adaptor.addChild(updateNode, sortExprNode);
     // 5) Modify INSERT branch condition. In particular, we need to modify the
-    // WHERE clause and pick up the second disjunct from the OR operation.
+    // WHERE clause and pick up the disjunct for the Insert branch.
     ASTNode whereClauseInInsert = findWhereClause(insertNode);
     if (whereClauseInInsert.getChild(0).getType() != HiveParser.KW_OR) {
       throw new SemanticException("OR clause expected below TOK_WHERE in incremental rewriting");
@@ -1416,8 +1415,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     ASTNode whereClauseInInsert = findWhereClause(insertNode);
 
-    // 4.3) Add filter condition to delete
-    // 4.2) Modifying filter condition. The incremental rewriting rule generated an OR
+    // 2) Add filter condition to Insert
+    // Modifying filter condition. The incremental rewriting rule generated an OR
     // clause where first disjunct contains the condition for the DELETE branch.
     // TOK_WHERE
     //    or
@@ -1451,11 +1450,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     addDeleteBranch(insertNode, subqueryNodeInputROJ, (ASTNode) whereClauseInInsert.getChild(0).getChild(indexDelete));
 
-    // 5) Add sort node to delete branch
+    // 3) Add sort node to delete branch
     ASTNode sortNode = createSortNode(createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
     ParseDriver.adaptor.addChild(insertNode.getParent().getChild(2), sortNode);
 
-    // 6) Now we set some tree properties related to multi-insert
+    // 4) Now we set some tree properties related to multi-insert
     // operation with INSERT/UPDATE
     ctx.setOperation(Context.Operation.MERGE);
     ctx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);

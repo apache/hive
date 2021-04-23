@@ -6,6 +6,14 @@ POSTHOOK: query: create table t1(a char(15), b int, c int) stored as orc TBLPROP
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2(a char(15), b int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2(a char(15), b int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
 PREHOOK: query: insert into t1(a, b, c) values
 ('update', 1, 1), ('update', 2, 1),
 ('null_update', null, 1), ('null_update', null, 2)
@@ -43,34 +51,79 @@ POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
 POSTHOOK: Lineage: t1.c SCRIPT []
+PREHOOK: query: insert into t2(a, b) values
+('update', 10),
+('null_update', null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2(a, b) values
+('update', 10),
+('null_update', null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.a SCRIPT []
+POSTHOOK: Lineage: t2.b SCRIPT []
+PREHOOK: query: insert into t2(a, b) values ('remove', 30), ('null_remove', null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2(a, b) values ('remove', 30), ('null_remove', null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.a SCRIPT []
+POSTHOOK: Lineage: t2.b SCRIPT []
+PREHOOK: query: insert into t2(a, b) values ('sum0', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2(a, b) values ('sum0', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.a SCRIPT []
+POSTHOOK: Lineage: t2.b SCRIPT []
 PREHOOK: query: create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as
-select a, sum(b), count(*) from t1 group by a
+select t1.a, sum(t1.b), count(*) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
 POSTHOOK: query: create materialized view mat1 stored as orc TBLPROPERTIES ('transactional'='true') as
-select a, sum(b), count(*) from t1 group by a
+select t1.a, sum(t1.b), count(*) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
 PREHOOK: query: explain cbo
-select a, sum(b) from t1 group by a order by a
+select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select a, sum(b) from t1 group by a order by a
+select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(a=[$0], _c1=[$1])
-    HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(a=[$0], _c1=[$1])
+  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: delete from t1 where b = 1
 PREHOOK: type: QUERY
@@ -128,26 +181,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
 PREHOOK: query: explain cbo
-select a, sum(b) from t1 group by a order by a
+select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select a, sum(b) from t1 group by a order by a
+select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(a=[$0], $f1=[$1])
-    HiveAggregate(group=[{0}], agg#0=[sum($1)])
-      HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveAggregate(group=[{0}], agg#0=[sum($1)])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(a=[$0], b=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+    HiveProject(a=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t2]], table:alias=[t2])
 
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
@@ -156,6 +220,7 @@ alter materialized view mat1 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
@@ -167,15 +232,21 @@ HiveProject(a0=[$4], $f1=[CASE(IS NULL($1), $5, IS NULL($5), $1, +($5, $1))], $f
         HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
       HiveProject(a=[$0], $f1=[$1], $f2=[$2])
         HiveAggregate(group=[{0}], agg#0=[SUM($1)], agg#1=[SUM($2)])
-          HiveProject(a=[$0], $f3=[CASE($6, *(-1, $1), $1)], $f4=[CASE($6, -1, 1)])
-            HiveFilter(condition=[<(3, $5.writeid)])
-              HiveTableScan(table=[[default, t1]], table:alias=[t1])
+          HiveProject(a=[$0], $f3=[CASE(OR($3, $5), *(-1, $1), $1)], $f4=[CASE(OR($3, $5), -1, 1)])
+            HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(a=[$0], b=[$1], ROW__ID=[$5], ROW__IS__DELETED=[$6])
+                HiveFilter(condition=[AND(<(3, $5.writeid), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+              HiveProject(a=[$0], ROW__IS__DELETED=[$5])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, t2]], table:alias=[t2])
 
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
@@ -184,6 +255,7 @@ alter materialized view mat1 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
@@ -203,11 +275,12 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 7 <- Map 6 (SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -232,31 +305,48 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  filterExpr: (ROW__ID.writeid > 3L) (type: boolean)
+                  filterExpr: ((ROW__ID.writeid > 3L) and a is not null) (type: boolean)
                   properties:
                     acid.fetch.deleted.rows TRUE
                   Statistics: Num rows: 9 Data size: 865 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ROW__ID.writeid > 3L) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 3L) and a is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: a (type: char(15)), CASE WHEN (ROW__IS__DELETED) THEN ((-1 * b)) ELSE (b) END (type: int), CASE WHEN (ROW__IS__DELETED) THEN (-1) ELSE (1) END (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: sum(_col1), sum(_col2)
-                        keys: _col0 (type: char(15))
-                        minReductionHashAggr: 0.4
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 3 Data size: 327 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: char(15))
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: char(15))
-                          Statistics: Num rows: 3 Data size: 327 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                      expressions: a (type: char(15)), b (type: int), ROW__IS__DELETED (type: boolean)
+                      outputColumnNames: _col0, _col1, _col3
+                      Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: char(15))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: char(15))
+                        Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int), _col3 (type: boolean)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: a is not null (type: boolean)
+                  properties:
+                    acid.fetch.deleted.rows TRUE
+                  Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: a is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: a (type: char(15)), ROW__IS__DELETED (type: boolean)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: char(15))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: char(15))
+                        Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: boolean)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -381,6 +471,35 @@ STAGE PLANS:
                       name: default.mat1
                   Write Type: UPDATE
         Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: char(15))
+                  1 _col0 (type: char(15))
+                outputColumnNames: _col0, _col1, _col3, _col5
+                Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: char(15)), CASE WHEN ((_col3 or _col5)) THEN ((-1 * _col1)) ELSE (_col1) END (type: int), CASE WHEN ((_col3 or _col5)) THEN (-1) ELSE (1) END (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: sum(_col1), sum(_col2)
+                    keys: _col0 (type: char(15))
+                    minReductionHashAggr: 0.4
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 327 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: char(15))
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: char(15))
+                      Statistics: Num rows: 3 Data size: 327 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 8 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -458,6 +577,7 @@ PREHOOK: query: alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
@@ -465,41 +585,51 @@ POSTHOOK: query: alter materialized view mat1 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
-POSTHOOK: Lineage: mat1._c1 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c1, type:bigint, comment:null), (t1)t1.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), (t1)t1.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: mat1._c2 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c2, type:bigint, comment:null), (t1)t1.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), ]
+POSTHOOK: Lineage: mat1._c1 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c1, type:bigint, comment:null), (t1)t1.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), (t2)t2.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), (t1)t1.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c2 EXPRESSION [(mat1)default.mat1.FieldSchema(name:_c2, type:bigint, comment:null), (t1)t1.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), (t2)t2.FieldSchema(name:ROW__IS__DELETED, type:boolean, comment:), ]
 POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:char(15), comment:null), ]
 PREHOOK: query: explain cbo
-select a, sum(b) from t1 group by a
+select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
-select a, sum(b) from t1 group by a
+select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a=[$0], _c1=[$1])
   HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
-PREHOOK: query: select a, sum(b) from t1 group by a order by a
+PREHOOK: query: select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: select a, sum(b) from t1 group by a order by a
+POSTHOOK: query: select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-add            	5
-null_add       	NULL
-null_add/remove	NULL
 null_remove    	NULL
 null_update    	NULL
 sum0           	0
@@ -512,18 +642,21 @@ POSTHOOK: query: drop materialized view mat1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mat1
 POSTHOOK: Output: default@mat1
-PREHOOK: query: select a, sum(b) from t1 group by a order by a
+PREHOOK: query: select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: select a, sum(b) from t1 group by a order by a
+POSTHOOK: query: select t1.a, sum(t1.b) from t1
+join t2 on (t1.a = t2.a)
+group by t1.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-add            	5
-null_add       	NULL
-null_add/remove	NULL
-null_remove    	NULL
 null_update    	NULL
 sum0           	0
 update         	7
+null_remove    	NULL
