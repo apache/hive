@@ -103,25 +103,29 @@ public class TestTaskExecutorService {
   org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(TestTaskExecutorService.class);
   @Test(timeout = 20000)
   public void testFinishablePreemptsNonFinishable() throws InterruptedException {
-    MockRequest r1 = createMockRequest(1, 1, 100, 200, false, 50000000l, false);
-    MockRequest r2 = createMockRequest(2, 1, 100, 200, true, 10000000l, false);
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, false, 50000000l, false, 10);
+    MockRequest r2 = createMockRequest(2, 1, 100, 200, true, 10000000l, false, 11);
     testPreemptionHelper(r1, r2, true);
-    r1 = createMockRequest(1, 1, 100, 200, false, 5000l, true);
-    r2 = createMockRequest(2, 1, 100, 200, true, 1000l, true);
+    r1 = createMockRequest(1, 1, 100, 200, false, 5000l, true, 12);
+    r2 = createMockRequest(2, 1, 100, 200, true, 1000l, true, 13);
     testPreemptionHelper(r1, r2, true);
     // No preemption with ducks reversed.
-    r1 = createMockRequest(1, 1, 100, 200, false, 500l, true);
-    r2 = createMockRequest(2, 1, 100, 200, true, 1000l, false);
+    r1 = createMockRequest(1, 1, 100, 200, false, 500l, true, 14);
+    r2 = createMockRequest(2, 1, 100, 200, true, 1000l, false, 15);
+    testPreemptionHelper(r1, r2, false);
+    // Same DAG/Vertex tasks should NOT preempt each-other!
+    r1 = createMockRequest(1, 1, 100, 200, false, 500l, false, 15);
+    r2 = createMockRequest(2, 1, 100, 200, true, 1000l, false, 15);
     testPreemptionHelper(r1, r2, false);
   }
 
   @Test//(timeout = 10000)
   public void testDuckPreemptsNonDuck() throws InterruptedException {
-    MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 5000l, false);
-    MockRequest r2 = createMockRequest(2, 1, 100, 200, false, 1000l, true);
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 5000l, false, 1);
+    MockRequest r2 = createMockRequest(2, 1, 100, 200, false, 1000l, true, 2);
     testPreemptionHelper(r1, r2, true);
-    r1 = createMockRequest(1, 1, 100, 200, false, 5000l, false);
-    r2 = createMockRequest(2, 1, 100, 200, false, 1000l, true);
+    r1 = createMockRequest(1, 1, 100, 200, false, 5000l, false, 2);
+    r2 = createMockRequest(2, 1, 100, 200, false, 1000l, true, 3);
     testPreemptionHelper(r1, r2, true);
   }
 
@@ -518,16 +522,16 @@ public class TestTaskExecutorService {
 
   @Test(timeout = 10000)
   public void testDontKillMultiple() throws InterruptedException {
-    MockRequest victim1 = createMockRequest(1, 1, 100, 100, false, 20000l, false);
-    MockRequest victim2 = createMockRequest(2, 1, 100, 100, false, 20000l, false);
+    MockRequest victim1 = createMockRequest(1, 1, 100, 100, false, 20000l, false, 1);
+    MockRequest victim2 = createMockRequest(2, 1, 100, 100, false, 20000l, false, 2);
     runPreemptionGraceTest(victim1, victim2, 200);
     assertNotEquals(victim1.wasPreempted(), victim2.wasPreempted()); // One and only one.
   }
 
   @Test(timeout = 10000)
   public void testDoKillMultiple() throws InterruptedException {
-    MockRequest victim1 = createMockRequest(1, 1, 100, 100, false, 20000l, false);
-    MockRequest victim2 = createMockRequest(2, 1, 100, 100, false, 20000l, false);
+    MockRequest victim1 = createMockRequest(1, 1, 100, 100, false, 20000l, false, 1);
+    MockRequest victim2 = createMockRequest(2, 1, 100, 100, false, 20000l, false, 2);
     runPreemptionGraceTest(victim1, victim2, 1000);
     assertTrue(victim1.wasPreempted());
     assertTrue(victim2.wasPreempted());
