@@ -201,7 +201,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    HiveMetaHook.super.preAlterTable(hmsTable, context);
+    super.preAlterTable(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = Catalogs.loadTable(conf, catalogProperties);
@@ -240,7 +240,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       PartitionSpecProxy partitionSpecProxy) throws MetaException {
-    HiveMetaHook.super.commitAlterTable(hmsTable, partitionSpecProxy);
+    super.commitAlterTable(hmsTable, partitionSpecProxy);
     if (canMigrateHiveTable) {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
