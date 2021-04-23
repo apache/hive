@@ -719,6 +719,22 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testInsertEmptyResultSet() throws IOException {
+    Table source = testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, ImmutableList.of());
+    Table target = testTables.createTable(shell, "target", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, ImmutableList.of());
+
+    shell.executeStatement("INSERT INTO target SELECT * FROM source");
+    HiveIcebergTestUtils.validateData(target, ImmutableList.of(), 0);
+
+    testTables.appendIcebergTable(shell.getHiveConf(), source, fileFormat, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("INSERT INTO target SELECT * FROM source WHERE first_name = 'Nobody'");
+    HiveIcebergTestUtils.validateData(target, ImmutableList.of(), 0);
+  }
+
+  @Test
   public void testDecimalTableWithPredicateLiterals() throws IOException {
     Schema schema = new Schema(required(1, "decimal_field", Types.DecimalType.of(7, 2)));
     List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
