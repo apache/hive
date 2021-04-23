@@ -113,7 +113,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
       ret.add(getHivePrivilegeObjectDfsUri(newUri));
     }
 
-    if(newTable.getParameters().containsKey(hive_metastoreConstants.META_TABLE_STORAGE)) {
+    if (newTable.getParameters().containsKey(hive_metastoreConstants.META_TABLE_STORAGE)) {
       String storageUri = "";
       DefaultStorageHandler defaultStorageHandler = null;
       HiveStorageHandler hiveStorageHandler = null;
@@ -124,20 +124,17 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
       try {
         hiveStorageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
-        Method methodIsImplemented = hiveStorageHandler.getClass().getMethod("getURIForAuth", Map.class);
-        if(methodIsImplemented != null && hiveStorageHandler instanceof DefaultStorageHandler) {
-          DefaultStorageHandler defaultHandler = (DefaultStorageHandler) ReflectionUtils.newInstance(
-                  conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
-          storageUri = defaultHandler.getURIForAuth(tableProperties).toString();
-        }else if(methodIsImplemented != null && hiveStorageHandler instanceof HiveStorageAuthorizationHandler){
+        if (hiveStorageHandler instanceof HiveStorageAuthorizationHandler) {
           HiveStorageAuthorizationHandler authorizationHandler = (HiveStorageAuthorizationHandler) ReflectionUtils.newInstance(
                   conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
           storageUri = authorizationHandler.getURIForAuth(tableProperties).toString();
+        } else {
+          //Custom storage handler that has not implemented the getURIForAuth()
+          storageUri = hiveStorageHandler.getClass().getName()+"://"+
+                  HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
         }
-      }catch(Exception ex){
-        //Custom storage handler that has not implemented the getURIForAuth()
-        storageUri = hiveStorageHandler.getClass().getName()+"://"+
-                HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
+      } catch(Exception ex) {
+        LOG.error("Exception occured while getting the URI from storage handler: "+ex.getMessage(), ex);
       }
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
               HivePrivObjectActionType.OTHER, null, newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE), newTable.getOwner(), newTable.getOwnerType()));
@@ -158,5 +155,4 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
     }
     return ret;
   }
-
 }
