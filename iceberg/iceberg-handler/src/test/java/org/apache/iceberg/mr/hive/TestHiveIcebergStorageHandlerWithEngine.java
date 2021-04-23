@@ -52,6 +52,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -339,8 +340,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testInsert() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, ImmutableList.of());
 
@@ -360,7 +359,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test(timeout = 100000)
   public void testInsertSupportedTypes() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
       // TODO: remove this filter when issue #1881 is resolved
@@ -389,8 +387,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
    */
   @Test
   public void testInsertFromSelect() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
@@ -408,8 +404,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
    */
   @Test
   public void testInsertFromSelectWithOrderBy() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
@@ -422,10 +416,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, records, 0);
   }
 
+  @Ignore("Ignored until new Tez release has come out")
   @Test
   public void testInsertFromSelectWithProjection() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, ImmutableList.of());
     testTables.createTable(shell, "orders", ORDER_SCHEMA, fileFormat, ORDER_RECORDS);
@@ -441,10 +434,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
+  @Ignore("Ignored until new Tez release has come out")
   @Test
   public void testInsertUsingSourceTableWithSharedColumnsNames() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     List<Record> records = HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS;
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
@@ -466,10 +458,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
+  @Ignore("Ignored until new Tez release has come out")
   @Test
   public void testInsertFromJoiningTwoIcebergTables() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
             .identity("last_name").build();
     testTables.createTable(shell, "source_customers_1", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -487,7 +478,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteArrayOfPrimitivesInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "arrayofprimitives",
             Types.ListType.ofRequired(3, Types.StringType.get())));
@@ -497,7 +487,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteArrayOfArraysInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema =
         new Schema(
             required(1, "id", Types.LongType.get()),
@@ -509,7 +498,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteArrayOfMapsInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema =
         new Schema(required(1, "id", Types.LongType.get()),
             required(2, "arrayofmaps", Types.ListType
@@ -521,7 +509,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteArrayOfStructsInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema =
         new Schema(required(1, "id", Types.LongType.get()),
             required(2, "arrayofstructs", Types.ListType.ofRequired(3, Types.StructType
@@ -533,7 +520,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteMapOfPrimitivesInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "mapofprimitives", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
             Types.StringType.get())));
@@ -543,7 +529,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteMapOfArraysInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "mapofarrays",
             Types.MapType.ofRequired(3, 4, Types.StringType.get(), Types.ListType.ofRequired(5,
@@ -554,7 +539,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteMapOfMapsInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "mapofmaps", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
             Types.MapType.ofRequired(5, 6, Types.StringType.get(), Types.StringType.get()))));
@@ -564,7 +548,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteMapOfStructsInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "mapofstructs", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
             Types.StructType.of(required(5, "something", Types.StringType.get()),
@@ -576,7 +559,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteStructOfPrimitivesInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "structofprimitives",
             Types.StructType.of(required(3, "key", Types.StringType.get()), required(4, "value",
@@ -587,7 +569,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteStructOfArraysInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "structofarrays", Types.StructType
             .of(required(3, "names", Types.ListType.ofRequired(4, Types.StringType.get())),
@@ -599,7 +580,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteStructOfMapsInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "structofmaps", Types.StructType
             .of(required(3, "map1", Types.MapType.ofRequired(4, 5,
@@ -612,7 +592,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteStructOfStructsInTable() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "structofstructs", Types.StructType.of(required(3, "struct1", Types.StructType
             .of(required(4, "key", Types.StringType.get()), required(5, "value",
@@ -623,8 +602,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testPartitionedWrite() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .bucket("customer_id", 3)
         .build();
@@ -639,8 +616,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testIdentityPartitionedWrite() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id")
         .build();
@@ -655,8 +630,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testMultilevelIdentityPartitionedWrite() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id")
         .identity("last_name")
@@ -672,8 +645,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testMultiTableInsert() throws IOException {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
@@ -702,9 +673,23 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table target1 = testTables.createTable(shell, "target1", target1Schema, fileFormat, ImmutableList.of());
     Table target2 = testTables.createTable(shell, "target2", target2Schema, fileFormat, ImmutableList.of());
 
+    // simple insert: should create a single vertex writing to both target tables
     shell.executeStatement("FROM customers " +
-                               "INSERT INTO target1 SELECT customer_id, first_name " +
-                               "INSERT INTO target2 SELECT last_name, customer_id");
+        "INSERT INTO target1 SELECT customer_id, first_name " +
+        "INSERT INTO target2 SELECT last_name, customer_id");
+
+    // Check that everything is as expected
+    HiveIcebergTestUtils.validateData(target1, target1Records, 0);
+    HiveIcebergTestUtils.validateData(target2, target2Records, 1);
+
+    // truncate the target tables
+    testTables.truncateIcebergTable(target1);
+    testTables.truncateIcebergTable(target2);
+
+    // complex insert: should use a different vertex for each target table
+    shell.executeStatement("FROM customers " +
+        "INSERT INTO target1 SELECT customer_id, first_name ORDER BY first_name " +
+        "INSERT INTO target2 SELECT last_name, customer_id ORDER BY last_name");
 
     // Check that everything is as expected
     HiveIcebergTestUtils.validateData(target1, target1Records, 0);
@@ -713,11 +698,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testWriteWithDefaultWriteFormat() {
-    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
-
     Assume.assumeTrue("Testing the default file format is enough for a single scenario.",
-        executionEngine.equals("tez") && testTableType == TestTables.TestTableType.HIVE_CATALOG &&
-            fileFormat == FileFormat.ORC);
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 

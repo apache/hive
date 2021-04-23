@@ -19,11 +19,13 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -32,7 +34,15 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.JobContextImpl;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -56,7 +66,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveIcebergMetaHook implements HiveMetaHook {
+public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME);
@@ -191,7 +201,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    HiveMetaHook.super.preAlterTable(hmsTable, context);
+    super.preAlterTable(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = Catalogs.loadTable(conf, catalogProperties);
@@ -230,7 +240,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       PartitionSpecProxy partitionSpecProxy) throws MetaException {
-    HiveMetaHook.super.commitAlterTable(hmsTable, partitionSpecProxy);
+    super.commitAlterTable(hmsTable, partitionSpecProxy);
     if (canMigrateHiveTable) {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
@@ -345,5 +355,71 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     private Schema schema;
     private PartitionSpec spec;
     private List<FieldSchema> partitionKeys;
+  }
+
+  @Override
+  public void preInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    // do nothing
+  }
+
+  @Override
+  public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    boolean failure = false;
+    try {
+      OutputCommitter committer = new HiveIcebergOutputCommitter();
+      committer.commitJob(jobContext);
+    } catch (Exception e) {
+      failure = true;
+      LOG.error("Error while trying to commit job", e);
+      throw new MetaException(StringUtils.stringifyException(e));
+    } finally {
+      // if there's a failure, the configs will still be needed in rollbackInsertTable
+      if (!failure) {
+        // avoid config pollution with prefixed/suffixed keys
+        cleanCommitConfig(tableName);
+      }
+    }
+  }
+
+  @Override
+  public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
+      throws MetaException {
+    String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    OutputCommitter committer = new HiveIcebergOutputCommitter();
+    try {
+      LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
+      committer.abortJob(jobContext, JobStatus.State.FAILED);
+    } catch (IOException e) {
+      LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
+      // no throwing here because the original commitInsertTable exception should be propagated
+    } finally {
+      // avoid config pollution with prefixed/suffixed keys
+      cleanCommitConfig(tableName);
+    }
+  }
+
+  private void cleanCommitConfig(String tableName) {
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName);
+    conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName);
+    conf.unset(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableName);
+    conf.unset(InputFormatConfig.OUTPUT_TABLES);
+  }
+
+  private JobContext getJobContextForCommitOrAbort(String tableName) {
+    JobConf jobConf = new JobConf(conf);
+    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
+    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
+    jobConf.setNumReduceTasks(numTasks);
+
+    // we should only commit this current table because
+    // for multi-table inserts, this hook method will be called sequentially for each target table
+    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+
+    return new JobContextImpl(jobConf, jobID, null);
   }
 }
