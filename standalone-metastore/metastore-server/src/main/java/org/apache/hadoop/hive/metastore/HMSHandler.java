@@ -1506,11 +1506,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public Database get_database_core(String catName, final String name) throws NoSuchObjectException, MetaException {
+    Database db = null;
     if (name == null) {
       throw new MetaException("Database name cannot be null.");
     }
-
-    return getMS().getDatabase(catName, name);
+    try {
+      db = getMS().getDatabase(catName, name);
+    } catch (Exception e) {
+      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class).defaultRuntimeException(true);
+    }
+    return db;
   }
 
   @Override
@@ -1531,7 +1536,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class).defaultMetaException();
+      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class).defaultRuntimeException(true);
     } finally {
       endFunction("get_database", db != null, ex);
     }
@@ -1856,9 +1861,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ret = getMS().getDatabases(parsedDbNamed[CAT_NAME], parsedDbNamed[DB_NAME]);
         ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
       }
-    } catch (MetaException e) {
+    } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_databases", ret != null, ex);
     }
@@ -1960,7 +1965,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       connector = getMS().getDataConnector(name);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class).checkRuntimeException();
+      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
+          .defaultRuntimeException(true);
     }
     return connector;
   }
@@ -1974,7 +1980,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       connector = get_dataconnector_core(request.getConnectorName());
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class).checkRuntimeException();
+      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
+          .defaultRuntimeException(true);
     } finally {
       endFunction("get_dataconnector", connector != null, ex);
     }
@@ -2042,7 +2049,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterDataConnectorsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_dataconnectors", ret != null, ex);
     }
@@ -3361,7 +3368,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           tableName, tbl, partNames, validWriteIds, writeId);
     } catch (Exception e) {
       throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(e, IOException.class, NoSuchObjectException.class)
+          .convertIfInstance(e, IOException.class, MetaException.class)
           .defaultMetaException();
     }
   }
@@ -3469,7 +3476,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_tables_ext", ret != null, ex);
     }
@@ -3567,7 +3574,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], t);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_table_metas", t != null, ex);
     }
@@ -5238,9 +5245,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           tbl_name, part_vals, deleteData, envContext);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(e, IOException.class, MetaException.class)
-          .throwIfInstance(e, TException.class).defaultMetaException();
+      throw convertIfInstance(e, IOException.class, MetaException.class)
+          .rethrowException(e);
     } finally {
       endFunction("drop_partition", ret, ex, tbl_name);
     }
@@ -5332,9 +5338,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterPartitionIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(e, InvalidObjectException.class, NoSuchObjectException.class)
-          .throwIfInstance(e, TException.class).defaultMetaException();
+     throw convertIfInstance(e, InvalidObjectException.class, NoSuchObjectException.class)
+         .rethrowException(e);
     } finally {
       endFunction("get_partition_with_auth", ret != null, ex, tbl_name);
     }
@@ -5404,9 +5409,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(e, InvalidObjectException.class, NoSuchObjectException.class)
-          .throwIfInstance(e, TException.class).defaultMetaException();
+      throw convertIfInstance(e, InvalidObjectException.class, NoSuchObjectException.class)
+          .rethrowException(e);
     } finally {
       endFunction("get_partitions_with_auth", ret != null, ex, tblName);
     }
@@ -5524,7 +5528,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       response.setPartitionSpec(partitionSpecs);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partitions_with_specs", response != null, ex, tableName);
     }
@@ -5555,7 +5559,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           filterHook, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_partition_names", ret != null, ex, tbl_name);
     }
@@ -5918,7 +5922,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_tables", ret != null, ex);
     }
@@ -5939,7 +5943,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_tables_by_type", ret != null, ex);
     }
@@ -5967,7 +5971,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("getTablesByTypeCore", ret != null, ex);
     }
@@ -5985,7 +5989,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getAllMaterializedViewObjectsForRewriting(DEFAULT_CATALOG_NAME);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_all_materialized_view_objects_for_rewriting", ret != null, ex);
     }
@@ -6004,7 +6008,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getMaterializedViewsForRewriting(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_materialized_views_for_rewriting", ret != null, ex);
     }
@@ -6024,7 +6028,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_all_tables", ret != null, ex);
     }
@@ -6305,7 +6309,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterPartitionIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partition_by_name", ret != null, ex, tbl_name);
     }
@@ -6382,9 +6386,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           tbl_name, part_name, deleteData, envContext);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(e, IOException.class, MetaException.class)
-          .throwIfInstance(e, TException.class).defaultMetaException();
+      throw convertIfInstance(e, IOException.class, MetaException.class).rethrowException(e);
     } finally {
       endFunction("drop_partition_by_name", ret, ex, tbl_name);
     }
@@ -6411,7 +6413,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partitions_ps", ret != null, ex, tbl_name);
     }
@@ -6442,9 +6444,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(e, InvalidObjectException.class, MetaException.class)
-          .throwIfInstance(e, TException.class).defaultMetaException();
+      throw convertIfInstance(e, InvalidObjectException.class, MetaException.class).rethrowException(e);
     } finally {
       endFunction("get_partitions_ps_with_auth", ret != null, ex, tbl_name);
     }
@@ -6492,7 +6492,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           filterHook, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, ret);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partitions_names_ps", ret != null, ex, tbl_name);
     }
@@ -6528,7 +6528,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           filterHook, catName, dbName, tblName, ret);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partition_names_req", ret != null, ex, tblName);
     }
@@ -6987,7 +6987,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partitions_by_filter", ret != null, ex, tblName);
     }
@@ -7050,7 +7050,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = new PartitionsSpecByExprResult(partitionSpecs, hasUnknownPartitions);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partitions_spec_by_expr", ret != null, ex, tblName);
     }
@@ -7074,7 +7074,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = new PartitionsByExprResult(partitions, hasUnknownPartitions);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_partitions_by_expr", ret != null, ex, tblName);
     }
@@ -7100,7 +7100,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           tblName, filter);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_num_partitions_by_filter", ret != -1, ex, tblName);
     }
@@ -7116,7 +7116,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getNumPartitionsByExpr(catName, dbName, tblName, expr);
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_num_partitions_by_expr", ret != -1, ex, tblName);
     }
@@ -7202,7 +7202,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       success = getMS().commitTransaction();
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       if (!success) {
         getMS().rollbackTransaction();
@@ -7266,7 +7266,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getColumnPrivilegeSet(
           catName, dbName, tableName, partName, columnName, userName, groupNames);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
     return ret;
   }
@@ -7279,7 +7279,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       ret = getMS().getDBPrivilegeSet(catName, dbName, userName, groupNames);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
     return ret;
   }
@@ -7295,7 +7295,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getPartitionPrivilegeSet(catName, dbName, tableName, partName,
           userName, groupNames);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
     return ret;
   }
@@ -7310,7 +7310,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getTablePrivilegeSet(catName, dbName, tableName, userName,
           groupNames);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
     return ret;
   }
@@ -7343,8 +7343,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw throwIfInstance(e, MetaException.class)
-          .convertIfInstance(e, InvalidObjectException.class, MetaException.class)
-          .convertIfInstance(e, NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(e, exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7395,8 +7394,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw throwIfInstance(e, MetaException.class)
-          .convertIfInstance(e, InvalidObjectException.class, MetaException.class)
-          .convertIfInstance(e, NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(e, exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7416,7 +7414,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw throwIfInstance(e, MetaException.class)
-          .convertIfInstance(e, NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(e, exInfo, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7431,7 +7429,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().listRoleNames();
       return ret;
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7446,8 +7444,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw throwIfInstance(e, MetaException.class)
-          .convertIfInstance(e, InvalidObjectException.class, MetaException.class)
-          .convertIfInstance(e, NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(e, exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7475,7 +7472,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw throwIfInstance(e, MetaException.class)
-          .convertIfInstance(e, NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(e, exInfo, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7547,7 +7544,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       boolean result = getMS().refreshPrivileges(objToRefresh, authorizer, grantRequest.getPrivileges());
       response.setSuccess(result);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
     return response;
   }
@@ -7568,8 +7565,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw throwIfInstance(e, MetaException.class)
-          .convertIfInstance(e, InvalidObjectException.class, MetaException.class)
-          .convertIfInstance(e, NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(e, exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7582,7 +7578,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       ret = getMS().getUserPrivilegeSet(userName, groupNames);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
     return ret;
   }
@@ -7652,7 +7648,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return getMS().listPrincipalTableColumnGrants(principalName, principalType,
           catName, dbName, tableName, columnName);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7675,7 +7671,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return getMS().listPrincipalPartitionColumnGrants(principalName, principalType, catName, dbName,
           tableName, partValues, partName, columnName);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7693,7 +7689,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listPrincipalDBGrants(principalName, principalType, catName, dbName);
       }
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7715,7 +7711,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return getMS().listPrincipalPartitionGrants(
           principalName, principalType, catName, dbName, tableName, partValues, partName);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7733,7 +7729,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       return getMS().listAllTableGrants(principalName, principalType, catName, dbName, tableName);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7747,7 +7743,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       return getMS().listPrincipalGlobalGrants(principalName, principalType);
     } catch (Exception e) {
-      throw throwIfInstance(e, MetaException.class).defaultRuntimeException();
+      throw throwIfInstance(e, MetaException.class).defaultRuntimeException(false);
     }
   }
 
@@ -7813,7 +7809,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().addToken(token_identifier, delegation_token);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("add_token", ret == true, ex);
     }
@@ -7829,7 +7825,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().removeToken(token_identifier);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("remove_token", ret == true, ex);
     }
@@ -7845,7 +7841,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getToken(token_identifier);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_token", ret != null, ex);
     }
@@ -7862,7 +7858,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getAllTokenIdentifiers();
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_all_token_identifiers.", ex == null, ex);
     }
@@ -7878,7 +7874,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().addMasterKey(key);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("add_master_key.", ex == null, ex);
     }
@@ -7893,7 +7889,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       getMS().updateMasterKey(seq_number, key);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("update_master_key.", ex == null, ex);
     }
@@ -7908,7 +7904,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().removeMasterKey(key_seq);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("remove_master_key.", ex == null, ex);
     }
@@ -7924,7 +7920,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getMasterKeys();
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_master_keys.", ret != null, ex);
     }
@@ -8024,7 +8020,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("partition_name_has_valid_characters", true, ex);
     }
@@ -8586,7 +8582,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       response = new GetPrincipalsInRoleResponse(getMS().listRoleMembers(request.getRoleName()));
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_principals_in_role", ex == null, ex);
     }
@@ -8605,7 +8601,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       roleMaps = getMS().listRolesWithGrants(request.getPrincipal_name(), request.getPrincipal_type());
     } catch (Exception e) {
       ex = e;
-      rethrowException(e);
+      throw rethrowException(e);
     } finally {
       endFunction("get_role_grants_for_principal", ex == null, ex);
     }
@@ -9220,7 +9216,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getUniqueConstraints(catName, db_name, tbl_name);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_unique_constraints", ret != null, ex, tbl_name);
     }
@@ -9240,7 +9236,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getNotNullConstraints(catName, db_name, tbl_name);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_not_null_constraints", ret != null, ex, tbl_name);
     }
@@ -9260,7 +9256,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getDefaultConstraints(catName, db_name, tbl_name);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_default_constraints", ret != null, ex, tbl_name);
     }
@@ -9280,7 +9276,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().getCheckConstraints(catName, db_name, tbl_name);
     } catch (Exception e) {
       ex = e;
-      throw throwIfInstance(e, MetaException.class).defaultMetaException();
+      throw newMetaException(e);
     } finally {
       endFunction("get_check_constraints", ret != null, ex, tbl_name);
     }

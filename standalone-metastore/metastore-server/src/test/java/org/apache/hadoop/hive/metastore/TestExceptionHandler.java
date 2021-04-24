@@ -70,7 +70,7 @@ public class TestExceptionHandler {
 
     try {
       Exception e = throwIfInstance(re, MetaException.class, InvalidOperationException.class)
-          .throwIfInstance(re, TException.class).defaultRuntimeException();
+          .throwIfInstance(re, TException.class).defaultRuntimeException(true);
       assertTrue(e == re);
     } catch (Exception e) {
       fail("Exception should not happen:" + e.getMessage());

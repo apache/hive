@@ -43,7 +43,7 @@ public final class ExceptionHandler {
   /**
    * Throws if the input e is the instance of the {@param clzt} or  {@param clze} in order
    */
-  public static <T extends Exception,E extends Exception> ExceptionHandler
+  public static <T extends Exception, E extends Exception> ExceptionHandler
       throwIfInstance(Exception e, Class<T> clzt, Class<E> clze) throws T, E {
     throwIfInstance(e, clzt);
     throwIfInstance(e, clze);
@@ -53,7 +53,7 @@ public final class ExceptionHandler {
   /**
    * Throws if the input e is the instance of the {@param clzt} or  {@param clze} or {@param clzc} in order
    */
-  public static <T extends Exception,E extends Exception, C extends Exception> ExceptionHandler
+  public static <T extends Exception, E extends Exception, C extends Exception> ExceptionHandler
       throwIfInstance(Exception e, Class<T> clzt, Class<E> clze, Class<C> clzc) throws T, E, C {
     throwIfInstance(e, clzt);
     throwIfInstance(e, clze);
@@ -82,8 +82,24 @@ public final class ExceptionHandler {
     return new ExceptionHandler(e);
   }
 
-  public static void rethrowException(Exception e) throws TException {
-    throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
+  /**
+   * Converts the input e if it is the instance of classes to MetaException with the given message
+   */
+  public static ExceptionHandler convertIfInstance(Exception e, String message, Class<?>... classes)
+      throws MetaException {
+    if (classes != null || classes.length > 0) {
+      for (Class<?> clz : classes) {
+        if (clz.isInstance(e)) {
+          // throw the exception if matches
+          throw new MetaException(message);
+        }
+      }
+    }
+    return new ExceptionHandler(e);
+  }
+
+  public static TException rethrowException(Exception e) throws TException {
+    return throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
         .throwIfInstance(e, TException.class)
         .defaultMetaException();
   }
@@ -102,7 +118,10 @@ public final class ExceptionHandler {
     return me;
   }
 
-  public RuntimeException defaultRuntimeException() {
+  public RuntimeException defaultRuntimeException(boolean check) {
+    if (check) {
+      assert (e instanceof RuntimeException);
+    }
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
     }
@@ -118,11 +137,6 @@ public final class ExceptionHandler {
       return (TException) e;
     }
     return newMetaException(e);
-  }
-
-  public RuntimeException checkRuntimeException() {
-    assert (e instanceof RuntimeException);
-    return (RuntimeException) e;
   }
 
 }
