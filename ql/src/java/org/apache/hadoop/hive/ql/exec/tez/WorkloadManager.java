@@ -248,7 +248,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL, TimeUnit.SECONDS)
             * 1000;
 
-    if ((delayedMoveTimeOutMs > 0) && (delayedMoveValidationIntervalMs > 0)) {
+    if ((HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) && (delayedMoveValidationIntervalMs > 0)) {
       delayedMoveThread = new Thread(() -> runDelayedMoveThread(), "Workload management delayed move");
       delayedMoveThread.setDaemon(true);
       delayedMoveThread.start();
@@ -683,11 +683,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     Map<WmTezSession, WmEvent> recordMoveEvents = new HashMap<>();
     for (MoveSession moveSession : e.moveSessions) {
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) {
-        handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, true,
-            false);
+        handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, true);
       } else {
-        handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, false,
-            false);
+        handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, false);
       }
     }
     e.moveSessions.clear();
@@ -706,7 +704,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     // 9. If delayed move is set to true, process the "delayed moves" now.
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) {
-      processDelayedMovesOnMasterThread(poolsToRedistribute, recordMoveEvents, syncWork, e.toReuse);
+      for (String poolName : pools.keySet()) {
+        processDelayedMovesForPool(poolName, poolsToRedistribute, recordMoveEvents, syncWork, e.toReuse);
+      }
     }
 
     // 10. Resolve all the kill query requests in flight. Nothing below can affect them.
@@ -847,8 +847,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     KILLED, // Killed because destination pool was full and delayed move is false.
     CONVERTED_TO_DELAYED_MOVE, // the move session was added to the pool's delayed moves as the dest. pool was full
     // and delayed move is true.
-    RETRY_FAILED, // can happen during a retry - when a delayed move is retried.
-    // but the dest. pool is still full, we will return and the move will be attempted later.)
     ERROR
   }
 
@@ -857,18 +855,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       final HashSet<String> poolsToRedistribute,
       final Map<WmTezSession, GetRequest> toReuse,
       final Map<WmTezSession, WmEvent> recordMoveEvents,
-      final boolean convertToDelayedMove, final boolean retryDelayedMove) {
+      final boolean convertToDelayedMove) {
     String destPoolName = moveSession.destPool;
-    LOG.info("Handling move session event: {}, Convert to Delayed Move: {}, Retry Delayed Move: {}", moveSession,
-        convertToDelayedMove, retryDelayedMove);
+    LOG.info("Handling move session event: {}, Convert to Delayed Move: {}", moveSession, convertToDelayedMove);
     if (validMove(moveSession.srcSession, destPoolName)) {
       String srcPoolName = moveSession.srcSession.getPoolName();
       PoolState srcPool = pools.get(srcPoolName);
       boolean capacityAvailableInDest = capacityAvailable(destPoolName);
-      // Retrying a delayed move.
-      if (retryDelayedMove && !capacityAvailableInDest) {
-        return MoveSessionResult.RETRY_FAILED;
-      }
+
       // If delayed move is set to true and if destination pool doesn't have enough capacity, don't kill the query.
       // Let the query run in source pool. Add the session to the source pool's delayed move sessions.
       if (convertToDelayedMove && !capacityAvailableInDest) {
@@ -1341,89 +1335,37 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
-  private void processDelayedMovesOnMasterThread(final HashSet<String> poolsToRedistribute,
-      final Map<WmTezSession, WmEvent> recordMoveEvents, WmThreadSyncWork syncWork,
-      IdentityHashMap<WmTezSession, GetRequest> toReuse) throws Exception {
-    Map<String, Integer> movedCounts = new HashMap<>();
-    if (delayedMoveTimeOutMs > 0) {
-      processExpiredDelayedMovesAndRetry(movedCounts, poolsToRedistribute, recordMoveEvents,
-          syncWork, toReuse);
-    }
-    processDelayedMovesForPoolsWithNewRequests(movedCounts, poolsToRedistribute, recordMoveEvents, syncWork, toReuse);
-  }
-
-  // 1. Process the delayed moves which have timed out.
-  // 2. Process the delayed moves for which destination pools have freed up.
-  private void processExpiredDelayedMovesAndRetry(final Map<String, Integer> movedCounts,
-      final HashSet<String> poolsToRedistribute, final Map<WmTezSession, WmEvent> recordMoveEvents,
+  private void processDelayedMovesForPool(final String poolName, final HashSet<String> poolsToRedistribute, final Map<WmTezSession, WmEvent> recordMoveEvents,
       WmThreadSyncWork syncWork, IdentityHashMap<WmTezSession, GetRequest> toReuse) {
     long currentTime = System.currentTimeMillis();
-    for (Map.Entry<String, PoolState> entry : pools.entrySet()) {
-      String poolName = entry.getKey();
-      PoolState pool = entry.getValue();
-      int movedCount = 0;
-      Iterator<MoveSession> iter = pool.delayedMoveSessions.iterator();
-      while (iter.hasNext()) {
-        MoveSession moveSession = iter.next();
-        MoveSessionResult result;
-        //Discard the delayed move if invalid
-        if (!validDelayedMove(moveSession, pool, poolName)) {
-          iter.remove();
-        } else {
-          // check for timeouts
-          if ((currentTime - moveSession.startTime) >= delayedMoveTimeOutMs) {
-            LOG.info("The delayed move {} for pool {} has timed out", moveSession, poolName);
-            result =
-                handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, toReuse, recordMoveEvents,
-                    false, false);
-          } else {
-            // retries
-            result =
-                handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, toReuse, recordMoveEvents,
-                    false, true);
-          }
-          LOG.info("Move Result {}", result);
-          if (result == MoveSessionResult.OK) {
-            LOG.info("Attempt to process delayed move {} for pool {} was successful", moveSession, poolName);
-            movedCount++;
-          }
-          // Do not remove the delayed move if retry failed because destination pool was full. We will retry later.
-          if (result != MoveSessionResult.RETRY_FAILED) {
-            iter.remove();
-          }
-        }
+    PoolState pool = pools.get(poolName);
+    int movedCount = 0;
+    int queueSize = pool.queue.size();
+    int remainingCapacity = pool.queryParallelism - pool.getTotalActiveSessions();
+    int delayedMovesToProcess = (queueSize > remainingCapacity) ? (queueSize - remainingCapacity) : 0;
+    Iterator<MoveSession> iter = pool.delayedMoveSessions.iterator();
+    while (iter.hasNext()) {
+      MoveSession moveSession = iter.next();
+      MoveSessionResult result;
+      //Discard the delayed move if invalid
+      if (!validDelayedMove(moveSession, pool, poolName)) {
+        iter.remove();
+        continue;
       }
-      movedCounts.put(poolName, movedCount);
-    }
-  }
-
-  // Process delayed Moves for pools which have queued requests.
-  // Incoming requests have more claim upon the pool than delayed moves.
-  private void processDelayedMovesForPoolsWithNewRequests(final Map<String, Integer> movedCounts,
-      final HashSet<String> poolsToRedistribute, final Map<WmTezSession, WmEvent> recordMoveEvents,
-      WmThreadSyncWork syncWork, IdentityHashMap<WmTezSession, GetRequest> toReuse) {
-    for (String poolName : poolsToRedistribute) {
-      PoolState pool = pools.get(poolName);
-      if (pool != null) {
-        int movedCount = movedCounts.getOrDefault(poolName, 0);
-        int queueSize = pool.queue.size();
-        int remainingCapacity = pool.queryParallelism - pool.getTotalActiveSessions();
-        int delayedMovesToProcess = (queueSize > remainingCapacity) ? (queueSize - remainingCapacity) : 0;
-        if (movedCount < delayedMovesToProcess) {
-          Iterator<MoveSession> iter = pool.delayedMoveSessions.iterator();
-          while (iter.hasNext()) {
-            MoveSession moveSession = iter.next();
-            iter.remove();
-            LOG.info("Processing delayed move {} for pool {} as the pool has queued requests", moveSession, poolName);
-            if (validDelayedMove(moveSession, pool, poolName)) {
-              handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, toReuse, recordMoveEvents,
-                  false, false);
-              movedCount++;
-              if (movedCount >= delayedMovesToProcess) {
-                break;
-              }
-            }
-          }
+      // Process the delayed move if
+      // 1. The delayed move has timed out or
+      // 2. The destination pool has freed up or
+      // 3. If the source pool has incoming requests and we need to free up capacity in the source pool
+      // to accommodate these requests.
+      if (((currentTime - moveSession.startTime) >= delayedMoveTimeOutMs) || (capacityAvailable(moveSession.destPool))
+          || (movedCount < delayedMovesToProcess)) {
+        LOG.info("Processing delayed move {} for pool {}", moveSession, poolName);
+        result = handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, toReuse, recordMoveEvents,
+            false);
+        iter.remove();
+        if (result == MoveSessionResult.OK) {
+          LOG.info("Attempt to process delayed move {} for pool {} was successful", moveSession, poolName);
+          movedCount++;
         }
       }
     }
