@@ -862,7 +862,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       String srcPoolName = moveSession.srcSession.getPoolName();
       PoolState srcPool = pools.get(srcPoolName);
       boolean capacityAvailableInDest = capacityAvailable(destPoolName);
-
       // If delayed move is set to true and if destination pool doesn't have enough capacity, don't kill the query.
       // Let the query run in source pool. Add the session to the source pool's delayed move sessions.
       if (convertToDelayedMove && !capacityAvailableInDest) {
