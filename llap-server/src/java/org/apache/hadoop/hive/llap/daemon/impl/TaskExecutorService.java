@@ -973,7 +973,7 @@ public class TaskExecutorService extends AbstractService
 
   /**
    * Victim Task (A) should be preempted in favor of a candidate Task (B) when:
-   *    1. A is NOT on the same DAG and Vertex as B  AND
+   *    1. A is NOT on the same Vertex as B AND
    *      1.1. B is a Guaranteed Task while A is not OR
    *      1.2. Both are guaranteed but A is not finishable and B is
    * To make sure that Victim task is not behind some upstream updates (asynchronous),
@@ -986,7 +986,7 @@ public class TaskExecutorService extends AbstractService
     if (victim == null) return false;
     SignableVertexSpec candVrtx = candidate.getTaskRunnerCallable().getFragmentInfo().getVertexSpec();
     SignableVertexSpec vicVrtx = victim.getTaskRunnerCallable().getFragmentInfo().getVertexSpec();
-    if (candVrtx.getHiveQueryId().compareTo(vicVrtx.getHiveQueryId()) == 0 &&
+    if (candVrtx.getHiveQueryId().equals(vicVrtx.getHiveQueryId()) &&
         candVrtx.getVertexIndex() == vicVrtx.getVertexIndex()) return false;
     if (candidate.isGuaranteed() && !victim.isGuaranteed()) return true;
     return ((candidate.isGuaranteed() == victim.isGuaranteed())
