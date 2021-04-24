@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -1526,19 +1527,19 @@ public class Hive {
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
       // Note: this is currently called w/true from StatsOptimizer only.
+      GetTableRequest request = new GetTableRequest(dbName, tableName);
+      request.setCatName(getDefaultCatalog(conf));
+      request.setGetColumnStats(getColumnStats);
+      request.setEngine(Constants.HIVE_ENGINE);
       if (checkTransactional) {
         ValidWriteIdList validWriteIdList = null;
-        long txnId = SessionState.get().getTxnMgr() != null ?
-            SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+        long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
         if (txnId > 0) {
-          validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf,
-              dbName, tableName);
+          validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
         }
-        tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
-            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
-      } else {
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE);
+        request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
       }
+      tTable = getMSC().getTable(request);
     } catch (NoSuchObjectException e) {
       if (throwException) {
         throw new InvalidTableException(tableName);

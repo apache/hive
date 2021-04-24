@@ -312,6 +312,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public Table getTable(String catalogName, String dbName, String tableName, String writeIdList, long tableId)
+      throws MetaException {
+    return null;
+  }
+
+  @Override
   public boolean addPartition(Partition part) throws InvalidObjectException, MetaException {
 
     return false;
