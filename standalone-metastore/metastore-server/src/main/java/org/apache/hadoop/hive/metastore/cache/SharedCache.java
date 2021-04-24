@@ -1456,13 +1456,12 @@ public class SharedCache {
     }
 
     public ValidWriteIdList getValidWriteIds() {
-      try{
+      try {
         tableLock.readLock().lock();
         return validWriteIds;
       } finally {
         tableLock.readLock().unlock();
       }
-
     }
 
   }

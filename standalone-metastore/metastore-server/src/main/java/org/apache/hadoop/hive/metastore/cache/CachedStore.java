@@ -579,17 +579,17 @@ public class CachedStore implements RawStore, Configurable {
               Deadline.stopTimer();
               cacheObjects.setTableConstraints(tableConstraints);
 
-              try
-              {
+              try {
                 Deadline.startTimer("getValidWriteIds");
-                ValidWriteIdList validWriteIdList = TxnCommonUtils.createValidReaderWriteIdList(txnStore.getValidWriteIds(new GetValidWriteIdsRequest(
-                    Collections.singletonList(TableName.getDbTable(dbName,tblName)))).getTblValidWriteIds().get(0));
+                ValidWriteIdList validWriteIdList = TxnCommonUtils.createValidReaderWriteIdList(txnStore
+                    .getValidWriteIds(
+                        new GetValidWriteIdsRequest(Collections.singletonList(TableName.getDbTable(dbName, tblName))))
+                    .getTblValidWriteIds().get(0));
                 Deadline.stopTimer();
                 cacheObjects.setValidWriteIdList(validWriteIdList);
               } catch (Exception e) {
                 LOG.debug(ExceptionUtils.getStackTrace(e));
               }
-
 
               // If the table could not cached due to memory limit, stop prewarm
               boolean isSuccess = sharedCache
@@ -949,17 +949,18 @@ public class CachedStore implements RawStore, Configurable {
       ValidWriteIdList validWriteIdList = null;
       try {
         Deadline.startTimer("getValidWriteIds");
-         validWriteIdList = TxnCommonUtils.createValidReaderWriteIdList(txnStore.getValidWriteIds(new GetValidWriteIdsRequest(
-            Collections.singletonList(TableName.getDbTable(dbName,tblName)))).getTblValidWriteIds().get(0));
+        validWriteIdList = TxnCommonUtils.createValidReaderWriteIdList(txnStore.getValidWriteIds(
+            new GetValidWriteIdsRequest(Collections.singletonList(TableName.getDbTable(dbName, tblName))))
+            .getTblValidWriteIds().get(0));
         Deadline.stopTimer();
       } catch (Exception e) {
-        LOG.info("Updating CachedStore: unable to update table validWriteIdList of catalog: " + catName + ", database: " + dbName
-            + ", table: " + tblName, e);
+        LOG.info("Updating CachedStore: unable to update table validWriteIdList of catalog: " + catName + ", database: "
+            + dbName + ", table: " + tblName, e);
       }
       if (validWriteIdList != null) {
         sharedCache.refreshValidWriteIdListInCache(catName, dbName, tblName, validWriteIdList);
-        LOG.debug("CachedStore: updated cached table validWriteIdList for catalog: {}, database: {}, table: {}", catName,
-            dbName, tblName);
+        LOG.debug("CachedStore: updated cached table validWriteIdList for catalog: {}, database: {}, table: {}",
+            catName, dbName, tblName);
       }
     }
 
