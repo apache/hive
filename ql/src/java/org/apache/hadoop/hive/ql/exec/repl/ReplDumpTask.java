@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.thrift.TException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -672,14 +673,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         Path dbRootData = new Path(bootstrapRoot, EximUtil.DATA_PATH_NAME + File.separator + dbName);
         boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
         ReplExternalTables externalTablesWriter = new ReplExternalTables(conf);
-        boolean isSingleCopyTaskForExternalTables =
+        boolean isSingleTaskForExternalDb =
             conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK) && work.replScope.includeAllTables();
-        ArrayList<String> singleCopyPaths = new ArrayList<>();
-        if (db != null && isSingleCopyTaskForExternalTables) {
-          singleCopyPaths =
-              new ArrayList<>(Arrays.asList(conf.getVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS).split(",")));
-          singleCopyPaths.add(db.getLocationUri());
-        }
+        ArrayList<String> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
         boolean isExternalTablePresent = false;
         for(String matchedDbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
           for (String tableName : Utils.matchesTbl(hiveDb, matchedDbName, work.replScope)) {
@@ -690,7 +686,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
                       && shouldDumpExternalTableLocation()) {
                 externalTablesWriter.dataLocationDump(table, extTableFileList, singleCopyPaths,
-                        !isSingleCopyTaskForExternalTables, conf);
+                        !isSingleTaskForExternalDb, conf);
                 isExternalTablePresent = true;
               }
 
@@ -711,9 +707,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
           // if it is not a table level replication, add a single task for
           // the database default location and the paths configured.
-          if (isExternalTablePresent && shouldDumpExternalTableLocation()
-              && isSingleCopyTaskForExternalTables) {
-            externalTablesWriter.singleLocationsDump(singleCopyPaths, extTableFileList, conf);
+          if (isExternalTablePresent && shouldDumpExternalTableLocation() && isSingleTaskForExternalDb) {
+            externalTablesWriter.dumpNonTableLevelCopyPaths(singleCopyPaths, extTableFileList, conf);
           }
         }
         dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
@@ -722,6 +717,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, lastReplId);
       return lastReplId;
     }
+  }
+
+  @NotNull
+  private ArrayList<String> getNonTableLevelCopyPaths(Database db, boolean isSingleCopyTaskForExternalTables) {
+    ArrayList<String> singleCopyPaths = new ArrayList<>();
+    if (db != null && isSingleCopyTaskForExternalTables) {
+      singleCopyPaths =
+          new ArrayList<>(Arrays.asList(conf.getVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS).split(",")));
+      singleCopyPaths.add(db.getLocationUri());
+    }
+    return singleCopyPaths;
   }
 
   private void setDataCopyIterators(FileList extTableFileList, FileList managedTableFileList) {
@@ -943,12 +949,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           ReplExternalTables externalTablesWriter = new ReplExternalTables(conf);
           boolean isSingleTaskForExternalDb =
               conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK) && work.replScope.includeAllTables();
-          ArrayList<String> singleCopyPaths = new ArrayList<>();
-          if (db != null && isSingleTaskForExternalDb) {
-            singleCopyPaths =
-                new ArrayList<>(Arrays.asList(conf.getVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS).split(",")));
-            singleCopyPaths.add(db.getLocationUri());
-          }
+          ArrayList<String> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
           boolean isExternalTablePresent = false;
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             Table table = null;
@@ -989,7 +990,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           // the database default location for external tables.
           if (isExternalTablePresent && shouldDumpExternalTableLocation()
               && isSingleTaskForExternalDb) {
-            externalTablesWriter.singleLocationsDump(singleCopyPaths, extTableFileList, conf);
+            externalTablesWriter.dumpNonTableLevelCopyPaths(singleCopyPaths, extTableFileList, conf);
           }
           dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
         } catch (Exception e) {

@@ -112,7 +112,14 @@ public class ReplExternalTables {
     }
   }
 
-  void singleLocationsDump(List<String> singlePathLocations, FileList fileList, HiveConf conf) throws Exception {
+  /**
+   * Creates copy task for the paths configured, irrespective of which table/partition belongs to it.
+   * @param singlePathLocations paths to be copied.
+   * @param fileList the tracking file which maintains the list of tasks.
+   * @param conf Hive Configuration.
+   * @throws Exception in case of any error.
+   */
+  void dumpNonTableLevelCopyPaths(List<String> singlePathLocations, FileList fileList, HiveConf conf) throws Exception {
     for (String location : singlePathLocations) {
       if (!StringUtils.isEmpty(location)) {
         Path fullyQualifiedDataLocation =
