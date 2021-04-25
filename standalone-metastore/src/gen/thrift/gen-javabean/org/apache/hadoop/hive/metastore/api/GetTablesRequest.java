@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField PROJECTION_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("projectionSpec", org.apache.thrift.protocol.TType.STRUCT, (short)7);
+  private static final org.apache.thrift.protocol.TField TABLES_PATTERN_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesPattern", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
   private List<String> processorCapabilities; // optional
   private String processorIdentifier; // optional
   private GetProjectionsSpec projectionSpec; // optional
+  private String tablesPattern; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -68,7 +70,8 @@ import org.slf4j.LoggerFactory;
     CAT_NAME((short)4, "catName"),
     PROCESSOR_CAPABILITIES((short)5, "processorCapabilities"),
     PROCESSOR_IDENTIFIER((short)6, "processorIdentifier"),
-    PROJECTION_SPEC((short)7, "projectionSpec");
+    PROJECTION_SPEC((short)7, "projectionSpec"),
+    TABLES_PATTERN((short)8, "tablesPattern");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -97,6 +100,8 @@ import org.slf4j.LoggerFactory;
           return PROCESSOR_IDENTIFIER;
         case 7: // PROJECTION_SPEC
           return PROJECTION_SPEC;
+        case 8: // TABLES_PATTERN
+          return TABLES_PATTERN;
         default:
           return null;
       }
@@ -137,7 +142,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TBL_NAMES,_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.PROJECTION_SPEC};
+  private static final _Fields optionals[] = {_Fields.TBL_NAMES,_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.PROJECTION_SPEC,_Fields.TABLES_PATTERN};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -157,6 +162,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PROJECTION_SPEC, new org.apache.thrift.meta_data.FieldMetaData("projectionSpec", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetProjectionsSpec.class)));
+    tmpMap.put(_Fields.TABLES_PATTERN, new org.apache.thrift.meta_data.FieldMetaData("tablesPattern", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetTablesRequest.class, metaDataMap);
   }
@@ -198,6 +205,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetProjectionSpec()) {
       this.projectionSpec = new GetProjectionsSpec(other.projectionSpec);
     }
+    if (other.isSetTablesPattern()) {
+      this.tablesPattern = other.tablesPattern;
+    }
   }
 
   public GetTablesRequest deepCopy() {
@@ -213,6 +223,7 @@ import org.slf4j.LoggerFactory;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
     this.projectionSpec = null;
+    this.tablesPattern = null;
   }
 
   public String getDbName() {
@@ -406,6 +417,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getTablesPattern() {
+    return this.tablesPattern;
+  }
+
+  public void setTablesPattern(String tablesPattern) {
+    this.tablesPattern = tablesPattern;
+  }
+
+  public void unsetTablesPattern() {
+    this.tablesPattern = null;
+  }
+
+  /** Returns true if field tablesPattern is set (has been assigned a value) and false otherwise */
+  public boolean isSetTablesPattern() {
+    return this.tablesPattern != null;
+  }
+
+  public void setTablesPatternIsSet(boolean value) {
+    if (!value) {
+      this.tablesPattern = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -464,6 +498,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case TABLES_PATTERN:
+      if (value == null) {
+        unsetTablesPattern();
+      } else {
+        setTablesPattern((String)value);
+      }
+      break;
+
     }
   }
 
@@ -490,6 +532,9 @@ import org.slf4j.LoggerFactory;
     case PROJECTION_SPEC:
       return getProjectionSpec();
 
+    case TABLES_PATTERN:
+      return getTablesPattern();
+
     }
     throw new IllegalStateException();
   }
@@ -515,6 +560,8 @@ import org.slf4j.LoggerFactory;
       return isSetProcessorIdentifier();
     case PROJECTION_SPEC:
       return isSetProjectionSpec();
+    case TABLES_PATTERN:
+      return isSetTablesPattern();
     }
     throw new IllegalStateException();
   }
@@ -595,6 +642,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_tablesPattern = true && this.isSetTablesPattern();
+    boolean that_present_tablesPattern = true && that.isSetTablesPattern();
+    if (this_present_tablesPattern || that_present_tablesPattern) {
+      if (!(this_present_tablesPattern && that_present_tablesPattern))
+        return false;
+      if (!this.tablesPattern.equals(that.tablesPattern))
+        return false;
+    }
+
     return true;
   }
 
@@ -636,6 +692,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_projectionSpec);
     if (present_projectionSpec)
       list.add(projectionSpec);
+
+    boolean present_tablesPattern = true && (isSetTablesPattern());
+    list.add(present_tablesPattern);
+    if (present_tablesPattern)
+      list.add(tablesPattern);
 
     return list.hashCode();
   }
@@ -714,6 +775,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetProjectionSpec()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.projectionSpec, other.projectionSpec);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTablesPattern()).compareTo(other.isSetTablesPattern());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTablesPattern()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tablesPattern, other.tablesPattern);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -802,6 +873,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.projectionSpec);
+      }
+      first = false;
+    }
+    if (isSetTablesPattern()) {
+      if (!first) sb.append(", ");
+      sb.append("tablesPattern:");
+      if (this.tablesPattern == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tablesPattern);
       }
       first = false;
     }
@@ -936,6 +1017,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // TABLES_PATTERN
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.tablesPattern = iprot.readString();
+              struct.setTablesPatternIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1010,6 +1099,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.tablesPattern != null) {
+        if (struct.isSetTablesPattern()) {
+          oprot.writeFieldBegin(TABLES_PATTERN_FIELD_DESC);
+          oprot.writeString(struct.tablesPattern);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1047,7 +1143,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProjectionSpec()) {
         optionals.set(5);
       }
-      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetTablesPattern()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetTblNames()) {
         {
           oprot.writeI32(struct.tblNames.size());
@@ -1078,6 +1177,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProjectionSpec()) {
         struct.projectionSpec.write(oprot);
       }
+      if (struct.isSetTablesPattern()) {
+        oprot.writeString(struct.tablesPattern);
+      }
     }
 
     @Override
@@ -1085,7 +1187,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(6);
+      BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list988 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -1129,6 +1231,10 @@ import org.slf4j.LoggerFactory;
         struct.projectionSpec = new GetProjectionsSpec();
         struct.projectionSpec.read(iprot);
         struct.setProjectionSpecIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.tablesPattern = iprot.readString();
+        struct.setTablesPatternIsSet(true);
       }
     }
   }

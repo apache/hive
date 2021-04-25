@@ -4392,6 +4392,7 @@ class GetTablesRequest
   PROCESSORCAPABILITIES = 5
   PROCESSORIDENTIFIER = 6
   PROJECTIONSPEC = 7
+  TABLESPATTERN = 8
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -4400,7 +4401,8 @@ class GetTablesRequest
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
-    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetProjectionsSpec, :optional => true}
+    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetProjectionsSpec, :optional => true},
+    TABLESPATTERN => {:type => ::Thrift::Types::STRING, :name => 'tablesPattern', :optional => true}
   }
 
   def struct_fields; FIELDS; end
