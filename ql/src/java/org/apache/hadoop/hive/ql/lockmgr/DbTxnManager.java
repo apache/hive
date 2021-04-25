@@ -170,7 +170,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private ScheduledFuture<?> heartbeatTask = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   private final ReentrantLock heartbeatTaskLock = new ReentrantLock();
-  private String replPolicy = null;
+  //Contains database under replication name for hive replication transactions (dump and load operation)
+  private String replPolicy;
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -489,6 +490,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     numStatements = 0;
     tableWriteIds.clear();
     queryId = null;
+    replPolicy = null;
   }
 
   @Override
@@ -501,7 +503,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         // For transaction started internally by repl load command, heartbeat needs to be stopped.
         clearLocksAndHB();
       }
-      rqst.setTxn_type(TxnType.REPL_CREATED);
       getMS().commitTxn(rqst);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(rqst.getTxnid()));
@@ -532,7 +533,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
       CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
       commitTxnRequest.setExclWriteEnabled(conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-      commitTxnRequest.setReplPolicy(replPolicy);
+      if (replPolicy != null) {
+        commitTxnRequest.setReplPolicy(replPolicy);
+        commitTxnRequest.setTxn_type(TxnType.DEFAULT);
+      }
       getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
@@ -547,7 +551,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     } finally {
       // do all new reset in resetTxnInfo method to make sure that same code is there for replCommitTxn flow.
       resetTxnInfo();
-      replPolicy = null;
     }
   }
   @Override
@@ -597,7 +600,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           e);
     } finally {
       resetTxnInfo();
-      replPolicy = null;
     }
   }
 

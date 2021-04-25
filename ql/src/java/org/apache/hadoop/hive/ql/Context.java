@@ -123,7 +123,7 @@ public class Context {
   // up when we are done.
   private final Set<Context> subContexts;
 
-  private String replPolicy = null;
+  private String replPolicy;
 
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;

@@ -3178,10 +3178,15 @@ public interface IMetaStoreClient {
   long openTxn(String user, TxnType txnType) throws TException;
 
   /**
-   * Initiate a transaction at the target cluster.
-   * @param replPolicy The replication policy to uniquely identify the source cluster.
-   * @param srcTxnIds The list of transaction ids at the source cluster
-   * @param user The user who has fired the repl load command.
+   * Initiate a transaction at the target cluster or dump/load transactions.
+   * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
+   *                   or database under replication name for hive replication txns
+   * @param srcTxnIds The list of transaction ids at the source cluster in case of repl replayed transactions
+   *                 or null in case of hive replication transactions.
+   * @param user The user who has fired the command.
+   *
+   * @param txnType Type of transaction to open: REPL_CREATED for repl replayed transactions
+   *                                             DEFAULT for hive replication transactions.
    * @return transaction identifiers
    * @throws TException
    */
@@ -3228,8 +3233,12 @@ public interface IMetaStoreClient {
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param srcTxnid id of transaction at source while is rolled back and to be replicated.
-   * @param replPolicy the replication policy to identify the source cluster
+   * @param srcTxnid id of transaction at source while is rolled back and to be replicated
+   *                 or null incase of hive replication transactions
+   * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
+   *                   or database under replication name for hive replication txns
+   * @param txnType Type of transaction to Rollback: REPL_CREATED for repl replayed transactions
+    *                                                DEFAULT for hive replication transactions.
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * Note that this can result from the transaction having timed out and been
    * deleted.

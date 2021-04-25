@@ -92,6 +92,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -214,6 +215,10 @@ public abstract class CompactorTest {
   protected long openTxn(TxnType txnType) throws MetaException {
     OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), ServerUtils.hostname());
     rqst.setTxn_type(txnType);
+    if (txnType == TxnType.REPL_CREATED) {
+      rqst.setReplPolicy("default.*");
+      rqst.setReplSrcTxnIds(Arrays.asList(1L));
+    }
     List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
   }

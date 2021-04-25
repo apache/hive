@@ -499,29 +499,19 @@ public class TestDbTxnManager {
     try {
       CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1);
       commitTxnRequest.setReplPolicy(replPolicy);
+      commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
       txnMgr.replCommitTxn(commitTxnRequest);
     } catch (LockException e) {
       exception = e;
     }
     Assert.assertNull("Txn commit should be successful", exception);
-    exception = null;
-    txnMgr.replOpenTxn(replPolicy, Arrays.asList(1L), "tom");
-    runReaper();
-    try {
-      CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1);
-      commitTxnRequest.setReplPolicy(replPolicy);
-      txnMgr.replCommitTxn(commitTxnRequest);
-    } catch (LockException e) {
-      exception = e;
-    }
-    Assert.assertNull("Txn commit should also be successful", exception);
-    exception = null;
     txnMgr.replOpenTxn(replPolicy, Arrays.asList(1L), "jerry");
     Thread.sleep(MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS));
     runReaper();
     try {
       CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1);
       commitTxnRequest.setReplPolicy(replPolicy);
+      commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
       txnMgr.replCommitTxn(commitTxnRequest);
     } catch (LockException e) {
       exception = e;
