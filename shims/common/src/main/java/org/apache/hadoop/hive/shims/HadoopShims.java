@@ -530,7 +530,43 @@ public interface HadoopShims {
    * @param conf The hadoop configuration object
    * @return True if it is successfull; False otherwise.
    */
-  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException;
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf)
+      throws IOException;
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done. This method allows to specify usage of -diff feature of
+   * distcp
+   * @param snap1    initial snapshot
+   * @param snap2    final snapshot
+   * @param srcPaths List of Path to the source files or directories to copy
+   * @param dst      Path to the destination file or directory
+   * @param conf     The hadoop configuration object
+   * @return True if it is successfull; False otherwise.
+   */
+  boolean runDistCpWithSnapshots(String snap1, String snap2,
+      List<Path> srcPaths, Path dst, Configuration conf) throws IOException;
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done. This method allows to specify usage of -diff feature of
+   * distcp. This is a variation which allows proxying as a different
+   * user to perform
+   * the distcp, and requires that the caller have requisite proxy user privileges.
+   * @param snap1     initial snapshot
+   * @param snap2     final snapshot
+   * @param srcPaths  List of Path to the source files or directories to copy
+   * @param dst       Path to the destination file or directory
+   * @param conf      The hadoop configuration object
+   * @param proxyUser The user to perform the distcp as
+   * @return True if it is successfull; False otherwise.
+   */
+  boolean runDistCpWithSnapshotsAs(String snap1, String snap2,
+      List<Path> srcPaths, Path dst, Configuration conf,
+      UserGroupInformation proxyUser) throws IOException;
+
 
   /**
    * This interface encapsulates methods used to get encryption information from

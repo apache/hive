@@ -691,6 +691,24 @@ public final class FileUtils {
     return copied;
   }
 
+  public static boolean distCpWithSnapshot(String snap1, String snap2, List<Path> srcPaths, Path dst,
+      UserGroupInformation proxyUser, HiveConf conf, HadoopShims shims) {
+    boolean copied = false;
+    try {
+      if (proxyUser == null) {
+        copied = shims.runDistCpWithSnapshots(snap1, snap2, srcPaths, dst, conf);
+      } else {
+        copied = shims.runDistCpWithSnapshotsAs(snap1, snap2, srcPaths, dst, conf, proxyUser);
+      }
+      if (copied)
+        LOG.info("Successfully copied using snapshots source {} and dest {} using snapshots {} and {}", srcPaths, dst,
+            snap1, snap2);
+    } catch (IOException e) {
+      LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
+    }
+    return copied;
+  }
+
   /**
    * Move a particular file or directory to the trash.
    * @param fs FileSystem to use
@@ -1103,4 +1121,16 @@ public final class FileUtils {
     return IO_ERROR_SLEEP_TIME * (int)(Math.pow(2.0, repeatNum));
   }
 
+  /**
+   * Attempts to delete a file if it exists.
+   * @param fs FileSystem
+   * @param path Path to be deleted.
+   */
+  public static void deleteIfExists(FileSystem fs, Path path) {
+    try {
+      fs.delete(path, true);
+    } catch (IOException e) {
+      LOG.debug("Unable to delete {}", path, e);
+    }
+  }
 }

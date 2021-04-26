@@ -675,6 +675,18 @@ public class HiveConf extends Configuration {
         + " table or partition level. If hive.exec.parallel \n"
         + "is set to true then max worker threads created for copy can be hive.exec.parallel.thread.number(determines \n"
         + "number of copy tasks in parallel) * hive.repl.parallel.copy.tasks "),
+    REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY("hive.repl.externaltable.snapshotdiff.copy",
+        false,"Use snapshot diff for copying data from source to "
+        + "destination cluster for external table in distcp"),
+    REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY("hive.repl.externaltable.snapshot.overwrite.target",
+        true,"If this is enabled, in case the target is modified, when using snapshot for external table"
+        + "data copy, the target data is overwritten and the modifications are removed and the copy is again "
+        + "attempted using the snapshot based approach. If disabled, the replication will fail in case the target is "
+        + "modified."),
+    REPL_SNAPSHOT_EXTERNAL_TABLE_PATHS("hive.repl.externatable.snapshot.paths",
+        "","A comma seperated list of paths, where an external table or "
+        + "partition lies apart from the database location, the specified "
+        + "path shall be copied using snapshots"),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

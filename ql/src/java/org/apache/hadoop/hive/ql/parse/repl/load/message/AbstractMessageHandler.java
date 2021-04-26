@@ -22,11 +22,14 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 
 abstract class AbstractMessageHandler implements MessageHandler {
+  static final Logger LOG = LoggerFactory.getLogger(AbstractMessageHandler.class);
   final HashSet<ReadEntity> readEntitySet = new HashSet<>();
   final HashSet<WriteEntity> writeEntitySet = new HashSet<>();
   final UpdatedMetaDataTracker updatedMetadata = new UpdatedMetaDataTracker();

@@ -21,11 +21,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.AclUtil;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -47,6 +50,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.utils.HdfsUtils.constructDistCpOptions;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.firstSnapshot;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.secondSnapshot;
 
 /**
  * DirCopyTask, mainly to be used to copy External table data.
@@ -167,18 +172,14 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
             //Should be retried
             throw new IOException(ex);
           }
-          // do we create a new conf and only here provide this additional option so that we get away from
-          // differences of data in two location for the same directories ?
-          // basically add distcp.options.delete to hiveconf new object ?
-          boolean response = FileUtils.distCp(
-            sourcePath.getFileSystem(conf), // source file system
-            Collections.singletonList(sourcePath),  // list of source paths
-            targetPath,
-            false,
-            proxyUser,
-            conf,
-            ShimLoader.getHadoopShims());
-          result.set(response);
+          if (!getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.FALLBACK_COPY)) {
+            LOG.info("Using Snapshot mode of copy for source: {} and target: " + " {}", sourcePath, targetPath);
+            // Use distcp with snapshots for copy.
+            result.set(copyUsingDistCpSnapshots(sourcePath, targetPath, proxyUser));
+          } else {
+            LOG.info("Using Normal copy for source: {} and target: {}", sourcePath, targetPath);
+            result.set(runFallbackDistCp(sourcePath, targetPath, proxyUser));
+          }
           return 0;
         } finally {
           if (proxyUser != null) {
@@ -217,5 +218,63 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
   @Override
   public boolean canExecuteInParallel() {
     return true;
+  }
+
+  boolean copyUsingDistCpSnapshots(Path sourcePath, Path targetPath, UserGroupInformation proxyUser) throws IOException {
+
+    DistributedFileSystem targetFs = SnapshotUtils.getDFS(targetPath, conf);
+    boolean result = false;
+    if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.DIFF_COPY)) {
+      LOG.info("Using snapshot diff copy for source: {} and target: {}", sourcePath, targetPath);
+       result = FileUtils
+          .distCpWithSnapshot(firstSnapshot(work.getSnapshotPrefix()), secondSnapshot(work.getSnapshotPrefix()),
+              Collections.singletonList(sourcePath), targetPath, proxyUser,
+              conf, ShimLoader.getHadoopShims());
+       if(result) {
+         // Delete the older snapshot from last iteration.
+         targetFs.deleteSnapshot(targetPath, firstSnapshot(work.getSnapshotPrefix()));
+       } else {
+         throw new IOException(
+             "Can not successfully copy external table data using snapshot diff. source:" + sourcePath + " and target: "
+                 + targetPath);
+       }
+    } else if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.INITIAL_COPY)) {
+      LOG.info("Using snapshot initial copy for source: {} and target: {}", sourcePath, targetPath);
+      // Get the path relative to the initial snapshot for copy.
+      Path snapRelPath =
+          new Path(sourcePath, HdfsConstants.DOT_SNAPSHOT_DIR + "/" + secondSnapshot(work.getSnapshotPrefix()));
+
+      // This is the first time we are copying, check if the target is snapshottable or not, if not attempt to allow
+      // snapshots.
+      SnapshotUtils.allowSnapshot(targetFs, targetPath, conf);
+      // Attempt to delete the snapshot, in case this is a bootstrap post a failed incremental, Since in case of
+      // bootstrap we go from start, so delete any pre-existing snapshot.
+      SnapshotUtils.deleteSnapshotSafe(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()));
+
+      // Copy from the initial snapshot path.
+      result = runFallbackDistCp(snapRelPath, targetPath, proxyUser);
+    }
+
+    // Create a new snapshot at target Filesystem. For the next iteration.
+    if (result) {
+      SnapshotUtils.createSnapshot(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), conf);
+    }
+    return result;
+  }
+
+  private boolean runFallbackDistCp(Path sourcePath, Path targetPath, UserGroupInformation proxyUser)
+      throws IOException {
+     // do we create a new conf and only here provide this additional option so that we get away from
+    // differences of data in two location for the same directories ?
+    // basically add distcp.options.delete to hiveconf new object ?
+    boolean response = FileUtils.distCp(
+        sourcePath.getFileSystem(conf), // source file system
+        Collections.singletonList(sourcePath),  // list of source paths
+        targetPath,
+        false,
+        proxyUser,
+        conf,
+        ShimLoader.getHadoopShims());
+    return response;
   }
 }

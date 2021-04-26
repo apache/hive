@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,9 +36,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.ipc.RemoteException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,11 +100,33 @@ public class FileUtils {
       LOG.warn(ioe.getMessage() + "; Force to delete it.");
     }
 
-    result = fs.delete(f, true);
+    try {
+      result = fs.delete(f, true);
+
+    } catch (RemoteException | SnapshotException se) {
+      if (se instanceof SnapshotException || se.getCause() instanceof SnapshotException || se.getMessage()
+          .contains("Snapshot"))
+        deleteReplRelatedSnapshots(fs, f);
+      result = fs.delete(f, true);
+    }
     if (!result) {
       LOG.error("Failed to delete " + f);
     }
     return result;
+  }
+
+  private static void deleteReplRelatedSnapshots(FileSystem fs, Path path) {
+    try {
+      DistributedFileSystem dfs = (DistributedFileSystem) fs;
+      FileStatus[] listing = fs.listStatus(new Path(path, ".snapshot"));
+      for (FileStatus elem : listing) {
+        if (elem.getPath().getName().contains("replOld") || elem.getPath().getName().contains("replNew")) {
+          dfs.deleteSnapshot(path, elem.getPath().getName());
+        }
+      }
+    } catch (IOException ioe) {
+      LOG.warn("Couldn't clean up replication related snapshots", ioe);
+    }
   }
 
   /**

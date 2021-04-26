@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +73,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.mapreduce.JobContext;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -83,9 +86,11 @@ import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
 
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -326,7 +331,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
 
       if (dbEventFound && conf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)) {
-        // Force the database creation before the other event like table/parttion etc, so that data copy path creation
+        // Force the database creation before the other event like table/partition etc, so that data copy path creation
         // can be achieved.
         LOG.info("Database event found, will be processed exclusively");
         break;
@@ -363,6 +368,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       createReplLoadCompleteAckTask();
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
+
+    if (new SnapshotUtils.ReplSnapshotConf(conf, null).isSnapshotEnabled) {
+      Path snapPath = SnapshotUtils.getSnapshotFileListPath(new Path(work.dumpDirectory));
+      try {
+        SnapshotUtils.getDFS(getExternalTableBaseDir(conf), conf)
+            .rename(new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT),
+                new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD), Options.Rename.OVERWRITE);
+      } catch (FileNotFoundException fnf) {
+        // Ignore if no file.
+      }
+    }
     return 0;
   }
 
@@ -681,6 +697,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     this.childTasks.addAll(childTasks);
     createReplLoadCompleteAckTask();
+    // Clean-up snapshots
+    if (new SnapshotUtils.ReplSnapshotConf(conf, null).isSnapshotEnabled) {
+      cleanupSnapshots(new Path(work.getDumpDirectory()).getParent().getParent().getParent(),
+          work.getSourceDbName().toLowerCase(), conf, null, true);
+    }
     return 0;
   }
 }

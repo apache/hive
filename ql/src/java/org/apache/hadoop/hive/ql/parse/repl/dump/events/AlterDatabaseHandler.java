@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class AlterDatabaseHandler extends AbstractEventHandler<AlterDatabaseMessage> {
 
-  AlterDatabaseHandler(NotificationEvent event) {
+  AlterDatabaseHandler(NotificationEvent event)  {
     super(event);
   }
 
