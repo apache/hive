@@ -234,6 +234,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
           }
         } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
           // TODO: most protocol exceptions are probably unrecoverable... throw?
+          LOG.debug(t.getMessage());
           caughtException = (TException)t;
         } else if ((t instanceof MetaException) && t.getMessage().matches(
             "(?s).*(JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*") &&

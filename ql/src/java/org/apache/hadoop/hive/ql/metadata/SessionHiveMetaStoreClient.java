@@ -2462,7 +2462,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
-  protected String getValidWriteIdList(String dbName, String tblName) {
+  protected String getValidWriteIdList(String dbName, String tblName) throws TException {
     try {
       final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
       if (validTxnsList == null) {
@@ -2476,7 +2476,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
           .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
       return (writeIdList != null) ? writeIdList.toString() : null;
+    } catch (TException e) {
+      throw e;
     } catch (Exception e) {
+      // XXX: HIVE-25070: Should not catch the general Exception. Make the exception handling more
+      // fine-tuned.
       throw new RuntimeException("Exception getting valid write id list", e);
     }
   }

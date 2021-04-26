@@ -1935,7 +1935,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   protected PartitionsByExprRequest buildPartitionsByExprRequest(String catName, String db_name, String tbl_name, byte[] expr,
-                                                                 String default_partition_name, int max_parts) {
+                                                                 String default_partition_name, int max_parts) throws TException {
     PartitionsByExprRequest req = new PartitionsByExprRequest(
         db_name, tbl_name, ByteBuffer.wrap(expr));
 
@@ -4390,7 +4390,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @param fullTableName
    * @return
    */
-  protected String getValidWriteIdList(String dbName, String tblName) {
+  protected String getValidWriteIdList(String dbName, String tblName) throws TException {
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
       return null;
     }
