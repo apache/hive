@@ -604,6 +604,13 @@ public class HiveConf extends Configuration {
         + "within the database default location for external tables, Would require more memory "
         + "for preparing the initial listing, Should be used if the memory "
         + "requirements can be fulfilled."),
+    REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS("hive.repl.external.warehouse.single.copy.task.paths",
+        "", "Comma seperated list of paths for which single copy task shall be created for all the external tables "
+        + "within the locations Would require more memory for preparing the initial listing, Should be used if the memory "
+        + "requirements can be fulfilled. If the directory contains data not part of the database, that data would "
+        + "also get copied, so only locations which contains tables only belonging to the same database should be "
+        + "provided. This has no effect in case of table level replication or if hive.repl.bootstrap.external.tables "
+        + "isn't enabled."),
     REPL_INCLUDE_AUTHORIZATION_METADATA("hive.repl.include.authorization.metadata", false,
             "This configuration will enable security and authorization related metadata along "
                     + "with the hive data and metadata replication. "),
