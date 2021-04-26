@@ -277,16 +277,16 @@ import com.google.common.annotations.VisibleForTesting;
 
   private HiveVectorIfStmtMode hiveVectorIfStmtMode;
 
-  private List<String> allowCustomUDFList;
+  private Set<String> allowCustomUDFs;
 
-  private List<String> getAllowCustomUDFList(HiveConf hiveConf) {
+  private Set<String> getAllowCustomUDFs(HiveConf hiveConf) {
     String udfs = HiveConf.getVar(hiveConf,
         HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LIST);
     if (udfs != null && !udfs.isEmpty()) {
-      return Arrays.asList(udfs.split(","));
+      return new HashSet<>(Arrays.asList(udfs.split(",")));
     }
 
-    return null;
+    return new HashSet<>();
   }
 
   //when set to true use the overflow checked vector expressions
@@ -310,7 +310,7 @@ import com.google.common.annotations.VisibleForTesting;
     adaptorSuppressEvaluateExceptions =
         HiveConf.getBoolVar(
             hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS);
-    this.allowCustomUDFList = getAllowCustomUDFList(hiveConf);
+    this.allowCustomUDFs = getAllowCustomUDFs(hiveConf);
   }
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
@@ -1023,7 +1023,7 @@ import com.google.common.annotations.VisibleForTesting;
                 "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=none");
           case CHOSEN:
-            if (isNonVectorizedPathUDF(expr, mode, allowCustomUDFList)) {
+            if (isNonVectorizedPathUDF(expr, mode, allowCustomUDFs)) {
               ve = getCustomUDFExpression(expr, mode);
             } else {
               throw new HiveException(
@@ -1430,7 +1430,7 @@ import com.google.common.annotations.VisibleForTesting;
    * may be implemented in the future with an optimized VectorExpression.
    */
   public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
-      VectorExpressionDescriptor.Mode mode, List<String> allowCustomUDFList) {
+      VectorExpressionDescriptor.Mode mode, Set<String> allowCustomUDFs) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
@@ -1465,9 +1465,7 @@ import com.google.common.annotations.VisibleForTesting;
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
       return true;
-    } else if (allowCustomUDFList != null
-        && !allowCustomUDFList.isEmpty()
-        && allowCustomUDFList.contains(gudf.getClass().getName())) {
+    } else if (allowCustomUDFs.contains(gudf.getClass().getName())) {
       return true;
     } else {
       return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
