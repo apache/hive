@@ -714,4 +714,9 @@
   <name>impala.explain_level</name>
   <value>VERBOSE</value>
 </property>
+
+<property>
+  <name>impala.scratch_limit</name>
+  <value>0</value>
+</property>
 </configuration>

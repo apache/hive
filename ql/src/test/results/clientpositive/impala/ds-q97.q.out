@@ -148,7 +148,7 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: sum(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -156,7 +156,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   18:AGGREGATE [FINALIZE]
   |  output: sum:merge(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
   |  limit: 100
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=24B cardinality=1
   |  in pipelines: 18(GETNEXT), 09(OPEN)
   |
@@ -166,12 +166,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 09(GETNEXT)
 
 F02:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales.ss_item_sk,default.impala_tpcds_store_sales.ss_customer_sk)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=139.94MB mem-reservation=35.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE
   |  output: sum(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=24B cardinality=1
   |  in pipelines: 09(GETNEXT), 12(OPEN)
   |

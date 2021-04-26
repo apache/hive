@@ -247,7 +247,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 05(GETNEXT)
 
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.04MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=60.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=21, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:NESTED LOOP JOIN [CROSS JOIN, BROADCAST]
@@ -262,7 +262,7 @@ Per-Host Resources: mem-estimate=10.04MB mem-reservation=0B thread-reservation=1
   |
   19:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=8B cardinality=1
   |  in pipelines: 19(GETNEXT), 09(OPEN)
   |
@@ -272,12 +272,12 @@ Per-Host Resources: mem-estimate=10.04MB mem-reservation=0B thread-reservation=1
      in pipelines: 09(GETNEXT)
 
 F04:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=18, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=8B cardinality=1
   |  in pipelines: 09(GETNEXT), 08(OPEN)
   |

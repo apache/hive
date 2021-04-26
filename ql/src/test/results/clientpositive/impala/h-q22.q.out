@@ -225,7 +225,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   10:AGGREGATE [FINALIZE]
   |  output: sum:merge(default.impala_tpch_customer_0.c_acctbal), count:merge(default.impala_tpch_customer_0.c_acctbal)
   |  having: casttodecimal(divide(sum(default.impala_tpch_customer_0.c_acctbal), casttodecimal(count(default.impala_tpch_customer_0.c_acctbal)))) IS NOT NULL
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=24B cardinality=1
   |  in pipelines: 10(GETNEXT), 02(OPEN)
   |
@@ -235,12 +235,12 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
      in pipelines: 02(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=09, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:AGGREGATE
   |  output: sum(default.impala_tpch_customer_0.c_acctbal), count(default.impala_tpch_customer_0.c_acctbal)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=24B cardinality=1
   |  in pipelines: 02(GETNEXT), 01(OPEN)
   |

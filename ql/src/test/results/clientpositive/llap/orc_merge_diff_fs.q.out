@@ -100,20 +100,8 @@ STAGE PLANS:
                           null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-<<<<<<< HEAD
-                          Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-=======
                           Statistics: Num rows: 250 Data size: 167250 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
-                    Reduce Output Operator
-                      key expressions: _col2 (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: int)
-                      Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string)
->>>>>>> CDPD-12463 HIVE-23530: Use SQL functions instead of compute_stats UDAF to compute column statistics (Jesus Camacho Rodriguez, reviewed by Zoltan Haindrich)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -260,20 +248,8 @@ STAGE PLANS:
                           null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-<<<<<<< HEAD
-                          Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-=======
                           Statistics: Num rows: 250 Data size: 167250 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
-                    Reduce Output Operator
-                      key expressions: _col2 (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: int)
-                      Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string)
->>>>>>> CDPD-12463 HIVE-23530: Use SQL functions instead of compute_stats UDAF to compute column statistics (Jesus Camacho Rodriguez, reviewed by Zoltan Haindrich)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -465,20 +441,8 @@ STAGE PLANS:
                           null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-<<<<<<< HEAD
-                          Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-=======
                           Statistics: Num rows: 250 Data size: 167250 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
-                    Reduce Output Operator
-                      key expressions: _col2 (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: int)
-                      Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string)
->>>>>>> CDPD-12463 HIVE-23530: Use SQL functions instead of compute_stats UDAF to compute column statistics (Jesus Camacho Rodriguez, reviewed by Zoltan Haindrich)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 

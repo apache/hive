@@ -248,7 +248,7 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F18:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.09MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=112.16KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: casttodecimal(divide(sum(default.impala_tpcds_store_sales.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales.ss_list_price)))), count(default.impala_tpcds_store_sales.ss_list_price), count(default.impala_tpcds_store_sales.ss_list_price), casttodecimal(divide(sum(default.impala_tpcds_store_sales_4.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales_4.ss_list_price)))), count(default.impala_tpcds_store_sales_4.ss_list_price), count(default.impala_tpcds_store_sales_4.ss_list_price), casttodecimal(divide(sum(default.impala_tpcds_store_sales_3.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales_3.ss_list_price)))), count(default.impala_tpcds_store_sales_3.ss_list_price), count(default.impala_tpcds_store_sales_3.ss_list_price), casttodecimal(divide(sum(default.impala_tpcds_store_sales_2.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales_2.ss_list_price)))), count(default.impala_tpcds_store_sales_2.ss_list_price), count(default.impala_tpcds_store_sales_2.ss_list_price), casttodecimal(divide(sum(default.impala_tpcds_store_sales_1.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales_1.ss_list_price)))), count(default.impala_tpcds_store_sales_1.ss_list_price), count(default.impala_tpcds_store_sales_1.ss_list_price), casttodecimal(divide(sum(default.impala_tpcds_store_sales_0.ss_list_price), casttodecimal(count(default.impala_tpcds_store_sales_0.ss_list_price)))), count(default.impala_tpcds_store_sales_0.ss_list_price), count(default.impala_tpcds_store_sales_0.ss_list_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -311,7 +311,7 @@ Per-Host Resources: mem-estimate=10.09MB mem-reservation=0B thread-reservation=1
   |
   27:AGGREGATE [FINALIZE]
   |  output: count:merge(default.impala_tpcds_store_sales.ss_list_price), sum:merge(default.impala_tpcds_store_sales.ss_list_price), count:merge(default.impala_tpcds_store_sales.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=32B cardinality=1
   |  in pipelines: 27(GETNEXT), 03(OPEN)
   |
@@ -321,12 +321,12 @@ Per-Host Resources: mem-estimate=10.09MB mem-reservation=0B thread-reservation=1
      in pipelines: 03(GETNEXT)
 
 F01:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales.ss_list_price)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=26, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE
   |  output: count(default.impala_tpcds_store_sales.ss_list_price), sum:merge(default.impala_tpcds_store_sales.ss_list_price), count:merge(default.impala_tpcds_store_sales.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=32B cardinality=1
   |  in pipelines: 03(GETNEXT), 25(OPEN)
   |
@@ -367,12 +367,12 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      in pipelines: 01(GETNEXT)
 
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=32, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   31:AGGREGATE [FINALIZE]
   |  output: count:merge(default.impala_tpcds_store_sales_0.ss_list_price), sum:merge(default.impala_tpcds_store_sales_0.ss_list_price), count:merge(default.impala_tpcds_store_sales_0.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=32B cardinality=1
   |  in pipelines: 31(GETNEXT), 06(OPEN)
   |
@@ -382,12 +382,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 06(GETNEXT)
 
 F04:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales_0.ss_list_price)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=30, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:AGGREGATE
   |  output: count(default.impala_tpcds_store_sales_0.ss_list_price), sum:merge(default.impala_tpcds_store_sales_0.ss_list_price), count:merge(default.impala_tpcds_store_sales_0.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=32B cardinality=1
   |  in pipelines: 06(GETNEXT), 29(OPEN)
   |
@@ -428,12 +428,12 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      in pipelines: 04(GETNEXT)
 
 F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=37, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:AGGREGATE [FINALIZE]
   |  output: count:merge(default.impala_tpcds_store_sales_1.ss_list_price), sum:merge(default.impala_tpcds_store_sales_1.ss_list_price), count:merge(default.impala_tpcds_store_sales_1.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=32B cardinality=1
   |  in pipelines: 36(GETNEXT), 10(OPEN)
   |
@@ -443,12 +443,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 10(GETNEXT)
 
 F07:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales_1.ss_list_price)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=35, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:AGGREGATE
   |  output: count(default.impala_tpcds_store_sales_1.ss_list_price), sum:merge(default.impala_tpcds_store_sales_1.ss_list_price), count:merge(default.impala_tpcds_store_sales_1.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=32B cardinality=1
   |  in pipelines: 10(GETNEXT), 34(OPEN)
   |
@@ -489,12 +489,12 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      in pipelines: 08(GETNEXT)
 
 F11:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=42, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   41:AGGREGATE [FINALIZE]
   |  output: count:merge(default.impala_tpcds_store_sales_2.ss_list_price), sum:merge(default.impala_tpcds_store_sales_2.ss_list_price), count:merge(default.impala_tpcds_store_sales_2.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=32B cardinality=1
   |  in pipelines: 41(GETNEXT), 14(OPEN)
   |
@@ -504,12 +504,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 14(GETNEXT)
 
 F10:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales_2.ss_list_price)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=40, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:AGGREGATE
   |  output: count(default.impala_tpcds_store_sales_2.ss_list_price), sum:merge(default.impala_tpcds_store_sales_2.ss_list_price), count:merge(default.impala_tpcds_store_sales_2.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=32B cardinality=1
   |  in pipelines: 14(GETNEXT), 39(OPEN)
   |
@@ -550,12 +550,12 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      in pipelines: 12(GETNEXT)
 
 F14:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=47, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   46:AGGREGATE [FINALIZE]
   |  output: count:merge(default.impala_tpcds_store_sales_3.ss_list_price), sum:merge(default.impala_tpcds_store_sales_3.ss_list_price), count:merge(default.impala_tpcds_store_sales_3.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=32B cardinality=1
   |  in pipelines: 46(GETNEXT), 18(OPEN)
   |
@@ -565,12 +565,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 18(GETNEXT)
 
 F13:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales_3.ss_list_price)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=45, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   18:AGGREGATE
   |  output: count(default.impala_tpcds_store_sales_3.ss_list_price), sum:merge(default.impala_tpcds_store_sales_3.ss_list_price), count:merge(default.impala_tpcds_store_sales_3.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=32B cardinality=1
   |  in pipelines: 18(GETNEXT), 44(OPEN)
   |
@@ -611,12 +611,12 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      in pipelines: 16(GETNEXT)
 
 F17:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F18, EXCHANGE=52, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   51:AGGREGATE [FINALIZE]
   |  output: count:merge(default.impala_tpcds_store_sales_4.ss_list_price), sum:merge(default.impala_tpcds_store_sales_4.ss_list_price), count:merge(default.impala_tpcds_store_sales_4.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17 row-size=32B cardinality=1
   |  in pipelines: 51(GETNEXT), 22(OPEN)
   |
@@ -626,12 +626,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 22(GETNEXT)
 
 F16:PLAN FRAGMENT [HASH(default.impala_tpcds_store_sales_4.ss_list_price)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F17, EXCHANGE=50, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:AGGREGATE
   |  output: count(default.impala_tpcds_store_sales_4.ss_list_price), sum:merge(default.impala_tpcds_store_sales_4.ss_list_price), count:merge(default.impala_tpcds_store_sales_4.ss_list_price)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17 row-size=32B cardinality=1
   |  in pipelines: 22(GETNEXT), 49(OPEN)
   |

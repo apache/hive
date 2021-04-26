@@ -168,7 +168,7 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=25.96MB mem-reservation=15.88MB thread-reservation=1
+Per-Host Resources: mem-estimate=15.98MB mem-reservation=15.88MB thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: default.impala_tpch_supplier.s_suppkey, default.impala_tpch_supplier.s_name, default.impala_tpch_supplier.s_address, default.impala_tpch_supplier.s_phone, sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -211,7 +211,7 @@ Per-Host Resources: mem-estimate=25.96MB mem-reservation=15.88MB thread-reservat
   13:AGGREGATE [FINALIZE]
   |  output: max:merge(sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount))))
   |  having: max(sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount)))) IS NOT NULL
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=16B cardinality=1
   |  in pipelines: 13(GETNEXT), 05(OPEN)
   |
@@ -221,12 +221,12 @@ Per-Host Resources: mem-estimate=25.96MB mem-reservation=15.88MB thread-reservat
      in pipelines: 05(GETNEXT)
 
 F01:PLAN FRAGMENT [HASH(default.impala_tpch_lineitem_0.l_suppkey)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=12, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:AGGREGATE
   |  output: max(sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount))))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=16B cardinality=1
   |  in pipelines: 05(GETNEXT), 11(OPEN)
   |

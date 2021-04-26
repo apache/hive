@@ -173,14 +173,14 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F16:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   44:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=8B cardinality=1
   |  in pipelines: 44(GETNEXT), 26(OPEN)
   |
@@ -190,12 +190,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 26(GETNEXT)
 
 F15:PLAN FRAGMENT [HASH($f0,$f1,$f2)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F16, EXCHANGE=43, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   26:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=8B cardinality=1
   |  in pipelines: 26(GETNEXT), 42(OPEN)
   |

@@ -741,7 +741,7 @@ Per-Host Resources: mem-estimate=650.00MB mem-reservation=171.94MB thread-reserv
   |  183:AGGREGATE [FINALIZE]
   |  |  output: sum:merge(multiply(casttodecimal(quantity), list_price)), count:merge(multiply(casttodecimal(quantity), list_price))
   |  |  having: casttodecimal(divide(sum(multiply(casttodecimal(quantity), list_price)), casttodecimal(count(multiply(casttodecimal(quantity), list_price))))) IS NOT NULL
-  |  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=131 row-size=24B cardinality=1
   |  |  in pipelines: 183(GETNEXT), 122(OPEN)
   |  |
@@ -764,7 +764,7 @@ Per-Host Resources: mem-estimate=650.00MB mem-reservation=171.94MB thread-reserv
   |  157:AGGREGATE [FINALIZE]
   |  |  output: sum:merge(multiply(casttodecimal(quantity), list_price)), count:merge(multiply(casttodecimal(quantity), list_price))
   |  |  having: casttodecimal(divide(sum(multiply(casttodecimal(quantity), list_price)), casttodecimal(count(multiply(casttodecimal(quantity), list_price))))) IS NOT NULL
-  |  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=87 row-size=24B cardinality=1
   |  |  in pipelines: 157(GETNEXT), 81(OPEN)
   |  |
@@ -787,7 +787,7 @@ Per-Host Resources: mem-estimate=650.00MB mem-reservation=171.94MB thread-reserv
   131:AGGREGATE [FINALIZE]
   |  output: sum:merge(multiply(casttodecimal(quantity), list_price)), count:merge(multiply(casttodecimal(quantity), list_price))
   |  having: casttodecimal(divide(sum(multiply(casttodecimal(quantity), list_price)), casttodecimal(count(multiply(casttodecimal(quantity), list_price))))) IS NOT NULL
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=43 row-size=24B cardinality=1
   |  in pipelines: 131(GETNEXT), 40(OPEN)
   |
@@ -797,12 +797,12 @@ Per-Host Resources: mem-estimate=650.00MB mem-reservation=171.94MB thread-reserv
      in pipelines: 40(GETNEXT)
 
 F06:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=1.97MB mem-reservation=1.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F81, EXCHANGE=130, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   40:AGGREGATE
   |  output: sum(multiply(casttodecimal(quantity), list_price)), count(multiply(casttodecimal(quantity), list_price))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=43 row-size=24B cardinality=1
   |  in pipelines: 40(GETNEXT), 31(OPEN), 34(OPEN), 37(OPEN)
   |
@@ -1379,12 +1379,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 23(GETNEXT)
 
 F33:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=1.97MB mem-reservation=1.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F81, EXCHANGE=156, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   81:AGGREGATE
   |  output: sum(multiply(casttodecimal(quantity), list_price)), count(multiply(casttodecimal(quantity), list_price))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=87 row-size=24B cardinality=1
   |  in pipelines: 81(GETNEXT), 72(OPEN), 75(OPEN), 78(OPEN)
   |
@@ -1959,12 +1959,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 64(GETNEXT)
 
 F60:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=1.97MB mem-reservation=1.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F81, EXCHANGE=182, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   122:AGGREGATE
   |  output: sum(multiply(casttodecimal(quantity), list_price)), count(multiply(casttodecimal(quantity), list_price))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=131 row-size=24B cardinality=1
   |  in pipelines: 122(GETNEXT), 113(OPEN), 116(OPEN), 119(OPEN)
   |

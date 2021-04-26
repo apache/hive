@@ -177,14 +177,14 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   06:AGGREGATE [FINALIZE]
   |  output: sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=16B cardinality=1
   |  in pipelines: 06(GETNEXT), 03(OPEN)
   |
@@ -194,12 +194,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 03(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=11.94MB mem-reservation=1.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=1.98MB mem-reservation=1.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE
   |  output: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=16B cardinality=1
   |  in pipelines: 03(GETNEXT), 00(OPEN)
   |

@@ -511,7 +511,7 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.13MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=144.05KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: count(*), count(*), count(*), count(*), count(*), count(*), count(*), count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -588,7 +588,7 @@ Per-Host Resources: mem-estimate=10.13MB mem-reservation=0B thread-reservation=1
   |
   75:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=8B cardinality=1
   |  in pipelines: 75(GETNEXT), 07(OPEN)
   |
@@ -598,12 +598,12 @@ Per-Host Resources: mem-estimate=10.13MB mem-reservation=0B thread-reservation=1
      in pipelines: 07(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=74, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=8B cardinality=1
   |  in pipelines: 07(GETNEXT), 00(OPEN)
   |
@@ -708,12 +708,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 05(GETNEXT)
 
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=81, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   80:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=8B cardinality=1
   |  in pipelines: 80(GETNEXT), 15(OPEN)
   |
@@ -723,12 +723,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 15(GETNEXT)
 
 F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=79, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=8B cardinality=1
   |  in pipelines: 15(GETNEXT), 08(OPEN)
   |
@@ -833,12 +833,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 13(GETNEXT)
 
 F14:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=87, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   86:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=23 row-size=8B cardinality=1
   |  in pipelines: 86(GETNEXT), 24(OPEN)
   |
@@ -848,12 +848,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 24(GETNEXT)
 
 F10:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=85, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   24:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=23 row-size=8B cardinality=1
   |  in pipelines: 24(GETNEXT), 17(OPEN)
   |
@@ -958,12 +958,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 22(GETNEXT)
 
 F19:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=93, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   92:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=31 row-size=8B cardinality=1
   |  in pipelines: 92(GETNEXT), 33(OPEN)
   |
@@ -973,12 +973,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 33(GETNEXT)
 
 F15:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F19, EXCHANGE=91, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   33:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=31 row-size=8B cardinality=1
   |  in pipelines: 33(GETNEXT), 26(OPEN)
   |
@@ -1083,12 +1083,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 31(GETNEXT)
 
 F24:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=99, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   98:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=39 row-size=8B cardinality=1
   |  in pipelines: 98(GETNEXT), 42(OPEN)
   |
@@ -1098,12 +1098,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 42(GETNEXT)
 
 F20:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=97, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   42:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=39 row-size=8B cardinality=1
   |  in pipelines: 42(GETNEXT), 35(OPEN)
   |
@@ -1208,12 +1208,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 40(GETNEXT)
 
 F29:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=105, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   104:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=47 row-size=8B cardinality=1
   |  in pipelines: 104(GETNEXT), 51(OPEN)
   |
@@ -1223,12 +1223,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 51(GETNEXT)
 
 F25:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F29, EXCHANGE=103, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   51:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=47 row-size=8B cardinality=1
   |  in pipelines: 51(GETNEXT), 44(OPEN)
   |
@@ -1333,12 +1333,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 49(GETNEXT)
 
 F34:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=111, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   110:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=55 row-size=8B cardinality=1
   |  in pipelines: 110(GETNEXT), 60(OPEN)
   |
@@ -1348,12 +1348,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 60(GETNEXT)
 
 F30:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F34, EXCHANGE=109, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   60:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=55 row-size=8B cardinality=1
   |  in pipelines: 60(GETNEXT), 53(OPEN)
   |
@@ -1458,12 +1458,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      in pipelines: 58(GETNEXT)
 
 F39:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.00KB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=117, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   116:AGGREGATE [FINALIZE]
   |  output: count:merge(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=63 row-size=8B cardinality=1
   |  in pipelines: 116(GETNEXT), 69(OPEN)
   |
@@ -1473,12 +1473,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 69(GETNEXT)
 
 F35:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservation=1
+Per-Host Resources: mem-estimate=5.86MB mem-reservation=5.81MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F39, EXCHANGE=115, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   69:AGGREGATE
   |  output: count(*)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=63 row-size=8B cardinality=1
   |  in pipelines: 69(GETNEXT), 62(OPEN)
   |

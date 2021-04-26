@@ -181,7 +181,7 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=32.05KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: count(ws1.ws_order_number), sum(ws1.ws_ext_ship_cost), sum(ws1.ws_net_profit)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -199,7 +199,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   |
   26:AGGREGATE [FINALIZE]
   |  output: count:merge(ws1.ws_order_number), sum:merge(ws1.ws_ext_ship_cost), sum:merge(ws1.ws_net_profit)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=40B cardinality=1
   |  in pipelines: 26(GETNEXT), 14(OPEN)
   |
@@ -209,12 +209,12 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
      in pipelines: 14(GETNEXT)
 
 F07:PLAN FRAGMENT [HASH(ws1.ws_order_number)] hosts=1 instances=1
-Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:AGGREGATE
   |  output: count(ws1.ws_order_number), sum:merge(ws1.ws_ext_ship_cost), sum:merge(ws1.ws_net_profit)
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=40B cardinality=1
   |  in pipelines: 14(GETNEXT), 24(OPEN)
   |

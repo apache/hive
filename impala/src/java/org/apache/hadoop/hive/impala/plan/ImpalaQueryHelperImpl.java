@@ -395,6 +395,10 @@ public class ImpalaQueryHelperImpl implements EngineQueryHelper {
         queryOptions.setExplain_level(
             TExplainLevel.valueOf(kv.getValue().toUpperCase()));
         break;
+      case SCRATCH_LIMIT:
+        queryOptions.setScratch_limit(
+            Long.parseLong(kv.getValue()));
+        break;
       default:
         throw new RuntimeException("Query option '" + field + "' not supported for yet. "
             + "Please add handling to parse options");

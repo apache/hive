@@ -189,7 +189,7 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservation=1
+Per-Host Resources: mem-estimate=6.06MB mem-reservation=6.00MB thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: default.impala_tpch_partsupp.ps_partkey, sum(multiply(default.impala_tpch_partsupp.ps_supplycost, casttodecimal(default.impala_tpch_partsupp.ps_availqty)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -219,7 +219,7 @@ Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservati
   18:AGGREGATE [FINALIZE]
   |  output: sum:merge(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty)))
   |  having: sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty))) IS NOT NULL
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=16B cardinality=1
   |  in pipelines: 18(GETNEXT), 12(OPEN)
   |
@@ -229,12 +229,12 @@ Per-Host Resources: mem-estimate=16.04MB mem-reservation=6.00MB thread-reservati
      in pipelines: 12(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=13.88MB mem-reservation=3.88MB thread-reservation=1
+Per-Host Resources: mem-estimate=3.92MB mem-reservation=3.88MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=17, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:AGGREGATE
   |  output: sum(multiply(default.impala_tpch_partsupp_0.ps_supplycost, casttodecimal(default.impala_tpch_partsupp_0.ps_availqty)))
-  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  mem-estimate=16.00KB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=16B cardinality=1
   |  in pipelines: 12(GETNEXT), 07(OPEN)
   |
