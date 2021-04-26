@@ -6908,9 +6908,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS) > 0) {
         maxReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
       }
-      if (acidOp == Operation.UPDATE || acidOp == Operation.DELETE) {
-        maxReducers = 1;
-      }
+//      if (acidOp == Operation.UPDATE || acidOp == Operation.DELETE) {
+//        maxReducers = 1;
+//      }
       int numBuckets = dest_tab.getNumBuckets();
       if (numBuckets > maxReducers) {
         LOG.debug("numBuckets is {} and maxReducers is {}", numBuckets, maxReducers);
@@ -6925,7 +6925,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           numFiles = totalFiles / maxReducers;
         }
       }
-      else if (acidOp == Operation.NOT_ACID || acidOp == Operation.INSERT) {
+//      else if (acidOp == Operation.NOT_ACID || acidOp == Operation.INSERT) {
+      else {
         maxReducers = numBuckets;
       }
 
