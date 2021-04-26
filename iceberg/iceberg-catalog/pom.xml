@@ -21,9 +21,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.iceberg</groupId>
-            <artifactId>iceberg-core</artifactId>
-            <optional>true</optional>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-iceberg-shading</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>

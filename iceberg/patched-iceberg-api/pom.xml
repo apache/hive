@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.iceberg</groupId>
-    <artifactId>iceberg-api</artifactId>
+    <artifactId>patched-iceberg-api</artifactId>
     <version>patched-${iceberg-api.version}-${project.parent.version}</version>
     <name>Patched Iceberg API</name>
 

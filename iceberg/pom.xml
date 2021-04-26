@@ -43,6 +43,7 @@
     <modules>
         <module>patched-iceberg-api</module>
         <module>patched-iceberg-core</module>
+        <module>iceberg-shading</module>
         <module>iceberg-catalog</module>
         <module>iceberg-handler</module>
     </modules>
@@ -51,13 +52,23 @@
         <dependencies>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
-                <artifactId>iceberg-api</artifactId>
+                <artifactId>patched-iceberg-api</artifactId>
                 <version>patched-${iceberg-api.version}-${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
-                <artifactId>iceberg-core</artifactId>
+                <artifactId>patched-iceberg-core</artifactId>
                 <version>patched-${iceberg-api.version}-${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.iceberg</groupId>
+                <artifactId>iceberg-api</artifactId>
+                <version>${iceberg-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.iceberg</groupId>
+                <artifactId>iceberg-core</artifactId>
+                <version>${iceberg-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>

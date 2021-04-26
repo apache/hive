@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.iceberg</groupId>
-    <artifactId>iceberg-core</artifactId>
+    <artifactId>patched-iceberg-core</artifactId>
     <version>patched-${iceberg-api.version}-${project.parent.version}</version>
     <name>Patched Iceberg Core</name>
 
@@ -34,6 +34,13 @@
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-core</artifactId>
             <version>${iceberg-api.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- in favor of patched-iceberg-api, the original is excluded here -->
+                    <groupId>org.apache.iceberg</groupId>
+                    <artifactId>iceberg-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
@@ -42,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
-            <artifactId>iceberg-api</artifactId>
+            <artifactId>patched-iceberg-api</artifactId>
         </dependency>
     </dependencies>
     <build>
