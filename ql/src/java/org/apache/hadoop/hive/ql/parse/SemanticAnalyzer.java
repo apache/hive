@@ -6872,6 +6872,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       enforceBucketing = true;
       if (updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
+        sortCols = getPartitionColsFromBucketColsForUpdateDelete(input, false);
+        sortOrders = new ArrayList<>();
+        for (int i = 0; i < sortCols.size(); i++) {
+          sortOrders.add(DirectionUtils.ASCENDING_CODE);
+        }
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, false);
       }
