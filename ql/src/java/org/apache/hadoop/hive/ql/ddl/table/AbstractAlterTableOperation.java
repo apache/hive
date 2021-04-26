@@ -160,8 +160,8 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
         try {
           context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
         } catch (HiveException ex) {
-          if (environmentContext.getProperties().containsKey(HiveMetaHook.INITIALIZE_ROLLBACK_ALTER) && Boolean
-              .valueOf(environmentContext.getProperties().get(HiveMetaHook.INITIALIZE_ROLLBACK_ALTER))) {
+          if (Boolean.valueOf(environmentContext.getProperties()
+              .getOrDefault(HiveMetaHook.INITIALIZE_ROLLBACK_MIGRATION, "false"))) {
             // in case of rollback of alter table do the following:
             // 1. drop the already altered table but keep the data files
             // 2. recreate the original table

@@ -214,6 +214,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
     super.preAlterTable(hmsTable, context);
+    context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
@@ -284,27 +285,30 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    context.getProperties().put(INITIALIZE_ROLLBACK_ALTER, "true");
-    this.catalogProperties = getCatalogProperties(hmsTable);
-    try {
-      this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
-    } catch (NoSuchTableException nte) {
-      // iceberg table was not yet created, no need to delete the metadata dir separately
-      return;
-    }
-    // we want to keep the data files but get rid of the metadata directory
-    hmsTable.getParameters().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE");
-    String metadataLocation = ((BaseTable) this.icebergTable).operations().current().metadataFileLocation();
-    try {
-      Path path = new Path(metadataLocation).getParent();
-      FileSystem fileSystem = FileSystem.get(path.toUri(), conf);
-      if (fileSystem.exists(path)) {
-        fileSystem.delete(path, true);
+    if (Boolean.valueOf(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
+      LOG.debug("Initiating rollback for table {} at location {}",
+          hmsTable.getTableName(), hmsTable.getSd().getLocation());
+      context.getProperties().put(INITIALIZE_ROLLBACK_MIGRATION, "true");
+      this.catalogProperties = getCatalogProperties(hmsTable);
+      try {
+        this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+      } catch (NoSuchTableException nte) {
+        // iceberg table was not yet created, no need to delete the metadata dir separately
+        return;
       }
-    } catch (IOException e) {
-      throw new MetaException("Unable to rollback alter table operation.\n" + e.getMessage());
-    }
 
+      // we want to keep the data files but get rid of the metadata directory
+      hmsTable.getParameters().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE");
+      String metadataLocation = ((BaseTable) this.icebergTable).operations().current().metadataFileLocation();
+      try {
+        Path path = new Path(metadataLocation).getParent();
+        FileSystem.get(path.toUri(), conf).delete(path, true);
+        LOG.debug("Metadata directory of iceberg table {} at location {} was deleted",
+            icebergTable.name(), path);
+      } catch (IOException e) {
+        // the file doesn't exists, do nothing
+      }
+    }
   }
 
   private void setFileFormat() {

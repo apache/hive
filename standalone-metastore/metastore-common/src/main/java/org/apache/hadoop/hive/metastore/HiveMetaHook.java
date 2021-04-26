@@ -51,7 +51,8 @@ public interface HiveMetaHook {
   String SET_PROPERTIES = "set_properties";
   String UNSET_PROPERTIES = "unset_properties";
   String PROPERTIES_SEPARATOR = "'";
-  String INITIALIZE_ROLLBACK_ALTER = "initialize_rollback_alter";
+  String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
+  String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";
 
   /**
    * Called before a new table definition is added to the metastore
