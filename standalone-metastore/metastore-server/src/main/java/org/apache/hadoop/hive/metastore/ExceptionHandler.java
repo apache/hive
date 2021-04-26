@@ -44,7 +44,6 @@ public final class ExceptionHandler {
     if (clz.isInstance(e)) {
       throw clz.cast(e);
     }
-
     return this;
   }
 
