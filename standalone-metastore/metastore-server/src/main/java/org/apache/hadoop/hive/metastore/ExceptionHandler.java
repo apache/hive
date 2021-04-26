@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.thrift.TException;
 
+import static java.util.Objects.requireNonNull;
+
 public final class ExceptionHandler {
   private final Exception e;
 
@@ -29,43 +31,49 @@ public final class ExceptionHandler {
     this.e = e;
   }
 
+  public static ExceptionHandler handleException(Exception e) {
+    requireNonNull(e, "Exception e is null");
+    return new ExceptionHandler(e);
+  }
+
   /**
-   * Throws if the input e is the instance of the {@param clz}
+   * Throws if the input e is the instance of the class clz
    */
-  public static <T extends Exception> ExceptionHandler throwIfInstance(Exception e, Class<T> clz)
-      throws T {
+  public <T extends Exception> ExceptionHandler
+      throwIfInstance(Class<T> clz) throws T {
     if (clz.isInstance(e)) {
-      throw (T) e;
+      throw clz.cast(e);
     }
-    return new ExceptionHandler(e);
+
+    return this;
   }
 
   /**
-   * Throws if the input e is the instance of the {@param clzt} or  {@param clze} in order
+   * Throws if the input e is the instance of the class clzt or  class clze in order
    */
-  public static <T extends Exception, E extends Exception> ExceptionHandler
-      throwIfInstance(Exception e, Class<T> clzt, Class<E> clze) throws T, E {
-    throwIfInstance(e, clzt);
-    throwIfInstance(e, clze);
-    return new ExceptionHandler(e);
+  public <T extends Exception, E extends Exception> ExceptionHandler
+      throwIfInstance(Class<T> clzt, Class<E> clze) throws T, E {
+    throwIfInstance(clzt);
+    throwIfInstance(clze);
+    return this;
   }
 
   /**
-   * Throws if the input e is the instance of the {@param clzt} or  {@param clze} or {@param clzc} in order
+   * Throws if the input e is the instance of the class clzt or  clze or clzc in order
    */
-  public static <T extends Exception, E extends Exception, C extends Exception> ExceptionHandler
-      throwIfInstance(Exception e, Class<T> clzt, Class<E> clze, Class<C> clzc) throws T, E, C {
-    throwIfInstance(e, clzt);
-    throwIfInstance(e, clze);
-    throwIfInstance(e, clzc);
-    return new ExceptionHandler(e);
+  public <T extends Exception, E extends Exception, C extends Exception> ExceptionHandler
+      throwIfInstance(Class<T> clzt, Class<E> clze, Class<C> clzc) throws T, E, C {
+    throwIfInstance(clzt);
+    throwIfInstance(clze);
+    throwIfInstance(clzc);
+    return this;
   }
 
   /**
-   * Converts the input e if it is the instance of {@param from} to the instance of {@param to} and throws
+   * Converts the input e if it is the instance of class from to the instance of class to and throws
    */
-  public static <T extends Exception, D extends TException> ExceptionHandler
-      convertIfInstance(Exception e, Class<T> from, Class<D> to) throws D {
+  public <T extends Exception, D extends TException> ExceptionHandler
+      convertIfInstance(Class<T> from, Class<D> to) throws D {
     D targetException = null;
     if (from.isInstance(e)) {
       try {
@@ -79,13 +87,13 @@ public final class ExceptionHandler {
       throw targetException;
     }
 
-    return new ExceptionHandler(e);
+    return this;
   }
 
   /**
    * Converts the input e if it is the instance of classes to MetaException with the given message
    */
-  public static ExceptionHandler convertIfInstance(Exception e, String message, Class<?>... classes)
+  public ExceptionHandler convertToMetaExceptionIfInstance(String message, Class<?>... classes)
       throws MetaException {
     if (classes != null || classes.length > 0) {
       for (Class<?> clz : classes) {
@@ -95,17 +103,19 @@ public final class ExceptionHandler {
         }
       }
     }
-    return new ExceptionHandler(e);
+    return this;
   }
 
   public static TException rethrowException(Exception e) throws TException {
-    return throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
-        .throwIfInstance(e, TException.class)
+    return handleException(e)
+        .throwIfInstance(MetaException.class, NoSuchObjectException.class)
+        .throwIfInstance(TException.class)
         .defaultMetaException();
   }
 
   public static void throwMetaException(Exception e) throws MetaException, NoSuchObjectException {
-    throw throwIfInstance(e, MetaException.class, NoSuchObjectException.class)
+    throw handleException(e)
+        .throwIfInstance(MetaException.class, NoSuchObjectException.class)
         .defaultMetaException();
   }
 
@@ -118,13 +128,11 @@ public final class ExceptionHandler {
     return me;
   }
 
-  public RuntimeException defaultRuntimeException(boolean check) {
-    if (check) {
-      assert (e instanceof RuntimeException);
-    }
+  public RuntimeException defaultRuntimeException() {
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
     }
+
     return new RuntimeException(e);
   }
 

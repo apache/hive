@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.IOException;
+
+import org.junit.Test;
+
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.thrift.TException;
-import org.junit.Test;
 
-import java.io.IOException;
-
-import static org.apache.hadoop.hive.metastore.ExceptionHandler.convertIfInstance;
-import static org.apache.hadoop.hive.metastore.ExceptionHandler.throwIfInstance;
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -35,50 +35,50 @@ public class TestExceptionHandler {
 
   @Test
   public void testThrowIfInstance() {
-    MetaException me = new MetaException("MetaException test");
-    InvalidOperationException ioe = new InvalidOperationException("InvalidOperationException test");
-    TException te = new TException("TException");
-    NullPointerException npe = new NullPointerException();
-    RuntimeException re = new RuntimeException("RuntimeException test");
 
+    MetaException me = new MetaException("MetaException test");
     try {
-      throwIfInstance(me, RuntimeException.class);
+      handleException(me).throwIfInstance(RuntimeException.class);
     } catch (Exception e) {
       fail("Exception should not happen:" + e.getMessage());
     }
 
     try {
-      throwIfInstance(me, MetaException.class);
+      handleException(me).throwIfInstance(MetaException.class);
       fail("Should throw a exception here");
     } catch (Exception e) {
       assertTrue(e == me);
     }
 
+    InvalidOperationException ioe = new InvalidOperationException("InvalidOperationException test");
     try {
-      throwIfInstance(ioe, MetaException.class, InvalidOperationException.class);
+      handleException(ioe).throwIfInstance(MetaException.class, InvalidOperationException.class);
       fail("Should throw a exception here");
     } catch (Exception e) {
       assertTrue(e == ioe);
     }
 
+    TException te = new TException("TException");
     try {
-      throwIfInstance(te, MetaException.class, InvalidOperationException.class)
-          .throwIfInstance(te, TException.class).defaultMetaException();
+      handleException(te).throwIfInstance(MetaException.class, InvalidOperationException.class)
+          .throwIfInstance(TException.class).defaultMetaException();
     } catch (Exception e) {
       assertTrue(e == te);
     }
 
+    RuntimeException re = new RuntimeException("RuntimeException test");
     try {
-      Exception e = throwIfInstance(re, MetaException.class, InvalidOperationException.class)
-          .throwIfInstance(re, TException.class).defaultRuntimeException(true);
+      Exception e = handleException(re).throwIfInstance(MetaException.class, InvalidOperationException.class)
+          .throwIfInstance(TException.class).defaultRuntimeException();
       assertTrue(e == re);
     } catch (Exception e) {
       fail("Exception should not happen:" + e.getMessage());
     }
 
+    NullPointerException npe = new NullPointerException();
     try {
-      Exception e = throwIfInstance(npe, MetaException.class, InvalidOperationException.class)
-          .throwIfInstance(npe, TException.class).defaultMetaException();
+      Exception e = handleException(npe).throwIfInstance(MetaException.class, InvalidOperationException.class)
+          .throwIfInstance(TException.class).defaultMetaException();
       assertTrue(e instanceof MetaException);
       assertTrue(e.getMessage().equals(npe.toString()));
     } catch (Exception e) {
@@ -86,8 +86,8 @@ public class TestExceptionHandler {
     }
 
     try {
-      throwIfInstance(me, MetaException.class, InvalidOperationException.class)
-          .throwIfInstance(me, TException.class).defaultMetaException();
+      handleException(me).throwIfInstance(MetaException.class, InvalidOperationException.class)
+          .throwIfInstance(TException.class).defaultMetaException();
       fail("Should throw a exception here");
     } catch (Exception e) {
       assertTrue(e == me);
@@ -98,13 +98,13 @@ public class TestExceptionHandler {
   public void testConvertIfInstance() {
     IOException ix = new IOException("IOException test");
     try {
-      convertIfInstance(ix, NoSuchObjectException.class, MetaException.class);
+      handleException(ix).convertIfInstance(NoSuchObjectException.class, MetaException.class);
     } catch (Exception e) {
       fail("Exception should not happen:" + e.getMessage());
     }
 
     try {
-      convertIfInstance(ix, IOException.class, MetaException.class);
+      handleException(ix).convertIfInstance(IOException.class, MetaException.class);
       fail("Should throw a exception here");
     } catch (Exception e) {
       assertTrue(e instanceof MetaException);
@@ -112,8 +112,8 @@ public class TestExceptionHandler {
     }
 
     try {
-      convertIfInstance(ix, NoSuchObjectException.class, MetaException.class)
-          .convertIfInstance(ix, IOException.class, MetaException.class);
+      handleException(ix).convertIfInstance(NoSuchObjectException.class, MetaException.class)
+          .convertIfInstance(IOException.class, MetaException.class);
       fail("Should throw a exception here");
     } catch (Exception e) {
       assertTrue(e instanceof MetaException);
