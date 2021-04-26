@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -1056,7 +1057,7 @@ public class TestLlapTaskSchedulerService {
       // 3rd task requested host2, got host1 as host2 and host3 are full
       assertEquals(HOST1, argumentCaptor2.getAllValues().get(2).getNodeId().getHost());
 
-      verify(tsWrapper.mockServiceInstanceSet, times(2)).getAllInstancesOrdered(true);
+      verify(tsWrapper.mockServiceInstanceSet, atLeast(2)).getAllInstancesOrdered(true);
 
       assertEquals(0, tsWrapper.ts.dagStats.numAllocationsNoLocalityRequest);
       assertEquals(1, tsWrapper.ts.dagStats.numLocalAllocations);
@@ -1115,7 +1116,7 @@ public class TestLlapTaskSchedulerService {
       // 3rd task requested host3, got host1 since host3 is dead and host4 is full
       assertEquals(HOST1, argumentCaptor2.getAllValues().get(2).getNodeId().getHost());
 
-      verify(tsWrapper.mockServiceInstanceSet, times(2)).getAllInstancesOrdered(true);
+      verify(tsWrapper.mockServiceInstanceSet, atLeast(2)).getAllInstancesOrdered(true);
 
       assertEquals(0, tsWrapper.ts.dagStats.numAllocationsNoLocalityRequest);
       assertEquals(1, tsWrapper.ts.dagStats.numLocalAllocations);
@@ -1822,7 +1823,7 @@ public class TestLlapTaskSchedulerService {
     String [] hostsH1 = new String[] {HOST1};
 
     // Node disable timeout higher than locality delay.
-    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(20000, hosts, 1, 1, 10000l);
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(20000, hosts, 1, 1, 9000l);
 
     // Fill up host1 with tasks. Leave host2 empty.
     try {
@@ -1857,7 +1858,7 @@ public class TestLlapTaskSchedulerService {
       long thirdAllocateTime = tsWrapper.getClock().getTime();
       long diff = thirdAllocateTime - startTime;
       // diffAfterSleep < total sleepTime
-      assertTrue("Task not allocated in expected time window: duration=" + diff, diff < 10000l);
+      assertTrue("Task not allocated in expected time window: duration=" + diff, diff < 9000l);
 
       verify(tsWrapper.mockAppCallback, never()).preemptContainer(any(ContainerId.class));
       argumentCaptor = ArgumentCaptor.forClass(Object.class);
@@ -2014,12 +2015,14 @@ public class TestLlapTaskSchedulerService {
           if (host == null) {
             LlapServiceInstance mockInactive = mock(InactiveServiceInstance.class);
             doReturn(host).when(mockInactive).getHost();
+            doReturn(Resource.newInstance(100, 1)).when(mockInactive).getResource();
             doReturn("inactive-host-" + host).when(mockInactive).getWorkerIdentity();
             doReturn(ImmutableSet.builder().add(mockInactive).build()).when(mockServiceInstanceSet).getByHost(host);
             liveInstances.add(mockInactive);
           } else {
             LlapServiceInstance mockActive = mock(LlapServiceInstance.class);
             doReturn(host).when(mockActive).getHost();
+            doReturn(Resource.newInstance(100, 1)).when(mockActive).getResource();
             doReturn("host-" + host).when(mockActive).getWorkerIdentity();
             doReturn(ImmutableSet.builder().add(mockActive).build()).when(mockServiceInstanceSet).getByHost(host);
             liveInstances.add(mockActive);

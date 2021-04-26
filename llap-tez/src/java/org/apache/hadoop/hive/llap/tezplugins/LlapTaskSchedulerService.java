@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.llap.tezplugins;
 import com.google.common.io.ByteArrayDataOutput;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSource;
@@ -1393,7 +1395,15 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    * @param request the list of preferred hosts. null implies any host
    * @return
    */
-  private SelectHostResult selectHost(TaskInfo request) {
+  private SelectHostResult selectHost(TaskInfo request, Map<String, List<NodeInfo>> availableHostMap) {
+    // short-circuit when all nodes are busy
+    if (availableHostMap.values().isEmpty()) {
+      // reset locality delay
+      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
+        request.resetLocalityDelayInfo();
+      }
+      return SELECT_HOST_RESULT_DELAYED_RESOURCES;
+    }
     String[] requestedHosts = request.requestedHosts;
     String requestedHostsDebugStr = Arrays.toString(requestedHosts);
     if (LOG.isDebugEnabled()) {
@@ -1412,45 +1422,39 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         for (String host : requestedHosts) {
           prefHostCount++;
           // Pick the first host always. Weak attempt at cache affinity.
-          Set<LlapServiceInstance> instances = activeInstances.getByHost(host);
-          if (!instances.isEmpty()) {
-            for (LlapServiceInstance inst : instances) {
-              NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-              if (nodeInfo != null) {
-                if  (nodeInfo.canAcceptTask()) {
-                  // Successfully scheduled.
-                  LOG.info("Assigning {} when looking for {}." +
-                          " local=true FirstRequestedHost={}, #prefLocations={}",
-                      nodeInfo.toShortString(), host,
-                      (prefHostCount == 0),
-                      requestedHosts.length);
-                  return new SelectHostResult(nodeInfo);
+          if (availableHostMap.containsKey(host)) {
+            List<NodeInfo> instances = availableHostMap.getOrDefault(host, new ArrayList<>());
+            // Host is there and there are available resources!
+            if (!instances.isEmpty()) {
+              NodeInfo nodeInfo = instances.iterator().next();
+              // Successfully scheduled.
+              LOG.info("Assigning {} when looking for {}." + " local=true FirstRequestedHost={}, #prefLocations={}",
+                  nodeInfo.toShortString(), host, (prefHostCount == 0), requestedHosts.length);
+              return new SelectHostResult(nodeInfo);
+            } else {
+              // The node cannot accept a task at the moment. (there is host -- but no resources)
+              if (shouldDelayForLocality) {
+                // Perform some checks on whether the node will become available or not.
+                if (request.shouldForceLocality()) {
+                  requestedHostsWillBecomeAvailable = true;
                 } else {
-                  // The node cannot accept a task at the moment.
-                  if (shouldDelayForLocality) {
-                    // Perform some checks on whether the node will become available or not.
-                    if (request.shouldForceLocality()) {
-                      requestedHostsWillBecomeAvailable = true;
-                    } else {
-                      if (nodeInfo.getEnableTime() > request.getLocalityDelayTimeout() &&
-                          nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
-                        LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
-                        // This node will likely be activated after the task timeout expires.
-                      } else {
-                        // Worth waiting for the timeout.
-                        requestedHostsWillBecomeAvailable = true;
-                      }
-                    }
+                  LlapServiceInstance inst = activeInstances.getByHost(host).stream().findFirst().get();
+                  NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+                  if (nodeInfo != null && nodeInfo.getEnableTime() > request.getLocalityDelayTimeout()
+                      && nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
+                    LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
+                    // This node will likely be activated after the task timeout expires.
+                  } else {
+                    // Worth waiting for the timeout.
+                    requestedHostsWillBecomeAvailable = true;
                   }
                 }
-              } else {
-                LOG.warn(
-                    "Null NodeInfo when attempting to get host with worker {}, and host {}",
-                    inst, host);
-                // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
-                // else ends up allocating to a random host immediately.
               }
             }
+          } else {
+            LOG.warn("Null NodeInfo when attempting to get host {}", host);
+            // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
+            // else ends up allocating to a random host immediately.
           }
         }
         // Check if forcing the location is required.
@@ -1472,46 +1476,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           }
         }
       }
-
       /* fall through - miss in locality or no locality-requested */
-      Collection<LlapServiceInstance> instances;
-      if (consistentSplits) {
-        instances = activeInstances.getAllInstancesOrdered(true);
-      } else {
-        // if consistent splits are not used we don't need the ordering as there will be no cache benefit anyways
-        instances = activeInstances.getAll();
-      }
-      List<NodeInfo> allNodes = new ArrayList<>(instances.size());
       List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
-      for (LlapServiceInstance inst : instances) {
-        if (inst instanceof InactiveServiceInstance) {
-          allNodes.add(null);
-        } else {
-          NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-          if (nodeInfo == null) {
-            allNodes.add(null);
-          } else {
-            allNodes.add(nodeInfo);
-            if (nodeInfo.canAcceptTask()) {
-              activeNodesWithFreeSlots.add(nodeInfo);
-            }
-          }
-        }
-      }
-
-      if (allNodes.isEmpty()) {
-        return SELECT_HOST_RESULT_DELAYED_RESOURCES;
-      }
-
-      // When all nodes are busy, reset locality delay
-      if (activeNodesWithFreeSlots.isEmpty()) {
-        isClusterCapacityFull.set(true);
-        if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
-          request.resetLocalityDelayInfo();
-        }
-      } else {
-        isClusterCapacityFull.set(false);
-      }
+      availableHostMap.values().forEach(activeNodesWithFreeSlots::addAll);
 
       // no locality-requested, randomly pick a node containing free slots
       if (requestedHosts == null || requestedHosts.length == 0) {
@@ -1523,20 +1490,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       // miss in locality request, try picking consistent location with fallback to random selection
       final String firstRequestedHost = requestedHosts[0];
-      int requestedHostIdx = -1;
-      for (int i = 0; i < allNodes.size(); i++) {
-        NodeInfo nodeInfo = allNodes.get(i);
-        if (nodeInfo != null) {
-          if (nodeInfo.getHost().equals(firstRequestedHost)){
-            requestedHostIdx = i;
-            break;
-          }
-        }
-      }
-
       // requested host died or unknown host requested, fallback to random selection.
       // TODO: At this point we don't know the slot number of the requested host, so can't rollover to next available
-      if (requestedHostIdx == -1) {
+      if (!availableHostMap.containsKey(firstRequestedHost)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Requested node [{}] in consistent order does not exist. Falling back to random selection for " +
             "request {}", firstRequestedHost, request);
@@ -1545,20 +1501,22 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       // requested host is still alive but cannot accept task, pick the next available host in consistent order
-      for (int i = 0; i < allNodes.size(); i++) {
-        NodeInfo nodeInfo = allNodes.get((i + requestedHostIdx + 1) % allNodes.size());
-        // next node in consistent order died or does not have free slots, rollover to next
-        if (nodeInfo == null || !nodeInfo.canAcceptTask()) {
-          continue;
-        } else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
-                + " requestedHosts={}", nodeInfo.toShortString(), allNodes.size(),
-              ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
-                requestedHostsDebugStr));
+      if (!activeNodesWithFreeSlots.isEmpty()) {
+        NodeInfo nextSlot = null;
+        boolean found = false;
+        for (Entry<String, List<NodeInfo>> entry : availableHostMap.entrySet()) {
+          if (found && !entry.getValue().isEmpty()) {
+            nextSlot = entry.getValue().iterator().next();
+            break;
           }
-          return new SelectHostResult(nodeInfo);
+          if (entry.getKey().equals(firstRequestedHost)) found = true;
         }
+        // rollover
+        if (nextSlot == null) nextSlot = activeNodesWithFreeSlots.stream().findFirst().get();
+        LOG.info("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
+                + " requestedHosts={}", nextSlot.toShortString(), availableHostMap.size(),
+            ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
+        return new SelectHostResult(nextSlot);
       }
 
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
@@ -1828,23 +1786,90 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     INADEQUATE_TOTAL_RESOURCES,
   }
 
+  private Pair<Resource, Map<String, List<NodeInfo>>> getResourceAvailability() {
+    int memory = 0;
+    int vcores = 0;
+    int numInstancesFound = 0;
+    Map<String, List<NodeInfo>> availableHostMap;
+    readLock.lock();
+    try {
+      // maintain insertion order (needed for Next slot in locality miss)
+      availableHostMap = new LinkedHashMap<>(instanceToNodeMap.size());
+      Collection<LlapServiceInstance> instances = consistentSplits ?
+          // might also include Inactive instances
+          activeInstances.getAllInstancesOrdered(true):
+          // if consistent splits are NOT used we don't need the ordering as there will be no cache benefit anyways
+          activeInstances.getAll();
+      boolean foundSlot = false;
+      for (LlapServiceInstance inst : instances) {
+        NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+        if (nodeInfo != null) {
+          List<NodeInfo> hostList = availableHostMap.get(nodeInfo.getHost());
+          if (hostList == null) {
+            hostList = new ArrayList<>();
+            availableHostMap.put(nodeInfo.getHost(), hostList);
+          }
+          if (!(inst instanceof InactiveServiceInstance)) {
+            Resource r = inst.getResource();
+            memory += r.getMemory();
+            vcores += r.getVirtualCores();
+            numInstancesFound++;
+            // Only add to List Nodes with available resources
+            // Hosts, however, exist even for nodes that do not currently have resources
+            if (nodeInfo.canAcceptTask()) {
+              foundSlot = true;
+              hostList.add(nodeInfo);
+            }
+          }
+        }
+      }
+      // isClusterCapacityFull will be set to false on every trySchedulingPendingTasks call
+      // set it false here to bail out early when we know there are no resources available.
+      if (!foundSlot) {
+        isClusterCapacityFull.set(true);
+      }
+    } finally {
+      readLock.unlock();
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Available resources: numInstancesFound={}, totalMem={}, totalVcores={} availableHosts: {}",
+          numInstancesFound, memory, vcores, availableHostMap.size());
+    }
+    return new ImmutablePair<>(Resource.newInstance(memory, vcores), availableHostMap);
+  }
+
+  /**
+   * Should cycle when:
+   *  1. There are available Resources OR
+   *  2. There is a pending task with higher pri than running ones
+   * @param availableHostMap
+   * @return
+   */
+  private boolean shouldCycle(Map<String, List<NodeInfo>> availableHostMap) {
+    // short-circuit on resource availability
+    if (!availableHostMap.values().isEmpty()) return true;
+    // check if pending Pri is lower than existing tasks pri
+    int specMax = speculativeTasks.isEmpty() ? Integer.MIN_VALUE : speculativeTasks.lastKey();
+    int guarMax = guaranteedTasks.isEmpty() ? Integer.MIN_VALUE : guaranteedTasks.lastKey();
+    return pendingTasks.firstKey().getPriority() < Math.max(specMax, guarMax);
+  }
 
   @VisibleForTesting
   protected void schedulePendingTasks() throws InterruptedException {
-    // Early exit where there are no slots available
+    // Early exit for scheduler calls that came **before** the end of this run and no resources are available.
+    // Preemption and locality delay will be taken care of in the first run.
     if (isClusterCapacityFull.get()) {
       return;
     }
     Ref<TaskInfo> downgradedTask = new Ref<>(null);
+    Pair<Resource, Map<String, List<NodeInfo>>> availabilityPair = getResourceAvailability();
     writeLock.lock();
     try {
       if (LOG.isDebugEnabled()) {
         LOG.debug("ScheduleRun: {}", constructPendingTaskCountsLogMessage());
       }
-      Iterator<Entry<Priority, List<TaskInfo>>> pendingIterator =
-          pendingTasks.entrySet().iterator();
-      Resource totalResource = getTotalResources();
-      while (pendingIterator.hasNext()) {
+      Iterator<Entry<Priority, List<TaskInfo>>> pendingIterator = pendingTasks.entrySet().iterator();
+      while (pendingIterator.hasNext() && shouldCycle(availabilityPair.getRight())) {
         Entry<Priority, List<TaskInfo>> entry = pendingIterator.next();
         List<TaskInfo> taskListAtPriority = entry.getValue();
         Iterator<TaskInfo> taskIter = taskListAtPriority.iterator();
@@ -1855,7 +1880,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             dagStats.registerDelayedAllocation();
           }
           taskInfo.triedAssigningTask();
-          ScheduleResult scheduleResult = scheduleTask(taskInfo, totalResource, downgradedTask);
+          ScheduleResult scheduleResult = scheduleTask(taskInfo, availabilityPair, downgradedTask);
           // Note: we must handle downgradedTask after this. We do it at the end, outside the lock.
           if (LOG.isDebugEnabled()) {
             LOG.debug("ScheduleResult for Task: {} = {}", taskInfo, scheduleResult);
@@ -1996,20 +2021,20 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return sb.toString();
   }
 
-  private ScheduleResult scheduleTask(TaskInfo taskInfo, Resource totalResource,
+  private ScheduleResult scheduleTask(TaskInfo taskInfo, Pair<Resource, Map<String, List<NodeInfo>>> availabilityPair,
       Ref<TaskInfo> downgradedTask) {
-    Preconditions.checkNotNull(totalResource, "totalResource can not be null");
-    // If there's no memory available, fail
-    if (totalResource.getMemory() <= 0) {
+    Preconditions.checkNotNull(availabilityPair.getLeft(), "totalResource can not be null");
+    // If there's no memory available at the cluster, fail
+    if (availabilityPair.getLeft().getMemory() <= 0) {
       return SELECT_HOST_RESULT_INADEQUATE_TOTAL_CAPACITY.scheduleResult;
     }
-    SelectHostResult selectHostResult = selectHost(taskInfo);
+    SelectHostResult selectHostResult = selectHost(taskInfo, availabilityPair.getRight());
     if (selectHostResult.scheduleResult != ScheduleResult.SCHEDULED) {
       return selectHostResult.scheduleResult;
     }
     boolean isGuaranteed = false;
     if (unusedGuaranteed > 0) {
-      boolean wasGuaranteed = false;
+      boolean wasGuaranteed;
       synchronized (taskInfo) {
         assert !taskInfo.isPendingUpdate; // No updates before it's running.
         wasGuaranteed = taskInfo.isGuaranteed;
@@ -2068,6 +2093,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       taskInfo.setAssignmentInfo(nodeInfo, container.getId(), clock.getTime());
       registerRunningTask(taskInfo);
       nodeInfo.registerTaskScheduled();
+      // if no more resources on Node -> remove
+      if (!nodeInfo.canAcceptTask()) {
+        availabilityPair.getRight().get(nodeInfo.getHost()).remove(nodeInfo);
+      }
     } finally {
       writeLock.unlock();
     }
@@ -2490,8 +2519,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         // will be handled in the next run.
         // A new request may come in right after this is set to false, but before the actual scheduling.
         // This will be handled in this run, but will cause an immediate run after, which is harmless.
-        // This is mainly to handle a trySchedue request while in the middle of a run - since the event
-        // which triggered it may not be processed for all tasks in the run.
+        // isClusterCapacityFull helps in such runs bailing out when we know no resources are available.
+        // pendingScheduleInvocations is mainly to handle a trySchedulingPendingTasks request while in the middle of
+        // a run - since the event which triggered it may not be processed for all tasks in the run.
         pendingScheduleInvocations.set(false);
         // Schedule outside of the scheduleLock - which should only be used to wait on the condition.
         try {
