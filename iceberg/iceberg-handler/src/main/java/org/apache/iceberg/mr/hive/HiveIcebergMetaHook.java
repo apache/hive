@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -45,6 +47,7 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -163,11 +166,16 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
   @Override
   public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    // do nothing
+  }
+
+  @Override
+  public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean deleteData) {
     this.catalogProperties = getCatalogProperties(hmsTable);
     this.deleteIcebergTable = hmsTable.getParameters() != null &&
         "TRUE".equalsIgnoreCase(hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
 
-    if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties)) {
+    if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties) && deleteData) {
       // Store the metadata and the id for deleting the actual table data
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       this.deleteIo = IcebergTableUtil.getTable(conf, catalogProperties).io();
@@ -271,6 +279,32 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
         icebergUpdateProperties.commit();
       }
     }
+  }
+
+  @Override
+  public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
+      throws MetaException {
+    context.getProperties().put(INITIALIZE_ROLLBACK_ALTER, "true");
+    this.catalogProperties = getCatalogProperties(hmsTable);
+    try {
+      this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+    } catch (NoSuchTableException nte) {
+      // iceberg table was not yet created, no need to delete the metadata dir separately
+      return;
+    }
+    // we want to keep the data files but get rid of the metadata directory
+    hmsTable.getParameters().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE");
+    String metadataLocation = ((BaseTable) this.icebergTable).operations().current().metadataFileLocation();
+    try {
+      Path path = new Path(metadataLocation).getParent();
+      FileSystem fileSystem = FileSystem.get(path.toUri(), conf);
+      if (fileSystem.exists(path)) {
+        fileSystem.delete(path, true);
+      }
+    } catch (IOException e) {
+      throw new MetaException("Unable to rollback alter table operation.\n" + e.getMessage());
+    }
+
   }
 
   private void setFileFormat() {

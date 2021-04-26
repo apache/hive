@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.Msck;
+import org.apache.hadoop.hive.metastore.MsckInfo;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.thrift.TException;
 
 /**
  * Operation process of running some alter table command that requires write id.
@@ -155,8 +157,32 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       }
       if (partitions == null) {
         long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
-        context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true,
-            writeId);
+        try {
+          context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+        } catch (HiveException ex) {
+          if (environmentContext.getProperties().containsKey(HiveMetaHook.INITIALIZE_ROLLBACK_ALTER) && Boolean
+              .valueOf(environmentContext.getProperties().get(HiveMetaHook.INITIALIZE_ROLLBACK_ALTER))) {
+            // in case of rollback of alter table do the following:
+            // 1. drop the already altered table but keep the data files
+            // 2. recreate the original table
+            // 3. run msck repair to sync partitions on filesystem with metastore
+            context.getDb().dropTable(table.getDbName(), table.getTableName(), false, true, false);
+            context.getDb().createTable(oldTable);
+            Msck msck = new Msck(false, false);
+            try {
+              msck.init(Msck.getMsckConf(context.getDb().getConf()));
+              msck.updateExpressionProxy(Msck.getProxyClass(context.getDb().getConf()));
+              MsckInfo msckInfo =
+                  new MsckInfo(table.getCatalogName(), table.getDbName(), table.getTableName(), null, null, true, true,
+                      true, -1);
+              msck.repair(msckInfo);
+            } catch (TException tex) {
+              throw new HiveException("Rollback of alter table cannot be performed", tex);
+            }
+          } else {
+            throw ex;
+          }
+        }
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
