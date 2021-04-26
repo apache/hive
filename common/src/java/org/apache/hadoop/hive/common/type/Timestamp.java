@@ -93,7 +93,7 @@ public class Timestamp implements Comparable<Timestamp> {
       .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NORMAL).appendLiteral(':')
       .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NORMAL).optionalStart()
       .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd().optionalEnd().toFormatter()
-      .withResolverStyle(ResolverStyle.LENIENT);
+      .withResolverStyle(ResolverStyle.STRICT);
 
   private static final DateTimeFormatter PRINT_FORMATTER = new DateTimeFormatterBuilder()
       // Date and Time Parts
