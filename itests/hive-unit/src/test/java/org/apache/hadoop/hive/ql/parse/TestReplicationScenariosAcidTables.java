@@ -918,8 +918,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
             .run("show tables like t2")
-            .verifyResults(new String[] { })
-            .verifyReplTargetProperty(replicatedDbName);
+            .verifyResults(new String[] { });
 
     // Verify if no create table on t1. Only table t2 should  be created in retry.
     callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
