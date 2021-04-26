@@ -319,10 +319,10 @@ Stage-3
               Reducer 2
               File Output Operator [FS_8]
                 table:{"name:":"default.acid_uami_n2"}
-                Select Operator [SEL_4] (rows=2/2 width=302)
+                Select Operator [SEL_7] (rows=2/2 width=302)
                   Output:["_col0","_col1","_col2","_col3"]
                 <-Map 1 [SIMPLE_EDGE]
-                  SHUFFLE [RS_3]
+                  SHUFFLE [RS_6]
                     PartitionCols:UDFToInteger(_col0)
                     Select Operator [SEL_2] (rows=2/2 width=190)
                       Output:["_col0","_col1","_col3"]
@@ -436,10 +436,10 @@ Stage-3
               Reducer 2
               File Output Operator [FS_7]
                 table:{"name:":"default.acid_dot_n0"}
-                Select Operator [SEL_4] (rows=1/8 width=3)
+                Select Operator [SEL_6] (rows=1/8 width=3)
                   Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE]
-                  SHUFFLE [RS_3]
+                  SHUFFLE [RS_5]
                     PartitionCols:UDFToInteger(_col0)
                     Select Operator [SEL_2] (rows=1/8 width=3)
                       Output:["_col0"]

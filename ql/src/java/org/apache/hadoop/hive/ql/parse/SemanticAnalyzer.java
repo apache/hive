@@ -6872,6 +6872,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       enforceBucketing = true;
       if (updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
+        sortCols = getPartitionColsFromBucketColsForUpdateDelete(input, false);
+        sortOrders = createSortOrderForUpdateDelete(sortCols);
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, false);
       }
@@ -6895,10 +6897,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (ExprNodeDesc expr : partnCols) {
         sortCols.add(expr.clone());
       }
-      sortOrders = new ArrayList<>();
-      for (int i = 0; i < sortCols.size(); i++) {
-        sortOrders.add(DirectionUtils.ASCENDING_CODE);
-      }
+      sortOrders = createSortOrderForUpdateDelete(sortCols);
     }
 
     if (enforceBucketing) {
@@ -6907,9 +6906,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       if (conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS) > 0) {
         maxReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
-      }
-      if (acidOp == Operation.UPDATE || acidOp == Operation.DELETE) {
-        maxReducers = 1;
       }
       int numBuckets = dest_tab.getNumBuckets();
       if (numBuckets > maxReducers) {
@@ -6925,7 +6921,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           numFiles = totalFiles / maxReducers;
         }
       }
-      else if (acidOp == Operation.NOT_ACID || acidOp == Operation.INSERT) {
+      else {
         maxReducers = numBuckets;
       }
 
@@ -6943,6 +6939,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setTotalFiles(totalFiles);
     }
     return input;
+  }
+
+  // SORT BY ROW__ID ASC
+  private List<Integer> createSortOrderForUpdateDelete(List<ExprNodeDesc> sortCols) {
+    List<Integer> sortOrders;
+    sortOrders = new ArrayList<>();
+    for (int i = 0; i < sortCols.size(); i++) {
+      sortOrders.add(DirectionUtils.ASCENDING_CODE);
+    }
+    return sortOrders;
   }
 
   private void genPartnCols(String dest, Operator input, QB qb,
