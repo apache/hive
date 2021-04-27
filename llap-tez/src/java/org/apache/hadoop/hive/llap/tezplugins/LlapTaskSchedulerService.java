@@ -1142,8 +1142,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
         capability, hosts, racks, clock.getTime(), id);
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, hostsNum={}",
-        task, priority, capability, hosts.length);
+    LOG.info("Received allocateRequest. task={}, priority={}, capability={}",
+            task, priority, capability);
     if (!dagRunning) {
       if (metrics != null && id != null) {
         metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
