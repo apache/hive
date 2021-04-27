@@ -103,6 +103,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String FILTER_OBJECT_CONF_STR =
       "hive.io.filter.object";
 
+  public static final String PARTITION_PRUNING_FILTER =
+      "hive.io.pruning.filter";
+
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
 
