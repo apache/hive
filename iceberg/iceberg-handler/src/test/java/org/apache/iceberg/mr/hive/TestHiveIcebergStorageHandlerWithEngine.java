@@ -294,7 +294,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[] {102L, 1L, 33.33d}, rows.get(2));
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -317,7 +317,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     }
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -411,7 +411,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
