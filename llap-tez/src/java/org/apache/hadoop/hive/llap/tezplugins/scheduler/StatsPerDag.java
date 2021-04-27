@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.tezplugins.metrics;
+package org.apache.hadoop.hive.llap.tezplugins.scheduler;
 
 import java.util.Arrays;
 import java.util.HashMap;
