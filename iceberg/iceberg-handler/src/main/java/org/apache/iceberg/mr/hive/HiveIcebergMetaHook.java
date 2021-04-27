@@ -298,7 +298,6 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       }
 
       // we want to keep the data files but get rid of the metadata directory
-      hmsTable.getParameters().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE");
       String metadataLocation = ((BaseTable) this.icebergTable).operations().current().metadataFileLocation();
       try {
         Path path = new Path(metadataLocation).getParent();

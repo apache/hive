@@ -27,9 +27,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.Msck;
-import org.apache.hadoop.hive.metastore.MsckInfo;
-import org.apache.hadoop.hive.metastore.PartitionIterable;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -44,7 +41,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.thrift.TException;
 
 /**
  * Operation process of running some alter table command that requires write id.
@@ -177,7 +173,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
             table.getParameters().putAll(oldTable.getParameters());
             context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
             throw new HiveException("Error occurred during hive table migration to iceberg. Table properties "
-                + "and serde info was reverted to it's original value. Partition info was lost during the migration "
+                + "and serde info was reverted to its original value. Partition info was lost during the migration "
                 + "process, but it can be reverted by running MSCK REPAIR on table/partition level.\n"
                 + "Retrying the migration without issuing MSCK REPAIR on a partitioned table will result in an empty "
                 + "iceberg table.");

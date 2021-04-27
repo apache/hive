@@ -1354,13 +1354,13 @@ public class TestHiveIcebergStorageHandlerWithEngine {
             "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
       } catch (IllegalArgumentException e) {
         Assert.assertTrue(e.getMessage().contains("Error occurred during hive table migration to iceberg."));
+        validateSd(tableName, fileFormat.name());
         shell.executeStatement("MSCK REPAIR TABLE " + tableName);
         List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
         Assert.assertEquals(originalResult.size(), alterResult.size());
         for (int i = 0; i < originalResult.size(); i++) {
           Assert.assertTrue(Arrays.equals(originalResult.get(i), alterResult.get(i)));
         }
-        validateSd(tableName, fileFormat.name());
         return;
       }
       Assert.fail("Alter table operations should have thrown an exception.");
