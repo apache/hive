@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
@@ -293,7 +294,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[] {102L, 1L, 33.33d}, rows.get(2));
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -316,7 +317,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     }
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -339,6 +340,59 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testPartitionPruning() throws IOException {
+    Schema salesSchema = new Schema(
+        required(1, "ss_item_sk", Types.IntegerType.get()),
+        required(2, "ss_sold_date_sk", Types.IntegerType.get()));
+
+    PartitionSpec salesSpec =
+        PartitionSpec.builderFor(salesSchema).identity("ss_sold_date_sk").build();
+
+    Schema dimSchema = new Schema(
+        required(1, "d_date_sk", Types.IntegerType.get()),
+        required(2, "d_moy", Types.IntegerType.get()));
+
+    List<Record> salesRecords = TestHelper.RecordsBuilder.newInstance(salesSchema)
+                                    .add(51, 5)
+                                    .add(61, 6)
+                                    .add(71, 7)
+                                    .add(81, 8)
+                                    .add(91, 9)
+                                    .build();
+    List<Record> dimRecords = TestHelper.RecordsBuilder.newInstance(salesSchema)
+                                    .add(1, 10)
+                                    .add(2, 20)
+                                    .add(3, 30)
+                                    .add(4, 40)
+                                    .add(5, 50)
+                                    .build();
+
+    Table salesTable = testTables.createTable(shell, "x1_store_sales", salesSchema, salesSpec, fileFormat, null);
+
+    PartitionKey partitionKey = new PartitionKey(salesSpec, salesSchema);
+    for (Record r : salesRecords) {
+      partitionKey.partition(r);
+      testTables.appendIcebergTable(shell.getHiveConf(), salesTable, fileFormat, partitionKey, ImmutableList.of(r));
+    }
+    testTables.createTable(shell, "x1_date_dim", dimSchema, fileFormat, dimRecords);
+
+    String query = "select s.ss_item_sk from x1_store_sales s, x1_date_dim d " +
+                       "where s.ss_sold_date_sk=d.d_date_sk*2 and d.d_moy=30";
+
+    // Check the query results
+    List<Object[]> rows = shell.executeStatement(query);
+
+    Assert.assertEquals(1, rows.size());
+    Assert.assertArrayEquals(new Object[] {61}, rows.get(0));
+
+    // Check if Dynamic Partitioning is used
+    Assert.assertTrue(shell.executeStatement("explain " + query).stream()
+                          .filter(a -> ((String) a[0]).contains("Dynamic Partitioning Event Operator"))
+                          .findAny()
+                          .isPresent());
+  }
+
+  @Test
   public void testInsert() throws IOException {
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, ImmutableList.of());
@@ -357,7 +411,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
