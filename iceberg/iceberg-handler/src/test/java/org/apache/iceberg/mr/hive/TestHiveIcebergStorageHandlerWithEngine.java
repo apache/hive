@@ -273,6 +273,20 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testRollbackMultiPartitionedHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_rollback";
+    shell.executeStatement("CREATE EXTERNAL TABLE " + tableName + " (a int) PARTITIONED BY (b string, c int) " +
+        "STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa', c='111') VALUES (1), (2), (3)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb', c='111') VALUES (4), (5)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa', c='222') VALUES (6)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc', c='333') VALUES (7), (8), (9), (10)");
+    validateMigrationRollback(tableName);
+  }
+
+  @Test
   public void testRollbackMigratePartitionedBucketedHiveTableToIceberg() throws TException, InterruptedException {
     Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
     String tableName = "tbl_part_bucketed";
@@ -1317,32 +1331,39 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   private void validateMigration(String tableName) throws TException, InterruptedException {
-    List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName);
+    List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
     shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
         "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
-    List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName);
+    List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
     Assert.assertEquals(originalResult.size(), alterResult.size());
     for (int i = 0; i < originalResult.size(); i++) {
-      Arrays.equals(originalResult.get(i), alterResult.get(i));
+      Assert.assertTrue(Arrays.equals(originalResult.get(i), alterResult.get(i)));
     }
     validateSd(tableName, "iceberg");
   }
 
   private void validateMigrationRollback(String tableName) throws TException, InterruptedException {
-    List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName);
+    List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
     try (MockedStatic<HiveTableUtil> mockedTableUtil = Mockito.mockStatic(HiveTableUtil.class)) {
       mockedTableUtil.when(() -> HiveTableUtil.importFiles(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
           ArgumentMatchers.any(PartitionSpecProxy.class), ArgumentMatchers.anyList(),
           ArgumentMatchers.any(Properties.class), ArgumentMatchers.any(Configuration.class)))
           .thenThrow(new MetaException());
-      shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
-          "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
-      List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName);
-      Assert.assertEquals(originalResult.size(), alterResult.size());
-      for (int i = 0; i < originalResult.size(); i++) {
-        Arrays.equals(originalResult.get(i), alterResult.get(i));
+      try {
+        shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
+            "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+      } catch (IllegalArgumentException e) {
+        Assert.assertTrue(e.getMessage().contains("Error occurred during hive table migration to iceberg."));
+        shell.executeStatement("MSCK REPAIR TABLE " + tableName);
+        List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
+        Assert.assertEquals(originalResult.size(), alterResult.size());
+        for (int i = 0; i < originalResult.size(); i++) {
+          Assert.assertTrue(Arrays.equals(originalResult.get(i), alterResult.get(i)));
+        }
+        validateSd(tableName, fileFormat.name());
+        return;
       }
-      validateSd(tableName, fileFormat.name());
+      Assert.fail("Alter table operations should have thrown an exception.");
     }
   }
 

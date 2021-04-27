@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.MsckInfo;
+import org.apache.hadoop.hive.metastore.PartitionIterable;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -163,22 +164,23 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
           if (Boolean.valueOf(environmentContext.getProperties()
               .getOrDefault(HiveMetaHook.INITIALIZE_ROLLBACK_MIGRATION, "false"))) {
             // in case of rollback of alter table do the following:
-            // 1. drop the already altered table but keep the data files
-            // 2. recreate the original table
-            // 3. run msck repair to sync partitions on filesystem with metastore
-            context.getDb().dropTable(table.getDbName(), table.getTableName(), false, true, false);
-            context.getDb().createTable(oldTable);
-            Msck msck = new Msck(false, false);
-            try {
-              msck.init(Msck.getMsckConf(context.getDb().getConf()));
-              msck.updateExpressionProxy(Msck.getProxyClass(context.getDb().getConf()));
-              MsckInfo msckInfo =
-                  new MsckInfo(table.getCatalogName(), table.getDbName(), table.getTableName(), null, null, true, true,
-                      true, -1);
-              msck.repair(msckInfo);
-            } catch (TException tex) {
-              throw new HiveException("Rollback of alter table cannot be performed", tex);
-            }
+            // 1. restore serde info and input/output format
+            // 2. remove table columns which are used to be partition columns
+            // 3. add partition columns
+            table.getSd().setInputFormat(oldTable.getSd().getInputFormat());
+            table.getSd().setOutputFormat(oldTable.getSd().getOutputFormat());
+            table.getSd().setSerdeInfo(oldTable.getSd().getSerdeInfo());
+            table.getSd().getCols().removeAll(oldTable.getPartitionKeys());
+            table.setPartCols(oldTable.getPartitionKeys());
+
+            table.getParameters().clear();
+            table.getParameters().putAll(oldTable.getParameters());
+            context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+            throw new HiveException("Error occurred during hive table migration to iceberg. Table properties "
+                + "and serde info was reverted to it's original value. Partition info was lost during the migration "
+                + "process, but it can be reverted by running MSCK REPAIR on table/partition level.\n"
+                + "Retrying the migration without issuing MSCK REPAIR on a partitioned table will result in an empty "
+                + "iceberg table.");
           } else {
             throw ex;
           }

@@ -214,11 +214,11 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
     super.preAlterTable(hmsTable, context);
-    context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
+      context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
       // If the iceberg table does not exist, and the hms table is external and not temporary and not acid
       // we will create it in commitAlterTable
       StorageDescriptor sd = hmsTable.getSd();
