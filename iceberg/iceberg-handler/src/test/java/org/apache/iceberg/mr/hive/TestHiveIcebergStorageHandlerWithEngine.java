@@ -21,6 +21,8 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -757,6 +759,120 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat, records);
 
     HiveIcebergTestUtils.validateData(table, records, 0);
+  }
+
+  @Test
+  public void testYearTransform() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Schema schemaWithDate = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.DateType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).year("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+                               .add(1L, LocalDate.of(2020, 1, 21))
+                               .add(2L, LocalDate.of(2020, 1, 22))
+                               .add(3L, LocalDate.of(2019, 1, 21))
+                               .build();
+    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testMonthTransform() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Schema schemaWithDate = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.DateType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).month("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+                               .add(1L, LocalDate.of(2020, 1, 21))
+                               .add(2L, LocalDate.of(2020, 1, 22))
+                               .add(3L, LocalDate.of(2019, 1, 21))
+                               .build();
+    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testDayTransform() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Schema schemaWithDate = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.TimestampType.withoutZone()));
+    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).day("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+                               .add(1L, LocalDateTime.of(2019, 2, 22, 9, 44, 54))
+                               .add(2L, LocalDateTime.of(2019, 2, 22, 10, 44, 54))
+                               .add(3L, LocalDateTime.of(2019, 2, 23, 9, 44, 54))
+                               .build();
+    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testHourTransform() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Schema schemaWithDate = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.TimestampType.withoutZone()));
+    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).hour("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+                               .add(1L, LocalDateTime.of(2019, 2, 22, 9, 44, 54))
+                               .add(2L, LocalDateTime.of(2019, 2, 22, 10, 44, 54))
+                               .add(3L, LocalDateTime.of(2019, 2, 23, 9, 44, 54))
+                               .build();
+    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testBucketTransform() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Schema schemaWithDate = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).bucket("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+                               .add(1L, "Part1")
+                               .add(2L, "Part2")
+                               .add(3L, "Art3")
+                               .build();
+    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testTruncateTransform() throws IOException {
+    Assume.assumeTrue("Tez write is not implemented yet", executionEngine.equals("mr"));
+
+    Schema schemaWithDate = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).truncate("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+                               .add(1L, "Part1")
+                               .add(2L, "Part2")
+                               .add(3L, "Art3")
+                               .build();
+    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
   }
 
   @Test

@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -106,6 +107,8 @@ public class HiveIcebergTestUtils {
               PrimitiveObjectInspectorFactory.writableStringObjectInspector,
               PrimitiveObjectInspectorFactory.writableStringObjectInspector
           ));
+
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
   private HiveIcebergTestUtils() {
     // Empty constructor for the utility class
@@ -265,5 +268,30 @@ public class HiveIcebergTestUtils {
     Assert.assertEquals(dataFileNum, dataFiles.size());
     Assert.assertFalse(
         new File(HiveIcebergOutputCommitter.generateJobLocation(table.location(), conf, jobId)).exists());
+  }
+
+  /**
+   * Validates whether the table contains the expected records. The records are retrieved by Hive query and compared as
+   * strings. The results should be sorted by a unique key so we do not end up with flaky tests.
+   * @param shell Shell to execute the query
+   * @param tableName The table to query
+   * @param expected The expected list of Records
+   * @param sortBy The column name by which we will sort
+   */
+  public static void validateData(TestHiveShell shell, String tableName, List<Record> expected, String sortBy) {
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY " + sortBy);
+
+    Assert.assertEquals(expected.size(), rows.size());
+    for (int i = 0; i < expected.size(); ++i) {
+      Object[] row = rows.get(i);
+      Record record = expected.get(i);
+      Assert.assertEquals(record.size(), row.length);
+      for (int j = 0; j < record.size(); ++j) {
+        Object field = record.get(j);
+        String expectedString =
+            (field instanceof LocalDateTime) ? ((LocalDateTime) field).format(DATE_FORMATTER) : field.toString();
+        Assert.assertEquals(expectedString, row[j].toString());
+      }
+    }
   }
 }
