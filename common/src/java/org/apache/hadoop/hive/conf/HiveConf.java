@@ -3753,11 +3753,12 @@ public class HiveConf extends Configuration {
         "Determines behavior of the wm move trigger when destination pool is full.\n" +
         "If true, the query will run in source pool as long as possible if destination pool is full;\n" +
         "if false, the query will be killed if destination pool is full."),
-    HIVE_SERVER2_WM_DELAYED_MOVE_TIMEOUT("hive.server2.wm.delayed.move.timeout", "600",
+    HIVE_SERVER2_WM_DELAYED_MOVE_TIMEOUT("hive.server2.wm.delayed.move.timeout", "3600",
         new TimeValidator(TimeUnit.SECONDS),
         "The amount of time a delayed move is allowed to run in the source pool,\n" +
-        "when a delayed move session times out, the session is moved to the destination pool.\n"),
-    HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL("hive.server2.wm.delayed.move.validator.interval", "10",
+        "when a delayed move session times out, the session is moved to the destination pool.\n" +
+        "A value of 0 indicates no timeout"),
+    HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL("hive.server2.wm.delayed.move.validator.interval", "60",
         new TimeValidator(TimeUnit.SECONDS),
         "Interval for checking for expired delayed moves and retries. Value of 0 indicates no checks."),
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",

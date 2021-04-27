@@ -1196,6 +1196,68 @@ public class TestWorkloadManager {
     assertEquals("A", sessionA3.getPoolName());
     assertEquals("A", sessionA4.getPoolName());
     assertEquals("B", sessionA1.getPoolName());
+
+
+    // Timeout
+    // Attempt to move to pool B which is full. Keep running in source pool as a "delayed move".
+    future = wm.applyMoveSessionAsync(sessionA3, "B");
+    assertNotNull(future.get());
+    assertFalse(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(2, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA3));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.3f, sessionA3.getClusterFraction(), EPSILON);
+    assertEquals(0.3f, sessionA4.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA3.getPoolName());
+    assertEquals("A", sessionA4.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    // Sleep till the delayed move times out and the move is attempted again.
+    // The query should be killed during the move since destination pool B is still full.
+    Thread.sleep(2000);
+    while (sessionA3.isOpen()) {
+      Thread.sleep(1000);
+    }
+    // [A:1, B:1]
+    assertNull(sessionA3.getPoolName());
+    assertEquals("Destination pool B is full. Killing query.", sessionA3.getReasonForKill());
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA4));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA4.getClusterFraction(), EPSILON);
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA4.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    // Retry
+    // Create another delayed move in A
+    future = wm.applyMoveSessionAsync(sessionA4, "B");
+    assertNotNull(future.get());
+    assertFalse(future.get());
+    wm.addTestEvent().get();
+
+    assertEquals("A", sessionA4.getPoolName());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA4));
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+
+    // Free up pool B.
+    wm.returnAfterUse(sessionA1);
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertFalse(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertNull(sessionA1.getPoolName());
+
+    // The delayed move is successfully retried since destination pool has freed up.
+    // [A:0 B:1]
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA4));
+    assertEquals(0.4f, sessionA4.getClusterFraction(), EPSILON);
+    assertEquals("B", sessionA4.getPoolName());
   }
 
   @Test(timeout=10000)
@@ -1345,6 +1407,8 @@ public class TestWorkloadManager {
   private HiveConf createConfForDelayedMove() {
     HiveConf conf = createConf();
     conf.set(ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE.varname, "true");
+    conf.set(ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_TIMEOUT.varname, "2");
+    conf.set(ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL.varname, "1");
     return conf;
   }
 }

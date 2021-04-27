@@ -166,8 +166,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private final ScheduledExecutorService timeoutPool;
   /** To retry delayed moves and check for expires delayed moves at specified intervals **/
   private final Thread delayedMoveThread;
-  private final int delayedMoveTimeOutMs;
-  private final int delayedMoveValidationIntervalMs;
+  private final int delayedMoveTimeOutSec;
+  private final int delayedMoveValidationIntervalSec;
 
   private LlapPluginEndpointClientImpl amComm;
 
@@ -242,15 +242,18 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     wmThread.setDaemon(true);
     wmThread.start();
 
-    delayedMoveTimeOutMs =
-        (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_TIMEOUT, TimeUnit.SECONDS) * 1000;
-    delayedMoveValidationIntervalMs =
-        (int) HiveConf.getTimeVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL, TimeUnit.SECONDS)
-            * 1000;
+    delayedMoveTimeOutSec = (int) HiveConf.getTimeVar(conf,
+        ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_TIMEOUT, TimeUnit.SECONDS);
+    delayedMoveValidationIntervalSec = (int) HiveConf.getTimeVar(conf,
+        ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL, TimeUnit.SECONDS);
 
-    if ((HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) && (delayedMoveValidationIntervalMs > 0)) {
+    if ((HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) &&
+        (delayedMoveTimeOutSec > 0)) {
       delayedMoveThread = new Thread(() -> runDelayedMoveThread(), "Workload management delayed move");
       delayedMoveThread.setDaemon(true);
+      LOG.info("Starting delayed move timeout validator with interval: {} s; " +
+              "delayed move timeout is set to : {} s",
+               delayedMoveValidationIntervalSec, delayedMoveTimeOutSec);
       delayedMoveThread.start();
     } else {
       delayedMoveThread = null;
@@ -449,7 +452,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private void runDelayedMoveThread() {
     while (true) {
       try {
-        Thread.sleep(delayedMoveValidationIntervalMs);
+        Thread.sleep(delayedMoveValidationIntervalSec * 1000);
         currentLock.lock();
         LOG.info("Retry delayed moves and check for expired delayed moves.");
         notifyWmThreadUnderLock();
@@ -682,11 +685,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // as possible
     Map<WmTezSession, WmEvent> recordMoveEvents = new HashMap<>();
     for (MoveSession moveSession : e.moveSessions) {
-      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE)) {
-        handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, true);
-      } else {
-        handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse, recordMoveEvents, false);
-      }
+      handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse,
+          recordMoveEvents, HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE));
     }
     e.moveSessions.clear();
 
@@ -868,7 +868,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         srcPool.delayedMoveSessions.add(moveSession);
         moveSession.srcSession.setDelayedMove(true);
         LOG.info("Converting Move: {} to a delayed move. Since destination pool {} is full, running in source pool {}"
-            + "as long as possible.", moveSession, destPoolName, srcPoolName);
+            + " as long as possible.", moveSession, destPoolName, srcPoolName);
         moveSession.future.set(false);
         return MoveSessionResult.CONVERTED_TO_DELAYED_MOVE;
       }
@@ -1346,23 +1346,25 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     while (iter.hasNext()) {
       MoveSession moveSession = iter.next();
       MoveSessionResult result;
+
       //Discard the delayed move if invalid
       if (!validDelayedMove(moveSession, pool, poolName)) {
         iter.remove();
         continue;
       }
+
       // Process the delayed move if
       // 1. The delayed move has timed out or
       // 2. The destination pool has freed up or
       // 3. If the source pool has incoming requests and we need to free up capacity in the source pool
       // to accommodate these requests.
-      if (((currentTime - moveSession.startTime) >= delayedMoveTimeOutMs) || (capacityAvailable(moveSession.destPool))
-          || (movedCount < delayedMovesToProcess)) {
+      if ((movedCount < delayedMovesToProcess) || (capacityAvailable(moveSession.destPool))
+          || ((delayedMoveTimeOutSec > 0) && ((currentTime - moveSession.startTime) >= delayedMoveTimeOutSec * 1000))){
         LOG.info("Processing delayed move {} for pool {}", moveSession, poolName);
         result = handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, toReuse, recordMoveEvents,
             false);
         iter.remove();
-        if (result == MoveSessionResult.OK) {
+        if ((result == MoveSessionResult.OK) || (result == MoveSessionResult.KILLED)) {
           LOG.info("Attempt to process delayed move {} for pool {} was successful", moveSession, poolName);
           movedCount++;
         }
