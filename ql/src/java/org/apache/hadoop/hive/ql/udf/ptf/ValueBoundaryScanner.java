@@ -1010,11 +1010,17 @@ class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
   @Override
   public boolean isDistanceGreater(Object v1, Object v2, int amt) {
     if (v1 != null && v2 != null) {
-      long l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI()).toEpochMilli();
-      long l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI()).toEpochMilli();
-      return (double)(l1-l2)/1000 > amt; // TODO: lossy conversion, distance is considered in seconds
+      if (v1 instanceof TimestampWritableV2 && v2 instanceof TimestampWritableV2) {
+        TimestampWritableV2 w1 = (TimestampWritableV2) v1;
+        TimestampWritableV2 w2 = (TimestampWritableV2) v2;
+        return w1.getSeconds() - w2.getSeconds() > amt;
+      } else {
+        long l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI()).toEpochMilli();
+        long l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI()).toEpochMilli();
+        return (double)(l1-l2)/1000 > amt; // TODO: lossy conversion, distance is considered in seconds
+      }
     }
     return v1 != null || v2 != null; // True if only one value is null
   }

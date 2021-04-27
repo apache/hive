@@ -184,4 +184,33 @@ public class TestValueBoundaryScanner {
 
     Assert.assertTrue(scanner.isEqual(null, null));
   }
+
+  @Test
+  public void testTimestampIsDistanceGreater() {
+    PTFExpressionDef argDef = new PTFExpressionDef();
+    argDef.setOI(PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
+
+    TimestampValueBoundaryScanner scanner =
+        new TimestampValueBoundaryScanner(null, null, new OrderExpressionDef(argDef), false);
+    Timestamp ts = new Timestamp();
+    ts.setTimeInMillis(1000000); // 1000s
+
+    TimestampWritableV2 w1 = new TimestampWritableV2(ts); // 1000s
+    TimestampWritableV2 w2 = new TimestampWritableV2(ts); // 1000s
+    TimestampWritableV2 w3 = new TimestampWritableV2(); // empty == epoch == 0s
+
+    // equal timestamps, distance is not greater than 0
+    Assert.assertFalse(scanner.isDistanceGreater(w1, w2, 0));
+    Assert.assertFalse(scanner.isDistanceGreater(w2, w1, 0));
+
+    // null comparison, true only if one value is null
+    Assert.assertTrue(scanner.isDistanceGreater(w1, null, 100));
+    Assert.assertTrue(scanner.isDistanceGreater(w2, null, 100));
+    Assert.assertFalse(scanner.isDistanceGreater(null, null, 100));
+
+    // 1000s distance
+    Assert.assertTrue(scanner.isDistanceGreater(w1, w3, 999)); // 1000 > 999
+    Assert.assertFalse(scanner.isDistanceGreater(w1, w3, 1000));
+    Assert.assertFalse(scanner.isDistanceGreater(w1, w3, 1001));
+  }
 }
