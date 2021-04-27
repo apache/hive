@@ -6933,7 +6933,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       StringBuilder nullOrder = new StringBuilder();
       for (int sortOrder : sortOrders) {
         order.append(DirectionUtils.codeToSign(sortOrder));
-        nullOrder.append(sortOrder == DirectionUtils.ASCENDING_CODE ? 'a' : 'z');
+        nullOrder.append(NullOrdering.map(sortOrder, conf).getSign());
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
           maxReducers, acidOp, isCompaction);

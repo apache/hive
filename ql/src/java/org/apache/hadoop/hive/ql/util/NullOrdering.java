@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullValueOption;
 
+import static org.apache.hadoop.hive.ql.util.DirectionUtils.ASCENDING_CODE;
+
 /**
  * Enum for converting different Null ordering description types.
  */
@@ -71,6 +73,13 @@ public enum NullOrdering {
   public static NullOrdering defaultNullOrder(Configuration hiveConf) {
     return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST) ?
             NullOrdering.NULLS_LAST : NullOrdering.NULLS_FIRST;
+  }
+
+  public static NullOrdering map(int orderCode, Configuration hiveConf) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST)) {
+      return orderCode == ASCENDING_CODE ? NullOrdering.NULLS_LAST : NullOrdering.NULLS_FIRST;
+    }
+    return orderCode == ASCENDING_CODE ? NullOrdering.NULLS_FIRST : NullOrdering.NULLS_LAST;
   }
 
   public int getCode() {
