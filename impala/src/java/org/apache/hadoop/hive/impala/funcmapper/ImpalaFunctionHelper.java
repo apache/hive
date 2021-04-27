@@ -264,6 +264,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
       break;
     case "avg":
       calciteAggregateFunction = new HiveSqlAverageAggFunction(
+          isDistinct,
           functionInfo.returnTypeInference,
           functionInfo.operandTypeInference,
           functionInfo.operandTypeChecker);

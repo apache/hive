@@ -83,7 +83,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   private static final long serialVersionUID = 1L;
 
-  public static enum SupportedFunctionType {
+  public enum SupportedFunctionType {
     ROW_NUMBER,
     RANK,
     DENSE_RANK,
@@ -93,7 +93,21 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     AVG,
     FIRST_VALUE,
     LAST_VALUE,
-    COUNT
+    COUNT(true);
+
+    private final boolean supportDistinct;
+
+    SupportedFunctionType() {
+      supportDistinct = false;
+    }
+
+    SupportedFunctionType(boolean supportDistinct) {
+      this.supportDistinct = supportDistinct;
+    }
+
+    public boolean isSupportDistinct() {
+      return supportDistinct;
+    }
   }
 
   public static HashMap<String, SupportedFunctionType> supportedFunctionsMap =

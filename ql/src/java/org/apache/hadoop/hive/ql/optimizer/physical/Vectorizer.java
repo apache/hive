@@ -2925,6 +2925,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     boolean isPartitionOrderBy = vectorPTFDesc.getIsPartitionOrderBy();
+    boolean[] distinctEvaluator = vectorPTFDesc.getEvaluatorsAreDistinct();
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
     final int count = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
@@ -2937,6 +2938,12 @@ public class Vectorizer implements PhysicalPlanResolver {
         setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
         return false;
       }
+
+      if (distinctEvaluator[i] && !supportedFunctionType.isSupportDistinct()) {
+        setOperatorIssue(functionName + " distinct is not supported ");
+        return false;
+      }
+
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       if (!windowFrameDef.isStartUnbounded()) {
         setOperatorIssue(functionName + " only UNBOUNDED start frame is supported");
