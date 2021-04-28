@@ -21,11 +21,16 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 
@@ -104,5 +109,88 @@ public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
             .project(projExprs)
             .build();
     call.transformTo(newNode);
+  }
+
+  public static class FilterPropagator extends HiveRowIsDeletedPropagator {
+
+    private boolean foundTopRightJoin;
+
+    public FilterPropagator(RelBuilder relBuilder) {
+      super(relBuilder);
+    }
+
+    @Override
+    public RelNode propagate(RelNode relNode) {
+      foundTopRightJoin = false;
+      return super.propagate(relNode);
+    }
+
+    @Override
+    public RelNode visit(HiveProject project) {
+      if (!foundTopRightJoin) {
+        return visitChild(project, 0, project.getInput());
+      }
+
+      // continue traversal and propagate rowIsDeleted column
+      return super.visit(project);
+    }
+
+    @Override
+    public RelNode visit(HiveJoin join) {
+      if (!foundTopRightJoin) {
+        if (join.getJoinType() != JoinRelType.RIGHT) {
+          // continue search for top Right Join node
+          return visitChildren(join);
+        }
+
+        foundTopRightJoin = true;
+        return createFilter(join);
+      }
+
+      // continue traversal and propagate rowIsDeleted column
+      return super.visit(join);
+    }
+
+    private RelNode createFilter(HiveJoin join) {
+      // This should be a Scan on the MV
+      RelNode leftInput = join.getLeft();
+
+      // This branch is querying the rows should be inserted/deleted into the view since the last rebuild.
+      RelNode rightInput = join.getRight();
+
+      RelNode tmpJoin = visitChild(join, 1, rightInput);
+      RelNode newRightInput = tmpJoin.getInput(1);
+
+      // Create input ref to rowIsDeleteColumn. It is used in filter condition later.
+      RelDataType newRowType = newRightInput.getRowType();
+      int rowIsDeletedIdx = newRowType.getFieldCount() - 1;
+      RexBuilder rexBuilder = relBuilder.getRexBuilder();
+      RexNode rowIsDeleted = rexBuilder.makeInputRef(
+              newRowType.getFieldList().get(rowIsDeletedIdx).getType(),
+              leftInput.getRowType().getFieldCount() + rowIsDeletedIdx);
+
+      List<RexNode> projects = new ArrayList<>(newRowType.getFieldCount());
+      List<String> projectNames = new ArrayList<>(newRowType.getFieldCount());
+      for (int i = 0; i < leftInput.getRowType().getFieldCount(); ++i) {
+        RelDataTypeField relDataTypeField = leftInput.getRowType().getFieldList().get(i);
+        projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), i));
+        projectNames.add(relDataTypeField.getName());
+      }
+      for (int i = 0; i < newRowType.getFieldCount() - 1; ++i) {
+        RelDataTypeField relDataTypeField = newRowType.getFieldList().get(i);
+        projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), leftInput.getRowType().getFieldCount() + i));
+        projectNames.add(relDataTypeField.getName());
+      }
+
+      // Create new Top Right Join and a Filter. The filter condition is used in CalcitePlanner.fixUpASTJoinIncrementalRebuild().
+      return relBuilder
+              .push(leftInput)
+              .push(newRightInput)
+              .join(join.getJoinType(), join.getCondition())
+              .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR,
+                      rowIsDeleted, rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted)))
+              .project(projects, projectNames)
+              .build();
+    }
   }
 }
