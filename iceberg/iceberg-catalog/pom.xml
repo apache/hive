@@ -23,7 +23,6 @@
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-iceberg-shading</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>
