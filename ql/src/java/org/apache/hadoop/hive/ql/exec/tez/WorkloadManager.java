@@ -684,9 +684,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // May be change command to support ... DELAYED MOVE TO etl ... which will run under src cluster fraction as long
     // as possible
     Map<WmTezSession, WmEvent> recordMoveEvents = new HashMap<>();
+    boolean convertToDelayedMove = HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE);
     for (MoveSession moveSession : e.moveSessions) {
       handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse,
-          recordMoveEvents, HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_DELAYED_MOVE));
+          recordMoveEvents, convertToDelayedMove);
     }
     e.moveSessions.clear();
 
