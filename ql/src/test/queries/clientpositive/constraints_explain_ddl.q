@@ -1,3 +1,6 @@
+set hive.cbo.enable = True;
+set hive.vectorized.execution.enabled = True;
+
 CREATE TABLE `customer_removal_n0`(
   `c_custkey` bigint,
   `c_name` string,

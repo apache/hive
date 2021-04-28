@@ -1,3 +1,6 @@
+set hive.cbo.enable = True;
+set hive.vectorized.execution.enabled = True;
+
 create table alter1(a int, b int);
 explain ddl select * from alter1;
 alter table alter1 set tblproperties ('a'='1', 'c'='3');

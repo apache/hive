@@ -179,6 +179,28 @@ EXPLAIN CBO select  * FROM db1.v1_n17;
 
 
 EXPLAIN VECTORIZED select  * FROM db1.v1_n17;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          properties:
+            insideView TRUE
+          Output: key, value
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select  * FROM db1.v2_n10
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -213,6 +235,28 @@ EXPLAIN select  * FROM db1.v2_n10;
 EXPLAIN CBO select  * FROM db1.v2_n10;
 
 EXPLAIN VECTORIZED select  * FROM db1.v2_n10;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          properties:
+            insideView TRUE
+          Output: key, value
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select  * FROM db1.v3_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -264,6 +308,93 @@ EXPLAIN select  * FROM db1.v3_n3;
 EXPLAIN CBO select  * FROM db1.v3_n3;
 
 EXPLAIN VECTORIZED select  * FROM db1.v3_n3;
+CBO PLAN:HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+  HiveProject(key=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  properties:
+                    insideView TRUE
+                  Output: key, value
+                 db1@table1_n19,t1,Tbl:COMPLETE,Col:NONE
+rows=1 width=368
+                  Filter Operator
+                    predicate: key is not null
+rows=1 width=368
+                    Select Operator
+                      Output: _col0, _col1
+rows=1 width=368
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=368
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  properties:
+                    insideView TRUE
+                  Output: key
+                 db1@table2_n13,t2,Tbl:COMPLETE,Col:NONE
+rows=1 width=184
+                  Filter Operator
+                    predicate: key is not null
+rows=1 width=184
+                    Select Operator
+                      Output: _col0
+rows=1 width=184
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=184
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0, _col1, _col2
+rows=1 width=404
+                File Output Operator
+                  table:
+rows=1 width=404
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 3
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select  * FROM db1.v4_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -298,6 +429,28 @@ EXPLAIN select  * FROM db1.v4_n3;
 EXPLAIN CBO select  * FROM db1.v4_n3;
 
 EXPLAIN VECTORIZED select  * FROM db1.v4_n3;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          properties:
+            insideView TRUE
+          Output: key, value
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select  * FROM db1.v5_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -332,6 +485,28 @@ EXPLAIN select  * FROM db1.v5_n1;
 EXPLAIN CBO select  * FROM db1.v5_n1;
 
 EXPLAIN VECTORIZED select  * FROM db1.v5_n1;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          properties:
+            insideView TRUE
+          Output: key, value
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select  * FROM db1.v6
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -383,6 +558,93 @@ EXPLAIN select  * FROM db1.v6;
 EXPLAIN CBO select  * FROM db1.v6;
 
 EXPLAIN VECTORIZED select  * FROM db1.v6;
+CBO PLAN:HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+  HiveProject(key=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  properties:
+                    insideView TRUE
+                  Output: key, value
+                 db1@table1_n19,t1,Tbl:COMPLETE,Col:NONE
+rows=1 width=368
+                  Filter Operator
+                    predicate: key is not null
+rows=1 width=368
+                    Select Operator
+                      Output: _col0, _col1
+rows=1 width=368
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=368
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  properties:
+                    insideView TRUE
+                  Output: key
+                 db1@table2_n13,t2,Tbl:COMPLETE,Col:NONE
+rows=1 width=184
+                  Filter Operator
+                    predicate: key is not null
+rows=1 width=184
+                    Select Operator
+                      Output: _col0
+rows=1 width=184
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=184
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0, _col1, _col2
+rows=1 width=404
+                File Output Operator
+                  table:
+rows=1 width=404
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 3
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select  * FROM db1.v7
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -417,6 +679,28 @@ EXPLAIN select  * FROM db1.v7;
 EXPLAIN CBO select  * FROM db1.v7;
 
 EXPLAIN VECTORIZED select  * FROM db1.v7;
+CBO PLAN:HiveProject(key=[$0])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          properties:
+            insideView TRUE
+          Output: key
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select  * FROM db1.v8
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@table1_n19
@@ -451,6 +735,28 @@ EXPLAIN select  * FROM db1.v8;
 EXPLAIN CBO select  * FROM db1.v8;
 
 EXPLAIN VECTORIZED select  * FROM db1.v8;
+CBO PLAN:HiveProject(key=[$0])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          properties:
+            insideView TRUE
+          Output: key
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

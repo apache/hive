@@ -273,6 +273,7 @@ public class DDLPlanUtils {
    * @return
    * @throws MetaException
    */
+  //TODO: Adding/Updating Stats to Default Partition Not Allowed. Need to Fix Later
   public String getAlterTableAddPartition(Partition pt) throws MetaException {
     Table tb = pt.getTable();
     ST command = new ST(ALTER_TABLE_CREATE_PARTITION);
@@ -475,7 +476,6 @@ public class DDLPlanUtils {
    * @param dbName
    * @return
    */
-
   public String getAlterTableStmtPartitionColStat(ColumnStatisticsData columnStatisticsData, String colName,
       String tblName, String ptName, String dbName) {
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN);
@@ -503,13 +503,11 @@ public class DDLPlanUtils {
    * statistics command for each column.
    *
    * @param columnStatisticsObjList
-   * @param colName
    * @param tblName
    * @param ptName
    * @param dbName
    */
   public List<String> getAlterTableStmtPartitionStatsColsAll(List<ColumnStatisticsObj> columnStatisticsObjList,
-      List<String> colName,
       String tblName,
       String ptName,
       String dbName) {
@@ -535,6 +533,18 @@ public class DDLPlanUtils {
     return alterTableStmt;
   }
 
+  public String paramToValues(Map<String, String> parameters){
+    List<String> paramsToValue = new ArrayList<>();
+    for (String s : req) {
+      String p = parameters.get(s);
+      if (p == null) {
+        p = "0";
+      }
+      paramsToValue.add("'" + s + "'='" + p + "'");
+    }
+    return Joiner.on(",").join(paramsToValue);
+  }
+
   /**
    * Parses the basic table statistics for the given table.
    *
@@ -543,19 +553,11 @@ public class DDLPlanUtils {
    */
   public String getAlterTableStmtPartitionStatsBasic(Partition pt) {
     Map<String, String> parameters = pt.getParameters();
-    List<String> paramsToValues = new ArrayList<>();
-    for (String s : req) {
-      String p = parameters.get(s);
-      if (p == null) {
-        p = "0";
-      }
-      paramsToValues.add("'" + s + "'='" + p + "'");
-    }
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC);
     command.add(DATABASE_NAME, pt.getTable().getDbName());
     command.add(TABLE_NAME, pt.getTable().getTableName());
     command.add(PARTITION_NAME, getPartitionActualName(pt));
-    command.add(TBLPROPERTIES, Joiner.on(",").join(paramsToValues));
+    command.add(TBLPROPERTIES, paramToValues(parameters));
     if(checkIfDefaultPartition(pt.getName())){
       command.add(COMMENT_SQL, "--");
     }
@@ -585,7 +587,6 @@ public class DDLPlanUtils {
         getPartitionActualName(p)));
     for (String partitionName : partitionColStats.keySet()) {
       alterTableStmt.addAll(getAlterTableStmtPartitionStatsColsAll(partitionColStats.get(partitionName),
-          columnNames,
           tableName, partitionToActualName.get(partitionName),
           databaseName));
     }
@@ -601,18 +602,10 @@ public class DDLPlanUtils {
    */
   public String getAlterTableStmtTableStatsBasic(Table tbl) {
     Map<String, String> parameters = tbl.getParameters();
-    List<String> paramsToValues = new ArrayList<>();
-    for (String s : req) {
-      String p = parameters.get(s);
-      if (p == null) {
-        p = "0";
-      }
-      paramsToValues.add("'" + s + "'='" + p + "'");
-    }
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_TABLE_BASIC);
     command.add(TABLE_NAME, tbl.getTableName());
     command.add(DATABASE_NAME, tbl.getDbName());
-    command.add(TBLPROPERTIES, Joiner.on(",").join(paramsToValues));
+    command.add(TBLPROPERTIES, paramToValues(parameters));
     return command.render();
   }
 

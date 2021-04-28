@@ -38,6 +38,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -80,6 +100,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -123,6 +163,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -166,6 +226,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -209,6 +289,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@alter1
@@ -254,6 +354,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@alter1
@@ -300,6 +420,26 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: drop table alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter1
@@ -360,6 +500,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -402,6 +562,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -445,6 +625,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -488,6 +688,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -531,6 +751,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -576,6 +816,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -622,6 +882,26 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: DROP TABLE alter1_db.alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter1_db@alter1
@@ -680,6 +960,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -732,6 +1032,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -789,6 +1109,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -848,6 +1188,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -901,6 +1261,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -959,6 +1339,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter2
@@ -1041,6 +1441,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1093,6 +1513,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1150,6 +1590,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1209,6 +1669,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1262,6 +1742,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2
@@ -1320,6 +1820,26 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
+CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+  HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: alter2_db@alter2

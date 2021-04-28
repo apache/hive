@@ -1,3 +1,6 @@
+set hive.cbo.enable = True;
+set hive.vectorized.execution.enabled = True;
+
 CREATE DATABASE db1;
 USE db1;
 

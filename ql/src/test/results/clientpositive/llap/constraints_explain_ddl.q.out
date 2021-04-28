@@ -115,6 +115,29 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey;
+CBO PLAN:HiveProject($f0=[$0])
+  HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+    HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: c_custkey, c_nation
+          Filter Operator
+            predicate: (c_nation) IN ('USA', 'INDIA')
+            Select Operator
+              Output: _col0
+
 PREHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_removal_n0
@@ -160,6 +183,29 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation;
+CBO PLAN:HiveProject(c_custkey=[$0])
+  HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+    HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: c_custkey, c_nation
+          Filter Operator
+            predicate: (c_nation) IN ('USA', 'INDIA')
+            Select Operator
+              Output: _col0
+
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dates_removal_n0
@@ -215,6 +261,29 @@ EXPLAIN CBO SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) 
 
 
 EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id;
+CBO PLAN:HiveProject(d_datekey=[$0])
+  HiveFilter(condition=[IN($5, 1985, 2004)])
+    HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: d_datekey, d_year
+          Filter Operator
+            predicate: (d_year) IN (1985, 2004)
+            Select Operator
+              Output: _col0
+
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
 order by d_datekey limit 10
 PREHOOK: type: QUERY
@@ -275,6 +344,67 @@ order by d_datekey limit 10;
 
 EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
 order by d_datekey limit 10;
+CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
+  HiveProject(d_datekey=[$0])
+    HiveFilter(condition=[IN($5, 1985, 2004)])
+      HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: d_datekey, d_year
+                 default@dates_removal_n0,dates_removal_n0,Tbl:COMPLETE,Col:NONE
+rows=1 width=12
+                  Filter Operator
+                    predicate: (d_year) IN (1985, 2004)
+rows=1 width=12
+                    Top N Key Operator
+                      top n: 10
+                      keys: d_datekey
+rows=1 width=12
+                      Select Operator
+                        Output: _col0
+rows=1 width=12
+                        Reduce Output Operator
+                          outputname: Reducer 2
+rows=1 width=12
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=12
+                Limit
+                  Number of rows: 10
+rows=1 width=12
+                  File Output Operator
+                    table:
+rows=1 width=12
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10
 PREHOOK: type: QUERY
@@ -335,6 +465,67 @@ d_sellingseason order by d_datekey limit 10;
 
 EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10;
+CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
+  HiveProject(d_datekey=[$0])
+    HiveFilter(condition=[IN($5, 1985, 2004)])
+      HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: d_datekey, d_year
+                 default@dates_removal_n0,dates_removal_n0,Tbl:COMPLETE,Col:NONE
+rows=1 width=12
+                  Filter Operator
+                    predicate: (d_year) IN (1985, 2004)
+rows=1 width=12
+                    Top N Key Operator
+                      top n: 10
+                      keys: d_datekey
+rows=1 width=12
+                      Select Operator
+                        Output: _col0
+rows=1 width=12
+                        Reduce Output Operator
+                          outputname: Reducer 2
+rows=1 width=12
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=12
+                Limit
+                  Number of rows: 10
+rows=1 width=12
+                  File Output Operator
+                    table:
+rows=1 width=12
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+
 PREHOOK: query: explain ddl SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10
 PREHOOK: type: QUERY
@@ -395,6 +586,93 @@ d_sellingseason order by d_datekey limit 10;
 
 EXPLAIN VECTORIZED SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10;
+CBO PLAN:HiveProject(_o__c0=[$0])
+  HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[10])
+    HiveProject(_o__c0=[$2], (tok_table_or_col d_datekey)=[$0])
+      HiveAggregate(group=[{0, 1}], agg#0=[count()])
+        HiveFilter(condition=[IN($5, 1985, 2004)])
+          HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: d_datekey, d_id, d_year
+                 default@dates_removal_n0,dates_removal_n0,Tbl:COMPLETE,Col:NONE
+rows=1 width=20
+                  Filter Operator
+                    predicate: (d_year) IN (1985, 2004)
+rows=1 width=20
+                    Top N Key Operator
+                      top n: 10
+                      keys: d_datekey, d_id
+rows=1 width=20
+                      Select Operator
+                        Output: d_datekey, d_id
+rows=1 width=20
+                        Group By Operator
+                          aggregations: count()
+                          keys: d_datekey, d_id
+                          Output: _col0, _col1, _col2
+rows=1 width=20
+                          Reduce Output Operator
+                            outputname: Reducer 2
+                            PartitionCols: _col0, _col1
+rows=1 width=20
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1, _col2
+rows=1 width=20
+                Select Operator
+                  Output: _col0, _col1
+rows=1 width=20
+                  Reduce Output Operator
+                    outputname: Reducer 3
+rows=1 width=20
+            tag: 0
+            tagToInput:
+              0 Map 1
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=20
+                Limit
+                  Number of rows: 10
+rows=1 width=20
+                  File Output Operator
+                    table:
+rows=1 width=20
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: insert into dates_removal_n0(d_datekey, d_id)  values(3, 0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -590,6 +868,82 @@ EXPLAIN CBO SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d
 
 
 EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id;
+CBO PLAN:HiveProject(d_datekey=[$0])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(d_datekey=[$0], d_id=[$1])
+      HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
+    HiveProject(c_custkey=[$0])
+      HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: d_datekey
+                 default@dates_removal_n0,dates_removal_n0,Tbl:COMPLETE,Col:COMPLETE
+rows=2 width=8
+                  Select Operator
+                    Output: _col0
+rows=2 width=8
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=2 width=8
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  Output: c_custkey
+                 default@customer_removal_n0,customer_removal_n0,Tbl:COMPLETE,Col:COMPLETE
+rows=1 width=8
+                  Select Operator
+                    Output: _col0
+rows=1 width=8
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=8
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0
+rows=2 width=8
+                File Output Operator
+                  table:
+rows=2 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 3
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
 order by d_datekey limit 10
 PREHOOK: type: QUERY
@@ -685,6 +1039,90 @@ order by d_datekey limit 10;
 
 EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
 order by d_datekey limit 10;
+CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
+  HiveProject(d_datekey=[$0])
+    HiveAggregate(group=[{0, 13}])
+      HiveFilter(condition=[IN($5, 1985, 2004)])
+        HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: d_datekey, d_year, d_sellingseason
+                 default@dates_removal_n0,dates_removal_n0,Tbl:COMPLETE,Col:COMPLETE
+rows=2 width=52
+                  Filter Operator
+                    predicate: (d_year) IN (1985, 2004)
+rows=1 width=96
+                    Top N Key Operator
+                      top n: 10
+                      keys: d_datekey, d_sellingseason
+rows=1 width=96
+                      Select Operator
+                        Output: d_datekey, d_sellingseason
+rows=1 width=96
+                        Group By Operator
+                          keys: d_datekey, d_sellingseason
+                          Output: _col0, _col1
+rows=1 width=92
+                          Reduce Output Operator
+                            outputname: Reducer 2
+                            PartitionCols: _col0, _col1
+rows=1 width=92
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1
+rows=1 width=92
+                Select Operator
+                  Output: _col0
+rows=1 width=8
+                  Reduce Output Operator
+                    outputname: Reducer 3
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=8
+                Limit
+                  Number of rows: 10
+rows=1 width=8
+                  File Output Operator
+                    table:
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+
 PREHOOK: query: explain ddl SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
 group by c_custkey, c_nation
 PREHOOK: type: QUERY
@@ -753,6 +1191,71 @@ group by c_custkey, c_nation;
 
 EXPLAIN VECTORIZED SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
 group by c_custkey, c_nation;
+CBO PLAN:HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+      HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: c_custkey, c_nation
+                 default@customer_removal_n0,customer_removal_n0,Tbl:COMPLETE,Col:COMPLETE
+rows=1 width=92
+                  Filter Operator
+                    predicate: (c_nation) IN ('USA', 'INDIA')
+rows=1 width=92
+                    Select Operator
+                      Output: c_custkey
+rows=1 width=92
+                      Group By Operator
+                        aggregations: count()
+                        keys: c_custkey
+                        Output: _col0, _col1
+rows=1 width=16
+                        Reduce Output Operator
+                          outputname: Reducer 2
+                          PartitionCols: _col0
+rows=1 width=16
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0
+                Output: _col0, _col1
+rows=1 width=16
+                Select Operator
+                  Output: _col0
+rows=1 width=8
+                  File Output Operator
+                    table:
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: DROP TABLE customer_removal_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_removal_n0
@@ -829,6 +1332,26 @@ EXPLAIN CBO select key1 from dest_g21 group by key1, value1;
 
 
 EXPLAIN VECTORIZED select key1 from dest_g21 group by key1, value1;
+CBO PLAN:HiveProject(key1=[$0])
+  HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: key1
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select key1 from dest_g21 where value1 > 1 group by key1, value1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -868,6 +1391,29 @@ EXPLAIN CBO select key1 from dest_g21 where value1 > 1 group by key1, value1;
 
 
 EXPLAIN VECTORIZED select key1 from dest_g21 where value1 > 1 group by key1, value1;
+CBO PLAN:HiveProject(key1=[$0])
+  HiveFilter(condition=[>($1, 1E0)])
+    HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: key1, value1
+          Filter Operator
+            predicate: (value1 > 1.0D)
+            Select Operator
+              Output: _col0
+
 PREHOOK: query: explain ddl select key1 from dest_g21 where key1 > 1 group by key1, value1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -907,6 +1453,29 @@ EXPLAIN CBO select key1 from dest_g21 where key1 > 1 group by key1, value1;
 
 
 EXPLAIN VECTORIZED select key1 from dest_g21 where key1 > 1 group by key1, value1;
+CBO PLAN:HiveProject(key1=[$0])
+  HiveFilter(condition=[>($0, 1)])
+    HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: key1
+          Filter Operator
+            predicate: (key1 > 1)
+            Select Operator
+              Output: _col0
+
 PREHOOK: query: explain ddl select count(key1) from dest_g21 group by key1, value1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -949,6 +1518,67 @@ EXPLAIN CBO select count(key1) from dest_g21 group by key1, value1;
 
 
 EXPLAIN VECTORIZED select count(key1) from dest_g21 group by key1, value1;
+CBO PLAN:HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: key1
+                 default@dest_g21,dest_g21,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=4
+                  Select Operator
+                    Output: key1
+rows=6 width=4
+                    Group By Operator
+                      aggregations: count()
+                      keys: key1
+                      Output: _col0, _col1
+rows=6 width=12
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=6 width=12
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0
+                Output: _col0, _col1
+rows=6 width=12
+                Select Operator
+                  Output: _col0
+rows=6 width=8
+                  File Output Operator
+                    table:
+rows=6 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select count(key1) from dest_g21 where value1 > 1 group by key1, value1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -988,6 +1618,71 @@ EXPLAIN CBO select count(key1) from dest_g21 where value1 > 1 group by key1, val
 
 
 EXPLAIN VECTORIZED select count(key1) from dest_g21 where value1 > 1 group by key1, value1;
+CBO PLAN:HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveFilter(condition=[>($1, 1E0)])
+      HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: key1, value1
+                 default@dest_g21,dest_g21,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=10
+                  Filter Operator
+                    predicate: (value1 > 1.0D)
+rows=6 width=10
+                    Select Operator
+                      Output: key1
+rows=6 width=10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key1
+                        Output: _col0, _col1
+rows=6 width=12
+                        Reduce Output Operator
+                          outputname: Reducer 2
+                          PartitionCols: _col0
+rows=6 width=12
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0
+                Output: _col0, _col1
+rows=6 width=12
+                Select Operator
+                  Output: _col0
+rows=6 width=8
+                  File Output Operator
+                    table:
+rows=6 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -1030,6 +1725,86 @@ EXPLAIN CBO select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key
 
 
 EXPLAIN VECTORIZED select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1;
+CBO PLAN:HiveProject($f0=[$0])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key1=[$0], value1=[$1])
+      HiveTableScan(table=[[default, dest_g21]], table:alias=[t1])
+    HiveProject(key1=[$0])
+      HiveFilter(condition=[>($1, 2E0)])
+        HiveTableScan(table=[[default, dest_g21]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: key1
+                 default@dest_g21,t1,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=4
+                  Select Operator
+                    Output: _col0
+rows=6 width=4
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=6 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  Output: key1, value1
+                 default@dest_g21,t2,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=10
+                  Filter Operator
+                    predicate: (value1 > 2.0D)
+rows=4 width=12
+                    Select Operator
+                      Output: _col0
+rows=4 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=4 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0
+rows=4 width=4
+                File Output Operator
+                  table:
+rows=4 width=4
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 3
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -1069,6 +1844,111 @@ EXPLAIN CBO select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 =
 
 
 EXPLAIN VECTORIZED select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1;
+CBO PLAN:HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key1=[$0], value1=[$1])
+        HiveTableScan(table=[[default, dest_g21]], table:alias=[t1])
+      HiveProject(key1=[$0])
+        HiveFilter(condition=[>($1, 2E0)])
+          HiveTableScan(table=[[default, dest_g21]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: key1
+                 default@dest_g21,t1,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=4
+                  Select Operator
+                    Output: _col0
+rows=6 width=4
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=6 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: key1, value1
+                 default@dest_g21,t2,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=10
+                  Filter Operator
+                    predicate: (value1 > 2.0D)
+rows=4 width=12
+                    Select Operator
+                      Output: _col0
+rows=4 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=4 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0
+rows=4 width=4
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0
+                  Output: _col0, _col1
+rows=3 width=12
+                  Reduce Output Operator
+                    outputname: Reducer 3
+                    PartitionCols: _col0
+rows=3 width=12
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 4
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0
+                Output: _col0, _col1
+rows=3 width=12
+                Select Operator
+                  Output: _col0
+rows=3 width=8
+                  File Output Operator
+                    table:
+rows=3 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -1111,6 +1991,29 @@ EXPLAIN CBO select key1 from (select key1, count(key1) from dest_g21 where value
 
 
 EXPLAIN VECTORIZED select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub;
+CBO PLAN:HiveProject(key1=[$0])
+  HiveFilter(condition=[<($1, 4.5E0)])
+    HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: key1, value1
+          Filter Operator
+            predicate: (value1 < 4.5D)
+            Select Operator
+              Output: _col0
+
 PREHOOK: query: explain ddl select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g21
@@ -1153,6 +2056,67 @@ EXPLAIN CBO select key1, sm from (select key1, count(key1), sum(key1) as sm from
 
 
 EXPLAIN VECTORIZED select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub;
+CBO PLAN:HiveAggregate(group=[{0}], agg#0=[sum($0)])
+  HiveFilter(condition=[<($1, 4.5E0)])
+    HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: key1, value1
+                 default@dest_g21,dest_g21,Tbl:COMPLETE,Col:COMPLETE
+rows=6 width=10
+                  Filter Operator
+                    predicate: (value1 < 4.5D)
+rows=6 width=10
+                    Select Operator
+                      Output: key1
+rows=6 width=10
+                      Group By Operator
+                        aggregations: sum(key1)
+                        keys: key1
+                        Output: _col0, _col1
+rows=6 width=12
+                        Reduce Output Operator
+                          outputname: Reducer 2
+                          PartitionCols: _col0
+rows=6 width=12
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0
+                Output: _col0, _col1
+rows=6 width=12
+                File Output Operator
+                  table:
+rows=6 width=12
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: DROP table dest_g21
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g21
@@ -1225,6 +2189,65 @@ EXPLAIN CBO select i, j from tconst where i is not null group by i,j, d_year;
 
 
 EXPLAIN VECTORIZED select i, j from tconst where i is not null group by i,j, d_year;
+CBO PLAN:HiveProject(i=[$0], j=[$1])
+  HiveAggregate(group=[{0, 1, 2}])
+    HiveTableScan(table=[[default, tconst]], table:alias=[tconst])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: i, j, d_year
+                 default@tconst,tconst,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=96
+                  Select Operator
+                    Output: i, j, d_year
+rows=3 width=96
+                    Group By Operator
+                      keys: i, j, d_year
+                      Output: _col0, _col1, _col2
+rows=3 width=96
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0, _col1, _col2
+rows=3 width=96
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1, KEY._col2
+                Output: _col0, _col1, _col2
+rows=3 width=96
+                Select Operator
+                  Output: _col0, _col1
+rows=3 width=8
+                  File Output Operator
+                    table:
+rows=3 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tconst
@@ -1270,6 +2293,66 @@ EXPLAIN CBO select i, j from tconst where i IS NOT NULL and j IS NOT NULL group 
 
 
 EXPLAIN VECTORIZED select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year;
+CBO PLAN:HiveProject(i=[$0], j=[$1])
+  HiveAggregate(group=[{0, 1, 2}])
+    HiveFilter(condition=[IS NOT NULL($1)])
+      HiveTableScan(table=[[default, tconst]], table:alias=[tconst])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: i, j, d_year
+                 default@tconst,tconst,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=96
+                  Filter Operator
+                    predicate: j is not null
+rows=2 width=96
+                    Group By Operator
+                      keys: i, j, d_year
+                      Output: _col0, _col1, _col2
+rows=2 width=96
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0, _col1, _col2
+rows=2 width=96
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1, KEY._col2
+                Output: _col0, _col1, _col2
+rows=2 width=96
+                Select Operator
+                  Output: _col0, _col1
+rows=2 width=8
+                  File Output Operator
+                    table:
+rows=2 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tconst
@@ -1315,6 +2398,65 @@ EXPLAIN CBO select i,j from tconst where i is not null OR j IS NOT NULL group by
 
 
 EXPLAIN VECTORIZED select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year;
+CBO PLAN:HiveProject(i=[$0], j=[$1])
+  HiveAggregate(group=[{0, 1, 2}])
+    HiveTableScan(table=[[default, tconst]], table:alias=[tconst])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: i, j, d_year
+                 default@tconst,tconst,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=96
+                  Select Operator
+                    Output: i, j, d_year
+rows=3 width=96
+                    Group By Operator
+                      keys: i, j, d_year
+                      Output: _col0, _col1, _col2
+rows=3 width=96
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0, _col1, _col2
+rows=3 width=96
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1, KEY._col2
+                Output: _col0, _col1, _col2
+rows=3 width=96
+                Select Operator
+                  Output: _col0, _col1
+rows=3 width=8
+                  File Output Operator
+                    table:
+rows=3 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tconst
@@ -1360,6 +2502,111 @@ EXPLAIN CBO select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by
 
 
 EXPLAIN VECTORIZED select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year;
+CBO PLAN:HiveProject(_o__c0=[$2])
+  HiveAggregate(group=[{0, 1}], agg#0=[sum($0)])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(i=[$0], d_year=[$2])
+        HiveTableScan(table=[[default, tconst]], table:alias=[t1])
+      HiveProject(j=[$1])
+        HiveFilter(condition=[IS NOT NULL($1)])
+          HiveTableScan(table=[[default, tconst]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: i, d_year
+                 default@tconst,t1,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=92
+                  Select Operator
+                    Output: _col0, _col1
+rows=3 width=92
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=3 width=92
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: j
+                 default@tconst,t2,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=4
+                  Filter Operator
+                    predicate: j is not null
+rows=2 width=4
+                    Select Operator
+                      Output: _col0
+rows=2 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=2 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0, _col1
+rows=2 width=92
+                Group By Operator
+                  aggregations: sum(_col0)
+                  keys: _col0, _col1
+                  Output: _col0, _col1, _col2
+rows=2 width=100
+                  Reduce Output Operator
+                    outputname: Reducer 3
+                    PartitionCols: _col0, _col1
+rows=2 width=100
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 4
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1, _col2
+rows=2 width=100
+                Select Operator
+                  Output: _col0
+rows=2 width=8
+                  File Output Operator
+                    table:
+rows=2 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tconst
@@ -1405,6 +2652,107 @@ EXPLAIN CBO select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by
 
 
 EXPLAIN VECTORIZED select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year;
+CBO PLAN:HiveProject(_o__c0=[$2])
+  HiveAggregate(group=[{0, 1}], agg#0=[sum($0)])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(i=[$0], d_year=[$2])
+        HiveTableScan(table=[[default, tconst]], table:alias=[t1])
+      HiveProject(i=[$0])
+        HiveTableScan(table=[[default, tconst]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: i, d_year
+                 default@tconst,t1,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=92
+                  Select Operator
+                    Output: _col0, _col1
+rows=3 width=92
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=3 width=92
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: i
+                 default@tconst,t2,Tbl:COMPLETE,Col:COMPLETE
+rows=3 width=4
+                  Select Operator
+                    Output: _col0
+rows=3 width=4
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=3 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0, _col1
+rows=3 width=92
+                Group By Operator
+                  aggregations: sum(_col0)
+                  keys: _col0, _col1
+                  Output: _col0, _col1, _col2
+rows=3 width=100
+                  Reduce Output Operator
+                    outputname: Reducer 3
+                    PartitionCols: _col0, _col1
+rows=3 width=100
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 4
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1, _col2
+rows=3 width=100
+                Select Operator
+                  Output: _col0
+rows=3 width=8
+                  File Output Operator
+                    table:
+rows=3 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: DROP TABLE tconst
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tconst
@@ -1454,6 +2802,26 @@ EXPLAIN select key1 from dest_g21 group by key1, value1;
 EXPLAIN CBO select key1 from dest_g21 group by key1, value1;
 
 EXPLAIN VECTORIZED select key1 from dest_g21 group by key1, value1;
+CBO PLAN:HiveProject(key1=[$0])
+  HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: key1
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: create table dest_g24 (key1 int , value1 double, UNIQUE(key1) disable rely)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1494,6 +2862,65 @@ EXPLAIN select key1 from dest_g24 group by key1, value1;
 EXPLAIN CBO select key1 from dest_g24 group by key1, value1;
 
 EXPLAIN VECTORIZED select key1 from dest_g24 group by key1, value1;
+CBO PLAN:HiveProject(key1=[$0])
+  HiveAggregate(group=[{0, 1}])
+    HiveTableScan(table=[[default, dest_g24]], table:alias=[dest_g24])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: key1, value1
+                 default@dest_g24,dest_g24,Tbl:COMPLETE,Col:NONE
+rows=1 width=12
+                  Select Operator
+                    Output: key1, value1
+rows=1 width=12
+                    Group By Operator
+                      keys: key1, value1
+                      Output: _col0, _col1
+rows=1 width=12
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0, _col1
+rows=1 width=12
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1
+rows=1 width=12
+                Select Operator
+                  Output: _col0
+rows=1 width=12
+                  File Output Operator
+                    table:
+rows=1 width=12
+            tag: 0
+            tagToInput:
+              0 Map 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: DROP TABLE dest_g21
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g21
@@ -1780,6 +3207,105 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address;
+CBO PLAN:HiveAggregate(group=[{1}])
+  HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(ss_customer_sk=[$3])
+      HiveFilter(condition=[IS NOT NULL($3)])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=188
+                  Select Operator
+                    Output: _col0, _col1
+rows=1 width=188
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=188
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Filter Operator
+                    predicate: ss_customer_sk is not null
+rows=1 width=4
+                    Select Operator
+                      Output: _col0
+rows=1 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1
+rows=1 width=206
+                Group By Operator
+                  keys: _col1
+                  Output: _col0
+rows=1 width=206
+                  Reduce Output Operator
+                    outputname: Reducer 3
+                    PartitionCols: _col0
+rows=1 width=206
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 4
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0
+                Output: _col0
+rows=1 width=206
+                File Output Operator
+                  table:
+rows=1 width=206
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl
 select c_customer_id
 from store_sales
@@ -1928,6 +3454,105 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address;
+CBO PLAN:HiveAggregate(group=[{2}])
+  HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(ss_customer_sk=[$3])
+      HiveFilter(condition=[IS NOT NULL($3)])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Filter Operator
+                    predicate: ss_customer_sk is not null
+rows=1 width=4
+                    Select Operator
+                      Output: _col0
+rows=1 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=188
+                  Select Operator
+                    Output: _col0, _col1
+rows=1 width=188
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=188
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col2
+rows=1 width=4
+                Group By Operator
+                  keys: _col2
+                  Output: _col0
+rows=1 width=4
+                  Reduce Output Operator
+                    outputname: Reducer 3
+                    PartitionCols: _col0
+rows=1 width=4
+            tag: 1
+            tagToInput:
+              0 Map 1
+              1 Map 4
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0
+                Output: _col0
+rows=1 width=4
+                File Output Operator
+                  table:
+rows=1 width=4
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl with year_total as (
   select c_customer_id customer_id
   ,c_first_name customer_first_name
@@ -2151,6 +3776,130 @@ year_total t_s_secyear
 where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100;
+CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+  HiveProject(customer_preferred_cust_flag=[$1])
+    HiveAggregate(group=[{1, 4}])
+      HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+          HiveTableScan(table=[[default, customer]], table:alias=[customer])
+        HiveProject(ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+          HiveFilter(condition=[IS NOT NULL($3)])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id, c_preferred_cust_flag
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=372
+                  Select Operator
+                    Output: _col0, _col1, _col4
+rows=1 width=372
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=372
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Filter Operator
+                    predicate: ss_customer_sk is not null
+rows=1 width=4
+                    Select Operator
+                      Output: _col0
+rows=1 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1, _col4
+rows=1 width=409
+                Top N Key Operator
+                  top n: 100
+                  keys: _col4, _col1
+rows=1 width=409
+                  Group By Operator
+                    keys: _col4, _col1
+                    Output: _col0, _col1
+rows=1 width=409
+                    Reduce Output Operator
+                      outputname: Reducer 3
+                      PartitionCols: _col0, _col1
+rows=1 width=409
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 5
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1
+rows=1 width=409
+                Select Operator
+                  Output: _col0
+rows=1 width=409
+                  Reduce Output Operator
+                    outputname: Reducer 4
+rows=1 width=409
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=409
+                Limit
+                  Number of rows: 100
+rows=1 width=409
+                  File Output Operator
+                    table:
+rows=1 width=409
+            tag: 0
+            tagToInput:
+              0 Reducer 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+
 PREHOOK: query: explain ddl
 with year_total as (
   select c_customer_id customer_id
@@ -2379,6 +4128,130 @@ year_total t_s_secyear
 where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100;
+CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+  HiveProject(customer_preferred_cust_flag=[$1])
+    HiveAggregate(group=[{1, 4}])
+      HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+          HiveTableScan(table=[[default, customer]], table:alias=[customer])
+        HiveProject(ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+          HiveFilter(condition=[IS NOT NULL($3)])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id, c_preferred_cust_flag
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=372
+                  Select Operator
+                    Output: _col0, _col1, _col4
+rows=1 width=372
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=372
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Filter Operator
+                    predicate: ss_customer_sk is not null
+rows=1 width=4
+                    Select Operator
+                      Output: _col0
+rows=1 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1, _col4
+rows=1 width=409
+                Top N Key Operator
+                  top n: 100
+                  keys: _col4, _col1
+rows=1 width=409
+                  Group By Operator
+                    keys: _col4, _col1
+                    Output: _col0, _col1
+rows=1 width=409
+                    Reduce Output Operator
+                      outputname: Reducer 3
+                      PartitionCols: _col0, _col1
+rows=1 width=409
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 5
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1
+rows=1 width=409
+                Select Operator
+                  Output: _col0
+rows=1 width=409
+                  Reduce Output Operator
+                    outputname: Reducer 4
+rows=1 width=409
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=409
+                Limit
+                  Number of rows: 100
+rows=1 width=409
+                  File Output Operator
+                    table:
+rows=1 width=409
+            tag: 0
+            tagToInput:
+              0 Reducer 3
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+
 PREHOOK: query: CREATE TABLE `date_dim`(
   `d_date_sk` int,
   `d_date_id` string,
@@ -2759,6 +4632,302 @@ and t_s_secyear.dyear = 2001+1
 and t_s_firstyear.year_total > 0
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100;
+CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+  HiveProject(customer_preferred_cust_flag=[$1])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(c_customer_id=[$0], c_preferred_cust_flag=[$1])
+        HiveAggregate(group=[{1, 4}])
+          HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+              HiveTableScan(table=[[default, customer]], table:alias=[customer])
+            HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+                HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveProject(d_date_sk=[$0])
+                HiveFilter(condition=[AND(=($6, 2002), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+      HiveProject($f0=[$0])
+        HiveFilter(condition=[>($1, 0)])
+          HiveAggregate(group=[{1}], agg#0=[sum($10)])
+            HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                HiveTableScan(table=[[default, customer]], table:alias=[customer])
+              HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+                  HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                HiveProject(d_date_sk=[$0])
+                  HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
+        Reducer 3 <- Map 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
+        Reducer 8 <- Map 10 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: d_date_sk, d_year
+                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE
+rows=1 width=8
+                  Filter Operator
+                    predicate: ((d_year = 2002) and d_date_sk is not null)
+rows=1 width=8
+                    Select Operator
+                      Output: _col0
+rows=1 width=8
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=8
+                  Filter Operator
+                    predicate: ((d_year = 2001) and d_date_sk is not null)
+rows=1 width=8
+                    Select Operator
+                      Output: _col0
+rows=1 width=8
+                      Reduce Output Operator
+                        outputname: Reducer 7
+                        PartitionCols: _col0
+rows=1 width=8
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id, c_preferred_cust_flag
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=372
+                  Select Operator
+                    Output: _col0, _col1, _col4
+rows=1 width=372
+                    Reduce Output Operator
+                      outputname: Reducer 3
+                      PartitionCols: _col0
+rows=1 width=372
+                  Select Operator
+                    Output: _col0, _col1
+rows=1 width=188
+                    Reduce Output Operator
+                      outputname: Reducer 8
+                      PartitionCols: _col0
+rows=1 width=188
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_sold_date_sk, ss_customer_sk, ss_ext_discount_amt, ss_ext_sales_price, ss_ext_wholesale_cost, ss_ext_list_price
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=456
+                  Filter Operator
+                    predicate: (ss_customer_sk is not null and ss_sold_date_sk is not null)
+rows=1 width=456
+                    Select Operator
+                      Output: _col0, _col1, _col2
+rows=1 width=456
+                      Reduce Output Operator
+                        outputname: Reducer 7
+                        PartitionCols: _col0
+rows=1 width=456
+                    Select Operator
+                      Output: _col0, _col1
+rows=1 width=8
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=8
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1
+rows=1 width=8
+                Reduce Output Operator
+                  outputname: Reducer 3
+                  PartitionCols: _col1
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Map 11
+              1 Map 1
+            tag: 1
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col1
+                  1 _col0
+                Output: _col5, _col8
+rows=1 width=8
+                Group By Operator
+                  keys: _col5, _col8
+                  Output: _col0, _col1
+rows=1 width=8
+                  Reduce Output Operator
+                    outputname: Reducer 4
+                    PartitionCols: _col0, _col1
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+              1 Map 10
+            tag: 0
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0, KEY._col1
+                Output: _col0, _col1
+rows=1 width=8
+                Reduce Output Operator
+                  outputname: Reducer 5
+                  PartitionCols: _col0
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 3
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1
+rows=1 width=8
+                Top N Key Operator
+                  top n: 100
+                  keys: _col1
+rows=1 width=8
+                  Select Operator
+                    Output: _col0
+rows=1 width=8
+                    Reduce Output Operator
+                      outputname: Reducer 6
+rows=1 width=8
+            tag: 1
+            tagToInput:
+              0 Reducer 4
+              1 Reducer 9
+            tag: 0
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                Output: _col0
+rows=1 width=8
+                Limit
+                  Number of rows: 100
+rows=1 width=8
+                  File Output Operator
+                    table:
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 5
+        Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1, _col2
+rows=1 width=501
+                Reduce Output Operator
+                  outputname: Reducer 8
+                  PartitionCols: _col1
+rows=1 width=501
+            tag: 0
+            tagToInput:
+              0 Map 11
+              1 Map 1
+            tag: 1
+        Reducer 8 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col1
+                  1 _col0
+                Output: _col2, _col5
+rows=1 width=551
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col5
+                  Output: _col0, _col1
+rows=1 width=551
+                  Reduce Output Operator
+                    outputname: Reducer 9
+                    PartitionCols: _col0
+rows=1 width=551
+            tag: 0
+            tagToInput:
+              0 Reducer 7
+              1 Map 10
+            tag: 0
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0
+                Output: _col0, _col1
+rows=1 width=551
+                Filter Operator
+                  predicate: (_col1 > 0)
+rows=1 width=551
+                  Select Operator
+                    Output: _col0
+rows=1 width=551
+                    Reduce Output Operator
+                      outputname: Reducer 5
+                      PartitionCols: _col0
+rows=1 width=551
+            tag: 0
+            tagToInput:
+              0 Reducer 8
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+
 PREHOOK: query: explain ddl
 SELECT
 C_CUSTOMER_SK
@@ -2938,6 +5107,89 @@ C_CUSTOMER_SK
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
 ;
+CBO PLAN:HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+  HiveProject(c_customer_sk=[$0])
+    HiveTableScan(table=[[default, customer]], table:alias=[customer])
+  HiveProject(ss_customer_sk=[$3])
+    HiveFilter(condition=[IS NOT NULL($3)])
+      HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Select Operator
+                    Output: _col0
+rows=1 width=4
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Filter Operator
+                    predicate: ss_customer_sk is not null
+rows=1 width=4
+                    Select Operator
+                      Output: _col0
+rows=1 width=4
+                      Group By Operator
+                        keys: _col0
+                        Output: _col0
+rows=1 width=4
+                        Reduce Output Operator
+                          outputname: Reducer 2
+                          PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Left Semi","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0
+rows=1 width=4
+                File Output Operator
+                  table:
+rows=1 width=4
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 3
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl
 SELECT
 C_CUSTOMER_ID
@@ -3114,6 +5366,125 @@ C_CUSTOMER_SK
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
 ;
+CBO PLAN:HiveProject(c_customer_id=[$2])
+  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+      HiveProject(c_customer_sk=[$0])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+      HiveProject(ss_customer_sk=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveProject(ss_customer_sk=[$3])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Select Operator
+                    Output: _col0
+rows=1 width=4
+                    Filter Operator
+                      predicate: _col0 is not null
+rows=1 width=4
+                      Group By Operator
+                        keys: _col0
+                        Output: _col0
+rows=1 width=4
+                        Reduce Output Operator
+                          outputname: Reducer 2
+                          PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=188
+                  Select Operator
+                    Output: _col0, _col1
+rows=1 width=188
+                    Reduce Output Operator
+                      outputname: Reducer 3
+                      PartitionCols: _col0
+rows=1 width=188
+                  Select Operator
+                    Output: _col0
+rows=1 width=4
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Left Semi","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0
+rows=1 width=4
+                Reduce Output Operator
+                  outputname: Reducer 3
+                  PartitionCols: _col0
+rows=1 width=4
+            tag: 0
+            tagToInput:
+              0 Map 4
+              1 Map 1
+            tag: 1
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col2
+rows=1 width=4
+                Select Operator
+                  Output: _col0
+rows=1 width=4
+                  File Output Operator
+                    table:
+rows=1 width=4
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+              1 Map 4
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl
 SELECT
 C_FIRST_NAME
@@ -3285,6 +5656,125 @@ C_CUSTOMER_SK
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
 ;
+CBO PLAN:HiveProject(c_first_name=[$2])
+  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+      HiveProject(c_customer_sk=[$0])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+      HiveProject(ss_customer_sk=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveProject(ss_customer_sk=[$3])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+    HiveProject(c_customer_sk=[$0], c_first_name=[$8])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Select Operator
+                    Output: _col0
+rows=1 width=4
+                    Filter Operator
+                      predicate: _col0 is not null
+rows=1 width=4
+                      Group By Operator
+                        keys: _col0
+                        Output: _col0
+rows=1 width=4
+                        Reduce Output Operator
+                          outputname: Reducer 2
+                          PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_first_name
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=188
+                  Select Operator
+                    Output: _col0, _col1
+rows=1 width=188
+                    Reduce Output Operator
+                      outputname: Reducer 3
+                      PartitionCols: _col0
+rows=1 width=188
+                  Select Operator
+                    Output: _col0
+rows=1 width=4
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Left Semi","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col0
+rows=1 width=4
+                Reduce Output Operator
+                  outputname: Reducer 3
+                  PartitionCols: _col0
+rows=1 width=4
+            tag: 0
+            tagToInput:
+              0 Map 4
+              1 Map 1
+            tag: 1
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col2
+rows=1 width=4
+                Select Operator
+                  Output: _col0
+rows=1 width=4
+                  File Output Operator
+                    table:
+rows=1 width=4
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+              1 Map 4
+            tag: 0
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: explain ddl
 SELECT
 C_CUSTOMER_ID
@@ -3459,6 +5949,105 @@ C_EMAIL_ADDRESS
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ;
+CBO PLAN:HiveAggregate(group=[{1}])
+  HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(ss_customer_sk=[$3])
+      HiveFilter(condition=[IS NOT NULL($3)])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: c_customer_sk, c_customer_id
+                 default@customer,customer,Tbl:COMPLETE,Col:NONE
+rows=1 width=188
+                  Select Operator
+                    Output: _col0, _col1
+rows=1 width=188
+                    Reduce Output Operator
+                      outputname: Reducer 2
+                      PartitionCols: _col0
+rows=1 width=188
+            Execution mode: vectorized, llap
+            tag: 0
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  Output: ss_customer_sk
+                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE
+rows=1 width=4
+                  Filter Operator
+                    predicate: ss_customer_sk is not null
+rows=1 width=4
+                    Select Operator
+                      Output: _col0
+rows=1 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     {"type":"Inner","left":0,"right":1}
+                keys:
+                  0 _col0
+                  1 _col0
+                Output: _col1
+rows=1 width=206
+                Group By Operator
+                  keys: _col1
+                  Output: _col0
+rows=1 width=206
+                  Reduce Output Operator
+                    outputname: Reducer 3
+                    PartitionCols: _col0
+rows=1 width=206
+            tag: 0
+            tagToInput:
+              0 Map 1
+              1 Map 4
+            tag: 0
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0
+                Output: _col0
+rows=1 width=206
+                File Output Operator
+                  table:
+rows=1 width=206
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
 constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely)
 PREHOOK: type: CREATETABLE
@@ -3530,6 +6119,83 @@ EXPLAIN select count(distinct ws_order_number) from web_sales;
 EXPLAIN CBO select count(distinct ws_order_number) from web_sales;
 
 EXPLAIN VECTORIZED select count(distinct ws_order_number) from web_sales;
+CBO PLAN:HiveAggregate(group=[{}], agg#0=[count()])
+  HiveProject(ws_order_number=[$0])
+    HiveAggregate(group=[{0}])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  Output: ws_order_number
+                 default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE
+rows=2 width=4
+                  Select Operator
+                    Output: ws_order_number
+rows=2 width=4
+                    Group By Operator
+                      keys: ws_order_number
+                      Output: _col0
+rows=1 width=4
+                      Reduce Output Operator
+                        outputname: Reducer 2
+                        PartitionCols: _col0
+rows=1 width=4
+            Execution mode: vectorized, llap
+            tag: 0
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0
+                Output: _col0
+rows=1 width=4
+                Select Operator
+rows=1 width=4
+                  Group By Operator
+                    aggregations: count()
+                    Output: _col0
+rows=1 width=8
+                    Reduce Output Operator
+                      outputname: Reducer 3
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Map 1
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Output: _col0
+rows=1 width=8
+                File Output Operator
+                  table:
+rows=1 width=8
+            tag: 0
+            tagToInput:
+              0 Reducer 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+
 PREHOOK: query: drop table web_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@web_sales
@@ -3758,6 +6424,26 @@ EXPLAIN CBO select * from table1_n13;
 
 
 EXPLAIN VECTORIZED select * from table1_n13;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table1_n13]], table:alias=[table1_n13])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table2_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2_n8
@@ -3790,6 +6476,26 @@ EXPLAIN select * from table2_n8;
 EXPLAIN CBO select * from table2_n8;
 
 EXPLAIN VECTORIZED select * from table2_n8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table3_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table3_n1
@@ -3821,6 +6527,26 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4_n0
@@ -3853,6 +6579,26 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table5_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table5_n4
@@ -3884,6 +6630,26 @@ EXPLAIN select * from table5_n4;
 EXPLAIN CBO select * from table5_n4;
 
 EXPLAIN VECTORIZED select * from table5_n4;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table5_n4]], table:alias=[table5_n4])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table6_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6_n3
@@ -3916,6 +6682,26 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table7_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table7_n3
@@ -3949,6 +6735,26 @@ EXPLAIN select * from table7_n3;
 EXPLAIN CBO select * from table7_n3;
 
 EXPLAIN VECTORIZED select * from table7_n3;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table7_n3]], table:alias=[table7_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table8
@@ -3981,6 +6787,26 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table8]], table:alias=[table8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table9
@@ -4014,6 +6840,26 @@ EXPLAIN select * from table9;
 EXPLAIN CBO select * from table9;
 
 EXPLAIN VECTORIZED select * from table9;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table9]], table:alias=[table9])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table10
@@ -4046,6 +6892,26 @@ EXPLAIN select * from table10;
 EXPLAIN CBO select * from table10;
 
 EXPLAIN VECTORIZED select * from table10;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table10]], table:alias=[table10])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table11
@@ -4080,6 +6946,26 @@ EXPLAIN select * from table11;
 EXPLAIN CBO select * from table11;
 
 EXPLAIN VECTORIZED select * from table11;
+CBO PLAN:HiveProject(a=[$0], b=[$1], c=[$2])
+  HiveTableScan(table=[[default, table11]], table:alias=[table11])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b, c
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: explain ddl select * from table12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table12
@@ -4112,6 +6998,26 @@ EXPLAIN select * from table12;
 EXPLAIN CBO select * from table12;
 
 EXPLAIN VECTORIZED select * from table12;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table12]], table:alias=[table12])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table13
@@ -4145,6 +7051,26 @@ EXPLAIN select * from table13;
 EXPLAIN CBO select * from table13;
 
 EXPLAIN VECTORIZED select * from table13;
+CBO PLAN:HiveProject(b=[$0], a=[$1])
+  HiveTableScan(table=[[default, table13]], table:alias=[table13])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table14
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table14
@@ -4177,6 +7103,26 @@ EXPLAIN select * from table14;
 EXPLAIN CBO select * from table14;
 
 EXPLAIN VECTORIZED select * from table14;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table14]], table:alias=[table14])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table15
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table15
@@ -4209,6 +7155,26 @@ EXPLAIN select * from table15;
 EXPLAIN CBO select * from table15;
 
 EXPLAIN VECTORIZED select * from table15;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table15]], table:alias=[table15])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table16
@@ -4241,6 +7207,26 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table16]], table:alias=[table16])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table17
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table17
@@ -4273,6 +7259,26 @@ EXPLAIN select * from table17;
 EXPLAIN CBO select * from table17;
 
 EXPLAIN VECTORIZED select * from table17;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table17]], table:alias=[table17])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table18
@@ -4306,6 +7312,26 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table18]], table:alias=[table18])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table19
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table19
@@ -4339,6 +7365,26 @@ EXPLAIN select * from table19;
 EXPLAIN CBO select * from table19;
 
 EXPLAIN VECTORIZED select * from table19;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table19]], table:alias=[table19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table20
@@ -4371,6 +7417,26 @@ EXPLAIN select * from table20;
 EXPLAIN CBO select * from table20;
 
 EXPLAIN VECTORIZED select * from table20;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table20]], table:alias=[table20])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table21
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table21
@@ -4404,6 +7470,26 @@ EXPLAIN select * from table21;
 EXPLAIN CBO select * from table21;
 
 EXPLAIN VECTORIZED select * from table21;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table21]], table:alias=[table21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table22
@@ -4436,6 +7522,26 @@ EXPLAIN select * from table22;
 EXPLAIN CBO select * from table22;
 
 EXPLAIN VECTORIZED select * from table22;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table22]], table:alias=[table22])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table1_n13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n13
@@ -4471,6 +7577,26 @@ EXPLAIN CBO select * from table1_n13;
 
 
 EXPLAIN VECTORIZED select * from table1_n13;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table1_n13]], table:alias=[table1_n13])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table2_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2_n8
@@ -4503,6 +7629,26 @@ EXPLAIN select * from table2_n8;
 EXPLAIN CBO select * from table2_n8;
 
 EXPLAIN VECTORIZED select * from table2_n8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table3_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table3_n1
@@ -4534,6 +7680,26 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4_n0
@@ -4566,6 +7732,26 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table5_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table5_n4
@@ -4597,6 +7783,26 @@ EXPLAIN select * from table5_n4;
 EXPLAIN CBO select * from table5_n4;
 
 EXPLAIN VECTORIZED select * from table5_n4;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table5_n4]], table:alias=[table5_n4])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table6_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6_n3
@@ -4629,6 +7835,26 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table7_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table7_n3
@@ -4662,6 +7888,26 @@ EXPLAIN select * from table7_n3;
 EXPLAIN CBO select * from table7_n3;
 
 EXPLAIN VECTORIZED select * from table7_n3;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table7_n3]], table:alias=[table7_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table8
@@ -4694,6 +7940,26 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table8]], table:alias=[table8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table9
@@ -4727,6 +7993,26 @@ EXPLAIN select * from table9;
 EXPLAIN CBO select * from table9;
 
 EXPLAIN VECTORIZED select * from table9;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table9]], table:alias=[table9])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table10
@@ -4759,6 +8045,26 @@ EXPLAIN select * from table10;
 EXPLAIN CBO select * from table10;
 
 EXPLAIN VECTORIZED select * from table10;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table10]], table:alias=[table10])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table11
@@ -4793,6 +8099,26 @@ EXPLAIN select * from table11;
 EXPLAIN CBO select * from table11;
 
 EXPLAIN VECTORIZED select * from table11;
+CBO PLAN:HiveProject(a=[$0], b=[$1], c=[$2])
+  HiveTableScan(table=[[default, table11]], table:alias=[table11])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b, c
+          Select Operator
+            Output: _col0, _col1, _col2
+
 PREHOOK: query: explain ddl select * from table12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table12
@@ -4825,6 +8151,26 @@ EXPLAIN select * from table12;
 EXPLAIN CBO select * from table12;
 
 EXPLAIN VECTORIZED select * from table12;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table12]], table:alias=[table12])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table13
@@ -4858,6 +8204,26 @@ EXPLAIN select * from table13;
 EXPLAIN CBO select * from table13;
 
 EXPLAIN VECTORIZED select * from table13;
+CBO PLAN:HiveProject(b=[$0], a=[$1])
+  HiveTableScan(table=[[default, table13]], table:alias=[table13])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table14
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table14
@@ -4890,6 +8256,26 @@ EXPLAIN select * from table14;
 EXPLAIN CBO select * from table14;
 
 EXPLAIN VECTORIZED select * from table14;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table14]], table:alias=[table14])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table15
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table15
@@ -4922,6 +8308,26 @@ EXPLAIN select * from table15;
 EXPLAIN CBO select * from table15;
 
 EXPLAIN VECTORIZED select * from table15;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table15]], table:alias=[table15])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table16
@@ -4954,6 +8360,26 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table16]], table:alias=[table16])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table17
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table17
@@ -4986,6 +8412,26 @@ EXPLAIN select * from table17;
 EXPLAIN CBO select * from table17;
 
 EXPLAIN VECTORIZED select * from table17;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table17]], table:alias=[table17])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table18
@@ -5019,6 +8465,26 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table18]], table:alias=[table18])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table19
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table19
@@ -5052,6 +8518,26 @@ EXPLAIN select * from table19;
 EXPLAIN CBO select * from table19;
 
 EXPLAIN VECTORIZED select * from table19;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table19]], table:alias=[table19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table20
@@ -5084,6 +8570,26 @@ EXPLAIN select * from table20;
 EXPLAIN CBO select * from table20;
 
 EXPLAIN VECTORIZED select * from table20;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table20]], table:alias=[table20])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table21
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table21
@@ -5117,6 +8623,26 @@ EXPLAIN select * from table21;
 EXPLAIN CBO select * from table21;
 
 EXPLAIN VECTORIZED select * from table21;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table21]], table:alias=[table21])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table22
@@ -5149,6 +8675,26 @@ EXPLAIN select * from table22;
 EXPLAIN CBO select * from table22;
 
 EXPLAIN VECTORIZED select * from table22;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table22]], table:alias=[table22])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
@@ -5212,6 +8758,26 @@ EXPLAIN CBO select * from table2_n8;
 
 
 EXPLAIN VECTORIZED select * from table2_n8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table3_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table3_n1
@@ -5243,6 +8809,26 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4_n0
@@ -5275,6 +8861,26 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table6_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6_n3
@@ -5307,6 +8913,26 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table8
@@ -5339,6 +8965,26 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table8]], table:alias=[table8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table16
@@ -5371,6 +9017,26 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table16]], table:alias=[table16])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table18
@@ -5404,6 +9070,26 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table18]], table:alias=[table18])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table2_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2_n8
@@ -5439,6 +9125,26 @@ EXPLAIN CBO select * from table2_n8;
 
 
 EXPLAIN VECTORIZED select * from table2_n8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table3_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table3_n1
@@ -5470,6 +9176,26 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4_n0
@@ -5502,6 +9228,26 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table6_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6_n3
@@ -5534,6 +9280,26 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table8
@@ -5566,6 +9332,26 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table8]], table:alias=[table8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table16
@@ -5598,6 +9384,26 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table16]], table:alias=[table16])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table18
@@ -5631,6 +9437,26 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table18]], table:alias=[table18])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
@@ -5694,6 +9520,26 @@ EXPLAIN CBO select * from table2_n8;
 
 
 EXPLAIN VECTORIZED select * from table2_n8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table3_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table3_n1
@@ -5725,6 +9571,26 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
+CBO PLAN:HiveProject(x=[$0])
+  HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x
+          Select Operator
+            Output: _col0
+
 PREHOOK: query: explain ddl select * from table6_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6_n3
@@ -5757,6 +9623,26 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
+CBO PLAN:HiveProject(x=[$0], y=[$1])
+  HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: x, y
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table8
@@ -5790,6 +9676,26 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table8]], table:alias=[table8])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table16
@@ -5822,6 +9728,26 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table16]], table:alias=[table16])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table18
@@ -5855,6 +9781,26 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table18]], table:alias=[table18])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE table12 CHANGE COLUMN b b STRING CONSTRAINT nn12_2 NOT NULL DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@table12
@@ -5906,6 +9852,26 @@ EXPLAIN CBO select * from table12;
 
 
 EXPLAIN VECTORIZED select * from table12;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table12]], table:alias=[table12])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from table13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table13
@@ -5939,6 +9905,26 @@ EXPLAIN select * from table13;
 EXPLAIN CBO select * from table13;
 
 EXPLAIN VECTORIZED select * from table13;
+CBO PLAN:HiveProject(b=[$0], a=[$1])
+  HiveTableScan(table=[[default, table13]], table:alias=[table13])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
@@ -5978,6 +9964,26 @@ EXPLAIN CBO select * from table12;
 
 
 EXPLAIN VECTORIZED select * from table12;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table12]], table:alias=[table12])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: CREATE DATABASE DbConstraint
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:DbConstraint
@@ -6039,6 +10045,26 @@ EXPLAIN CBO select * from DbConstraint.Table2;
 
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
 PREHOOK: type: QUERY
 PREHOOK: Input: dbconstraint@table2
@@ -6071,6 +10097,26 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
@@ -6110,6 +10156,26 @@ EXPLAIN CBO select * from DbConstraint.Table2;
 
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
 PREHOOK: type: QUERY
 PREHOOK: Input: dbconstraint@table2
@@ -6142,6 +10208,26 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
@@ -6178,6 +10264,26 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
@@ -6214,6 +10320,26 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a, b
+          Select Operator
+            Output: _col0, _col1
+
 PREHOOK: query: CREATE TABLE table23 (a STRING) PARTITIONED BY (b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -6267,3 +10393,23 @@ EXPLAIN CBO select * from table23;
 
 
 EXPLAIN VECTORIZED select * from table23;
+CBO PLAN:HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, table23]], table:alias=[table23])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          Output: a
+          Select Operator
+            Output: _col0, _col1
+

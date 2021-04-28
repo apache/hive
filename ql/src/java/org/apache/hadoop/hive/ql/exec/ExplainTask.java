@@ -309,7 +309,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     boolean suppressOthersForVectorization = false;
-    if (this.work != null && this.work.isVectorization()) {
+    if (this.work != null && (this.work.isVectorization() || this.work.isDDL())) {
       ImmutablePair<Boolean, JSONObject> planVecPair = outputPlanVectorization(out, jsonOutput);
 
       if (this.work.isVectorizationOnly()) {
@@ -465,7 +465,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return;
   }
 
-  public void getDDLPlan(PrintStream out) throws HiveException, MetaException {
+  public void getDDLPlan(PrintStream out) throws HiveException, MetaException, Exception {
     DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
     Set<String> createDatabase = new TreeSet<String>();
     List<String> tableCreateStmt = new LinkedList<String>();
@@ -514,6 +514,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     out.println(jn.join(alterTableStmt));
     out.println(jn.join(createViewList));
     out.println(jn.join(explainStmt));
+    work.getConfig().setUserLevelExplain(true);
+    getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
+        false, false, work.isAppendTaskType(), work.getCboInfo(),
+        work.getCboPlan(), work.getOptimizedSQL());
   }
 
   @Override
@@ -525,7 +529,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      if (work.isCbo()) {
+      if(work.isDDL()){
+        getDDLPlan(out);
+      } else if (work.isCbo()) {
         JSONObject jsonCBOPlan = getJSONCBOPlan(out, work);
         if (work.isFormatted()) {
           out.print(jsonCBOPlan);
@@ -553,8 +559,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (work.getAstStringTree() != null) {
           outputAST(work.getAstStringTree(), out, work.isFormatted(), 0);
         }
-      }else if (work.isDDL()) {
-          getDDLPlan(out);
       } else {
         if (work.isUserLevelExplain()) {
           // Because of the implementation of the JsonParserFactory, we are sure
