@@ -64,9 +64,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  * ON (mv.a <=> source.a AND mv.b <=> source.b)
  * WHEN MATCHED AND mv.c + source.c &lt;&gt; 0
  *   THEN UPDATE SET mv.s = mv.s + source.s, mv.c = mv.c + source.c
+ * WHEN MATCHED AND countStar = 0 THEN DELETE
  * WHEN NOT MATCHED
  *   THEN INSERT VALUES (source.a, source.b, s, c);
- * WHEN MATCHED AND countStar = 0 THEN DELETE
  *
  * To be precise, we need to convert it into a MERGE rewritten as:
  * FROM (select *, true flag from mv) mv right outer join _source_ source
