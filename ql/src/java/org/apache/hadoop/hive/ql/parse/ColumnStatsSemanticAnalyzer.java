@@ -556,14 +556,14 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
      */
     if (shouldRewrite(ast)) {
       tbl = AnalyzeCommandUtils.getTable(ast, this);
-      colNames = getColumnName(ast);
-      // Save away the original AST
-      originalTree = ast;
       // Check incremental keyword
       if (AnalyzeCommandUtils.isIncrementalStats(ast)) {
         throw new SemanticException(
             "Columns cannot be specified with INCREMENTAL statistics computation");
       }
+      colNames = getColumnName(ast);
+      // Save away the original AST
+      originalTree = ast;
       boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast);
       if (isImpalaPlan(conf) && isPartitionStats) {
         throw new SemanticException(
