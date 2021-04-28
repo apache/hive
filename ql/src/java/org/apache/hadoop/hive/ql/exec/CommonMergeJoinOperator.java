@@ -167,7 +167,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     sources = ((TezContext) MapredContext.get()).getRecordSources();
     interruptChecker = new InterruptibleProcessing();
 
-    nullOrdering = NullOrdering.NULLS_FIRST;
+    nullOrdering = NullOrdering.defaultNullOrder(hconf);
     if (sources[0] instanceof ReduceRecordSource) {
       ReduceRecordSource reduceRecordSource = (ReduceRecordSource) sources[0];
       if (reduceRecordSource.getKeyTableDesc() != null &&
@@ -178,7 +178,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
           nullOrdering = NullOrdering.fromSign(nullSortOrder.charAt(0));
         }
       }
-      nullOrdering = NullOrdering.defaultNullOrder(hconf);
       if (parentOperators != null && !parentOperators.isEmpty()) {
         // Tell ReduceRecordSource to flush last record as this is a reduce
         // side SMB
