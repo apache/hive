@@ -48,7 +48,8 @@ import java.util.List;
  * @param <T> Should be a class that wraps the right input of the top right outer join: the union branch
  *           which represents the plan which produces the delta records since the last view rebuild.
  */
-public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAggregateIncrementalRewritingRuleBase.RightInput>
+public abstract class HiveAggregateIncrementalRewritingRuleBase<
+        T extends HiveAggregateIncrementalRewritingRuleBase.IncrementalComputePlan>
         extends RelOptRule {
 
   private final int aggregateIndex;
@@ -162,10 +163,10 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<T extends HiveAg
 
   protected abstract T createJoinRightInput(RelOptRuleCall call);
 
-  protected static class RightInput {
+  protected static class IncrementalComputePlan {
     protected final RelNode rightInput;
 
-    public RightInput(RelNode rightInput) {
+    public IncrementalComputePlan(RelNode rightInput) {
       this.rightInput = rightInput;
     }
   }

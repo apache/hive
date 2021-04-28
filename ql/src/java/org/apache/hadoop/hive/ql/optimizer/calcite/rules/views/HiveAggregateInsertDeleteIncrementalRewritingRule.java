@@ -93,8 +93,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  *
  * {@see CalcitePlanner#fixUpASTAggregateInsertDeleteIncrementalRebuild}
  */
-public class HiveAggregateInsertDeleteIncrementalRewritingRule
-        extends HiveAggregateIncrementalRewritingRuleBase<HiveAggregateInsertDeleteIncrementalRewritingRule.RightInputWithDeletedRows> {
+public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggregateIncrementalRewritingRuleBase<
+        HiveAggregateInsertDeleteIncrementalRewritingRule.IncrementalComputePlanWithDeletedRows> {
 
   public static final HiveAggregateInsertDeleteIncrementalRewritingRule INSTANCE =
       new HiveAggregateInsertDeleteIncrementalRewritingRule();
@@ -106,7 +106,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
   }
 
   @Override
-  protected RightInputWithDeletedRows createJoinRightInput(RelOptRuleCall call) {
+  protected IncrementalComputePlanWithDeletedRows createJoinRightInput(RelOptRuleCall call) {
     RelBuilder relBuilder = call.builder();
     Aggregate aggregate = call.rel(2);
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
@@ -164,7 +164,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
       return null;
     }
 
-    return new RightInputWithDeletedRows(relBuilder
+    return new IncrementalComputePlanWithDeletedRows(relBuilder
             .push(aggInput)
             .aggregate(relBuilder.groupKey(aggregate.getGroupSet()), newAggregateCalls)
             .build(),
@@ -172,23 +172,24 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule
   }
 
   /**
-   * Extend {@link HiveAggregateIncrementalRewritingRuleBase.RightInput} with countStarIndex. It is
+   * Extend {@link HiveAggregateIncrementalRewritingRuleBase.IncrementalComputePlan} with countStarIndex. It is
    * required for building the filter condition that distribute the rows to the insert/update/delete branches.
    */
-  static class RightInputWithDeletedRows extends HiveAggregateIncrementalRewritingRuleBase.RightInput {
+  static class IncrementalComputePlanWithDeletedRows
+          extends HiveAggregateIncrementalRewritingRuleBase.IncrementalComputePlan {
     private final int countStarIndex;
 
-    public RightInputWithDeletedRows(RelNode rightInput, int countStarIndex) {
+    public IncrementalComputePlanWithDeletedRows(RelNode rightInput, int countStarIndex) {
       super(rightInput);
       this.countStarIndex = countStarIndex;
     }
   }
 
   @Override
-  protected RexNode createFilterCondition(
-          RightInputWithDeletedRows rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
+  protected RexNode createFilterCondition(IncrementalComputePlanWithDeletedRows incrementalComputePlan,
+                                          RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
-    RexNode countStarCase = projExprs.get(rightInput.countStarIndex);
+    RexNode countStarCase = projExprs.get(incrementalComputePlan.countStarIndex);
     RexNode countStarGT0 = rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN, countStarCase, relBuilder.literal(0));
     RexNode countStarEq0 = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, countStarCase, relBuilder.literal(0));
     RexNode insert = rexBuilder.makeCall(SqlStdOperatorTable.AND,

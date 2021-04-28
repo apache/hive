@@ -81,8 +81,8 @@ import java.util.List;
  *
  * {@see CalcitePlanner#fixUpASTAggregateInsertIncrementalRebuild}
  */
-public class HiveAggregateInsertIncrementalRewritingRule
-        extends HiveAggregateIncrementalRewritingRuleBase<HiveAggregateIncrementalRewritingRuleBase.RightInput> {
+public class HiveAggregateInsertIncrementalRewritingRule extends HiveAggregateIncrementalRewritingRuleBase<
+        HiveAggregateIncrementalRewritingRuleBase.IncrementalComputePlan> {
 
   public static final HiveAggregateInsertIncrementalRewritingRule INSTANCE =
       new HiveAggregateInsertIncrementalRewritingRule();
@@ -94,13 +94,14 @@ public class HiveAggregateInsertIncrementalRewritingRule
   }
 
   @Override
-  protected RightInput createJoinRightInput(RelOptRuleCall call) {
+  protected IncrementalComputePlan createJoinRightInput(RelOptRuleCall call) {
     RelNode union = call.rel(1);
-    return new RightInput(union.getInput(0));
+    return new IncrementalComputePlan(union.getInput(0));
   }
 
   @Override
-  protected RexNode createFilterCondition(RightInput rightInput, RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
+  protected RexNode createFilterCondition(IncrementalComputePlan incrementalComputePlan,
+                                          RexNode flagNode, List<RexNode> projExprs, RelBuilder relBuilder) {
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
     return rexBuilder.makeCall(
             SqlStdOperatorTable.OR, flagNode, rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, flagNode));
