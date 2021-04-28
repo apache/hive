@@ -3932,6 +3932,21 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE my
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@myinput1_n7
+PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
+
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1_n7
@@ -3940,7 +3955,7 @@ POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
@@ -3950,21 +3965,44 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=1 width=8)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Inner),Output:["_col0","_col1","_col6","_col7"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_2]
-              PartitionCols:key
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=1 width=8)
+          Conds:RS_4._col0=RS_5._col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_4]
+            PartitionCols:_col0
+            Select Operator [SEL_1] (rows=1 width=8)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=8)
                 default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Map 3 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
-              PartitionCols:value
-              TableScan [TS_1] (rows=1 width=8)
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_5]
+            PartitionCols:_col1
+            Select Operator [SEL_3] (rows=1 width=8)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+  HiveJoin(condition=[IS NOT DISTINCT FROM($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, myinput1_n7]], table:alias=[c])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
 PREHOOK: type: QUERY
@@ -3974,45 +4012,70 @@ POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Reducer 3 llap
-      File Output Operator [FS_12]
-        Select Operator [SEL_11] (rows=1 width=8)
+      File Output Operator [FS_15]
+        Select Operator [SEL_14] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Merge Join Operator [MERGEJOIN_41] (rows=1 width=8)
-            Conds:RS_7._col0=RS_9.key(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_9]
-              PartitionCols:key
-              Filter Operator [FIL_16] (rows=1 width=8)
-                predicate:key is not null
-                TableScan [TS_0] (rows=1 width=8)
-                  default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+          Merge Join Operator [MERGEJOIN_31] (rows=1 width=8)
+            Conds:RS_11._col0=RS_12._col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          <-Map 4 [SIMPLE_EDGE] llap
+            SHUFFLE [RS_12]
+              PartitionCols:_col1
+              Select Operator [SEL_7] (rows=1 width=8)
+                Output:["_col0","_col1"]
+                TableScan [TS_6] (rows=1 width=8)
+                  default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Reducer 2 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_7]
+            SHUFFLE [RS_11]
               PartitionCols:_col0
-              Merge Join Operator [MERGEJOIN_40] (rows=1 width=8)
-                Conds:RS_3.key=RS_4.value(Inner),Output:["_col0","_col1","_col6","_col7"]
-              <-Map 1 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_3]
-                  PartitionCols:key
-                   Please refer to the previous Filter Operator [FIL_16]
+              Merge Join Operator [MERGEJOIN_30] (rows=1 width=8)
+                Conds:RS_8._col0=RS_9._col0(Inner),Output:["_col0","_col1","_col2","_col3"]
               <-Map 4 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_4]
-                  PartitionCols:value
-                  Filter Operator [FIL_17] (rows=1 width=8)
-                    predicate:value is not null
-                    TableScan [TS_1] (rows=1 width=8)
-                      default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                SHUFFLE [RS_9]
+                  PartitionCols:_col0
+                  Select Operator [SEL_5] (rows=1 width=8)
+                    Output:["_col0","_col1"]
+                    Filter Operator [FIL_19] (rows=1 width=8)
+                      predicate:key is not null
+                       Please refer to the previous TableScan [TS_6]
+              <-Map 1 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_8]
+                  PartitionCols:_col0
+                  Select Operator [SEL_2] (rows=1 width=8)
+                    Output:["_col0","_col1"]
+                    Filter Operator [FIL_18] (rows=1 width=8)
+                      predicate:key is not null
+                      TableScan [TS_0] (rows=1 width=8)
+                        default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+  HiveJoin(condition=[IS NOT DISTINCT FROM($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, myinput1_n7]], table:alias=[c])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
 PREHOOK: type: QUERY
@@ -4022,7 +4085,7 @@ POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
@@ -4033,30 +4096,55 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 llap
-      File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=1 width=8)
+      File Output Operator [FS_13]
+        Select Operator [SEL_12] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Merge Join Operator [MERGEJOIN_12] (rows=1 width=8)
-            Conds:RS_6._col0=RS_7.key(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
+          Merge Join Operator [MERGEJOIN_15] (rows=1 width=8)
+            Conds:RS_9._col0=RS_10._col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_7]
-              PartitionCols:key
-              TableScan [TS_0] (rows=1 width=8)
-                default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+            SHUFFLE [RS_10]
+              PartitionCols:_col1
+              Select Operator [SEL_1] (rows=1 width=8)
+                Output:["_col0","_col1"]
+                TableScan [TS_0] (rows=1 width=8)
+                  default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Reducer 2 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_6]
+            SHUFFLE [RS_9]
               PartitionCols:_col0
-              Merge Join Operator [MERGEJOIN_11] (rows=1 width=8)
-                Conds:RS_3.key=RS_4.value(Inner),Output:["_col0","_col1","_col6","_col7"]
+              Merge Join Operator [MERGEJOIN_14] (rows=1 width=8)
+                Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col1","_col2","_col3"]
               <-Map 1 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_3]
-                  PartitionCols:key
-                   Please refer to the previous TableScan [TS_0]
+                SHUFFLE [RS_6]
+                  PartitionCols:_col0
+                   Please refer to the previous Select Operator [SEL_1]
               <-Map 4 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_4]
-                  PartitionCols:value
-                  TableScan [TS_1] (rows=1 width=8)
-                    default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                SHUFFLE [RS_7]
+                  PartitionCols:_col0
+                  Select Operator [SEL_3] (rows=1 width=8)
+                    Output:["_col0","_col1"]
+                    TableScan [TS_2] (rows=1 width=8)
+                      default@myinput1_n7,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), =($1, $5))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $3), =($1, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveFilter(condition=[IS NOT NULL($1)])
+        HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+    HiveProject(key=[$0], value=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
+  HiveProject(key=[$0], value=[$1])
+    HiveFilter(condition=[IS NOT NULL($1)])
+      HiveTableScan(table=[[default, myinput1_n7]], table:alias=[c])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
@@ -4066,7 +4154,7 @@ POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
@@ -4077,34 +4165,55 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 llap
-      File Output Operator [FS_14]
-        Select Operator [SEL_13] (rows=1 width=8)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Merge Join Operator [MERGEJOIN_19] (rows=1 width=8)
-            Conds:RS_9._col0, _col1=RS_11.key, value(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_11]
-              PartitionCols:key, value
-              Filter Operator [FIL_15] (rows=1 width=8)
+      File Output Operator [FS_16]
+        Merge Join Operator [MERGEJOIN_21] (rows=1 width=8)
+          Conds:RS_12._col1, _col0=RS_13._col1, _col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_13]
+            PartitionCols:_col1, _col0
+            Select Operator [SEL_2] (rows=1 width=8)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_17] (rows=1 width=8)
                 predicate:value is not null
                 TableScan [TS_0] (rows=1 width=8)
                   default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Reducer 2 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_9]
-              PartitionCols:_col0, _col1
-              Merge Join Operator [MERGEJOIN_18] (rows=1 width=8)
-                Conds:RS_4.key, value=RS_6.value, key(Inner),Output:["_col0","_col1","_col6","_col7"]
-              <-Map 1 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_4]
-                  PartitionCols:key, value
-                   Please refer to the previous Filter Operator [FIL_15]
-              <-Map 4 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_6]
-                  PartitionCols:value, key
-                  Filter Operator [FIL_16] (rows=1 width=8)
+        <-Reducer 2 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_12]
+            PartitionCols:_col1, _col0
+            Merge Join Operator [MERGEJOIN_20] (rows=1 width=8)
+              Conds:RS_9._col1, _col0=RS_10._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+            <-Map 1 [SIMPLE_EDGE] llap
+              SHUFFLE [RS_9]
+                PartitionCols:_col1, _col0
+                 Please refer to the previous Select Operator [SEL_2]
+            <-Map 4 [SIMPLE_EDGE] llap
+              SHUFFLE [RS_10]
+                PartitionCols:_col0, _col1
+                Select Operator [SEL_5] (rows=1 width=8)
+                  Output:["_col0","_col1"]
+                  Filter Operator [FIL_18] (rows=1 width=8)
                     predicate:key is not null
-                    TableScan [TS_1] (rows=1 width=8)
+                    TableScan [TS_3] (rows=1 width=8)
                       default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+  HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $5), IS NOT DISTINCT FROM($1, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $2), IS NOT DISTINCT FROM($1, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, myinput1_n7]], table:alias=[c])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
@@ -4114,7 +4223,7 @@ POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
@@ -4125,30 +4234,49 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 llap
-      File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=1 width=8)
+      File Output Operator [FS_13]
+        Select Operator [SEL_12] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Merge Join Operator [MERGEJOIN_12] (rows=1 width=8)
-            Conds:RS_6._col0, _col1=RS_7.key, value(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
+          Merge Join Operator [MERGEJOIN_15] (rows=1 width=8)
+            Conds:RS_9._col0, _col1=RS_10._col1, _col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_7]
-              PartitionCols:key, value
-              TableScan [TS_0] (rows=1 width=8)
-                default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+            SHUFFLE [RS_10]
+              PartitionCols:_col1, _col0
+              Select Operator [SEL_1] (rows=1 width=8)
+                Output:["_col0","_col1"]
+                TableScan [TS_0] (rows=1 width=8)
+                  default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Reducer 2 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_6]
+            SHUFFLE [RS_9]
               PartitionCols:_col0, _col1
-              Merge Join Operator [MERGEJOIN_11] (rows=1 width=8)
-                Conds:RS_3.key, value=RS_4.value, key(Inner),Output:["_col0","_col1","_col6","_col7"]
+              Merge Join Operator [MERGEJOIN_14] (rows=1 width=8)
+                Conds:RS_6._col0, _col1=RS_7._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
               <-Map 1 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_3]
-                  PartitionCols:key, value
-                   Please refer to the previous TableScan [TS_0]
+                SHUFFLE [RS_6]
+                  PartitionCols:_col0, _col1
+                   Please refer to the previous Select Operator [SEL_1]
               <-Map 4 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_4]
-                  PartitionCols:value, key
-                  TableScan [TS_1] (rows=1 width=8)
-                    default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                SHUFFLE [RS_7]
+                  PartitionCols:_col0, _col1
+                  Select Operator [SEL_3] (rows=1 width=8)
+                    Output:["_col0","_col1"]
+                    TableScan [TS_2] (rows=1 width=8)
+                      default@myinput1_n7,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
 PREHOOK: type: QUERY
@@ -4158,7 +4286,7 @@ POSTHOOK: query: explain select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
@@ -4168,21 +4296,38 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=1 width=8)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Left Outer),Output:["_col0","_col1","_col6","_col7"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_2]
-              PartitionCols:key
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=1 width=8)
+          Conds:RS_4._col0=RS_5._col1(Left Outer),Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_4]
+            PartitionCols:_col0
+            Select Operator [SEL_1] (rows=1 width=8)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=8)
                 default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Map 3 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
-              PartitionCols:value
-              TableScan [TS_1] (rows=1 width=8)
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_5]
+            PartitionCols:_col1
+            Select Operator [SEL_3] (rows=1 width=8)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[right], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
 PREHOOK: type: QUERY
@@ -4192,7 +4337,7 @@ POSTHOOK: query: explain select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
@@ -4202,21 +4347,38 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=1 width=8)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Right Outer),Output:["_col0","_col1","_col6","_col7"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_2]
-              PartitionCols:key
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=1 width=8)
+          Conds:RS_4._col0=RS_5._col1(Right Outer),Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_4]
+            PartitionCols:_col0
+            Select Operator [SEL_1] (rows=1 width=8)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=8)
                 default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Map 3 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
-              PartitionCols:value
-              TableScan [TS_1] (rows=1 width=8)
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_5]
+            PartitionCols:_col1
+            Select Operator [SEL_3] (rows=1 width=8)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[full], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
 PREHOOK: type: QUERY
@@ -4226,7 +4388,7 @@ POSTHOOK: query: explain select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
@@ -4236,21 +4398,38 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=1 width=8)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Outer),Output:["_col0","_col1","_col6","_col7"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_2]
-              PartitionCols:key
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=1 width=8)
+          Conds:RS_4._col0=RS_5._col1(Outer),Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_4]
+            PartitionCols:_col0
+            Select Operator [SEL_1] (rows=1 width=8)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=8)
                 default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Map 3 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
-              PartitionCols:value
-              TableScan [TS_1] (rows=1 width=8)
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_5]
+            PartitionCols:_col1
+            Select Operator [SEL_3] (rows=1 width=8)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n7
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
 PREHOOK: type: QUERY
@@ -4260,7 +4439,7 @@ POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
@@ -4270,20 +4449,22 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=1 width=8)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Inner),Output:["_col0","_col1","_col6","_col7"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_2]
-              PartitionCols:key
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=1 width=8)
+          Conds:RS_4._col0=RS_5._col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_4]
+            PartitionCols:_col0
+            Select Operator [SEL_1] (rows=1 width=8)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=8)
                 default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Map 3 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
-              PartitionCols:value
-              TableScan [TS_1] (rows=1 width=8)
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_5]
+            PartitionCols:_col1
+            Select Operator [SEL_3] (rows=1 width=8)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: CREATE TABLE smb_input_n0(key int, value int)
@@ -4352,6 +4533,21 @@ POSTHOOK: query: analyze table smb_input1_n2 compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 POSTHOOK: Output: default@smb_input1_n2
+PREHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
+
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1_n2
@@ -4360,23 +4556,40 @@ POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN sm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Map 1 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=48 width=15)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=DUMMY_STORE_8.key(Inner),Output:["_col0","_col1","_col6","_col7"]
-          <-Dummy Store [DUMMY_STORE_8]
-              TableScan [TS_1] (rows=26 width=7)
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=48 width=15)
+          Conds:SEL_1._col0=DUMMY_STORE_10._col0(Inner),Output:["_col0","_col1","_col2","_col3"]
+        <-Dummy Store [DUMMY_STORE_10]
+            Select Operator [SEL_3] (rows=26 width=7)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=26 width=7)
                 default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-TableScan [TS_0] (rows=26 width=7)
+        <-Select Operator [SEL_1] (rows=26 width=7)
+            Output:["_col0","_col1"]
+            TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $2), IS NOT DISTINCT FROM($1, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
 PREHOOK: type: QUERY
@@ -4386,7 +4599,7 @@ POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN sm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
@@ -4396,21 +4609,38 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=48 width=15)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:RS_2.key, value=RS_3.key, value(Inner),Output:["_col0","_col1","_col6","_col7"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_2]
-              PartitionCols:key, value
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=48 width=15)
+          Conds:RS_4._col0, _col1=RS_5._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_4]
+            PartitionCols:_col0, _col1
+            Select Operator [SEL_1] (rows=26 width=7)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=26 width=7)
                 default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-Map 3 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
-              PartitionCols:key, value
-              TableScan [TS_1] (rows=26 width=7)
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_5]
+            PartitionCols:_col0, _col1
+            Select Operator [SEL_3] (rows=26 width=7)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=26 width=7)
                 default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[right], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
 PREHOOK: type: QUERY
@@ -4420,23 +4650,40 @@ POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT O
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Map 2 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=48 width=15)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:DUMMY_STORE_8.key=TS_1.key(Right Outer),Output:["_col0","_col1","_col6","_col7"]
-          <-Dummy Store [DUMMY_STORE_8]
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=48 width=15)
+          Conds:DUMMY_STORE_10._col0=SEL_3._col0(Right Outer),Output:["_col0","_col1","_col2","_col3"]
+        <-Dummy Store [DUMMY_STORE_10]
+            Select Operator [SEL_1] (rows=26 width=7)
+              Output:["_col0","_col1"]
               TableScan [TS_0] (rows=26 width=7)
                 default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-TableScan [TS_1] (rows=26 width=7)
+        <-Select Operator [SEL_3] (rows=26 width=7)
+            Output:["_col0","_col1"]
+            TableScan [TS_2] (rows=26 width=7)
               default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
 PREHOOK: type: QUERY
@@ -4446,23 +4693,40 @@ POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN sm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Map 1 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=48 width=15)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=DUMMY_STORE_8.key(Inner),Output:["_col0","_col1","_col6","_col7"]
-          <-Dummy Store [DUMMY_STORE_8]
-              TableScan [TS_1] (rows=26 width=7)
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=48 width=15)
+          Conds:SEL_1._col0=DUMMY_STORE_10._col0(Inner),Output:["_col0","_col1","_col2","_col3"]
+        <-Dummy Store [DUMMY_STORE_10]
+            Select Operator [SEL_3] (rows=26 width=7)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=26 width=7)
                 default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-TableScan [TS_0] (rows=26 width=7)
+        <-Select Operator [SEL_1] (rows=26 width=7)
+            Output:["_col0","_col1"]
+            TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[a])
+  HiveProject(key=[$0], value=[$1])
+    HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
 PREHOOK: type: QUERY
@@ -4472,22 +4736,24 @@ POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
-Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Map 1 llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=48 width=15)
-          Output:["_col0","_col1","_col2","_col3"]
-          Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=DUMMY_STORE_8.key(Left Outer),Output:["_col0","_col1","_col6","_col7"]
-          <-Dummy Store [DUMMY_STORE_8]
-              TableScan [TS_1] (rows=26 width=7)
+      File Output Operator [FS_8]
+        Merge Join Operator [MERGEJOIN_9] (rows=48 width=15)
+          Conds:SEL_1._col0=DUMMY_STORE_10._col0(Left Outer),Output:["_col0","_col1","_col2","_col3"]
+        <-Dummy Store [DUMMY_STORE_10]
+            Select Operator [SEL_3] (rows=26 width=7)
+              Output:["_col0","_col1"]
+              TableScan [TS_2] (rows=26 width=7)
                 default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-TableScan [TS_0] (rows=26 width=7)
+        <-Select Operator [SEL_1] (rows=26 width=7)
+            Output:["_col0","_col1"]
+            TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: drop table sales_n0

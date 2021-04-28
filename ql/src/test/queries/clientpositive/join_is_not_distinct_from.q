@@ -5,20 +5,24 @@ CREATE TABLE myinput1_n10(key int, value int);
 LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n10;
 
 -- merging
+explain cbo select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value;
 explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value;
 -- SORT_QUERY_RESULTS
 select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value;
 
+explain cbo select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key=c.key;
 explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key=c.key;
 select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key=c.key;
 
+explain cbo select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key is not distinct from c.key;
 explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key is not distinct from c.key;
 select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key is not distinct from c.key;
 
+explain cbo select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value=b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value=c.value;
 explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value=b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value=c.value;
-
 select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value=b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value=c.value;
 
+explain cbo select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value is not distinct from b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value is not distinct from c.value;
 explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value is not distinct from b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value is not distinct from c.value;
 select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value is not distinct from b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value is not distinct from c.value;
 
@@ -67,5 +71,6 @@ SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n5 a JOIN smb_input2_n5 b ON a.value 
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n5 a LEFT OUTER JOIN smb_input2_n5 b ON a.value  is not distinct from  b.value;
 
 --HIVE-3315 join predicate transitive
+explain cbo select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.key is NULL;
 explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.key is NULL;
 select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.key is NULL;
