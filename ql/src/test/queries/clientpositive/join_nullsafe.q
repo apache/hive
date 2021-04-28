@@ -5,20 +5,24 @@ CREATE TABLE myinput1_n9(key int, value int);
 LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n9;
 
 -- merging
+explain cbo select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value;
 explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value;
 -- SORT_QUERY_RESULTS
 select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value;
 
+explain cbo select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key;
 explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key;
 select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key;
 
+explain cbo select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key;
 explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key;
 select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key;
 
+explain cbo select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value;
 explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value;
-
 select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value;
 
+explain cbo select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value;
 explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value;
 select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value;
 
@@ -67,5 +71,6 @@ SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n4 a JOIN smb_input2_n4 b ON a.value 
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n4 a LEFT OUTER JOIN smb_input2_n4 b ON a.value <=> b.value;
 
 --HIVE-3315 join predicate transitive
+explain cbo select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL;
 explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL;
 select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL;
