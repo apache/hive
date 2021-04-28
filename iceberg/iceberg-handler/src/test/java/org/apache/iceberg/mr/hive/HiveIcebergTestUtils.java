@@ -41,6 +41,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -288,9 +290,15 @@ public class HiveIcebergTestUtils {
       Assert.assertEquals(record.size(), row.length);
       for (int j = 0; j < record.size(); ++j) {
         Object field = record.get(j);
-        String expectedString =
-            (field instanceof LocalDateTime) ? ((LocalDateTime) field).format(DATE_FORMATTER) : field.toString();
-        Assert.assertEquals(expectedString, row[j].toString());
+        if (field instanceof LocalDateTime) {
+          Assert.assertEquals(((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli(),
+              TimestampUtils.stringToTimestamp((String) row[j]).toEpochMilli());
+        } else if (field instanceof OffsetDateTime) {
+          Assert.assertEquals(((OffsetDateTime) field).toInstant().toEpochMilli(),
+              TimestampTZUtil.parse((String) row[j]).toEpochMilli());
+        } else {
+          Assert.assertEquals(field.toString(), row[j].toString());
+        }
       }
     }
   }
