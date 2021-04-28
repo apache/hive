@@ -29,10 +29,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
@@ -532,6 +535,38 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNull(field.doc());
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
           "from deserializer"}, rows.get(i));
+    }
+  }
+
+  @Test
+  public void testAlterTableProperties() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
+        "t_int INT,  " +
+        "t_string STRING) " +
+        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+    String propKey = "dummy";
+    String propValue = "dummy_val";
+    shell.executeStatement(String.format("ALTER TABLE customers SET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    // Check the Iceberg table parameters
+    Table icebergTable = testTables.loadTable(identifier);
+    Assert.assertTrue(icebergTable.properties().containsKey(propKey));
+    Assert.assertEquals(icebergTable.properties().get(propKey), propValue);
+    propValue = "new_dummy_val";
+    shell.executeStatement(String.format("ALTER TABLE customers SET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    icebergTable.refresh();
+    Assert.assertTrue(icebergTable.properties().containsKey(propKey));
+    Assert.assertEquals(icebergTable.properties().get(propKey), propValue);
+    shell.executeStatement(String.format("ALTER TABLE customers UNSET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    icebergTable.refresh();
+    Assert.assertFalse(icebergTable.properties().containsKey(propKey));
+    propKey = "dummy\ndummy";
+    try {
+      shell.executeStatement(String.format("ALTER TABLE customers SET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    } catch (IllegalArgumentException e) {
+      Assert.assertTrue(e.getMessage().contains("Table property name must not contain '\\n' character"));
     }
   }
 

@@ -48,6 +48,9 @@ public interface HiveMetaHook {
   public List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
   String ALTERLOCATION = "ALTERLOCATION";
   String ALLOW_PARTITION_KEY_CHANGE = "allow_partition_key_change";
+  String SET_PROPERTIES = "set_properties";
+  String UNSET_PROPERTIES = "unset_properties";
+  String PROPERTIES_SEPARATOR = "\n";
 
   /**
    * Called before a new table definition is added to the metastore
@@ -126,9 +129,10 @@ public interface HiveMetaHook {
   /**
    * Called after a table is altered in the metastore during ALTER TABLE.
    * @param table new table definition
+   * @param context environment context, containing information about the alter operation type
    * @param partitionSpecProxy list of partitions wrapped in {@link PartitionSpecProxy}
    */
-  default void commitAlterTable(Table table, PartitionSpecProxy partitionSpecProxy) throws MetaException {
+  default void commitAlterTable(Table table, EnvironmentContext context, PartitionSpecProxy partitionSpecProxy) throws MetaException {
     // Do nothing
   }
 
