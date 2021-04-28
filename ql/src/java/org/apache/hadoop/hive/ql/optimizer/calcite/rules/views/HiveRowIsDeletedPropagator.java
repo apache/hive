@@ -142,24 +142,29 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
             rightRowType.getFieldList().get(rightRowIsDeletedIndex).getType(),
             leftRowType.getFieldCount() + rightRowIsDeletedIndex);
 
-    // Collect projected columns: all columns from both inputs except rowIsDeleted columns
-    List<RexNode> projects = new ArrayList<>(leftRowType.getFieldCount() + rightRowType.getFieldCount() - 1);
-    List<String> projectNames = new ArrayList<>(leftRowType.getFieldCount() + rightRowType.getFieldCount() - 1);
-    populateProjects(rexBuilder, leftRowType, 0, leftRowType.getFieldCount() - 1, projects, projectNames);
-    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), rightRowType.getFieldCount() - 1, projects, projectNames);
-    // Add rowIsDeleted column to project
-    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
-    projectNames.add("rowIsDeleted");
-
     RexNode newJoinCondition;
-    if (leftInput.getRowType().getFieldCount() != join.getInput(0).getRowType().getFieldCount()) {
+    int newLeftFieldCount;
+    if (join.getInput(0).getRowType().getField(VirtualColumn.ROWISDELETED.getName(), false, false) == null) {
       // Shift column references refers columns coming from right input by one in join condition since the new left input
       // has a new column
       newJoinCondition = new InputRefShifter(leftRowType.getFieldCount() - 1, relBuilder)
           .apply(join.getCondition());
+
+      newLeftFieldCount = leftRowType.getFieldCount() - 1;
     } else {
       newJoinCondition = join.getCondition();
+      newLeftFieldCount = leftRowType.getFieldCount();
     }
+
+    // Collect projected columns: all columns from both inputs
+    List<RexNode> projects = new ArrayList<>(newLeftFieldCount + rightRowType.getFieldCount() + 1);
+    List<String> projectNames = new ArrayList<>(newLeftFieldCount + rightRowType.getFieldCount() + 1);
+    populateProjects(rexBuilder, leftRowType, 0, newLeftFieldCount, projects, projectNames);
+    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), rightRowType.getFieldCount(), projects, projectNames);
+
+    // Add rowIsDeleted column to project
+    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
+    projectNames.add(VirtualColumn.ROWISDELETED.getName());
 
     return relBuilder
             .push(leftInput)

@@ -31,7 +31,7 @@ group by t1.a;
 
 -- do some changes on source table data
 delete from t1 where b = 1;
-delete from t1 where a = 'remove';
+delete from t1 where a like '%remove';
 delete from t1 where c = 2;
 
 insert into t1(a,b,c) values
@@ -42,7 +42,13 @@ insert into t1(a,b,c) values
 ('null_add', null, 0),
 ('null_add/remove', null, 0);
 
-delete from t1 where a like 'add/remove';
+insert into t2(a,b) values
+('add', 15),
+('add/remove', 0),
+('null_add', null),
+('null_add/remove', null);
+
+delete from t1 where a like '%add/remove';
 
 -- view can not be used
 explain cbo
