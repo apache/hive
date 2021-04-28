@@ -24,6 +24,7 @@
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-iceberg-catalog</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

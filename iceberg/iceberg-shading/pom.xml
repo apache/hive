@@ -42,6 +42,7 @@
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>patched-iceberg-core</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
@@ -115,7 +116,6 @@
                                     <artifactSet>
                                         <includes>
                                             <include>org.apache.iceberg:*</include>
-                                            <include>org.apache.hive:hive-iceberg-catalog</include>
                                             <include>org.apache.avro:*</include>
                                             <include>org.apache.orc:*</include>
                                             <include>org.apache.parquet:*</include>

@@ -12,7 +12,7 @@
 
     <groupId>org.apache.iceberg</groupId>
     <artifactId>patched-iceberg-api</artifactId>
-    <version>patched-${iceberg-api.version}-${project.parent.version}</version>
+    <version>patched-${iceberg.version}-${project.parent.version}</version>
     <name>Patched Iceberg API</name>
 
     <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
@@ -28,7 +28,8 @@
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-api</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <build>
@@ -48,7 +49,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.iceberg</groupId>
                                     <artifactId>iceberg-api</artifactId>
-                                    <version>${iceberg-api.version}</version>
+                                    <version>${iceberg.version}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
