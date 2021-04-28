@@ -42,7 +42,6 @@
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>patched-iceberg-core</artifactId>
-            <version>patched-${iceberg-api.version}-${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.iceberg</groupId>
