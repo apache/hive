@@ -246,8 +246,12 @@ public class Initiator extends MetaStoreCompactorThread {
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
 
-    cache.putIfAbsent(fullTableName, findUserToRunAs(sd.getLocation(), t));
-    return cache.get(fullTableName);
+    String user = cache.get(fullTableName);
+    if (user == null) {
+      user = findUserToRunAs(sd.getLocation(), t);
+      cache.put(fullTableName, user);
+    }
+    return user;
   }
 
   @Override
