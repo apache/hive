@@ -138,9 +138,6 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     try {
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, desc.getType().name());
       if (desc.getType() == AlterTableType.ADDPROPS) {
-        if (table.getParameters().keySet().stream().anyMatch(k -> k.contains(HiveMetaHook.PROPERTIES_SEPARATOR))) {
-          throw new HiveException("Table property name must not contain '\\n' character");
-        }
         Map<String, String> oldTableParameters = oldTable.getParameters();
         environmentContext.putToProperties(HiveMetaHook.SET_PROPERTIES,
             table.getParameters().entrySet().stream()

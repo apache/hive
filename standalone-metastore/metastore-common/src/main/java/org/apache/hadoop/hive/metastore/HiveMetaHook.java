@@ -50,7 +50,7 @@ public interface HiveMetaHook {
   String ALLOW_PARTITION_KEY_CHANGE = "allow_partition_key_change";
   String SET_PROPERTIES = "set_properties";
   String UNSET_PROPERTIES = "unset_properties";
-  String PROPERTIES_SEPARATOR = "\n";
+  String PROPERTIES_SEPARATOR = "'";
 
   /**
    * Called before a new table definition is added to the metastore
