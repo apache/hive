@@ -914,6 +914,7 @@ class MetaStoreDirectSql {
     long queryTime = doTrace ? System.nanoTime() : 0;
     MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
     if (sqlResult.isEmpty()) {
+      query.closeAll();
       return Collections.emptyList(); // no partitions, bail early.
     }
 
@@ -1453,6 +1454,7 @@ class MetaStoreDirectSql {
     };
     List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
     if (list.isEmpty()) {
+      b.closeAllQueries();
       return null;
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
