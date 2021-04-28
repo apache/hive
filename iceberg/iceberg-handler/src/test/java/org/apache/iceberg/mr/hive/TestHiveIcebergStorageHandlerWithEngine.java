@@ -777,7 +777,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
-    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
 
   @Test
@@ -794,7 +794,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
-    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
 
   @Test
@@ -811,7 +811,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
-    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
 
   @Test
@@ -828,7 +828,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
-    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
 
   @Test
@@ -845,7 +845,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
-    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
 
   @Test
@@ -862,7 +862,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
-    HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
 
   @Test

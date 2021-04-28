@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -278,7 +277,7 @@ public class HiveIcebergTestUtils {
    * @param expected The expected list of Records
    * @param sortBy The column name by which we will sort
    */
-  public static void validateData(TestHiveShell shell, String tableName, List<Record> expected, String sortBy) {
+  public static void validateDataWithSQL(TestHiveShell shell, String tableName, List<Record> expected, String sortBy) {
     List<Object[]> rows = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY " + sortBy);
 
     Assert.assertEquals(expected.size(), rows.size());
