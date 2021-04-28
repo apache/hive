@@ -3760,7 +3760,7 @@ public class HiveConf extends Configuration {
         "A value of 0 indicates no timeout"),
     HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL("hive.server2.wm.delayed.move.validator.interval", "60",
         new TimeValidator(TimeUnit.SECONDS),
-        "Interval for checking for expired delayed moves and retries."),
+        "Interval for checking for expired delayed moves."),
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
         "A list of comma separated values corresponding to YARN queues of the same name.\n" +
         "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
