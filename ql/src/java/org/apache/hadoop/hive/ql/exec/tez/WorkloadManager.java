@@ -1363,9 +1363,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         LOG.info("Processing delayed move {} for pool {}", moveSession, poolName);
         result = handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, toReuse, recordMoveEvents,
             false);
+        LOG.info("Result of processing delayed move {} for pool {}: {}", moveSession, poolName, result);
         iter.remove();
         if ((result == MoveSessionResult.OK) || (result == MoveSessionResult.KILLED)) {
-          LOG.info("Attempt to process delayed move {} for pool {} was successful", moveSession, poolName);
           movedCount++;
         }
       }
