@@ -19,11 +19,6 @@
     <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
     <!-- We should remove the package for good when Iceberg integration has been stabilized. -->
 
-    <!-- In your IDE you have to add manually the generated jar to the classpath of the -->
-    <!-- patched-iceberg-core, hive-iceberg-catalog, hive-iceberg-handler packages -->
-    <!-- The jar could be found here: -->
-    <!-- <HIVE_ROOT>/iceberg/patched-iceberg-api/target/iceberg-api-patched-0.11.0-4.0.0-SNAPSHOT.jar -->
-
     <properties>
         <hive.path.to.root>../..</hive.path.to.root>
         <path.to.iceberg.root>..</path.to.iceberg.root>
