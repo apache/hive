@@ -110,8 +110,6 @@ public class HiveIcebergTestUtils {
               PrimitiveObjectInspectorFactory.writableStringObjectInspector
           ));
 
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
-
   private HiveIcebergTestUtils() {
     // Empty constructor for the utility class
   }

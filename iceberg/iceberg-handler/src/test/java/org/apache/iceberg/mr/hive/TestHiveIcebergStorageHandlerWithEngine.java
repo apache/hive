@@ -765,16 +765,16 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testYearTransform() throws IOException {
-    Schema schemaWithDate = new Schema(
+    Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.DateType.get()));
-    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).year("part_field").build();
-    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+    PartitionSpec spec = PartitionSpec.builderFor(schema).year("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
         .add(1L, LocalDate.of(2020, 1, 21))
         .add(2L, LocalDate.of(2020, 1, 22))
         .add(3L, LocalDate.of(2019, 1, 21))
         .build();
-    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
@@ -782,16 +782,16 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testMonthTransform() throws IOException {
-    Schema schemaWithDate = new Schema(
+    Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.TimestampType.withZone()));
-    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).month("part_field").build();
-    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+    PartitionSpec spec = PartitionSpec.builderFor(schema).month("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
         .add(1L, OffsetDateTime.of(2017, 11, 22, 11, 30, 7, 0, ZoneOffset.ofHours(1)))
         .add(2L, OffsetDateTime.of(2017, 11, 22, 11, 30, 7, 0, ZoneOffset.ofHours(2)))
         .add(3L, OffsetDateTime.of(2017, 11, 23, 11, 30, 7, 0, ZoneOffset.ofHours(3)))
         .build();
-    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
@@ -799,16 +799,16 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testDayTransform() throws IOException {
-    Schema schemaWithDate = new Schema(
+    Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.TimestampType.withoutZone()));
-    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).day("part_field").build();
-    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+    PartitionSpec spec = PartitionSpec.builderFor(schema).day("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
         .add(1L, LocalDateTime.of(2019, 2, 22, 9, 44, 54))
         .add(2L, LocalDateTime.of(2019, 2, 22, 10, 44, 54))
         .add(3L, LocalDateTime.of(2019, 2, 23, 9, 44, 54))
         .build();
-    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
@@ -816,16 +816,16 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testHourTransform() throws IOException {
-    Schema schemaWithDate = new Schema(
+    Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.TimestampType.withoutZone()));
-    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).hour("part_field").build();
-    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+    PartitionSpec spec = PartitionSpec.builderFor(schema).hour("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
         .add(1L, LocalDateTime.of(2019, 2, 22, 9, 44, 54))
         .add(2L, LocalDateTime.of(2019, 2, 22, 10, 44, 54))
         .add(3L, LocalDateTime.of(2019, 2, 23, 9, 44, 54))
         .build();
-    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
@@ -833,16 +833,16 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testBucketTransform() throws IOException {
-    Schema schemaWithDate = new Schema(
+    Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.StringType.get()));
-    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).bucket("part_field", 2).build();
-    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
         .add(1L, "Part1")
         .add(2L, "Part2")
         .add(3L, "Art3")
         .build();
-    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
@@ -850,16 +850,16 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testTruncateTransform() throws IOException {
-    Schema schemaWithDate = new Schema(
+    Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.StringType.get()));
-    PartitionSpec spec = PartitionSpec.builderFor(schemaWithDate).truncate("part_field", 2).build();
-    List<Record> records = TestHelper.RecordsBuilder.newInstance(schemaWithDate)
+    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
         .add(1L, "Part1")
         .add(2L, "Part2")
         .add(3L, "Art3")
         .build();
-    Table table = testTables.createTable(shell, "part_test", schemaWithDate, spec, fileFormat, records);
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateData(shell, "part_test", records, "id");
