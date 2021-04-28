@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -790,8 +791,11 @@ public class ASTConverter {
         }
         break;
       case IS_DISTINCT_FROM:
-        // convert IS DISTINCT FROM to NOT (IS NOT DISTINCT FROM)
-        return visitCall((RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.getOperands())));
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
+        return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
+          Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst)));
       case CAST:
         assert(call.getOperands().size() == 1);
         if (call.getType().isStruct() ||

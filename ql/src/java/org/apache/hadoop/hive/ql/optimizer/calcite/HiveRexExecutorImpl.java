@@ -21,12 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexExecutorImpl;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
@@ -55,11 +51,7 @@ public class HiveRexExecutorImpl extends RexExecutorImpl {
     for (RexNode rexNode : constExps) {
       // initialize the converter
       ExprNodeConverter converter = new ExprNodeConverter("", null, null, null,
-          new HashSet<>(), rexBuilder.getTypeFactory());
-
-      if (rexNode.getKind() == SqlKind.IS_DISTINCT_FROM) {
-        rexNode = RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, ((RexCall) rexNode).operands));
-      }
+          new HashSet<>(), rexBuilder);
       // convert RexNode to ExprNodeGenericFuncDesc
       ExprNodeDesc expr = rexNode.accept(converter);
       if (expr instanceof ExprNodeGenericFuncDesc) {
