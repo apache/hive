@@ -30,6 +30,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.hive.iceberg.org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.Metrics;
@@ -40,8 +42,6 @@ import org.apache.iceberg.hadoop.HadoopInputFile;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.orc.OrcMetrics;
 import org.apache.iceberg.parquet.ParquetUtil;
-import org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 
 /**
  * @deprecated use org.apache.iceberg.data.DataUtil once Iceberg 0.12 is released.
