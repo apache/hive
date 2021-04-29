@@ -264,7 +264,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
         if (contextProperties.containsKey(SET_PROPERTIES)) {
           splitter.splitToList(contextProperties.get(SET_PROPERTIES))
               .forEach(k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k)));
-        } else {
+        } else if (contextProperties.containsKey(UNSET_PROPERTIES)) {
           splitter.splitToList(contextProperties.get(UNSET_PROPERTIES)).forEach(icebergUpdateProperties::remove);
         }
         icebergUpdateProperties.commit();
