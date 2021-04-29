@@ -413,8 +413,6 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(conf);
     JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
-    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
-    jobConf.setNumReduceTasks(numTasks);
     jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
     // we should only commit this current table because
