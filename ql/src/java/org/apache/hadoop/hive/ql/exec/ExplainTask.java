@@ -514,7 +514,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     out.println(jn.join(alterTableStmt));
     out.println(jn.join(createViewList));
     out.println(jn.join(explainStmt));
-    work.getConfig().setUserLevelExplain(true);
+    // Get the explain plan outputs and print them in the console.
     getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
         false, false, work.isAppendTaskType(), work.getCboInfo(),
         work.getCboPlan(), work.getOptimizedSQL());

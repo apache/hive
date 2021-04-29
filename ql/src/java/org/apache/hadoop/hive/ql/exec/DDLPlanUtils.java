@@ -408,6 +408,18 @@ public class DDLPlanUtils {
     return null;
   }
 
+  public String addAllColStats(ColumnStatisticsData columnStatisticsData){
+    List<String> temp = new ArrayList<>();
+    addBinaryStats(columnStatisticsData, temp);
+    addLongStats(columnStatisticsData, temp);
+    addBooleanStats(columnStatisticsData, temp);
+    addStringStats(columnStatisticsData, temp);
+    addDateStats(columnStatisticsData, temp);
+    addDoubleStats(columnStatisticsData, temp);
+    addDecimalStats(columnStatisticsData, temp);
+    return Joiner.on(",").join(temp);
+  }
+
   /**
    * Parses the basic ColumnStatObject and returns the alter tables stmt for each individual column in a table.
    *
@@ -422,15 +434,7 @@ public class DDLPlanUtils {
     command.add(DATABASE_NAME, dbName);
     command.add(TABLE_NAME, tblName);
     command.add(COLUMN_NAME, colName);
-    List<String> temp = new ArrayList<>();
-    addBinaryStats(columnStatisticsData, temp);
-    addLongStats(columnStatisticsData, temp);
-    addBooleanStats(columnStatisticsData, temp);
-    addStringStats(columnStatisticsData, temp);
-    addDateStats(columnStatisticsData, temp);
-    addDoubleStats(columnStatisticsData, temp);
-    addDecimalStats(columnStatisticsData, temp);
-    command.add(TBLPROPERTIES, Joiner.on(",").join(temp));
+    command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
     return command.render();
   }
 
@@ -483,15 +487,7 @@ public class DDLPlanUtils {
     command.add(TABLE_NAME, tblName);
     command.add(COLUMN_NAME, colName);
     command.add(PARTITION_NAME, ptName);
-    List<String> temp = new ArrayList<>();
-    addBinaryStats(columnStatisticsData, temp);
-    addLongStats(columnStatisticsData, temp);
-    addBooleanStats(columnStatisticsData, temp);
-    addStringStats(columnStatisticsData, temp);
-    addDateStats(columnStatisticsData, temp);
-    addDoubleStats(columnStatisticsData, temp);
-    addDecimalStats(columnStatisticsData, temp);
-    command.add(TBLPROPERTIES, Joiner.on(",").join(temp));
+    command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
     if(checkIfDefaultPartition(ptName)){
       command.add(COMMENT_SQL, "--");
     }

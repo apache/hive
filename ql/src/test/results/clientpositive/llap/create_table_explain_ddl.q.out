@@ -54,9 +54,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -116,9 +118,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -179,9 +183,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -242,9 +248,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -305,9 +313,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
@@ -370,9 +380,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
@@ -436,9 +448,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: drop table alter1
 PREHOOK: type: DROPTABLE
@@ -516,9 +530,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -578,9 +594,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -641,9 +659,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -704,9 +724,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -767,9 +789,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
@@ -832,9 +856,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
@@ -898,9 +924,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter1
           Select Operator
-            Output: _col0, _col1
+            expressions: a (type: int), b (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: DROP TABLE alter1_db.alter1
 PREHOOK: type: DROPTABLE
@@ -976,9 +1004,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1048,9 +1078,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1125,9 +1157,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1204,9 +1238,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1277,9 +1313,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1355,9 +1393,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1457,9 +1497,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1529,9 +1571,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1606,9 +1650,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1685,9 +1731,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1758,9 +1806,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
@@ -1836,9 +1886,11 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          Output: a, b
+          alias: alter2
           Select Operator
-            Output: _col0, _col1, _col2
+            expressions: a (type: int), b (type: int), insertdate (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
 
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
