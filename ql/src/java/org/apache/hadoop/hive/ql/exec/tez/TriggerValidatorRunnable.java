@@ -95,7 +95,7 @@ public class TriggerValidatorRunnable implements Runnable {
 
           Trigger chosenTrigger = violatedSessions.get(sessionState);
           if (chosenTrigger != null) {
-            LOG.info("Query: {}. {}. Applying action.", sessionState.getWmContext().getQueryId(),
+            LOG.debug("Query: {}. {}. Applying action.", sessionState.getWmContext().getQueryId(),
               chosenTrigger.getViolationMsg());
           }
         }
