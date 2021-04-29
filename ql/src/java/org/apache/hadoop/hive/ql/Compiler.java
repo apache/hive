@@ -183,12 +183,6 @@ public class Compiler {
     // that SemanticAnalyzer finds are in use
     SessionState.get().getCurrentFunctionsInUse().clear();
 
-    // Flush the metastore cache.  This assures that we don't pick up objects from a previous
-    // query running in this same thread.  This has to be done after we get our semantic
-    // analyzer (this is when the connection to the metastore is made) but before we analyze,
-    // because at that point we need access to the objects.
-    Hive.get().getMSC().flushCache();
-
     driverContext.setBackupContext(new Context(context));
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
 
