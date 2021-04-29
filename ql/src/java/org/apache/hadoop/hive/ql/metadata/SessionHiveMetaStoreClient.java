@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
-import org.apache.hadoop.hive.metastore.api.ObjectDictionary;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -113,6 +112,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.localcache.PartitionCacheHelper;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -2450,15 +2450,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   // passing it through the conf.
   @Override
   protected Long getTxnId(String dbName, String tblName) {
-    try {
-      HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
-      if (txnMgr == null) {
-        return super.getTxnId(dbName, tblName);
-      }
-      return txnMgr.getCurrentTxnId();
-    } catch (Exception e) {
-      throw new RuntimeException("Exception getting txn id", e);
+    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
+    if (txnMgr == null) {
+      return super.getTxnId(dbName, tblName);
     }
+    return txnMgr.getCurrentTxnId();
   }
 
   @Override
@@ -2472,15 +2468,12 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         return null;
       }
       final String fullTableName = TableName.getDbTable(dbName, tblName);
-      final ValidTxnWriteIdList validTxnWriteIdList = SessionState.get().getTxnMgr()
-          .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
+      final ValidTxnWriteIdList validTxnWriteIdList = TxnUtils.createValidTxnWriteIdList(
+          SessionState.get().getTxnMgr().getCurrentTxnId(),
+          getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList));
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
       return (writeIdList != null) ? writeIdList.toString() : null;
-    } catch (TException e) {
-      throw e;
-    } catch (Exception e) {
-      // XXX: HIVE-25070: Should not catch the general Exception. Make the exception handling more
-      // fine-tuned.
+    } catch (HiveException e) {
       throw new RuntimeException("Exception getting valid write id list", e);
     }
   }
