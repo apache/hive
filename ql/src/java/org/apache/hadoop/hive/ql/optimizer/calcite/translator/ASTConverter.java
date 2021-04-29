@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -788,6 +790,12 @@ public class ASTConverter {
           }
         }
         break;
+      case IS_DISTINCT_FROM:
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
+        return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
+          Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst)));
       case CAST:
         assert(call.getOperands().size() == 1);
         if (call.getType().isStruct() ||

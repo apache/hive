@@ -155,8 +155,9 @@ public class MessageBuilder {
     if (instance == null) {
       synchronized (lock) {
         if (instance == null) {
-          instance = new MessageBuilder();
-          instance.init();
+          MessageBuilder newInstance = new MessageBuilder();
+          newInstance.init();
+          instance = newInstance;
         }
       }
     }

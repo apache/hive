@@ -24,6 +24,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -87,12 +88,23 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
    * @throws NoSuchObjectException If the table does not exist.
    * @throws MetaException  If another error occurs.
    */
+  @Deprecated
   Table get_table_core(final String catName, final String dbname, final String name)
       throws MetaException, NoSuchObjectException;
-
+  @Deprecated
   Table get_table_core(final String catName, final String dbname,
                        final String name,
                        final String writeIdList)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   *
+   * @param getTableRequest request object to query table in HMS
+   * @return Table Object
+   * @throws NoSuchObjectException If the table does not exist.
+   * @throws MetaException  If another error occurs
+   */
+  Table get_table_core(final GetTableRequest getTableRequest)
       throws MetaException, NoSuchObjectException;
 
   /**

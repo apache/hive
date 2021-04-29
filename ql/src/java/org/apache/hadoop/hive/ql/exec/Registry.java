@@ -553,21 +553,19 @@ public class Registry {
         Integer refCount = persistent.get(functionClass);
         persistent.put(functionClass, Integer.valueOf(refCount == null ? 1 : refCount + 1));
       }
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
     } finally {
       lock.unlock();
     }
   }
 
-  private Class<?> getPermanentUdfClass(FunctionInfo function) {
+  private Class<?> getPermanentUdfClass(FunctionInfo function) throws ClassNotFoundException {
     Class<?> functionClass = function.getFunctionClass();
     if (functionClass == null) {
       // Expected for permanent UDFs at this point.
       ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
-      try {
-        functionClass = Class.forName(function.getClassName(), true, loader);
-      } catch (ClassNotFoundException ex) {
-        throw new RuntimeException(ex);
-      }
+      functionClass = Class.forName(function.getClassName(), true, loader);
     }
     return functionClass;
   }
@@ -593,14 +591,19 @@ public class Registry {
   }
 
   private void removePersistentFunctionUnderLock(FunctionInfo fi) {
-    Class<?> functionClass = getPermanentUdfClass(fi);
-    Integer refCount = persistent.get(functionClass);
-    if (refCount != null) {
-      if (refCount == 1) {
-        persistent.remove(functionClass);
-      } else {
-        persistent.put(functionClass, Integer.valueOf(refCount - 1));
+    try {
+      Class<?> functionClass = getPermanentUdfClass(fi);
+      Integer refCount = persistent.get(functionClass);
+      if (refCount != null) {
+        if (refCount == 1) {
+          persistent.remove(functionClass);
+        } else {
+          persistent.put(functionClass, Integer.valueOf(refCount - 1));
+        }
       }
+    } catch (ClassNotFoundException e) {
+      LOG.debug("Associated class could not be found when dropping a custom UDF {}." +
+          "This may happen if this UDF was never used in this session.", fi.getDisplayName());
     }
   }
 

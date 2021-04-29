@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.metrics.AcidMetricService.replaceWhitespace;
 
@@ -162,6 +165,87 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(originalValue,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
+  }
+
+  @Test
+  public void  testInitiatorNoFailure() throws Exception {
+    startInitiator();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testCleanerNoFailure() throws Exception {
+    startCleaner();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testInitiatorFailure() throws Exception {
+    ThrowingTxnHandler.doThrow = true;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
+    startInitiator();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
+    Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testCleanerFailure() throws Exception {
+    ThrowingTxnHandler.doThrow = true;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
+    startCleaner();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+    Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testInitiatorAuxFailure() throws Exception {
+    TxnStore.MutexAPI.LockHandle handle = null;
+    try {
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+      final Thread main = Thread.currentThread();
+      interruptThread(5000, main);
+      startInitiator();
+    } finally {
+      if (handle != null) {
+        handle.releaseLocks();
+      }
+    }
+    // the lock timeout on AUX lock, should be ignored.
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
+    Assert.assertEquals(0, ratio.getLeft().get());
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testCleanerAuxFailure() throws Exception {
+    TxnStore.MutexAPI.LockHandle handle = null;
+    try {
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+      final Thread main = Thread.currentThread();
+      interruptThread(5000, main);
+      startCleaner();
+    } finally {
+      if (handle != null) {
+        handle.releaseLocks();
+      }
+    }
+    // the lock timeout on AUX lock, should be ignored.
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
   }
 
   @Test
@@ -516,6 +600,17 @@ public class TestCompactionMetrics  extends CompactorTest {
     element.setInitiatorVersion("4.0.0");
     element.setWorkerVersion("4.0.0");
     return element;
+  }
+
+  private void interruptThread(long timeout, Thread target) {
+    Thread t = new Thread(() -> {
+      try {
+        Thread.sleep(timeout);
+        target.interrupt();
+      } catch (Exception e) {}
+    });
+    t.setDaemon(true);
+    t.start();
   }
 
   @Override
