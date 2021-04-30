@@ -327,9 +327,8 @@ public class OrcEncodedDataConsumer
       ((SettableTreeReader) reader).setBuffers(batch, sameStripe);
       // TODO: When hive moves to java8, make updateTimezone() as default method in
       // SettableTreeReader so that we can avoid this check.
-      if (reader instanceof EncodedTreeReaderFactory.TimestampStreamReader && !sameStripe) {
-        ((EncodedTreeReaderFactory.TimestampStreamReader) reader)
-                .updateTimezone(stripeMetadata.getWriterTimezone());
+      if (!sameStripe) {
+        ((SettableTreeReader) reader).updateTimezone(stripeMetadata.getWriterTimezone());
       }
       reader.seek(pps);
     }

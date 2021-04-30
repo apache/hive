@@ -48,6 +48,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
    */
   public interface SettableTreeReader {
     void setBuffers(EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe) throws IOException;
+
+    default void updateTimezone(String writerTimezoneId) throws IOException { }
   }
 
   public static class TimestampStreamReader extends TimestampTreeReader
