@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
@@ -312,9 +313,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Committing job has started for table: {}, using location: {}",
         table, generateJobLocation(location, conf, jobContext.getJobID()));
 
-    // If there are reducers, then every reducer will generate a result file.
-    // If this is a map only task, then every mapper will generate a result file.
-    int numTasks = conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
+    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + name, -1);
+    if (numTasks == -1) {
+      // Fallback logic, if number of tasks are not available in the config
+      // If there are reducers, then every reducer will generate a result file.
+      // If this is a map only task, then every mapper will generate a result file.
+      LOG.info("Number of tasks not available in config for jobID: {}, table: {}. Falling back to jobConf " +
+          "numReduceTasks/numMapTasks", jobContext.getJobID(), name);
+      numTasks = conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
+    }
     Collection<DataFile> dataFiles = dataFiles(numTasks, executor, location, jobContext, io, true);
 
     boolean isOverwrite = conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false);
