@@ -1867,6 +1867,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param \metastore\StoredProcedureRequest $request
      * @return \metastore\StoredProcedure
      * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
      */
     public function get_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**
@@ -1884,6 +1885,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param \metastore\GetPackageRequest $request
      * @return \metastore\Package
      * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
      */
     public function find_package(\metastore\GetPackageRequest $request);
     /**

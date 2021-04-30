@@ -16445,6 +16445,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o1 !== null) {
             throw $result->o1;
         }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
         throw new \Exception("get_stored_procedure failed: unknown result");
     }
 
@@ -16627,6 +16630,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         }
         if ($result->o1 !== null) {
             throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
         }
         throw new \Exception("find_package failed: unknown result");
     }
