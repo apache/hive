@@ -170,6 +170,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         }
       }
     }
+    int localRetryLimit = retryLimit;
 
     while (true) {
       try {
@@ -236,6 +237,13 @@ public class RetryingMetaStoreClient implements InvocationHandler {
           // TODO: most protocol exceptions are probably unrecoverable... throw?
           LOG.debug(t.getMessage());
           caughtException = (TException)t;
+          // For this one specific exception type, we know that there is no chance that the thrift
+          // message got to the server. We will allow one retry in this case.
+          if ( t instanceof TTransportException &&
+              ((TTransportException) t).getType() == TTransportException.NOT_OPEN) {
+            localRetryLimit = 2;
+            allowRetry = true;
+          }
         } else if ((t instanceof MetaException) && t.getMessage().matches(
             "(?s).*(JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*") &&
             !t.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException")) {
@@ -253,12 +261,12 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       }
 
 
-      if (retriesMade >= retryLimit || base.isLocalMetaStore() || !allowRetry) {
+      if (retriesMade >= localRetryLimit || base.isLocalMetaStore() || !allowRetry) {
         throw caughtException;
       }
       retriesMade++;
       LOG.warn("MetaStoreClient lost connection. Attempting to reconnect (" + retriesMade + " of " +
-          retryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
+          localRetryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
       Thread.sleep(retryDelaySeconds * 1000);
     }
     return ret;
