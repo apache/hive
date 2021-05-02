@@ -7522,14 +7522,18 @@ class PrimaryKeysRequest(object):
      - db_name
      - tbl_name
      - catName
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, db_name=None, tbl_name=None, catName=None,):
+    def __init__(self, db_name=None, tbl_name=None, catName=None, validWriteIdList=None, tableId=-1,):
         self.db_name = db_name
         self.tbl_name = tbl_name
         self.catName = catName
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -7555,6 +7559,16 @@ class PrimaryKeysRequest(object):
                     self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -7576,6 +7590,14 @@ class PrimaryKeysRequest(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 3)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -7675,16 +7697,20 @@ class ForeignKeysRequest(object):
      - foreign_db_name
      - foreign_tbl_name
      - catName
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, parent_db_name=None, parent_tbl_name=None, foreign_db_name=None, foreign_tbl_name=None, catName=None,):
+    def __init__(self, parent_db_name=None, parent_tbl_name=None, foreign_db_name=None, foreign_tbl_name=None, catName=None, validWriteIdList=None, tableId=-1,):
         self.parent_db_name = parent_db_name
         self.parent_tbl_name = parent_tbl_name
         self.foreign_db_name = foreign_db_name
         self.foreign_tbl_name = foreign_tbl_name
         self.catName = catName
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -7720,6 +7746,16 @@ class ForeignKeysRequest(object):
                     self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -7749,6 +7785,14 @@ class ForeignKeysRequest(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 5)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 7)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -7842,14 +7886,18 @@ class UniqueConstraintsRequest(object):
      - catName
      - db_name
      - tbl_name
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, catName=None, db_name=None, tbl_name=None,):
+    def __init__(self, catName=None, db_name=None, tbl_name=None, validWriteIdList=None, tableId=-1,):
         self.catName = catName
         self.db_name = db_name
         self.tbl_name = tbl_name
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -7875,6 +7923,16 @@ class UniqueConstraintsRequest(object):
                     self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -7896,6 +7954,14 @@ class UniqueConstraintsRequest(object):
         if self.tbl_name is not None:
             oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
             oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -7995,14 +8061,18 @@ class NotNullConstraintsRequest(object):
      - catName
      - db_name
      - tbl_name
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, catName=None, db_name=None, tbl_name=None,):
+    def __init__(self, catName=None, db_name=None, tbl_name=None, validWriteIdList=None, tableId=-1,):
         self.catName = catName
         self.db_name = db_name
         self.tbl_name = tbl_name
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -8028,6 +8098,16 @@ class NotNullConstraintsRequest(object):
                     self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -8049,6 +8129,14 @@ class NotNullConstraintsRequest(object):
         if self.tbl_name is not None:
             oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
             oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -8148,14 +8236,18 @@ class DefaultConstraintsRequest(object):
      - catName
      - db_name
      - tbl_name
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, catName=None, db_name=None, tbl_name=None,):
+    def __init__(self, catName=None, db_name=None, tbl_name=None, validWriteIdList=None, tableId=-1,):
         self.catName = catName
         self.db_name = db_name
         self.tbl_name = tbl_name
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -8181,6 +8273,16 @@ class DefaultConstraintsRequest(object):
                     self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -8202,6 +8304,14 @@ class DefaultConstraintsRequest(object):
         if self.tbl_name is not None:
             oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
             oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -8301,14 +8411,18 @@ class CheckConstraintsRequest(object):
      - catName
      - db_name
      - tbl_name
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, catName=None, db_name=None, tbl_name=None,):
+    def __init__(self, catName=None, db_name=None, tbl_name=None, validWriteIdList=None, tableId=-1,):
         self.catName = catName
         self.db_name = db_name
         self.tbl_name = tbl_name
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -8334,6 +8448,16 @@ class CheckConstraintsRequest(object):
                     self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -8355,6 +8479,14 @@ class CheckConstraintsRequest(object):
         if self.tbl_name is not None:
             oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
             oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -8454,14 +8586,18 @@ class AllTableConstraintsRequest(object):
      - dbName
      - tblName
      - catName
+     - validWriteIdList
+     - tableId
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, catName=None,):
+    def __init__(self, dbName=None, tblName=None, catName=None, validWriteIdList=None, tableId=-1,):
         self.dbName = dbName
         self.tblName = tblName
         self.catName = catName
+        self.validWriteIdList = validWriteIdList
+        self.tableId = tableId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -8487,6 +8623,16 @@ class AllTableConstraintsRequest(object):
                     self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -8508,6 +8654,14 @@ class AllTableConstraintsRequest(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 3)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28867,6 +29021,8 @@ PrimaryKeysRequest.thrift_spec = (
     (1, TType.STRING, 'db_name', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'catName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(PrimaryKeysResponse)
 PrimaryKeysResponse.thrift_spec = (
@@ -28881,6 +29037,8 @@ ForeignKeysRequest.thrift_spec = (
     (3, TType.STRING, 'foreign_db_name', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'foreign_tbl_name', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'catName', 'UTF8', None, ),  # 5
+    (6, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 6
+    (7, TType.I64, 'tableId', None, -1, ),  # 7
 )
 all_structs.append(ForeignKeysResponse)
 ForeignKeysResponse.thrift_spec = (
@@ -28893,6 +29051,8 @@ UniqueConstraintsRequest.thrift_spec = (
     (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(UniqueConstraintsResponse)
 UniqueConstraintsResponse.thrift_spec = (
@@ -28905,6 +29065,8 @@ NotNullConstraintsRequest.thrift_spec = (
     (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(NotNullConstraintsResponse)
 NotNullConstraintsResponse.thrift_spec = (
@@ -28917,6 +29079,8 @@ DefaultConstraintsRequest.thrift_spec = (
     (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(DefaultConstraintsResponse)
 DefaultConstraintsResponse.thrift_spec = (
@@ -28929,6 +29093,8 @@ CheckConstraintsRequest.thrift_spec = (
     (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(CheckConstraintsResponse)
 CheckConstraintsResponse.thrift_spec = (
@@ -28941,6 +29107,8 @@ AllTableConstraintsRequest.thrift_spec = (
     (1, TType.STRING, 'dbName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tblName', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'catName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(AllTableConstraintsResponse)
 AllTableConstraintsResponse.thrift_spec = (

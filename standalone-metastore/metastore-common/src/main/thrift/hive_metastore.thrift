@@ -678,7 +678,9 @@ struct EnvironmentContext {
 struct PrimaryKeysRequest {
   1: required string db_name,
   2: required string tbl_name,
-  3: optional string catName
+  3: optional string catName,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct PrimaryKeysResponse {
@@ -690,7 +692,9 @@ struct ForeignKeysRequest {
   2: string parent_tbl_name,
   3: string foreign_db_name,
   4: string foreign_tbl_name
-  5: optional string catName          // No cross catalog constraints
+  5: optional string catName,          // No cross catalog constraints
+  6: optional string validWriteIdList,
+  7: optional i64 tableId=-1
 }
 
 struct ForeignKeysResponse {
@@ -701,6 +705,8 @@ struct UniqueConstraintsRequest {
   1: required string catName,
   2: required string db_name,
   3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct UniqueConstraintsResponse {
@@ -711,6 +717,8 @@ struct NotNullConstraintsRequest {
   1: required string catName,
   2: required string db_name,
   3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct NotNullConstraintsResponse {
@@ -720,7 +728,9 @@ struct NotNullConstraintsResponse {
 struct DefaultConstraintsRequest {
   1: required string catName,
   2: required string db_name,
-  3: required string tbl_name
+  3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct DefaultConstraintsResponse {
@@ -730,7 +740,9 @@ struct DefaultConstraintsResponse {
 struct CheckConstraintsRequest {
   1: required string catName,
   2: required string db_name,
-  3: required string tbl_name
+  3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct CheckConstraintsResponse {
@@ -740,7 +752,9 @@ struct CheckConstraintsResponse {
 struct AllTableConstraintsRequest {
   1: required string dbName,
   2: required string tblName,
-  3: required string catName
+  3: required string catName,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1 // table id
 }
 
 struct AllTableConstraintsResponse {

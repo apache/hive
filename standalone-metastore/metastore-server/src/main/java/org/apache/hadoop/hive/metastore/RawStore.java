@@ -30,17 +30,21 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -58,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
@@ -67,6 +72,7 @@ import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -94,6 +100,7 @@ import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -1571,7 +1578,18 @@ public interface RawStore extends Configurable {
    * @return list of primary key columns or an empty list if the table does not have a primary key
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name)
+      throws MetaException;
+
+  /**
+   * Get the primary associated with a table.  Strangely enough each SQLPrimaryKey is actually a
+   * column in they key, not the key itself.  Thus the list.
+   * @param request primary key request
+   * @return list of primary key columns or an empty list if the table does not have a primary key
+   * @throws MetaException error accessing the RDBMS
+   */
+  List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
       throws MetaException;
 
   /**
@@ -1587,9 +1605,21 @@ public interface RawStore extends Configurable {
    * matches the arguments the results here will be all mixed together into a single list.
    * @throws MetaException error access the RDBMS.
    */
+  @Deprecated
   List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException;
+
+  /**
+   * Get the foreign keys for a table.  All foreign keys for a particular table can be fetched by
+   * passing null for the last two arguments.
+   * @param request ForeignKeysRequest object
+   * @return List of all matching foreign key columns.  Note that if more than one foreign key
+   * matches the arguments the results here will be all mixed together into a single list.
+   * @throws MetaException error access the RDBMS.
+   */
+  List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request)
+      throws MetaException;
 
   /**
    * Get unique constraints associated with a table.
@@ -1599,8 +1629,17 @@ public interface RawStore extends Configurable {
    * @return list of unique constraints
    * @throws MetaException error access the RDBMS.
    */
+  @Deprecated
   List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name,
     String tbl_name) throws MetaException;
+
+  /**
+   * Get unique constraints associated with a table.
+   * @param request UniqueConstraintsRequest object.
+   * @return list of unique constraints
+   * @throws MetaException error access the RDBMS.
+   */
+  List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException;
 
   /**
    * Get not null constraints on a table.
@@ -1610,8 +1649,17 @@ public interface RawStore extends Configurable {
    * @return list of not null constraints
    * @throws MetaException error accessing the RDBMS.
    */
+  @Deprecated
   List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name,
     String tbl_name) throws MetaException;
+
+  /**
+   * Get not null constraints on a table.
+   * @param request NotNullConstraintsRequest object.
+   * @return list of not null constraints
+   * @throws MetaException error accessing the RDBMS.
+   */
+  List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException;
 
   /**
    * Get default values for columns in a table.
@@ -1621,8 +1669,17 @@ public interface RawStore extends Configurable {
    * @return list of default values defined on the table.
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   List<SQLDefaultConstraint> getDefaultConstraints(String catName, String db_name,
                                                    String tbl_name) throws MetaException;
+
+  /**
+   * Get default values for columns in a table.
+   * @param request DefaultConstraintsRequest object.
+   * @return list of default values defined on the table.
+   * @throws MetaException error accessing the RDBMS
+   */
+  List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException;
 
   /**
    * Get check constraints for columns in a table.
@@ -1632,8 +1689,17 @@ public interface RawStore extends Configurable {
    * @return ccheck constraints for this table
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name,
                                                    String tbl_name) throws MetaException;
+
+  /**
+   * Get check constraints for columns in a table.
+   * @param request CheckConstraintsRequest object.
+   * @return ccheck constraints for this table
+   * @throws MetaException error accessing the RDBMS
+   */
+  List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException;
 
   /**
    * Get all constraints of the table
@@ -1643,7 +1709,18 @@ public interface RawStore extends Configurable {
    * @return all constraints for this table
    * @throws MetaException error accessing the RDBMS
    */
+  @Deprecated
   SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get all constraints of the table
+   * @param tableConstraintsRequest request object
+   * @return all constraints for this table
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   */
+  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest tableConstraintsRequest)
       throws MetaException, NoSuchObjectException;
 
   /**

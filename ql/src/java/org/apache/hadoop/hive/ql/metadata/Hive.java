@@ -5881,10 +5881,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName)
+  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName, long tableId)
       throws HiveException, NoSuchObjectException {
     try {
-      return getMSC().getAllTableConstraints(new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
+
+      ValidWriteIdList validWriteIdList = null;
+      long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+      if (txnId > 0) {
+        validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+      }
+
+      AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
+      request.setTableId(tableId);
+      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
+      return getMSC().getAllTableConstraints(request);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
@@ -5893,12 +5903,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public TableConstraintsInfo getTableConstraints(String dbName, String tblName, boolean fetchReliable,
-      boolean fetchEnabled) throws HiveException {
+      boolean fetchEnabled, long tableId) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_CONSTRAINTS);
+
     try {
-      SQLAllTableConstraints tableConstraints =
-          getMSC().getAllTableConstraints(new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
+
+      ValidWriteIdList validWriteIdList = null;
+      long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+      if (txnId > 0) {
+        validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+      }
+      AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
+      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
+      request.setTableId(tableId);
+
+      SQLAllTableConstraints tableConstraints = getMSC().getAllTableConstraints(request);
       if (fetchReliable && tableConstraints != null) {
         if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())) {
           tableConstraints.setPrimaryKeys(
