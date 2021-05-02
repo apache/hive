@@ -240,21 +240,13 @@ public class HiveSessionImpl implements HiveSession {
    * @throws HiveSQLException
    */
   private void setSessionHive() throws HiveSQLException {
-    Hive newSessionHive;
     try {
-      newSessionHive = Hive.get(getHiveConf());
-
-      // HMS connections from sessionHive shouldn't be closed by any query execution thread when it
-      // recreates the Hive object. It is allowed to be closed only when session is closed/released.
-      newSessionHive.setAllowClose(false);
+      sessionHive = sessionState.getHiveDb();
     } catch (HiveException e) {
-      throw new HiveSQLException("Failed to get metastore connection", e);
+      String msg = "Failed to create Hive Object: " + e;
+      LOG.error(msg, e);
+      throw new HiveSQLException(msg, e);
     }
-
-    // The previous sessionHive object might still be referred by any async query execution thread.
-    // So, it shouldn't be closed here explicitly. Anyways, Hive object will auto-close HMS connection
-    // when it is garbage collected. So, it is safe to just overwrite sessionHive here.
-    sessionHive = newSessionHive;
   }
 
   private void processGlobalInitFile() {
@@ -408,18 +400,10 @@ public class HiveSessionImpl implements HiveSession {
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
 
-    // If the thread local Hive is different from sessionHive, it means, the previous query execution in
-    // master thread has re-created Hive object due to changes in MS related configurations in sessionConf.
-    // So, it is necessary to reset sessionHive object based on new sessionConf. Here, we cannot,
-    // directly set sessionHive with thread local Hive because if the previous command was REPL LOAD, then
-    // the config changes lives only within command execution not in session level.
-    // So, the safer option is to invoke Hive.get() which decides if to reuse Thread local Hive or re-create it.
-    if (Hive.getThreadLocal() != sessionHive) {
-      try {
-        setSessionHive();
-      } catch (HiveSQLException e) {
-        throw new RuntimeException(e);
-      }
+    try {
+      setSessionHive();
+    } catch (HiveSQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
