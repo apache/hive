@@ -125,6 +125,8 @@ public class FileUtils {
         }
       }
     } catch (IOException ioe) {
+      // Ignore since this method is used as part of purge which actually ignores all exception, if the directory can
+      // not be deleted, so preserve the same behaviour.
       LOG.warn("Couldn't clean up replication related snapshots", ioe);
     }
   }

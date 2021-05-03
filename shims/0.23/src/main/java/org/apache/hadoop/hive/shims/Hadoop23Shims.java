@@ -1197,7 +1197,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         return false;
       }
     } catch (Exception e) {
-      throw new IOException("Cannot execute DistCp process: " + e, e);
+      throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
       // Set the job id from distCp conf to the callers configuration.
       if (distcp != null) {
@@ -1210,12 +1210,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
-  public boolean runDistCpWithSnapshots(String snap1, String snap2, List<Path> srcPaths, Path dst, Configuration conf)
+  public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst, Configuration conf)
       throws IOException {
-    DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(snap1, snap2)
+    DistCpOptions options =
+        new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
         .preserve(FileAttribute.BLOCKSIZE).preserve(FileAttribute.XATTR).build();
 
-    List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, snap1, snap2, conf, "-diff");
+    List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, oldSnapshot, newSnapshot, conf, "-diff");
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
       DistCp distcp = new DistCp(conf, options);
@@ -1226,35 +1227,35 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         // Handling FileNotFoundException, if source got deleted, in that case we don't want to copy either, So it is
         // like a success case, we didn't had anything to copy and we copied nothing, so, we need not to fail.
         LOG.warn("Copy failed with INVALID_ARGUMENT for source: {} to target: {} snapshot1: {} snapshot2: {} "
-            + "params: {}", srcPaths, dst, snap1, snap2, params);
+            + "params: {}", srcPaths, dst, oldSnapshot, newSnapshot, params);
         return true;
       } else if (returnCode == DistCpConstants.UNKNOWN_ERROR && conf
           .getBoolean("hive.repl.externaltable.snapshot.overwrite.target", true)) {
         // Check if this error is due to target modified.
-        if (shouldRdiff(dst, conf, snap1)) {
+        if (shouldRdiff(dst, conf, oldSnapshot)) {
           LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
-              + "snapshot: {}", srcPaths, dst, snap1);
-          List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", snap1, conf, "-rdiff");
+              + "snapshot: {}", srcPaths, dst, oldSnapshot);
+          List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
           DistCp rDistcp = new DistCp(conf, options);
           returnCode = rDistcp.run(rParams.toArray(new String[0]));
           if (returnCode == 0) {
             LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
-                srcPaths, dst, snap1);
-            dst.getFileSystem(conf).deleteSnapshot(dst, snap1);
-            dst.getFileSystem(conf).createSnapshot(dst, snap1);
+                srcPaths, dst, oldSnapshot);
+            dst.getFileSystem(conf).deleteSnapshot(dst, oldSnapshot);
+            dst.getFileSystem(conf).createSnapshot(dst, oldSnapshot);
             returnCode = distcp.run(params.toArray(new String[0]));
             if (returnCode == 0) {
               return true;
             } else {
               LOG.error("Copy failed with after target restore for source: {} to target: {} snapshot1: {} snapshot2: "
-                  + "{} params: {}. Return code: {}", srcPaths, dst, snap1, snap2, params, returnCode);
+                  + "{} params: {}. Return code: {}", srcPaths, dst, oldSnapshot, newSnapshot, params, returnCode);
               return false;
             }
           }
         }
       }
     } catch (Exception e) {
-      throw new IOException("Cannot execute DistCp process: " + e, e);
+      throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
       conf.setBoolean("mapred.mapper.new-api", false);
     }
@@ -1292,14 +1293,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return targetModified;
   }
 
-  public boolean runDistCpWithSnapshotsAs(String snap1, String snap2,
+  public boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot,
       List<Path> srcPaths, Path dst, Configuration conf,
       UserGroupInformation proxyUser) throws IOException {
     try {
       return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
         @Override
         public Boolean run() throws Exception {
-          return runDistCpWithSnapshots(snap1, snap2, srcPaths, dst, conf);
+          return runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, conf);
         }
       });
     } catch (InterruptedException e) {

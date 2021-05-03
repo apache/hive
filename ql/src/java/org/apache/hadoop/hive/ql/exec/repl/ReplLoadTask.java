@@ -85,6 +85,7 @@ import java.util.Map;
 import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
@@ -369,7 +370,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
 
-    if (new SnapshotUtils.ReplSnapshotConf(conf, null).isSnapshotEnabled) {
+    if (conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY)) {
       Path snapPath = SnapshotUtils.getSnapshotFileListPath(new Path(work.dumpDirectory));
       try {
         SnapshotUtils.getDFS(getExternalTableBaseDir(conf), conf)
@@ -698,7 +699,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     this.childTasks.addAll(childTasks);
     createReplLoadCompleteAckTask();
     // Clean-up snapshots
-    if (new SnapshotUtils.ReplSnapshotConf(conf, null).isSnapshotEnabled) {
+    if (conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY)) {
       cleanupSnapshots(new Path(work.getDumpDirectory()).getParent().getParent().getParent(),
           work.getSourceDbName().toLowerCase(), conf, null, true);
     }

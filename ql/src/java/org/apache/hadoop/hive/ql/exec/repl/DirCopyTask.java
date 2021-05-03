@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.AclUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
+import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -139,7 +140,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
     String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     Retryable retryable = Retryable.builder()
       .withHiveConf(conf)
-      .withRetryOnException(IOException.class).build();
+      .withRetryOnException(IOException.class).withFailOnException(SnapshotException.class).build();
     long startTime = System.currentTimeMillis();
     AtomicInteger retries = new AtomicInteger(-1);
      AtomicBoolean result = new AtomicBoolean(false);
@@ -234,7 +235,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
          // Delete the older snapshot from last iteration.
          targetFs.deleteSnapshot(targetPath, firstSnapshot(work.getSnapshotPrefix()));
        } else {
-         throw new IOException(
+         throw new SnapshotException(
              "Can not successfully copy external table data using snapshot diff. source:" + sourcePath + " and target: "
                  + targetPath);
        }
@@ -249,7 +250,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
       SnapshotUtils.allowSnapshot(targetFs, targetPath, conf);
       // Attempt to delete the snapshot, in case this is a bootstrap post a failed incremental, Since in case of
       // bootstrap we go from start, so delete any pre-existing snapshot.
-      SnapshotUtils.deleteSnapshotSafe(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()));
+      SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), conf);
 
       // Copy from the initial snapshot path.
       result = runFallbackDistCp(snapRelPath, targetPath, proxyUser);

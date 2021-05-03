@@ -41,8 +41,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_EXTERNAL_TABLE_PATHS;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplDumpTask.createTableFileList;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.externalTableDataPath;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
@@ -120,6 +120,43 @@ public class SnapshotUtils {
       LOG.warn("Couldn't delete the snapshot {} under path {}", snapshotName, snapshotPath, fnf);
     }
     return false;
+  }
+
+  /**
+   *  Attempts deleting a snapshot if it exists, with retries.
+   * @param fs FileSystem object.
+   * @param snapshotPath Path of the snapshot.
+   * @param snapshotName Name of the snapshot.
+   * @param conf Hive Configuration.
+   * @return true if snapshot is no longer available.
+   */
+  public static boolean deleteSnapshotIfExists(DistributedFileSystem fs, Path snapshotPath, String snapshotName,
+      HiveConf conf) throws IOException {
+    Retryable retryable = Retryable.builder().withHiveConf(conf).withRetryOnException(IOException.class)
+        .withFailOnException(SnapshotException.class).build();
+    try {
+      retryable.executeCallable(() -> {
+        try {
+          if (fs.exists(new Path(snapshotPath, ".snapshot/" + snapshotName))) {
+            fs.deleteSnapshot(snapshotPath, snapshotName);
+          }
+        } catch (FileNotFoundException e) {
+          // Ignore FileNotFoundException, Our intention is to make sure the snapshot doesn't exist and the FNF means
+          // it already doesn't exist.
+          LOG.warn("Couldn't create the snapshot {} under path {}. It doesn't exist", snapshotName, snapshotPath, e);
+        } catch (SnapshotException e) {
+          if (e.getMessage().contains("the snapshot does not exist") || e.getMessage()
+              .contains("Directory is not a snapshottable directory")) {
+            return true;
+          }
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      throw new SnapshotException(
+          "Unable to delete snapshot for path: " + snapshotPath + " snapshot name: " + snapshotName, e);
+    }
+    return true;
   }
 
   /**
@@ -249,14 +286,18 @@ public class SnapshotUtils {
    * @param diffList Elements to be deleted.
    * @param prefix Prefix used in snapshot names,
    * @param snapshotCount snapshot counter to track the number of snapshots deleted.
+   * @param conf the Hive Configuration.
    * @throws IOException in case of any error.
    */
   private static void cleanUpSnapshots(DistributedFileSystem dfs, ArrayList<String> diffList, String prefix,
-      ReplSnapshotCount snapshotCount) throws IOException {
+      ReplSnapshotCount snapshotCount, HiveConf conf) throws IOException {
     for (String path : diffList) {
       Path snapshotPath = new Path(path);
-      boolean isFirstDeleted = deleteSnapshotSafe(dfs, snapshotPath, firstSnapshot(prefix));
-      boolean isSecondDeleted = deleteSnapshotSafe(dfs, snapshotPath, secondSnapshot(prefix));
+      boolean isFirstDeleted = deleteSnapshotIfExists(dfs, snapshotPath, firstSnapshot(prefix), conf);
+      boolean isSecondDeleted = deleteSnapshotIfExists(dfs, snapshotPath, secondSnapshot(prefix), conf);
+      // Only attempt to disallowSnapshot, we have deleted the snapshots related to our replication policy, so if
+      // this path was only used by this policy for snapshots, then the disallow will be success, if it is used by
+      // some other applications as well, it won't be success, in that case we ignore.
       disallowSnapshot(dfs, snapshotPath);
       if (snapshotCount != null) {
         if (isFirstDeleted) {
@@ -306,7 +347,7 @@ public class SnapshotUtils {
       ArrayList<String> newPaths = SnapshotUtils.getListFromFileList(snapNew);
       ArrayList<String> diffList = SnapshotUtils.getDiffList(newPaths, oldPaths, conf, isLoad);
       dfs = isLoad ? (DistributedFileSystem) getExternalTableBaseDir(conf).getFileSystem(conf) : dfs;
-      SnapshotUtils.cleanUpSnapshots(dfs, diffList, snapshotPrefix, snapshotCount);
+      SnapshotUtils.cleanUpSnapshots(dfs, diffList, snapshotPrefix, snapshotCount, conf);
     }
     if (isLoad) {
       try {
@@ -339,19 +380,6 @@ public class SnapshotUtils {
     }
   }
 
-  public static void deleteReplRelatedSnapshots(FileSystem fs, Path path) {
-    try {
-      FileStatus[] listing = fs.listStatus(new Path(path, ".snapshot"));
-      for (FileStatus elem : listing) {
-        if (elem.getPath().getName().contains(OLD_SNAPSHOT) || elem.getPath().getName().contains(NEW_SNAPSHOT)) {
-          deleteSnapshotSafe((DistributedFileSystem) fs, path, elem.getPath().getName());
-        }
-      }
-    } catch (Exception e) {
-      // Ignore
-    }
-  }
-
   public static Path getSnapshotFileListPath(Path dumpRoot) {
     return dumpRoot.getParent().getParent().getParent();
   }
@@ -362,25 +390,6 @@ public class SnapshotUtils {
 
   public static String secondSnapshot(String prefix) {
     return prefix + NEW_SNAPSHOT;
-  }
-
-  /**
-   * Configuration holder class for snapshot related configurations.
-   */
-  public static class ReplSnapshotConf {
-
-    public boolean isSnapshotEnabled;
-    public List<String> snapCustomPaths;
-
-    public ReplSnapshotConf(HiveConf conf, Database db) {
-      isSnapshotEnabled = conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY);
-      if (isSnapshotEnabled) {
-        snapCustomPaths = new ArrayList<>(Arrays.asList(conf.getVar(REPL_SNAPSHOT_EXTERNAL_TABLE_PATHS).split(",")));
-        if (db != null) {
-          snapCustomPaths.add(db.getLocationUri());
-        }
-      }
-    }
   }
 
   /**

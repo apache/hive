@@ -120,6 +120,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -662,13 +663,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dmd.setReplScope(work.replScope);
       dmd.write(true);
     }
+
     // Get snapshot related configurations for external data copy.
-    SnapshotUtils.ReplSnapshotConf replSnapshotConf = new SnapshotUtils.ReplSnapshotConf(conf, db);
+    boolean isSnapshotEnabled = conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY);
     String snapshotPrefix = dbName.toLowerCase();
     ArrayList<String> prevSnaps = new ArrayList<>();
-    FileList snapPathFileList = null;
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, conf);
-        FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf)) {
+        FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf);
+        FileList snapPathFileList = isSnapshotEnabled ? createTableFileList(
+        SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf) : null) {
       // Examine all the tables if required.
       if (shouldExamineTablesToDump() || (tableList != null)) {
         // If required wait more for any transactions open at the time of starting the ACID bootstrap.
@@ -693,11 +696,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         ReplExternalTables externalTablesWriter = new ReplExternalTables(conf);
         boolean isSingleTaskForExternalDb =
             conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK) && work.replScope.includeAllTables();
-        ArrayList<String> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
+        HashMap<String, Boolean> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
         boolean isExternalTablePresent = false;
-        if (replSnapshotConf.isSnapshotEnabled) {
-          snapPathFileList = createTableFileList(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
-              EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf);
+        if (isSnapshotEnabled) {
           snapshotCount = new SnapshotUtils.ReplSnapshotCount();
           if (snapPathFileList.hasNext()) {
             prevSnaps = getListFromFileList(snapPathFileList);
@@ -709,11 +710,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               Table table = hiveDb.getTable(matchedDbName, tableName);
 
               // Dump external table locations if required.
-              if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
-                      && shouldDumpExternalTableLocation(conf)) {
-                externalTablesWriter.dataLocationDump(table, extTableFileList, singleCopyPaths,
-                        !isSingleTaskForExternalDb, replSnapshotConf.isSnapshotEnabled, snapshotPrefix, replSnapshotConf.snapCustomPaths, snapshotCount,
-                    snapPathFileList, prevSnaps, false, conf);
+              if (TableType.EXTERNAL_TABLE.equals(table.getTableType()) && shouldDumpExternalTableLocation(conf)) {
+                externalTablesWriter
+                    .dataLocationDump(table, extTableFileList, singleCopyPaths, !isSingleTaskForExternalDb, conf);
                 isExternalTablePresent = true;
               }
 
@@ -736,9 +735,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           // the database default location and the paths configured.
           if (isExternalTablePresent && shouldDumpExternalTableLocation(conf) && isSingleTaskForExternalDb) {
             externalTablesWriter
-                .dumpNonTableLevelCopyPaths(singleCopyPaths, extTableFileList, conf, replSnapshotConf.isSnapshotEnabled,
-                    replSnapshotConf.snapCustomPaths, snapshotPrefix, snapshotCount, snapPathFileList, prevSnaps,
-                    false);
+                .dumpNonTableLevelCopyPaths(singleCopyPaths, extTableFileList, conf, isSnapshotEnabled, snapshotPrefix,
+                    snapshotCount, snapPathFileList, prevSnaps, false);
           }
         }
         dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
@@ -746,25 +744,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       setDataCopyIterators(extTableFileList, managedTblList);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, lastReplId, snapshotCount);
       // Clean-up snapshots
-      if (replSnapshotConf.isSnapshotEnabled) {
+      if (isSnapshotEnabled) {
         cleanupSnapshots(SnapshotUtils.getSnapshotFileListPath(dumpRoot), work.dbNameOrPattern.toLowerCase(), conf,
             snapshotCount, false);
       }
       return lastReplId;
-    } finally {
-      if (snapPathFileList != null) {
-        snapPathFileList.close();
-      }
     }
   }
 
   @NotNull
-  private ArrayList<String> getNonTableLevelCopyPaths(Database db, boolean isSingleCopyTaskForExternalTables) {
-    ArrayList<String> singleCopyPaths = new ArrayList<>();
+  private HashMap<String, Boolean> getNonTableLevelCopyPaths(Database db, boolean isSingleCopyTaskForExternalTables) {
+    HashMap<String, Boolean> singleCopyPaths = new HashMap<String, Boolean>();
     if (db != null && isSingleCopyTaskForExternalTables) {
-      singleCopyPaths =
-          new ArrayList<>(Arrays.asList(conf.getVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS).split(",")));
-      singleCopyPaths.add(db.getLocationUri());
+      List<String> paths = Arrays.asList(conf.getVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS).split(","));
+      for (String path : paths) {
+        if (!StringUtils.isEmpty(path)) {
+          singleCopyPaths.put(path, false);
+        }
+      }
+      singleCopyPaths.put(db.getLocationUri(), false);
     }
     return singleCopyPaths;
   }
@@ -990,13 +988,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           ReplExternalTables externalTablesWriter = new ReplExternalTables(conf);
           boolean isSingleTaskForExternalDb =
               conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK) && work.replScope.includeAllTables();
-          ArrayList<String> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
-          boolean isExternalTablePresent = false;
           // Generate snapshot related configurations for external table data copy.
-          SnapshotUtils.ReplSnapshotConf replSnapshotConf = new SnapshotUtils.ReplSnapshotConf(conf, db);
+          HashMap<String, Boolean> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
+          boolean isSnapshotEnabled = conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY);
+          boolean isExternalTablePresent = false;
+
           String snapshotPrefix = dbName.toLowerCase();
           ArrayList<String> prevSnaps = new ArrayList<>(); // Will stay empty in case of bootstrap
-          if (replSnapshotConf.isSnapshotEnabled) {
+          if (isSnapshotEnabled) {
             // Delete any old existing snapshot file, We always start fresh in case of bootstrap.
             FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
                 new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
@@ -1024,8 +1023,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 LOG.debug("Adding table {} to external tables list", tblName);
                 externalTablesWriter
                     .dataLocationDump(tableTuple.object, extTableFileList, singleCopyPaths, !isSingleTaskForExternalDb,
-                        replSnapshotConf.isSnapshotEnabled, snapshotPrefix, replSnapshotConf.snapCustomPaths,
-                        replSnapshotCount, snapPathFileList, prevSnaps, true, conf);
+                        conf);
                 isExternalTablePresent = true;
               }
               dumpTable(dbName, tblName, validTxnList, dbRoot, dbDataRoot,
@@ -1043,12 +1041,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
 
           // if it is not a table level replication, add a single task for
-          // the database default location for external tables.
-          if (isExternalTablePresent && shouldDumpExternalTableLocation(conf)
-              && isSingleTaskForExternalDb) {
+          // the database default location and for the configured paths for external tables.
+          if (isExternalTablePresent && shouldDumpExternalTableLocation(conf) && isSingleTaskForExternalDb) {
             externalTablesWriter
-                .dumpNonTableLevelCopyPaths(singleCopyPaths, extTableFileList, conf, replSnapshotConf.isSnapshotEnabled,
-                    replSnapshotConf.snapCustomPaths, snapshotPrefix, replSnapshotCount, snapPathFileList, prevSnaps, true);
+                .dumpNonTableLevelCopyPaths(singleCopyPaths, extTableFileList, conf, isSnapshotEnabled, snapshotPrefix,
+                    replSnapshotCount, snapPathFileList, prevSnaps, true);
           }
           dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
         } catch (Exception e) {

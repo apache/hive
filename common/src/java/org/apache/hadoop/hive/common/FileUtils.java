@@ -691,18 +691,18 @@ public final class FileUtils {
     return copied;
   }
 
-  public static boolean distCpWithSnapshot(String snap1, String snap2, List<Path> srcPaths, Path dst,
+  public static boolean distCpWithSnapshot(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       UserGroupInformation proxyUser, HiveConf conf, HadoopShims shims) {
     boolean copied = false;
     try {
       if (proxyUser == null) {
-        copied = shims.runDistCpWithSnapshots(snap1, snap2, srcPaths, dst, conf);
+        copied = shims.runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, conf);
       } else {
-        copied = shims.runDistCpWithSnapshotsAs(snap1, snap2, srcPaths, dst, conf, proxyUser);
+        copied = shims.runDistCpWithSnapshotsAs(oldSnapshot, newSnapshot, srcPaths, dst, conf, proxyUser);
       }
       if (copied)
         LOG.info("Successfully copied using snapshots source {} and dest {} using snapshots {} and {}", srcPaths, dst,
-            snap1, snap2);
+            oldSnapshot, newSnapshot);
     } catch (IOException e) {
       LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
     }

@@ -43,7 +43,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.NEW_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.OLD_SNAPSHOT;
@@ -75,10 +77,8 @@ public class ReplExternalTables {
    * table if the table is partitioned and the partition location is outside the table.
    * It returns list of all the external table locations.
    */
-  void dataLocationDump(Table table, FileList fileList,  List<String> singleCopyPaths, boolean isTableLevelReplication,
-      boolean isSnapshotEnabed, String snapshotPrefix, List<String> snapCustomPaths,
-      SnapshotUtils.ReplSnapshotCount replSnapshotCount, FileList snapPathFileList, ArrayList<String> prevSnaps,
-      boolean isBootstrap, HiveConf conf) throws IOException, HiveException {
+  void dataLocationDump(Table table, FileList fileList, HashMap<String, Boolean> singleCopyPaths,
+      boolean isTableLevelReplication, HiveConf conf) throws IOException, HiveException {
     if (!shouldWrite()) {
       return;
     }
@@ -89,9 +89,11 @@ public class ReplExternalTables {
     }
     Path fullyQualifiedDataLocation = PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
     if (isTableLevelReplication ||  !isPathWithinSubtree(table.getDataLocation(), singleCopyPaths)) {
-      dirLocationToCopy(table.getTableName(), fileList, fullyQualifiedDataLocation, conf,
-          isSnapshotEnabed ? isSnapshotRequiredForPath(table.getDataLocation(), snapCustomPaths) : false,
-          snapshotPrefix, replSnapshotCount, snapPathFileList, prevSnaps, isBootstrap);
+      // Pass the snapshot related arguments as null, since snapshots won't be created for tables following this path
+      // . The configured tables would be skipped here as they would be as part of singleCopyPaths, for which tasks
+      // shall be created in the end
+      dirLocationToCopy(table.getTableName(), fileList, fullyQualifiedDataLocation, conf, false, null,
+          null, null, null, false);
     }
     if (table.isPartitioned()) {
       List<Partition> partitions;
@@ -121,10 +123,9 @@ public class ReplExternalTables {
         if (partitionLocOutsideTableLoc) {
           fullyQualifiedDataLocation = PathBuilder
                   .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
-          dirLocationToCopy(table.getTableName(), fileList,
-              fullyQualifiedDataLocation, conf,
-              isSnapshotEnabed ? isSnapshotRequiredForPath(fullyQualifiedDataLocation, snapCustomPaths) : false,
-              snapshotPrefix, replSnapshotCount, snapPathFileList, prevSnaps, isBootstrap);
+          // Passing null for snapshot related configs, since the creation of snapshots is explicitly turned off here.
+          dirLocationToCopy(table.getTableName(), fileList, fullyQualifiedDataLocation, conf, false, null, null, null,
+              null, false);
         }
       }
     }
@@ -132,42 +133,36 @@ public class ReplExternalTables {
 
   /**
    * Creates copy task for the paths configured, irrespective of which table/partition belongs to it.
-   * @param singlePathLocations paths to be copied.
+   * @param singlePathLocations paths to be copied. if the value is true then only the task is created.
    * @param fileList the tracking file which maintains the list of tasks.
    * @param conf Hive Configuration.
-   * @param snapCustomPaths
    * @throws Exception in case of any error.
    */
-  void dumpNonTableLevelCopyPaths(List<String> singlePathLocations, FileList fileList, HiveConf conf,
-      boolean isSnapshotEnabled, List<String> snapCustomPaths, String snapshotPrefix, SnapshotUtils.ReplSnapshotCount replSnapshotCount,
+  void dumpNonTableLevelCopyPaths(HashMap<String, Boolean> singlePathLocations, FileList fileList, HiveConf conf,
+      boolean isSnapshotEnabled, String snapshotPrefix, SnapshotUtils.ReplSnapshotCount replSnapshotCount,
       FileList snapPathFileList, ArrayList<String> prevSnaps, boolean isBootstrap) throws HiveException, IOException {
-    for (String location : singlePathLocations) {
-      if (!StringUtils.isEmpty(location)) {
-        boolean useSnapshot = isSnapshotEnabled && snapCustomPaths.contains(location);
+    for (Map.Entry<String, Boolean> location : singlePathLocations.entrySet()) {
+      if (!StringUtils.isEmpty(location.getKey()) && location.getValue()) {
         Path fullyQualifiedDataLocation =
-            PathBuilder.fullyQualifiedHDFSUri(new Path(location), FileSystem.get(hiveConf));
+            PathBuilder.fullyQualifiedHDFSUri(new Path(location.getKey()), FileSystem.get(hiveConf));
         dirLocationToCopy(fullyQualifiedDataLocation.getName(), fileList, fullyQualifiedDataLocation, conf,
-            useSnapshot, snapshotPrefix, replSnapshotCount, snapPathFileList, prevSnaps, isBootstrap);
+            isSnapshotEnabled, snapshotPrefix, replSnapshotCount, snapPathFileList, prevSnaps, isBootstrap);
       }
     }
   }
 
-  private boolean isPathWithinSubtree(Path path, List<String> parentPaths) {
+  private boolean isPathWithinSubtree(Path path, HashMap<String, Boolean> parentPaths) {
     boolean response = false;
-    for (String parent : parentPaths) {
-      if (!StringUtils.isEmpty(parent)) {
-        response = FileUtils.isPathWithinSubtree(path, new Path(parent));
+    for (Map.Entry<String, Boolean> parent : parentPaths.entrySet()) {
+      if (!StringUtils.isEmpty(parent.getKey())) {
+        response = FileUtils.isPathWithinSubtree(path, new Path(parent.getKey()));
       }
       if (response) {
+        parent.setValue(true);
         break;
       }
     }
     return response;
-  }
-
-  private boolean isSnapshotRequiredForPath(Path tableLocation,
-      List<String> customPaths) {
-    return customPaths.contains(tableLocation.toString());
   }
 
   private void dirLocationToCopy(String tableName, FileList fileList, Path sourcePath, HiveConf conf,
@@ -208,8 +203,8 @@ public class ReplExternalTables {
     try {
       if(isBootstrap) {
         // Delete any pre existing snapshots.
-        SnapshotUtils.deleteSnapshotSafe(sourceDfs, sourcePath, firstSnapshot(snapshotPrefix));
-        SnapshotUtils.deleteSnapshotSafe(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix));
+        SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, firstSnapshot(snapshotPrefix), conf);
+        SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
         allowAndCreateInitialSnapshot(sourcePath, snapshotPrefix, conf, replSnapshotCount, snapPathFileList, sourceDfs);
         return INITIAL_COPY;
       }
@@ -222,7 +217,7 @@ public class ReplExternalTables {
         replSnapshotCount.incrementNumCreated();
         snapPathFileList.add(sourcePath.toString());
         return SnapshotUtils
-            .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, NEW_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
+            .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
       }
       // check if second snapshot exists.
       boolean isSecondSnapAvlb = SnapshotUtils.isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix,
