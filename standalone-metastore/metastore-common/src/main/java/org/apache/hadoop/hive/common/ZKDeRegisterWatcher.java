@@ -30,7 +30,6 @@ public class ZKDeRegisterWatcher implements Watcher {
   private static final Logger LOG = LoggerFactory.getLogger(ZKDeRegisterWatcher.class);
   private final ZooKeeperHiveHelper zooKeeperHiveHelper;
   private String zNodePath;
-  private boolean needToSetAgain;
 
   public ZKDeRegisterWatcher(ZooKeeperHiveHelper zooKeeperHiveHelper) {
     this.zooKeeperHiveHelper = zooKeeperHiveHelper;
@@ -40,25 +39,14 @@ public class ZKDeRegisterWatcher implements Watcher {
   public void process(WatchedEvent event) {
     if (event.getType().equals(Event.EventType.NodeDeleted)) {
       zooKeeperHiveHelper.deregisterZnode();
-    } else {
-      if (Event.KeeperState.SyncConnected == event.getState() && Event.EventType.None == event.getType()) {
-        needToSetAgain = true; // connection reestablishment case
-      } else if (needToSetAgain &&
-          zNodePath != null &&
-          Event.KeeperState.SyncConnected == event.getState() &&
-          Event.EventType.NodeDataChanged == event.getType() &&
-          zNodePath.equals(event.getPath())) {
-        LOG.warn("DeRegisterWatcher is called with WatchedEvent[{}] other than NodeDeleted event. "
-            + "DeRegisterWatcher will be registered again.", event.toString());
-        try {
-          zooKeeperHiveHelper.setDeRegisterWatcher(this);
-          needToSetAgain = false;
-        } catch (Exception e) {
-          LOG.error("It's failed to register DeRegisterWatcher again for this HiveServer2 instance on ZooKeeper.", e);
-        }
-      } else {
-        LOG.info("DeRegisterWatcher is called with WatchedEvent[{}] which server doesn't expect.", event.toString());
+    } else if (Event.EventType.NodeDataChanged == event.getType()) {
+      try {
+        zooKeeperHiveHelper.setDeRegisterWatcher(this);
+      } catch (Exception e) {
+        LOG.error("It's failed to register DeRegisterWatcher again for this HiveServer2 instance on ZooKeeper.", e);
       }
+    } else {
+      LOG.info("DeRegisterWatcher is called with WatchedEvent[{}] which server doesn't expect.", event.toString());
     }
   }
 
