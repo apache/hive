@@ -253,6 +253,7 @@ class HostExecutor {
     templateVariables.put("logDir", drone.getLocalLogDirectory());
     Preconditions.checkArgument(StringUtils.isNotBlank(batch.getTestModuleRelativeDir()));
     templateVariables.put("testModule", batch.getTestModuleRelativeDir());
+    templateVariables.put("mavenEnvOpts", "-Piceberg")
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
