@@ -2222,6 +2222,10 @@ public class SessionState implements ISessionAuthState{
   public Hive getHiveDb() throws HiveException {
     if (hiveDb == null) {
       hiveDb = Hive.createHiveForSession(sessionConf);
+      // Need to setAllowClose to false. For legacy reasons, the Hive object is stored
+      // in thread local storage. If allowClose is true, the session can get closed when
+      // the thread goes away which is not desirable when the Hive object is used across
+      // different queries in the session.
       hiveDb.setAllowClose(false);
     }
     return hiveDb;
