@@ -123,19 +123,19 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.BOOLEAN_STATS, new org.apache.thrift.meta_data.FieldMetaData("booleanStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.BOOLEAN_STATS, new org.apache.thrift.meta_data.FieldMetaData("booleanStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BooleanColumnStatsData.class)));
-    tmpMap.put(_Fields.LONG_STATS, new org.apache.thrift.meta_data.FieldMetaData("longStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.LONG_STATS, new org.apache.thrift.meta_data.FieldMetaData("longStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LongColumnStatsData.class)));
-    tmpMap.put(_Fields.DOUBLE_STATS, new org.apache.thrift.meta_data.FieldMetaData("doubleStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DOUBLE_STATS, new org.apache.thrift.meta_data.FieldMetaData("doubleStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DoubleColumnStatsData.class)));
-    tmpMap.put(_Fields.STRING_STATS, new org.apache.thrift.meta_data.FieldMetaData("stringStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.STRING_STATS, new org.apache.thrift.meta_data.FieldMetaData("stringStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StringColumnStatsData.class)));
-    tmpMap.put(_Fields.BINARY_STATS, new org.apache.thrift.meta_data.FieldMetaData("binaryStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.BINARY_STATS, new org.apache.thrift.meta_data.FieldMetaData("binaryStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BinaryColumnStatsData.class)));
-    tmpMap.put(_Fields.DECIMAL_STATS, new org.apache.thrift.meta_data.FieldMetaData("decimalStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DECIMAL_STATS, new org.apache.thrift.meta_data.FieldMetaData("decimalStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DecimalColumnStatsData.class)));
-    tmpMap.put(_Fields.DATE_STATS, new org.apache.thrift.meta_data.FieldMetaData("dateStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DATE_STATS, new org.apache.thrift.meta_data.FieldMetaData("dateStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DateColumnStatsData.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatisticsData.class, metaDataMap);

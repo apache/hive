@@ -353,12 +353,12 @@ class TTypeEntry < ::Thrift::Union
   USERDEFINEDTYPEENTRY = 6
 
   FIELDS = {
-    PRIMITIVEENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'primitiveEntry', :class => ::TPrimitiveTypeEntry},
-    ARRAYENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'arrayEntry', :class => ::TArrayTypeEntry},
-    MAPENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'mapEntry', :class => ::TMapTypeEntry},
-    STRUCTENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'structEntry', :class => ::TStructTypeEntry},
-    UNIONENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'unionEntry', :class => ::TUnionTypeEntry},
-    USERDEFINEDTYPEENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'userDefinedTypeEntry', :class => ::TUserDefinedTypeEntry}
+    PRIMITIVEENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'primitiveEntry', :class => ::TPrimitiveTypeEntry, :optional => true},
+    ARRAYENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'arrayEntry', :class => ::TArrayTypeEntry, :optional => true},
+    MAPENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'mapEntry', :class => ::TMapTypeEntry, :optional => true},
+    STRUCTENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'structEntry', :class => ::TStructTypeEntry, :optional => true},
+    UNIONENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'unionEntry', :class => ::TUnionTypeEntry, :optional => true},
+    USERDEFINEDTYPEENTRY => {:type => ::Thrift::Types::STRUCT, :name => 'userDefinedTypeEntry', :class => ::TUserDefinedTypeEntry, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -582,13 +582,13 @@ class TColumnValue < ::Thrift::Union
   STRINGVAL = 7
 
   FIELDS = {
-    BOOLVAL => {:type => ::Thrift::Types::STRUCT, :name => 'boolVal', :class => ::TBoolValue},
-    BYTEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'byteVal', :class => ::TByteValue},
-    I16VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i16Val', :class => ::TI16Value},
-    I32VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i32Val', :class => ::TI32Value},
-    I64VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i64Val', :class => ::TI64Value},
-    DOUBLEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'doubleVal', :class => ::TDoubleValue},
-    STRINGVAL => {:type => ::Thrift::Types::STRUCT, :name => 'stringVal', :class => ::TStringValue}
+    BOOLVAL => {:type => ::Thrift::Types::STRUCT, :name => 'boolVal', :class => ::TBoolValue, :optional => true},
+    BYTEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'byteVal', :class => ::TByteValue, :optional => true},
+    I16VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i16Val', :class => ::TI16Value, :optional => true},
+    I32VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i32Val', :class => ::TI32Value, :optional => true},
+    I64VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i64Val', :class => ::TI64Value, :optional => true},
+    DOUBLEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'doubleVal', :class => ::TDoubleValue, :optional => true},
+    STRINGVAL => {:type => ::Thrift::Types::STRUCT, :name => 'stringVal', :class => ::TStringValue, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -823,14 +823,14 @@ class TColumn < ::Thrift::Union
   BINARYVAL = 8
 
   FIELDS = {
-    BOOLVAL => {:type => ::Thrift::Types::STRUCT, :name => 'boolVal', :class => ::TBoolColumn},
-    BYTEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'byteVal', :class => ::TByteColumn},
-    I16VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i16Val', :class => ::TI16Column},
-    I32VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i32Val', :class => ::TI32Column},
-    I64VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i64Val', :class => ::TI64Column},
-    DOUBLEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'doubleVal', :class => ::TDoubleColumn},
-    STRINGVAL => {:type => ::Thrift::Types::STRUCT, :name => 'stringVal', :class => ::TStringColumn},
-    BINARYVAL => {:type => ::Thrift::Types::STRUCT, :name => 'binaryVal', :class => ::TBinaryColumn}
+    BOOLVAL => {:type => ::Thrift::Types::STRUCT, :name => 'boolVal', :class => ::TBoolColumn, :optional => true},
+    BYTEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'byteVal', :class => ::TByteColumn, :optional => true},
+    I16VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i16Val', :class => ::TI16Column, :optional => true},
+    I32VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i32Val', :class => ::TI32Column, :optional => true},
+    I64VAL => {:type => ::Thrift::Types::STRUCT, :name => 'i64Val', :class => ::TI64Column, :optional => true},
+    DOUBLEVAL => {:type => ::Thrift::Types::STRUCT, :name => 'doubleVal', :class => ::TDoubleColumn, :optional => true},
+    STRINGVAL => {:type => ::Thrift::Types::STRUCT, :name => 'stringVal', :class => ::TStringColumn, :optional => true},
+    BINARYVAL => {:type => ::Thrift::Types::STRUCT, :name => 'binaryVal', :class => ::TBinaryColumn, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1120,12 +1120,12 @@ class TGetInfoValue < ::Thrift::Union
   LENVALUE = 6
 
   FIELDS = {
-    STRINGVALUE => {:type => ::Thrift::Types::STRING, :name => 'stringValue'},
-    SMALLINTVALUE => {:type => ::Thrift::Types::I16, :name => 'smallIntValue'},
-    INTEGERBITMASK => {:type => ::Thrift::Types::I32, :name => 'integerBitmask'},
-    INTEGERFLAG => {:type => ::Thrift::Types::I32, :name => 'integerFlag'},
-    BINARYVALUE => {:type => ::Thrift::Types::I32, :name => 'binaryValue'},
-    LENVALUE => {:type => ::Thrift::Types::I64, :name => 'lenValue'}
+    STRINGVALUE => {:type => ::Thrift::Types::STRING, :name => 'stringValue', :optional => true},
+    SMALLINTVALUE => {:type => ::Thrift::Types::I16, :name => 'smallIntValue', :optional => true},
+    INTEGERBITMASK => {:type => ::Thrift::Types::I32, :name => 'integerBitmask', :optional => true},
+    INTEGERFLAG => {:type => ::Thrift::Types::I32, :name => 'integerFlag', :optional => true},
+    BINARYVALUE => {:type => ::Thrift::Types::I32, :name => 'binaryValue', :optional => true},
+    LENVALUE => {:type => ::Thrift::Types::I64, :name => 'lenValue', :optional => true}
   }
 
   def struct_fields; FIELDS; end

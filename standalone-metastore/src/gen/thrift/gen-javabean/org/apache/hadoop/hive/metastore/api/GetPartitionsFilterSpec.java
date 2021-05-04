@@ -444,13 +444,13 @@ import org.slf4j.LoggerFactory;
           case 8: // FILTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1194 = iprot.readListBegin();
-                struct.filters = new ArrayList<String>(_list1194.size);
-                String _elem1195;
-                for (int _i1196 = 0; _i1196 < _list1194.size; ++_i1196)
+                org.apache.thrift.protocol.TList _list1210 = iprot.readListBegin();
+                struct.filters = new ArrayList<String>(_list1210.size);
+                String _elem1211;
+                for (int _i1212 = 0; _i1212 < _list1210.size; ++_i1212)
                 {
-                  _elem1195 = iprot.readString();
-                  struct.filters.add(_elem1195);
+                  _elem1211 = iprot.readString();
+                  struct.filters.add(_elem1211);
                 }
                 iprot.readListEnd();
               }
@@ -484,9 +484,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FILTERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filters.size()));
-            for (String _iter1197 : struct.filters)
+            for (String _iter1213 : struct.filters)
             {
-              oprot.writeString(_iter1197);
+              oprot.writeString(_iter1213);
             }
             oprot.writeListEnd();
           }
@@ -524,9 +524,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilters()) {
         {
           oprot.writeI32(struct.filters.size());
-          for (String _iter1198 : struct.filters)
+          for (String _iter1214 : struct.filters)
           {
-            oprot.writeString(_iter1198);
+            oprot.writeString(_iter1214);
           }
         }
       }
@@ -542,13 +542,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list1199 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.filters = new ArrayList<String>(_list1199.size);
-          String _elem1200;
-          for (int _i1201 = 0; _i1201 < _list1199.size; ++_i1201)
+          org.apache.thrift.protocol.TList _list1215 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filters = new ArrayList<String>(_list1215.size);
+          String _elem1216;
+          for (int _i1217 = 0; _i1217 < _list1215.size; ++_i1217)
           {
-            _elem1200 = iprot.readString();
-            struct.filters.add(_elem1200);
+            _elem1216 = iprot.readString();
+            struct.filters.add(_elem1216);
           }
         }
         struct.setFiltersIsSet(true);

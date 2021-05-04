@@ -29,7 +29,7 @@ namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
 const string DDL_TIME = "transient_lastDdlTime"
-const string HMS_API = "1.2.7"
+const string HMS_API = "1.2.9"
 const byte ACCESSTYPE_NONE       = 1;
 const byte ACCESSTYPE_READONLY   = 2;
 const byte ACCESSTYPE_WRITEONLY  = 4;
@@ -1241,6 +1241,16 @@ struct ShowCompactResponseElement {
 
 struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
+}
+
+struct GetLatestCommittedCompactionInfoRequest {
+    1: required string dbname,
+    2: required string tablename,
+    3: optional list<string> partitionnames,
+}
+
+struct GetLatestCommittedCompactionInfoResponse {
+    1: required list<CompactionInfoStruct> compactions,
 }
 
 struct AddDynamicPartitions {
@@ -2464,7 +2474,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<PartitionSpec> get_part_specs_by_filter(1:string db_name 2:string tbl_name
     3:string filter, 4:i32 max_parts=-1)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
- 
+
   // get the partitions matching the given partition filter
   // unlike get_partitions_by_filter, takes serialized hive expression, and with that can work
   // with any filter (get_partitions_by_filter only works if the filter can be pushed down to JDOQL.
@@ -2741,6 +2751,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
+  GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(1:GetLatestCommittedCompactionInfoRequest rqst)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 

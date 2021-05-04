@@ -580,6 +580,10 @@ class ShowCompactResponseElement;
 
 class ShowCompactResponse;
 
+class GetLatestCommittedCompactionInfoRequest;
+
+class GetLatestCommittedCompactionInfoResponse;
+
 class AddDynamicPartitions;
 
 class BasicTxnInfo;
@@ -4109,19 +4113,33 @@ class ColumnStatisticsData {
 
   bool operator == (const ColumnStatisticsData & rhs) const
   {
-    if (!(booleanStats == rhs.booleanStats))
+    if (__isset.booleanStats != rhs.__isset.booleanStats)
       return false;
-    if (!(longStats == rhs.longStats))
+    else if (__isset.booleanStats && !(booleanStats == rhs.booleanStats))
       return false;
-    if (!(doubleStats == rhs.doubleStats))
+    if (__isset.longStats != rhs.__isset.longStats)
       return false;
-    if (!(stringStats == rhs.stringStats))
+    else if (__isset.longStats && !(longStats == rhs.longStats))
       return false;
-    if (!(binaryStats == rhs.binaryStats))
+    if (__isset.doubleStats != rhs.__isset.doubleStats)
       return false;
-    if (!(decimalStats == rhs.decimalStats))
+    else if (__isset.doubleStats && !(doubleStats == rhs.doubleStats))
       return false;
-    if (!(dateStats == rhs.dateStats))
+    if (__isset.stringStats != rhs.__isset.stringStats)
+      return false;
+    else if (__isset.stringStats && !(stringStats == rhs.stringStats))
+      return false;
+    if (__isset.binaryStats != rhs.__isset.binaryStats)
+      return false;
+    else if (__isset.binaryStats && !(binaryStats == rhs.binaryStats))
+      return false;
+    if (__isset.decimalStats != rhs.__isset.decimalStats)
+      return false;
+    else if (__isset.decimalStats && !(decimalStats == rhs.decimalStats))
+      return false;
+    if (__isset.dateStats != rhs.__isset.dateStats)
+      return false;
+    else if (__isset.dateStats && !(dateStats == rhs.dateStats))
       return false;
     return true;
   }
@@ -6914,9 +6932,13 @@ class RequestPartsSpec {
 
   bool operator == (const RequestPartsSpec & rhs) const
   {
-    if (!(names == rhs.names))
+    if (__isset.names != rhs.__isset.names)
       return false;
-    if (!(exprs == rhs.exprs))
+    else if (__isset.names && !(names == rhs.names))
+      return false;
+    if (__isset.exprs != rhs.__isset.exprs)
+      return false;
+    else if (__isset.exprs && !(exprs == rhs.exprs))
       return false;
     return true;
   }
@@ -10150,6 +10172,104 @@ inline std::ostream& operator<<(std::ostream& out, const ShowCompactResponse& ob
   return out;
 }
 
+typedef struct _GetLatestCommittedCompactionInfoRequest__isset {
+  _GetLatestCommittedCompactionInfoRequest__isset() : partitionnames(false) {}
+  bool partitionnames :1;
+} _GetLatestCommittedCompactionInfoRequest__isset;
+
+class GetLatestCommittedCompactionInfoRequest {
+ public:
+
+  GetLatestCommittedCompactionInfoRequest(const GetLatestCommittedCompactionInfoRequest&);
+  GetLatestCommittedCompactionInfoRequest& operator=(const GetLatestCommittedCompactionInfoRequest&);
+  GetLatestCommittedCompactionInfoRequest() : dbname(), tablename() {
+  }
+
+  virtual ~GetLatestCommittedCompactionInfoRequest() throw();
+  std::string dbname;
+  std::string tablename;
+  std::vector<std::string>  partitionnames;
+
+  _GetLatestCommittedCompactionInfoRequest__isset __isset;
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_partitionnames(const std::vector<std::string> & val);
+
+  bool operator == (const GetLatestCommittedCompactionInfoRequest & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionnames != rhs.__isset.partitionnames)
+      return false;
+    else if (__isset.partitionnames && !(partitionnames == rhs.partitionnames))
+      return false;
+    return true;
+  }
+  bool operator != (const GetLatestCommittedCompactionInfoRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetLatestCommittedCompactionInfoRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetLatestCommittedCompactionInfoRequest &a, GetLatestCommittedCompactionInfoRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetLatestCommittedCompactionInfoResponse {
+ public:
+
+  GetLatestCommittedCompactionInfoResponse(const GetLatestCommittedCompactionInfoResponse&);
+  GetLatestCommittedCompactionInfoResponse& operator=(const GetLatestCommittedCompactionInfoResponse&);
+  GetLatestCommittedCompactionInfoResponse() {
+  }
+
+  virtual ~GetLatestCommittedCompactionInfoResponse() throw();
+  std::vector<CompactionInfoStruct>  compactions;
+
+  void __set_compactions(const std::vector<CompactionInfoStruct> & val);
+
+  bool operator == (const GetLatestCommittedCompactionInfoResponse & rhs) const
+  {
+    if (!(compactions == rhs.compactions))
+      return false;
+    return true;
+  }
+  bool operator != (const GetLatestCommittedCompactionInfoResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetLatestCommittedCompactionInfoResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetLatestCommittedCompactionInfoResponse &a, GetLatestCommittedCompactionInfoResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _AddDynamicPartitions__isset {
   _AddDynamicPartitions__isset() : operationType(true) {}
   bool operationType :1;
@@ -10760,9 +10880,13 @@ class FireEventRequestData {
 
   bool operator == (const FireEventRequestData & rhs) const
   {
-    if (!(insertData == rhs.insertData))
+    if (__isset.insertData != rhs.__isset.insertData)
       return false;
-    if (!(insertDatas == rhs.insertDatas))
+    else if (__isset.insertData && !(insertData == rhs.insertData))
+      return false;
+    if (__isset.insertDatas != rhs.__isset.insertDatas)
+      return false;
+    else if (__isset.insertDatas && !(insertDatas == rhs.insertDatas))
       return false;
     return true;
   }

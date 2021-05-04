@@ -354,14 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // FIELDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1234 = iprot.readListBegin();
-                struct.fields = new ArrayList<FieldSchema>(_list1234.size);
-                FieldSchema _elem1235;
-                for (int _i1236 = 0; _i1236 < _list1234.size; ++_i1236)
+                org.apache.thrift.protocol.TList _list1250 = iprot.readListBegin();
+                struct.fields = new ArrayList<FieldSchema>(_list1250.size);
+                FieldSchema _elem1251;
+                for (int _i1252 = 0; _i1252 < _list1250.size; ++_i1252)
                 {
-                  _elem1235 = new FieldSchema();
-                  _elem1235.read(iprot);
-                  struct.fields.add(_elem1235);
+                  _elem1251 = new FieldSchema();
+                  _elem1251.read(iprot);
+                  struct.fields.add(_elem1251);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FIELDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.fields.size()));
-          for (FieldSchema _iter1237 : struct.fields)
+          for (FieldSchema _iter1253 : struct.fields)
           {
-            _iter1237.write(oprot);
+            _iter1253.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fields.size());
-        for (FieldSchema _iter1238 : struct.fields)
+        for (FieldSchema _iter1254 : struct.fields)
         {
-          _iter1238.write(oprot);
+          _iter1254.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetSchemaResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list1239 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.fields = new ArrayList<FieldSchema>(_list1239.size);
-        FieldSchema _elem1240;
-        for (int _i1241 = 0; _i1241 < _list1239.size; ++_i1241)
+        org.apache.thrift.protocol.TList _list1255 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.fields = new ArrayList<FieldSchema>(_list1255.size);
+        FieldSchema _elem1256;
+        for (int _i1257 = 0; _i1257 < _list1255.size; ++_i1257)
         {
-          _elem1240 = new FieldSchema();
-          _elem1240.read(iprot);
-          struct.fields.add(_elem1240);
+          _elem1256 = new FieldSchema();
+          _elem1256.read(iprot);
+          struct.fields.add(_elem1256);
         }
       }
       struct.setFieldsIsSet(true);

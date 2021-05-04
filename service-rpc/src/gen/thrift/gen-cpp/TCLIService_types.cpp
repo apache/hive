@@ -1132,26 +1132,32 @@ TTypeEntry::~TTypeEntry() throw() {
 
 void TTypeEntry::__set_primitiveEntry(const TPrimitiveTypeEntry& val) {
   this->primitiveEntry = val;
+__isset.primitiveEntry = true;
 }
 
 void TTypeEntry::__set_arrayEntry(const TArrayTypeEntry& val) {
   this->arrayEntry = val;
+__isset.arrayEntry = true;
 }
 
 void TTypeEntry::__set_mapEntry(const TMapTypeEntry& val) {
   this->mapEntry = val;
+__isset.mapEntry = true;
 }
 
 void TTypeEntry::__set_structEntry(const TStructTypeEntry& val) {
   this->structEntry = val;
+__isset.structEntry = true;
 }
 
 void TTypeEntry::__set_unionEntry(const TUnionTypeEntry& val) {
   this->unionEntry = val;
+__isset.unionEntry = true;
 }
 
 void TTypeEntry::__set_userDefinedTypeEntry(const TUserDefinedTypeEntry& val) {
   this->userDefinedTypeEntry = val;
+__isset.userDefinedTypeEntry = true;
 }
 
 uint32_t TTypeEntry::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -1240,30 +1246,36 @@ uint32_t TTypeEntry::write(::apache::thrift::protocol::TProtocol* oprot) const {
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("TTypeEntry");
 
-  xfer += oprot->writeFieldBegin("primitiveEntry", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += this->primitiveEntry.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("arrayEntry", ::apache::thrift::protocol::T_STRUCT, 2);
-  xfer += this->arrayEntry.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("mapEntry", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->mapEntry.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("structEntry", ::apache::thrift::protocol::T_STRUCT, 4);
-  xfer += this->structEntry.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("unionEntry", ::apache::thrift::protocol::T_STRUCT, 5);
-  xfer += this->unionEntry.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("userDefinedTypeEntry", ::apache::thrift::protocol::T_STRUCT, 6);
-  xfer += this->userDefinedTypeEntry.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.primitiveEntry) {
+    xfer += oprot->writeFieldBegin("primitiveEntry", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->primitiveEntry.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.arrayEntry) {
+    xfer += oprot->writeFieldBegin("arrayEntry", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->arrayEntry.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.mapEntry) {
+    xfer += oprot->writeFieldBegin("mapEntry", ::apache::thrift::protocol::T_STRUCT, 3);
+    xfer += this->mapEntry.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.structEntry) {
+    xfer += oprot->writeFieldBegin("structEntry", ::apache::thrift::protocol::T_STRUCT, 4);
+    xfer += this->structEntry.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.unionEntry) {
+    xfer += oprot->writeFieldBegin("unionEntry", ::apache::thrift::protocol::T_STRUCT, 5);
+    xfer += this->unionEntry.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.userDefinedTypeEntry) {
+    xfer += oprot->writeFieldBegin("userDefinedTypeEntry", ::apache::thrift::protocol::T_STRUCT, 6);
+    xfer += this->userDefinedTypeEntry.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1302,12 +1314,12 @@ TTypeEntry& TTypeEntry::operator=(const TTypeEntry& other42) {
 void TTypeEntry::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TTypeEntry(";
-  out << "primitiveEntry=" << to_string(primitiveEntry);
-  out << ", " << "arrayEntry=" << to_string(arrayEntry);
-  out << ", " << "mapEntry=" << to_string(mapEntry);
-  out << ", " << "structEntry=" << to_string(structEntry);
-  out << ", " << "unionEntry=" << to_string(unionEntry);
-  out << ", " << "userDefinedTypeEntry=" << to_string(userDefinedTypeEntry);
+  out << "primitiveEntry="; (__isset.primitiveEntry ? (out << to_string(primitiveEntry)) : (out << "<null>"));
+  out << ", " << "arrayEntry="; (__isset.arrayEntry ? (out << to_string(arrayEntry)) : (out << "<null>"));
+  out << ", " << "mapEntry="; (__isset.mapEntry ? (out << to_string(mapEntry)) : (out << "<null>"));
+  out << ", " << "structEntry="; (__isset.structEntry ? (out << to_string(structEntry)) : (out << "<null>"));
+  out << ", " << "unionEntry="; (__isset.unionEntry ? (out << to_string(unionEntry)) : (out << "<null>"));
+  out << ", " << "userDefinedTypeEntry="; (__isset.userDefinedTypeEntry ? (out << to_string(userDefinedTypeEntry)) : (out << "<null>"));
   out << ")";
 }
 
@@ -2303,30 +2315,37 @@ TColumnValue::~TColumnValue() throw() {
 
 void TColumnValue::__set_boolVal(const TBoolValue& val) {
   this->boolVal = val;
+__isset.boolVal = true;
 }
 
 void TColumnValue::__set_byteVal(const TByteValue& val) {
   this->byteVal = val;
+__isset.byteVal = true;
 }
 
 void TColumnValue::__set_i16Val(const TI16Value& val) {
   this->i16Val = val;
+__isset.i16Val = true;
 }
 
 void TColumnValue::__set_i32Val(const TI32Value& val) {
   this->i32Val = val;
+__isset.i32Val = true;
 }
 
 void TColumnValue::__set_i64Val(const TI64Value& val) {
   this->i64Val = val;
+__isset.i64Val = true;
 }
 
 void TColumnValue::__set_doubleVal(const TDoubleValue& val) {
   this->doubleVal = val;
+__isset.doubleVal = true;
 }
 
 void TColumnValue::__set_stringVal(const TStringValue& val) {
   this->stringVal = val;
+__isset.stringVal = true;
 }
 
 uint32_t TColumnValue::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -2423,34 +2442,41 @@ uint32_t TColumnValue::write(::apache::thrift::protocol::TProtocol* oprot) const
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("TColumnValue");
 
-  xfer += oprot->writeFieldBegin("boolVal", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += this->boolVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("byteVal", ::apache::thrift::protocol::T_STRUCT, 2);
-  xfer += this->byteVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("i16Val", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->i16Val.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("i32Val", ::apache::thrift::protocol::T_STRUCT, 4);
-  xfer += this->i32Val.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("i64Val", ::apache::thrift::protocol::T_STRUCT, 5);
-  xfer += this->i64Val.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("doubleVal", ::apache::thrift::protocol::T_STRUCT, 6);
-  xfer += this->doubleVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("stringVal", ::apache::thrift::protocol::T_STRUCT, 7);
-  xfer += this->stringVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.boolVal) {
+    xfer += oprot->writeFieldBegin("boolVal", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->boolVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.byteVal) {
+    xfer += oprot->writeFieldBegin("byteVal", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->byteVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.i16Val) {
+    xfer += oprot->writeFieldBegin("i16Val", ::apache::thrift::protocol::T_STRUCT, 3);
+    xfer += this->i16Val.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.i32Val) {
+    xfer += oprot->writeFieldBegin("i32Val", ::apache::thrift::protocol::T_STRUCT, 4);
+    xfer += this->i32Val.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.i64Val) {
+    xfer += oprot->writeFieldBegin("i64Val", ::apache::thrift::protocol::T_STRUCT, 5);
+    xfer += this->i64Val.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.doubleVal) {
+    xfer += oprot->writeFieldBegin("doubleVal", ::apache::thrift::protocol::T_STRUCT, 6);
+    xfer += this->doubleVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.stringVal) {
+    xfer += oprot->writeFieldBegin("stringVal", ::apache::thrift::protocol::T_STRUCT, 7);
+    xfer += this->stringVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2492,13 +2518,13 @@ TColumnValue& TColumnValue::operator=(const TColumnValue& other76) {
 void TColumnValue::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TColumnValue(";
-  out << "boolVal=" << to_string(boolVal);
-  out << ", " << "byteVal=" << to_string(byteVal);
-  out << ", " << "i16Val=" << to_string(i16Val);
-  out << ", " << "i32Val=" << to_string(i32Val);
-  out << ", " << "i64Val=" << to_string(i64Val);
-  out << ", " << "doubleVal=" << to_string(doubleVal);
-  out << ", " << "stringVal=" << to_string(stringVal);
+  out << "boolVal="; (__isset.boolVal ? (out << to_string(boolVal)) : (out << "<null>"));
+  out << ", " << "byteVal="; (__isset.byteVal ? (out << to_string(byteVal)) : (out << "<null>"));
+  out << ", " << "i16Val="; (__isset.i16Val ? (out << to_string(i16Val)) : (out << "<null>"));
+  out << ", " << "i32Val="; (__isset.i32Val ? (out << to_string(i32Val)) : (out << "<null>"));
+  out << ", " << "i64Val="; (__isset.i64Val ? (out << to_string(i64Val)) : (out << "<null>"));
+  out << ", " << "doubleVal="; (__isset.doubleVal ? (out << to_string(doubleVal)) : (out << "<null>"));
+  out << ", " << "stringVal="; (__isset.stringVal ? (out << to_string(stringVal)) : (out << "<null>"));
   out << ")";
 }
 
@@ -3647,34 +3673,42 @@ TColumn::~TColumn() throw() {
 
 void TColumn::__set_boolVal(const TBoolColumn& val) {
   this->boolVal = val;
+__isset.boolVal = true;
 }
 
 void TColumn::__set_byteVal(const TByteColumn& val) {
   this->byteVal = val;
+__isset.byteVal = true;
 }
 
 void TColumn::__set_i16Val(const TI16Column& val) {
   this->i16Val = val;
+__isset.i16Val = true;
 }
 
 void TColumn::__set_i32Val(const TI32Column& val) {
   this->i32Val = val;
+__isset.i32Val = true;
 }
 
 void TColumn::__set_i64Val(const TI64Column& val) {
   this->i64Val = val;
+__isset.i64Val = true;
 }
 
 void TColumn::__set_doubleVal(const TDoubleColumn& val) {
   this->doubleVal = val;
+__isset.doubleVal = true;
 }
 
 void TColumn::__set_stringVal(const TStringColumn& val) {
   this->stringVal = val;
+__isset.stringVal = true;
 }
 
 void TColumn::__set_binaryVal(const TBinaryColumn& val) {
   this->binaryVal = val;
+__isset.binaryVal = true;
 }
 
 uint32_t TColumn::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -3779,38 +3813,46 @@ uint32_t TColumn::write(::apache::thrift::protocol::TProtocol* oprot) const {
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("TColumn");
 
-  xfer += oprot->writeFieldBegin("boolVal", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += this->boolVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("byteVal", ::apache::thrift::protocol::T_STRUCT, 2);
-  xfer += this->byteVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("i16Val", ::apache::thrift::protocol::T_STRUCT, 3);
-  xfer += this->i16Val.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("i32Val", ::apache::thrift::protocol::T_STRUCT, 4);
-  xfer += this->i32Val.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("i64Val", ::apache::thrift::protocol::T_STRUCT, 5);
-  xfer += this->i64Val.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("doubleVal", ::apache::thrift::protocol::T_STRUCT, 6);
-  xfer += this->doubleVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("stringVal", ::apache::thrift::protocol::T_STRUCT, 7);
-  xfer += this->stringVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("binaryVal", ::apache::thrift::protocol::T_STRUCT, 8);
-  xfer += this->binaryVal.write(oprot);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.boolVal) {
+    xfer += oprot->writeFieldBegin("boolVal", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->boolVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.byteVal) {
+    xfer += oprot->writeFieldBegin("byteVal", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->byteVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.i16Val) {
+    xfer += oprot->writeFieldBegin("i16Val", ::apache::thrift::protocol::T_STRUCT, 3);
+    xfer += this->i16Val.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.i32Val) {
+    xfer += oprot->writeFieldBegin("i32Val", ::apache::thrift::protocol::T_STRUCT, 4);
+    xfer += this->i32Val.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.i64Val) {
+    xfer += oprot->writeFieldBegin("i64Val", ::apache::thrift::protocol::T_STRUCT, 5);
+    xfer += this->i64Val.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.doubleVal) {
+    xfer += oprot->writeFieldBegin("doubleVal", ::apache::thrift::protocol::T_STRUCT, 6);
+    xfer += this->doubleVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.stringVal) {
+    xfer += oprot->writeFieldBegin("stringVal", ::apache::thrift::protocol::T_STRUCT, 7);
+    xfer += this->stringVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.binaryVal) {
+    xfer += oprot->writeFieldBegin("binaryVal", ::apache::thrift::protocol::T_STRUCT, 8);
+    xfer += this->binaryVal.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -3855,14 +3897,14 @@ TColumn& TColumn::operator=(const TColumn& other150) {
 void TColumn::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TColumn(";
-  out << "boolVal=" << to_string(boolVal);
-  out << ", " << "byteVal=" << to_string(byteVal);
-  out << ", " << "i16Val=" << to_string(i16Val);
-  out << ", " << "i32Val=" << to_string(i32Val);
-  out << ", " << "i64Val=" << to_string(i64Val);
-  out << ", " << "doubleVal=" << to_string(doubleVal);
-  out << ", " << "stringVal=" << to_string(stringVal);
-  out << ", " << "binaryVal=" << to_string(binaryVal);
+  out << "boolVal="; (__isset.boolVal ? (out << to_string(boolVal)) : (out << "<null>"));
+  out << ", " << "byteVal="; (__isset.byteVal ? (out << to_string(byteVal)) : (out << "<null>"));
+  out << ", " << "i16Val="; (__isset.i16Val ? (out << to_string(i16Val)) : (out << "<null>"));
+  out << ", " << "i32Val="; (__isset.i32Val ? (out << to_string(i32Val)) : (out << "<null>"));
+  out << ", " << "i64Val="; (__isset.i64Val ? (out << to_string(i64Val)) : (out << "<null>"));
+  out << ", " << "doubleVal="; (__isset.doubleVal ? (out << to_string(doubleVal)) : (out << "<null>"));
+  out << ", " << "stringVal="; (__isset.stringVal ? (out << to_string(stringVal)) : (out << "<null>"));
+  out << ", " << "binaryVal="; (__isset.binaryVal ? (out << to_string(binaryVal)) : (out << "<null>"));
   out << ")";
 }
 
@@ -5400,26 +5442,32 @@ TGetInfoValue::~TGetInfoValue() throw() {
 
 void TGetInfoValue::__set_stringValue(const std::string& val) {
   this->stringValue = val;
+__isset.stringValue = true;
 }
 
 void TGetInfoValue::__set_smallIntValue(const int16_t val) {
   this->smallIntValue = val;
+__isset.smallIntValue = true;
 }
 
 void TGetInfoValue::__set_integerBitmask(const int32_t val) {
   this->integerBitmask = val;
+__isset.integerBitmask = true;
 }
 
 void TGetInfoValue::__set_integerFlag(const int32_t val) {
   this->integerFlag = val;
+__isset.integerFlag = true;
 }
 
 void TGetInfoValue::__set_binaryValue(const int32_t val) {
   this->binaryValue = val;
+__isset.binaryValue = true;
 }
 
 void TGetInfoValue::__set_lenValue(const int64_t val) {
   this->lenValue = val;
+__isset.lenValue = true;
 }
 
 uint32_t TGetInfoValue::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -5508,30 +5556,36 @@ uint32_t TGetInfoValue::write(::apache::thrift::protocol::TProtocol* oprot) cons
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("TGetInfoValue");
 
-  xfer += oprot->writeFieldBegin("stringValue", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->stringValue);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("smallIntValue", ::apache::thrift::protocol::T_I16, 2);
-  xfer += oprot->writeI16(this->smallIntValue);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("integerBitmask", ::apache::thrift::protocol::T_I32, 3);
-  xfer += oprot->writeI32(this->integerBitmask);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("integerFlag", ::apache::thrift::protocol::T_I32, 4);
-  xfer += oprot->writeI32(this->integerFlag);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("binaryValue", ::apache::thrift::protocol::T_I32, 5);
-  xfer += oprot->writeI32(this->binaryValue);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("lenValue", ::apache::thrift::protocol::T_I64, 6);
-  xfer += oprot->writeI64(this->lenValue);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.stringValue) {
+    xfer += oprot->writeFieldBegin("stringValue", ::apache::thrift::protocol::T_STRING, 1);
+    xfer += oprot->writeString(this->stringValue);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.smallIntValue) {
+    xfer += oprot->writeFieldBegin("smallIntValue", ::apache::thrift::protocol::T_I16, 2);
+    xfer += oprot->writeI16(this->smallIntValue);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.integerBitmask) {
+    xfer += oprot->writeFieldBegin("integerBitmask", ::apache::thrift::protocol::T_I32, 3);
+    xfer += oprot->writeI32(this->integerBitmask);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.integerFlag) {
+    xfer += oprot->writeFieldBegin("integerFlag", ::apache::thrift::protocol::T_I32, 4);
+    xfer += oprot->writeI32(this->integerFlag);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.binaryValue) {
+    xfer += oprot->writeFieldBegin("binaryValue", ::apache::thrift::protocol::T_I32, 5);
+    xfer += oprot->writeI32(this->binaryValue);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.lenValue) {
+    xfer += oprot->writeFieldBegin("lenValue", ::apache::thrift::protocol::T_I64, 6);
+    xfer += oprot->writeI64(this->lenValue);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5570,12 +5624,12 @@ TGetInfoValue& TGetInfoValue::operator=(const TGetInfoValue& other220) {
 void TGetInfoValue::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TGetInfoValue(";
-  out << "stringValue=" << to_string(stringValue);
-  out << ", " << "smallIntValue=" << to_string(smallIntValue);
-  out << ", " << "integerBitmask=" << to_string(integerBitmask);
-  out << ", " << "integerFlag=" << to_string(integerFlag);
-  out << ", " << "binaryValue=" << to_string(binaryValue);
-  out << ", " << "lenValue=" << to_string(lenValue);
+  out << "stringValue="; (__isset.stringValue ? (out << to_string(stringValue)) : (out << "<null>"));
+  out << ", " << "smallIntValue="; (__isset.smallIntValue ? (out << to_string(smallIntValue)) : (out << "<null>"));
+  out << ", " << "integerBitmask="; (__isset.integerBitmask ? (out << to_string(integerBitmask)) : (out << "<null>"));
+  out << ", " << "integerFlag="; (__isset.integerFlag ? (out << to_string(integerFlag)) : (out << "<null>"));
+  out << ", " << "binaryValue="; (__isset.binaryValue ? (out << to_string(binaryValue)) : (out << "<null>"));
+  out << ", " << "lenValue="; (__isset.lenValue ? (out << to_string(lenValue)) : (out << "<null>"));
   out << ")";
 }
 

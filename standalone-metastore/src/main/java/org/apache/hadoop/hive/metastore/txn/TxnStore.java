@@ -304,6 +304,21 @@ public interface TxnStore extends Configurable {
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
 
   /**
+   * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
+   * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
+   * Is is assumed to be done by the caller.
+   * Note that partition names should be supplied with the request for a partitioned table; otherwise,
+   * no records will be returned.
+   * @param rqst info on which compaction to retrieve
+   * @return one latest compaction record for a non partitioned table or one latest record for each
+   * partition specified by the request.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException;
+
+  /**
    * Add information on a set of dynamic partitions that participated in a transaction.
    * @param rqst dynamic partition info.
    * @throws NoSuchTxnException

@@ -1424,13 +1424,13 @@ class ColumnStatisticsData < ::Thrift::Union
   DATESTATS = 7
 
   FIELDS = {
-    BOOLEANSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'booleanStats', :class => ::BooleanColumnStatsData},
-    LONGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'longStats', :class => ::LongColumnStatsData},
-    DOUBLESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'doubleStats', :class => ::DoubleColumnStatsData},
-    STRINGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'stringStats', :class => ::StringColumnStatsData},
-    BINARYSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'binaryStats', :class => ::BinaryColumnStatsData},
-    DECIMALSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'decimalStats', :class => ::DecimalColumnStatsData},
-    DATESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'dateStats', :class => ::DateColumnStatsData}
+    BOOLEANSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'booleanStats', :class => ::BooleanColumnStatsData, :optional => true},
+    LONGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'longStats', :class => ::LongColumnStatsData, :optional => true},
+    DOUBLESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'doubleStats', :class => ::DoubleColumnStatsData, :optional => true},
+    STRINGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'stringStats', :class => ::StringColumnStatsData, :optional => true},
+    BINARYSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'binaryStats', :class => ::BinaryColumnStatsData, :optional => true},
+    DECIMALSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'decimalStats', :class => ::DecimalColumnStatsData, :optional => true},
+    DATESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'dateStats', :class => ::DateColumnStatsData, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2478,8 +2478,8 @@ class RequestPartsSpec < ::Thrift::Union
   EXPRS = 2
 
   FIELDS = {
-    NAMES => {:type => ::Thrift::Types::LIST, :name => 'names', :element => {:type => ::Thrift::Types::STRING}},
-    EXPRS => {:type => ::Thrift::Types::LIST, :name => 'exprs', :element => {:type => ::Thrift::Types::STRUCT, :class => ::DropPartitionsExpr}}
+    NAMES => {:type => ::Thrift::Types::LIST, :name => 'names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    EXPRS => {:type => ::Thrift::Types::LIST, :name => 'exprs', :element => {:type => ::Thrift::Types::STRUCT, :class => ::DropPartitionsExpr}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3723,6 +3723,45 @@ class ShowCompactResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetLatestCommittedCompactionInfoRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+  PARTITIONNAMES = 3
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
+    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetLatestCommittedCompactionInfoResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COMPACTIONS = 1
+
+  FIELDS = {
+    COMPACTIONS => {:type => ::Thrift::Types::LIST, :name => 'compactions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::CompactionInfoStruct}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactions is unset!') unless @compactions
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class AddDynamicPartitions
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
@@ -3957,8 +3996,8 @@ class FireEventRequestData < ::Thrift::Union
   INSERTDATAS = 2
 
   FIELDS = {
-    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData},
-    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}}
+    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData, :optional => true},
+    INSERTDATAS => {:type => ::Thrift::Types::LIST, :name => 'insertDatas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::InsertEventRequestData}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

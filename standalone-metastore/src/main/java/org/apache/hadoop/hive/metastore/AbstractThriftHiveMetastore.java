@@ -1131,6 +1131,12 @@ public class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
+    public GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(
+        GetLatestCommittedCompactionInfoRequest rqst) throws TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
     public NotificationEventResponse get_next_notification(NotificationEventRequest rqst) throws TException {
         throw new UnsupportedOperationException("this method is not supported");
     }

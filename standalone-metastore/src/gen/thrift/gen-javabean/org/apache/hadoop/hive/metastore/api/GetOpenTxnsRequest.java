@@ -346,13 +346,13 @@ import org.slf4j.LoggerFactory;
           case 1: // EXCLUDE_TXN_TYPES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1306 = iprot.readListBegin();
-                struct.excludeTxnTypes = new ArrayList<TxnType>(_list1306.size);
-                TxnType _elem1307;
-                for (int _i1308 = 0; _i1308 < _list1306.size; ++_i1308)
+                org.apache.thrift.protocol.TList _list1322 = iprot.readListBegin();
+                struct.excludeTxnTypes = new ArrayList<TxnType>(_list1322.size);
+                TxnType _elem1323;
+                for (int _i1324 = 0; _i1324 < _list1322.size; ++_i1324)
                 {
-                  _elem1307 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
-                  struct.excludeTxnTypes.add(_elem1307);
+                  _elem1323 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+                  struct.excludeTxnTypes.add(_elem1323);
                 }
                 iprot.readListEnd();
               }
@@ -379,9 +379,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(EXCLUDE_TXN_TYPES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.excludeTxnTypes.size()));
-            for (TxnType _iter1309 : struct.excludeTxnTypes)
+            for (TxnType _iter1325 : struct.excludeTxnTypes)
             {
-              oprot.writeI32(_iter1309.getValue());
+              oprot.writeI32(_iter1325.getValue());
             }
             oprot.writeListEnd();
           }
@@ -413,9 +413,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetExcludeTxnTypes()) {
         {
           oprot.writeI32(struct.excludeTxnTypes.size());
-          for (TxnType _iter1310 : struct.excludeTxnTypes)
+          for (TxnType _iter1326 : struct.excludeTxnTypes)
           {
-            oprot.writeI32(_iter1310.getValue());
+            oprot.writeI32(_iter1326.getValue());
           }
         }
       }
@@ -427,13 +427,13 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1311 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-          struct.excludeTxnTypes = new ArrayList<TxnType>(_list1311.size);
-          TxnType _elem1312;
-          for (int _i1313 = 0; _i1313 < _list1311.size; ++_i1313)
+          org.apache.thrift.protocol.TList _list1327 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.excludeTxnTypes = new ArrayList<TxnType>(_list1327.size);
+          TxnType _elem1328;
+          for (int _i1329 = 0; _i1329 < _list1327.size; ++_i1329)
           {
-            _elem1312 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
-            struct.excludeTxnTypes.add(_elem1312);
+            _elem1328 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+            struct.excludeTxnTypes.add(_elem1328);
           }
         }
         struct.setExcludeTxnTypesIsSet(true);

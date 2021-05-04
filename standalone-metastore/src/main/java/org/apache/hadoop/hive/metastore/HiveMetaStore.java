@@ -8567,6 +8567,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(
+        GetLatestCommittedCompactionInfoRequest rqst) throws MetaException {
+      if (rqst.getDbname() == null || rqst.getTablename() == null) {
+        throw new MetaException("Database name and table name cannot be null.");
+      }
+      GetLatestCommittedCompactionInfoResponse response = getTxnHandler().getLatestCommittedCompactionInfo(rqst);
+      return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isServerFilterEnabled, filterHook,
+          getDefaultCatalog(conf), rqst.getDbname(), rqst.getTablename(), response);
+    }
+
+    @Override
     public AllocateTableWriteIdsResponse allocate_table_write_ids(
             AllocateTableWriteIdsRequest rqst) throws TException {
       AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);

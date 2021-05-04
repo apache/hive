@@ -93,9 +93,13 @@ class PropValueUnion {
       return false;
     else if (__isset.flag && !(flag == rhs.flag))
       return false;
-    if (!(lString == rhs.lString))
+    if (__isset.lString != rhs.__isset.lString)
       return false;
-    if (!(unionMStringString == rhs.unionMStringString))
+    else if (__isset.lString && !(lString == rhs.lString))
+      return false;
+    if (__isset.unionMStringString != rhs.__isset.unionMStringString)
+      return false;
+    else if (__isset.unionMStringString && !(unionMStringString == rhs.unionMStringString))
       return false;
     return true;
   }

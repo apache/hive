@@ -52,8 +52,8 @@ class PropValueUnion < ::Thrift::Union
     STRINGVALUE => {:type => ::Thrift::Types::STRING, :name => 'stringValue', :optional => true},
     DOUBLEVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'doubleValue', :optional => true},
     FLAG => {:type => ::Thrift::Types::BOOL, :name => 'flag', :optional => true},
-    LSTRING => {:type => ::Thrift::Types::LIST, :name => 'lString', :element => {:type => ::Thrift::Types::STRING}},
-    UNIONMSTRINGSTRING => {:type => ::Thrift::Types::MAP, :name => 'unionMStringString', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    LSTRING => {:type => ::Thrift::Types::LIST, :name => 'lString', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    UNIONMSTRINGSTRING => {:type => ::Thrift::Types::MAP, :name => 'unionMStringString', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

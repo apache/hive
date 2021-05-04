@@ -23,9 +23,12 @@ import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
+import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
@@ -254,6 +257,125 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
+  public void testGetLatestCommittedCompaction() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String errorMessage = "Dummy error";
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
+    assertNull("Expecting null partitionname for a non-partitioned table", lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    rqst.setPartitionnames(new ArrayList<>());
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
+    lci = response.getCompactions().get(0);
+    assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
+    assertEquals(dbName, lci.getDbname());
+    assertEquals(tableName, lci.getTablename());
+    assertNull("Expecting null partitionname for a non-partitioned table", lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
+  @Test
+  public void testGetLatestCommittedCompactionPartition() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    final String errorMessage = "Dummy error";
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    rqst.addToPartitionnames(partitionName);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record", 1, response.getCompactionsSize());
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    assertEquals("Expecting the first succeeded compaction record", 1, lci.getId());
+    assertEquals(partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    final String anotherPartitionName = "ds=yesterday";
+    addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, anotherPartitionName, errorMessage);
+    rqst.addToPartitionnames(anotherPartitionName);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single compaction record for each partition", 2, response.getCompactionsSize());
+    CompactionInfoStruct lci1 = response.getCompactions().stream()
+        .filter(c -> c.getPartitionname().equals(partitionName)).findFirst().get();
+    assertEquals(1, lci1.getId());
+    CompactionInfoStruct lci2 = response.getCompactions().stream().
+        filter(c -> c.getPartitionname().equals(anotherPartitionName)).findFirst().get();
+    assertEquals(3, lci2.getId());
+  }
+
+  @Test
+  public void testGetLatestSucceededCompaction() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    final String errorMessage = "Dummy error";
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addSucceededCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    rqst.addToPartitionnames(partitionName);
+    txnHandler.getLatestCommittedCompactionInfo(rqst);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single record", 1, response.getCompactionsSize());
+    CompactionInfoStruct lci = response.getCompactions().get(0);
+    assertEquals("Expecting the second succeeded compaction record", 2, lci.getId());
+    assertEquals(partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+
+    addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertNotNull(response);
+    assertEquals("Expecting a single record", 1, response.getCompactionsSize());
+    lci = response.getCompactions().get(0);
+    assertEquals("Expecting the last compaction record waiting for cleaning", 3, lci.getId());
+    assertEquals(partitionName, lci.getPartitionname());
+    assertEquals(CompactionType.MINOR, lci.getType());
+  }
+
+  @Test
+  public void testGetNoCompaction() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String errorMessage = "Dummy error";
+    GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tableName);
+    GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertEquals(0, response.getCompactionsSize());
+
+    addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    response = txnHandler.getLatestCommittedCompactionInfo(rqst);
+
+    assertEquals(0, response.getCompactionsSize());
+  }
+
+  @Test
   public void testMarkFailed() throws Exception {
     final String dbName = "foo";
     final String tableName = "bar";
@@ -329,12 +451,42 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst;
     CompactionInfo ci;
     rqst = new CompactionRequest(dbName, tableName, type);
-    rqst.setPartitionname(partitionName);
+    if (partitionName != null) {
+      rqst.setPartitionname(partitionName);
+    }
     txnHandler.compact(rqst);
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
     ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
+  }
+
+  private void addSucceededCompaction(String dbName, String tableName, CompactionType type,
+      String partitionName, String errorMessage) throws MetaException {
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    CompactionInfo ci;
+    if (partitionName != null) {
+      rqst.setPartitionname(partitionName);
+    }
+    txnHandler.compact(rqst);
+    ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    ci.errorMessage = errorMessage;
+    txnHandler.markCleaned(ci);
+  }
+
+  private void addWaitingForCleaningCompaction(String dbName, String tableName, CompactionType type,
+      String partitionName, String errorMessage) throws MetaException {
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    CompactionInfo ci;
+    if (partitionName != null) {
+      rqst.setPartitionname(partitionName);
+    }
+    txnHandler.compact(rqst);
+    ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    ci.errorMessage = errorMessage;
+    txnHandler.markCompacted(ci);
   }
 
   @Test
