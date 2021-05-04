@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.IllegalCacheConfigurationException;
@@ -118,12 +119,15 @@ public class VectorizedOrcAcidRowBatchReader
    * {@link RecordIdentifier}/{@link VirtualColumn#ROWID} information
    */
   private final StructColumnVector recordIdColumnVector;
+  private final LongColumnVector rowIsDeletedVector;
   private final Reader.Options readerOptions;
   private final boolean isOriginal;
   /**
    * something further in the data pipeline wants {@link VirtualColumn#ROWID}
    */
   private final boolean rowIdProjected;
+  private final boolean rowIsDeletedProjected;
+  private final boolean fetchDeletedRows;
   /**
    * if false, we don't need any acid medadata columns from the file because we
    * know all data in the split is valid (wrt to visible writeIDs/delete events)
@@ -281,16 +285,17 @@ public class VectorizedOrcAcidRowBatchReader
     deleteEventReaderOptions.range(0, Long.MAX_VALUE);
     deleteEventReaderOptions.searchArgument(null, null);
     keyInterval = findMinMaxKeys(orcSplit, conf, deleteEventReaderOptions);
+    fetchDeletedRows = conf.getBoolean(Constants.ACID_FETCH_DELETED_ROWS, false);
     DeleteEventRegistry der;
     try {
       // See if we can load all the relevant delete events from all the
       // delete deltas in memory...
       der = new ColumnizedDeleteEventRegistry(conf, orcSplit,
-          deleteEventReaderOptions, keyInterval, cacheTag);
+          deleteEventReaderOptions, keyInterval, cacheTag, fetchDeletedRows);
     } catch (DeleteEventsOverflowMemoryException e) {
       // If not, then create a set of hanging readers that do sort-merge to find the next smallest
       // delete event on-demand. Caps the memory consumption to (some_const * no. of readers).
-      der = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
+      der = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions, fetchDeletedRows);
     }
     this.deleteEventRegistry = der;
     isOriginal = orcSplit.isOriginal();
@@ -303,6 +308,12 @@ public class VectorizedOrcAcidRowBatchReader
           VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
+    rowIsDeletedProjected = isVirtualColumnProjected(rbCtx, VirtualColumn.ROWISDELETED);
+    if (rowIsDeletedProjected) {
+      rowIsDeletedVector = new LongColumnVector();
+    } else {
+      rowIsDeletedVector = null;
+    }
     rootPath = orcSplit.getRootDir();
 
     /**
@@ -815,14 +826,18 @@ public class VectorizedOrcAcidRowBatchReader
   }
 
   private static boolean areRowIdsProjected(VectorizedRowBatchCtx rbCtx) {
+    //The query needs ROW__ID: maybe explicitly asked, maybe it's part of
+    // Update/Delete statement.
+    //Either way, we need to decorate "original" rows with row__id
+    return isVirtualColumnProjected(rbCtx, VirtualColumn.ROWID);
+  }
+
+  private static boolean isVirtualColumnProjected(VectorizedRowBatchCtx rbCtx, VirtualColumn virtualColumn) {
     if (rbCtx.getVirtualColumnCount() == 0) {
       return false;
     }
     for(VirtualColumn vc : rbCtx.getNeededVirtualColumns()) {
-      if(vc == VirtualColumn.ROWID) {
-        //The query needs ROW__ID: maybe explicitly asked, maybe it's part of
-        // Update/Delete statement.
-        //Either way, we need to decorate "original" rows with row__id
+      if(vc == virtualColumn) {
         return true;
       }
     }
@@ -892,7 +907,7 @@ public class VectorizedOrcAcidRowBatchReader
     } catch (Exception e) {
       throw new IOException("error iterating", e);
     }
-    if(!includeAcidColumns) {
+    if (!includeAcidColumns) {
       //if here, we don't need to filter anything wrt acid metadata columns
       //in fact, they are not even read from file/llap
       value.size = vectorizedRowBatchBase.size;
@@ -932,8 +947,10 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     // Case 2- find rows which have been deleted.
+    BitSet notDeletedBitSet = fetchDeletedRows ? (BitSet) selectedBitSet.clone() : selectedBitSet;
+
     this.deleteEventRegistry.findDeletedRecords(innerRecordIdColumnVector,
-        vectorizedRowBatchBase.size, selectedBitSet);
+            vectorizedRowBatchBase.size, notDeletedBitSet);
 
     if (selectedBitSet.cardinality() == vectorizedRowBatchBase.size) {
       // None of the cases above matched and everything is selected. Hence, we will use the
@@ -948,7 +965,7 @@ public class VectorizedOrcAcidRowBatchReader
       // This loop fills up the selected[] vector with all the index positions that are selected.
       for (int setBitIndex = selectedBitSet.nextSetBit(0), selectedItr = 0;
            setBitIndex >= 0;
-           setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1), ++selectedItr) {
+           setBitIndex = selectedBitSet.nextSetBit(setBitIndex + 1), ++selectedItr) {
         value.selected[selectedItr] = setBitIndex;
       }
     }
@@ -958,6 +975,28 @@ public class VectorizedOrcAcidRowBatchReader
     if (rowIdProjected) {
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
       value.cols[ix] = recordIdColumnVector;
+    }
+    if (rowIsDeletedProjected) {
+      if (fetchDeletedRows) {
+        if (notDeletedBitSet.cardinality() == vectorizedRowBatchBase.size) {
+          rowIsDeletedVector.vector[0] = 0;
+          rowIsDeletedVector.isRepeating = true;
+        } else {
+          Arrays.fill(rowIsDeletedVector.vector, 1);
+          rowIsDeletedVector.isRepeating = false;
+          for (int setBitIndex = notDeletedBitSet.nextSetBit(0);
+               setBitIndex >= 0;
+               setBitIndex = notDeletedBitSet.nextSetBit(setBitIndex + 1)) {
+            rowIsDeletedVector.vector[setBitIndex] = 0;
+          }
+        }
+      } else {
+        rowIsDeletedVector.vector[0] = 0;
+        rowIsDeletedVector.isRepeating = true;
+      }
+
+      int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
+      value.cols[ix] = rowIsDeletedVector;
     }
     progress = baseReader.getProgress();
     return true;
@@ -983,7 +1022,7 @@ public class VectorizedOrcAcidRowBatchReader
       System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
     }
     if (rowIdProjected) {
-      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_WRITEID];
+      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[fetchDeletedRows ? OrcRecordUpdater.CURRENT_WRITEID : OrcRecordUpdater.ORIGINAL_WRITEID];
       recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
       recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
     }
@@ -1166,9 +1205,11 @@ public class VectorizedOrcAcidRowBatchReader
     private OrcStruct deleteRecordValue;
     private Boolean isDeleteRecordAvailable = null;
     private ValidWriteIdList validWriteIdList;
+    private final boolean fetchDeletedRows;
 
     SortMergedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
-        Reader.Options readerOptions) throws IOException {
+                                  Reader.Options readerOptions, boolean fetchDeletedRows) throws IOException {
+      this.fetchDeletedRows = fetchDeletedRows;
       Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData = new HashMap<>();
       final Path[] deleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit, pathToDeltaMetaData);
       if (deleteDeltas.length > 0) {
@@ -1225,7 +1266,7 @@ public class VectorizedOrcAcidRowBatchReader
           : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
       long repeatedRowId = (rowId != null) ? -1
           : ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector[0];
-
+      LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
 
       // Get the first valid row in the batch still available.
       int firstValidIndex = selectedBitSet.nextSetBit(0);
@@ -1268,6 +1309,10 @@ public class VectorizedOrcAcidRowBatchReader
         if (deleteRecordKey.compareRow(currRecordIdInBatch) == 0) {
           // When deleteRecordId == currRecordIdInBatch, this record in the batch has been deleted.
           selectedBitSet.clear(currIndex);
+          if (fetchDeletedRows) {
+            currentWriteIdVector.vector[currIndex] = deleteRecordKey.getCurrentWriteId();
+            cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating = false;
+          }
           currIndex = selectedBitSet.nextSetBit(currIndex + 1); // Move to next valid index.
         } else if (deleteRecordKey.compareRow(currRecordIdInBatch) == 1) {
           // When deleteRecordId > currRecordIdInBatch, we have to move on to look at the
@@ -1315,6 +1360,7 @@ public class VectorizedOrcAcidRowBatchReader
      */
     static class DeleteRecordKey implements Comparable<DeleteRecordKey> {
       private long originalWriteId;
+      private long currentWriteId;
       /**
        * see {@link BucketCodec}
        */
@@ -1322,12 +1368,14 @@ public class VectorizedOrcAcidRowBatchReader
       private long rowId;
       DeleteRecordKey() {
         this.originalWriteId = -1;
+        this.currentWriteId = -1;
         this.rowId = -1;
       }
-      public void set(long owid, int bucketProperty, long rowId) {
+      public void set(long owid, int bucketProperty, long rowId, long cwid) {
         this.originalWriteId = owid;
         this.bucketProperty = bucketProperty;
         this.rowId = rowId;
+        this.currentWriteId = cwid;
       }
 
       @Override
@@ -1523,7 +1571,7 @@ public class VectorizedOrcAcidRowBatchReader
                 = batch.cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating ? 0 : indexPtrInBatch;
         long currentWriteId
                 = ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[currentWriteIdIndex];
-        deleteRecordKey.set(originalWriteId, bucketProperty, rowId);
+        deleteRecordKey.set(originalWriteId, bucketProperty, rowId, currentWriteId);
         return currentWriteId;
       }
       private void checkBucketId() throws IOException {
@@ -1679,26 +1727,27 @@ public class VectorizedOrcAcidRowBatchReader
      * Or much simpler, make compaction of delete deltas very aggressive so that
      * we never have move than a few delete files to read.
      */
-    private TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
-    private long rowIds[];
-    private CompressedOwid compressedOwids[];
-    private ValidWriteIdList validWriteIdList;
-    private Boolean isEmpty;
+    private final TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
+    private long[] rowIds;
+    private CompressedOwid[] compressedOwids;
+    private TreeMap<Integer, Long> compressedCwids;
+    private final Boolean isEmpty;
     private final int maxEventsInMemory;
     private final OrcSplit orcSplit;
     private final boolean testMode;
+    private final boolean fetchDeletedRows;
 
 
 
     ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
-        Reader.Options readerOptions,
-        OrcRawRecordMerger.KeyInterval keyInterval, CacheTag cacheTag)
+                                  Reader.Options readerOptions,
+                                  OrcRawRecordMerger.KeyInterval keyInterval, CacheTag cacheTag, boolean fetchDeletedRows)
         throws IOException, DeleteEventsOverflowMemoryException {
       this.testMode = conf.getBoolean(ConfVars.HIVE_IN_TEST.varname, false);
+      this.fetchDeletedRows = fetchDeletedRows;
       int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      this.validWriteIdList
-              = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
       LOG.debug("Using ColumnizedDeleteEventRegistry");
       this.sortMerger = new TreeMap<>();
       this.rowIds = null;
@@ -1748,7 +1797,7 @@ public class VectorizedOrcAcidRowBatchReader
                   assert shouldReadDeleteDeltasWithLlap(conf, true);
                 }
                 deleteReaderValue = new DeleteReaderValue(readerData.reader, deleteDeltaFile, readerOptions, bucket,
-                    validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
+                        validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
 
                 DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
                 if (deleteReaderValue.next(deleteRecordKey)) {
@@ -1850,7 +1899,9 @@ public class VectorizedOrcAcidRowBatchReader
       // We compress the owids into CompressedOwid data structure that records
       // the fromIndex(inclusive) and toIndex(exclusive) for each unique owid.
       List<CompressedOwid> compressedOwids = new ArrayList<>();
+      compressedCwids = new TreeMap<>();
       CompressedOwid lastCo = null;
+      long lastCwid = -1;
       while (!sortMerger.isEmpty()) {
         // The sortMerger is a heap data structure that stores a pair of
         // (deleteRecordKey, deleteReaderValue) at each node and is ordered by deleteRecordKey.
@@ -1865,6 +1916,7 @@ public class VectorizedOrcAcidRowBatchReader
         DeleteRecordKey deleteRecordKey = entry.getKey();
         DeleteReaderValue deleteReaderValue = entry.getValue();
         long owid = deleteRecordKey.originalWriteId;
+        long cwid = deleteRecordKey.currentWriteId;
         int bp = deleteRecordKey.bucketProperty;
         checkSize(index);
         rowIds[index] = deleteRecordKey.rowId;
@@ -1874,6 +1926,10 @@ public class VectorizedOrcAcidRowBatchReader
           }
           lastCo = new CompressedOwid(owid, bp, index, -1);
           compressedOwids.add(lastCo);
+        }
+        if (lastCwid != cwid/* || lastCompressedCwid.bucketProperty != bp*/) {
+          compressedCwids.put(index, cwid);
+          lastCwid = cwid;
         }
         ++index;
         if (deleteReaderValue.next(deleteRecordKey)) {
@@ -1886,6 +1942,7 @@ public class VectorizedOrcAcidRowBatchReader
         lastCo.toIndex = index; // Finalize the last record.
         lastCo = null;
       }
+      compressedCwids.put(index, -1L);
       if (rowIds.length > index) {
         rowIds = Arrays.copyOf(rowIds, index);
       }
@@ -1894,9 +1951,9 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
 
-    private boolean isDeleted(long owid, int bucketProperty, long rowId) {
+    private long isDeleted(long owid, int bucketProperty, long rowId) {
       if (compressedOwids == null || rowIds == null) {
-        return false;
+        return -1;
       }
       // To find if a given (owid, rowId) pair is deleted or not, we perform
       // two binary searches at most. The first binary search is on the
@@ -1906,7 +1963,7 @@ public class VectorizedOrcAcidRowBatchReader
       // Check if owid is outside the range of all owids present.
       if (owid < compressedOwids[0].originalWriteId
           || owid > compressedOwids[compressedOwids.length - 1].originalWriteId) {
-        return false;
+        return -1;
       }
       // Create a dummy key for searching the owid/bucket in the compressed owid ranges.
       CompressedOwid key = new CompressedOwid(owid, bucketProperty, -1, -1);
@@ -1917,13 +1974,15 @@ public class VectorizedOrcAcidRowBatchReader
         // Check if rowId is outside the range of all rowIds present for this owid.
         if (rowId < rowIds[key.fromIndex]
             || rowId > rowIds[key.toIndex - 1]) {
-          return false;
+          return -1;
         }
-        if (Arrays.binarySearch(rowIds, key.fromIndex, key.toIndex, rowId) >= 0) {
-          return true; // rowId also found!
+        pos = Arrays.binarySearch(rowIds, key.fromIndex, key.toIndex, rowId);
+        if (pos >= 0) {  // rowId also found!
+          Map.Entry<Integer, Long> cEntry = compressedCwids.floorEntry(pos);
+          return cEntry == null ? -1 : cEntry.getValue();
         }
       }
-      return false;
+      return -1;
     }
     /**
      * @return how many delete events are actually loaded
@@ -1961,6 +2020,7 @@ public class VectorizedOrcAcidRowBatchReader
       long[] rowIdVector =
           ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
+      LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
           setBitIndex >= 0;
           setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
@@ -1969,8 +2029,13 @@ public class VectorizedOrcAcidRowBatchReader
         int bucketProperty = bucketProperties != null ? (int)bucketProperties[setBitIndex]
           : repeatedBucketProperty;
         long rowId = rowIdVector[setBitIndex];
-        if (isDeleted(owid, bucketProperty, rowId)) {
+        long currentWriteId = isDeleted(owid, bucketProperty, rowId);
+        if (currentWriteId >= 0) {
           selectedBitSet.clear(setBitIndex);
+          if (fetchDeletedRows) {
+            currentWriteIdVector.vector[setBitIndex] = currentWriteId;
+            cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating = false;
+          }
         }
      }
     }
