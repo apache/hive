@@ -48,7 +48,14 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
    */
   @Override
   public ResultSet fetchTableMetadata(String tableName) throws MetaException {
-     return null;
+    ResultSet rs = null;
+    try {
+      rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
+    } catch (SQLException sqle) {
+      LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
+      throw sqle;
+    }
+    return rs;
   }
 
   /**

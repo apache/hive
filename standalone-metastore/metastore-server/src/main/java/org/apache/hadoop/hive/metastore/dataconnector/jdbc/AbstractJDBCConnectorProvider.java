@@ -172,10 +172,12 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     ResultSet rs = null;
     Table table = null;
     try {
-      // rs = fetchTableMetadata(tableName);
-      rs = fetchTableViaDBMetaData(tableName);
+      rs = fetchTableMetadata(tableName);
+//      rs = fetchTableViaDBMetaData(tableName);
       List<FieldSchema> cols = new ArrayList<>();
       while (rs.next()) {
+        String datatype = rs.getString("DATA_TYPE");
+        String typename = rs.getString("TYPE_NAME");
         FieldSchema fs = new FieldSchema();
         fs.setName(rs.getString("COLUMN_NAME"));
         fs.setType(getDataType(rs.getString("TYPE_NAME"), rs.getInt("COLUMN_SIZE")));
@@ -192,7 +194,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       //Setting the table properties.
       table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
-      table.getParameters().put(JDBC_TABLE, tableName);
+      table.getParameters().put(JDBC_TABLE, scoped_db+"."+tableName);
       table.getParameters().put(JDBC_URL, this.jdbcUrl);
       table.getParameters().put(hive_metastoreConstants.META_TABLE_STORAGE, JDBC_HIVE_STORAGE_HANDLER_ID);
       table.getParameters().put("EXTERNAL", "TRUE");
@@ -216,16 +218,16 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     }
   }
 
-  private ResultSet fetchTableViaDBMetaData(String tableName) throws SQLException {
-    ResultSet rs = null;
-    try {
-      rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
-    } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
-      throw sqle;
-    }
-    return rs;
-  }
+//  private ResultSet fetchTableViaDBMetaData(String tableName) throws SQLException {
+//    ResultSet rs = null;
+//    try {
+//      rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
+//    } catch (SQLException sqle) {
+//      LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
+//      throw sqle;
+//    }
+//    return rs;
+//  }
 
   protected String wrapSize(int size) {
     return "(" + size + ")";
@@ -253,6 +255,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     case "mediumblob":
     case "longblob":
     case "bytea":
+    case "binary":
       return ColumnType.BINARY_TYPE_NAME;
     case "tinyint":
       return ColumnType.TINYINT_TYPE_NAME;
