@@ -34,11 +34,10 @@ public class MSSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
         ResultSet rs = null;
         try {
-            test();
             rs = getConnection().getMetaData().getColumns(null, scoped_db, tableName, null);
-        } catch (SQLException | ClassNotFoundException sqle) {
+        } catch (SQLException sqle) {
             LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-            throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
+            throw new MetaException("Could not retrieve table metadata from remote datasource, cause:" + sqle.getMessage());
         }
         return rs;
     }

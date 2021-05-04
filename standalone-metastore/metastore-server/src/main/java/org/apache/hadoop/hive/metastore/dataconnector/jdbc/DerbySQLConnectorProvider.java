@@ -53,7 +53,7 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
       rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
-      throw sqle;
+      throw new MetaException("Could not retrieve table meta data from remote datasource, cause:" + sqle);
     }
     return rs;
   }
