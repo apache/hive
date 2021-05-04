@@ -7759,6 +7759,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               .getMsg(destinationPath.toUri().toString()));
         }
       }
+      // handle direct insert CTAS case
+      // for direct insert CTAS, the table creation DDL is not added to the task plan in TaskCompiler,
+      // therefore we need to add the InsertHook here manually so that HiveMetaHook#commitInsertTable is called
+      if (qb.isCTAS() && tableDesc != null && tableDesc.getStorageHandler() != null) {
+        try {
+          if (HiveUtils.getStorageHandler(conf, tableDesc.getStorageHandler()).directInsertCTAS()) {
+            createPreInsertDesc(destinationTable, false);
+          }
+        } catch (HiveException e) {
+          // do nothing
+        }
+      }
       break;
     }
     default:
@@ -7846,6 +7858,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     setWriteIdForSurrogateKeys(ltd, input);
 
     LOG.debug("Created FileSink Plan for clause: {}dest_path: {} row schema: {}", dest, destinationPath, inputRR);
+
+//    createPreInsertDesc(getTable(tableDesc.getTableName().getDbTable()), false);
 
     FileSinkOperator fso = (FileSinkOperator) output;
     fso.getConf().setTable(destinationTable);
@@ -11795,6 +11809,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (qb.getAlias() != null) {
       rewriteRRForSubQ(qb.getAlias(), bodyOpInfo, skipAmbiguityCheck);
     }
+
+//    // handle direct insert CTAS
+//    if (qb.isCTAS()) {
+//      createPreInsertDesc(getTable(tableDesc.getTableName().getDbTable()), false);
+//    }
 
     setQB(qb);
     return bodyOpInfo;

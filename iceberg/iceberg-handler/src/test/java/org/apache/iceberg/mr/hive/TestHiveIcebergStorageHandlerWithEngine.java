@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -57,7 +56,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -151,8 +149,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  @Rule
-  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
+//  @Rule
+//  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
@@ -178,6 +176,26 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     // proceed, but they do not reset it to done=false at the beginning. Therefore, without calling this after each test
     // case, any tez job that follows a completed mr job will erroneously read done=true and will not proceed.
     ExecMapper.setDone(false);
+  }
+
+  @Test
+  public void testCTAS() throws IOException {
+    Assume.assumeTrue("CTAS is only for HiveCatalog tables",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    shell.executeStatement(String.format("CREATE TABLE target STORED BY '%s' AS SELECT * FROM source",
+        HiveIcebergStorageHandler.class.getName()));
+
+    // validate we can read it via SQL
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target");
+    Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size(), objects.size());
+    // check data contents
+    Table table = testTables.loadTable(target);
+    HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
   }
 
   @Test

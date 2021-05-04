@@ -361,7 +361,7 @@ public class TezTask extends Task<TezWork> {
           .filter(name -> name.endsWith("HiveIcebergNoJobCommitter")).isPresent();
       // we should only consider jobs with Iceberg output committer and a data sink
       if (hasIcebergCommitter && !vertex.getDataSinks().isEmpty()) {
-        String tableLocationRoot = jobConf.get("location");
+        String tableLocationRoot = jobConf.get("iceberg.mr.table.location");
         if (tableLocationRoot != null) {
           VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
           Path path = new Path(tableLocationRoot + "/temp");
