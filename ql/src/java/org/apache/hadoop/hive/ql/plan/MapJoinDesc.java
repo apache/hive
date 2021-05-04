@@ -783,13 +783,14 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     return false;
   }
 
-  public static boolean hasMapTypeColumns(List<ExprNodeDesc> keys) {
+  public static boolean isSupportedComplexType(List<ExprNodeDesc> keys) {
     for (ExprNodeDesc key : keys) {
-      if (key.getTypeInfo().getCategory() == ObjectInspector.Category.MAP) {
-        return true;
+      if (key.getTypeInfo().getCategory() == ObjectInspector.Category.MAP
+        || key.getTypeInfo().getCategory() == ObjectInspector.Category.UNION) {
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
 }

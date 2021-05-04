@@ -33,7 +33,7 @@ public final class WritableComparatorFactory {
             // TODO : https://issues.apache.org/jira/browse/HIVE-25042
             throw new RuntimeException("map datatype is not supported for SMB and Merge Join");
         } else if (key instanceof StandardUnion) {
-            return new HiveUnionComparator(nullSafe, nullOrdering);
+            throw new RuntimeException("union datatype is not supported for SMB and Merge Join");
         } else {
             return new HiveWritableComparator(nullSafe, nullOrdering);
         }

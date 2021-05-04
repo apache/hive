@@ -38,9 +38,9 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
     super(joinDesc);
 
     for (List<ExprNodeDesc> keys : joinDesc.getKeys().values()) {
-      if (hasMapTypeColumns(keys)) {
+      if (!isSupportedComplexType(keys)) {
         //TODO : https://issues.apache.org/jira/browse/HIVE-25042
-        throw new RuntimeException("map type is not supported for common merge join");
+        throw new RuntimeException("map and union type is not supported for common merge join");
       }
     }
 

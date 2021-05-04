@@ -24,36 +24,20 @@ SELECT *
 FROM test_list1 INNER JOIN test_list2
 ON (test_list1.value=test_list2.value);
 
+CREATE TABLE test_struct1 (key INT, value struct<f1: int,f2: string>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+INSERT INTO test_struct1 VALUES (99, named_struct("f1", 1, "f2", 'val_0'), 'Alice'),
+ (99, named_struct("f1", 2, "f2", 'val_2'), 'Mat'),
+ (100, named_struct("f1", 0, "f2", 'val_0'), 'Bob'), (101, named_struct("f1", 2, "f2", 'val_2'), 'Car');
 
-CREATE TABLE test_map1 (key INT, value map<int, int>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-INSERT INTO test_map1 VALUES (99, map(0,0), 'Alice'), (99, map(2,2), 'Mat'), (100, map(0,0), 'Bob'), (101, map(2,2), 'Car');
-
-CREATE TABLE test_map2 (key INT, value map<int, int>, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-INSERT INTO test_map2 VALUES (102, map(2,2), 'Del'), (103, map(2,2), 'Ema'), (104, map(3,3), 'Fli');
-
-EXPLAIN
-SELECT *
-FROM test_map1  INNER  JOIN test_map2
-ON (test_map1.value=test_map2.value);
-
-SELECT *
-FROM test_map1  INNER JOIN test_map2
-ON (test_map1.value=test_map2.value);
-
-
-CREATE TABLE test_union1 (key INT, value UNIONTYPE<int, string>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-INSERT INTO test_union1 VALUES (99, create_union(0,0,"val_0"), 'Alice'), (99, create_union(0,2, "val_2"), 'Mat'),
- (100, create_union(0,0, "val_0"), 'Bob'), (101, create_union(0,2,"val_2"), 'Car');
-
-CREATE TABLE test_union2 (key INT, value UNIONTYPE<int, string>, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-INSERT INTO test_union2 VALUES (102, create_union(0,2,"val_2"), 'Del'), (103, create_union(0,2,"val_2"), 'Ema'),
- (104, create_union(0,3,"val_3"), 'Fli');
+CREATE TABLE test_struct2 (key INT, value struct<f1: int,f2: string>, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+INSERT INTO test_struct2 VALUES (102, named_struct("f1", 2, "f2", 'val_2'), 'Del'), (103, named_struct("f1", 2, "f2", 'val_2'), 'Ema'),
+ (104, named_struct("f1", 3, "f2", 'val_3'), 'Fli');
 
 EXPLAIN
 SELECT *
-FROM test_union1  INNER JOIN test_union2
-ON (test_union1.value=test_union2.value);
+FROM test_struct1  INNER JOIN test_struct2
+ON (test_struct1.value=test_struct2.value);
 
 SELECT *
-FROM test_union1  INNER JOIN test_union2
-ON (test_union1.value=test_union2.value);
+FROM test_struct1  INNER JOIN test_struct2
+ON (test_struct1.value=test_struct2.value);

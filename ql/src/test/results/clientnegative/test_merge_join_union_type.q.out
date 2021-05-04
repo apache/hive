@@ -1,0 +1,9 @@
+PREHOOK: query: create table test_union1 (key int, value UNIONTYPE<int, string>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_union1
+POSTHOOK: query: create table test_union1 (key int, value UNIONTYPE<int, string>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_union1
+FAILED: RuntimeException map and union type is not supported for common merge join
