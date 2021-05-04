@@ -68,6 +68,14 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
      return null;
   }
 
+  @Override protected String getCatalogName() {
+    return scoped_db;
+  }
+
+  @Override protected String getDatabaseName() {
+    return null;
+  }
+
   protected String getDataType(String dbDataType, int size) {
     String mappedType = super.getDataType(dbDataType, size);
     if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
