@@ -948,9 +948,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       metadataPath.getFileSystem(conf).delete(metadataPath, true);
     }
     List<EximUtil.DataCopyPath> functionsBinaryCopyPaths = Collections.emptyList();
-    FileList snapPathFileList = null;
+    boolean isSnapshotEnabled = conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY);
+    // Create SnapPathFileList only if snapshots are enabled.
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, conf);
-        FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf)) {
+        FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf);
+        FileList snapPathFileList = isSnapshotEnabled ? createTableFileList(
+            SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf) : null) {
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
         LOG.debug("Dumping db: " + dbName);
         // TODO : Currently we don't support separate table list for each database.
@@ -990,7 +993,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               conf.getBoolVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK) && work.replScope.includeAllTables();
           // Generate snapshot related configurations for external table data copy.
           HashMap<String, Boolean> singleCopyPaths = getNonTableLevelCopyPaths(db, isSingleTaskForExternalDb);
-          boolean isSnapshotEnabled = conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY);
           boolean isExternalTablePresent = false;
 
           String snapshotPrefix = dbName.toLowerCase();
@@ -1000,8 +1002,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
                 new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
                     EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT));
-            snapPathFileList = createTableFileList(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
-                EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf);
+            // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
           }
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
@@ -1075,9 +1076,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         dumpRoot.toUri(), bootDumpBeginReplId, currentNotificationId(hiveDb));
       return bootDumpBeginReplId;
     } finally {
-      if (snapPathFileList != null) {
-        snapPathFileList.close();
-      }
       //write the dmd always irrespective of success/failure to enable checkpointing in table level replication
       Long bootDumpEndReplId = currentNotificationId(hiveDb);
       long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
