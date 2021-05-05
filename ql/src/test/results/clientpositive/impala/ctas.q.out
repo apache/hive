@@ -143,7 +143,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 
   Stage: Stage-2
     Create Table
-      columns: $f0 int, $f1 int
+      columns: empid int, deptno int
       name: default.tab1_imp0
       input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
       output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat

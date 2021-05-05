@@ -179,7 +179,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -264,7 +263,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MarkEventRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RuleStatisticsListener;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
@@ -1717,12 +1715,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // CDPD-8391: Refactor and get rid of this at some point, the DummyScanOperator
       // isn't really needed.
       TableScanOperator tableScanOp = new DummyScanOperator(getOpContext(),
-          TypeConverter.createRowSchema(impalaRel));
+          new RowSchema(sinkRowResolver.getRowSchema()));
       // topOps needs to have a TableScanOperator for a plan to compile.
       topOps.put(DUMMY_TABLE, tableScanOp);
-      RowResolver impalaRootRR = genRowResolver(tableScanOp, getQB());
       // opParseCtx needs to have the input inside or else genFileSinkPlan crashes
-      opParseCtx.put(tableScanOp, new OpParseContext(impalaRootRR));
+      opParseCtx.put(tableScanOp, new OpParseContext(sinkRowResolver));
 
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
       FileSinkOperator fso = (FileSinkOperator) genFileSinkPlan(dest, getQB(), tableScanOp);
@@ -1983,9 +1980,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
+        sinkRowResolver = relToHiveRR.get(calciteGenPlan);
         // if it is to create view, we do not use table alias
         resultSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
-            relToHiveRR.get(calciteGenPlan),
+            sinkRowResolver,
             getQB().isView() || getQB().isMaterializedView() ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {

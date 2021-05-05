@@ -355,6 +355,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<GroupByOperator, Set<String>> groupOpToInputTables;
   protected Map<String, PrunedPartitionList> prunedPartitions;
   protected List<FieldSchema> resultSchema;
+  protected RowResolver sinkRowResolver;
   protected CreateViewDesc createVwDesc;
   private  MaterializedViewUpdateDesc materializedViewUpdateDesc;
   private List<String> viewsExpanded;
@@ -530,6 +531,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToSamplePruner.clear();
     nameToSplitSample.clear();
     resultSchema = null;
+    sinkRowResolver = null;
     createVwDesc = null;
     materializedViewUpdateDesc = null;
     viewsExpanded = null;
@@ -12954,7 +12956,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 3. Deduce Resultset Schema
     if (createVwDesc != null && !this.ctx.isCboSucceeded()) {
-      resultSchema = convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
+      sinkRowResolver = opParseCtx.get(sinkOp).getRowResolver();
+      resultSchema = convertRowSchemaToViewSchema(sinkRowResolver);
     } else {
       // resultSchema will be null if
       // (1) cbo is disabled;
@@ -12963,7 +12966,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // It will only be not null if cbo is enabled with new return path and it
       // succeeds.
       if (resultSchema == null) {
-        resultSchema = convertRowSchemaToResultSetSchema(opParseCtx.get(sinkOp).getRowResolver(),
+        sinkRowResolver = opParseCtx.get(sinkOp).getRowResolver();
+        resultSchema = convertRowSchemaToResultSetSchema(sinkRowResolver,
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       }
     }

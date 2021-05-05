@@ -145,7 +145,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 
   Stage: Stage-2
     Create View
-      columns: $f0 int, $f1 int
+      columns: empid int, deptno int
       table properties:
         materializedview.engine impala
       expanded text: select `emps_imp0`.`empid`, `depts_imp0`.`deptno` from `default`.`emps_imp0`

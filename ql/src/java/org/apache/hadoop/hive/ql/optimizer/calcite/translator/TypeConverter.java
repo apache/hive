@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -416,14 +415,4 @@ public class TypeConverter {
     return ht;
   }
 
-  public static RowSchema createRowSchema(RelNode relNode) {
-    ArrayList<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
-    for (int i = 0; i < relNode.getRowType().getFieldList().size(); ++i) {
-      String fieldName = relNode.getRowType().getFieldNames().get(i);
-      RelDataType fieldType = relNode.getRowType().getFieldList().get(i).getType();
-      TypeInfo typeInfo = convert(fieldType);
-      columnInfos.add(new ColumnInfo(fieldName, typeInfo, "", false));
-    }
-    return new RowSchema(columnInfos);
-  }
 }
