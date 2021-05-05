@@ -28,6 +28,7 @@
 <jdo>
   <package name="org.apache.hadoop.hive.metastore.model">
     <class name="MDatabase" identity-type="datastore" table="DBS" detachable="true">  
+      <foreign-key name="CTLG_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="DB_ID"/>
       </datastore-identity>
@@ -48,6 +49,7 @@
         <column name="DB_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="parameters" table="DATABASE_PARAMS">
+        <foreign-key name="DATABASE_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="DB_ID"/>
@@ -104,6 +106,7 @@
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">
+      <foreign-key name="TYPE_FIELDS_FK1" delete-action="cascade"/>
       <field name="name">
         <column name="FNAME" length="767" jdbc-type="VARCHAR"/>
       </field>
@@ -152,6 +155,8 @@
     </class>
 
     <class name="MTable" table="TBLS" identity-type="application" detachable="true" objectid-class="MTable$PK">
+      <foreign-key name="TBLS_FK1" delete-action="cascade"/>
+      <foreign-key name="TBLS_FK2" delete-action="cascade"/>
       <field name="id" primary-key="true" value-strategy="native">
         <column name="TBL_ID" jdbc-type="BIGINT" />
       </field>
@@ -166,6 +171,7 @@
         <column name="DB_ID"/>
       </field>
       <field name="partitionKeys" table="PARTITION_KEYS" >
+        <foreign-key name="PARTITION_KEYS_FK1" delete-action="cascade"/>
         <collection element-type="MFieldSchema"/>
         <join>
           <primary-key name="PARTITION_KEY_PK">
@@ -207,6 +213,7 @@
         <column name="RETENTION" jdbc-type="integer"/>
       </field>
       <field name="parameters" table="TABLE_PARAMS">
+        <foreign-key name="TABLE_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="TBL_ID"/>
@@ -254,6 +261,8 @@
         <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
       <field name="tables" table="MV_TABLES_USED">
+        <foreign-key name="MV_TABLES_USED_FK1" delete-action="cascade"/>
+        <foreign-key name="MV_TABLES_USED_FK2" delete-action="cascade"/>
         <collection element-type="MTable"/>
         <join>
           <column name="MV_CREATION_METADATA_ID"/>
@@ -315,6 +324,7 @@
         <column name="SLIB" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="parameters" table="SERDE_PARAMS">
+        <foreign-key name="SERDE_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="SERDE_ID"/>
@@ -354,6 +364,7 @@
         <column name="CD_ID"/>
       </datastore-identity>
       <field name="cols" persistence-modifier="persistent" table="COLUMNS_V2">
+        <foreign-key name="COLUMNS_V2_FK1" delete-action="cascade"/>
         <collection element-type="MFieldSchema" dependent-element="true" />
         <join>
           <primary-key name="SQL110922153006740">
@@ -392,6 +403,8 @@
    </class>
 
     <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
+      <foreign-key name="SDS_FK1" delete-action="cascade"/>
+      <foreign-key name="SDS_FK2" delete-action="cascade"/>
       <datastore-identity>
         <column name="SD_ID"/>
       </datastore-identity>
@@ -420,6 +433,7 @@
         <column name="SERDE_ID"/>
       </field>
       <field name="bucketCols" table="BUCKETING_COLS">
+        <foreign-key name="BUCKETING_COLS_FK1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -427,6 +441,7 @@
         <element column="BUCKET_COL_NAME"/>
       </field>
       <field name="sortCols" table="SORT_COLS">
+        <foreign-key name="SORT_COLS_FK1" delete-action="cascade"/>
         <collection element-type="MOrder"/>
         <join>
           <column name="SD_ID"/>
@@ -443,6 +458,7 @@
         </element>
       </field>
       <field name="parameters" table="SD_PARAMS">
+        <foreign-key name="SD_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -455,6 +471,7 @@
         </value>
       </field>
       <field name="skewedColNames" table="SKEWED_COL_NAMES">
+        <foreign-key name="SKEWED_COL_NAMES_FK1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -462,10 +479,14 @@
         <element column="SKEWED_COL_NAME"/>
       </field>
       <field name="skewedColValues" table="SKEWED_VALUES">
+        <foreign-key name="SKEWED_VALUES_FK1" delete-action="cascade"/>
+        <foreign-key name="SKEWED_VALUES_FK2" delete-action="cascade"/>
         <collection element-type="MStringList"/>
         <join/>
       </field>
       <field name="skewedColValueLocationMaps" table="SKEWED_COL_VALUE_LOC_MAP">
+        <foreign-key name="SKEWED_COL_VALUE_LOC_MAP_FK1" delete-action="cascade"/>
+        <foreign-key name="SKEWED_COL_VALUE_LOC_MAP_FK2" delete-action="cascade"/>
         <map key-type="MStringList" value-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -477,6 +498,8 @@
     </class>
 
     <class name="MPartition" table="PARTITIONS" identity-type="datastore" detachable="true">
+      <foreign-key name="PARTITIONS_FK1" delete-action="cascade"/>
+      <foreign-key name="PARTITIONS_FK2" delete-action="cascade"/>
       <index name="UniquePartition" unique="true">
         <column name="PART_NAME"/>
         <column name="TBL_ID"/>
@@ -497,6 +520,7 @@
         <column name="LAST_ACCESS_TIME" jdbc-type="integer"/>
       </field>
       <field name="values" table="PARTITION_KEY_VALS">
+        <foreign-key name="PARTITION_KEY_VALS_FK1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="PART_ID"/>
@@ -508,6 +532,7 @@
       </field>
       <field name="parameters" table="PARTITION_PARAMS">
         <map key-type="java.lang.String" value-type="java.lang.String"/>
+        <foreign-key name="PARTITION_PARAMS_FK1" delete-action="cascade"/>
         <join>
           <column name="PART_ID"/>
         </join>
@@ -524,6 +549,9 @@
     </class>
     
     <class name="MIndex" table="IDXS" identity-type="datastore" detachable="true">
+      <foreign-key name="IDXS_FK1" delete-action="cascade"/>
+      <foreign-key name="IDXS_FK2" delete-action="cascade"/>
+      <foreign-key name="IDXS_FK3" delete-action="cascade"/>
       <index name="UniqueINDEX" unique="true">
         <column name="INDEX_NAME"/>
         <column name="ORIG_TBL_ID"/>
@@ -557,6 +585,7 @@
         <column name="SD_ID"/>
       </field>
       <field name="parameters" table="INDEX_PARAMS">
+        <foreign-key name="INDEX_PARAMS_FK1" delete-action="cascade"/>
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>
           <column name="INDEX_ID"/>
@@ -593,6 +622,7 @@
     </class>
 
     <class name="MRoleMap" table="ROLE_MAP" identity-type="datastore" detachable="true">
+      <foreign-key name="ROLE_MAP_FK1" delete-action="cascade"/>
       <index name="UserRoleMapINDEX" unique="true">
         <column name="PRINCIPAL_NAME"/>
         <column name="ROLE_ID"/>
@@ -669,6 +699,7 @@
     </class>
 
     <class name="MDBPrivilege" table="DB_PRIVS" identity-type="datastore" detachable="true">
+      <foreign-key name="DB_PRIVS_FK1" delete-action="cascade"/>
       
       <index name="DBPrivilegeIndex" unique="true">
         <column name="AUTHORIZER"/>
@@ -714,6 +745,7 @@
     </class>
 
     <class name="MTablePrivilege" table="TBL_PRIVS" identity-type="datastore" detachable="true">
+      <foreign-key name="TBL_PRIVS_FK1" delete-action="cascade"/>
     
       <index name="TablePrivilegeIndex" unique="false">
         <column name="AUTHORIZER"/>
@@ -759,6 +791,7 @@
     </class>
 
     <class name="MPartitionPrivilege" table="PART_PRIVS" identity-type="datastore" detachable="true">
+      <foreign-key name="PART_PRIVS_FK1" delete-action="cascade"/>
     
       <index name="PartPrivilegeIndex" unique="false">
         <column name="AUTHORIZER"/>
@@ -804,6 +837,7 @@
     </class>
 
     <class name="MTableColumnPrivilege" table="TBL_COL_PRIVS" identity-type="datastore" detachable="true">
+     <foreign-key name="TBL_COL_PRIVS_FK1" delete-action="cascade"/>
     
      <index name="TableColumnPrivilegeIndex" unique="false">
         <column name="AUTHORIZER"/>
@@ -853,6 +887,7 @@
     </class>
 
     <class name="MPartitionColumnPrivilege" table="PART_COL_PRIVS" identity-type="datastore" detachable="true">
+     <foreign-key name="PART_COL_PRIVS_FK1" delete-action="cascade"/>
     
      <index name="PartitionColumnPrivilegeIndex" unique="false">
         <column name="AUTHORIZER"/>
@@ -957,6 +992,7 @@
     </class>    
 
     <class name="MTableColumnStatistics" table="TAB_COL_STATS" identity-type="datastore" detachable="true">
+      <foreign-key name="TAB_COL_STATS_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="CS_ID"/>
       </datastore-identity>
@@ -1027,6 +1063,7 @@
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
+      <foreign-key name="PART_COL_STATS_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="CS_ID"/>
       </datastore-identity>
@@ -1133,6 +1170,7 @@
     </class>
 
     <class name="MFunction" table="FUNCS" identity-type="datastore" detachable="true">
+      <foreign-key name="FUNCS_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="FUNC_ID"/>
       </datastore-identity>
@@ -1162,6 +1200,7 @@
         <column name="CREATE_TIME" jdbc-type="integer"/>
       </field>
       <field name="resourceUris" table="FUNC_RU">
+        <foreign-key name="FUNC_RU_FK1" delete-action="cascade"/>
         <collection element-type="MResourceUri"/>
         <join>
           <column name="FUNC_ID"/>
@@ -1257,6 +1296,7 @@
     </class>
 
     <class name="MWMResourcePlan" identity-type="datastore" table="WM_RESOURCEPLAN" detachable="true">
+      <foreign-key name="WM_RESOURCEPLAN_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="RP_ID"/>
       </datastore-identity>
@@ -1292,6 +1332,7 @@
     </class>
 
     <class name="MWMPool" identity-type="datastore" table="WM_POOL" detachable="true">
+      <foreign-key name="WM_POOL_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="POOL_ID"/>
       </datastore-identity>
@@ -1311,6 +1352,8 @@
         <column name="SCHEDULING_POLICY" jdbc-type="string" allows-null="true"/>
       </field>
       <field name="triggers" table="WM_POOL_TO_TRIGGER">
+        <foreign-key name="WM_POOL_TO_TRIGGER_FK1" delete-action="cascade"/>
+        <foreign-key name="WM_POOL_TO_TRIGGER_FK" delete-action="cascade"/>
         <collection element-type="MWMTrigger" />
         <join>
           <column name="POOL_ID" />
@@ -1326,6 +1369,7 @@
     </class>
 
     <class name="MWMTrigger" identity-type="datastore" table="WM_TRIGGER" detachable="true">
+      <foreign-key name="WM_TRIGGER_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="TRIGGER_ID"/>
       </datastore-identity>
@@ -1354,6 +1398,8 @@
     </class>
 
     <class name="MWMMapping" identity-type="datastore" table="WM_MAPPING" detachable="true">
+      <foreign-key name="WM_MAPPING_FK1" delete-action="cascade"/>
+      <foreign-key name="WM_MAPPING_FK2" delete-action="cascade"/>
       <datastore-identity>
         <column name="MAPPING_ID"/>
       </datastore-identity>
@@ -1559,6 +1605,7 @@
     </class>
 
     <class name="MStoredProc" table="STORED_PROCS" identity-type="datastore" detachable="true">
+      <foreign-key name="STOREDPROC_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="SP_ID"/>
       </datastore-identity>
@@ -1583,6 +1630,7 @@
       </index>
     </class>
     <class name="MPackage" table="PACKAGES" identity-type="datastore" detachable="true">
+      <foreign-key name="PACKAGES_FK1" delete-action="cascade"/>
       <datastore-identity>
         <column name="PKG_ID"/>
       </datastore-identity>
@@ -1632,6 +1680,7 @@
          <column name="CREATE_TIME" jdbc-type="integer" allows-null="false"/>
        </field>
        <field name="parameters" table="DATACONNECTOR_PARAMS">
+         <foreign-key name="DATACONNECTOR_NAME_FK1" delete-action="cascade"/>
          <map key-type="java.lang.String" value-type="java.lang.String"/>
           <join>
             <column name="NAME"/>
