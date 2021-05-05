@@ -5884,13 +5884,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public SQLAllTableConstraints getTableConstraints(String dbName, String tblName, long tableId)
       throws HiveException, NoSuchObjectException {
     try {
-
-      ValidWriteIdList validWriteIdList = null;
-      long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
-      if (txnId > 0) {
-        validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
-      }
-
+      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
       AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
       request.setTableId(tableId);
       request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
@@ -5909,11 +5903,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     try {
 
-      ValidWriteIdList validWriteIdList = null;
-      long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
-      if (txnId > 0) {
-        validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
-      }
+      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName,tblName);
       AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
       request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
       request.setTableId(tableId);
