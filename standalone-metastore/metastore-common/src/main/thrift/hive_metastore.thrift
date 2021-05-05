@@ -754,7 +754,7 @@ struct AllTableConstraintsRequest {
   2: required string tblName,
   3: required string catName,
   4: optional string validWriteIdList,
-  5: optional i64 tableId=-1 // table id
+  5: optional i64 tableId=-1
 }
 
 struct AllTableConstraintsResponse {

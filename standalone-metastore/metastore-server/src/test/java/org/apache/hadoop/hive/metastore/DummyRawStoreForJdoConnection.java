@@ -1123,7 +1123,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest tableConstraintsRequest)
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException {
     return null;
   }

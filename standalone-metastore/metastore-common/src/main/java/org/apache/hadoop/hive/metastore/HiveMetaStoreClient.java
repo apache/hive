@@ -1241,7 +1241,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     boolean success = false;
     try {
       // Subclasses can override this step (for example, for temporary tables)
-       create_table_with_environment_context(tbl, envContext);
+      create_table_with_environment_context(tbl, envContext);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }

@@ -1583,8 +1583,9 @@ public interface RawStore extends Configurable {
       throws MetaException;
 
   /**
-   * Get the primary associated with a table.  Strangely enough each SQLPrimaryKey is actually a
-   * column in they key, not the key itself.  Thus the list.
+   * SQLPrimaryKey represents a single primary key column.
+   * Since a table can have one or more primary keys ( in case of composite primary key ),
+   * this method returns List<SQLPrimaryKey>
    * @param request primary key request
    * @return list of primary key columns or an empty list if the table does not have a primary key
    * @throws MetaException error accessing the RDBMS
@@ -1611,8 +1612,9 @@ public interface RawStore extends Configurable {
     throws MetaException;
 
   /**
-   * Get the foreign keys for a table.  All foreign keys for a particular table can be fetched by
-   * passing null for the last two arguments.
+   * SQLForeignKey represents a single foreign key column.
+   * Since a table can have one or more foreign keys ( in case of composite foreign key ),
+   * this method returns List<SQLForeignKey>
    * @param request ForeignKeysRequest object
    * @return List of all matching foreign key columns.  Note that if more than one foreign key
    * matches the arguments the results here will be all mixed together into a single list.
@@ -1634,7 +1636,9 @@ public interface RawStore extends Configurable {
     String tbl_name) throws MetaException;
 
   /**
-   * Get unique constraints associated with a table.
+   * SQLUniqueConstraint represents a single unique constraint column.
+   * Since a table can have one or more unique constraint ( in case of composite unique constraint ),
+   * this method returns List<SQLUniqueConstraint>
    * @param request UniqueConstraintsRequest object.
    * @return list of unique constraints
    * @throws MetaException error access the RDBMS.
@@ -1654,7 +1658,9 @@ public interface RawStore extends Configurable {
     String tbl_name) throws MetaException;
 
   /**
-   * Get not null constraints on a table.
+   * SQLNotNullConstraint represents a single not null constraint column.
+   * Since a table can have one or more not null constraint ( in case of composite not null constraint ),
+   * this method returns List<SQLNotNullConstraint>
    * @param request NotNullConstraintsRequest object.
    * @return list of not null constraints
    * @throws MetaException error accessing the RDBMS.
@@ -1674,7 +1680,9 @@ public interface RawStore extends Configurable {
                                                    String tbl_name) throws MetaException;
 
   /**
-   * Get default values for columns in a table.
+   * SQLDefaultConstraint represents a single default constraint column.
+   * Since a table can have one or more default constraint ( in case of composite default constraint ),
+   * this method returns List<SQLDefaultConstraint>
    * @param request DefaultConstraintsRequest object.
    * @return list of default values defined on the table.
    * @throws MetaException error accessing the RDBMS
@@ -1694,7 +1702,9 @@ public interface RawStore extends Configurable {
                                                    String tbl_name) throws MetaException;
 
   /**
-   * Get check constraints for columns in a table.
+   * SQLCheckConstraint represents a single check constraint column.
+   * Since a table can have one or more check constraint ( in case of composite check constraint ),
+   * this method returns List<SQLCheckConstraint>
    * @param request CheckConstraintsRequest object.
    * @return ccheck constraints for this table
    * @throws MetaException error accessing the RDBMS
@@ -1714,13 +1724,13 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException;
 
   /**
-   * Get all constraints of the table
-   * @param tableConstraintsRequest request object
+   * Get table constraints
+   * @param request AllTableConstraintsRequest object
    * @return all constraints for this table
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest tableConstraintsRequest)
+  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException;
 
   /**

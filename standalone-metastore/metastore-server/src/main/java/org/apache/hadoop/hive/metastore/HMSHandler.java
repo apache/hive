@@ -9289,8 +9289,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request) throws TException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startTableFunction("get_primary_keys", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLPrimaryKey> ret = null;
     Exception ex = null;
@@ -9307,8 +9306,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request) throws TException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startFunction("get_foreign_keys",
         " : parentdb=" + request.getParent_db_name() + " parenttbl=" + request.getParent_tbl_name() + " foreigndb="
             + request.getForeign_db_name() + " foreigntbl=" + request.getForeign_tbl_name());
@@ -9327,8 +9325,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request) throws TException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startTableFunction("get_unique_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLUniqueConstraint> ret = null;
     Exception ex = null;
@@ -9345,8 +9342,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request) throws TException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startTableFunction("get_not_null_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLNotNullConstraint> ret = null;
     Exception ex = null;
@@ -9363,8 +9359,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request) throws TException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startTableFunction("get_default_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLDefaultConstraint> ret = null;
     Exception ex = null;
@@ -9381,8 +9376,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request) throws TException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startTableFunction("get_check_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLCheckConstraint> ret = null;
     Exception ex = null;
@@ -9406,8 +9400,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request)
       throws TException, MetaException, NoSuchObjectException {
-    if (!request.isSetCatName())
-      request.setCatName(getDefaultCatalog(conf));
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
     startTableFunction("get_all_table_constraints", request.getCatName(), request.getDbName(), request.getTblName());
     SQLAllTableConstraints ret = null;
     Exception ex = null;

@@ -2780,13 +2780,13 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest tableConstraintsRequest)
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException {
-    String catName = StringUtils.normalizeIdentifier(tableConstraintsRequest.getCatName());
-    String dbName = StringUtils.normalizeIdentifier(tableConstraintsRequest.getDbName());
-    String tblName = StringUtils.normalizeIdentifier(tableConstraintsRequest.getTblName());
+    String catName = StringUtils.normalizeIdentifier(request.getCatName());
+    String dbName = StringUtils.normalizeIdentifier(request.getDbName());
+    String tblName = StringUtils.normalizeIdentifier(request.getTblName());
     if (shouldGetConstraintFromRawStore(catName, dbName, tblName)) {
-      return rawStore.getAllTableConstraints(tableConstraintsRequest);
+      return rawStore.getAllTableConstraints(request);
     }
     return sharedCache.listCachedAllTableConstraints(catName, dbName, tblName);
   }

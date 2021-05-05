@@ -12052,17 +12052,17 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Api to fetch all constraints at once
-   * @param tableConstraintsRequest request object
+   * @param request request object
    * @return all table constraints
    * @throws MetaException
    * @throws NoSuchObjectException
    */
   @Override
-  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest tableConstraintsRequest)
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException {
-    String catName = tableConstraintsRequest.getCatName();
-    String dbName = tableConstraintsRequest.getDbName();
-    String tblName = tableConstraintsRequest.getTblName();
+    String catName = request.getCatName();
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
     debugLog("Get all table constraints for the table - " + catName + "." + dbName + "." + tblName
         + " in class ObjectStore.java");
     SQLAllTableConstraints sqlAllTableConstraints = new SQLAllTableConstraints();
