@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  *
@@ -536,7 +537,7 @@ public class DataWritableWriter {
         Long int64value = ParquetTimestampUtils.getInt64(ts, timeUnit);
         recordConsumer.addLong(int64value);
       } else {
-        recordConsumer.addBinary(NanoTimeUtils.getNanoTime(ts, false).toBinary());
+        recordConsumer.addBinary(NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId()).toBinary());
       }
     }
 

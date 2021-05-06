@@ -50,28 +50,11 @@ public class NanoTimeUtils {
     return parquetGMTCalendar.get();
   }
 
-  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
-    return getNanoTime(ts, skipConversion, null);
-  }
-
   /**
-   * Gets a NanoTime object, which represents timestamps as nanoseconds since epoch, from a
-   * Timestamp object. Parquet will store this NanoTime object as int96.
-   *
-   * If skipConversion flag is on, the timestamp will be converted to NanoTime as-is, i.e.
-   * timeZoneId argument will be ignored.
-   * If skipConversion is off, timestamp can be converted from a given time zone (timeZoneId) to UTC
-   * if timeZoneId is present, and if not present: from system time zone to UTC, before being
-   * converted to NanoTime.
-   * (See TimestampDataWriter#write for current Hive writing procedure.)
+   * Converts a timestamp from the specified timezone to UTC and returns its representation in NanoTime.
    */
-  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion, ZoneId timeZoneId) {
-    if (skipConversion) {
-      timeZoneId = ZoneOffset.UTC;
-    } else if (timeZoneId == null) {
-      timeZoneId = TimeZone.getDefault().toZoneId();
-    }
-    ts = TimestampTZUtil.convertTimestampToZone(ts, timeZoneId, ZoneOffset.UTC);
+  public static NanoTime getNanoTime(Timestamp ts, ZoneId sourceZone) {
+    ts = TimestampTZUtil.convertTimestampToZone(ts, sourceZone, ZoneOffset.UTC);
 
     Calendar calendar = getGMTCalendar();
     calendar.setTimeInMillis(ts.toEpochMilli());
