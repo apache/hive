@@ -57,7 +57,7 @@ public class TestParquetTimestampUtils {
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(nt.getJulianDay(), 2440000);
 
-    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, false);
+    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(tsFetched, ts);
 
     //check if 30 Julian Days between Jan 1, 2005 and Jan 31, 2005.
@@ -72,7 +72,7 @@ public class TestParquetTimestampUtils {
     Timestamp ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, TimeZone.getDefault().toZoneId());
 
-    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
+    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts1Fetched, ts1);
 
     GregorianCalendar cal2 = new GregorianCalendar();
@@ -86,7 +86,7 @@ public class TestParquetTimestampUtils {
     Timestamp ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, TimeZone.getDefault().toZoneId());
 
-    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
+    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts2Fetched, ts2);
     Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 30);
 
@@ -104,7 +104,7 @@ public class TestParquetTimestampUtils {
     ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
     nt1 = NanoTimeUtils.getNanoTime(ts1, TimeZone.getDefault().toZoneId());
 
-    ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
+    ts1Fetched = NanoTimeUtils.getTimestamp(nt1, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts1Fetched, ts1);
 
     cal2 = new GregorianCalendar();
@@ -118,7 +118,7 @@ public class TestParquetTimestampUtils {
     ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
     nt2 = NanoTimeUtils.getNanoTime(ts2, TimeZone.getDefault().toZoneId());
 
-    ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
+    ts2Fetched = NanoTimeUtils.getTimestamp(nt2, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts2Fetched, ts2);
     Assert.assertEquals(730517, nt2.getJulianDay() - nt1.getJulianDay());
 
@@ -188,9 +188,9 @@ public class TestParquetTimestampUtils {
     Assert.assertEquals(n2.getTimeOfDayNanos() - n1.getTimeOfDayNanos(), 600000000009L);
 
     NanoTime n3 = new NanoTime(n1.getJulianDay() - 1, n1.getTimeOfDayNanos() + TimeUnit.DAYS.toNanos(1));
-    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT, false));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, GMT, false));
     n3 = new NanoTime(n1.getJulianDay() + 3, n1.getTimeOfDayNanos() - TimeUnit.DAYS.toNanos(3));
-    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT, false));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, GMT, false));
   }
 
   @Test
@@ -237,14 +237,14 @@ public class TestParquetTimestampUtils {
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, ZoneOffset.UTC);
     Assert.assertEquals(nt1.getJulianDay(), 2455563);
     Assert.assertEquals(nt1.getTimeOfDayNanos(), 1830111111111L);
-    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, true);
+    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, ZoneOffset.UTC);
     Assert.assertEquals(ts1Fetched.toString(), ts1.toString());
 
     Timestamp ts2 = Timestamp.valueOf("2011-02-02 08:30:30.222222222");
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, ZoneOffset.UTC);
     Assert.assertEquals(nt2.getJulianDay(), 2455595);
     Assert.assertEquals(nt2.getTimeOfDayNanos(), 30630222222222L);
-    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, true);
+    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, ZoneOffset.UTC);
     Assert.assertEquals(ts2Fetched.toString(), ts2.toString());
   }
 
@@ -281,7 +281,8 @@ public class TestParquetTimestampUtils {
     Timestamp ts = Timestamp.valueOf(tsString);
     ZoneId sourceZone = local ? ZoneOffset.UTC : TimeZone.getDefault().toZoneId(); 
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, sourceZone);
-    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, local);
+    ZoneId targetZone = local ? ZoneOffset.UTC : TimeZone.getDefault().toZoneId();
+    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, targetZone);
     Assert.assertEquals(tsString, tsFetched.toString());
   }
 

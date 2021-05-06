@@ -78,32 +78,17 @@ public class NanoTimeUtils {
     return new NanoTime(days, nanosOfDay);
   }
 
-  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
-    return getTimestamp(nt, skipConversion, null, false);
+  public static Timestamp getTimestamp(NanoTime nt, ZoneId targetZone) {
+    return getTimestamp(nt, targetZone, false);
   }
 
   /**
-   * Gets a Timestamp object from a NanoTime object, which represents timestamps as nanoseconds
-   * since epoch. Parquet stores these as int96.
+   * Converts a nanotime representation in UTC, to a timestamp in the specified timezone.
    *
-   * Before converting to NanoTime, we may convert the timestamp to a desired time zone
-   * (timeZoneId). This will only happen if skipConversion flag is off.
-   * If skipConversion is off and timeZoneId is not found, then convert the timestamp to system
-   * time zone.
-   *
-   * For skipConversion to be true it must be set in conf AND the parquet file must NOT be written
-   * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
+   * @param legacyConversion when true the conversion to the target timezone is done with legacy (backwards compatible)
+   * method.
    */
-  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId,
-      boolean legacyConversionEnabled) {
-    boolean legacyConversion = false;
-    if (skipConversion) {
-      timeZoneId = ZoneOffset.UTC;
-    } else if (timeZoneId == null) {
-      legacyConversion = legacyConversionEnabled;
-      timeZoneId = TimeZone.getDefault().toZoneId();
-    }
-
+  public static Timestamp getTimestamp(NanoTime nt, ZoneId targetZone, boolean legacyConversion) {
     int julianDay = nt.getJulianDay();
     long nanosOfDay = nt.getTimeOfDayNanos();
 
@@ -134,7 +119,7 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId, legacyConversion);
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion);
     return ts;
   }
 }

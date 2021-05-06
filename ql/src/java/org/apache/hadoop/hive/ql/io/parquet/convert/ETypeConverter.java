@@ -16,10 +16,14 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
 
+import com.google.common.base.MoreObjects;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -701,8 +705,9 @@ public enum ETypeConverter {
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
           boolean legacyConversion = Boolean.parseBoolean(
               metadata.get(ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname));
-          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion,
-              DataWritableReadSupport.getWriterTimeZoneId(metadata), legacyConversion);
+          ZoneId targetZone = skipConversion ? ZoneOffset.UTC : MoreObjects
+              .firstNonNull(DataWritableReadSupport.getWriterTimeZoneId(metadata), TimeZone.getDefault().toZoneId());
+          Timestamp ts = NanoTimeUtils.getTimestamp(nt, targetZone, legacyConversion);
           return new TimestampWritableV2(ts);
         }
       };
