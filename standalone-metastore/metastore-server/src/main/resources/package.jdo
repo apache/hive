@@ -461,7 +461,6 @@
         </value>
       </field>
       <field name="skewedColNames" table="SKEWED_COL_NAMES">
-        <foreign-key name="SKEWED_COL_NAMES_FK1" delete-action="cascade"/>
         <collection element-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
@@ -469,12 +468,10 @@
         <element column="SKEWED_COL_NAME"/>
       </field>
       <field name="skewedColValues" table="SKEWED_VALUES">
-        <foreign-key name="SKEWED_VALUES_FK1" delete-action="cascade"/>
         <collection element-type="MStringList"/>
         <join/>
       </field>
       <field name="skewedColValueLocationMaps" table="SKEWED_COL_VALUE_LOC_MAP">
-        <foreign-key name="SKEWED_COL_VALUE_LOC_MAP_FK1" delete-action="cascade"/>
         <map key-type="MStringList" value-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
