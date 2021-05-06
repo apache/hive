@@ -53,8 +53,9 @@ public class OperationLog {
   // True if we are running test and the extra test file should be used when the logs are
   // requested.
   private final boolean isShortLogs;
-
-  protected boolean isRemoveLogs;
+  // True if the logs should be removed after the operation. Should be used only in test mode
+  // or the historic log is enabled
+  private final boolean isRemoveLogs;
 
   private final LoggingLevel opLoggingLevel;
 
@@ -73,10 +74,10 @@ public class OperationLog {
       opLoggingLevel = LoggingLevel.UNKNOWN;
     }
 
+    isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS);
     // If in test mod create a test log file which will contain only logs which are supposed to
     // be written to the qtest output
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
-      isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS);
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_SHORT_LOGS)) {
         testLogFile = new LogFile(new File(file.getAbsolutePath() + ".test"));
         isShortLogs = true;
@@ -87,7 +88,6 @@ public class OperationLog {
     } else {
       testLogFile = null;
       isShortLogs = false;
-      isRemoveLogs = true;
     }
   }
 

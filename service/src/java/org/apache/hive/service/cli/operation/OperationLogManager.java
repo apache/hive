@@ -40,11 +40,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.session.HistoricOperationLog;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.HiveSessionImpl;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -147,15 +145,14 @@ public class OperationLogManager {
     File operationLogFile = new File(parentFile, queryState.getQueryId());
     OperationLog operationLog;
     if (isHistoricLogEnabled) {
-      operationLog = new HistoricOperationLog(opHandle.toString(), operationLogFile, queryState.getConf());
       // dynamically setting the log location to route the operation log
       HiveConf.setVar(queryState.getConf(),
           HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION, HISTORIC_OPERATION_LOG_ROOT_DIR);
+      HiveConf.setBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS, false);
       LOG.info("The operation log location changes from {} to {}.", new File(session.getOperationLogSessionDir(),
           queryState.getQueryId()), operationLogFile);
-    } else {
-      operationLog = new OperationLog(opHandle.toString(), operationLogFile, queryState.getConf());
     }
+    operationLog = new OperationLog(opHandle.toString(), operationLogFile, queryState.getConf());
     return operationLog;
   }
 
