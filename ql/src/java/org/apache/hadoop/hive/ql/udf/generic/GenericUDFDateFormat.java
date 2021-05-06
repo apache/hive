@@ -80,7 +80,7 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (fmtStr != null) {
         try {
           formatter = new SimpleDateFormat(fmtStr);
-          formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
+          formatter.setCalendar(DateTimeMath.getTimeZonedProlepticGregorianCalendar());
         } catch (IllegalArgumentException e) {
           // ignore
         }
