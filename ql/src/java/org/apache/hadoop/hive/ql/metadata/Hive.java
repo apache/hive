@@ -347,6 +347,13 @@ public class Hive {
     return getInternal(c, false, true, doRegisterAllFns);
   }
 
+  /**
+   * Same as {@link #get(HiveConf)}, except that it does not register all functions.
+   */
+  public static Hive getWithoutRegisterFns(HiveConf c) throws HiveException {
+    return getInternal(c, false, false, false);
+  }
+
   private static Hive getInternal(HiveConf c, boolean needsRefresh, boolean isFastCheck,
       boolean doRegisterAllFns) throws HiveException {
     Hive db = hiveDB.get();
