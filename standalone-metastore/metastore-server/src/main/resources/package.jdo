@@ -393,6 +393,7 @@
    </class>
 
     <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
+
       <foreign-key name="SDS_FK1" delete-action="cascade"/>
       <foreign-key name="SDS_FK2" delete-action="cascade"/>
       <datastore-identity>
