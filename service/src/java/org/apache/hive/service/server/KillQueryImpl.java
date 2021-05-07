@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.KillQuery;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -94,6 +95,43 @@ public class KillQueryImpl implements KillQuery {
       throw new RuntimeException("Exception occurred while killing child job(s)", ye);
     }
   }
+
+  private static boolean isAdmin() {
+    boolean isAdmin = false;
+    SessionState ss = SessionState.get();
+    if (!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      // If authorization is disabled, hs2 process owner should have kill privileges
+      try {
+        return StringUtils.equals(ss.getUserName(), UserGroupInformation.getCurrentUser().getShortUserName());
+      } catch (IOException e) {
+        LOG.warn("Unable to check for admin privileges", e);
+        return false;
+      }
+    }
+    if (ss.getAuthorizerV2() != null) {
+      try {
+        ss.getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY, new ArrayList<>(), new ArrayList<>(),
+            new HiveAuthzContext.Builder().build());
+        isAdmin = true;
+      } catch (Exception e) {
+        LOG.warn("Error while checking privileges", e);
+      }
+    }
+    return isAdmin;
+  }
+
+  private boolean cancelOperation(Operation operation, boolean isAdmin, String errMsg) throws
+          HiveSQLException {
+    if (isAdmin || operation.getParentSession().getUserName().equals(SessionState.get()
+            .getAuthenticator().getUserName())) {
+      OperationHandle handle = operation.getHandle();
+      operationManager.cancelOperation(handle, errMsg);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 
   @Override
   public void killQuery(String queryId, String errMsg, HiveConf conf) throws HiveException {
