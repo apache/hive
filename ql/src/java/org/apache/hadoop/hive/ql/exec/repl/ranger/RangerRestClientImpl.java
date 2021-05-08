@@ -420,8 +420,8 @@ public class RangerRestClientImpl implements RangerRestClient {
   }
 
   @Override
-  public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                            String sourceDb, String targetDb) throws SemanticException {
+  public RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName,
+                                                   String sourceDb, String targetDb) throws SemanticException {
     if (StringUtils.isEmpty(rangerServiceName)) {
       throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Ranger Service " +
         "Name cannot be empty", ReplUtils.REPL_RANGER_SERVICE));
@@ -444,8 +444,7 @@ public class RangerRestClientImpl implements RangerRestClient {
     List<RangerPolicy.RangerPolicyItemAccess> denyExceptionsPolicyItemAccesses = new ArrayList<RangerPolicy.
         RangerPolicyItemAccess>();
 
-    resourceNameList.add(sourceDb);
-    resourceNameList.add("dummy");
+    resourceNameList.add(targetDb);
     rangerPolicyResource.setValues(resourceNameList);
     RangerPolicy.RangerPolicyResource rangerPolicyResourceColumn =new RangerPolicy.RangerPolicyResource();
     rangerPolicyResourceColumn.setValues(new ArrayList<String>(){{add("*"); }});
@@ -480,10 +479,8 @@ public class RangerRestClientImpl implements RangerRestClient {
     denyExceptionsPolicyItem.setUsers(denyExceptionsPolicyItemsUsers);
     denyRangerPolicy.setDenyExceptions(denyExceptionsItemsForBeaconUser);
 
-    rangerPolicies.add(denyRangerPolicy);
-    return rangerPolicies;
+    return denyRangerPolicy;
   }
-
 
   private WebResource.Builder getRangerResourceBuilder(String url, HiveConf hiveConf) {
     Client client = getRangerClient(hiveConf);

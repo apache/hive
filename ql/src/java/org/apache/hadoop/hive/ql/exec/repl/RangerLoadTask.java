@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
 /**
  * RangerLoadTask.
  *
@@ -127,13 +126,8 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         LOG.info("There are no ranger policies to import");
         rangerPolicies = new ArrayList<>();
       }
-      List<RangerPolicy> rangerPoliciesWithDenyPolicy = rangerPolicies;
-      if (conf.getBoolVar(REPL_RANGER_ADD_DENY_POLICY_TARGET)) {
-        rangerPoliciesWithDenyPolicy = rangerRestClient.addDenyPolicies(rangerPolicies,
-          rangerHiveServiceName, work.getSourceDbName(), work.getTargetDbName());
-      }
 
-      List<RangerPolicy> updatedRangerPolicies = rangerRestClient.changeDataSet(rangerPoliciesWithDenyPolicy,
+      List<RangerPolicy> updatedRangerPolicies = rangerRestClient.changeDataSet(rangerPolicies,
           work.getSourceDbName(), work.getTargetDbName());
 
       long importCount = 0;

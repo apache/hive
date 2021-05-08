@@ -102,6 +102,7 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
                   UserGroupInformation.getCurrentUser().getUserName());
           put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
+          put(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET.varname, "false");
         }}, "test_key123");
 
     List<String> dumpWithClause = Arrays.asList(
