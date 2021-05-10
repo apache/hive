@@ -112,7 +112,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1720 Basic stats: COMPLETE Column stats: PARTIAL
@@ -216,7 +216,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1720 Basic stats: COMPLETE Column stats: PARTIAL
@@ -416,7 +416,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1720 Basic stats: COMPLETE Column stats: PARTIAL
@@ -520,7 +520,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1720 Basic stats: COMPLETE Column stats: PARTIAL
@@ -729,7 +729,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
@@ -838,7 +838,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 800 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 10 Data size: 3480 Basic stats: COMPLETE Column stats: PARTIAL
@@ -984,7 +984,7 @@ STAGE PLANS:
                       Statistics: Num rows: 14 Data size: 3696 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 14 Data size: 3696 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1191,7 +1191,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1652,7 +1652,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL

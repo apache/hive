@@ -6868,12 +6868,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isCompaction = AcidUtils.isCompactionTable(dest_tab.getParameters());
     }
 
+    StringBuilder order = new StringBuilder();
+    StringBuilder nullOrder = new StringBuilder();
     if (dest_tab.getNumBuckets() > 0 && !dest_tab.getBucketCols().isEmpty()) {
       enforceBucketing = true;
       if (updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
         sortCols = getPartitionColsFromBucketColsForUpdateDelete(input, false);
-        sortOrders = createSortOrderForUpdateDelete(sortCols);
+        createSortOrderForUpdateDelete(sortCols, order, nullOrder);
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, false);
       }
@@ -6887,7 +6889,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dest_tab.getSortCols() != null) &&
         (dest_tab.getSortCols().size() > 0)) {
       sortCols = getSortCols(dest, qb, dest_tab, table_desc, input);
-      sortOrders = getSortOrders(dest_tab);
+      getSortOrders(dest_tab, order, nullOrder);
       if (!enforceBucketing) {
         throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
       }
@@ -6897,7 +6899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (ExprNodeDesc expr : partnCols) {
         sortCols.add(expr.clone());
       }
-      sortOrders = createSortOrderForUpdateDelete(sortCols);
+      createSortOrderForUpdateDelete(sortCols, order, nullOrder);
     }
 
     if (enforceBucketing) {
@@ -6925,12 +6927,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         maxReducers = numBuckets;
       }
 
-      StringBuilder order = new StringBuilder();
-      StringBuilder nullOrder = new StringBuilder();
-      for (int sortOrder : sortOrders) {
-        order.append(DirectionUtils.codeToSign(sortOrder));
-        nullOrder.append(NullOrdering.map(sortOrder, conf).getSign());
-      }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
           maxReducers, acidOp, isCompaction);
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
@@ -6942,13 +6938,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // SORT BY ROW__ID ASC
-  private List<Integer> createSortOrderForUpdateDelete(List<ExprNodeDesc> sortCols) {
-    List<Integer> sortOrders;
-    sortOrders = new ArrayList<>();
+  private void createSortOrderForUpdateDelete(List<ExprNodeDesc> sortCols,
+                                              StringBuilder sortOrder, StringBuilder nullSortOrder) {
+    NullOrdering defaultNullOrder = NullOrdering.defaultNullOrder(conf);
     for (int i = 0; i < sortCols.size(); i++) {
-      sortOrders.add(DirectionUtils.ASCENDING_CODE);
+      sortOrder.append(DirectionUtils.codeToSign(DirectionUtils.ASCENDING_CODE));
+      nullSortOrder.append(defaultNullOrder.getSign());
     }
-    return sortOrders;
   }
 
   private void genPartnCols(String dest, Operator input, QB qb,
@@ -8748,20 +8744,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genConvertCol(dest, qb, tableDesc, input, posns, false);
   }
 
-  private List<Integer> getSortOrders(Table tab) {
+  private void getSortOrders(Table tab, StringBuilder order, StringBuilder nullOrder) {
     List<Order> tabSortCols = tab.getSortCols();
     List<FieldSchema> tabCols = tab.getCols();
 
-    List<Integer> orders = new ArrayList<Integer>();
     for (Order sortCol : tabSortCols) {
       for (FieldSchema tabCol : tabCols) {
         if (sortCol.getCol().equals(tabCol.getName())) {
-          orders.add(sortCol.getOrder());
+          order.append(DirectionUtils.codeToSign(sortCol.getOrder()));
+          nullOrder.append(sortCol.getOrder() == DirectionUtils.ASCENDING_CODE ? 'a' : 'z');
           break;
         }
       }
     }
-    return orders;
   }
 
   private Operator genReduceSinkPlan(String dest, QB qb, Operator<?> input,
