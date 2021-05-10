@@ -411,14 +411,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 512);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 128);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 512);
-      // Overrides values from the hive/tez-site.
-      conf.setInt("hive.tez.container.size", 128);
-      conf.setInt(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezConfiguration.TEZ_TASK_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
-      conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
-      conf.setInt(TezConfiguration.TEZ_COUNTERS_MAX, 1024);
+
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
@@ -448,16 +441,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public void setupConfiguration(Configuration conf) {
       Configuration config = mr.getConfig();
-      for (Map.Entry<String, String> pair: config) {
+      for (Map.Entry<String, String> pair : config) {
         conf.set(pair.getKey(), pair.getValue());
       }
-      // Overrides values from the hive/tez-site.
-      conf.setInt("hive.tez.container.size", 128);
-      conf.setInt(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezConfiguration.TEZ_TASK_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
-      conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
       if (isLlap) {
         conf.set("hive.llap.execution.mode", "all");
       }
