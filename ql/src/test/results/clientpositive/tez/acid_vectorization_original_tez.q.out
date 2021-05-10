@@ -372,8 +372,8 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8746 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7525 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8777 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7522 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7167 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7058 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
@@ -396,10 +396,10 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8746 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8746 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7525 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7525 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8777 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8777 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7522 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7522 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7167 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7167 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7058 ### HDFS DATE ### hdfs://### HDFS PATH ###
@@ -614,7 +614,7 @@ STAGE PLANS:
                       Statistics: Num rows: 7 Data size: 2835 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 7 Data size: 2919 Basic stats: COMPLETE Column stats: COMPLETE
