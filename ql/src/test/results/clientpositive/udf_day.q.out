@@ -18,3 +18,21 @@ param can be one of:
   30
 Function class:org.apache.hadoop.hive.ql.udf.UDFDayOfMonth
 Function type:BUILTIN
+PREHOOK: query: select month('2005-01-02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select month('2005-01-02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select month('1001-01-05')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select month('1001-01-05')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
