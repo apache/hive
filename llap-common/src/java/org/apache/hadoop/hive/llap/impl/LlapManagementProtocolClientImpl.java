@@ -120,4 +120,15 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
       throw new ServiceException(e);
     }
   }
+
+  @Override
+  public LlapDaemonProtocolProtos.GetCacheContentResponseProto getCacheContent(RpcController controller,
+      final LlapDaemonProtocolProtos.GetCacheContentRequestProto request) throws ServiceException {
+    try {
+      return getProxy().getCacheContent(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
 }

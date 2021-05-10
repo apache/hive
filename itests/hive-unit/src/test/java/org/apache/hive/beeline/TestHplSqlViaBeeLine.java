@@ -151,21 +151,6 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
-  public void testDbChange() throws Throwable {
-    String SCRIPT_TEXT =
-        "DROP TABLE IF EXISTS result;\n" +
-        "CREATE TABLE result (n int);\n" +
-        "create database test_db1;\n" +
-        "create database test_db2;\n" +
-        "use test_db1; CREATE PROCEDURE f() BEGIN INSERT INTO default.result VALUES(42); END;\n" +
-        "use test_db2; CREATE PROCEDURE f() BEGIN INSERT INTO default.result VALUES(43); END;\n" +
-        "use test_db1; f();/\n" +
-        "use test_db2; f();/\n" +
-        "SELECT sum(n) FROM default.result; /\n";
-    testScriptFile(SCRIPT_TEXT, args(), "85");
-  }
-
-  @Test
   public void testPackage() throws Throwable {
     String SCRIPT_TEXT =
       "DROP TABLE IF EXISTS result;\n" +
@@ -184,6 +169,202 @@ public class TestHplSqlViaBeeLine {
       "INSERT INTO result VALUES(Counter.current());\n" +
       "SELECT * FROM result;\n";
     testScriptFile(SCRIPT_TEXT, args(), "12345");
+  }
+  
+  @Test
+  public void testUdf() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+                    "CREATE TABLE result (s string);\n" +
+                    "INSERT INTO result VALUES('alice');\n" +
+                    "INSERT INTO result VALUES('bob');\n" +
+                    "CREATE FUNCTION hello(p STRING) RETURNS STRING BEGIN RETURN 'hello ' || p; END;\n" +
+                    "SELECT hello(s) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "hello alice.*hello bob");
+  }
+
+  @Test
+    public void testDbChange() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+        "CREATE TABLE result (n int);\n" +
+        "create database test_db1;\n" +
+        "create database test_db2;\n" +
+        "use test_db1; CREATE PROCEDURE f() BEGIN INSERT INTO default.result VALUES(42); END;\n" +
+        "use test_db2; CREATE PROCEDURE f() BEGIN INSERT INTO default.result VALUES(43); END;\n" +
+        "use test_db1; f();/\n" +
+        "use test_db2; f();/\n" +
+        "SELECT sum(n) FROM default.result; /\n";
+    testScriptFile(SCRIPT_TEXT, args(), "85");
+  }
+
+  @Test
+  public void testTableSelect() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('alice', 20);\n" +
+            "TYPE t_emp IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "TYPE t_names IS TABLE OF emp.name%TYPE INDEX BY BINARY_INTEGER;\n" +
+            "TYPE t_ages IS TABLE OF emp.age%TYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE rows t_emp;\n" +
+            "DECLARE names t_names;\n" +
+            "DECLARE ages t_ages;\n" +
+            "SELECT * INTO rows(200) FROM emp WHERE name = 'alice';\n" +
+            "SELECT name, age INTO names(1), ages(1) FROM emp WHERE name = 'alice';\n" +
+            "INSERT INTO result VALUES(rows(200).name || ' is ' || rows(200).age || ' ' || names(1) || ' = ' || ages(1));\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), " alice is 20 alice = 20");
+  }
+
+  @Test
+  public void testTableTypeCustom() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string);\n" +
+            "INSERT INTO emp VALUES('bob');\n" +
+            "TYPE my_type1 IS TABLE OF STRING INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE my_table1 my_type1;\n" +
+            "DECLARE my_table2 my_type1;\n" +
+            "SELECT name INTO my_table1(100) FROM emp;\n" +
+            "my_table2(101) := 'alice';\n" +
+            "INSERT INTO result VALUES(my_table1(100) || ' ' ||  my_table2(101));\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "bob alice");
+  }
+
+  @Test
+  public void testTableIteration() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string);\n" +
+            "INSERT INTO emp VALUES('alice');\n" +
+            "INSERT INTO emp VALUES('bob');\n" +
+            "TYPE tbl_type IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE tbl tbl_type;\n" +
+            "SELECT * INTO tbl(1) FROM emp WHERE name = 'bob';\n" +
+            "SELECT * INTO tbl(2) FROM emp WHERE name = 'alice';\n" +
+            "DECLARE idx INT = tbl.FIRST;\n" +
+            "DECLARE s STRING = '';\n" +
+            "WHILE idx IS NOT NULL LOOP\n" +
+            "   DECLARE r ROW = tbl(idx);\n" +
+            "   s = s || r.name || ' ';\n" +
+            "   idx = tbl.NEXT(idx);\n" +
+            "END LOOP;\n" +
+            "INSERT INTO result VALUES(s);\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "bob alice ");
+  }
+
+  @Test
+  public void testTableRowAssignment() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('alice', 16);\n" +
+            "INSERT INTO emp VALUES('bob', 18);\n" +
+            "TYPE tbl_type IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE tbl tbl_type;\n" +
+            "DECLARE tmp tbl_type;\n" +
+            "SELECT * INTO tbl(1) FROM emp WHERE name = 'alice';\n" +
+            "SELECT * INTO tmp(1) FROM emp WHERE name = 'bob';\n" +
+            "tbl(2) := tmp(1);" +
+            "INSERT INTO result VALUES( tbl(1).name || ' ' || tbl(1).age || ' ' || tbl(2).name || ' ' || tbl(2).age );\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "alice 16 bob 18");
+  }
+
+  @Test
+  public void testBulkCollectColumns() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('alice', 20);\n" +
+            "INSERT INTO emp VALUES('bob', 30);\n" +
+            "TYPE t_names IS TABLE OF emp.name%TYPE INDEX BY BINARY_INTEGER;\n" +
+            "TYPE t_ages IS TABLE OF emp.age%TYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE names t_names;\n" +
+            "DECLARE ages  t_ages;\n" +
+            "SELECT name, age BULK COLLECT INTO names, ages FROM emp;\n" +
+            "INSERT INTO result VALUES(names(1) || ' = ' || ages(1) || ' ' || names(2) || ' = ' || ages(2));\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), " alice = 20 bob = 30");
+  }
+
+  @Test
+  public void testBulkCollectRows() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('alice', 20);\n" +
+            "INSERT INTO emp VALUES('bob', 30);\n" +
+            "TYPE t_emp IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE tbl t_emp;\n" +
+            "SELECT * BULK COLLECT INTO tbl FROM emp;\n" +
+            "INSERT INTO result VALUES(tbl(1).name || ' = ' || tbl(1).age || ' ' || tbl(2).name || ' = ' || tbl(2).age);\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), " alice = 20 bob = 30");
+  }
+
+  @Test
+  public void testBulkCollectFetch() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('alice', 20);\n" +
+            "INSERT INTO emp VALUES('bob', 30);\n" +
+            "TYPE t_rows IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE rows t_rows;\n" +
+            "DECLARE cur SYS_REFCURSOR;\n" +
+            "OPEN cur FOR SELECT * FROM emp;\n" +
+            "FETCH cur BULK COLLECT INTO rows;\n" +
+            "CLOSE cur;\n" +
+            "INSERT INTO result VALUES(rows(1).name || ' = ' || rows(1).age || ' ' || rows(2).name || ' = ' || rows(2).age);\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), " alice = 20 bob = 30");
+  }
+
+  @Test
+  public void testBulkCollectFetchLoop() throws Throwable {
+    String SCRIPT_TEXT =
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('e1', 1);\n" +
+            "INSERT INTO emp VALUES('e2', 2);\n" +
+            "INSERT INTO emp VALUES('e3', 3);\n" +
+            "INSERT INTO emp VALUES('e4', 4);\n" +
+            "INSERT INTO emp VALUES('e5', 5);\n" +
+            "INSERT INTO emp VALUES('e6', 6);\n" +
+            "TYPE t_rows IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "DECLARE batch t_rows;\n" +
+            "DECLARE cur SYS_REFCURSOR;\n" +
+            "DECLARE s STRING = '';\n" +
+            "OPEN cur FOR SELECT * FROM emp;\n" +
+            "LOOP\n" +
+            "   FETCH cur BULK COLLECT INTO batch LIMIT 2;\n" +
+            "   EXIT WHEN batch.COUNT = 0;\n" +
+            "   s = s || batch(1).name || '=' || batch(1).age || ' ' || batch(2).name || '=' || batch(2).age || ' ';\n" +
+            "END LOOP;\n" +
+            "CLOSE cur;\n" +
+            "INSERT INTO result VALUES(s);\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "e1=1 e2=2 e3=3 e4=4 e5=5 e6=6");
   }
 
   private static List<String> args() {

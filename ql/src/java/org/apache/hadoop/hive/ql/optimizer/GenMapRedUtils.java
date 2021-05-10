@@ -678,9 +678,8 @@ public final class GenMapRedUtils {
         if (p == null) {
           continue;
         }
-        String path = p.toString();
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding " + path + " of table " + alias_id);
+          LOG.debug("Adding " + p.toString() + " of table " + alias_id);
         }
 
         partDir.add(p);

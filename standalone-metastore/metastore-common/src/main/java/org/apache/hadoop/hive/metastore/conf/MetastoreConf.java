@@ -415,6 +415,10 @@ public class MetastoreConf {
         "hive.compactor.history.retention.succeeded", 3,
         new RangeValidator(0, 100), "Determines how many successful compaction records will be " +
         "retained in compaction history for a given table/partition."),
+    COMPACTOR_HISTORY_RETENTION_TIMEOUT("metastore.compactor.history.retention.timeout",
+            "hive.compactor.history.retention.timeout", 7, TimeUnit.DAYS,
+            "Determines how long failed and not initiated compaction records will be " +
+            "retained in compaction history if there is a more recent succeeded compaction on the table/partition."),
     COMPACTOR_INITIATOR_FAILED_THRESHOLD("metastore.compactor.initiator.failed.compacts.threshold",
         "hive.compactor.initiator.failed.compacts.threshold", 2,
         new RangeValidator(1, 20), "Number of consecutive compaction failures (per table/partition) " +
@@ -1031,6 +1035,10 @@ public class MetastoreConf {
     REPL_METRICS_MAX_AGE("metastore.repl.metrics.max.age",
       "hive.metastore.repl.metrics.max.age", 7, TimeUnit.DAYS,
       "Maximal age of a replication metrics entry before it is removed."),
+    REPL_TXN_TIMEOUT("metastore.repl.txn.timeout", "hive.repl.txn.timeout", 11, TimeUnit.DAYS,
+      "Time after which replication transactions are declared aborted if the client has not sent a " +
+              "heartbeat. If this is a target cluster, value must be greater than" +
+              "hive.repl.event.db.listener.timetolive on the source cluster (!), ideally by 1 day."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
@@ -1239,7 +1247,7 @@ public class MetastoreConf {
             " If org.apache.hive.hcatalog.listener.DbNotificationListener is configured along with other transactional event" +
             " listener implementation classes, make sure org.apache.hive.hcatalog.listener.DbNotificationListener is placed at" +
             " the end of the list."),
-    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", true,
+    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", false,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     TRY_DIRECT_SQL("metastore.try.direct.sql", "hive.metastore.try.direct.sql", true,
@@ -1352,6 +1360,8 @@ public class MetastoreConf {
     HIVE_IN_TEST("hive.in.test", "hive.in.test", false, "internal usage only, true in test mode"),
     HIVE_IN_TEZ_TEST("hive.in.tez.test", "hive.in.tez.test", false,
         "internal use only, true when in testing tez"),
+    HIVE_IN_TEST_ICEBERG("hive.in.iceberg.test", "hive.in.iceberg.test", false,
+        "internal usage only, true when testing iceberg"),
     // We need to track this as some listeners pass it through our config and we need to honor
     // the system properties.
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -1395,6 +1405,8 @@ public class MetastoreConf {
         "hive.metastore.custom.database.product.classname", "none",
           "Hook for external RDBMS. This class will be instantiated only when " +
           "metastore.use.custom.database.product is set to true."),
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
+            "Comma-separated list of supported blobstore schemes."),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
@@ -2250,5 +2262,15 @@ public class MetastoreConf {
     }
     buf.append("Finished MetastoreConf object.\n");
     return buf.toString();
+  }
+
+  public static char[] getValueFromKeystore(String keystorePath, String key) throws IOException {
+    char[] valueCharArray = null;
+    if (keystorePath != null && key != null) {
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystorePath);
+      valueCharArray = conf.getPassword(key);
+    }
+    return valueCharArray;
   }
 }

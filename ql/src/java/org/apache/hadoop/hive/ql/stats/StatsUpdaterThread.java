@@ -34,7 +34,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
@@ -58,6 +57,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -226,8 +226,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     //    on the target again
     // 2. updating stats requires a writeId to be created. Hence writeIds on source and target
     //    can get out of sync when stats are updated. That can cause consistency issues.
-    String replTrgtParam = table.getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
-    if (replTrgtParam != null && !replTrgtParam.isEmpty()) {
+    if (ReplUtils.isTargetOfReplication(rs.getDatabase(cat, db))) {
       LOG.debug("Skipping table {} since it is being replicated into", table);
       return null;
     }

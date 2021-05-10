@@ -1025,7 +1025,7 @@ public class SessionState implements ISessionAuthState{
     authorizerV2.applyAuthorizationConfigPolicy(sessionConf);
     // update config in Hive thread local as well and init the metastore client
     try {
-      Hive.get(sessionConf).getMSC();
+      Hive.getWithoutRegisterFns(sessionConf).getMSC();
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
@@ -1878,6 +1878,11 @@ public class SessionState implements ISessionAuthState{
     // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
     // cleared up, we would have to retain this to avoid mem leak.
     clearReflectionUtilsCache();
+    for (Object each : dynamicVars.values()) {
+      if (each instanceof Closeable) {
+        ((Closeable)each).close();
+      }
+    }
     dynamicVars.clear();
   }
 

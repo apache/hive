@@ -381,6 +381,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("=", GenericUDFOPEqual.class);
     system.registerGenericUDF("==", GenericUDFOPEqual.class);
     system.registerGenericUDF("<=>", GenericUDFOPEqualNS.class);
+    system.registerGenericUDF("is_not_distinct_from", GenericUDFOPEqualNS.class);
     system.registerGenericUDF("!=", GenericUDFOPNotEqual.class);
     system.registerGenericUDF("<>", GenericUDFOPNotEqual.class);
     system.registerGenericUDF("<", GenericUDFOPLessThan.class);
@@ -1079,12 +1080,12 @@ public final class FunctionRegistry {
 
   public static GenericUDAFEvaluator getGenericWindowingEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isDistinct,
-      boolean isAllColumns) throws SemanticException {
+      boolean isAllColumns, boolean respectNulls) throws SemanticException {
     Registry registry = SessionState.getRegistry();
     GenericUDAFEvaluator evaluator = registry == null ? null :
-        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns);
+        registry.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls);
     return evaluator != null ? evaluator :
-        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns);
+        system.getGenericWindowingEvaluator(name, argumentOIs, isDistinct, isAllColumns, respectNulls);
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName)

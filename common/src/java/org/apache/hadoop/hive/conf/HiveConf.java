@@ -542,10 +542,6 @@ public class HiveConf extends Configuration {
         "Number of threads that will be used to dump partition data information during repl dump."),
     REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
             "Indicates whether replication should run data copy tasks during repl load operation."),
-    REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
-        "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
-                + "When the config 'hive.repl.run.data.copy.tasks.on.target' is set to true, this config " +
-          "is not considered."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
@@ -608,6 +604,13 @@ public class HiveConf extends Configuration {
         + "within the database default location for external tables, Would require more memory "
         + "for preparing the initial listing, Should be used if the memory "
         + "requirements can be fulfilled."),
+    REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS("hive.repl.external.warehouse.single.copy.task.paths",
+        "", "Comma seperated list of paths for which single copy task shall be created for all the external tables "
+        + "within the locations Would require more memory for preparing the initial listing, Should be used if the memory "
+        + "requirements can be fulfilled. If the directory contains data not part of the database, that data would "
+        + "also get copied, so only locations which contains tables only belonging to the same database should be "
+        + "provided. This has no effect in case of table level replication or if hive.repl.bootstrap.external.tables "
+        + "isn't enabled."),
     REPL_INCLUDE_AUTHORIZATION_METADATA("hive.repl.include.authorization.metadata", false,
             "This configuration will enable security and authorization related metadata along "
                     + "with the hive data and metadata replication. "),
@@ -653,6 +656,11 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.HOURS),
       "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
         "the policy instance will be marked as failed and will need manual intervention to restart."),
+    REPL_COPY_FILE_LIST_ITERATOR_RETRY("hive.repl.copy.file.list.iterator.retry", true,
+            "Determines whether writes happen with retry upon encountering filesystem errors for data-copy \n"
+            + "iterator files. It should be disabled when we do not want retry on a per-line basis while writing \n"
+            + "to the files and in cases when flushing capabilities are not available on the stream. If disabled, then retry \n"
+            + "is only attempted during file creation, not for errors encountered while writing entries."),
     REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
@@ -769,6 +777,8 @@ public class HiveConf extends Configuration {
         "If not set, defaults to the codec extension for text files (e.g. \".gz\"), or no extension otherwise."),
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
+    HIVE_IN_TEST_ICEBERG("hive.in.iceberg.test", false, "internal usage only, true when " +
+        "testing iceberg", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
     // TODO: this needs to be removed; see TestReplicationScenarios* comments.
     HIVE_IN_TEST_REPL("hive.in.repl.test", false, "internal usage only, true in replication test mode", true),
@@ -3749,6 +3759,18 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "The timeout for AM registry registration, after which (on attempting to use the\n" +
         "session), we kill it and try to get another one."),
+    HIVE_SERVER2_WM_DELAYED_MOVE("hive.server2.wm.delayed.move", false,
+        "Determines behavior of the wm move trigger when destination pool is full.\n" +
+        "If true, the query will run in source pool as long as possible if destination pool is full;\n" +
+        "if false, the query will be killed if destination pool is full."),
+    HIVE_SERVER2_WM_DELAYED_MOVE_TIMEOUT("hive.server2.wm.delayed.move.timeout", "3600",
+        new TimeValidator(TimeUnit.SECONDS),
+        "The amount of time a delayed move is allowed to run in the source pool,\n" +
+        "when a delayed move session times out, the session is moved to the destination pool.\n" +
+        "A value of 0 indicates no timeout"),
+    HIVE_SERVER2_WM_DELAYED_MOVE_VALIDATOR_INTERVAL("hive.server2.wm.delayed.move.validator.interval", "60",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Interval for checking for expired delayed moves."),
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
         "A list of comma separated values corresponding to YARN queues of the same name.\n" +
         "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
@@ -4663,6 +4685,12 @@ public class HiveConf extends Configuration {
         "Whether LLAP cache for ORC should remember gaps in ORC compression buffer read\n" +
         "estimates, to avoid re-reading the data that was read once and discarded because it\n" +
         "is unneeded. This is only necessary for ORC files written before HIVE-9660."),
+    LLAP_CACHE_HYDRATION_STRATEGY_CLASS("hive.llap.cache.hydration.strategy.class", "", "Strategy class for managing the "
+        + "llap cache hydration. It's executed when the daemon starts and stops, and gives a chance to save and/or "
+        + "load the contens of the llap cache. If left empty the feature is disabled.\n" +
+        "The class should implement org.apache.hadoop.hive.llap.LlapCacheHydration interface."),
+    LLAP_CACHE_HYDRATION_SAVE_DIR("hive.llap.cache.hydration.save.dir", "/tmp/hive", "Directory to save the llap cache content\n"
+        + "info on shutdown, if BasicLlapCacheHydration is used as the hive.llap.cache.hydration.strategy.class."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
         "cases of file overwrites. This is supported on HDFS. Disabling this also turns off any\n" +
@@ -5447,6 +5475,12 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.cache.results.QueryResultsCache$InvalidationEventConsumer",
         "Comma-separated list of class names extending EventConsumer," +
          "to handle the NotificationEvents retreived by the notification event poll."),
+
+    HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS("hive.describe.partitionedtable.ignore.stats", false,
+        "Disable partitioned table stats collection for 'DESCRIBE FORMATTED' or 'DESCRIBE EXTENDED' commands."),
+
+    HIVE_SERVER2_ICEBERG_METADATA_GENERATOR_THREADS("hive.server2.iceberg.metadata.generator.threads", 10,
+        "Number of threads used to scan partition directories for data files and update/generate iceberg metadata"),
 
     /* BLOBSTORE section */
 

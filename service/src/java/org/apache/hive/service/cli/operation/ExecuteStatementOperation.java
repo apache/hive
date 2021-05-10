@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import org.apache.hive.service.cli.operation.hplsql.BeelineConsole;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -33,8 +35,10 @@ import org.apache.hive.hplsql.Conf;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplSqlSessionState;
 import org.apache.hive.hplsql.ResultListener;
+import org.apache.hive.hplsql.udf.Udf;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationType;
+import org.apache.hive.service.cli.operation.hplsql.BeelineConsole;
 import org.apache.hive.service.cli.operation.hplsql.HplSqlOperation;
 import org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -67,11 +71,12 @@ public abstract class ExecuteStatementOperation extends Operation {
         Exec interpreter = new Exec(
                 new Conf(),
                 new BeelineConsole(),
-                ResultListener.NONE,
                 new HplSqlQueryExecutor(parentSession),
                 parentSession.getMetaStoreClient(),
                 new HiveHplSqlSessionState(SessionState.get())
         );
+        interpreter.init();
+        registerUdf();
         SessionState.get().addDynamicVar(interpreter);
       }
       return new HplSqlOperation(parentSession, statement, confOverlay, runAsync, SessionState.get().getDynamicVar(Exec.class));
@@ -90,6 +95,16 @@ public abstract class ExecuteStatementOperation extends Operation {
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout, hplSqlMode());
     }
     return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
+  }
+
+  private static void registerUdf() throws HiveSQLException {
+    try {
+      if (FunctionRegistry.getTemporaryFunctionInfo(Udf.NAME) == null) {
+        FunctionRegistry.registerTemporaryUDF(Udf.NAME, org.apache.hive.hplsql.udf.Udf.class);
+      }
+    } catch (SemanticException e) {
+      throw new HiveSQLException(e);
+    }
   }
 
   private static boolean proceduralMode(Map<String, String> confOverlay) {

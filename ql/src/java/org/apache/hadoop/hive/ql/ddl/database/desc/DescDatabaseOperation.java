@@ -25,11 +25,14 @@ import java.util.TreeMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+import static org.apache.hadoop.hive.metastore.api.DatabaseType.NATIVE;
 
 /**
  * Operation process of describing a database.
@@ -48,18 +51,28 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
       }
 
       SortedMap<String, String> params = null;
+      String location = "";
       if (desc.isExtended()) {
         params = new TreeMap<>(database.getParameters());
       }
 
-      String location = database.getLocationUri();
-      if (HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
-        location = "location/in/test";
-      }
-
       DescDatabaseFormatter formatter = DescDatabaseFormatter.getFormatter(context.getConf());
-      formatter.showDatabaseDescription(outStream, database.getName(), database.getDescription(), location,
-          database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params);
+      switch(database.getType()) {
+      case NATIVE:
+        location = database.getLocationUri();
+        if (HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
+          location = "location/in/test";
+        }
+        formatter.showDatabaseDescription(outStream, database.getName(), database.getDescription(), location,
+            database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params, "", "");
+        break;
+      case REMOTE:
+        formatter.showDatabaseDescription(outStream, database.getName(), database.getDescription(), "", "",
+          database.getOwnerName(), database.getOwnerType(), params, database.getConnector_name(), database.getRemote_dbname());
+        break;
+      default:
+          throw new HiveException("Unsupported database type " + database.getType() + " for " + database.getName());
+      }
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }

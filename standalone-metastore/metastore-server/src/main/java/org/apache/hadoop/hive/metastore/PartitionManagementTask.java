@@ -32,11 +32,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.TimeValidator;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,9 +90,13 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
   }
 
-  private static boolean tblBeingReplicatedInto(Map<String, String> params) {
-    return params != null && params.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY) &&
-            !params.get(ReplConst.REPL_TARGET_TABLE_PROPERTY).trim().isEmpty();
+  public boolean isTargetOfReplication(Database db) {
+    assert (db != null);
+    Map<String, String> params = db.getParameters();
+    if ((params != null) && (params.containsKey(ReplConst.TARGET_OF_REPLICATION))) {
+      return !StringUtils.isEmpty(params.get(ReplConst.TARGET_OF_REPLICATION));
+    }
+    return false;
   }
 
   @Override
@@ -130,7 +136,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         for (TableMeta tableMeta : foundTableMetas) {
           try {
             Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-            if (partitionDiscoveryEnabled(table.getParameters()) && !tblBeingReplicatedInto(table.getParameters())) {
+            Database db = msc.getDatabase(table.getCatName(), table.getDbName());
+            if (partitionDiscoveryEnabled(table.getParameters()) && !isTargetOfReplication(db)) {
               candidateTables.add(table);
             }
           } catch (NoSuchObjectException e) {

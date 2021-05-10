@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -468,7 +469,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       Utilities.copyTablePropertiesToConf(table, conf);
       if (tableScan != null) {
         AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),
-            tableScan.getConf().getAcidOperationalProperties());
+            tableScan.getConf().getAcidOperationalProperties(), tableScan.getConf().isFetchDeletedRows());
 
         if (tableScan.getConf().isTranscationalTable() && (validWriteIdList == null)) {
           throw new IOException("Acid table: " + table.getTableName()
@@ -890,6 +891,23 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
     ExprNodeGenericFuncDesc filterExpr = scanDesc.getFilterExpr();
+    String pruningFilter = jobConf.get(TableScanDesc.PARTITION_PRUNING_FILTER);
+    // If we have a pruning filter then combine it with the original
+    if (pruningFilter != null) {
+      ExprNodeGenericFuncDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
+      if (filterExpr != null) {
+        // Combine the 2 filters with AND
+        filterExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);
+      } else {
+        // Use the pruning filter if there was no filter before
+        filterExpr = pruningExpr;
+      }
+
+      // Set the combined filter in the TableScanDesc and remove the pruning filter
+      scanDesc.setFilterExpr(filterExpr);
+      scanDesc.setSerializedFilterExpr(SerializationUtilities.serializeExpression(filterExpr));
+      jobConf.unset(TableScanDesc.PARTITION_PRUNING_FILTER);
+    }
     if (filterExpr == null) {
       return;
     }
@@ -1001,7 +1019,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         pushFilters(jobConf, ts, this.mrwork);
 
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
-            ts.getConf().getAcidOperationalProperties());
+            ts.getConf().getAcidOperationalProperties(), ts.getConf().isFetchDeletedRows());
         AcidUtils.setValidWriteIdList(job, ts.getConf());
       }
     }

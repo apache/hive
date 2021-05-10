@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
+import com.codahale.metrics.Counter;
+
 /**
  * Extends the transaction handler with methods needed only by the compactor threads.  These
  * methods are not available through the thrift interface.
@@ -58,7 +62,7 @@ class CompactionTxnHandler extends TxnHandler {
       "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
           + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-          + "\"CQ_ENQUEUE_TIME\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
+          + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
 
   public CompactionTxnHandler() {
   }
@@ -165,11 +169,12 @@ class CompactionTxnHandler extends TxnHandler {
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
    * @param workerId id of the worker calling this, will be recorded in the db
+   * @param workerVersion runtime version of the Worker calling this
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
   @Override
   @RetrySemantics.SafeToRetry
-  public CompactionInfo findNextToCompact(String workerId) throws MetaException {
+  public CompactionInfo findNextToCompact(String workerId, String workerVersion) throws MetaException {
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -199,7 +204,7 @@ class CompactionTxnHandler extends TxnHandler {
           info.properties = rs.getString(6);
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
-          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + workerId + "', " +
+          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + workerId + "', \"CQ_WORKER_VERSION\" = '" + workerVersion + "', " +
             "\"CQ_START\" = " + now + ", \"CQ_STATE\" = '" + WORKING_STATE + "' WHERE \"CQ_ID\" = " + info.id +
             " AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
           LOG.debug("Going to execute update <" + s + ">");
@@ -231,7 +236,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      return findNextToCompact(workerId);
+      return findNextToCompact(workerId, workerVersion);
     }
   }
 
@@ -363,11 +368,13 @@ class CompactionTxnHandler extends TxnHandler {
         String s = "INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
             + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
             + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
-            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\") "
+            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\", "
+            + "\"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
           + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + quoteChar(SUCCEEDED_STATE) + ", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
             + getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
-            + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\" "
+            + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
+            + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\""
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
@@ -841,6 +848,8 @@ class CompactionTxnHandler extends TxnHandler {
     int didNotInitiateRetention = 0;
     int failedRetention = 0;
     int succeededRetention = 0;
+    boolean hasSucceededMajorCompaction = false;
+    boolean hasSucceededMinorCompaction = false;
 
     RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention) {
       this.didNotInitiateRetention = didNotInitiateRetention;
@@ -849,15 +858,15 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-  private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc) {
+  private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc, long timeoutThreshold) {
     switch (ci.state) {
       case DID_NOT_INITIATE:
-        if(--rc.didNotInitiateRetention < 0) {
+        if(--rc.didNotInitiateRetention < 0 || timedOut(ci, rc, timeoutThreshold)) {
           deleteSet.add(ci.id);
         }
         break;
       case FAILED_STATE:
-        if(--rc.failedRetention < 0) {
+        if(--rc.failedRetention < 0 || timedOut(ci, rc, timeoutThreshold)) {
           deleteSet.add(ci.id);
         }
         break;
@@ -865,10 +874,20 @@ class CompactionTxnHandler extends TxnHandler {
         if(--rc.succeededRetention < 0) {
           deleteSet.add(ci.id);
         }
+        if (ci.type == CompactionType.MAJOR) {
+          rc.hasSucceededMajorCompaction = true;
+        } else {
+          rc.hasSucceededMinorCompaction = true;
+        }
         break;
       default:
-        //do nothing to hanlde future RU/D where we may want to add new state types
+        //do nothing to handle future RU/D where we may want to add new state types
     }
+  }
+
+  private static boolean timedOut(CompactionInfo ci, RetentionCounters rc, long pastTimeout) {
+    return ci.start < pastTimeout
+            && (rc.hasSucceededMajorCompaction || (rc.hasSucceededMinorCompaction && ci.type == CompactionType.MINOR));
   }
 
   /**
@@ -877,6 +896,13 @@ class CompactionTxnHandler extends TxnHandler {
    * history such that a configurable number of each type of state is present.  Any other entries
    * can be purged.  This scheme has advantage of always retaining the last failure/success even if
    * it's not recent.
+   *
+   * Also, "not initiated" and "failed" compactions are purged if they are older than
+   * metastore.compactor.history.retention.timeout and there is a newer "succeeded"
+   * compaction on the table and either (1) the "succeeded" compaction is major or (2) it is minor
+   * and the "not initiated" or "failed" compaction is also minor –– so a minor succeeded compaction
+   * will not cause the deletion of a major "not initiated" or "failed" compaction.
+   *
    * @throws MetaException
    */
   @Override
@@ -888,29 +914,37 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     List<Long> deleteSet = new ArrayList<>();
     RetentionCounters rc = null;
+    long timeoutThreshold = System.currentTimeMillis() -
+            MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS);
+    int didNotInitiateRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE);
+    int failedRetention = getFailedCompactionRetention();
+    int succeededRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED);
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         /* cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first */
-        rs = stmt.executeQuery("SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\" "
-            + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_ID\" DESC");
+        rs = stmt.executeQuery("SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", "
+            + "\"CC_STATE\" , \"CC_START\", \"CC_TYPE\" "
+            + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"," +
+                "\"CC_ID\" DESC");
         String lastCompactedEntity = null;
         /* In each group, walk from most recent and count occurrences of each state type.  Once you
         * have counted enough (for each state) to satisfy retention policy, delete all other
-        * instances of this status. */
+        * instances of this status, plus timed-out entries (see this method's JavaDoc).
+        */
         while(rs.next()) {
           CompactionInfo ci = new CompactionInfo(
               rs.getLong(1), rs.getString(2), rs.getString(3),
               rs.getString(4), rs.getString(5).charAt(0));
+          ci.start = rs.getLong(6);
+          ci.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
-            rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
-              getFailedCompactionRetention(),
-              MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
+            rc = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention);
           }
-          checkForDeletion(deleteSet, ci, rc);
+          checkForDeletion(deleteSet, ci, rc, timeoutThreshold);
         }
         close(rs);
 
@@ -1068,7 +1102,7 @@ class CompactionTxnHandler extends TxnHandler {
         pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
             + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-            + "\"CQ_ENQUEUE_TIME\" "
+            + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" "
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
@@ -1110,8 +1144,8 @@ class CompactionTxnHandler extends TxnHandler {
             + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
             + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
             + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
-            + "\"CC_ENQUEUE_TIME\") "
-            + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?)");
+            + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
+            + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?)");
         if (errorMessage != null) {
           ci.errorMessage = errorMessage;
         }

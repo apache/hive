@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.hplsql.Arguments;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.ResultListener;
 import org.apache.hive.hplsql.executor.Metadata;
@@ -58,7 +59,7 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
     super(parentSession, statement, confOverlay, runInBackground, false);
     this.exec = exec;
     this.runInBackground = runInBackground;
-    exec.setResultListener(this);
+    this.exec.setResultListener(this);
   }
 
   @Override
@@ -90,10 +91,9 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
         return;
       }
       setState(OperationState.RUNNING);
-      int code = exec.run(new String[]{"-e", statement});
-      if (code != 0) {
-        throw new HiveSQLException("HPL/SQL returned " + code);
-      }
+      Arguments args = new Arguments();
+      args.parse(new String[]{"-e", statement});
+      exec.parseAndEval(args);
       setState(OperationState.FINISHED);
     } catch (Throwable e) {
       if (getState().isTerminal()) {
@@ -108,6 +108,8 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
       } else {
         throw new HiveSQLException("Error running HPL/SQL operation", e);
       }
+    } finally {
+      exec.printExceptions();
     }
   }
 

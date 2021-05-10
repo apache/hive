@@ -1102,6 +1102,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+    if (db.getType() == null) {
+      db.setType(DatabaseType.NATIVE);
+    }
     rawStore.createDatabase(db);
     // in case of event based cache update, cache will be updated during commit.
     if (!canUseEvents) {
@@ -1160,6 +1163,32 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.listCachedDatabases(catName);
   }
 
+  @Override public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    rawStore.createDataConnector(connector);
+  }
+
+  @Override public DataConnector getDataConnector(String dcName) throws NoSuchObjectException {
+    // in case of  event based cache update, cache will be updated during commit. So within active transaction, read
+    // directly from rawStore to avoid reading stale data as the data updated during same transaction will not be
+    // updated in the cache.
+      return rawStore.getDataConnector(dcName);
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcName) throws NoSuchObjectException, MetaException {
+     return rawStore.dropDataConnector(dcName);
+  }
+
+  @Override public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.alterDataConnector(dcName, connector);
+  }
+
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+      return rawStore.getAllDataConnectorNames();
+  }
+  
   @Override public boolean createType(Type type) {
     return rawStore.createType(type);
   }
@@ -1227,7 +1256,12 @@ public class CachedStore implements RawStore, Configurable {
     return getTable(catName, dbName, tblName, null);
   }
 
-  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds)
+  @Override
+  public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
+    return getTable(catName, dbName, tblName, null, -1);
+  }
+
+  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
       throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
@@ -1532,8 +1566,8 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-          GetProjectionsSpec projectionsSpec) throws MetaException, UnknownDBException {
-    return getTableObjectsByName(catName, db, tbl_names, null);
+          GetProjectionsSpec projectionsSpec, String tablePattern) throws MetaException, UnknownDBException {
+    return rawStore.getTableObjectsByName(catName, db, tbl_names, projectionsSpec, tablePattern);
   }
 
   @Override public List<String> getAllTables(String catName, String dbName) throws MetaException {
@@ -3133,12 +3167,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
     return rawStore.getStoredProcedure(catName, db, name);
   }
 
   @Override
-  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
     rawStore.dropStoredProcedure(catName, dbName, funcName);
   }
 

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -845,11 +846,19 @@ class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
   @Override
   public boolean isEqual(Object v1, Object v2) {
     if (v1 != null && v2 != null) {
-      Timestamp l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      Timestamp l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return l1.equals(l2);
+      if (v1 instanceof TimestampWritableV2 && v2 instanceof TimestampWritableV2) {
+        // TimestampWritableV2.compareTo will call getSeconds() and getNanos() directly,
+        // so even if the embedded Timestamp is empty, it can operate on the bytes
+        TimestampWritableV2 w1 = (TimestampWritableV2) v1;
+        TimestampWritableV2 w2 = (TimestampWritableV2) v2;
+        return w1.equals(w2);
+      } else {
+        Timestamp l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        Timestamp l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return l1.equals(l2);
+      }
     }
     return v1 == null && v2 == null; // True if both are null
   }

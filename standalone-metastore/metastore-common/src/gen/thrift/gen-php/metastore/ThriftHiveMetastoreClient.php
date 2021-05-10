@@ -915,6 +915,327 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
+    public function create_dataconnector(\metastore\DataConnector $connector)
+    {
+        $this->send_create_dataconnector($connector);
+        $this->recv_create_dataconnector();
+    }
+
+    public function send_create_dataconnector(\metastore\DataConnector $connector)
+    {
+        $args = new \metastore\ThriftHiveMetastore_create_dataconnector_args();
+        $args->connector = $connector;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'create_dataconnector',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('create_dataconnector', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_create_dataconnector()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_create_dataconnector_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_create_dataconnector_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
+        return;
+    }
+
+    public function get_dataconnector_req(\metastore\GetDataConnectorRequest $request)
+    {
+        $this->send_get_dataconnector_req($request);
+        return $this->recv_get_dataconnector_req();
+    }
+
+    public function send_get_dataconnector_req(\metastore\GetDataConnectorRequest $request)
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_dataconnector_req_args();
+        $args->request = $request;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_dataconnector_req',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_dataconnector_req', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_dataconnector_req()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_dataconnector_req_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_dataconnector_req_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        throw new \Exception("get_dataconnector_req failed: unknown result");
+    }
+
+    public function drop_dataconnector($name, $ifNotExists, $checkReferences)
+    {
+        $this->send_drop_dataconnector($name, $ifNotExists, $checkReferences);
+        $this->recv_drop_dataconnector();
+    }
+
+    public function send_drop_dataconnector($name, $ifNotExists, $checkReferences)
+    {
+        $args = new \metastore\ThriftHiveMetastore_drop_dataconnector_args();
+        $args->name = $name;
+        $args->ifNotExists = $ifNotExists;
+        $args->checkReferences = $checkReferences;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'drop_dataconnector',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('drop_dataconnector', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_drop_dataconnector()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_drop_dataconnector_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_drop_dataconnector_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
+        return;
+    }
+
+    public function get_dataconnectors()
+    {
+        $this->send_get_dataconnectors();
+        return $this->recv_get_dataconnectors();
+    }
+
+    public function send_get_dataconnectors()
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_dataconnectors_args();
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_dataconnectors',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_dataconnectors', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_dataconnectors()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_dataconnectors_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_dataconnectors_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        throw new \Exception("get_dataconnectors failed: unknown result");
+    }
+
+    public function alter_dataconnector($name, \metastore\DataConnector $connector)
+    {
+        $this->send_alter_dataconnector($name, $connector);
+        $this->recv_alter_dataconnector();
+    }
+
+    public function send_alter_dataconnector($name, \metastore\DataConnector $connector)
+    {
+        $args = new \metastore\ThriftHiveMetastore_alter_dataconnector_args();
+        $args->name = $name;
+        $args->connector = $connector;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'alter_dataconnector',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('alter_dataconnector', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_alter_dataconnector()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_alter_dataconnector_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_alter_dataconnector_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        return;
+    }
+
     public function get_type($name)
     {
         $this->send_get_type($name);
@@ -11977,16 +12298,17 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function find_next_compact($workerId)
+    public function find_next_compact($workerId, $workerVersion)
     {
-        $this->send_find_next_compact($workerId);
+        $this->send_find_next_compact($workerId, $workerVersion);
         return $this->recv_find_next_compact();
     }
 
-    public function send_find_next_compact($workerId)
+    public function send_find_next_compact($workerId, $workerVersion)
     {
         $args = new \metastore\ThriftHiveMetastore_find_next_compact_args();
         $args->workerId = $workerId;
+        $args->workerVersion = $workerVersion;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -12387,6 +12709,65 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             $this->input_->readMessageEnd();
         }
         return;
+    }
+
+    public function get_latest_committed_compaction_info(\metastore\GetLatestCommittedCompactionInfoRequest $rqst)
+    {
+        $this->send_get_latest_committed_compaction_info($rqst);
+        return $this->recv_get_latest_committed_compaction_info();
+    }
+
+    public function send_get_latest_committed_compaction_info(\metastore\GetLatestCommittedCompactionInfoRequest $rqst)
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_latest_committed_compaction_info_args();
+        $args->rqst = $rqst;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_latest_committed_compaction_info',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_latest_committed_compaction_info', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_latest_committed_compaction_info()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_latest_committed_compaction_info_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_latest_committed_compaction_info_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        throw new \Exception("get_latest_committed_compaction_info failed: unknown result");
     }
 
     public function get_next_notification(\metastore\NotificationEventRequest $rqst)
@@ -16126,9 +16507,6 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o1 !== null) {
             throw $result->o1;
         }
-        if ($result->o2 !== null) {
-            throw $result->o2;
-        }
         return;
     }
 
@@ -16252,6 +16630,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         }
         if ($result->o1 !== null) {
             throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
         }
         throw new \Exception("find_package failed: unknown result");
     }

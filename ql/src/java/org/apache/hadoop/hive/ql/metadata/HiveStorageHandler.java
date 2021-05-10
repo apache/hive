@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -178,11 +179,13 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Test if the storage handler allows the push-down of join filter predicate to prune further the splits.
    *
+   * @param table The table to filter.
    * @param syntheticFilterPredicate Join filter predicate.
    * @return true if supports dynamic split pruning for the given predicate.
    */
 
-  default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
+  default boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
+      ExprNodeDesc syntheticFilterPredicate) {
     return false;
   }
 
@@ -196,5 +199,23 @@ public interface HiveStorageHandler extends Configurable {
    */
   default Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc, Map<String, String> initialProps) {
     return initialProps;
+  }
+
+  /**
+   * Return some basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
+   * implementation.
+   * @param partish a partish wrapper class
+   * @return map of basic statistics, can be null
+   */
+  default Map<String, String> getBasicStatistics(Partish partish) {
+    return null;
+  }
+
+  /**
+   * Check if the storage handler can provide basic statistics.
+   * @return true if the storage handler can supply the basic statistics
+   */
+  default boolean canProvideBasicStatistics() {
+    return false;
   }
 }
