@@ -63,7 +63,7 @@ public class DateScalarSubtractDateColumn extends VectorExpression {
     }
 
     // Input #2 is type date (epochDays).
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
     // Output is type HiveIntervalDayTime.
     IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
@@ -143,7 +143,7 @@ public class DateScalarSubtractDateColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + org.apache.hadoop.hive.common.type.Date.ofEpochMilli(value.getTime()) + ", " + getColumnParamString(1, inputColumnNum);
+    return "val " + org.apache.hadoop.hive.common.type.Date.ofEpochMilli(value.getTime()) + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

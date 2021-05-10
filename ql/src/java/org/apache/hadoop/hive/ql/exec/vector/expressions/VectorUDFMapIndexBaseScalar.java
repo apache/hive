@@ -55,7 +55,7 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorExpression {
     }
 
     ColumnVector outV = batch.cols[outputColumnNum];
-    MapColumnVector mapV = (MapColumnVector) batch.cols[inputColumnNum];
+    MapColumnVector mapV = (MapColumnVector) batch.cols[inputColumnNum[0]];
     ColumnVector valuesV = mapV.values;
 
     int[] sel = batch.selected;
@@ -182,6 +182,6 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorExpression {
   }
 
   public int getMapColumnNum() {
-    return inputColumnNum;
+    return inputColumnNum[0];
   }
 }

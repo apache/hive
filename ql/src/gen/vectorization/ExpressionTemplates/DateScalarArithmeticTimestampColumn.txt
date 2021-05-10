@@ -85,7 +85,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #2 is type <OperandType2>.
-    <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[inputColumnNum];
+    <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[inputColumnNum[0]];
 
     // Output is type <ReturnType>.
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
@@ -186,7 +186,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + org.apache.hadoop.hive.common.type.Date.ofEpochMilli(value.getTime()) + ", " + getColumnParamString(1, inputColumnNum);
+    return "val " + org.apache.hadoop.hive.common.type.Date.ofEpochMilli(value.getTime()) + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

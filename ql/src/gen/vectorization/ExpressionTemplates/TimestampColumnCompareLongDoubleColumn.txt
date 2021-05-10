@@ -60,7 +60,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector1 = (TimestampColumnVector) batch.cols[inputColumnNum];
+    TimestampColumnVector inputColVector1 = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[colNum2];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
@@ -128,7 +128,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

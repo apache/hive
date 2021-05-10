@@ -72,7 +72,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #1 is type interval_year_mont (epochMonths).
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
     // Output is type date.
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -182,7 +182,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + value.toString();
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + value.toString();
   }
 
   @Override

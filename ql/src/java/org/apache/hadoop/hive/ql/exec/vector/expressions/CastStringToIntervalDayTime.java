@@ -52,7 +52,7 @@ public class CastStringToIntervalDayTime extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
@@ -153,7 +153,7 @@ public class CastStringToIntervalDayTime extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

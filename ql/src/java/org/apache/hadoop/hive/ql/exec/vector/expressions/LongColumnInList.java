@@ -60,7 +60,7 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
       inSet.load(inListValues);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -149,7 +149,7 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
   }
 
   public String vectorExpressionParameters() {
-    return "col " + inputColumnNum + ", values " + Arrays.toString(inListValues);
+    return "col " + inputColumnNum[0] + ", values " + Arrays.toString(inListValues);
   }
 
   @Override

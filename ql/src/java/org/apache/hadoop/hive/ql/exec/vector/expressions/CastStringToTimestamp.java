@@ -37,9 +37,6 @@ public class CastStringToTimestamp extends VectorExpression {
 
   public CastStringToTimestamp() {
     super();
-
-    // Dummy final assignments.
-    inputColumnNum = -1;
   }
 
   public CastStringToTimestamp(int inputColumnNum, int outputColumnNum) {
@@ -53,7 +50,7 @@ public class CastStringToTimestamp extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
@@ -161,7 +158,7 @@ public class CastStringToTimestamp extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

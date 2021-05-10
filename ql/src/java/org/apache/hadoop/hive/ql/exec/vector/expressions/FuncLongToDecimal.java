@@ -39,9 +39,6 @@ public abstract class FuncLongToDecimal extends VectorExpression {
 
   public FuncLongToDecimal() {
     super();
-
-    // Dummy final assignments.
-    inputColumnNum = -1;
   }
 
   abstract protected void func(DecimalColumnVector outputColVector, LongColumnVector inputColVector, int i);
@@ -53,7 +50,7 @@ public abstract class FuncLongToDecimal extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
@@ -138,7 +135,7 @@ public abstract class FuncLongToDecimal extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

@@ -63,7 +63,7 @@ public abstract class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -152,6 +152,6 @@ public abstract class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + displayUtf8Bytes(value);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + displayUtf8Bytes(value);
   }
 }

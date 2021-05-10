@@ -150,7 +150,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
       initValue();
     }
 
-    ColumnVector inputColVector = batch.cols[inputColumnNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;

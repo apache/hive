@@ -51,7 +51,7 @@ public class CastStringToDate extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -161,7 +161,7 @@ public class CastStringToDate extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

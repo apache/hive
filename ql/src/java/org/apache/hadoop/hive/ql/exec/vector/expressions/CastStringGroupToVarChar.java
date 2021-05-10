@@ -51,6 +51,6 @@ public class CastStringGroupToVarChar extends StringUnaryUDFDirect implements Tr
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

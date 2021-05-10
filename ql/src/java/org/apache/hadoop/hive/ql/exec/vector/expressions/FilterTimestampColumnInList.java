@@ -68,7 +68,7 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
@@ -166,7 +166,7 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputColumnNum[0]) + ", values " + Arrays.toString(inListValues);
   }
 
 }

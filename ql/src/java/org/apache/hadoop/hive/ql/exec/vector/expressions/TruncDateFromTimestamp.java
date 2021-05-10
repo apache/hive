@@ -50,7 +50,7 @@ public class TruncDateFromTimestamp extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumnNum + ", format " + fmt;
+    return "col " + inputColumnNum[0] + ", format " + fmt;
   }
 
   @Override
@@ -60,7 +60,7 @@ public class TruncDateFromTimestamp extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[inputColumnNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;

@@ -50,7 +50,7 @@ abstract public class DoubleToStringUnaryUDF extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum];
+    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     double[] vector = inputColVector.vector;
@@ -137,7 +137,7 @@ abstract public class DoubleToStringUnaryUDF extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

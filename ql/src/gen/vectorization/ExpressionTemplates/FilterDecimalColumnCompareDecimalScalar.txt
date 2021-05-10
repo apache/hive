@@ -61,7 +61,7 @@ public class <ClassName> extends VectorExpression {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
 
@@ -138,7 +138,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + value.toString();
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + value.toString();
   }
 
   @Override

@@ -45,7 +45,7 @@ public class NotCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector = inputColVector.vector;
@@ -116,7 +116,7 @@ public class NotCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

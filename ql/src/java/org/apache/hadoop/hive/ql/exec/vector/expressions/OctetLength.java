@@ -45,7 +45,7 @@ public class OctetLength extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -137,7 +137,7 @@ public class OctetLength extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

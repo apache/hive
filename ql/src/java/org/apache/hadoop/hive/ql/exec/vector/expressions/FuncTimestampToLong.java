@@ -51,7 +51,7 @@ public abstract class FuncTimestampToLong extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -136,7 +136,7 @@ public abstract class FuncTimestampToLong extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

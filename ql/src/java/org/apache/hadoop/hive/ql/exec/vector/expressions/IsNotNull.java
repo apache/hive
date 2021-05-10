@@ -47,7 +47,7 @@ public class IsNotNull extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[inputColumnNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     int n = batch.size;
@@ -95,7 +95,7 @@ public class IsNotNull extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

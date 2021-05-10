@@ -71,7 +71,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #1 is type date (days).  For the math we convert it to a timestamp.
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
     // Output is type <ReturnType>.
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
@@ -179,7 +179,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
   }
 
   @Override

@@ -40,13 +40,11 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private <ScalarType> arg2Scalar;
-  private final int arg3Column;
 
   public <ClassName>(int arg1Column, <ScalarType> arg2Scalar, int arg3Column,
       int outputColumnNum) {
-    super(arg1Column, outputColumnNum);
+    super(arg1Column, arg3Column, outputColumnNum);
     this.arg2Scalar = arg2Scalar;
-    this.arg3Column = arg3Column;
   }
 
   public <ClassName>() {
@@ -54,7 +52,6 @@ public class <ClassName> extends VectorExpression {
 
     // Dummy final assignments.
     arg2Scalar = null;
-    arg3Column = -1;
   }
 
   @Override
@@ -64,8 +61,8 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum];
-    <ColumnVectorType> arg3ColVector = (<ColumnVectorType>) batch.cols[arg3Column];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    <ColumnVectorType> arg3ColVector = (<ColumnVectorType>) batch.cols[inputColumnNum[1]];
     boolean[] arg3IsNull = arg3ColVector.isNull;
 #IF DECIMAL
     HiveDecimalWritable[] vector3 = arg3ColVector.vector;
@@ -193,8 +190,8 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val "+ arg2Scalar + ", " +
-        getColumnParamString(2, arg3Column);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val "+ arg2Scalar + ", " +
+        getColumnParamString(2, inputColumnNum[1]);
   }
 
   @Override

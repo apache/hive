@@ -79,7 +79,7 @@ public class CastLongToDecimal64 extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     Decimal64ColumnVector outputColVector = (Decimal64ColumnVector) batch.cols[outputColumnNum];
@@ -166,7 +166,7 @@ public class CastLongToDecimal64 extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

@@ -67,7 +67,7 @@ public class CastDecimalToDecimal extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
@@ -162,7 +162,7 @@ public class CastDecimalToDecimal extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

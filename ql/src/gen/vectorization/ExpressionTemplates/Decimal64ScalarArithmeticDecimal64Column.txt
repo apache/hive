@@ -65,7 +65,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    Decimal64ColumnVector inputColVector = (Decimal64ColumnVector) batch.cols[inputColumnNum];
+    Decimal64ColumnVector inputColVector = (Decimal64ColumnVector) batch.cols[inputColumnNum[0]];
     Decimal64ColumnVector outputColVector = (Decimal64ColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -192,7 +192,7 @@ public class <ClassName> extends VectorExpression {
     HiveDecimalWritable writable = new HiveDecimalWritable();
     writable.deserialize64(value, decimalTypeInfo.scale());
     return "decimal64Val " + value + ", decimalVal " + writable.toString() +
-        ", " + getColumnParamString(1, inputColumnNum);
+        ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

@@ -58,7 +58,7 @@ public class ListIndexColScalar extends VectorExpression {
     }
 
     ColumnVector outV = batch.cols[outputColumnNum];
-    ListColumnVector listV = (ListColumnVector) batch.cols[inputColumnNum];
+    ListColumnVector listV = (ListColumnVector) batch.cols[inputColumnNum[0]];
     ColumnVector childV = listV.child;
     int[] sel = batch.selected;
     boolean[] listIsNull = listV.isNull;
@@ -187,7 +187,7 @@ public class ListIndexColScalar extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, index);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, index);
   }
 
   @Override

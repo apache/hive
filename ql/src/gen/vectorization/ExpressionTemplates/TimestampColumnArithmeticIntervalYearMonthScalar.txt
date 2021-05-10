@@ -68,7 +68,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #1 is type Timestamp.
-    TimestampColumnVector inputColVector1 = (TimestampColumnVector) batch.cols[inputColumnNum];
+    TimestampColumnVector inputColVector1 = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
 
     // Output is type Timestamp.
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
@@ -168,7 +168,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + value.toString();
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + value.toString();
   }
 
   @Override

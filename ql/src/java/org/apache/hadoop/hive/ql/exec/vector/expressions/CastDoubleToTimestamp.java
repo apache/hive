@@ -51,7 +51,7 @@ public class CastDoubleToTimestamp extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum];
+    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum[0]];
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -145,7 +145,7 @@ public class CastDoubleToTimestamp extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

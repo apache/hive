@@ -114,7 +114,7 @@ public class StringSubstrColStart extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int n = batch.size;
@@ -229,7 +229,7 @@ public class StringSubstrColStart extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", start " + startIdx;
+    return getColumnParamString(0, inputColumnNum[0]) + ", start " + startIdx;
   }
 
   @Override

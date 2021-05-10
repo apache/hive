@@ -50,7 +50,7 @@ abstract public class DecimalToStringUnaryUDF extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
@@ -136,7 +136,7 @@ abstract public class DecimalToStringUnaryUDF extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

@@ -53,7 +53,7 @@ public class StringGroupColConcatStringScalar extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
@@ -149,7 +149,7 @@ public class StringGroupColConcatStringScalar extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + displayUtf8Bytes(value);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + displayUtf8Bytes(value);
   }
 
   @Override

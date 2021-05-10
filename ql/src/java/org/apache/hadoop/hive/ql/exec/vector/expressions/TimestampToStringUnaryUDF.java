@@ -50,7 +50,7 @@ abstract public class TimestampToStringUnaryUDF extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
@@ -134,7 +134,7 @@ abstract public class TimestampToStringUnaryUDF extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

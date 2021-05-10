@@ -65,7 +65,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector1 = (DecimalColumnVector) batch.cols[inputColumnNum];
+    DecimalColumnVector inputColVector1 = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     HiveDecimalWritable[] vector1 = inputColVector1.vector;
 
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -155,7 +155,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + value.toString();
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + value.toString();
   }
 
   @Override

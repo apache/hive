@@ -64,7 +64,7 @@ public class <ClassName> extends VectorExpression {
     }
 
      // Input #1 is type <OperandType>.
-    <InputColumnVectorType> inputColVector1 = (<InputColumnVectorType>) batch.cols[inputColumnNum];
+    <InputColumnVectorType> inputColVector1 = (<InputColumnVectorType>) batch.cols[inputColumnNum[0]];
 
      // Input #2 is type <OperandType>.
     <InputColumnVectorType> inputColVector2 = (<InputColumnVectorType>) batch.cols[colNum2];
@@ -133,7 +133,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

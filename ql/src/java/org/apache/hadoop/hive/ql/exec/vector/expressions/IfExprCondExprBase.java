@@ -44,6 +44,15 @@ public abstract class IfExprCondExprBase extends VectorExpression {
     super(arg1Column, outputColumnNum);
   }
 
+  /* These constructors are used by subclasses */
+  public IfExprCondExprBase(int arg1Column, int arg2Column, int outputColumnNum) {
+    super(arg1Column, arg2Column, outputColumnNum);
+  }
+
+  public IfExprCondExprBase(int arg1Column, int arg2Column, int arg3Column, int outputColumnNum) {
+    super(arg1Column, arg2Column, arg3Column, outputColumnNum);
+  }
+
   public IfExprCondExprBase() {
     super();
   }
@@ -84,7 +93,7 @@ public abstract class IfExprCondExprBase extends VectorExpression {
 
     // Child #1 is the IF boolean expression.
     childExpressions[0].evaluate(batch);
-    LongColumnVector ifExprColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector ifExprColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     if (ifExprColVector.isRepeating) {
       isIfStatementResultRepeated = true;
       isIfStatementResultThen =

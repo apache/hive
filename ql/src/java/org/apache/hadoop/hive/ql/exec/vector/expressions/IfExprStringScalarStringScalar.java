@@ -63,7 +63,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -138,7 +138,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val "+ displayUtf8Bytes(arg2Scalar) + ", val "+ displayUtf8Bytes(arg3Scalar);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val "+ displayUtf8Bytes(arg2Scalar) + ", val "+ displayUtf8Bytes(arg3Scalar);
   }
 
   @Override

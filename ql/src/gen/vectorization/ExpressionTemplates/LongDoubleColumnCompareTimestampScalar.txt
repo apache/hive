@@ -63,7 +63,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[inputColumnNum];
+    <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector1.isNull;
@@ -154,7 +154,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
   }
 
   @Override

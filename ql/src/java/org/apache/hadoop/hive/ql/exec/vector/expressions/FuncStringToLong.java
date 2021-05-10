@@ -48,7 +48,7 @@ public abstract class FuncStringToLong extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -144,16 +144,16 @@ public abstract class FuncStringToLong extends VectorExpression {
   }
 
   public int getInputCol() {
-    return inputColumnNum;
+    return inputColumnNum[0];
   }
 
   public void setInputCol(int inputCol) {
-    this.inputColumnNum = inputCol;
+    this.inputColumnNum[0] = inputCol;
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumnNum;
+    return "col " + inputColumnNum[0];
   }
 
   @Override

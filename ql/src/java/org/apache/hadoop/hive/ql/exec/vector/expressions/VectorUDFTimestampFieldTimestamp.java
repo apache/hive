@@ -83,7 +83,7 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
       }
 
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
-    ColumnVector inputColVec = batch.cols[this.inputColumnNum];
+    ColumnVector inputColVec = batch.cols[this.inputColumnNum[0]];
 
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputColVec.isRepeating ? 1 : batch.size;
@@ -151,9 +151,9 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
 
   public String vectorExpressionParameters() {
     if (field == -1) {
-      return getColumnParamString(0, inputColumnNum);
+      return getColumnParamString(0, inputColumnNum[0]);
     } else {
-      return getColumnParamString(0, inputColumnNum) + ", field " + DateUtils.getFieldName(field);
+      return getColumnParamString(0, inputColumnNum[0]) + ", field " + DateUtils.getFieldName(field);
     }
   }
 

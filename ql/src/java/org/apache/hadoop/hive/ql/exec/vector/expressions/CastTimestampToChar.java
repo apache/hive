@@ -49,6 +49,6 @@ public class CastTimestampToChar extends CastTimestampToString implements TruncS
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

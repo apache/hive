@@ -45,9 +45,6 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
 
   public DecimalColumnInList() {
     super();
-
-    // Dummy final assignments.
-    inputColumnNum = -1;
   }
 
   /**
@@ -74,7 +71,7 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColumnVector = (DecimalColumnVector) batch.cols[inputColumnNum];
+    DecimalColumnVector inputColumnVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColumnVector.isNull;
@@ -170,7 +167,7 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputColumnNum[0]) + ", values " + Arrays.toString(inListValues);
   }
 
 }

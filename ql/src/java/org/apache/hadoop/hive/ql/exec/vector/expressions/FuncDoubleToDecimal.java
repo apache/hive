@@ -50,7 +50,7 @@ public abstract class FuncDoubleToDecimal extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum];
+    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
@@ -135,7 +135,7 @@ public abstract class FuncDoubleToDecimal extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

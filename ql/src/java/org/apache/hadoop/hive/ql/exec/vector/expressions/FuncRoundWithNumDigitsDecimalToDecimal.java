@@ -50,7 +50,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -130,7 +130,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", decimalPlaces " + decimalPlaces;
+    return getColumnParamString(0, inputColumnNum[0]) + ", decimalPlaces " + decimalPlaces;
   }
 
   @Override

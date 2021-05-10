@@ -41,7 +41,7 @@ public class ScalarNullOrCol extends ColOrCol {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
     super.doEvaluate(batch, new LongColumnVector(inputColVector.vector.length).fillWithNulls(),
         inputColVector);
@@ -49,7 +49,7 @@ public class ScalarNullOrCol extends ColOrCol {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getLongValueParamString(1, 0);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getLongValueParamString(1, 0);
   }
 
   @Override

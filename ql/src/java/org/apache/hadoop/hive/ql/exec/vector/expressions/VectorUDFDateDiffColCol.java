@@ -75,7 +75,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector1 = batch.cols[inputColumnNum];
+    ColumnVector inputColVector1 = batch.cols[inputColumnNum[0]];
     ColumnVector inputColVector2 = batch.cols[colNum2];
     int[] sel = batch.selected;
     int n = batch.size;
@@ -386,7 +386,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

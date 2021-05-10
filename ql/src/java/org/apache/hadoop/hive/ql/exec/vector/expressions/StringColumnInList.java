@@ -69,7 +69,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
       inSet.load(inListValues);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -170,7 +170,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
   public String vectorExpressionParameters() {
     StringBuilder sb = new StringBuilder();
     sb.append("col ");
-    sb.append(inputColumnNum);
+    sb.append(inputColumnNum[0]);
     sb.append(", values ");
     sb.append(displayArrayOfUtf8ByteArrays(inListValues));
     return sb.toString();

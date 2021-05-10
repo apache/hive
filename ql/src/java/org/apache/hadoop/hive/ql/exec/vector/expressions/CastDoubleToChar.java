@@ -49,6 +49,6 @@ public class CastDoubleToChar extends CastDoubleToString implements TruncStringO
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

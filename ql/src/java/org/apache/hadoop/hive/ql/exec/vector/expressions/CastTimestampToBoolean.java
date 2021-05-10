@@ -48,7 +48,7 @@ public class CastTimestampToBoolean extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -111,7 +111,7 @@ public class CastTimestampToBoolean extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

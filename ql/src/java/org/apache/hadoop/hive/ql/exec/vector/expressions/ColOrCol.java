@@ -35,18 +35,12 @@ public class ColOrCol extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum2;
-
   public ColOrCol(int colNum1, int colNum2, int outputColumnNum) {
-    super(colNum1, outputColumnNum);
-    this.colNum2 = colNum2;
+    super(colNum1, colNum2, outputColumnNum);
   }
 
   public ColOrCol() {
     super();
-
-    // Dummy final assignments.
-    colNum2 = -1;
   }
 
   @Override
@@ -56,8 +50,8 @@ public class ColOrCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum];
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[1]];
     doEvaluate(batch, inputColVector1, inputColVector2);
   }
 
@@ -304,7 +298,7 @@ public class ColOrCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

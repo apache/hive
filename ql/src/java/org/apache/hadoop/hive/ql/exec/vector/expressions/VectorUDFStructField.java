@@ -58,7 +58,7 @@ public class VectorUDFStructField extends VectorExpression {
 
     ColumnVector outV = batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    StructColumnVector structColumnVector = (StructColumnVector) batch.cols[inputColumnNum];
+    StructColumnVector structColumnVector = (StructColumnVector) batch.cols[inputColumnNum[0]];
     ColumnVector fieldColumnVector = structColumnVector.fields[fieldIndex];
 
     boolean[] inputIsNull = structColumnVector.isNull;
@@ -140,7 +140,7 @@ public class VectorUDFStructField extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumnNum) + ", " + getColumnParamString(1, fieldIndex);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, fieldIndex);
   }
 
   @Override

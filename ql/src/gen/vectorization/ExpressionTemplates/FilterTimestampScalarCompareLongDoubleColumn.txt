@@ -44,7 +44,7 @@ public class <ClassName> extends <BaseClassName> {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", " + getColumnParamString(1, inputColumnNum);
+    return "val " + value + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

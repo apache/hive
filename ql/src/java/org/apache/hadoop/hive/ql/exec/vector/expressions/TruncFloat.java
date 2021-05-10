@@ -47,7 +47,7 @@ public class TruncFloat extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumnNum + ", scale " + scale;
+    return "col " + inputColumnNum[0] + ", scale " + scale;
   }
 
   @Override
@@ -56,7 +56,7 @@ public class TruncFloat extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[inputColumnNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     ColumnVector outputColVector = batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;

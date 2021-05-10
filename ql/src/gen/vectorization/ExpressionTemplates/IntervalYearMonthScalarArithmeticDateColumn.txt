@@ -86,7 +86,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #2 is type date.
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
     // Output is type Date.
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -196,7 +196,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + value.toString() + ", " + getColumnParamString(0, inputColumnNum);
+    return "val " + value.toString() + ", " + getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

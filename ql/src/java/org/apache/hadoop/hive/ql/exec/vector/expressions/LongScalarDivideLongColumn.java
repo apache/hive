@@ -55,7 +55,7 @@ public class LongScalarDivideLongColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -157,7 +157,7 @@ public class LongScalarDivideLongColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", " + getColumnParamString(1, inputColumnNum);
+    return "val " + value + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

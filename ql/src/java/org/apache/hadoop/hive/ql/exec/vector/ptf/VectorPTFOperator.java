@@ -495,6 +495,15 @@ public class VectorPTFOperator extends Operator<PTFDesc>
           evaluator.inputVecExpr.inputColumnNum = IntStream.range(0, bufferedColumnMap.length)
               .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.inputColumnNum)
               .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum);
+
+          evaluator.inputVecExpr.inputColumnNum2 = IntStream.range(0, bufferedColumnMap.length)
+              .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.inputColumnNum2)
+              .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum2);
+
+          evaluator.inputVecExpr.inputColumnNum3 = IntStream.range(0, bufferedColumnMap.length)
+              .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.inputColumnNum3)
+              .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum3);
+
           evaluator.inputVecExpr.outputColumnNum = IntStream.range(0, bufferedColumnMap.length)
               .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.outputColumnNum)
               .findFirst().orElseGet(() -> evaluator.inputVecExpr.outputColumnNum);

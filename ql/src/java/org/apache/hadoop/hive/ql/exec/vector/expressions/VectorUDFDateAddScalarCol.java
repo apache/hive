@@ -83,7 +83,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputCol = (LongColumnVector) batch.cols[this.inputColumnNum];
+    LongColumnVector inputCol = (LongColumnVector) batch.cols[this.inputColumnNum[0]];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
@@ -250,7 +250,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     } else {
       value = "unknown";
     }
-    return "val " + value + ", " + getColumnParamString(0, inputColumnNum);
+    return "val " + value + ", " + getColumnParamString(0, inputColumnNum[0]);
   }
 
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
