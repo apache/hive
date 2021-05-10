@@ -21,7 +21,6 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -80,7 +80,7 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (fmtStr != null) {
         try {
           formatter = new SimpleDateFormat(fmtStr);
-          formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+          formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
         } catch (IllegalArgumentException e) {
           // ignore
         }
