@@ -1760,7 +1760,7 @@ public abstract class BaseSemanticAnalyzer {
     Database database;
     try {
       database = db.getDatabase(dbName);
-      if (database.getType().equals(DatabaseType.REMOTE)) {
+      if (database != null && database.getType().equals(DatabaseType.REMOTE)) {
         isRemoteType = true;
       } else {
         isRemoteType = false;
