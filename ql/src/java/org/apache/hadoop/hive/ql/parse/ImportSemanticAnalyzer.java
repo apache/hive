@@ -67,6 +67,8 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.PathResolver;
+import org.apache.hadoop.hive.ql.plan.TablePathResolver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -518,13 +520,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                    Long writeId, int stmtId,
                                    String dumpRoot, ReplicationMetricCollector metricCollector) {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
-    LoadTableStateWrapper loadTableStateWrapper = new LoadTableStateWrapper(replace, writeId, stmtId, x.getHive(),
-        x.getCtx(), tblDesc, replicationSpec.isInReplicationScope());
+
+    PathResolver resolver = new TablePathResolver(replace, writeId, stmtId, x.getHive(), x.getCtx(), tblDesc,
+        replicationSpec.isInReplicationScope());
 
     Task<?> copyTask;
     // Corresponding work instances are not complete yet. Some of the values will be calculated and assigned when task
-    // is being executed. LoadTableStateWrapper contains the required variables (for this delayed calculation)
-    // and is passed in these work instances.
+    // is being executed.
     if (replicationSpec.isInReplicationScope()) {
       boolean copyAtLoad = x.getConf().getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, null, x.getConf(),
@@ -532,14 +534,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       copyTask = TaskFactory.get(new CopyWork(dataPath, null, false, dumpRoot, metricCollector, true));
     }
-    ((CopyWork) copyTask.getWork()).setLoadTableStateWrapper(loadTableStateWrapper);
+    copyTask.setPathResolver(resolver);
 
     MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false,
-        dumpRoot, metricCollector, true, loadTableStateWrapper);
+        dumpRoot, metricCollector, true);
 
     //if Importing into existing table, FileFormat is checked by
     // ImportSemanticAnalzyer.checked checkTable()
     Task<?> loadTableTask = TaskFactory.get(moveWork, x.getConf());
+    loadTableTask.setPathResolver(resolver);
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
     return loadTableTask;
@@ -1156,7 +1159,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
+  public static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
       throws SemanticException {
     Table newTable = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
     //so that we know the type of table we are creating: acid/MM to match what was exported
@@ -1438,115 +1441,4 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       return null;
     }
   }
-
-  public static class LoadTableStateWrapper {
-    private final boolean inReplScope;
-    private final boolean replace;
-    private final Long writeId;
-    private final int stmtId;
-    private final Hive hive;
-    private final Context ctx;
-    private final ImportTableDesc tblDesc;
-    private Path destPath = null, loadPath = null;
-    private LoadTableDesc.LoadFileType lft;
-    private boolean isSkipTrash = false;
-    private boolean needRecycle = false;
-    private final Path tgtPath;
-    private boolean isCalculated = false;
-
-    public LoadTableStateWrapper(boolean replace, Long writeId, int stmtId, Hive hive, Context ctx, ImportTableDesc tblDesc,
-        boolean inReplScope) {
-      this.replace = replace;
-      this.writeId = writeId;
-      this.stmtId = stmtId;
-      this.hive = hive;
-      this.ctx = ctx;
-      this.tblDesc = tblDesc;
-      this.inReplScope = inReplScope;
-      tgtPath = tblDesc == null ? null : new Path(tblDesc.getLocation());
-    }
-
-    public Table getTableIfExists() throws HiveException {
-      Table table = tableIfExists(tblDesc, hive);
-      if (table == null) {
-        table = createNewTableMetadataObject(tblDesc, true);
-      }
-
-      return table;
-    }
-
-    public void calculateValues(Table table) throws HiveException {
-      assert table != null;
-      assert table.getParameters() != null;
-
-      if (!isCalculated) {
-        if (inReplScope) {
-          isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-          if (table.isTemporary()) {
-            needRecycle = false;
-          } else {
-            org.apache.hadoop.hive.metastore.api.Database db = hive.getDatabase(table.getDbName());
-            needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
-          }
-        }
-
-        if (AcidUtils.isTransactionalTable(table)) {
-          String mmSubdir = replace ? AcidUtils.baseDir(writeId) : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-          destPath = new Path(tgtPath, mmSubdir);
-          loadPath = tgtPath;
-          lft = LoadTableDesc.LoadFileType.KEEP_EXISTING;
-        } else {
-          destPath = loadPath = ctx.getExternalTmpPath(tgtPath);
-          lft = replace ? LoadTableDesc.LoadFileType.REPLACE_ALL : LoadTableDesc.LoadFileType.OVERWRITE_EXISTING;
-        }
-
-        isCalculated = true;
-      }
-    }
-
-    public Long getWriteId() {
-      return writeId;
-    }
-
-    public int getStmtId() {
-      return stmtId;
-    }
-
-    public boolean isReplace() {
-      return replace;
-    }
-
-    public Path getTgtPath() {
-      return tgtPath;
-    }
-
-    public boolean isInReplScope() {
-      return inReplScope;
-    }
-
-    public Path getDestPath() {
-      return destPath;
-    }
-
-    public Path getLoadPath() {
-      return loadPath;
-    }
-
-    public LoadTableDesc.LoadFileType getLft() {
-      return lft;
-    }
-
-    public boolean isSkipTrash() {
-      return isSkipTrash;
-    }
-
-    public boolean isNeedRecycle() {
-      return needRecycle;
-    }
-
-    public boolean isCalculated() {
-      return isCalculated;
-    }
-  }
-
 }

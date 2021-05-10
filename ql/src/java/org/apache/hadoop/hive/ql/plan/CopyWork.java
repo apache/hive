@@ -21,9 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.LoadTableStateWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -41,7 +38,6 @@ public class CopyWork implements Serializable {
   private boolean isReplication;
   private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
-  protected LoadTableStateWrapper loadTableStateWrapper;
 
   public CopyWork() {
   }
@@ -141,17 +137,7 @@ public class CopyWork implements Serializable {
     this.overwrite = overwrite;
   }
 
-  public void setLoadTableStateWrapper(LoadTableStateWrapper loadTableStateWrapper) {
-    this.loadTableStateWrapper = loadTableStateWrapper;
-  }
-
-  public void setValuesBeforeExec() throws HiveException {
-    if (loadTableStateWrapper == null) {
-      return;
-    }
-
-    Table table = loadTableStateWrapper.getTableIfExists();
-    loadTableStateWrapper.calculateValues(table);
-    this.toPath = new Path[] { loadTableStateWrapper.getDestPath() };
+  public void setToPath(Path[] toPath) {
+    this.toPath = toPath;
   }
 }

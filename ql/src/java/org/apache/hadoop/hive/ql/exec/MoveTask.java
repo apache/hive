@@ -305,7 +305,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      work.setValuesBeforeExec();
+      setupWork();
     } catch (HiveException he) {
       return processHiveException(he);
     }
@@ -499,6 +499,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     errorCode = ReplUtils.handleException(work.isReplication(), he, work.getDumpDirectory(),
         work.getMetricCollector(), getName(), conf);
     return errorCode;
+  }
+
+  private void setupWork() throws HiveException {
+    if (null != getPathResolver()) {
+      getPathResolver().setupWork(work);
+    }
   }
 
   public void logMessage(LoadTableDesc tbd) {

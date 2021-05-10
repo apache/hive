@@ -138,17 +138,4 @@ public class ReplCopyWork extends CopyWork {
   public boolean isOverWrite() {
     return overWrite;
   }
-
-  @Override
-  public void setValuesBeforeExec() throws HiveException {
-    if (loadTableStateWrapper == null) {
-      return;
-    }
-    super.setValuesBeforeExec();
-    if (loadTableStateWrapper.isReplace()) {
-      setDeleteDestIfExist(true);
-      setAutoPurge(loadTableStateWrapper.isSkipTrash());
-      setNeedRecycle(loadTableStateWrapper.isNeedRecycle());
-    }
-  }
 }
