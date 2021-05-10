@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.ql.util.PeriodicLoggerWithStopwatch;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -132,8 +133,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private StructObjectInspector recIdInspector; // OI for inspecting record id
   private IntObjectInspector bucketInspector; // OI for inspecting bucket id
   protected transient long numRows = 0;
-  protected transient long cntr = 1;
-  protected transient long logEveryNRows = 0;
   protected transient int rowIndex = 0;
   private transient Path destTablePath;
   private transient boolean isInsertOverwrite;
@@ -141,6 +140,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
   private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
+  private transient PeriodicLoggerWithStopwatch periodicLogger;
 
   /**
    * Counters.
@@ -720,8 +720,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       numRows = 0;
-      cntr = 1;
-      logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
+      periodicLogger = getPeriodicLoggerWithPrefix(hconf, toString() + ": records written - ");
 
       statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
 
@@ -1123,16 +1122,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
         fpaths.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
-
-      if ((++numRows == cntr) && LOG.isInfoEnabled()) {
-        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
-        if (cntr < 0 || numRows < 0) {
-          cntr = 0;
-          numRows = 1;
-        }
-        LOG.info(toString() + ": records written - " + numRows);
-      }
-
+      numRows += 1;
+      periodicLogger.increment();
       int writerOffset;
       // This if/else chain looks ugly in the inner loop, but given that it will be 100% the same
       // for a given operator branch prediction should work quite nicely on it.
@@ -1430,7 +1421,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void closeOp(boolean abort) throws HiveException {
 
     row_count.set(numRows);
-    LOG.info(toString() + ": records written - " + numRows);
+    periodicLogger.log();
 
     if ("spark".equalsIgnoreCase(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
       SparkMetricUtils.updateSparkRecordsWrittenMetrics(runTimeNumRows);

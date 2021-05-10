@@ -31,13 +31,11 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -46,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.util.PeriodicLoggerWithStopwatch;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -73,13 +72,11 @@ import com.google.common.annotations.VisibleForTesting;
  * different from regular operators in that it starts off by processing a
  * Writable data structure from a Table (instead of a Hive Object).
  **/
-@SuppressWarnings("deprecation")
 public class MapOperator extends AbstractMapOperator {
 
   private static final long serialVersionUID = 1L;
 
-  protected transient long cntr = 1;
-  protected transient long logEveryNRows = 0;
+  private transient PeriodicLoggerWithStopwatch periodicLogger;
 
   // input path --> {operator --> context}
   private final Map<Path, Map<Operator<?>, MapOpCtx>> opCtxMap = new HashMap<>();
@@ -501,8 +498,7 @@ public class MapOperator extends AbstractMapOperator {
   public void initializeMapOperator(Configuration hconf) throws HiveException {
     super.initializeMapOperator(hconf);
 
-    cntr = 1;
-    logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
+    periodicLogger = getPeriodicLoggerWithPrefix(hconf, toString() + ": records read - ");
 
     for (Entry<Operator<?>, StructObjectInspector> entry : childrenOpToOI.entrySet()) {
       Operator<?> child = entry.getKey();
@@ -582,14 +578,7 @@ public class MapOperator extends AbstractMapOperator {
   protected final void rowsForwarded(int childrenDone, int rows) {
     numRows += rows;
     if (LOG.isInfoEnabled()) {
-      while (numRows >= cntr) {
-        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
-        if (cntr < 0 || numRows < 0) {
-          cntr = 1;
-          numRows = 0;
-        }
-        LOG.info(toString() + ": records read - " + numRows);
-      }
+      periodicLogger.increment(rows);
     }
     if (childrenDone == currentCtxs.length) {
       setDone(true);

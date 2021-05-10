@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.util.PeriodicLoggerWithStopwatch;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -137,6 +138,8 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
   // Debug display.
   protected transient long batchCounter;
+
+  private transient PeriodicLoggerWithStopwatch periodicLogger;
 
   //---------------------------------------------------------------------------
 
@@ -301,6 +304,8 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     }
 
     batchCounter = 0;
+
+    periodicLogger = getPeriodicLoggerWithPrefix(hconf, toString() + ": records written - ");
   }
 
   protected void initializeEmptyKey(int tag) {
@@ -352,17 +357,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     // forward is not called
     if (null != out) {
       numRows++;
-      if (LOG.isInfoEnabled()) {
-        if (numRows == cntr) {
-          cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
-          if (cntr < 0 || numRows < 0) {
-            cntr = 0;
-            numRows = 1;
-          }
-          LOG.info(toString() + ": records written - " + numRows);
-        }
-      }
-
+      periodicLogger.increment();
       // BytesWritable valueBytesWritable = (BytesWritable) valueWritable;
       // LOG.info("VectorReduceSinkCommonOperator collect keyWritable " + keyWritable.getLength() + " " +
       //     VectorizedBatchUtil.displayBytes(keyWritable.getBytes(), 0, keyWritable.getLength()) +
@@ -382,9 +377,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     super.closeOp(abort);
     out = null;
     reducerHash = null;
-    if (LOG.isInfoEnabled()) {
-      LOG.info(toString() + ": records written - " + numRows);
-    }
+    periodicLogger.log();
     this.runTimeNumRows = numRows;
   }
 
