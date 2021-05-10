@@ -86,7 +86,6 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     this.hmsHandler = handler;
     this.defaultCatalog = MetaStoreUtils.getDefaultCatalog(handler.getConf());
     this.isTenantBasedStorage = hmsHandler.getConf().getBoolean(MetastoreConf.ConfVars.ALLOW_TENANT_BASED_STORAGE.getVarname(), false);
-    //    this.xMode = hmsHandler.getConf
 
     acidWriteList.addAll(ACIDCOMMONWRITELIST);
     acidList.addAll(acidWriteList);
@@ -531,8 +530,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (requiredCapabilities.contains(HIVEBUCKET2) && !processorCapabilities.contains(HIVEBUCKET2)) {
               Partition newPartition = new Partition(partition);
               StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA))
-               {
+              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
                 newSd.setNumBuckets(-1); // removing bucketing if HIVEBUCKET2 isnt specified
               }
               newPartition.setSd(newSd);
@@ -546,7 +544,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               if (!processorCapabilities.contains(HIVEBUCKET2)) {
                 Partition newPartition = new Partition(partition);
                 StorageDescriptor newSd = new StorageDescriptor(partition.getSd());
-              if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
+                if (!processorCapabilities.contains(ACCEPTSUNMODIFIEDMETADATA)) {
                   newSd.setNumBuckets(-1); // remove bucketing info
                 }
                 newPartition.setSd(newSd);
@@ -567,14 +565,22 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   }
 
   static enum TableLocationStrategy {
+    seqprefix {
+      @Override
+      Path getLocation(IHMSHandler hmsHandler, Database db, Table table, int idx) throws MetaException {
+        if (idx == 0) {
+          return getDefaultPath(hmsHandler, db, table.getTableName());
+        }
+        return getDefaultPath(hmsHandler, db, idx + "_" + table.getTableName());
+      }
+    },
     seqsuffix {
       @Override
       Path getLocation(IHMSHandler hmsHandler, Database db, Table table, int idx) throws MetaException {
         if (idx == 0) {
           return getDefaultPath(hmsHandler, db, table.getTableName());
         }
-        return getDefaultPath(hmsHandler, db, table.getTableName() + "-" + idx);
-
+        return getDefaultPath(hmsHandler, db, table.getTableName() + "_" + idx);
       }
     },
     prohibit {

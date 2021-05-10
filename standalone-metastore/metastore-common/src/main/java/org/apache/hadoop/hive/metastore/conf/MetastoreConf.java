@@ -953,9 +953,10 @@ public class MetastoreConf {
             + " This class should implement the IMetaStoreMetadataTransformer interface"),
     METASTORE_METADATA_TRANSFORMER_LOCATION_MODE("metastore.metadata.transformer.location.mode",
         "metastore.metadata.transformer.location.mode", "seqsuffix",
-        new StringSetValidator("seqsuffix", "prohibit"),
+        new StringSetValidator("seqsuffix", "seqprefix", "prohibit"),
         "Defines the strategy to use in case the default location for a translated table already exists.\n"
-            + "  seqsuffix: add a '-N' suffix to the table name to get a unique location (table,table-1,table-2,...)\n"
+            + "  seqsuffix: add a '_N' suffix to the table name to get a unique location (table,table_1,table_2,...)\n"
+            + "  seqprefix: adds a 'N_' prefix to the table name to get a unique location (table,1_table,2_table,...)\n"
             + "  prohibit: do not allow alternate locations; throw error if the default is not available\n"),
 
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
