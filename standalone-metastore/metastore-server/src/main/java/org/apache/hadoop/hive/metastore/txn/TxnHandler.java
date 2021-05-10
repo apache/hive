@@ -287,10 +287,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT * FROM (SELECT COUNT(*) FROM \"TXN_TO_WRITE_ID\") \"TTWID\" CROSS JOIN (" +
       "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\") \"CTC\" CROSS JOIN (" +
       "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
-        TxnStatus.OPEN + "') \"T\" CROSS JOIN (" +
+        TxnStatus.OPEN + "' AND \"TXN_TYPE\" = "+ TxnType.REPL_CREATED.getValue() +") \"TR\" CROSS JOIN (" +
+      "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
+        TxnStatus.OPEN + "' AND \"TXN_TYPE\" != "+ TxnType.REPL_CREATED.getValue() +") \"T\" CROSS JOIN (" +
       "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
         TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
       "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\"";
+
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -3753,14 +3756,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (rs.next()) {
           metrics.setTxnToWriteIdCount(rs.getInt(1));
           metrics.setCompletedTxnsCount(rs.getInt(2));
-          metrics.setOpenTxnsCount(rs.getInt(3));
-          metrics.setOldestOpenTxnId(rs.getInt(4));
-          metrics.setOldestOpenTxnAge(rs.getInt(5));
-          metrics.setAbortedTxnsCount(rs.getInt(6));
-          metrics.setOldestAbortedTxnId(rs.getInt(7));
-          metrics.setOldestAbortedTxnAge(rs.getInt(8));
-          metrics.setLocksCount(rs.getInt(9));
-          metrics.setOldestLockAge(rs.getInt(10));
+          metrics.setOpenReplTxnsCount(rs.getInt(3));
+          metrics.setOldestOpenReplTxnId(rs.getInt(4));
+          metrics.setOldestOpenReplTxnAge(rs.getInt(5));
+          metrics.setOpenNonReplTxnsCount(rs.getInt(6));
+          metrics.setOldestOpenNonReplTxnId(rs.getInt(7));
+          metrics.setOldestOpenNonReplTxnAge(rs.getInt(8));
+          metrics.setAbortedTxnsCount(rs.getInt(9));
+          metrics.setOldestAbortedTxnId(rs.getInt(10));
+          metrics.setOldestAbortedTxnAge(rs.getInt(11));
+          metrics.setLocksCount(rs.getInt(12));
+          metrics.setOldestLockAge(rs.getInt(13));
         }
         return metrics;
       } catch (SQLException e) {
