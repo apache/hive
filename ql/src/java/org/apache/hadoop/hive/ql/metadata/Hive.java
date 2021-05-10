@@ -2612,11 +2612,7 @@ public class Hive {
       try {
         setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
       } catch (TException e) {
-<<<<<<< HEAD
-        LOG.error("Error setStatsPropAndAlterPartition", e);
-=======
->>>>>>> HIVE-24555: Improve Hive Class Logging/Error Handling
-        throw new HiveException(e);
+        throw new HiveException("Error setStatsPropAndAlterPartition", e);
       }
     } catch (Exception e) {
       try {
@@ -3102,12 +3098,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return result;
     } catch (TException te) {
-<<<<<<< HEAD
-      LOG.error("Failed loadDynamicPartitions", te);
-=======
->>>>>>> HIVE-24555: Improve Hive Class Logging/Error Handling
       throw new HiveException("Exception updating metastore for acid table "
-          + tbd.getTable().getTableName() + " with partitions " + result.values(), te);
+          + tbd.getTable().getTableName() + " with partitions " + result.size(), te);
     }
   }
 
@@ -3296,11 +3288,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       GetPartitionResponse res = getMSC().getPartitionRequest(req);
       return res.getPartition();
     } catch (Exception e) {
-<<<<<<< HEAD
-      LOG.error("Failed getPartition", e);
-=======
->>>>>>> HIVE-24555: Improve Hive Class Logging/Error Handling
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartition", e);
     }
   }
 
