@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 public class CastDateToString extends LongToStringUnaryUDF {
   private static final long serialVersionUID = 1L;
@@ -33,13 +33,13 @@ public class CastDateToString extends LongToStringUnaryUDF {
   public CastDateToString() {
     super();
     formatter = new SimpleDateFormat("yyyy-MM-dd");
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
   }
 
   public CastDateToString(int inputColumn, int outputColumnNum) {
     super(inputColumn, outputColumnNum);
     formatter = new SimpleDateFormat("yyyy-MM-dd");
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
   }
 
   // The assign method will be overridden for CHAR and VARCHAR.
