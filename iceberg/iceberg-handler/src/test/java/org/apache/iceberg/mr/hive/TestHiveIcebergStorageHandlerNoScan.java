@@ -536,6 +536,37 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testAlterTableProperties() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
+        "t_int INT,  " +
+        "t_string STRING) " +
+        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+    String propKey = "dummy";
+    String propValue = "dummy_val";
+    // add new property
+    shell.executeStatement(String.format("ALTER TABLE customers SET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    // Check the Iceberg table parameters
+    Table icebergTable = testTables.loadTable(identifier);
+    Assert.assertTrue(icebergTable.properties().containsKey(propKey));
+    Assert.assertEquals(icebergTable.properties().get(propKey), propValue);
+    // update existing property
+    propValue = "new_dummy_val";
+    shell.executeStatement(String.format("ALTER TABLE customers SET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    // Check the Iceberg table parameters
+    icebergTable.refresh();
+    Assert.assertTrue(icebergTable.properties().containsKey(propKey));
+    Assert.assertEquals(icebergTable.properties().get(propKey), propValue);
+    // remove existing property
+    shell.executeStatement(String.format("ALTER TABLE customers UNSET TBLPROPERTIES('%s'='%s')", propKey, propValue));
+    // Check the Iceberg table parameters
+    icebergTable.refresh();
+    Assert.assertFalse(icebergTable.properties().containsKey(propKey));
+  }
+
+  @Test
   public void testIcebergAndHmsTableProperties() throws Exception {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 

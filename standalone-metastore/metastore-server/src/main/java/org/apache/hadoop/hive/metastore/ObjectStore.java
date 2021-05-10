@@ -1634,6 +1634,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public Table getTable(String catalogName, String dbName, String tableName, String writeIdList, long tableId)
+      throws MetaException {
+    return getTable( catalogName, dbName, tableName, writeIdList);
+  }
+
+  @Override
   public List<String> getTables(String catName, String dbName, String pattern)
       throws MetaException {
     return getTables(catName, dbName, pattern, null, -1);

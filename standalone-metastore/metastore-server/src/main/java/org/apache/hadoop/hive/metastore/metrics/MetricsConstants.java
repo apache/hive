@@ -23,11 +23,15 @@ public class MetricsConstants {
   public static final String COMPACTION_STATUS_PREFIX = "compaction_num_";
   public static final String COMPACTION_OLDEST_ENQUEUE_AGE = "compaction_oldest_enqueue_age_in_sec";
   public static final String COMPACTION_INITIATOR_CYCLE = "compaction_initiator_cycle";
+  public static final String COMPACTION_FAILED_INITIATOR_RATIO = "compaction_failed_initiator_ratio";
   public static final String COMPACTION_CLEANER_CYCLE = "compaction_cleaner_cycle";
+  public static final String COMPACTION_FAILED_CLEANER_RATIO = "compaction_failed_cleaner_ratio";
   public static final String COMPACTION_WORKER_CYCLE = "compaction_worker_cycle";
 
-  public static final String OLDEST_OPEN_TXN_ID = "oldest_open_txn_id";
-  public static final String OLDEST_OPEN_TXN_AGE = "oldest_open_txn_age_in_sec";
+  public static final String OLDEST_OPEN_REPL_TXN_ID = "oldest_open_repl_txn_id";
+  public static final String OLDEST_OPEN_NON_REPL_TXN_ID = "oldest_open_non_repl_txn_id";
+  public static final String OLDEST_OPEN_REPL_TXN_AGE = "oldest_open_repl_txn_age_in_sec";
+  public static final String OLDEST_OPEN_NON_REPL_TXN_AGE = "oldest_open_non_repl_txn_age_in_sec";
   // number of aborted txns in TXNS table
   public static final String NUM_ABORTED_TXNS = "num_aborted_transactions";
   public static final String OLDEST_ABORTED_TXN_ID = "oldest_aborted_txn_id";
@@ -61,6 +65,8 @@ public class MetricsConstants {
   public static final String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
 
   public static final String NUM_OPEN_TXNS = "num_open_transactions";
+  public static final String NUM_OPEN_REPL_TXNS = "num_open_repl_transactions";
+  public static final String NUM_OPEN_NON_REPL_TXNS = "num_open_non_repl_transactions";
   public static final String TOTAL_NUM_ABORTED_TXNS = "total_num_aborted_transactions";
   public static final String TOTAL_NUM_COMMITTED_TXNS = "total_num_committed_transactions";
   public static final String TOTAL_NUM_TIMED_OUT_TXNS = "total_num_timed_out_transactions";

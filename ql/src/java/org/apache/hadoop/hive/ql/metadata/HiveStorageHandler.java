@@ -179,11 +179,13 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Test if the storage handler allows the push-down of join filter predicate to prune further the splits.
    *
+   * @param table The table to filter.
    * @param syntheticFilterPredicate Join filter predicate.
    * @return true if supports dynamic split pruning for the given predicate.
    */
 
-  default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
+  default boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
+      ExprNodeDesc syntheticFilterPredicate) {
     return false;
   }
 

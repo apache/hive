@@ -343,6 +343,19 @@ public interface RawStore extends Configurable {
                  String writeIdList) throws MetaException;
 
   /**
+   * Get a table object.
+   * @param catalogName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param writeIdList string format of valid writeId transaction list
+   * @return table object, or null if no such table exists (wow it would be nice if we either
+   * consistently returned null or consistently threw NoSuchObjectException).
+   * @throws MetaException something went wrong in the RDBMS
+   */
+  Table getTable(String catalogName, String dbName, String tableName,
+      String writeIdList, long tableId) throws MetaException;
+
+  /**
    * Add a partition.
    * @param part partition to add
    * @return true if the partition was successfully added.

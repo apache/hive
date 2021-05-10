@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -136,6 +137,22 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
 
     try {
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, desc.getType().name());
+      if (desc.getType() == AlterTableType.ADDPROPS) {
+        Map<String, String> oldTableParameters = oldTable.getParameters();
+        environmentContext.putToProperties(HiveMetaHook.SET_PROPERTIES,
+            table.getParameters().entrySet().stream()
+                .filter(e -> !oldTableParameters.containsKey(e.getKey()) ||
+                    !oldTableParameters.get(e.getKey()).equals(e.getValue()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(HiveMetaHook.PROPERTIES_SEPARATOR)));
+      } else if (desc.getType() == AlterTableType.DROPPROPS) {
+        Map<String, String> newTableParameters = table.getParameters();
+        environmentContext.putToProperties(HiveMetaHook.UNSET_PROPERTIES,
+            oldTable.getParameters().entrySet().stream()
+                .filter(e -> !newTableParameters.containsKey(e.getKey()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(HiveMetaHook.PROPERTIES_SEPARATOR)));
+      }
       if (partitions == null) {
         long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
         context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true,

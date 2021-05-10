@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -38,10 +39,12 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.metrics.AcidMetricService.replaceWhitespace;
 
@@ -162,6 +166,87 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(originalValue,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
+  }
+
+  @Test
+  public void  testInitiatorNoFailure() throws Exception {
+    startInitiator();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testCleanerNoFailure() throws Exception {
+    startCleaner();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testInitiatorFailure() throws Exception {
+    ThrowingTxnHandler.doThrow = true;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
+    startInitiator();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
+    Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testCleanerFailure() throws Exception {
+    ThrowingTxnHandler.doThrow = true;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
+    startCleaner();
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+    Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testInitiatorAuxFailure() throws Exception {
+    TxnStore.MutexAPI.LockHandle handle = null;
+    try {
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+      final Thread main = Thread.currentThread();
+      interruptThread(5000, main);
+      startInitiator();
+    } finally {
+      if (handle != null) {
+        handle.releaseLocks();
+      }
+    }
+    // the lock timeout on AUX lock, should be ignored.
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
+    Assert.assertEquals(0, ratio.getLeft().get());
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
+  }
+
+  @Test
+  public void  testCleanerAuxFailure() throws Exception {
+    TxnStore.MutexAPI.LockHandle handle = null;
+    try {
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+      final Thread main = Thread.currentThread();
+      interruptThread(5000, main);
+      startCleaner();
+    } finally {
+      if (handle != null) {
+        handle.releaseLocks();
+      }
+    }
+    // the lock timeout on AUX lock, should be ignored.
+    Pair<AtomicInteger, AtomicInteger> ratio =
+        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
+    Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
   }
 
   @Test
@@ -422,6 +507,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     long start = System.currentTimeMillis();
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
+    openTxn(TxnType.REPL_CREATED);
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
@@ -447,11 +533,19 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS).intValue());
 
     Assert.assertEquals(2,
-        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_NON_REPL_TXNS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_REPL_TXNS).intValue());
+
     Assert.assertEquals(23,
-        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue());
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_AGE).intValue() >= 1);
+
+    Assert.assertEquals(25,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_AGE).intValue() >= 1);
 
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_LOCKS).intValue());
@@ -464,7 +558,7 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
     start = System.currentTimeMillis();
-    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(25L, 27L)));
+    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(26L, 28L)));
     Thread.sleep(1000);
 
     runAcidMetricService();
@@ -473,7 +567,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() >= 1);
 
-    Assert.assertEquals(25,
+    Assert.assertEquals(26,
         Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
@@ -516,6 +610,17 @@ public class TestCompactionMetrics  extends CompactorTest {
     element.setInitiatorVersion("4.0.0");
     element.setWorkerVersion("4.0.0");
     return element;
+  }
+
+  private void interruptThread(long timeout, Thread target) {
+    Thread t = new Thread(() -> {
+      try {
+        Thread.sleep(timeout);
+        target.interrupt();
+      } catch (Exception e) {}
+    });
+    t.setDaemon(true);
+    t.start();
   }
 
   @Override

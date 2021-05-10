@@ -64,7 +64,7 @@ public class ReplExternalTables {
    * It returns list of all the external table locations.
    */
   void dataLocationDump(Table table, FileList fileList,
-                        Path dbLoc, boolean isTableLevelReplication, HiveConf conf)
+                        List<String> singleCopyPaths, boolean isTableLevelReplication, HiveConf conf)
           throws InterruptedException, IOException, HiveException {
     if (!shouldWrite()) {
       return;
@@ -75,8 +75,7 @@ public class ReplExternalTables {
                       .getTableType());
     }
     Path fullyQualifiedDataLocation = PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
-    if (isTableLevelReplication || !FileUtils
-            .isPathWithinSubtree(table.getDataLocation(), dbLoc)) {
+    if (isTableLevelReplication || !isPathWithinSubtree(table.getDataLocation(), singleCopyPaths)) {
       dirLocationToCopy(table.getTableName(), fileList, fullyQualifiedDataLocation, conf);
     }
     if (table.isPartitioned()) {
@@ -97,11 +96,10 @@ public class ReplExternalTables {
                 partition.getDataLocation(), table.getDataLocation()
         );
         if (partitionLocOutsideTableLoc) {
-          // check if the entire db location is getting copied, then the
-          // partition isn't inside the db location, if so we can skip
-          // copying this separately.
-          if (!isTableLevelReplication && FileUtils
-                  .isPathWithinSubtree(partition.getDataLocation(), dbLoc)) {
+          // check if the partition is outside the table location but inside any of the single copy task paths, in
+          // that case we need not to create a task for this partition, that would get covered by one of the single
+          // copy paths
+          if (!isTableLevelReplication && isPathWithinSubtree(partition.getDataLocation(), singleCopyPaths)) {
             partitionLocOutsideTableLoc = false;
           }
         }
@@ -114,11 +112,34 @@ public class ReplExternalTables {
     }
   }
 
-  void dbLocationDump(String dbName, Path dbLocation, FileList fileList,
-                      HiveConf conf) throws Exception {
-    Path fullyQualifiedDataLocation = PathBuilder
-            .fullyQualifiedHDFSUri(dbLocation, FileSystem.get(hiveConf));
-    dirLocationToCopy(dbName, fileList, fullyQualifiedDataLocation, conf);
+  /**
+   * Creates copy task for the paths configured, irrespective of which table/partition belongs to it.
+   * @param singlePathLocations paths to be copied.
+   * @param fileList the tracking file which maintains the list of tasks.
+   * @param conf Hive Configuration.
+   * @throws Exception in case of any error.
+   */
+  void dumpNonTableLevelCopyPaths(List<String> singlePathLocations, FileList fileList, HiveConf conf) throws Exception {
+    for (String location : singlePathLocations) {
+      if (!StringUtils.isEmpty(location)) {
+        Path fullyQualifiedDataLocation =
+            PathBuilder.fullyQualifiedHDFSUri(new Path(location), FileSystem.get(hiveConf));
+        dirLocationToCopy(fullyQualifiedDataLocation.getName(), fileList, fullyQualifiedDataLocation, conf);
+      }
+    }
+  }
+
+  private boolean isPathWithinSubtree(Path path, List<String> parentPaths) {
+    boolean response = false;
+    for (String parent : parentPaths) {
+      if (!StringUtils.isEmpty(parent)) {
+        response = FileUtils.isPathWithinSubtree(path, new Path(parent));
+      }
+      if (response) {
+        break;
+      }
+    }
+    return response;
   }
 
   private void dirLocationToCopy(String tableName, FileList fileList, Path sourcePath, HiveConf conf)

@@ -91,11 +91,12 @@ public class AcidMetricService  implements MetastoreTaskThread {
     Metrics.getOrCreateGauge(NUM_TXN_TO_WRITEID).set(metrics.getTxnToWriteIdCount());
     Metrics.getOrCreateGauge(NUM_COMPLETED_TXN_COMPONENTS).set(metrics.getCompletedTxnsCount());
 
-    // NOTE: AcidOpenTxnsCounterService has a duplicate countOpenTxns() functionality and could be disabled.
-    // PS: make sure to update `numOpenTxns` counter in TxnHandler.
-    Metrics.getOrCreateGauge(NUM_OPEN_TXNS).set(metrics.getOpenTxnsCount());
-    Metrics.getOrCreateGauge(OLDEST_OPEN_TXN_ID).set(metrics.getOldestOpenTxnId());
-    Metrics.getOrCreateGauge(OLDEST_OPEN_TXN_AGE).set(metrics.getOldestOpenTxnAge());
+    Metrics.getOrCreateGauge(NUM_OPEN_REPL_TXNS).set(metrics.getOpenReplTxnsCount());
+    Metrics.getOrCreateGauge(OLDEST_OPEN_REPL_TXN_ID).set(metrics.getOldestOpenReplTxnId());
+    Metrics.getOrCreateGauge(OLDEST_OPEN_REPL_TXN_AGE).set(metrics.getOldestOpenReplTxnAge());
+    Metrics.getOrCreateGauge(NUM_OPEN_NON_REPL_TXNS).set(metrics.getOpenNonReplTxnsCount());
+    Metrics.getOrCreateGauge(OLDEST_OPEN_NON_REPL_TXN_ID).set(metrics.getOldestOpenNonReplTxnId());
+    Metrics.getOrCreateGauge(OLDEST_OPEN_NON_REPL_TXN_AGE).set(metrics.getOldestOpenNonReplTxnAge());
 
     Metrics.getOrCreateGauge(NUM_ABORTED_TXNS).set(metrics.getAbortedTxnsCount());
     Metrics.getOrCreateGauge(OLDEST_ABORTED_TXN_ID).set(metrics.getOldestAbortedTxnId());
