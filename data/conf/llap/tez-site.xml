@@ -9,6 +9,22 @@
     <name>tez.am.resource.memory.mb</name>
     <value>128</value>
   </property>
+  <property>
+    <name>tez.task.resource.memory.mb</name>
+    <value>128</value>
+  </property>
+  <property>
+    <name>tez.runtime.io.sort.mb</name>
+    <value>24</value>
+  </property>
+  <property>
+    <name>tez.runtime.unordered.output.buffer.size-mb</name>
+    <value>10</value>
+  </property>
+  <property>
+    <name>tez.runtime.shuffle.fetch.buffer.percent</name>
+    <value>0.4</value>
+  </property>
 
   <!-- Fail fast during tests -->
   <property>
