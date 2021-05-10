@@ -82,6 +82,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
@@ -1467,7 +1468,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Check the task copied post bootstrap, It should have the database loc,
     // the table 'a' since that is outside of the default location, and the
     // 'c', since its partition is out of the default location.
-    ReplicationTestUtils.assertExternalFileList(Arrays.asList(primaryDbName.toLowerCase(), "a", "c"), tuple.dumpLocation, primary);
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList(new Path(primaryDb.getLocationUri()).getName(), "a", "c"),
+        tuple.dumpLocation, primary);
 
     // Add more data to tables and do a incremental run and create another
     // tables one inside and other outside default location.
@@ -1523,7 +1525,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // outside should be there, apart from the ones in the previous run.
 
     ReplicationTestUtils.assertExternalFileList(
-        Arrays.asList(primaryDbName.toLowerCase(), "a", "c", "newout"), tuple.dumpLocation, primary);
+        Arrays.asList(new Path(primaryDb.getLocationUri()).getName(), "a", "c", "newout"), tuple.dumpLocation, primary);
   }
 
   @Test
@@ -1679,5 +1681,105 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     loggerConfig.setLevel(oldLevel);
     ctx.updateLoggers();
     appender.removeFromLogger(logger.getName());
+  }
+
+  @Test
+  public void testSingleCopyTasksAtSource() throws Throwable {
+    testDataCopyEndLog(false);
+  }
+
+  @Test
+  public void testSingleCopyTasksAtTarget() throws Throwable {
+    testDataCopyEndLog(true);
+  }
+
+  public void testSingleCopyTasks(boolean runCopyTasksOnTarget)
+      throws Throwable {
+    // Create five tables, 2 inside each parent path and one inside the database location.
+    Path parentPath1 = new Path("/" + testName.getMethodName() + "/" + "external1");
+    Path parentPath2 = new Path("/" + testName.getMethodName() + "/" + "external1");
+    Path parent1Table1 = new Path(parentPath1,"table1");
+    Path parent1Table2 = new Path(parentPath1,"table2");
+    Path parent2Table3 = new Path(parentPath2,"table3");
+    Path parent2Table4 = new Path(parentPath2,"table4");
+
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(parent1Table1, new FsPermission("777"));
+    fs.mkdirs(parent1Table2, new FsPermission("777"));
+    fs.mkdirs(parent2Table3, new FsPermission("777"));
+    fs.mkdirs(parent2Table4, new FsPermission("777"));
+
+    List<String> withClause = Arrays
+        .asList("'distcp.options.update'=''", "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + runCopyTasksOnTarget + "'",
+            "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS.varname + "'='" + fs.makeQualified(parentPath1) + ","
+                + fs.makeQualified(parentPath2) + "'");
+
+    WarehouseInstance.Tuple tuple =
+        primary.run("use " + primaryDbName)
+            .run("create external table table1 (id int) row format delimited fields terminated by ',' location '"
+                + parent1Table1.toUri() + "'")
+            .run("create external table table2 (id int) row format delimited fields terminated by ',' location '"
+                + parent1Table2.toUri() + "'")
+            .run("create external table table3 (id int) row format delimited fields terminated by ',' location '"
+                + parent2Table3.toUri() + "'")
+            .run("create external table table4 (id int) row format delimited fields terminated by ',' location '"
+                + parent2Table4.toUri() + "'")
+            .run("create external table table5(id int) row format delimited fields terminated by ','")
+            .run("insert into table1 values (1)")
+            .run("insert into table2 values (2)")
+            .run("insert into table3 values (3)")
+            .run("insert into table4 values (4)")
+            .run("insert into table4 values (5)")
+            .dump(primaryDbName, withClause);
+
+    Path primaryDb = new Path(primary.getDatabase(primaryDbName).getLocationUri());
+
+    // Do a load and verify all the data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select id from table1 ")
+        .verifyResult("1")
+        .run("select id from table2")
+        .verifyResult("2")
+        .run("select id from table3")
+        .verifyResult("3")
+        .run("select id from table4")
+        .verifyResult("4")
+        .run("select id from table5")
+        .verifyResult("5");
+
+    // Verify the tasks created for these tables, it should be one for the database, two for the two parent paths
+    // that we configured.
+    ReplicationTestUtils.assertExternalFileList(
+        Arrays.asList(primaryDb.getName(), parentPath1.getName(), parentPath2.getName()), tuple.dumpLocation, primary);
+
+    // Add more data to tables and do a incremental run and check if things stays same.
+    tuple =
+        primary.run("use " + primaryDbName)
+            .run("insert into table1 values (4)")
+            .run("insert into table2 values (3)")
+            .run("insert into table3 values (2)")
+            .run("insert into table4 values (1)")
+            .run("insert into table5 values (6)")
+            .dump(primaryDbName, withClause);
+
+    // Do an incremental load and check if all the old and new data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select id from table1 ")
+        .verifyResults(new String[] {"1", "4"})
+        .run("select id from table2 ")
+        .verifyResults(new String[] {"2", "3"})
+        .run("select id from table3 ")
+        .verifyResults(new String[] {"3", "2"})
+        .run("select id from table4")
+        .verifyResults(new String[] {"4", "1"})
+        .run("select id from table5")
+        .verifyResults(new String[] {"5", "6"});;
+
+    // The same tasks should be created.
+    ReplicationTestUtils.assertExternalFileList(
+        Arrays.asList(primaryDb.getName(), parentPath1.getName(), parentPath2.getName()), tuple.dumpLocation, primary);
   }
 }

@@ -1878,14 +1878,14 @@ STAGE PLANS:
                     predicate: (p_name is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_name (type: string), p_size (type: int)
+                      expressions: p_name (type: string), (p_size + 100) (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), (_col1 + 100) (type: int)
+                        key expressions: _col0 (type: string), _col1 (type: int)
                         null sort order: zz
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), (_col1 + 100) (type: int)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1923,7 +1923,7 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 _col0 (type: string), (_col1 + 100) (type: int)
+                  0 _col0 (type: string), _col1 (type: int)
                   1 _col0 (type: string), _col1 (type: int)
                 Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
@@ -2142,21 +2142,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (p_size is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_name is not null and p_size is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_size is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), (p_size + 121150) (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: string), _col5 (type: int)
-                        null sort order: zz
-                        sort order: ++
-                        Map-reduce partition columns: _col1 (type: string), _col5 (type: int)
-                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        key expressions: _col1 (type: string), _col5 (type: int), _col9 (type: int)
+                        null sort order: zzz
+                        sort order: +++
+                        Map-reduce partition columns: _col1 (type: string), _col5 (type: int), _col9 (type: int)
+                        Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2164,27 +2164,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p
-                  filterExpr: (((p_size + 121150) = p_partkey) and p_size is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_size is not null and p_partkey is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((p_size + 121150) = p_partkey) and p_size is not null and p_name is not null) (type: boolean)
-                    Statistics: Num rows: 13 Data size: 1677 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (p_size is not null and p_partkey is not null and p_name is not null) (type: boolean)
+                    Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_name (type: string), p_size (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_name (type: string), p_size (type: int), p_partkey (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: _col0 (type: string), _col1 (type: int)
+                        keys: _col0 (type: string), _col1 (type: int), _col2 (type: int)
                         minReductionHashAggr: 0.4
                         mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 25 Data size: 3225 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: int)
-                          null sort order: zz
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                          Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
+                          key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+                          null sort order: zzz
+                          sort order: +++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+                          Statistics: Num rows: 25 Data size: 3225 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2194,13 +2194,13 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 _col1 (type: string), _col5 (type: int)
-                  1 _col0 (type: string), _col1 (type: int)
+                  0 _col1 (type: string), _col5 (type: int), _col9 (type: int)
+                  1 _col0 (type: string), _col1 (type: int), _col2 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 13 Data size: 8047 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 13 Data size: 8047 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2246,10 +2246,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (p_partkey is not null and p_size is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_partkey is not null and p_name is not null and p_size is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_partkey is not null and p_size is not null and p_name is not null) (type: boolean)
+                    predicate: (p_partkey is not null and p_name is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
@@ -2374,10 +2374,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (p_brand is not null and p_type is not null) (type: boolean)
+                  filterExpr: (p_type is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_brand is not null and p_type is not null) (type: boolean)
+                    predicate: (p_type is not null and p_brand is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_type (type: string), p_brand (type: string)
@@ -2495,19 +2495,17 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: ((p_size is not null and p_type is not null) or p_size is not null) (type: boolean)
+                  filterExpr: (p_type is not null and p_size is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5954 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_size is not null and p_type is not null) (type: boolean)
+                    predicate: (p_type is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 5954 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_type (type: string), (p_size + 1) (type: int)
@@ -2520,36 +2518,33 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string), _col2 (type: int)
                         Statistics: Num rows: 26 Data size: 5954 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: part
+                  filterExpr: (p_size is not null and p_type is not null) (type: boolean)
+                  Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (p_size is not null and p_type is not null) (type: boolean)
+                    Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_type (type: string), (p_size + 1) (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
-                  Filter Operator
-                    predicate: p_size is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: (p_size + 1) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: _col0 (type: int)
+                        keys: _col0 (type: string), _col1 (type: int)
                         minReductionHashAggr: 0.4
                         mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 24 Data size: 2592 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                          key expressions: _col0 (type: string), _col1 (type: int)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                          Statistics: Num rows: 24 Data size: 2592 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2570,47 +2565,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 3 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col2
-                Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: string), _col2 (type: int)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: _col0 (type: string), _col1 (type: int)
-                    minReductionHashAggr: 0.4
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 24 Data size: 2592 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: int)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                      Statistics: Num rows: 24 Data size: 2592 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 4 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -3578,10 +3532,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (p_mfgr is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_name is not null and p_mfgr is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_mfgr is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_mfgr is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
@@ -3708,7 +3662,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p
-                  filterExpr: ((p_type is not null and p_name is not null) or (p_size is not null and p_name is not null)) (type: boolean)
+                  filterExpr: ((p_type is not null and p_name is not null) or (p_name is not null and p_size is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_type is not null and p_name is not null) (type: boolean)
@@ -3725,7 +3679,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
                   Filter Operator
-                    predicate: (p_size is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_size (type: int)
@@ -3875,7 +3829,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p
-                  filterExpr: ((p_size is not null and p_type is not null and p_name is not null) or (p_size is not null and p_name is not null)) (type: boolean)
+                  filterExpr: ((p_size is not null and p_type is not null and p_name is not null) or (p_name is not null and p_size is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5954 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_size is not null and p_type is not null and p_name is not null) (type: boolean)
@@ -3892,7 +3846,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
                   Filter Operator
-                    predicate: (p_size is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_size (type: int)
@@ -4044,10 +3998,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: ((p_type is not null and p_size is not null and p_name is not null) or (p_type is not null and p_name is not null)) (type: boolean)
+                  filterExpr: ((p_name is not null and p_type is not null and p_size is not null) or (p_type is not null and p_name is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 6058 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_type is not null and p_size is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_type is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 6058 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_type (type: string), p_size (type: int)
@@ -4177,7 +4131,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p
-                  filterExpr: ((p_type is not null and p_name is not null) or (p_size is not null and p_name is not null)) (type: boolean)
+                  filterExpr: ((p_type is not null and p_name is not null) or (p_name is not null and p_size is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_type is not null and p_name is not null) (type: boolean)
@@ -4194,7 +4148,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
                   Filter Operator
-                    predicate: (p_size is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_size (type: int)
@@ -5585,10 +5539,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t_n22
-                  filterExpr: (j is not null and UDFToLong(i) is not null) (type: boolean)
+                  filterExpr: (UDFToLong(i) is not null and j is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (j is not null and UDFToLong(i) is not null) (type: boolean)
+                    predicate: (UDFToLong(i) is not null and j is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i (type: int), j (type: int)

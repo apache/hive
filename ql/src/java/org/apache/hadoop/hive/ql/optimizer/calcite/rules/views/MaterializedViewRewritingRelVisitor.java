@@ -19,16 +19,22 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ControlFlowException;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is a helper to check whether a materialized view rebuild
@@ -49,10 +55,12 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
 
   private boolean containsAggregate;
   private boolean rewritingAllowed;
+  private int countIndex;
 
   public MaterializedViewRewritingRelVisitor() {
     this.containsAggregate = false;
     this.rewritingAllowed = false;
+    this.countIndex = -1;
   }
 
   @Override
@@ -92,6 +100,14 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
           // We can continue
           super.visit(node, ordinal, parent);
         } else if (node instanceof Aggregate && containsAggregate) {
+          Aggregate aggregate = (Aggregate) node;
+          for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
+            AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
+            if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().size() == 0) {
+              countIndex = i + aggregate.getGroupCount();
+              break;
+            }
+          }
           // We can continue
           super.visit(node, ordinal, parent);
         } else {
@@ -149,6 +165,9 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     return rewritingAllowed;
   }
 
+  public int getCountIndex() {
+    return countIndex;
+  }
 
   /**
    * Exception used to interrupt a visitor walk.

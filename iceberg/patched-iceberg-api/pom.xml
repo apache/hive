@@ -11,18 +11,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.iceberg</groupId>
-    <artifactId>iceberg-api</artifactId>
-    <version>patched-${iceberg-api.version}-${project.parent.version}</version>
+    <artifactId>patched-iceberg-api</artifactId>
+    <version>patched-${iceberg.version}-${project.parent.version}</version>
     <name>Patched Iceberg API</name>
 
     <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
     <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
     <!-- We should remove the package for good when Iceberg integration has been stabilized. -->
-
-    <!-- In your IDE you have to add manually the generated jar to the classpath of the -->
-    <!-- patched-iceberg-core, hive-iceberg-catalog, hive-iceberg-handler packages -->
-    <!-- The jar could be found here: -->
-    <!-- <HIVE_ROOT>/iceberg/patched-iceberg-api/target/iceberg-api-patched-0.11.0-4.0.0-SNAPSHOT.jar -->
 
     <properties>
         <hive.path.to.root>../..</hive.path.to.root>
@@ -33,7 +28,8 @@
         <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-api</artifactId>
-            <version>${iceberg-api.version}</version>
+            <version>${iceberg.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <build>
@@ -53,7 +49,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.iceberg</groupId>
                                     <artifactId>iceberg-api</artifactId>
-                                    <version>${iceberg-api.version}</version>
+                                    <version>${iceberg.version}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>

@@ -1691,6 +1691,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ListStoredProcedureRequest request = new ListStoredProcedureRequest(catName);
       request.setDbName(name);
       List<String> allProcedures = get_all_stored_procedures(request);
+      ListPackageRequest pkgRequest = new ListPackageRequest(catName);
+      pkgRequest.setDbName(name);
+      List<String> allPackages = get_all_packages(pkgRequest);
 
       if (!cascade) {
         if (!uniqueTableNames.isEmpty()) {
@@ -1704,6 +1707,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (!allProcedures.isEmpty()) {
           throw new InvalidOperationException(
               "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
+        }
+        if (!allPackages.isEmpty()) {
+          throw new InvalidOperationException(
+                  "Database " + db.getName() + " is not empty. One or more packages exist.");
         }
       }
       Path path = new Path(db.getLocationUri()).getParent();
@@ -1722,6 +1729,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       for (String procName : allProcedures) {
         drop_stored_procedure(new StoredProcedureRequest(catName, name, procName));
+      }
+      for (String pkgName : allPackages) {
+        drop_package(new DropPackageRequest(catName, name, pkgName));
       }
 
       final int tableBatchSize = MetastoreConf.getIntVar(conf,
@@ -3010,7 +3020,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       isReplicated = isDbReplicationTarget(db);
 
       // drop any partitions
-      tbl = get_table_core(catName, dbname, name, null);
+      GetTableRequest req = new GetTableRequest(dbname,name);
+      req.setCatName(catName);
+      tbl = get_table_core(req);
       if (tbl == null) {
         throw new NoSuchObjectException(name + " doesn't exist");
       }
@@ -3530,8 +3542,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public Table get_table(final String dbname, final String name) throws MetaException,
       NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
-    return getTableInternal(
-        parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false, null, null, null);
+    GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME],name);
+    getTableRequest.setCatName(parsedDbName[CAT_NAME]);
+    return getTableInternal(getTableRequest);
   }
 
   @Override
@@ -3606,10 +3619,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetTableResult get_table_req(GetTableRequest req) throws MetaException,
       NoSuchObjectException {
-    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
-        req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats(), req.getEngine(),
-        req.getProcessorCapabilities(), req.getProcessorIdentifier()));
+    req.setCatName(req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf));
+    return new GetTableResult(getTableInternal(req));
   }
 
   /**
@@ -3617,36 +3628,36 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * then engine should be specified so the table is retrieve with the column stats
    * for that engine.
    */
-  private Table getTableInternal(String catName, String dbname, String name,
-                                 ClientCapabilities capabilities, String writeIdList, boolean getColumnStats, String engine,
-                                 List<String> processorCapabilities, String processorId)
-      throws MetaException, NoSuchObjectException {
-    Preconditions.checkArgument(!getColumnStats || engine != null,
+  private Table getTableInternal(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
+
+    Preconditions.checkArgument(!getTableRequest.isGetColumnStats() || getTableRequest.getEngine() != null,
         "To retrieve column statistics with a table, engine parameter cannot be null");
 
     if (isInTest) {
-      assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
-          "Hive tests", "get_table_req");
+      assertClientHasCapability(getTableRequest.getCapabilities(), ClientCapability.TEST_CAPABILITY, "Hive tests",
+          "get_table_req");
     }
 
     Table t = null;
-    startTableFunction("get_table", catName, dbname, name);
+    startTableFunction("get_table", getTableRequest.getCatName(), getTableRequest.getDbName(),
+        getTableRequest.getTblName());
     Exception ex = null;
     try {
-      t = get_table_core(catName, dbname, name, writeIdList, getColumnStats, engine);
+      t = get_table_core(getTableRequest);
       if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
-        assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
+        assertClientHasCapability(getTableRequest.getCapabilities(), ClientCapability.INSERT_ONLY_TABLES,
             "insert-only tables", "get_table_req");
       }
 
-      if (processorCapabilities == null || processorCapabilities.size() == 0 ||
-          processorCapabilities.contains("MANAGERAWMETADATA")) {
-        LOG.info("Skipping translation for processor with " + processorId);
+      if (CollectionUtils.isEmpty(getTableRequest.getProcessorCapabilities()) || getTableRequest
+          .getProcessorCapabilities().contains("MANAGERAWMETADATA")) {
+        LOG.info("Skipping translation for processor with " + getTableRequest.getProcessorIdentifier());
       } else {
         if (transformer != null) {
           List<Table> tList = new ArrayList<>();
           tList.add(t);
-          Map<Table, List<String>> ret = transformer.transform(tList, processorCapabilities, processorId);
+          Map<Table, List<String>> ret = transformer
+              .transform(tList, getTableRequest.getProcessorCapabilities(), getTableRequest.getProcessorIdentifier());
           if (ret.size() > 1) {
             LOG.warn("Unexpected resultset size:" + ret.size());
             throw new MetaException("Unexpected result from metadata transformer:return list size is " + ret.size());
@@ -3660,7 +3671,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw e;
     } finally {
-      endFunction("get_table", t != null, ex, name);
+      endFunction("get_table", t != null, ex, getTableRequest.getTblName());
     }
     return t;
   }
@@ -3686,22 +3697,29 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  @Deprecated
   public Table get_table_core(
       final String catName,
       final String dbname,
       final String name)
       throws MetaException, NoSuchObjectException {
-    return get_table_core(catName, dbname, name, null);
+    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
+    getTableRequest.setCatName(catName);
+    return get_table_core(getTableRequest);
   }
 
   @Override
+  @Deprecated
   public Table get_table_core(
       final String catName,
       final String dbname,
       final String name,
       final String writeIdList)
       throws MetaException, NoSuchObjectException {
-    return get_table_core(catName, dbname, name, writeIdList, false, null);
+    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
+    getTableRequest.setCatName(catName);
+    getTableRequest.setValidWriteIdList(writeIdList);
+    return get_table_core(getTableRequest);
   }
 
   /**
@@ -3709,44 +3727,41 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * then engine should be specified so the table is retrieve with the column stats
    * for that engine.
    */
-  public Table get_table_core(final String catName,
-                              final String dbname,
-                              final String name,
-                              final String writeIdList,
-                              boolean getColumnStats, String engine)
-      throws MetaException, NoSuchObjectException {
-    Preconditions.checkArgument(!getColumnStats || engine != null,
+  @Override
+  public Table get_table_core(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
+    Preconditions.checkArgument(!getTableRequest.isGetColumnStats() || getTableRequest.getEngine() != null,
         "To retrieve column statistics with a table, engine parameter cannot be null");
-
+    String catName = getTableRequest.getCatName();
+    String dbName = getTableRequest.getDbName();
+    String tblName = getTableRequest.getTblName();
     Database db = null;
     Table t = null;
     try {
-      db = get_database_core(catName, dbname);
+      db = get_database_core(catName, dbName);
     } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
     if (db != null) {
       if (db.getType().equals(DatabaseType.REMOTE)) {
-        t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
+        t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
         if (t == null) {
-          throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
-              " table not found");
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
         }
-        t.setDbName(dbname);
+        t.setDbName(dbName);
         return t;
       }
     }
 
     try {
-      t = getMS().getTable(catName, dbname, name, writeIdList);
+      t = getMS().getTable(catName, dbName, tblName, getTableRequest.getValidWriteIdList(), getTableRequest.getId());
       if (t == null) {
-        throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
-            " table not found");
+        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
       }
 
       // If column statistics was requested and is valid fetch it.
-      if (getColumnStats) {
-        ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbname, name,
-            StatsSetupConst.getColumnsHavingStats(t.getParameters()), engine, writeIdList);
+      if (getTableRequest.isGetColumnStats()) {
+        ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbName, tblName,
+            StatsSetupConst.getColumnsHavingStats(t.getParameters()), getTableRequest.getEngine(),
+            getTableRequest.getValidWriteIdList());
         if (colStats != null) {
           t.setColStats(colStats);
         }
@@ -5053,7 +5068,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       ms.openTransaction();
       part = ms.getPartition(catName, db_name, tbl_name, part_vals);
-      tbl = get_table_core(catName, db_name, tbl_name, null);
+      GetTableRequest request = new GetTableRequest(db_name,tbl_name);
+      request.setCatName(catName);
+      tbl = get_table_core(request);
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
       firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
       mustPurge = isMustPurge(envContext, tbl);
@@ -6010,7 +6027,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      Table oldt = get_table_core(catName, dbname, name, null);
+      GetTableRequest request = new GetTableRequest(dbname, name);
+      request.setCatName(catName);
+      Table oldt = get_table_core(request);
       if (transformer != null) {
         newTable = transformer.transformAlterTable(newTable, processorCapabilities, processorId);
       }
@@ -10491,13 +10510,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException {
+  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
     startFunction("get_stored_procedure");
     Exception ex = null;
     try {
-      return getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+      StoredProcedure proc = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+        if (proc == null) {
+          throw new NoSuchObjectException(
+                  "HPL/SQL StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
+        }
+        return proc;
     } catch (Exception e) {
-      LOG.error("Caught exception", e);
+      if (!(e instanceof NoSuchObjectException)) {
+        LOG.error("Caught exception", e);
+      }
       ex = e;
       throw e;
     } finally {
@@ -10535,13 +10561,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-public Package find_package(GetPackageRequest request) throws MetaException {
+public Package find_package(GetPackageRequest request) throws MetaException, NoSuchObjectException {
     startFunction("find_package");
     Exception ex = null;
     try {
-      return getMS().findPackage(request);
+      Package pkg = getMS().findPackage(request);
+      if (pkg == null) {
+        throw new NoSuchObjectException(
+                "HPL/SQL package " + request.getDbName() + "." + request.getPackageName() + " does not exist");
+      }
+      return pkg;
     } catch (Exception e) {
-      LOG.error("Caught exception", e);
+      if (!(e instanceof NoSuchObjectException)) {
+        LOG.error("Caught exception", e);
+      }
       ex = e;
       throw e;
     } finally {

@@ -24,9 +24,12 @@ public class MetricsInfo {
 
   private int txnToWriteIdCount;
   private int completedTxnsCount;
-  private int openTxnsCount;
-  private int oldestOpenTxnId;
-  private int oldestOpenTxnAge;
+  private int openReplTxnsCount;
+  private int oldestOpenReplTxnId;
+  private int oldestOpenReplTxnAge;
+  private int openNonReplTxnsCount;
+  private int oldestOpenNonReplTxnId;
+  private int oldestOpenNonReplTxnAge;
   private int abortedTxnsCount;
   private int oldestAbortedTxnId;
   private int oldestAbortedTxnAge;
@@ -49,28 +52,52 @@ public class MetricsInfo {
     this.completedTxnsCount = completedTxnsCount;
   }
 
-  public int getOpenTxnsCount() {
-    return openTxnsCount;
+  public int getOpenReplTxnsCount() {
+    return openReplTxnsCount;
   }
 
-  public void setOpenTxnsCount(int openTxnsCount) {
-    this.openTxnsCount = openTxnsCount;
+  public void setOpenReplTxnsCount(int openReplTxnsCount) {
+    this.openReplTxnsCount = openReplTxnsCount;
   }
 
-  public int getOldestOpenTxnId() {
-    return oldestOpenTxnId;
+  public int getOldestOpenReplTxnId() {
+    return oldestOpenReplTxnId;
   }
 
-  public void setOldestOpenTxnId(int oldestOpenTxnId) {
-    this.oldestOpenTxnId = oldestOpenTxnId;
+  public void setOldestOpenReplTxnId(int oldestOpenReplTxnId) {
+    this.oldestOpenReplTxnId = oldestOpenReplTxnId;
   }
 
-  public int getOldestOpenTxnAge() {
-    return oldestOpenTxnAge;
+  public int getOldestOpenReplTxnAge() {
+    return oldestOpenReplTxnAge;
   }
 
-  public void setOldestOpenTxnAge(int oldestOpenTxnAge) {
-    this.oldestOpenTxnAge = oldestOpenTxnAge;
+  public void setOldestOpenReplTxnAge(int oldestOpenReplTxnAge) {
+    this.oldestOpenReplTxnAge = oldestOpenReplTxnAge;
+  }
+
+  public int getOpenNonReplTxnsCount() {
+    return openNonReplTxnsCount;
+  }
+
+  public void setOpenNonReplTxnsCount(int openNonReplTxnsCount) {
+    this.openNonReplTxnsCount = openNonReplTxnsCount;
+  }
+
+  public int getOldestOpenNonReplTxnId() {
+    return oldestOpenNonReplTxnId;
+  }
+
+  public void setOldestOpenNonReplTxnId(int oldestOpenNonReplTxnId) {
+    this.oldestOpenNonReplTxnId = oldestOpenNonReplTxnId;
+  }
+
+  public int getOldestOpenNonReplTxnAge() {
+    return oldestOpenNonReplTxnAge;
+  }
+
+  public void setOldestOpenNonReplTxnAge(int oldestOpenNonReplTxnAge) {
+    this.oldestOpenNonReplTxnAge = oldestOpenNonReplTxnAge;
   }
 
   public int getAbortedTxnsCount() {

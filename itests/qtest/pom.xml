@@ -120,7 +120,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-handler</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc-handler</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-handler</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -539,6 +549,8 @@
                 <mkdir dir="${project.build.directory}/qfile-results/contribnegative"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientpositive"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientnegative"/>
+                <mkdir dir="${project.build.directory}/qfile-results/iceberg-handler/positive/"/>
+                <mkdir dir="${project.build.directory}/qfile-results/iceberg-handler/negative/"/>
               </target>
             </configuration>
             <goals>
