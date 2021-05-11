@@ -1,0 +1,521 @@
+PREHOOK: query: drop table tbl_parquet
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tbl_parquet
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE `tbl_parquet`(
+   `sample_sk` int
+)
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: CREATE TABLE `tbl_parquet`(
+   `sample_sk` int
+)
+ ROW FORMAT SERDE
+   'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: INSERT INTO tbl_parquet VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: INSERT INTO tbl_parquet VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+POSTHOOK: Lineage: tbl_parquet.sample_sk SCRIPT []
+PREHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_parquet
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:sample_sk:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: sample_sk (type: int)
+                    outputColumnNames: sample_sk
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0]
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(sample_sk)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumLong(col 0:int) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:bigint
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: sample_sk:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_parquet
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:sample_sk:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: sample_sk (type: int)
+                    outputColumnNames: sample_sk
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0]
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(sample_sk)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumLong(col 0:int) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:bigint
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: sample_sk:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_parquet
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sample_sk (type: int)
+                    outputColumnNames: sample_sk
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(sample_sk)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.vectorized.input.format IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain vectorization detail
+select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_parquet
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sample_sk (type: int)
+                    outputColumnNames: sample_sk
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(sample_sk)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select SUM(sample_sk) FROM tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
