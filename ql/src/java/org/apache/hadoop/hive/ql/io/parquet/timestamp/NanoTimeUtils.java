@@ -53,8 +53,8 @@ public class NanoTimeUtils {
   /**
    * Converts a timestamp from the specified timezone to UTC and returns its representation in NanoTime.
    */
-  public static NanoTime getNanoTime(Timestamp ts, ZoneId sourceZone) {
-    ts = TimestampTZUtil.convertTimestampToZone(ts, sourceZone, ZoneOffset.UTC);
+  public static NanoTime getNanoTime(Timestamp ts, ZoneId sourceZone, boolean legacyConversion) {
+    ts = TimestampTZUtil.convertTimestampToZone(ts, sourceZone, ZoneOffset.UTC, legacyConversion);
 
     Calendar calendar = getGMTCalendar();
     calendar.setTimeInMillis(ts.toEpochMilli());

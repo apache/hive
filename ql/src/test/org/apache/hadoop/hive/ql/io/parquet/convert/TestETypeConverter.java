@@ -130,7 +130,7 @@ public class TestETypeConverter {
   @Test
   public void testGetBigIntConverter() {
     Timestamp timestamp = Timestamp.valueOf("1998-10-03 09:58:31.231");
-    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC);
+    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC, false);
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
     Writable writable = getWritableFromBinaryConverter(createHiveTypeInfo("bigint"), primitiveType, nanoTime.toBinary());
     // Retrieve as BigInt
@@ -141,7 +141,7 @@ public class TestETypeConverter {
   @Test
   public void testGetTimestampConverter() throws Exception {
     Timestamp timestamp = Timestamp.valueOf("2018-06-15 15:12:20.0");
-    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC);
+    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC, false);
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
     Writable writable = getWritableFromBinaryConverter(null, primitiveType, nanoTime.toBinary());
     TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
@@ -151,7 +151,7 @@ public class TestETypeConverter {
   @Test
   public void testGetTimestampProlepticConverter() throws Exception {
     Timestamp timestamp = Timestamp.valueOf("1572-06-15 15:12:20.0");
-    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC);
+    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC, false);
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
     Writable writable = getWritableFromBinaryConverter(null, primitiveType, nanoTime.toBinary());
     TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;

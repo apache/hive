@@ -142,8 +142,11 @@ public class ParquetRecordReaderBase {
         skipProlepticConversion = HiveConf.getBoolVar(
             conf, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT);
       }
-      legacyConversionEnabled = HiveConf.getBoolVar(
-          conf, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
+      legacyConversionEnabled = DataWritableReadSupport.getWriterLegacyConversion(fileMetaData.getKeyValueMetaData());
+      if (legacyConversionEnabled == null) {
+        legacyConversionEnabled =
+            HiveConf.getBoolVar(conf, ConfVars.HIVE_PARQUET_TIMESTAMP_READ_LEGACY_CONVERSION_ENABLED);
+      }
 
       split = new ParquetInputSplit(finalPath,
         splitStart,

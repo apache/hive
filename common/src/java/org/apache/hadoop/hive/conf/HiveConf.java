@@ -2214,9 +2214,21 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT("hive.parquet.date.proleptic.gregorian.default", false,
       "This value controls whether date type in Parquet files was written using the hybrid or proleptic\n" +
       "calendar. Hybrid is the default."),
+    /**
+     * @deprecated Use {@link #HIVE_PARQUET_TIMESTAMP_READ_LEGACY_CONVERSION_ENABLED} instead.
+     */
+    @Deprecated
     HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.parquet.timestamp.legacy.conversion.enabled", true,
       "This value controls whether we use former Java time API to convert between timezones on files where timezone\n" +
       "is not encoded in the metadata. This is for debugging."),
+    HIVE_PARQUET_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED("hive.parquet.timestamp.write.legacy.conversion.enabled", false,
+        "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
+        "Parquet files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
+        "Changing the value of this property affects only new data written to the file."),
+    HIVE_PARQUET_TIMESTAMP_READ_LEGACY_CONVERSION_ENABLED("hive.parquet.timestamp.read.legacy.conversion.enabled", true,
+        "Whether to use former Java date/time APIs to convert between timezones when reading timestamps from " +
+        "Parquet files. The property has no effect when the file contains explicit metadata about the conversion " +
+        "used to write the data; in this case reading conversion is chosen based on the metadata."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +

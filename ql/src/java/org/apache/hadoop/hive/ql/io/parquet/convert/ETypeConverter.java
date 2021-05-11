@@ -703,8 +703,8 @@ public enum ETypeConverter {
           // time zone in order to emulate time zone agnostic behavior.
           boolean skipConversion = Boolean.parseBoolean(
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
-          boolean legacyConversion = Boolean.parseBoolean(
-              metadata.get(ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname));
+          Boolean legacyConversion = DataWritableReadSupport.getWriterLegacyConversion(metadata);
+          assert legacyConversion != null;
           ZoneId targetZone = skipConversion ? ZoneOffset.UTC : MoreObjects
               .firstNonNull(DataWritableReadSupport.getWriterTimeZoneId(metadata), TimeZone.getDefault().toZoneId());
           Timestamp ts = NanoTimeUtils.getTimestamp(nt, targetZone, legacyConversion);

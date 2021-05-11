@@ -212,7 +212,7 @@ public class VectorizedColumnReaderTestBase {
   protected static NanoTime getNanoTime(int index) {
     Timestamp ts = new Timestamp();
     ts.setTimeInMillis(index);
-    return NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId());
+    return NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId(), false);
   }
 
   protected static HiveDecimal getDecimal(
