@@ -469,16 +469,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
 
     for (int i = 0; i < k1.size(); i++) {
-      WritableComparable key_1 = (WritableComparable) k1.get(i);
-      WritableComparable key_2 = (WritableComparable) k2.get(i);
-      if (key_1 == null && key_2 == null) {
-        return nullsafes != null && nullsafes[i] ? 0 : -1; // just return k1 is smaller than k2
-      } else if (key_1 == null) {
-        return -1;
-      } else if (key_2 == null) {
-        return 1;
-      }
-      ret = WritableComparator.get(key_1.getClass()).compare(key_1, key_2);
+      ret = WritableComparatorFactory.get(k1.get(i), nullsafes == null ? false : nullsafes[i], null)
+              .compare(k1.get(i), k2.get(i));
       if(ret != 0) {
         return ret;
       }
