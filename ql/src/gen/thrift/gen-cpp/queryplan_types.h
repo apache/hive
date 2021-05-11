@@ -122,8 +122,9 @@ struct StageType {
     ACK = 18,
     RANGER_DUMP = 19,
     RANGER_LOAD = 20,
-    ATLAS_DUMP = 21,
-    ATLAS_LOAD = 22
+    RANGER_DENY = 21,
+    ATLAS_DUMP = 22,
+    ATLAS_LOAD = 23
   };
 };
 

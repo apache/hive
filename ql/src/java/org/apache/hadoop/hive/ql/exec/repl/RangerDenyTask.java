@@ -118,14 +118,14 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
             }
             throw e;
         } catch (Exception e) {
-            LOG.error("Ranger Deny policy creation Failed", e);
-            int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-            setException(e);
-            try{
+            try {
+                LOG.error("Ranger Deny policy creation Failed", e);
+                setException(e);
                 return ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
                         getName(), conf);
-            } catch (Exception ex){
+            } catch (Exception ex) {
                 LOG.error("Failed to collect replication metrics: ", ex);
+                int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
                 return errorCode;
             }
         }
@@ -140,7 +140,7 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
 
     @Override
     public StageType getType() {
-        return StageType.RANGER_LOAD;
+        return StageType.RANGER_DENY;
     }
 
     @Override
