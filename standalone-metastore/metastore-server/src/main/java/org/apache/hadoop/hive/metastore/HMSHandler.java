@@ -3742,16 +3742,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     if (db != null) {
       if (db.getType().equals(DatabaseType.REMOTE)) {
-        try {
-          t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
-          if (t == null) {
-            throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
-          }
-          t.setDbName(dbName);
-          return t;
-        } catch (Exception e) { /* Need to throw an exception when connector jar is not found */
-          throwMetaException(e);
+        t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
+        if (t == null) {
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
         }
+        t.setDbName(dbName);
+        return t;
       }
     }
 
@@ -6068,12 +6064,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
       if (db != null && db.getType() != null) {
-        try {
-          if (db.getType().equals(DatabaseType.REMOTE)) {
-            return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
-          }
-        } catch (Exception e) { /* Need to throw an exception if the connector jar is not found. */
-          throw newMetaException(e);
+        if (db.getType().equals(DatabaseType.REMOTE)) {
+          return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
         }
       }
     } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
