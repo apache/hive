@@ -445,6 +445,7 @@ public class RangerRestClientImpl implements RangerRestClient {
         RangerPolicyItemAccess>();
 
     resourceNameList.add(targetDb);
+    resourceNameList.add("dummy");
     rangerPolicyResource.setValues(resourceNameList);
     RangerPolicy.RangerPolicyResource rangerPolicyResourceColumn =new RangerPolicy.RangerPolicyResource();
     rangerPolicyResourceColumn.setValues(new ArrayList<String>(){{add("*"); }});

@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+
 /**
  * RangerDenyTask.
  *
@@ -71,7 +73,6 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
     @Override
     public int execute() {
         try {
-            LOG.info("Creating Ranger Deny Policy for {}", work.getTargetDbName());
             SecurityUtils.reloginExpiringKeytabUser();
             if (rangerRestClient == null) {
                 rangerRestClient = getRangerRestClient();
@@ -97,7 +98,16 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
             }
             RangerPolicy rangerDenyPolicy = rangerRestClient.getDenyPolicyForReplicatedDb(rangerHiveServiceName,
                     work.getSourceDbName(), work.getTargetDbName());
-
+            if (!conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)) {
+                if (isSetRangerDenyPolicyForReplicatedDb(rangerEndpoint, rangerHiveServiceName, rangerDenyPolicy)) {
+                    LOG.info("Disabling Ranger Deny policy for {}, set earlier", work.getTargetDbName());
+                    rangerDenyPolicy.setIsEnabled(false);
+                } else {
+                    return 0;
+                }
+            } else {
+                LOG.info("Creating Ranger Deny Policy for {}", work.getTargetDbName());
+            }
             RangerExportPolicyList rangerExportPolicyList = new RangerExportPolicyList();
             rangerExportPolicyList.setPolicies(new ArrayList<RangerPolicy>() {{add(rangerDenyPolicy);}});
             rangerRestClient.importRangerPolicies(rangerExportPolicyList, work.getTargetDbName(), rangerEndpoint,
@@ -129,6 +139,23 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
                 return errorCode;
             }
         }
+    }
+
+    private boolean isSetRangerDenyPolicyForReplicatedDb(String rangerEndpoint, String rangerHiveServiceName,
+                                                         RangerPolicy rangerDenyPolicy) throws Exception {
+        RangerExportPolicyList rangerExportPolicyList = rangerRestClient.exportRangerPolicies(rangerEndpoint,
+                work.getTargetDbName(), rangerHiveServiceName, conf);
+        List<RangerPolicy> rangerPolicies = rangerExportPolicyList.getPolicies();
+        for (RangerPolicy policy : rangerPolicies) {
+            if (policy.getIsEnabled() == true && policy.getName().equals(rangerDenyPolicy.getName())
+            && policy.getDenyPolicyItems().equals(rangerDenyPolicy.getDenyPolicyItems())
+            && policy.getPolicyItems().size() == 0 && policy.getService().equals(rangerDenyPolicy.getService())
+            && policy.getResources().equals(rangerDenyPolicy.getResources()) && policy.getAllowExceptions().size() == 0
+            && policy.getDenyExceptions().equals(rangerDenyPolicy.getDenyExceptions())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private RangerRestClient getRangerRestClient() {

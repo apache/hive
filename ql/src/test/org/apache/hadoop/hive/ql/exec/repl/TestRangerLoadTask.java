@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
+import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
@@ -170,12 +172,78 @@ public class TestRangerLoadTask {
   }
 
   @Test
-  public void testSuccessAddDenyRangerPolicies() throws Exception {
+  public void testSuccessAddDenyRangerPoliciesForTargetDb() throws Exception {
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(rangerDenyWork.getSourceDbName()).thenReturn("srcdb");
     Mockito.when(rangerDenyWork.getTargetDbName()).thenReturn("tgtdb");
     Mockito.when(rangerDenyWork.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
+    RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
+    rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+            Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(false);
+    int status = rangerDenyTask.execute();
+    Assert.assertEquals(0, status);
+    ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);
+    ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
+    Mockito.verify(mockClient,
+            Mockito.times(0)).importRangerPolicies(rangerPolicyCapture.capture(),
+            targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
+    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(true);
+    status = rangerDenyTask.execute();
+    Assert.assertEquals(0, status);
+    Mockito.verify(mockClient,
+            Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
+            targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
+    Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
+    Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
+    Assert.assertEquals("hive", serviceName.getAllValues().get(0));
+    RangerExportPolicyList actualPolicyList = rangerPolicyCapture.getAllValues().get(0);
+    //Deny policy is added
+    Assert.assertEquals(1, actualPolicyList.getListSize());
+    RangerPolicy denyPolicy = actualPolicyList.getPolicies().get(0);
+    Assert.assertEquals("hive", denyPolicy.getService());
+    Assert.assertEquals("srcdb_replication deny policy for tgtdb", denyPolicy.getName());
+    Assert.assertEquals(1, denyPolicy.getDenyExceptions().size());
+    Assert.assertEquals("public", denyPolicy.getDenyPolicyItems().get(0).getGroups().get(0));
+    Assert.assertEquals(8, denyPolicy.getDenyPolicyItems().get(0).getAccesses().size());
+    boolean isReplAdminDenied = false;
+    for (RangerPolicy.RangerPolicyItemAccess access : denyPolicy.getDenyPolicyItems().get(0).getAccesses()) {
+      if (access.getType().equalsIgnoreCase("ReplAdmin")) {
+        isReplAdminDenied = true;
+      }
+    }
+    Assert.assertTrue(isReplAdminDenied);
+    //Deny exception is for hive user. Deny exception is not for repl admin permission
+    Assert.assertEquals("hive", denyPolicy.getDenyExceptions().get(0).getUsers().get(0));
+    Assert.assertEquals(10, denyPolicy.getDenyExceptions().get(0).getAccesses().size());
+    isReplAdminDenied = false;
+    for (RangerPolicy.RangerPolicyItemAccess access : denyPolicy.getDenyExceptions().get(0).getAccesses()) {
+      if (access.getType().equalsIgnoreCase("ReplAdmin")) {
+        isReplAdminDenied = true;
+      }
+    }
+    Assert.assertTrue(isReplAdminDenied);
+  }
+
+  @Test
+  public void testDisableRangerDenyPolicyForTargetDb() throws Exception {
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(rangerDenyWork.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(rangerDenyWork.getTargetDbName()).thenReturn("tgtdb");
+    Mockito.when(rangerDenyWork.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
+    RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
+    RangerRestClient client = new RangerRestClientImpl();
+    RangerPolicy expectedDenyPolicy = client.getDenyPolicyForReplicatedDb("hive", "srcdb", "tgtdb");
+    rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>(){{add(expectedDenyPolicy);}});
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+            Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)).thenReturn(false);
     int status = rangerDenyTask.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<RangerExportPolicyList> rangerPolicyCapture = ArgumentCaptor.forClass(RangerExportPolicyList.class);
@@ -198,6 +266,7 @@ public class TestRangerLoadTask {
     Assert.assertEquals(1, denyPolicy.getDenyExceptions().size());
     Assert.assertEquals("public", denyPolicy.getDenyPolicyItems().get(0).getGroups().get(0));
     Assert.assertEquals(8, denyPolicy.getDenyPolicyItems().get(0).getAccesses().size());
+    Assert.assertEquals(false, denyPolicy.getIsEnabled());
     boolean isReplAdminDenied = false;
     for (RangerPolicy.RangerPolicyItemAccess access : denyPolicy.getDenyPolicyItems().get(0).getAccesses()) {
       if (access.getType().equalsIgnoreCase("ReplAdmin")) {
