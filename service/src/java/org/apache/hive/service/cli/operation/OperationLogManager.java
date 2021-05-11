@@ -170,8 +170,10 @@ public class OperationLogManager {
     Set<String> results = new HashSet<>();
     if (logDir.exists() && logDir.isDirectory()) {
       File[] subFiles = logDir.listFiles();
-      for (File f : subFiles) {
-        results.add(f.getName());
+      if (subFiles != null) {
+        for (File f : subFiles) {
+          results.add(f.getName());
+        }
       }
     }
     return results;
