@@ -858,6 +858,15 @@ public class VectorPTFGroupBatches extends PTFPartition {
 
     Object result = null;
     if (evaluator.canRunOptimizedCalculation(rowNum, range)) {
+      /*
+       * A classic evaluator (which doesn't take advantage of optimized calculation) usually
+       * evaluates its input expression in evaluateGroupBatch. The optimized calculation doesn't
+       * necessarily work on batches, but input expressions still have to be evaluated, so we take
+       * care of them here.
+       */
+      RowPositionInBatch rp = getPosition(rowNum);
+      evaluator.evaluateInputExpr(bufferedBatches.get(rp.batchIndex));
+
       result = copyResultIfNeeded(evaluator, evaluator.runOnRange(rowNum, range, this));
       partitionMetrics.evaluationOptimized += 1;
     } else { // fallback to batch-by-batch manner over the whole range

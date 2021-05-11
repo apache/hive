@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBase;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorCount;
@@ -46,6 +47,8 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleLastVal
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLag;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLead;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongAvg;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongCountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongFirstValue;
@@ -94,7 +97,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     AVG,
     FIRST_VALUE,
     LAST_VALUE,
-    COUNT(true);
+    COUNT(true),
+    LEAD,
+    LAG;
 
     private final boolean supportDistinct;
 
@@ -124,6 +129,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     supportedFunctionsMap.put("first_value", SupportedFunctionType.FIRST_VALUE);
     supportedFunctionsMap.put("last_value", SupportedFunctionType.LAST_VALUE);
     supportedFunctionsMap.put("count", SupportedFunctionType.COUNT);
+    supportedFunctionsMap.put("lead", SupportedFunctionType.LEAD);
+    supportedFunctionsMap.put("lag", SupportedFunctionType.LAG);
   }
   public static List<String> supportedFunctionNames = new ArrayList<String>();
   static {
@@ -172,8 +179,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   // We provide this public method to help EXPLAIN VECTORIZATION show the evaluator classes.
   public static VectorPTFEvaluatorBase getEvaluator(SupportedFunctionType functionType,
-      boolean isDistinct, WindowFrameDef windowFrameDef, Type columnVectorType,
-      VectorExpression inputVectorExpression, int outputColumnNum) {
+      List<ExprNodeDesc> evaluatorParameters, boolean isDistinct, WindowFrameDef windowFrameDef,
+      Type[] columnVectorTypes, VectorExpression[] inputVectorExpressions, int outputColumnNum) {
 
     final boolean isRowEndCurrent = (windowFrameDef.getWindowType() == WindowType.ROWS
         && windowFrameDef.getEnd().isCurrentRow());
@@ -184,6 +191,10 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
      * a boundary on a streaming evaluator
      */
     final boolean canStream = windowFrameDef.getStart().isUnbounded() && isRowEndCurrent;
+
+    // most of the evaluators will use only first argument
+    VectorExpression inputVectorExpression = inputVectorExpressions[0];
+    Type columnVectorType = columnVectorTypes[0];
 
     VectorPTFEvaluatorBase evaluator;
     switch (functionType) {
@@ -372,6 +383,45 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
         }
       }
       break;
+    case LAG:
+      // lag(column, constant, ...)
+      int amt = inputVectorExpressions.length > 1
+        ? (int) ((ConstantVectorExpression) inputVectorExpressions[1]).getLongValue() : 1;
+
+      // lag(column, constant, constant/column)
+      VectorExpression defaultValueExpression =
+          inputVectorExpressions.length > 2 ? inputVectorExpressions[2] : null;
+      switch (columnVectorType) {
+      case LONG:
+      case DOUBLE:
+      case DECIMAL:
+        evaluator = new VectorPTFEvaluatorLag(windowFrameDef, inputVectorExpression,
+            outputColumnNum, columnVectorType, amt, defaultValueExpression);
+        break;
+      default:
+        throw new RuntimeException(
+            "Unexpected column vector type " + columnVectorType + " for " + functionType);
+      }
+      break;
+    case LEAD:
+      // lead(column, constant, ...)
+      amt = inputVectorExpressions.length > 1
+        ? (int) ((ConstantVectorExpression) inputVectorExpressions[1]).getLongValue() : 1;
+
+      // lead(column, constant, constant/column)
+      defaultValueExpression = inputVectorExpressions.length > 2 ? inputVectorExpressions[2] : null;
+      switch (columnVectorType) {
+      case LONG:
+      case DOUBLE:
+      case DECIMAL:
+        evaluator = new VectorPTFEvaluatorLead(windowFrameDef, inputVectorExpression,
+            outputColumnNum, columnVectorType, amt, defaultValueExpression);
+        break;
+      default:
+        throw new RuntimeException(
+            "Unexpected column vector type " + columnVectorType + " for " + functionType);
+      }
+      break;
     default:
       throw new RuntimeException("Unexpected function type " + functionType);
     }
@@ -381,10 +431,11 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   public static VectorPTFEvaluatorBase[] getEvaluators(VectorPTFDesc vectorPTFDesc, VectorPTFInfo vectorPTFInfo) {
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
     boolean[] evaluatorsAreDistinct = vectorPTFDesc.getEvaluatorsAreDistinct();
+    List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
     int evaluatorCount = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
-    VectorExpression[] evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
-    Type[] evaluatorInputColumnVectorTypes = vectorPTFInfo.getEvaluatorInputColumnVectorTypes();
+    VectorExpression[][] evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
+    Type[][] evaluatorInputColumnVectorTypes = vectorPTFInfo.getEvaluatorInputColumnVectorTypes();
 
     int[] outputColumnMap = vectorPTFInfo.getOutputColumnMap();
 
@@ -394,14 +445,15 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       boolean isDistinct = evaluatorsAreDistinct[i];
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
-      VectorExpression inputVectorExpression = evaluatorInputExpressions[i];
-      final Type columnVectorType = evaluatorInputColumnVectorTypes[i];
+      VectorExpression[] inputVectorExpressions = evaluatorInputExpressions[i];
+      final Type[] columnVectorTypes = evaluatorInputColumnVectorTypes[i];
 
       // The output* arrays start at index 0 for output evaluator aggregations.
       final int outputColumnNum = outputColumnMap[i];
 
-      VectorPTFEvaluatorBase evaluator = VectorPTFDesc.getEvaluator(functionType, isDistinct,
-          windowFrameDef, columnVectorType, inputVectorExpression, outputColumnNum);
+      VectorPTFEvaluatorBase evaluator =
+          VectorPTFDesc.getEvaluator(functionType, evaluatorInputExprNodeDescLists[i], isDistinct,
+              windowFrameDef, columnVectorTypes, inputVectorExpressions, outputColumnNum);
 
       evaluators[i] = evaluator;
     }

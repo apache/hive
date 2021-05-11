@@ -6101,7 +6101,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:timestamp, VALUE._col0:string, VALUE._col1:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp, bigint, timestamp, timestamp]
+                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp, bigint, timestamp, timestamp, bigint, timestamp, timestamp]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
@@ -7267,7 +7267,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:timestamp, VALUE._col0:string, VALUE._col1:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp, bigint, timestamp, timestamp]
+                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp, bigint, timestamp, timestamp, bigint, timestamp, timestamp]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
