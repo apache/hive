@@ -2964,8 +2964,11 @@ public class Vectorizer implements PhysicalPlanResolver {
           supportedFunctionType != SupportedFunctionType.DENSE_RANK) {
 
         if (exprNodeDescList != null) {
-          if (exprNodeDescList.size() > 1) {
-            setOperatorIssue("More than 1 argument expression of aggregation function " + functionName);
+          // LEAD and LAG now supports multiple arguments in vectorized mode
+          if (exprNodeDescList.size() > 1 && supportedFunctionType != SupportedFunctionType.LAG
+              && supportedFunctionType != SupportedFunctionType.LEAD) {
+            setOperatorIssue(
+                "More than 1 argument expression of aggregation function " + functionName);
             return false;
           }
 
@@ -5114,33 +5117,34 @@ public class Vectorizer implements PhysicalPlanResolver {
     int[] keyInputColumnMap = ArrayUtils.toPrimitive(keyInputColumns.toArray(new Integer[0]));
     int[] nonKeyInputColumnMap = ArrayUtils.toPrimitive(nonKeyInputColumns.toArray(new Integer[0]));
 
-    VectorExpression[] evaluatorInputExpressions = new VectorExpression[evaluatorCount];
-    Type[] evaluatorInputColumnVectorTypes = new Type[evaluatorCount];
+    VectorExpression[][] evaluatorInputExpressions = new VectorExpression[evaluatorCount][];
+    Type[][] evaluatorInputColumnVectorTypes = new Type[evaluatorCount][];
     for (int i = 0; i < evaluatorCount; i++) {
       List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
       VectorExpression inputVectorExpression;
-      final Type columnVectorType;
+      Type columnVectorType;
       if (exprNodeDescList != null) {
+        evaluatorInputExpressions[i] = new VectorExpression[exprNodeDescList.size()];
+        evaluatorInputColumnVectorTypes[i] = new Type[exprNodeDescList.size()];
+        for (int j = 0; j < exprNodeDescList.size(); j++){
+          ExprNodeDesc exprNodeDesc = exprNodeDescList.get(j);
 
-        // Validation has limited evaluatorInputExprNodeDescLists to size 1.
-        ExprNodeDesc exprNodeDesc = exprNodeDescList.get(0);
+          // Determine input vector expression using the VectorizationContext.
+          inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
 
-        // Determine input vector expression using the VectorizationContext.
-        inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+          if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+            inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+          }
 
-        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
-          inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+          TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
+          columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+          evaluatorInputExpressions[i][j]= inputVectorExpression;
+          evaluatorInputColumnVectorTypes[i][j] = columnVectorType;
         }
-
-        TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
-        columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
       } else {
-        inputVectorExpression =  null;
-        columnVectorType = ColumnVector.Type.NONE;
+        evaluatorInputExpressions[i] = new VectorExpression[] { null };
+        evaluatorInputColumnVectorTypes[i] = new Type[] { ColumnVector.Type.NONE };
       }
-
-      evaluatorInputExpressions[i] = inputVectorExpression;
-      evaluatorInputColumnVectorTypes[i] = columnVectorType;
     }
 
     VectorPTFInfo vectorPTFInfo = new VectorPTFInfo();
