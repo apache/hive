@@ -6898,8 +6898,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sortCols = new ArrayList<>();
       for (ExprNodeDesc expr : partnCols) {
         sortCols.add(expr.clone());
+        order.append(DirectionUtils.codeToSign(DirectionUtils.ASCENDING_CODE));
+        nullOrder.append(NullOrdering.NULLS_FIRST.getSign());
       }
-      createSortOrderForUpdateDelete(sortCols, order, nullOrder);
     }
 
     if (enforceBucketing) {
