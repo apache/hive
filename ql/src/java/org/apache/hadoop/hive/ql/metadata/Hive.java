@@ -5207,7 +5207,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return convertFromMetastore(getTable(destDb, destinationTableName), partitions);
     } catch (Exception ex) {
-      throw new HiveException(("Failed exchangeTablePartitions", ex);
+      throw new HiveException("Failed exchangeTablePartitions", ex);
     }
   }
 
