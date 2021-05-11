@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -276,6 +278,49 @@ public class TestCatalogs {
 
     Assert.assertTrue(hiveCatalog.isPresent());
     Assert.assertTrue(hiveCatalog.get() instanceof HiveCatalog);
+  }
+
+  @Test
+  public void testLoadTableFromCache() throws IOException {
+    String defaultCatalogName = "default";
+    String customersTableName = "customers";
+    String ordersTableName = "orders";
+    String queryId1 = UUID.randomUUID().toString();
+    String warehouseLocation = temp.newFolder("hadoop", "warehouse").toString();
+    setCustomCatalogProperties(defaultCatalogName, warehouseLocation);
+    HadoopCatalog catalog = new CustomHadoopCatalog(conf, warehouseLocation);
+    catalog.createTable(TableIdentifier.of(customersTableName), SCHEMA);
+    catalog.createTable(TableIdentifier.of(ordersTableName), SCHEMA);
+    // load customers table for queryId1
+    conf.set(InputFormatConfig.TABLE_IDENTIFIER, customersTableName);
+    conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId1);
+    Table customersTableQuery1 = Catalogs.loadTable(conf);
+    Assert.assertEquals(customersTableQuery1,
+        Catalogs.TableCache.getTable(conf, defaultCatalogName, customersTableName));
+    // load orders table for queryId1
+    conf.set(InputFormatConfig.TABLE_IDENTIFIER, ordersTableName);
+    Table ordersTableQuery1 = Catalogs.loadTable(conf);
+    Assert.assertEquals(ordersTableQuery1, Catalogs.TableCache.getTable(conf, defaultCatalogName, ordersTableName));
+    // switch off cache for orders table with queryId1
+    Assert.assertNotEquals(Catalogs.loadTableSkipCache(conf), ordersTableQuery1);
+    // load customers table for queryId2
+    String queryId2 = UUID.randomUUID().toString();
+    conf.set(InputFormatConfig.TABLE_IDENTIFIER, customersTableName);
+    conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId2);
+    Table customersTableQuery2 = Catalogs.loadTable(conf);
+    Assert.assertEquals(customersTableQuery2,
+        Catalogs.TableCache.getTable(conf, defaultCatalogName, customersTableName));
+    // check that the current and previous customers tables are different
+    Assert.assertNotEquals(customersTableQuery1, customersTableQuery2);
+    // remove all tables used in queryId1
+    conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId1);
+    Catalogs.TableCache.removeTable(conf);
+    Assert.assertNull(Catalogs.TableCache.getTable(conf, defaultCatalogName, customersTableName));
+    Assert.assertNull(Catalogs.TableCache.getTable(conf, defaultCatalogName, ordersTableName));
+    // check customers table for queryId2 still in cache
+    conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId2);
+    Assert.assertEquals(customersTableQuery2,
+        Catalogs.TableCache.getTable(conf, defaultCatalogName, customersTableName));
   }
 
   public static class CustomHadoopCatalog extends HadoopCatalog {

@@ -307,7 +307,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (catalogName != null) {
       catalogProperties.put(InputFormatConfig.CATALOG_NAME, catalogName);
     }
-    Table table = Catalogs.loadTable(conf, catalogProperties);
+    Table table = Catalogs.loadTableSkipCache(conf, catalogProperties);
 
     long startTime = System.currentTimeMillis();
     LOG.info("Committing job has started for table: {}, using location: {}",

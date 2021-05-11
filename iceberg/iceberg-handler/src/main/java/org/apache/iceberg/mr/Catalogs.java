@@ -24,8 +24,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Cache;
+import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -73,40 +78,84 @@ public final class Catalogs {
 
   /**
    * Load an Iceberg table using the catalog and table identifier (or table path) specified by the configuration.
+   * If the table was already loaded within the same query, the cached version of the Iceberg table will be returned.
    * @param conf a Hadoop conf
    * @return an Iceberg table
    */
   public static Table loadTable(Configuration conf) {
     return loadTable(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER), conf.get(InputFormatConfig.TABLE_LOCATION),
-            conf.get(InputFormatConfig.CATALOG_NAME));
+            conf.get(InputFormatConfig.CATALOG_NAME), true);
   }
 
   /**
    * Load an Iceberg table using the catalog specified by the configuration.
+   * If the table was already loaded within the same query, the cached version of the Iceberg table will be returned.
    * <p>
    * The table identifier ({@link Catalogs#NAME}) and the catalog name ({@link InputFormatConfig#CATALOG_NAME}),
    * or table path ({@link Catalogs#LOCATION}) should be specified by the controlling properties.
    * <p>
-   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler
-   * @param conf a Hadoop
+   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler.
+   * @param conf a Hadoop configuration
    * @param props the controlling properties
    * @return an Iceberg table
    */
   public static Table loadTable(Configuration conf, Properties props) {
     return loadTable(conf, props.getProperty(NAME), props.getProperty(LOCATION),
-            props.getProperty(InputFormatConfig.CATALOG_NAME));
+            props.getProperty(InputFormatConfig.CATALOG_NAME), true);
+  }
+
+  /**
+   * Load an Iceberg table using the catalog specified by the configuration leaving out the caching layer.
+   *
+   * @param conf a Hadoop configuration
+   * @return an Iceberg table
+   */
+  public static Table loadTableSkipCache(Configuration conf) {
+    return loadTable(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER), conf.get(InputFormatConfig.TABLE_LOCATION),
+        conf.get(InputFormatConfig.CATALOG_NAME), false);
+  }
+
+  /**
+   * Load an Iceberg table using the catalog specified by the configuration leaving out the caching layer.
+   * <p>
+   * The table identifier ({@link Catalogs#NAME}) and the catalog name ({@link InputFormatConfig#CATALOG_NAME}),
+   * or table path ({@link Catalogs#LOCATION}) should be specified by the controlling properties.
+   * <p>
+   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler.
+   * @param conf a Hadoop configuration
+   * @param props the controlling properties
+   * @return an Iceberg table
+   */
+  public static Table loadTableSkipCache(Configuration conf, Properties props) {
+    return loadTable(conf, props.getProperty(NAME), props.getProperty(LOCATION),
+        props.getProperty(InputFormatConfig.CATALOG_NAME), false);
   }
 
   private static Table loadTable(Configuration conf, String tableIdentifier, String tableLocation,
-                                 String catalogName) {
+                                 String catalogName, boolean useCache) {
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
+    Table cachedTable = null;
     if (catalog.isPresent()) {
       Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
-      return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
+      if (useCache) {
+        cachedTable = TableCache.getTable(conf, catalog.get().name(), tableIdentifier);
+        if (cachedTable != null) {
+          return cachedTable;
+        }
+      }
+      Table table = catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
+      TableCache.addTable(conf, catalog.get().name(), tableIdentifier, table);
+      return table;
     }
 
     Preconditions.checkArgument(tableLocation != null, "Table location not set");
+    if (useCache) {
+      cachedTable = TableCache.getTable(conf, NO_CATALOG_TYPE, tableIdentifier);
+      if (cachedTable != null) {
+        return cachedTable;
+      }
+    }
     return new HadoopTables(conf).load(tableLocation);
   }
 
@@ -282,6 +331,42 @@ public final class Catalogs {
       } else {
         return catalogType;
       }
+    }
+  }
+
+  public static class TableCache {
+    private static final Cache<String, Table> tableCache = Caffeine.newBuilder()
+        .expireAfterAccess(12, TimeUnit.HOURS).build();
+    private static final Set<String> keys = new TreeSet<>();
+
+    public static void removeTable(Configuration conf) {
+      String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      if (queryId != null && !queryId.isEmpty()) {
+        Set<String> queryKeys = keys.stream().filter(k -> k.startsWith(queryId)).collect(Collectors.toSet());
+        tableCache.invalidateAll(queryKeys);
+        keys.removeAll(queryKeys);
+      }
+    }
+
+    public static Table getTable(Configuration conf, String catalogName, String tableIdentifier) {
+      String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      if (queryId != null  && !queryId.isEmpty()) {
+        return tableCache.getIfPresent(getKey(queryId, catalogName, tableIdentifier));
+      }
+      return null;
+    }
+
+    public static void addTable(Configuration conf, String catalogName, String tableIdentifier, Table table) {
+      String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      if (queryId != null  && !queryId.isEmpty()) {
+        String key = getKey(queryId, catalogName, tableIdentifier);
+        tableCache.put(key, table);
+        keys.add(key);
+      }
+    }
+
+    private static String getKey(String queryId, String catalogName, String tableIdentifier) {
+      return queryId + "." + catalogName + "." + tableIdentifier;
     }
   }
 }
