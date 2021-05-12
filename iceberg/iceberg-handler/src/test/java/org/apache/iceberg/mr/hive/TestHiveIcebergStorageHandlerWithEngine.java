@@ -525,9 +525,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     // get source data from a different catalog
-    shell.executeStatement(String.format("CREATE TABLE source STORED BY '%s' LOCATION '%s' TBLPROPERTIES ('%s'='%s', '%s'='%s')",
+    shell.executeStatement(String.format(
+        "CREATE TABLE source STORED BY '%s' LOCATION '%s' TBLPROPERTIES ('%s'='%s', '%s'='%s')",
         HiveIcebergStorageHandler.class.getName(),
-        temp.getRoot().getPath() + "/source/",
+        temp.getRoot().getPath() + "/default/source/",
         InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_HADOOP_TABLE_NAME,
         InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)));
     shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'Roger'), (2, 'Linda', 'Albright')");
