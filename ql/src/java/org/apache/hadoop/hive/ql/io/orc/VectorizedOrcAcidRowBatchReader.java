@@ -914,6 +914,13 @@ public class VectorizedOrcAcidRowBatchReader
       value.selected = vectorizedRowBatchBase.selected;
       value.selectedInUse = vectorizedRowBatchBase.selectedInUse;
       copyFromBase(value);
+
+      if (rowIsDeletedProjected) {
+        Arrays.fill(rowIsDeletedVector.vector, 0);
+        int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
+        value.cols[ix] = rowIsDeletedVector;
+      }
+
       progress = baseReader.getProgress();
       return true;
     }
