@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -33,12 +34,17 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -56,6 +62,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -149,8 +156,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-//  @Rule
-//  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
+  @Rule
+  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
@@ -176,26 +183,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     // proceed, but they do not reset it to done=false at the beginning. Therefore, without calling this after each test
     // case, any tez job that follows a completed mr job will erroneously read done=true and will not proceed.
     ExecMapper.setDone(false);
-  }
-
-  @Test
-  public void testCTAS() throws IOException {
-    Assume.assumeTrue("CTAS is only for HiveCatalog tables",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
-    TableIdentifier target = TableIdentifier.of("default", "target");
-    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-
-    shell.executeStatement(String.format("CREATE TABLE target STORED BY '%s' AS SELECT * FROM source",
-        HiveIcebergStorageHandler.class.getName()));
-
-    // validate we can read it via SQL
-    List<Object[]> objects = shell.executeStatement("SELECT * FROM target");
-    Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size(), objects.size());
-    // check data contents
-    Table table = testTables.loadTable(target);
-    HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
   }
 
   @Test
@@ -530,6 +517,54 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM target WHERE FALSE");
 
     HiveIcebergTestUtils.validateData(table, expected, 0);
+  }
+
+  @Test
+  public void testCTAS() {
+    Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // get source data from a different catalog
+    shell.executeStatement(String.format("CREATE TABLE source STORED BY '%s' LOCATION '%s' TBLPROPERTIES ('%s'='%s', '%s'='%s')",
+        HiveIcebergStorageHandler.class.getName(),
+        temp.getRoot().getPath() + "/source/",
+        InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_HADOOP_TABLE_NAME,
+        InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)));
+    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'Roger'), (2, 'Linda', 'Albright')");
+
+    // CTAS into a new HiveCatalog table
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        HiveIcebergStorageHandler.class.getName(),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY customer_id");
+    Assert.assertEquals(2, objects.size());
+    Assert.assertArrayEquals(new Object[]{1L, "Mike", "Roger"}, objects.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Albright"}, objects.get(1));
+  }
+
+  @Test
+  public void testCTASFailureRollback() throws IOException {
+    Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // force an execution error by passing in a committer class that Tez won't be able to load
+    shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
+
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    try {
+      shell.executeStatement(String.format("CREATE TABLE target STORED BY '%s' AS SELECT * FROM source",
+          HiveIcebergStorageHandler.class.getName()));
+    } catch (Exception e) {
+      // expected error
+    }
+
+    // CTAS table should have been dropped by the lifecycle hook
+    Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
   }
 
   /**

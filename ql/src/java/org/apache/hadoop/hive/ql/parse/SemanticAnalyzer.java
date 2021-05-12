@@ -7859,8 +7859,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.debug("Created FileSink Plan for clause: {}dest_path: {} row schema: {}", dest, destinationPath, inputRR);
 
-//    createPreInsertDesc(getTable(tableDesc.getTableName().getDbTable()), false);
-
     FileSinkOperator fso = (FileSinkOperator) output;
     fso.getConf().setTable(destinationTable);
     // the following code is used to collect column stats when
@@ -11809,11 +11807,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (qb.getAlias() != null) {
       rewriteRRForSubQ(qb.getAlias(), bodyOpInfo, skipAmbiguityCheck);
     }
-
-//    // handle direct insert CTAS
-//    if (qb.isCTAS()) {
-//      createPreInsertDesc(getTable(tableDesc.getTableName().getDbTable()), false);
-//    }
 
     setQB(qb);
     return bodyOpInfo;
