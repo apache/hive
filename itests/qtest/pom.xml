@@ -421,17 +421,6 @@
   </dependencies>
   <profiles>
     <profile>
-      <id>iceberg</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-iceberg-handler</artifactId>
-          <version>${parent.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <!-- replaces -Dclustermode=minimr which I am sure sure was used? -->
       <id>minimr</id>
       <properties>

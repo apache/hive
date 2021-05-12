@@ -482,6 +482,11 @@
         <artifactId>hadoop-yarn-registry</artifactId>
         <version>${hadoop.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-iceberg-handler</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -494,19 +499,9 @@
     </profile>
     <profile>
       <id>iceberg</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-iceberg-handler</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-iceberg-handler</artifactId>
-          <version>${project.version}</version>
-          <classifier>tests</classifier>
-        </dependency>
-      </dependencies>
+      <modules>
+        <module>qtest-iceberg</module>
+      </modules>
     </profile>
   </profiles>
 
