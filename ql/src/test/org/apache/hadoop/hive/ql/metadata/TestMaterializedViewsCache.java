@@ -135,7 +135,8 @@ class TestMaterializedViewsCache {
   private static HiveRelOptMaterialization createMaterialization(Table table) {
     return new HiveRelOptMaterialization(
             new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName()),
-            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class));
+            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class),
+            HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE);
   }
 
   @Test
