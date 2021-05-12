@@ -14,9 +14,15 @@
 # limitations under the License.
 
 #Validate the number of arguments.
-if [ $# != 3 ]; then
-    echo "Invalid Arguments"
-    echo  "Usage: replStat.sh policyName executionId pathForFiles"
+if [ $# -gt 3 ]; then
+    echo "Invalid Arguments. Required Max 3, but provided: ""$#"
+    echo  "Usage: replStat.sh policyName executionId [pathForFiles]"
+    exit 1;
+fi
+
+if [ $# -lt 2 ]; then
+    echo "Missing Arguments"
+    echo  "Usage: replStat.sh policyName executionId [pathForFiles]"
     exit 1;
 fi
 
@@ -26,6 +32,12 @@ togrep="Repl#"$policy"#"$index
 csv="~/"$togrep"values.csv"
 echo "Getting details of mapred jobs containing ""$togrep"" as part of their Application Name"
 path=$3
+
+#If path isn't specified
+if [ $# -eq 2 ]; then
+    echo "Path isn't explicitily provided. Using ""$PWD"
+    path=$PWD
+fi
 
 #Mapred command to list all jobs, Then from that extract the list of job ids which contains the application name, then get history for all the job ids and dump into the stat file one after the other
 
@@ -52,13 +64,13 @@ fi
   launch="${line/Launched At: /}"
   ltime="${line#*(}"
   ltime="${ltime%?}"
-  launch=${launch%(*}
+  launch=${launch% (*}
 fi
   if [[ $line == *"Finished At: "* ]]; then
   finish="${line/Finished At: /}"
   ftime="${line#*(}"
   ftime="${ftime%?}"
-  finish=${finish%(*}
+  finish=${finish% (*}
 fi
     if [[ $line == *"Status: "* ]]; then
   status="${line/Status: /}"
