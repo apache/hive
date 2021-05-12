@@ -118,7 +118,7 @@ public class Warehouse {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -417,7 +417,7 @@ public class Warehouse {
       fs = getFs(f);
       return FileUtils.mkdir(fs, f);
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return false;
   }
@@ -433,7 +433,7 @@ public class Warehouse {
       FileSystem destFs = getFs(destPath);
       return FileUtils.rename(srcFs, destFs, sourcePath, destPath);
     } catch (Exception ex) {
-      MetaStoreUtils.logAndThrowMetaException(ex);
+      MetaStoreUtils.throwMetaException(ex);
     }
     return false;
   }
@@ -762,7 +762,7 @@ public class Warehouse {
     } catch (FileNotFoundException e) {
       return false;
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return true;
   }
@@ -794,7 +794,7 @@ public class Warehouse {
       FileSystem fileSys = path.getFileSystem(conf);
       return FileUtils.getFileStatusRecurse(path, fileSys);
     } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
+      MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
   }
@@ -812,7 +812,7 @@ public class Warehouse {
       FileSystem fileSys = tablePath.getFileSystem(conf);
       return FileUtils.getFileStatusRecurse(tablePath, fileSys);
     } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
+      MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
   }

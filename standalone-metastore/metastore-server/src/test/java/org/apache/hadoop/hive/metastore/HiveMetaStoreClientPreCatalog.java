@@ -265,7 +265,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     } catch (IllegalArgumentException e) {
       throw (e);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
   }
 
@@ -1256,7 +1256,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterDatabases(client.get_databases(databasePattern));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1267,7 +1267,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterDatabases(client.get_all_databases());
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1278,7 +1278,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       client.get_dataconnectors(); // TODO run thru filterhook
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1613,7 +1613,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTableNames(null, dbname, client.get_tables(dbname, tablePattern));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1625,7 +1625,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       return filterHook.filterTableNames(null, dbname,
           client.get_tables_by_type(dbname, tablePattern, tableType.toString()));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1636,7 +1636,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTables(client.get_all_materialized_view_objects_for_rewriting());
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1647,7 +1647,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTableNames(null, dbname, client.get_materialized_views_for_rewriting(dbname));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1658,7 +1658,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterNames(client.get_table_meta(dbPatterns, tablePatterns, tableTypes));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -1689,7 +1689,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       return filterHook.filterTableNames(null, dbname, client.get_all_tables(dbname));
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
