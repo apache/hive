@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -46,6 +45,8 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Streams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -337,14 +338,17 @@ public final class Catalogs {
   public static class TableCache {
     private static final Cache<String, Table> tableCache = Caffeine.newBuilder()
         .expireAfterAccess(12, TimeUnit.HOURS).build();
-    private static final Set<String> keys = new TreeSet<>();
+    private static final Logger LOG = LoggerFactory.getLogger(TableCache.class);
 
-    public static void removeTable(Configuration conf) {
+    public static void removeTables(Configuration conf) {
       String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
       if (queryId != null && !queryId.isEmpty()) {
-        Set<String> queryKeys = keys.stream().filter(k -> k.startsWith(queryId)).collect(Collectors.toSet());
+        Set<String> queryKeys = tableCache.asMap().keySet().stream()
+            .filter(k -> k.startsWith(queryId)).collect(Collectors.toSet());
         tableCache.invalidateAll(queryKeys);
-        keys.removeAll(queryKeys);
+      } else {
+        LOG.warn("Query id is not present in config, therefore no Iceberg table object is removed " +
+            "from the table cache.");
       }
     }
 
@@ -358,10 +362,9 @@ public final class Catalogs {
 
     public static void addTable(Configuration conf, String catalogName, String tableIdentifier, Table table) {
       String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
-      if (queryId != null  && !queryId.isEmpty()) {
+      if (queryId != null && !queryId.isEmpty()) {
         String key = getKey(queryId, catalogName, tableIdentifier);
         tableCache.put(key, table);
-        keys.add(key);
       }
     }
 

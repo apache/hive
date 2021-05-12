@@ -314,7 +314,7 @@ public class TestCatalogs {
     Assert.assertNotEquals(customersTableQuery1, customersTableQuery2);
     // remove all tables used in queryId1
     conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId1);
-    Catalogs.TableCache.removeTable(conf);
+    Catalogs.TableCache.removeTables(conf);
     Assert.assertNull(Catalogs.TableCache.getTable(conf, defaultCatalogName, customersTableName));
     Assert.assertNull(Catalogs.TableCache.getTable(conf, defaultCatalogName, ordersTableName));
     // check customers table for queryId2 still in cache
