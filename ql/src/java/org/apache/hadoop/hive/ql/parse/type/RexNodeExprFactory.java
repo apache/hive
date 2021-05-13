@@ -325,9 +325,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).longValueExact();
         } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-          return Double.valueOf(constantToInterpret.toString());
+          return new BigDecimal(Double.valueOf(constantToInterpret.toString()));
         } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-          return Float.valueOf(constantToInterpret.toString());
+          return new BigDecimal(Float.valueOf(constantToInterpret.toString()));
         } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).byteValueExact();
         } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
@@ -342,17 +342,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       }
     }
 
-    // Comparision of decimal and float/double happens in float/double.
     if (constantToInterpret instanceof BigDecimal) {
-      BigDecimal bigDecimal = (BigDecimal) constantToInterpret;
-
-      PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
-      if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.doubleValue();
-      } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.floatValue();
-      }
-      return bigDecimal;
+      return constantToInterpret;
     }
 
     String constTypeInfoName = sourceType.getTypeName();
