@@ -104,9 +104,13 @@ public class FileUtils {
       result = fs.delete(f, true);
 
     } catch (RemoteException | SnapshotException se) {
+      // If this is snapshot exception or the cause is snapshot replication from HDFS, could be the case where the
+      // snapshots were created by replication, so in that case attempt to delete the replication related snapshots,
+      // if the exists and then re attempt delete.
       if (se instanceof SnapshotException || se.getCause() instanceof SnapshotException || se.getMessage()
           .contains("Snapshot"))
         deleteReplRelatedSnapshots(fs, f);
+      // retry delete after attempting to delete replication related snapshots
       result = fs.delete(f, true);
     }
     if (!result) {
@@ -115,16 +119,23 @@ public class FileUtils {
     return result;
   }
 
+  /**
+   * Attempts to delete the replication related snapshots
+   * @param fs the filesystem
+   * @param path path where the snapshots are supposed to exists.
+   */
   private static void deleteReplRelatedSnapshots(FileSystem fs, Path path) {
     try {
       DistributedFileSystem dfs = (DistributedFileSystem) fs;
+      // List the snapshot directory.
       FileStatus[] listing = fs.listStatus(new Path(path, ".snapshot"));
       for (FileStatus elem : listing) {
-        if (elem.getPath().getName().contains("replOld") || elem.getPath().getName().contains("replNew")) {
+        // if the snapshot name has replication related suffix, then delete that snapshot.
+        if (elem.getPath().getName().endsWith("replOld") || elem.getPath().getName().endsWith("replNew")) {
           dfs.deleteSnapshot(path, elem.getPath().getName());
         }
       }
-    } catch (IOException ioe) {
+    } catch (Exception ioe) {
       // Ignore since this method is used as part of purge which actually ignores all exception, if the directory can
       // not be deleted, so preserve the same behaviour.
       LOG.warn("Couldn't clean up replication related snapshots", ioe);

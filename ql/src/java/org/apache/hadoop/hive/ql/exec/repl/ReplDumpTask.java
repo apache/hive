@@ -1002,6 +1002,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
                 new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
                     EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT));
+            FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
+                new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
+                    EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD));
             // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
           }

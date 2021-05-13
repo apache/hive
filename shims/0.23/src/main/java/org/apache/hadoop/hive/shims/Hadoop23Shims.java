@@ -1139,21 +1139,38 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return params;
   }
 
+  /**
+   * Constructs the params to be passed for using snapshot based replication
+   * @param srcPaths source paths
+   * @param dst destination
+   * @param sourceSnap starting snapshot
+   * @param destSnap end snapshot
+   * @param conf hive configuration
+   * @param diff -diff or -rdiff
+   * @return
+   */
   List<String> constructDistCpWithSnapshotParams(List<Path> srcPaths, Path dst, String sourceSnap, String destSnap,
       Configuration conf, String diff) {
+    // Get the default distcp params
     List<String> params = constructDistCpDefaultParams(conf);
     if (params.contains("-delete")) {
       params.remove("-delete");
     }
 
     // Add distCp snapshot diff parameters.
+
+    // Add -diff or -rdiff
     params.add(diff);
+    // Add the starting snapshot.
     params.add(sourceSnap);
+    // Add the second snapshot
     params.add(destSnap);
 
+    // Add the source paths.
     for (Path src : srcPaths) {
       params.add(src.toString());
     }
+    // Add the target path.
     params.add(dst.toString());
     return params;
   }
@@ -1210,6 +1227,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  @Override
   public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst, Configuration conf)
       throws IOException {
     DistCpOptions options =
@@ -1262,6 +1280,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return false;
   }
 
+  /**
+   * Checks wether reverse diff on the snapshot should be performed or not.
+   * @param p path where snapshot exists.
+   * @param conf the hive configuration.
+   * @param snapshot the name of snapshot.
+   * @return true, if we need to do rdiff.
+   */
   private static boolean shouldRdiff(Path p, Configuration conf, String snapshot) throws Exception {
     // Using the configuration in string form since hive-shims doesn't have a dependency on hive-common.
     boolean isOverwrite = conf.getBoolean("hive.repl.externaltable.snapshot.overwrite.target", true);

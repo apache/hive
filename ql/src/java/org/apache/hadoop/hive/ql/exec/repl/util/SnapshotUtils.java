@@ -17,16 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -36,13 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplDumpTask.createTableFileList;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.externalTableDataPath;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
@@ -366,28 +359,29 @@ public class SnapshotUtils {
     }
   }
 
-  public static boolean shouldRdiff(Path p, HiveConf conf, String snapshot) {
-    try {
-      DistributedFileSystem dfs = getDFS(p, conf);
-      // check if the target got modified
-      int index =
-          dfs.getClient().getSnapshotDiffReportListing(p.toUri().getPath(), snapshot, "", DFSUtilClient.EMPTY_BYTES, -1)
-              .getLastIndex();
-
-      return index > -1;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
+  /**
+   * Gets the path where the snapshotfile needs to be created. The hrepl directory.
+   * @param dumpRoot the dumproot.
+   * @return the path where the snapshot tracking file is to be created.
+   */
   public static Path getSnapshotFileListPath(Path dumpRoot) {
     return dumpRoot.getParent().getParent().getParent();
   }
 
+  /**
+   * Gets the name of the first snapshot, combined with the prefix.
+   * @param prefix the prefix that needs to be attached to the default hive replication first snapshot name.
+   * @return name to be used as first snapshot.
+   */
   public static String firstSnapshot(String prefix) {
     return prefix + OLD_SNAPSHOT;
   }
 
+  /**
+   * Gets the name of the second snapshot, combined with the prefix.
+   * @param prefix the prefix that needs to be attached to the default hive replication second snapshot name.
+   * @return name to be used as second snapshot.
+   */
   public static String secondSnapshot(String prefix) {
     return prefix + NEW_SNAPSHOT;
   }

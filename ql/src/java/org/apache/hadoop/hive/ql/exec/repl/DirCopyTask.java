@@ -174,7 +174,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
             throw new IOException(ex);
           }
           if (!getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.FALLBACK_COPY)) {
-            LOG.info("Using Snapshot mode of copy for source: {} and target: " + " {}", sourcePath, targetPath);
+            LOG.info("Using Snapshot mode of copy for source: {} and target: {}", sourcePath, targetPath);
             // Use distcp with snapshots for copy.
             result.set(copyUsingDistCpSnapshots(sourcePath, targetPath, proxyUser));
           } else {
@@ -247,7 +247,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
 
       // This is the first time we are copying, check if the target is snapshottable or not, if not attempt to allow
       // snapshots.
-      SnapshotUtils.allowSnapshot(targetFs, targetPath, conf);
+      SnapshotUtils.allowSnapshot(targetFs, work.getFullyQualifiedTargetPath(), conf);
       // Attempt to delete the snapshot, in case this is a bootstrap post a failed incremental, Since in case of
       // bootstrap we go from start, so delete any pre-existing snapshot.
       SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), conf);

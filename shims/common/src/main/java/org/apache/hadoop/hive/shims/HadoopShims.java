@@ -515,7 +515,7 @@ public interface HadoopShims {
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
    * @param proxyUser The user to perform the distcp as
-   * @return True if it is successfull; False otherwise.
+   * @return true if it is successful; false otherwise.
    */
   boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, UserGroupInformation proxyUser)
           throws IOException;
@@ -528,7 +528,7 @@ public interface HadoopShims {
    * @param srcPaths List of Path to the source files or directories to copy
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
-   * @return True if it is successfull; False otherwise.
+   * @return true if it is successful; false otherwise.
    */
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf)
       throws IOException;
@@ -543,7 +543,7 @@ public interface HadoopShims {
    * @param srcPaths List of Path to the source files or directories to copy
    * @param dst      Path to the destination file or directory
    * @param conf     The hadoop configuration object
-   * @return True if it is successful; False otherwise.
+   * @return true if it is successful; false otherwise.
    */
   boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       Configuration conf) throws IOException;
@@ -561,7 +561,7 @@ public interface HadoopShims {
    * @param dst       Path to the destination file or directory
    * @param conf      The hadoop configuration object
    * @param proxyUser The user to perform the distcp as
-   * @return True if it is successfull; False otherwise.
+   * @return true if it is successful; false otherwise.
    */
   boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       Configuration conf, UserGroupInformation proxyUser) throws IOException;

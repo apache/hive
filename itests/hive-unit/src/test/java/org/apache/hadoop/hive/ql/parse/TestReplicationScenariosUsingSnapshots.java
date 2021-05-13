@@ -44,6 +44,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1256,6 +1257,134 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     assertNotNull(dfs.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
     assertNotNull(
         dfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+  }
+
+  @Test
+  public void testSnapshotsWithFiltersCustomDbLevelPaths() throws Throwable {
+    // Directory Structure:
+    //    /prefix/project/   <- Specified as custom Location.(Snapshot Root)
+    //                        /randomStuff <- Not to be copied as part of external data copy
+    //                        /warehouse1 <- To be copied, Contains table1 & table2
+    //                       /warehouse2 <- To be copied, Contains table3 & table4
+
+    // Create /prefix/project
+    Path project = new Path("/" + testName.getMethodName() + "/project");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(project);
+
+    // Create /prefix/project/warehouse1
+    Path warehouse1 = new Path(project, "warehouse1");
+    fs.mkdirs(warehouse1);
+
+    // Create /prefix/project/warehouse2
+    Path warehouse2 = new Path(project, "warehouse2");
+    fs.mkdirs(warehouse2);
+
+    // Table1 Path: /prefix/project/warehouse1/table1
+    Path table1 = new Path(warehouse1, "table1");
+    fs.mkdirs(table1);
+
+    // Table2 Path: /prefix/project/warehouse1/table2
+    Path table2 = new Path(warehouse1, "table2");
+    fs.mkdirs(table2);
+
+    // Table3 Path: /prefix/project/warehouse2/table3
+    Path table3 = new Path(warehouse2, "table3");
+    fs.mkdirs(table3);
+
+    // Table4 Path: /prefix/project/warehouse2/table4
+    Path table4 = new Path(warehouse2, "table4");
+    fs.mkdirs(table4);
+
+    // Random Dir inside the /prefix/project
+    Path random = new Path(project, "randomStuff");
+    fs.mkdirs(random);
+
+    fs.create(new Path(random, "file1")).close();
+    fs.create(new Path(random, "file2")).close();
+    fs.create(new Path(random, "file3")).close();
+
+    // Create a filter file for DistCp
+    Path filterFile = new Path("/tmp/filter");
+    try(FSDataOutputStream stream = fs.create(filterFile)) {
+      stream.writeBytes(".*randomStuff.*");
+    }
+    assertTrue(fs.exists(filterFile.makeQualified(fs.getUri(), fs.getWorkingDirectory())));
+    FileWriter myWriter = new FileWriter("/tmp/filter");
+    myWriter.write(".*randomStuff.*");
+    myWriter.close();
+
+    // Specify the project directory as the snapshot root using the single copy task path config.
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'"
+        + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS.varname + "'='" + project
+        .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
+
+    // Add Filter file
+    withClause.add("'distcp.options.filters'='" + "/tmp/filter" + "'");
+
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+        .run("create external table table1 (place string)  row format "
+            + "delimited fields terminated by ',' location '" + table1.toString() +"'")
+        .run("create external table table2 (place string)  row format "
+            + "delimited fields terminated by ',' location '" + table2.toString() +"'")
+        .run("create external table table3 (place string)  row format "
+            + "delimited fields terminated by ',' location '" + table3.toString() +"'")
+        .run("create external table table4 (place string)  row format "
+            + "delimited fields terminated by ',' location '" + table4.toString() +"'")
+        .run("insert into table1 values ('bangalore')")
+        .run("select place from table1")
+        .verifyResults(new String[] {"bangalore"})
+        .run("insert into table2 values ('beejing')")
+        .run("insert into table3 values ('new york')")
+        .run("insert into table4 values ('tokyo')")
+        .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select place from table1")
+        .verifyResults(new String[] {"bangalore"})
+        .run("select place from table2")
+        .verifyResults(new String[] {"beejing"})
+        .run("select place from table3")
+        .verifyResults(new String[] {"new york"})
+        .run("select place from table4")
+        .verifyResults(new String[] {"tokyo"})
+        .verifyReplTargetProperty(replicatedDbName);
+
+    // Check if the initial snapshot got created for project dir
+    validateInitialSnapshotsCreated(project.toString());
+
+    // Check if the randomStuff Directory didn't get copied.
+    assertFalse(fs.exists(new Path(REPLICA_EXTERNAL_BASE, random.toUri().getPath().replaceFirst("/", ""))));
+
+    // Diff Mode Of Snapshot.
+    tuple = primary.run("use " + primaryDbName)
+        .run("insert into table1 values ('delhi')")
+        .run("insert into table2 values ('wuhan')")
+        .run("insert into table3 values ('washington')")
+        .run("insert into table4 values ('osaka')")
+        .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select place from table1")
+        .verifyResults(new String[] {"bangalore", "delhi"})
+        .run("select place from table2")
+        .verifyResults(new String[] {"beejing", "wuhan"})
+        .run("select place from table3")
+        .verifyResults(new String[] {"new york", "washington"})
+        .run("select place from table4")
+        .verifyResults(new String[] {"tokyo", "osaka"})
+        .verifyReplTargetProperty(replicatedDbName);
+
+
+    // Check if diff snapshot got created.
+    validateDiffSnapshotsCreated(project.toString());
+
+    // Check if the randomStuff Directory didn't get copied, post diff copy
+    assertFalse(fs.exists(new Path(REPLICA_EXTERNAL_BASE, random.toUri().getPath().replaceFirst("/", ""))));
+
   }
 
   // Verifies if the initial rounds are snapshots are created for source and target database.
