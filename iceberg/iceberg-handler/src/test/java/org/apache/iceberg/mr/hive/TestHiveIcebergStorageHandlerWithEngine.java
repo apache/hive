@@ -520,7 +520,27 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
-  public void testCTAS() {
+  public void testCTASFromHiveTable() {
+    Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY '%s' %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        HiveIcebergStorageHandler.class.getName(),
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
+    Assert.assertEquals(2, objects.size());
+    Assert.assertArrayEquals(new Object[]{1L, "Mike", "HR"}, objects.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Finance"}, objects.get(1));
+  }
+
+  @Test
+  public void testCTASFromDifferentIcebergCatalog() {
     Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 

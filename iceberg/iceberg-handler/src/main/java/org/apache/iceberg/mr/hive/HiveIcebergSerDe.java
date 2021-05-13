@@ -50,6 +50,7 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -112,7 +113,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         // This is only for table creation, it is ok to have an empty partition column list
         this.partitionColumns = ImmutableList.of();
         // create table for CTAS
-        if (Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
+        if (e instanceof NoSuchTableException &&
+            Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
           LOG.info("Creating table {} for CTAS with schema: {}", serDeProperties.get(Catalogs.NAME), tableSchema);
           createTableForCTAS(configuration, serDeProperties);
         }
