@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+// NOTE: this job expects an OPTS and a SPLITS parameter to be provided in the job configuration
+// because of some issues with the gerrit trigger plugin this cant be provided here
+
 if(env.GERRIT_CHANGE_NUMBER != null) {
     currentBuild.displayName = "#${BUILD_NUMBER} [${GERRIT_BRANCH}] ${GERRIT_PATCHSET_UPLOADER_NAME}"
     currentBuild.description = "${GERRIT_CHANGE_SUBJECT}"
@@ -30,15 +33,6 @@ if(env.GERRIT_CHANGE_NUMBER != null) {
       println("The current patchset is a TIP ${GERRIT_PATCHSET_REVISION}!")
     }
 }
-
-properties([
-    // disableConcurrentBuilds(),
-    parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '-q', description: 'additional maven opts'),
-    ]),
-    buildDiscarder(logRotator(daysToKeepStr: '33'))
-])
 
 def executorNode(run) {
   hdbPodTemplate {
@@ -145,6 +139,7 @@ df -h
 
 def hdbPodTemplate(closure) {
   podTemplate(
+  name: "${JOB_NAME}-${BUILD_NUMBER}".replaceAll("[^_a-zA-Z0-9-]", "_"),
   containers: [
     containerTemplate(name: 'hdb', image: 'docker-sandbox.infra.cloudera.com/hive/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
@@ -268,7 +263,7 @@ echo "@ merged"
       stage('Prepare sources') {
         sh '''#!/bin/bash -e
 
-http_proxy=http://sustwork.bdp.cloudera.com:3128 cdpd-patcher hive
+http_proxy=http://sustwork.bdp.cloudera.com:3128 cdpd-patcher hive $VERSION
         '''
       }
       if(false)
