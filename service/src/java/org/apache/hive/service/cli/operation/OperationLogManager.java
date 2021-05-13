@@ -80,9 +80,9 @@ public class OperationLogManager {
   private final OperationManager operationManager;
   private OperationLogDirCleaner cleaner;
 
-  public OperationLogManager(SessionManager sessionManager) {
+  public OperationLogManager(SessionManager sessionManager, HiveConf hiveConf) {
     this.operationManager = sessionManager.getOperationManager();
-    this.hiveConf = sessionManager.getHiveConf();
+    this.hiveConf = hiveConf;
     this.sessionManager = sessionManager;
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED)
         && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)
@@ -180,7 +180,7 @@ public class OperationLogManager {
   }
 
 
-      @VisibleForTesting
+  @VisibleForTesting
   public List<File> getExpiredOperationLogFiles() {
     if (HISTORIC_OPERATION_LOG_ROOT_DIR == null) {
       return Collections.emptyList();
@@ -287,11 +287,14 @@ public class OperationLogManager {
 
     @Override
     public void run() {
-      removeExpiredOperationLogAndDir();
       sleepFor(interval);
       while (!shutdown) {
-        removeExpiredOperationLogAndDir();
-        sleepFor(interval);
+        try {
+          removeExpiredOperationLogAndDir();
+          sleepFor(interval);
+        } catch (Exception e) {
+          LOG.warn("OperationLogDir cleaner caught exception: " + e.getMessage(), e);
+        }
       }
     }
 

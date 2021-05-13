@@ -117,7 +117,6 @@ public class SessionManager extends CompositeService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
-    setHiveConf(hiveConf);
     this.hiveConf = hiveConf;
     //Create operation log root directory, if operation logging is enabled
     if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
@@ -285,7 +284,7 @@ public class SessionManager extends CompositeService {
         LOG.warn("Failed to schedule cleanup HS2 operation logging root dir: " +
             operationLogRootDir.getAbsolutePath(), e);
       }
-      logManager = new OperationLogManager(this);
+      logManager = new OperationLogManager(this, hiveConf);
     }
   }
 
