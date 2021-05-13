@@ -905,6 +905,31 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
+  public void onUpdatePartitionColumnStatDirectSql(UpdatePartitionColumnStatEvent updatePartColStatEvent,
+                                                   Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+    UpdatePartitionColumnStatMessage msg = MessageBuilder.getInstance()
+            .buildUpdatePartitionColumnStatMessage(updatePartColStatEvent.getPartColStats(),
+                    updatePartColStatEvent.getPartVals(),
+                    updatePartColStatEvent.getPartParameters(),
+                    updatePartColStatEvent.getTableObj(),
+                    updatePartColStatEvent.getWriteId());
+
+    NotificationEvent event =
+            new NotificationEvent(0, now(), EventType.UPDATE_PARTITION_COLUMN_STAT.toString(),
+                    msgEncoder.getSerializer().serialize(msg));
+    ColumnStatisticsDesc statDesc = updatePartColStatEvent.getPartColStats().getStatsDesc();
+    event.setCatName(statDesc.isSetCatName() ? statDesc.getCatName() : DEFAULT_CATALOG_NAME);
+    event.setDbName(statDesc.getDbName());
+    event.setTableName(statDesc.getTableName());
+    try {
+      addNotificationLog(event, updatePartColStatEvent, dbConn, sqlGenerator);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
+  }
+
+  @Override
   public void onDeletePartitionColumnStat(DeletePartitionColumnStatEvent deletePartColStatEvent) throws MetaException {
     DeletePartitionColumnStatMessage msg = MessageBuilder.getInstance()
             .buildDeletePartitionColumnStatMessage(deletePartColStatEvent.getDBName(),

@@ -6437,7 +6437,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private List<String> getPartValsFromName(Table t, String partName)
+  public static List<String> getPartValsFromName(Table t, String partName)
       throws MetaException, InvalidObjectException {
     Preconditions.checkArgument(t != null, "Table can not be null");
     // Unescape the partition name
@@ -7039,6 +7039,40 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     return parameters != null;
+  }
+
+  private boolean updatePartitionColStatsInBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
+                                                 String validWriteIds, long writeId)
+          throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+
+    if (statsMap.size() == 0) {
+      return false;
+    }
+
+    String catalogName = tbl.getCatName();
+    String dbName = tbl.getDbName();
+    String tableName = tbl.getTableName();
+
+    startFunction("updatePartitionColStatsInBatch", ":  db=" + dbName  + " table=" + tableName);
+
+    Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
+    for (Map.Entry entry : statsMap.entrySet()) {
+      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      normalizeColStatsInput(colStats);
+      assert catalogName.equalsIgnoreCase(colStats.getStatsDesc().getCatName());
+      assert dbName.equalsIgnoreCase(colStats.getStatsDesc().getDbName());
+      assert tableName.equalsIgnoreCase(colStats.getStatsDesc().getTableName());
+      newStatsMap.put((String) entry.getKey(), colStats);
+    }
+
+    boolean ret = false;
+    try {
+      ret = getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
+              listeners, tbl, validWriteIds, writeId);
+    } finally {
+      endFunction("updatePartitionColStatsInBatch", ret != false, null, tableName);
+    }
+    return true;
   }
 
   @Override
@@ -8995,11 +9029,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             colNames, newStatsMap, request);
       } else { // No merge.
         Table t = getTable(catName, dbName, tableName);
-        for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
-          // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-          ret = updatePartitonColStatsInternal(t, entry.getValue(),
-              request.getValidWriteIdList(), request.getWriteId()) && ret;
-        }
+        LOG.info("ETL_PERF started updatePartitionColStatsInBatch");
+        ret = updatePartitionColStatsInBatch(t, newStatsMap,
+                request.getValidWriteIdList(), request.getWriteId());
+        LOG.info("ETL_PERF done updatePartitionColStatsInBatch");
       }
     }
     return ret;

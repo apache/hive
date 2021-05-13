@@ -66,6 +66,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -74,6 +75,9 @@ import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
@@ -84,6 +88,10 @@ import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -103,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -144,6 +153,7 @@ import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -160,6 +170,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 
+import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
@@ -5410,6 +5422,506 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       countOpenTxns();
+    }
+  }
+
+  private void cleanOldStatsFromPartColStatTable(Connection dbConn, List<Long> partIdList) throws SQLException {
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+    PreparedStatement pStmt = null;
+
+    prefix.append("DELETE FROM \"PART_COL_STATS\" where ");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+            partIdList, "\"PART_ID\"", false, false);
+    List<String> params = Collections.emptyList();
+    try {
+      for (String query : queries) {
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+        LOG.debug("Going to execute query " + query);
+        pStmt.executeUpdate();
+      }
+    } finally {
+      closeStmt(pStmt);
+    }
+  }
+
+  private long getMaxCSId(Connection dbConn) throws SQLException {
+    Statement stmtInt = null;
+    ResultSet rsInt = null;
+    long maxCsId = 0;
+    try {
+      stmtInt = dbConn.createStatement();
+      String query = "select MAX(\"CS_ID\") from \"PART_COL_STATS\"";
+      rsInt = stmtInt.executeQuery("select MAX(\"CS_ID\") from \"PART_COL_STATS\"");
+      LOG.debug("Going to execute query " + query);
+      if (rsInt.next()) {
+        maxCsId = rsInt.getLong(1) + 1;
+      }
+      return maxCsId;
+    } finally {
+      close(rsInt, stmtInt, null);
+    }
+  }
+
+  private void insertIntoPartColStatTable(Map<String, PartitionInfo> statsPartInfoMap,
+                                          Map<String, ColumnStatistics> newStatsMap,
+                                          Connection dbConn) throws SQLException {
+    PreparedStatement statement = null;
+    long maxCsId = getMaxCSId(dbConn);
+    try {
+      String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"CAT_NAME\", \"DB_NAME\","
+              + "\"TABLE_NAME\", \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
+              + " \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", \"DOUBLE_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\","
+              + " \"BIG_DECIMAL_LOW_VALUE\", \"BIG_DECIMAL_HIGH_VALUE\", \"NUM_NULLS\", \"NUM_DISTINCTS\", \"BIT_VECTOR\" ,"
+              + " \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
+              + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      statement = dbConn.prepareStatement(insert);
+      int numRows = 0;
+      int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+
+      for (Map.Entry entry : newStatsMap.entrySet()) {
+        // If the partition does not exist (deleted/removed by some other task), no need to update the stats.
+        if (!statsPartInfoMap.containsKey(entry.getKey())) {
+          continue;
+        }
+
+        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+        ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+        String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
+        String dbName = statsDesc.getDbName();
+        String tableName = statsDesc.getTableName();
+        String partName = statsDesc.getPartName();
+        long partId = statsPartInfoMap.get(entry.getKey()).partitionId;
+
+        for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
+          ColumnStatisticsData statsData = statisticsObj.getStatsData();
+          String columnType = statisticsObj.getColType();
+          long numNulls = 0;
+          long numDVs = 0;
+          double avgColLen = 0;
+          long maxColLen = 0;
+          long numTrues = 0;
+          long numFalses = 0;
+          byte[] bitVector = null;
+          if (columnType.equalsIgnoreCase("long")
+                  || columnType.equalsIgnoreCase("tinyint")
+                  || columnType.equalsIgnoreCase("smallint")
+                  || columnType.equalsIgnoreCase("int")
+                  || columnType.equalsIgnoreCase("bigint")
+                  || columnType.equalsIgnoreCase("timestamp")) {
+            numNulls = statsData.getLongStats().getNumNulls();
+            numDVs = statsData.getLongStats().getNumDVs();
+            bitVector = statsData.getLongStats().getBitVectors();
+          } else if (columnType.equalsIgnoreCase("double")
+                  || columnType.equalsIgnoreCase("float")) {
+            numNulls = statsData.getDoubleStats().getNumNulls();
+            numDVs = statsData.getDoubleStats().getNumDVs();
+            bitVector = statsData.getDoubleStats().getBitVectors();
+          } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
+                  || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
+            avgColLen = statsData.getStringStats().getAvgColLen();
+            maxColLen = statsData.getStringStats().getMaxColLen();
+            numNulls = statsData.getStringStats().getNumNulls();
+            numDVs = statsData.getStringStats().getNumDVs();
+            bitVector = statsData.getStringStats().getBitVectors();
+          } else if (columnType.equalsIgnoreCase("boolean")) {
+            numTrues = statsData.getBooleanStats().getNumTrues();
+            numFalses = statsData.getBooleanStats().getNumFalses();
+            numNulls = statsData.getBooleanStats().getNumNulls();
+            bitVector = statsData.getBooleanStats().getBitVectors();
+          } else if (columnType.equalsIgnoreCase("binary")) {
+            avgColLen = statsData.getBinaryStats().getAvgColLen();
+            maxColLen = statsData.getBinaryStats().getMaxColLen();
+            numNulls = statsData.getBinaryStats().getNumNulls();
+            bitVector = statsData.getBinaryStats().getBitVectors();
+          } else if (columnType.toLowerCase().startsWith("decimal")) {
+            numNulls = statsData.getDecimalStats().getNumNulls();
+            bitVector = statsData.getDecimalStats().getBitVectors();
+          } else if (columnType.equalsIgnoreCase("date")) {
+            numNulls = statsData.getDateStats().getNumNulls();
+            numDVs = statsData.getDateStats().getNumDVs();
+            bitVector = statsData.getDateStats().getBitVectors();
+          }
+
+          if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRESQL_NAME) && bitVector == null) {
+            // workaround for DN bug in persisting nulls in pg bytea column
+            // instead set empty bit vector with header.
+            bitVector = new byte[]{'H', 'L'};
+          }
+
+          statement.setLong(1, maxCsId);
+          statement.setString(2, catName);
+          statement.setString(3, dbName);
+          statement.setString(4, tableName);
+          statement.setString(5, partName);
+          statement.setString(6, statisticsObj.getColName());
+          statement.setString(7, statisticsObj.getColType());
+          statement.setLong(8, partId);
+          statement.setObject(9,
+                  (statsData.isSetLongStats() ? statsData.getLongStats().getLowValue() : null));
+          statement.setObject(10,
+                  (statsData.isSetLongStats() ? statsData.getLongStats().getHighValue() : null));
+          statement.setObject(11,
+                  (statsData.isSetDoubleStats() ? statsData.getDoubleStats().getLowValue() : null));
+          statement.setObject(12,
+                  (statsData.isSetDoubleStats() ? statsData.getDoubleStats().getHighValue() : null));
+          statement.setObject(13,
+                  (statsData.isSetDecimalStats() ? statsData.getDecimalStats().getLowValue() : null),
+                  java.sql.JDBCType.DECIMAL, statsData.isSetDecimalStats() ?
+                          statsData.getDecimalStats().getLowValue().getScale() : 0);
+          statement.setObject(14,
+                  (statsData.isSetDecimalStats() ? statsData.getDecimalStats().getHighValue() : null),
+                  java.sql.JDBCType.DECIMAL, statsData.isSetDecimalStats() ?
+                          statsData.getDecimalStats().getHighValue().getScale() : 0);
+          statement.setLong(15, numNulls);
+          statement.setLong(16, numDVs);
+          statement.setBytes(17, bitVector);
+          statement.setDouble(18, avgColLen);
+          statement.setLong(19, maxColLen);
+          statement.setLong(20, numTrues);
+          statement.setLong(21, numFalses);
+          statement.setLong(22, colStats.getStatsDesc().getLastAnalyzed());
+          statement.setString(23, colStats.getEngine());
+
+          maxCsId++;
+          numRows++;
+          statement.addBatch();
+          if (numRows == maxNumRows) {
+            statement.executeBatch();
+            numRows = 0;
+          }
+        }
+      }
+
+      if (numRows != 0) {
+        statement.executeBatch();
+      }
+    } finally {
+      closeStmt(statement);
+    }
+  }
+
+  private Map<Long, String> getParamValues(Connection dbConn, List<Long> partIdList) throws SQLException {
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+    PreparedStatement pStmt = null;
+    ResultSet rs = null;
+
+    prefix.append("select \"PART_ID\", \"PARAM_VALUE\" "
+            + " from \"PARTITION_PARAMS\" where "
+            + " \"PARAM_KEY\" = 'COLUMN_STATS_ACCURATE' "
+            + " and ");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+            partIdList, "\"PART_ID\"", false, false);
+
+    List<String> params = Collections.emptyList();
+    Map<Long, String> partIdToParaMap = new HashMap<>();
+
+    try {
+      for (String query : queries) {
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+        LOG.debug("Going to execute query " + query);
+        rs = pStmt.executeQuery();
+        while (rs.next()) {
+          partIdToParaMap.put(rs.getLong(1), rs.getString(2));
+        }
+      }
+      return partIdToParaMap;
+    } finally {
+      close(rs, pStmt, null);
+    }
+  }
+
+  private void updateWriteIdForPartitions(Connection dbConn, long writeId, List<Long> partIdList) throws SQLException {
+    StringBuilder prefix = new StringBuilder();
+    List<String> queries = new ArrayList<>();
+    StringBuilder suffix = new StringBuilder();
+    prefix.append("UPDATE \"PARTITIONS\" set \"WRITE_ID\" = " + writeId + " where ");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+            partIdList, "\"PART_ID\"", false, false);
+
+    List<String> params = Collections.emptyList();
+    PreparedStatement pStmt = null;
+    try {
+      for (String query : queries) {
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+        LOG.debug("Going to execute query " + query);
+        pStmt.executeUpdate();
+      }
+    } finally {
+      closeStmt(pStmt);
+    }
+  }
+
+  private Map<String, Map<String, String>> updatePartitionParamTable(Connection dbConn,
+                                                                     Map<String, PartitionInfo> partitionInfoMap,
+                                                                     Map<String, ColumnStatistics> partColStatsMap,
+                                                                     List<Long> partIdList,
+                                                                     String validWriteIds,
+                                                                     long writeId,
+                                                                     boolean isAcidTable)
+          throws SQLException, MetaException {
+    Map<String, Map<String, String>> result = new HashMap<>();
+    Statement stmtInt = null;
+
+    LOG.info("ETL_PERF started getParamValues ");
+    Map<Long, String> partIdToParaMap = getParamValues(dbConn, partIdList);
+    LOG.info("ETL_PERF done getParamValues ");
+
+    String insert = "INSERT INTO \"PARTITION_PARAMS\" (\"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\") "
+            + "VALUES( ? , 'COLUMN_STATS_ACCURATE'  , ? )";
+    PreparedStatement statementInsert = dbConn.prepareStatement(insert);
+    int numInsert = 0;
+
+    String delete = "DELETE from \"PARTITION_PARAMS\" "
+            + " where \"PART_ID\" = ? "
+            + " and \"PARTITION_PARAMS\".\"PARAM_KEY\" = 'COLUMN_STATS_ACCURATE'";
+    PreparedStatement statementDelete = dbConn.prepareStatement(delete);
+    int numDelete = 0;
+
+    String update = "UPDATE \"PARTITION_PARAMS\" set \"PARAM_VALUE\" = ? "
+            + " where \"PART_ID\" = ? "
+            + " and \"PARTITION_PARAMS\".\"PARAM_KEY\" = 'COLUMN_STATS_ACCURATE'";
+    PreparedStatement statementUpdate = dbConn.prepareStatement(update);
+    int numUpdate = 0;
+
+    boolean areTxnStatsSupported = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
+    int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+
+    try {
+      stmtInt = dbConn.createStatement();
+      for (Map.Entry entry : partColStatsMap.entrySet()) {
+        if (!partitionInfoMap.containsKey(entry.getKey())) {
+          // Partition is dropped or removed by some concurrent thread.
+          continue;
+        }
+
+        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+        List<String> colNames = colStats.getStatsObj().stream().map(e -> e.getColName()).collect(Collectors.toList());
+        long partWriteId = partitionInfoMap.get(entry.getKey()).writeId;
+        long partId = partitionInfoMap.get(entry.getKey()).partitionId;
+        Map<String, String> newParameter;
+
+        if (!partIdToParaMap.containsKey(partId)) {
+          newParameter = new HashMap<>();
+          newParameter.put(COLUMN_STATS_ACCURATE, "TRUE");
+          StatsSetupConst.setColumnStatsState(newParameter, colNames);
+          statementInsert.setLong(1, partId);
+          statementInsert.setString(2, newParameter.get(COLUMN_STATS_ACCURATE));
+          numInsert++;
+          statementInsert.addBatch();
+          if (numInsert == maxNumRows) {
+            statementInsert.executeBatch();
+            numInsert = 0;
+          }
+          LOG.debug(" Executing insert " + insert);
+        } else {
+          String oldStats =partIdToParaMap.get(partId);
+
+          Map<String, String> oldParameter = new HashMap<>();
+          oldParameter.put(COLUMN_STATS_ACCURATE, oldStats);
+
+          newParameter = new HashMap<>();
+          newParameter.put(COLUMN_STATS_ACCURATE, oldStats);
+          StatsSetupConst.setColumnStatsState(newParameter, colNames);
+
+          if (isAcidTable) {
+            String errorMsg = ObjectStore.verifyStatsChangeCtx(
+                    colStats.getStatsDesc().getDbName() + "." + colStats.getStatsDesc().getTableName(),
+                    oldParameter, newParameter, writeId, validWriteIds, true);
+            if (errorMsg != null) {
+              throw new MetaException(errorMsg);
+            }
+          }
+
+          if (isAcidTable &&
+                  (!areTxnStatsSupported || !ObjectStore.isCurrentStatsValidForTheQuery(oldParameter, partWriteId,
+                          validWriteIds, true))) {
+            statementDelete.setLong(1, partId);
+            statementDelete.addBatch();
+            numDelete++;
+            if (numDelete == maxNumRows) {
+              statementDelete.executeBatch();
+              numDelete = 0;
+            }
+            LOG.debug("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
+                    + colStats.getStatsDesc().getDbName() + "." + colStats.getStatsDesc().getTableName() + "."
+                    + colStats.getStatsDesc().getPartName());
+          } else {
+            statementUpdate.setString(1, newParameter.get(COLUMN_STATS_ACCURATE));
+            statementUpdate.setLong(2, partId);
+            statementUpdate.addBatch();
+            numUpdate++;
+            if (numUpdate == maxNumRows) {
+              statementUpdate.executeBatch();
+              numUpdate = 0;
+            }
+            LOG.debug(" Executing update " + statementUpdate);
+          }
+        }
+        result.put(colStats.getStatsDesc().getPartName(), newParameter);
+      }
+
+      if (numInsert != 0) {
+        statementInsert.executeBatch();
+      }
+
+      if (numUpdate != 0) {
+        statementUpdate.executeBatch();
+      }
+
+      if (numDelete != 0) {
+        statementDelete.executeBatch();
+      }
+
+      if (isAcidTable) {
+        LOG.info("ETL_PERF started updateWriteIdForPartitions ");
+        updateWriteIdForPartitions(dbConn, writeId, partIdList);
+        LOG.info("ETL_PERF done updateWriteIdForPartitions ");
+      }
+      return result;
+    } finally {
+      closeStmt(stmtInt);
+      closeStmt(statementInsert);
+      closeStmt(statementUpdate);
+      closeStmt(statementDelete);
+    }
+  }
+
+  private static class PartitionInfo {
+    long partitionId;
+    long writeId;
+    public PartitionInfo(long partitionId, long writeId) {
+      this.partitionId = partitionId;
+      this.writeId = writeId;
+    }
+  }
+
+  private Map<String, PartitionInfo> getPartitionInfo(Connection dbConn, String catName,
+                                                      String dbName, String tblName,
+                                                      List<String> partKeys) throws SQLException {
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+    PreparedStatement pStmt = null;
+    ResultSet rs = null;
+
+    prefix.append("select \"PARTITIONS\".\"PART_ID\", \"PARTITIONS\".\"WRITE_ID\", \"PARTITIONS\".\"PART_NAME\" "
+            + " from \"DBS\", \"TBLS\", \"PARTITIONS\" where "
+            + " \"DBS\".\"NAME\" = ? "
+            + " and \"DBS\".\"CTLG_NAME\" = ? "
+            + " and \"TBLS\".\"TBL_NAME\" = ? and ");
+    suffix.append(" and \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\" and \"TBLS\".\"TBL_ID\" = \"PARTITIONS\".\"TBL_ID\"");
+    TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
+            partKeys, "\"PARTITIONS\".\"PART_NAME\"", false, false);
+
+    List<String> params = Arrays.asList(dbName, catName, tblName);
+    Map<String, PartitionInfo> partitionInfoMap = new HashMap<>();
+    try {
+      for (String query : queries) {
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+        LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
+                quoteString(dbName), quoteString(catName), quoteString(tblName));
+        rs = pStmt.executeQuery();
+        while (rs.next()) {
+          PartitionInfo partitionInfo = new PartitionInfo(rs.getLong(1), rs.getLong(2));
+          partitionInfoMap.put(rs.getString(3), partitionInfo);
+        }
+      }
+    } finally {
+      close(rs, pStmt, null);
+    }
+    return partitionInfoMap;
+  }
+
+  @Override
+  public boolean updatePartitionColumnStatistics(Map<String, ColumnStatistics> partColStatsMap,
+                                                 IHMSHandler handler,
+                                                 List<MetaStoreEventListener> listeners,
+                                                 Table tbl,
+                                                 String validWriteIds, long writeId) throws MetaException {
+    Connection dbConn = null;
+    String catName = tbl.getCatName();
+    String dbName = tbl.getDbName();
+    String tableName = tbl.getTableName();
+    boolean isAcidTable = TxnUtils.isAcidTable(tbl);
+
+    LOG.info("ETL_PERF started updatePartitionColumnStatistics");
+    boolean committed = false;
+    try {
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
+
+        LOG.info("ETL_PERF started getPartitionInfo");
+        List<String> partNames = partColStatsMap.keySet().stream().map(
+                e -> quoteString(e)).collect(Collectors.toList()
+        );
+        Map<String, PartitionInfo> partitionInfoMap = getPartitionInfo(dbConn, catName, dbName, tableName, partNames);
+        LOG.info("ETL_PERF done getPartitionInfo");
+
+        List<Long> partIdList = partitionInfoMap.values().stream().map(
+                e -> e.partitionId).collect(Collectors.toList()
+        );
+
+        LOG.info("ETL_PERF started updatePartitionParamTable");
+        Map<String, Map<String, String>> result =
+                updatePartitionParamTable(dbConn, partitionInfoMap, partColStatsMap,
+                        partIdList, validWriteIds, writeId, isAcidTable);
+        LOG.info("ETL_PERF done updatePartitionParamTable");
+
+        LOG.info("ETL_PERF started cleanOldStatsFromPartColStatTable ");
+        cleanOldStatsFromPartColStatTable(dbConn, partIdList);
+        LOG.info("ETL_PERF done cleanOldStatsFromPartColStatTable ");
+
+        LOG.info("ETL_PERF started insertIntoPartColStatTable ");
+        insertIntoPartColStatTable(partitionInfoMap, partColStatsMap, dbConn);
+        LOG.info("ETL_PERF done insertIntoPartColStatTable ");
+
+        LOG.info("ETL_PERF started notifyEventWithDirectSql");
+        for (Map.Entry entry : result.entrySet()) {
+          Map<String, String> parameters = (Map<String, String>) entry.getValue();
+          ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
+          List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+          if (transactionalListeners != null) {
+            MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+                    EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
+                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                            tbl, writeId, handler), dbConn, sqlGenerator);
+          }
+
+          if (listeners != null) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
+                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                            tbl, writeId, handler));
+          }
+        }
+        LOG.info("ETL_PERF done notifyEventWithDirectSql result size " + result.size());
+        dbConn.commit();
+        committed = true;
+        return true;
+      } catch (SQLException e) {
+        checkRetryable(dbConn, e, "updatePartitionColumnStatistics(" + partColStatsMap + "," + listeners
+                + "," + tbl
+                + "," + validWriteIds + "," + writeId + ")");
+        throw new MetaException("Unable to update Column stats for  " + quoteString(tableName)
+                + " due to: " + getMessage(e) + "; " + StringUtils.stringifyException(e));
+      } catch (InvalidObjectException e) {
+        throw new MetaException("Unable to update Column stats for  " + quoteString(tableName)
+                + " due to: "  + e.getMessage());
+      } finally {
+        if (!committed) {
+          rollbackDBConn(dbConn);
+        }
+        closeDbConn(dbConn);
+        unlockInternal();
+        LOG.info("ETL_PERF done updatePartitionColumnStatisticsEx");
+      }
+    } catch (RetryException ex) {
+      return updatePartitionColumnStatistics(partColStatsMap, handler, listeners, tbl, validWriteIds, writeId);
     }
   }
 
