@@ -217,7 +217,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt1 (type: string)
                     null sort order: a
@@ -642,7 +642,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt2 (type: string)
                     null sort order: a
@@ -908,7 +908,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt2 (type: string)
                     null sort order: a
@@ -1146,7 +1146,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt2 (type: string)
                     null sort order: a
@@ -1453,7 +1453,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt1 (type: string)
                     null sort order: a
@@ -1760,7 +1760,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt2 (type: string)
                     null sort order: a
@@ -1995,7 +1995,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:txt1:string, 2:txt2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: txt1 (type: string)
                     null sort order: a
@@ -2268,7 +2268,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: long2 (type: int)
                     null sort order: a
@@ -2575,7 +2575,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: long1 (type: int)
                     null sort order: a
@@ -2882,7 +2882,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: long2 (type: int)
                     null sort order: a
@@ -3117,7 +3117,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:long1:int, 2:long2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: long1 (type: int)
                     null sort order: a
@@ -3390,7 +3390,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: double2 (type: double)
                     null sort order: a
@@ -3697,7 +3697,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: double1 (type: double)
                     null sort order: a
@@ -4004,7 +4004,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: double2 (type: double)
                     null sort order: a
@@ -4239,7 +4239,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:double1:double, 2:double2:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: double1 (type: double)
                     null sort order: a
@@ -4512,7 +4512,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: decimal2 (type: decimal(10,0))
                     null sort order: a
@@ -4819,7 +4819,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: decimal1 (type: decimal(10,0))
                     null sort order: a
@@ -5126,7 +5126,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: decimal2 (type: decimal(10,0))
                     null sort order: a
@@ -5361,7 +5361,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:decimal1:decimal(10,0)/DECIMAL_64, 2:decimal2:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: decimal1 (type: decimal(10,0))
                     null sort order: a
@@ -5634,7 +5634,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: timestamp2 (type: timestamp)
                     null sort order: a
@@ -5941,7 +5941,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: timestamp1 (type: timestamp)
                     null sort order: a
@@ -6248,7 +6248,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: timestamp2 (type: timestamp)
                     null sort order: a
@@ -6483,7 +6483,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:timestamp1:timestamp, 2:timestamp2:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: timestamp1 (type: timestamp)
                     null sort order: a

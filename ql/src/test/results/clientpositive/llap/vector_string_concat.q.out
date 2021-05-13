@@ -141,8 +141,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [7, 13, 18]
-                          selectExpressions: StringGroupColConcatStringScalar(col 12:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 12:string) -> 13:string, StringGroupColConcatStringScalar(col 17:string, val |)(children: StringScalarConcatStringGroupCol(val |, col 16:string)(children: StringRTrimCol(col 15:string)(children: StringGroupColConcatStringScalar(col 14:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 14:string) -> 15:string) -> 16:string) -> 17:string) -> 18:string
+                          projectedOutputColumnNums: [7, 14, 19]
+                          selectExpressions: StringGroupColConcatStringScalar(col 13:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 13:string) -> 14:string, StringGroupColConcatStringScalar(col 18:string, val |)(children: StringScalarConcatStringGroupCol(val |, col 17:string)(children: StringRTrimCol(col 16:string)(children: StringGroupColConcatStringScalar(col 15:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 15:string) -> 16:string) -> 17:string) -> 18:string) -> 19:string
                       Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -359,7 +359,7 @@ STAGE PLANS:
                     top n: 50
                     Top N Key Vectorization:
                         className: VectorTopNKeyOperator
-                        keyExpressions: StringGroupConcatColCol(col 22:string, col 24:string)(children: StringGroupColConcatStringScalar(col 21:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 20:string)(children: CastLongToString(col 19:int)(children: CastDoubleToLong(col 18:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 18:double) -> 19:int) -> 20:string) -> 21:string) -> 22:string, CastLongToString(col 23:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 23:int) -> 24:string) -> 25:string
+                        keyExpressions: StringGroupConcatColCol(col 23:string, col 25:string)(children: StringGroupColConcatStringScalar(col 22:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 21:string)(children: CastLongToString(col 20:int)(children: CastDoubleToLong(col 19:double)(children: DoubleColAddDoubleScalar(col 18:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 17:double, val 3.0)(children: CastLongToDouble(col 16:int)(children: LongColSubtractLongScalar(col 15:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 15:int) -> 16:int) -> 17:double) -> 18:double) -> 19:double) -> 20:int) -> 21:string) -> 22:string) -> 23:string, CastLongToString(col 24:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 24:int) -> 25:string) -> 26:string
                         native: true
                     Select Operator
                       expressions: concat(concat(concat('Quarter ', CAST( UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0D) + 1.0D)) AS STRING)), '-'), CAST( year(dt) AS STRING)) (type: string)
@@ -367,14 +367,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [22]
-                          selectExpressions: StringGroupConcatColCol(col 20:string, col 21:string)(children: StringGroupColConcatStringScalar(col 21:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 20:string)(children: CastLongToString(col 14:int)(children: CastDoubleToLong(col 16:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 16:double) -> 14:int) -> 20:string) -> 21:string) -> 20:string, CastLongToString(col 14:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 14:int) -> 21:string) -> 22:string
+                          projectedOutputColumnNums: [23]
+                          selectExpressions: StringGroupConcatColCol(col 21:string, col 22:string)(children: StringGroupColConcatStringScalar(col 22:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 21:string)(children: CastLongToString(col 15:int)(children: CastDoubleToLong(col 17:double)(children: DoubleColAddDoubleScalar(col 18:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 17:double, val 3.0)(children: CastLongToDouble(col 16:int)(children: LongColSubtractLongScalar(col 15:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 15:int) -> 16:int) -> 17:double) -> 18:double) -> 17:double) -> 15:int) -> 21:string) -> 22:string) -> 21:string, CastLongToString(col 15:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 15:int) -> 22:string) -> 23:string
                       Statistics: Num rows: 2000 Data size: 106288 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 22:string
+                            keyExpressions: col 23:string
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []

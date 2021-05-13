@@ -49,7 +49,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: a (type: int)
                     outputColumnNames: a
@@ -198,7 +198,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: cint
@@ -410,20 +410,20 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 935842 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int), CASE WHEN (((cstring1 like 'test%1') or (cstring1 like 'test%2'))) THEN (1) ELSE (0) END (type: int), CASE WHEN (((cstring1 like 'test%3') or (cstring1 like '%test%5'))) THEN (cstring1) ELSE ('XXXXX') END (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 2, 16, 20]
-                        selectExpressions: IfExprLongScalarLongScalar(col 15:boolean, val 1, val 0)(children: ColOrCol(col 13:boolean, col 14:boolean)(children: SelectStringColLikeStringScalar(col 6:string) -> 13:boolean, SelectStringColLikeStringScalar(col 6:string) -> 14:boolean) -> 15:boolean) -> 16:int, IfExprStringGroupColumnStringScalar(col 19:boolean, col 6:string, val XXXXX)(children: ColOrCol(col 17:boolean, col 18:boolean)(children: SelectStringColLikeStringScalar(col 6:string) -> 17:boolean, SelectStringColLikeStringScalar(col 6:string) -> 18:boolean) -> 19:boolean) -> 20:string
+                        projectedOutputColumnNums: [0, 2, 17, 21]
+                        selectExpressions: IfExprLongScalarLongScalar(col 16:boolean, val 1, val 0)(children: ColOrCol(col 14:boolean, col 15:boolean)(children: SelectStringColLikeStringScalar(col 6:string) -> 14:boolean, SelectStringColLikeStringScalar(col 6:string) -> 15:boolean) -> 16:boolean) -> 17:int, IfExprStringGroupColumnStringScalar(col 20:boolean, col 6:string, val XXXXX)(children: ColOrCol(col 18:boolean, col 19:boolean)(children: SelectStringColLikeStringScalar(col 6:string) -> 18:boolean, SelectStringColLikeStringScalar(col 6:string) -> 19:boolean) -> 20:boolean) -> 21:string
                     Statistics: Num rows: 12288 Data size: 935842 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(DISTINCT _col1), sum(_col2), max(_col3)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 2:int) -> bigint, VectorUDAFSumLong(col 16:int) -> bigint, VectorUDAFMaxString(col 20:string) -> string
+                          aggregators: VectorUDAFCount(col 2:int) -> bigint, VectorUDAFSumLong(col 17:int) -> bigint, VectorUDAFMaxString(col 21:string) -> string
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 0:tinyint, col 2:int

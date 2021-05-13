@@ -427,8 +427,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val null) -> 16:void
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val null) -> 17:void
                     Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -492,8 +492,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val 11) -> 16:int
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val 11) -> 17:int
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -557,8 +557,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val 11) -> 16:bigint
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val 11) -> 17:bigint
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -622,8 +622,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val 11) -> 16:decimal(2,0)
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val 11) -> 17:decimal(2,0)
                     Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -687,8 +687,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val hello) -> 16:string
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val hello) -> 17:string
                     Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -752,8 +752,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val hello) -> 16:char(5)
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val hello) -> 17:char(5)
                     Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -817,8 +817,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val hello) -> 16:varchar(5)
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val hello) -> 17:varchar(5)
                     Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -882,8 +882,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val ��) -> 16:binary
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val ��) -> 17:binary
                     Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -947,8 +947,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16, 17]
-                        selectExpressions: ConstantVectorExpression(val 1) -> 16:tinyint, ConstantVectorExpression(val 20) -> 17:smallint
+                        projectedOutputColumnNums: [17, 18]
+                        selectExpressions: ConstantVectorExpression(val 1) -> 17:tinyint, ConstantVectorExpression(val 20) -> 18:smallint
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1012,8 +1012,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val 1970-12-31 15:59:58.174) -> 16:timestamp
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val 1970-12-31 15:59:58.174) -> 17:timestamp
                     Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1077,8 +1077,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val 364) -> 16:date
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val 364) -> 17:date
                     Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1142,8 +1142,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: ConstantVectorExpression(val 58) -> 16:decimal(10,0)
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: ConstantVectorExpression(val 58) -> 17:decimal(10,0)
                     Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1207,8 +1207,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: VectorUDFAdaptor(array(1,2,3)) -> 16:array<int>
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: VectorUDFAdaptor(array(1,2,3)) -> 17:array<int>
                     Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1272,8 +1272,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: VectorUDFAdaptor(str_to_map('a=1 b=2 c=3',' ','=')) -> 16:map<string,string>
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: VectorUDFAdaptor(str_to_map('a=1 b=2 c=3',' ','=')) -> 17:map<string,string>
                     Statistics: Num rows: 2 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1337,8 +1337,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: VectorUDFAdaptor(named_struct('a',11,'b',11)) -> 16:struct<a:int,b:int>
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: VectorUDFAdaptor(named_struct('a',11,'b',11)) -> 17:struct<a:int,b:int>
                     Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1402,8 +1402,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [16]
-                        selectExpressions: VectorUDFAdaptor(create_union(0,'hello')) -> 16:uniontype<string>
+                        projectedOutputColumnNums: [17]
+                        selectExpressions: VectorUDFAdaptor(create_union(0,'hello')) -> 17:uniontype<string>
                     Statistics: Num rows: 2 Data size: 250 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1511,8 +1511,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16]
-                        selectExpressions: ConstantVectorExpression(val 11) -> 16:int
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17]
+                        selectExpressions: ConstantVectorExpression(val 11) -> 17:int
                     Statistics: Num rows: 2 Data size: 3364 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false

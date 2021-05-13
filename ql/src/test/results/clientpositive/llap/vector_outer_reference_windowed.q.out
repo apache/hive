@@ -275,7 +275,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: decimal(15,2))
                     outputColumnNames: c1
@@ -500,7 +500,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
                     outputColumnNames: c1, c2
@@ -515,7 +515,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFSumDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> decimal(25,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2), ConvertDecimal64ToDecimal(col 1:decimal(15,2)/DECIMAL_64) -> 4:decimal(15,2)
+                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 4:decimal(15,2), ConvertDecimal64ToDecimal(col 1:decimal(15,2)/DECIMAL_64) -> 5:decimal(15,2)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -747,7 +747,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -801,7 +801,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1070,7 +1070,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1122,7 +1122,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1392,7 +1392,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1446,7 +1446,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1633,7 +1633,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: decimal(7,2))
                     outputColumnNames: c1
@@ -1858,7 +1858,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
                     outputColumnNames: c1, c2
@@ -1873,7 +1873,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFSumDecimal64(col 0:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2), ConvertDecimal64ToDecimal(col 1:decimal(7,2)/DECIMAL_64) -> 4:decimal(7,2)
+                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 4:decimal(7,2), ConvertDecimal64ToDecimal(col 1:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -2105,7 +2105,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2159,7 +2159,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2428,7 +2428,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2480,7 +2480,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2750,7 +2750,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2804,7 +2804,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

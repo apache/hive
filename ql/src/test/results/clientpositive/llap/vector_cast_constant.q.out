@@ -158,7 +158,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(50), count(), sum(50.0D), count(50.0D), sum(50), count(50)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(ConstantVectorExpression(val 50) -> 12:int) -> bigint, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(ConstantVectorExpression(val 50.0) -> 13:double) -> double, VectorUDAFCount(ConstantVectorExpression(val 50.0) -> 14:double) -> bigint, VectorUDAFSumDecimal(ConstantVectorExpression(val 50) -> 15:decimal(10,0)) -> decimal(20,0), VectorUDAFCount(ConstantVectorExpression(val 50) -> 16:decimal(10,0)) -> bigint
+                            aggregators: VectorUDAFSumLong(ConstantVectorExpression(val 50) -> 13:int) -> bigint, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(ConstantVectorExpression(val 50.0) -> 14:double) -> double, VectorUDAFCount(ConstantVectorExpression(val 50.0) -> 15:double) -> bigint, VectorUDAFSumDecimal(ConstantVectorExpression(val 50) -> 16:decimal(10,0)) -> decimal(20,0), VectorUDAFCount(ConstantVectorExpression(val 50) -> 17:decimal(10,0)) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 2:int

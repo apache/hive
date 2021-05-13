@@ -214,7 +214,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date), SelectColumnIsNotNull(col 8:string))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 15:date)(children: CastTimestampToDate(col 10:timestamp) -> 15:date), SelectColumnIsNotNull(col 8:string))
                     predicate: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
                     Statistics: Num rows: 905 Data size: 167854 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -223,8 +223,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [8, 16]
-                          selectExpressions: DateColSubtractDateColumn(col 12:date, col 15:date)(children: CastTimestampToDate(col 10:timestamp) -> 15:date) -> 16:interval_day_time
+                          projectedOutputColumnNums: [8, 17]
+                          selectExpressions: DateColSubtractDateColumn(col 12:date, col 16:date)(children: CastTimestampToDate(col 10:timestamp) -> 16:date) -> 17:interval_day_time
                       Statistics: Num rows: 905 Data size: 95930 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -247,7 +247,7 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [8, 8, 16]
+                              projectedOutputColumnNums: [8, 8, 17]
                           Statistics: Num rows: 29831 Data size: 5966200 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
@@ -282,7 +282,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date), SelectColumnIsNotNull(col 8:string))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 15:date)(children: CastTimestampToDate(col 10:timestamp) -> 15:date), SelectColumnIsNotNull(col 8:string))
                     predicate: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
                     Statistics: Num rows: 890 Data size: 164340 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -291,8 +291,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [8, 16]
-                          selectExpressions: DateColSubtractDateColumn(col 12:date, col 15:date)(children: CastTimestampToDate(col 10:timestamp) -> 15:date) -> 16:interval_day_time
+                          projectedOutputColumnNums: [8, 17]
+                          selectExpressions: DateColSubtractDateColumn(col 12:date, col 16:date)(children: CastTimestampToDate(col 10:timestamp) -> 16:date) -> 17:interval_day_time
                       Statistics: Num rows: 890 Data size: 94340 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: interval_day_time)

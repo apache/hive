@@ -172,7 +172,7 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
+                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 31:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
@@ -310,7 +310,7 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:bigint
+                          keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 31:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
