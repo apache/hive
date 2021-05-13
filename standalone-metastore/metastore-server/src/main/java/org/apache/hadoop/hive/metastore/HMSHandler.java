@@ -7565,7 +7565,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7617,7 +7617,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7638,7 +7638,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7671,7 +7671,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7700,7 +7700,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7796,7 +7796,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
