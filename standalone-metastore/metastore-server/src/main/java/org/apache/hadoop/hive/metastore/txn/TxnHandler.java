@@ -466,25 +466,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
-    return getOpenTxnsList(true).toOpenTxnsInfoResponse();
+    return getOpenTxnsList(true, null).toOpenTxnsInfoResponse();
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return getOpenTxnsList(false).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
+    return getOpenTxnsList(false, null).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
+  }
+
+  private GetOpenTxnsResponse getOpenTxns(Connection dbConn) throws MetaException {
+    return getOpenTxnsList(false, dbConn).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException {
-    return getOpenTxnsList(false).toOpenTxnsResponse(excludeTxnTypes);
+    return getOpenTxnsList(false, null).toOpenTxnsResponse(excludeTxnTypes);
   }
 
-  private OpenTxnList getOpenTxnsList(boolean infoFields) throws MetaException {
+  private OpenTxnList getOpenTxnsList(boolean infoFields, Connection dbConn) throws MetaException {
     try {
+      boolean shouldCloseConnection = dbConn == null;
       // We need to figure out the HighWaterMark and the list of open transactions.
-      Connection dbConn = null;
       Statement stmt = null;
       ResultSet rs = null;
       try {
@@ -497,7 +501,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * openTxns must ensure, that no new transaction will be opened with txn_id below LWM and
          * commitTxn must ensure, that no committed transaction will be removed before the time period expires.
          */
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        if (dbConn == null) {
+          dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        }
         stmt = dbConn.createStatement();
         List<OpenTxn> txnInfos = new ArrayList<>();
         String txnsQuery = String.format(infoFields ? OpenTxn.OPEN_TXNS_INFO_QUERY : OpenTxn.OPEN_TXNS_QUERY,
@@ -554,10 +560,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException(
             "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
       } finally {
-        close(rs, stmt, dbConn);
+        if (shouldCloseConnection) {
+          close(rs, stmt, dbConn);
+        } else {
+          close(rs, stmt, null);
+        }
       }
     } catch (RetryException e) {
-      return getOpenTxnsList(infoFields);
+      return getOpenTxnsList(infoFields, dbConn);
     }
   }
 
@@ -1803,7 +1813,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               quoteString(names[1]));
       rs = pst.executeQuery();
       if (rs.next()) {
-        return TxnCommonUtils.createValidReadTxnList(getOpenTxns(), rs.getLong(1));
+        return TxnCommonUtils.createValidReadTxnList(getOpenTxns(dbConn), rs.getLong(1));
       }
       throw new MetaException("invalid write id " + writeId + " for table " + fullTableName);
     } finally {
@@ -1834,7 +1844,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           validTxnList = getValidTxnList(dbConn, rqst.getFullTableNames().get(0), rqst.getWriteId());
         } else {
           // Passing 0 for currentTxn means, this validTxnList is not wrt to any txn
-          validTxnList = TxnCommonUtils.createValidReadTxnList(getOpenTxns(), 0);
+          validTxnList = TxnCommonUtils.createValidReadTxnList(getOpenTxns(dbConn), 0);
         }
 
         // Get the valid write id list for all the tables read by the current txn
