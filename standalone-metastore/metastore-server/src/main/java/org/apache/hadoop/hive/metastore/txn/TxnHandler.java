@@ -1807,6 +1807,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     PreparedStatement pst = null;
     ResultSet rs = null;
     try {
+      // To reuse dbConn, we should get open transactions at first
+      GetOpenTxnsResponse openTxns = getOpenTxns(dbConn);
+
       String[] names = TxnUtils.getDbTableName(fullTableName);
       assert names.length == 2;
       List<String> params = Arrays.asList(names[0], names[1]);
@@ -1818,7 +1821,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               quoteString(names[1]));
       rs = pst.executeQuery();
       if (rs.next()) {
-        return TxnCommonUtils.createValidReadTxnList(getOpenTxns(dbConn), rs.getLong(1));
+        return TxnCommonUtils.createValidReadTxnList(openTxns, rs.getLong(1));
       }
       throw new MetaException("invalid write id " + writeId + " for table " + fullTableName);
     } finally {
