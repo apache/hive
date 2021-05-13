@@ -486,8 +486,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private OpenTxnList getOpenTxnsList(boolean infoFields, Connection dbConn) throws MetaException {
+    // If the dbConn is passed in, the connection should not be closed
+    boolean shouldCloseConnection = (dbConn == null);
     try {
-      boolean shouldCloseConnection = dbConn == null;
       // We need to figure out the HighWaterMark and the list of open transactions.
       Statement stmt = null;
       ResultSet rs = null;
@@ -567,7 +568,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       }
     } catch (RetryException e) {
-      return getOpenTxnsList(infoFields, dbConn);
+      if (shouldCloseConnection) {
+        return getOpenTxnsList(infoFields, null);
+      } else {
+        return getOpenTxnsList(infoFields, dbConn);
+      }
     }
   }
 
