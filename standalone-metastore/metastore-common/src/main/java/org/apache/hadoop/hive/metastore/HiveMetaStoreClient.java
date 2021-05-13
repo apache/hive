@@ -289,13 +289,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return (ThriftHiveMetastore.Iface) method.invoke(null, conf);
     } catch (InvocationTargetException e) {
       if (e.getCause() != null) {
-        MetaStoreUtils.logAndThrowMetaException((Exception) e.getCause());
+        MetaStoreUtils.throwMetaException((Exception) e.getCause());
       }
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (ClassNotFoundException
         | NoSuchMethodException
         | IllegalAccessException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -328,7 +328,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 serviceDiscoveryMode);
       }
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
 
     if (metastoreUrisString.isEmpty() && "zookeeper".equalsIgnoreCase(serviceDiscoveryMode)) {
@@ -373,7 +373,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     } catch (IllegalArgumentException e) {
       throw (e);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
   }
 
@@ -2631,7 +2631,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2668,7 +2668,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern, tableType);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2705,7 +2705,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<Table> views = client.get_all_materialized_view_objects_for_rewriting();
       return FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, views);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2723,7 +2723,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           client.get_materialized_views_for_rewriting(prependCatalogToDbName(catName, dbname, conf));
       return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbname, views);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2734,7 +2734,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTableMeta(getDefaultCatalog(conf), dbPatterns, tablePatterns, tableTypes);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2752,7 +2752,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getAllTables(getDefaultCatalog(conf), dbname);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
