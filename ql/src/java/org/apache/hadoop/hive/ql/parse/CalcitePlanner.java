@@ -3464,7 +3464,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * or null if the target has no constraint defined or all of them are disabled.
      */
     private Pair<RelNode, RowResolver> genConstraintFilterLogicalPlan(
-        QB qb, RelNode srcRel, ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR)
+        QB qb, Pair<RelNode, RowResolver> selPair, ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR)
         throws SemanticException {
       if (qb.getIsQuery()) {
         return null;
@@ -3475,15 +3475,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
 
-      RowResolver inputRR = relToHiveRR.get(srcRel);
+      RowResolver inputRR = relToHiveRR.get(selPair.left);
       RexNode constraintUDF = RexNodeTypeCheck.genConstraintsExpr(
           conf, cluster.getRexBuilder(), getTargetTable(qb, dest), updating(dest), inputRR);
       if (constraintUDF == null) {
         return null;
       }
 
-      RelNode constraintRel = genFilterRelNode(constraintUDF, srcRel, outerNameToPosMap, outerRR);
-      return new Pair<>(constraintRel, inputRR);
+      RelNode constraintRel = genFilterRelNode(constraintUDF, selPair.left, outerNameToPosMap, outerRR);
+
+      List<RexNode> originalInputRefs = toRexNodeList(selPair.left);
+      List<RexNode> selectedRefs = Lists.newArrayList();
+      for (int index = 0; index < selPair.right.getColumnInfos().size(); index++) {
+        selectedRefs.add(originalInputRefs.get(index));
+      }
+
+      return new Pair<>(genSelectRelNode(selectedRefs, selPair.right, constraintRel), selPair.right);
     }
 
     private AggregateCall convertGBAgg(AggregateInfo agg, List<RexNode> gbChildProjLst,
@@ -5031,7 +5038,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Build Rel for Constraint checks
       Pair<RelNode, RowResolver> constraintPair =
-          genConstraintFilterLogicalPlan(qb, srcRel, outerNameToPosMap, outerRR);
+          genConstraintFilterLogicalPlan(qb, selPair, outerNameToPosMap, outerRR);
       if (constraintPair != null) {
         selPair = constraintPair;
       }
