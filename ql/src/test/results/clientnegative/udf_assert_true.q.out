@@ -25,12 +25,12 @@ STAGE PLANS:
             Lateral View Forward
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 138000 Basic stats: COMPLETE Column stats: COMPLETE
                 Lateral View Join Operator
-                  outputColumnNames: _col5
-                  Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                  outputColumnNames: _col6
+                  Statistics: Num rows: 1000 Data size: 162000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: assert_true((_col5 > 0)) (type: void)
+                    expressions: assert_true((_col6 > 0)) (type: void)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
@@ -51,10 +51,10 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col5
-                    Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                    outputColumnNames: _col6
+                    Statistics: Num rows: 1000 Data size: 162000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: assert_true((_col5 > 0)) (type: void)
+                      expressions: assert_true((_col6 > 0)) (type: void)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Limit
@@ -106,12 +106,12 @@ STAGE PLANS:
             Lateral View Forward
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 138000 Basic stats: COMPLETE Column stats: COMPLETE
                 Lateral View Join Operator
-                  outputColumnNames: _col5
-                  Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                  outputColumnNames: _col6
+                  Statistics: Num rows: 1000 Data size: 162000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: assert_true((_col5 < 2)) (type: void)
+                    expressions: assert_true((_col6 < 2)) (type: void)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
@@ -132,10 +132,10 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col5
-                    Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                    outputColumnNames: _col6
+                    Statistics: Num rows: 1000 Data size: 162000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: assert_true((_col5 < 2)) (type: void)
+                      expressions: assert_true((_col6 < 2)) (type: void)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Limit

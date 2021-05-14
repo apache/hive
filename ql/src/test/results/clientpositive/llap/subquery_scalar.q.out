@@ -1068,7 +1068,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col2, _col5
-                Statistics: Num rows: 26 Data size: 9620 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1088,12 +1088,12 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9620 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
                     keys: first_value_window_0 (type: int)
                     null sort order: z
-                    Statistics: Num rows: 26 Data size: 9620 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 1
                     Select Operator
                       expressions: first_value_window_0 (type: int)

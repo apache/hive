@@ -71,9 +71,9 @@ Stage-3
                                   Output:["_col0","_col1"]
                                   Select Operator [SEL_42] (rows=4 width=87)
                                     Output:["_col1"]
-                                    Lateral View Join Operator [LVJ_40] (rows=4 width=239)
-                                      Output:["_col5"]
-                                      Select Operator [SEL_38] (rows=2 width=431)
+                                    Lateral View Join Operator [LVJ_40] (rows=4 width=205)
+                                      Output:["_col6"]
+                                      Select Operator [SEL_38] (rows=2 width=363)
                                         Lateral View Forward [LVF_37] (rows=2 width=86)
                                           Filter Operator [FIL_36] (rows=2 width=86)
                                             predicate:(key = '238')
@@ -91,8 +91,8 @@ Stage-3
                                   Output:["_col0","_col1"]
                                   Select Operator [SEL_42] (rows=4 width=87)
                                     Output:["_col1"]
-                                    Lateral View Join Operator [LVJ_40] (rows=4 width=239)
-                                      Output:["_col5"]
+                                    Lateral View Join Operator [LVJ_40] (rows=4 width=205)
+                                      Output:["_col6"]
                                       UDTF Operator [UDTF_41] (rows=2 width=48)
                                         function name:explode
                                         Select Operator [SEL_39] (rows=2 width=48)

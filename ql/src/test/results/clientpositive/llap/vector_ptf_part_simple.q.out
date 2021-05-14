@@ -193,7 +193,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -263,7 +263,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 6, 7, 8, 9, 0, 1, 2]
                       outputTypes: [int, int, int, double, double, bigint, bigint, string, string, double]
                       streamingColumns: [3, 4, 5, 6]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -446,7 +446,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -504,7 +504,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                               isStar: true
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -680,7 +680,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -738,7 +738,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                               isStar: true
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -927,7 +927,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -998,7 +998,7 @@ STAGE PLANS:
                       outputTypes: [int, int, int, double, double, bigint, bigint, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4, 5, 6]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -1182,7 +1182,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1240,7 +1240,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                               isStar: true
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -1417,7 +1417,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1475,7 +1475,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                               isStar: true
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -1665,7 +1665,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 1, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1736,7 +1736,7 @@ STAGE PLANS:
                       outputTypes: [int, int, int, double, double, bigint, bigint, string, string, double]
                       partitionExpressions: [ConstantVectorExpression(val 0) -> 11:int]
                       streamingColumns: [4, 5, 6, 7]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -1921,7 +1921,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1979,7 +1979,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                               isStar: true
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -2157,7 +2157,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col1 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2215,7 +2215,7 @@ STAGE PLANS:
                               window function: GenericUDAFCountEvaluator
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                               isStar: true
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -2397,7 +2397,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2447,7 +2447,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [double, double, double, double, string, string, double]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -2630,7 +2630,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2680,7 +2680,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [double, double, double, double, string, string, double]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -2863,7 +2863,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2913,7 +2913,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [double, double, double, double, string, string, double]
                       streamingColumns: [3, 4, 5, 6]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -3097,7 +3097,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3148,7 +3148,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, double, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -3332,7 +3332,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3383,7 +3383,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, double, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -3567,7 +3567,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3618,7 +3618,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, double, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4, 5, 6]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -3803,7 +3803,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 1, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3854,7 +3854,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, double, string, string, double]
                       partitionExpressions: [ConstantVectorExpression(val 0) -> 8:int]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -4039,7 +4039,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 1, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4090,7 +4090,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, double, string, string, double]
                       partitionExpressions: [ConstantVectorExpression(val 0) -> 8:int]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -4275,7 +4275,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 1, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4326,7 +4326,7 @@ STAGE PLANS:
                       outputTypes: [double, double, double, double, string, string, double]
                       partitionExpressions: [ConstantVectorExpression(val 0) -> 8:int]
                       streamingColumns: [4, 5, 6, 7]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -4551,7 +4551,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 23664 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 23824 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4601,7 +4601,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [decimal(38,18), decimal(38,18), decimal(38,18), decimal(38,18), string, string, decimal(38,18)]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 23664 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 23824 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: decimal(38,18)), sum_window_0 (type: decimal(38,18)), min_window_1 (type: decimal(38,18)), max_window_2 (type: decimal(38,18)), avg_window_3 (type: decimal(38,18))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -4785,7 +4785,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 23664 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 23824 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4836,7 +4836,7 @@ STAGE PLANS:
                       outputTypes: [decimal(38,18), decimal(38,18), decimal(38,18), decimal(38,18), string, string, decimal(38,18)]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 23664 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 23824 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: decimal(38,18)), sum_window_0 (type: decimal(38,18)), min_window_1 (type: decimal(38,18)), max_window_2 (type: decimal(38,18)), avg_window_3 (type: decimal(38,18))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -5039,7 +5039,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5089,7 +5089,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [bigint, bigint, bigint, double, string, string, bigint]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint), sum_window_0 (type: bigint), min_window_1 (type: bigint), max_window_2 (type: bigint), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -5273,7 +5273,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5324,7 +5324,7 @@ STAGE PLANS:
                       outputTypes: [bigint, bigint, bigint, double, string, string, bigint]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint), sum_window_0 (type: bigint), min_window_1 (type: bigint), max_window_2 (type: bigint), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -5501,7 +5501,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
-                Statistics: Num rows: 40 Data size: 14936 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 15096 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5534,7 +5534,7 @@ STAGE PLANS:
                       outputColumns: [2, 0, 1]
                       outputTypes: [int, string, double]
                       streamingColumns: [2]
-                  Statistics: Num rows: 40 Data size: 14936 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -5706,7 +5706,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5740,7 +5740,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -5912,7 +5912,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5945,7 +5945,7 @@ STAGE PLANS:
                       outputColumns: [4, 0, 2, 3]
                       outputTypes: [int, string, string, double]
                       streamingColumns: [4]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -6118,7 +6118,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6152,7 +6152,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, double]
                       partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
                       streamingColumns: [4]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -6453,7 +6453,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
-                Statistics: Num rows: 40 Data size: 14936 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 15096 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6486,7 +6486,7 @@ STAGE PLANS:
                       outputColumns: [2, 0, 1]
                       outputTypes: [int, string, double]
                       streamingColumns: [2]
-                  Statistics: Num rows: 40 Data size: 14936 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -6658,7 +6658,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6692,7 +6692,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -6865,7 +6865,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6899,7 +6899,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, double]
                       partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
                       streamingColumns: [4]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -7071,7 +7071,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3]
-                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7104,7 +7104,7 @@ STAGE PLANS:
                       outputColumns: [4, 0, 2, 3]
                       outputTypes: [int, string, string, double]
                       streamingColumns: [4]
-                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 19976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3

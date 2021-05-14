@@ -133,7 +133,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0]
-                Statistics: Num rows: 26 Data size: 12662 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -167,7 +167,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [2]
-                  Statistics: Num rows: 26 Data size: 12662 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1
@@ -295,7 +295,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0]
-                Statistics: Num rows: 26 Data size: 12662 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -329,14 +329,14 @@ STAGE PLANS:
                       outputTypes: [int, string, string]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [2]
-                  Statistics: Num rows: 26 Data size: 12662 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColLessLongScalar(col 2:int, val 4)
                     predicate: (rank_window_0 < 4) (type: boolean)
-                    Statistics: Num rows: 8 Data size: 3896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 3928 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col2 (type: string), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
@@ -727,7 +727,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col5
-                Statistics: Num rows: 12288 Data size: 3365908 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 12288 Data size: 3415060 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -748,10 +748,10 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 12288 Data size: 3365908 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 3415060 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 < 5) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 1097740 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4096 Data size: 1114124 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: tinyint), _col5 (type: double), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1, _col2
@@ -903,7 +903,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col5
-                Statistics: Num rows: 12288 Data size: 3365908 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 12288 Data size: 3415060 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -924,10 +924,10 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 12288 Data size: 3365908 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 3415060 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 < 5) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 1097740 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4096 Data size: 1114124 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: tinyint), _col5 (type: double), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1, _col2

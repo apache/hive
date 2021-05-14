@@ -172,8 +172,8 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	15                  
-	totalSize           	1145                
-	transactional       	true                
+	totalSize           	1145
+	transactional       	true
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
 	 	 
@@ -453,23 +453,27 @@ PREHOOK: query: explain cbo
 select empid, deptno from emps_parquet_n3 group by empid, deptno
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select empid, deptno from emps_parquet_n3 group by empid, deptno
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(empid=[$0], deptno=[$1])
-  HiveTableScan(table=[[default, emps_parquet_n3]], table:alias=[emps_parquet_n3])
+HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select empid, deptno from emps_parquet_n3 group by empid, deptno
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select empid, deptno from emps_parquet_n3 group by empid, deptno
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 100	10
 110	10
@@ -502,23 +506,27 @@ PREHOOK: query: explain cbo
 select empid, name from emps_parquet_n3 group by empid, name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select empid, name from emps_parquet_n3 group by empid, name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(empid=[$0], name=[$2])
-  HiveTableScan(table=[[default, emps_parquet_n3]], table:alias=[emps_parquet_n3])
+HiveProject(empid=[CAST($0):INTEGER NOT NULL], name=[$1])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select empid, name from emps_parquet_n3 group by empid, name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select empid, name from emps_parquet_n3 group by empid, name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 100	Bill
 110	Theodore

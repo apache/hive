@@ -93,4 +93,5 @@ public class Constants {
   public static final String COMPACTOR_CLEANER_THREAD_NAME_FORMAT = "Cleaner-executor-thread-%d";
 
   public static final String MODE = "mode";
+  public static final String ACID_FETCH_DELETED_ROWS = "acid.fetch.deleted.rows";
 }

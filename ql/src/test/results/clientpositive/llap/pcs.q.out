@@ -968,7 +968,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 20 Data size: 9120 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 20 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -989,7 +989,7 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 20 Data size: 9120 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: lag_window_0 (type: int)
                     outputColumnNames: _col0

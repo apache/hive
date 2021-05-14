@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +123,10 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         }
         else if(recordReader instanceof AcidInputFormat.AcidRecordReader) {
           //supports AcidInputFormat which do not use the KEY pass ROW__ID info
-          ioCxtRef.setRecordIdentifier(((AcidInputFormat.AcidRecordReader) recordReader).getRecordIdentifier());
+          AcidInputFormat.AcidRecordReader acidRecordReader = (AcidInputFormat.AcidRecordReader) this.recordReader;
+          OrcRawRecordMerger.ReaderKey recordIdentifier = acidRecordReader.getRecordIdentifier();
+          ioCxtRef.setRecordIdentifier(recordIdentifier);
+          ioCxtRef.setDeletedRecord(recordIdentifier != null && recordIdentifier.isDeleteEvent());
         }
       }
       return retVal;

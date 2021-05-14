@@ -2543,7 +2543,7 @@ POSTHOOK: Input: default@table1
 CBO PLAN:
 HiveProject(r=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[left])
-    HiveProject(_o__col11=[RANK() OVER (ORDER BY $1 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+    HiveProject(_o__col13=[RANK() OVER (ORDER BY $1 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
       HiveJoin(condition=[=($0, $2)], joinType=[inner])
         HiveProject(a=[$0], b=[$1])
           HiveFilter(condition=[IS NOT NULL($0)])

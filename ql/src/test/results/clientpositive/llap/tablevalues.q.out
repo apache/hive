@@ -877,7 +877,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 1770 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 1790 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -897,7 +897,7 @@ STAGE PLANS:
                               window function: GenericUDAFRowNumberEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 5 Data size: 1770 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 1790 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: array(struct(row_number_window_0,'A',10,row_number_window_0),struct(row_number_window_0,'B',20,row_number_window_0)) (type: array<struct<col1:int,col2:string,col3:int,col4:int>>)
                     outputColumnNames: _col0

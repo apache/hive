@@ -195,7 +195,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -209,13 +209,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -240,7 +240,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -287,7 +287,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -719,7 +719,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -733,7 +733,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -883,7 +883,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -897,13 +897,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -928,7 +928,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -975,7 +975,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1141,7 +1141,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1155,13 +1155,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -1174,7 +1174,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1209,7 +1209,7 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), (_col5 - lag_window_2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -1369,7 +1369,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1383,11 +1383,11 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       minReductionHashAggr: 0.0
@@ -1639,7 +1639,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1653,16 +1653,16 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
 
   Stage: Stage-0
@@ -1816,10 +1816,10 @@ STAGE PLANS:
                 keys:
                   0 p_partkey (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                outputColumnNames: _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                 Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col12 (type: int), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
+                  expressions: _col13 (type: int), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: int), _col19 (type: string), _col20 (type: double), _col21 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                   Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1843,7 +1843,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1857,16 +1857,16 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 23166 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
 
   Stage: Stage-0
@@ -2000,7 +2000,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2015,13 +2015,13 @@ STAGE PLANS:
                         partition by: _col2
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     null sort order: aza
                     sort order: ++-
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -2045,7 +2045,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2079,7 +2079,7 @@ STAGE PLANS:
                       outputTypes: [int, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -2233,7 +2233,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2248,13 +2248,13 @@ STAGE PLANS:
                         partition by: _col2
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2279,7 +2279,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2326,7 +2326,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -2488,7 +2488,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2502,13 +2502,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2533,7 +2533,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2580,7 +2580,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -2745,7 +2745,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2759,7 +2759,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -2781,14 +2781,14 @@ STAGE PLANS:
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -2801,7 +2801,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2823,13 +2823,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -2854,7 +2854,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2, 3]
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2901,7 +2901,7 @@ STAGE PLANS:
                       outputTypes: [int, int, double, string, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [4, 5, 6]
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -3073,7 +3073,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3087,13 +3087,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -3106,7 +3106,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3132,7 +3132,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), count_window_0 (type: bigint), round(sum_window_1, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -3340,7 +3340,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 27 Data size: 20709 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 27 Data size: 20925 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3387,7 +3387,7 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 27 Data size: 20709 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 27 Data size: 20925 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), count_window_2 (type: bigint), _col7 (type: double), round(sum_window_3, 2) (type: double), _col5 (type: int), (_col5 - lag_window_4) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -3410,7 +3410,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3424,16 +3424,16 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 13182 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
 
   Stage: Stage-0
@@ -3579,7 +3579,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3593,11 +3593,11 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       minReductionHashAggr: 0.0
@@ -4098,7 +4098,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4112,20 +4112,20 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col5 (type: int)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -4138,7 +4138,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4172,7 +4172,7 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -4235,7 +4235,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4255,17 +4255,17 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(5)~CURRENT
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: sum_window_0, _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: sum_window_0 (type: bigint), _col5 (type: int)
         Reducer 6 
             Execution mode: llap
@@ -4278,7 +4278,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col0, _col2, _col3, _col6
-                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4319,7 +4319,7 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col3 (type: string), _col2 (type: string), _col6 (type: int), UDFToInteger(round(_col0, 1)) (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), cume_dist_window_3 (type: double), first_value_window_4 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
@@ -4634,7 +4634,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4655,7 +4655,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -4677,14 +4677,14 @@ STAGE PLANS:
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -4697,7 +4697,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4719,13 +4719,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -4750,7 +4750,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4796,7 +4796,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 1, 0, 2]
                       outputTypes: [int, int, bigint, string, string, int]
                       streamingColumns: [3, 4, 5]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -4990,7 +4990,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5011,13 +5011,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -5030,7 +5030,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5044,13 +5044,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -5063,7 +5063,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5077,13 +5077,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
             Execution mode: vectorized, llap
@@ -5108,7 +5108,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5155,7 +5155,7 @@ STAGE PLANS:
                       outputTypes: [int, int, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4, 5]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -5344,7 +5344,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5365,13 +5365,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -5384,7 +5384,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5405,13 +5405,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -5436,7 +5436,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5483,7 +5483,7 @@ STAGE PLANS:
                       outputTypes: [int, int, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -5673,7 +5673,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5694,13 +5694,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -5713,7 +5713,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5727,7 +5727,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -5742,14 +5742,14 @@ STAGE PLANS:
                           partition by: _col2, _col1
                           raw input shape:
                           transforms raw input: true
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -5762,7 +5762,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5777,13 +5777,13 @@ STAGE PLANS:
                         partition by: _col2, _col1
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
             Execution mode: vectorized, llap
@@ -5808,7 +5808,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5854,7 +5854,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 1, 0, 2]
                       outputTypes: [int, int, bigint, string, string, int]
                       streamingColumns: [3, 4, 5]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -6045,7 +6045,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6059,7 +6059,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -6081,14 +6081,14 @@ STAGE PLANS:
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -6101,7 +6101,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6123,13 +6123,13 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -6154,7 +6154,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6200,7 +6200,7 @@ STAGE PLANS:
                       outputColumns: [3, 4, 5, 1, 0, 2]
                       outputTypes: [int, int, bigint, string, string, int]
                       streamingColumns: [3, 4, 5]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -6385,7 +6385,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6406,7 +6406,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -6421,14 +6421,14 @@ STAGE PLANS:
                           partition by: _col2, _col1
                           raw input shape:
                           transforms raw input: true
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -6441,7 +6441,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6456,13 +6456,13 @@ STAGE PLANS:
                         partition by: _col2, _col1
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -6487,7 +6487,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6534,7 +6534,7 @@ STAGE PLANS:
                       outputTypes: [int, int, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4]
-                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12870 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6

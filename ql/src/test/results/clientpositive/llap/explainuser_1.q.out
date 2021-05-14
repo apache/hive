@@ -2581,11 +2581,11 @@ Stage-0
               Output:["_col0"],keys:_col0
               Select Operator [SEL_11] (rows=26 width=184)
                 Output:["_col0"]
-                Filter Operator [FIL_25] (rows=26 width=491)
+                Filter Operator [FIL_25] (rows=26 width=495)
                   predicate:first_value_window_0 is not null
-                  PTF Operator [PTF_10] (rows=26 width=491)
+                  PTF Operator [PTF_10] (rows=26 width=495)
                     Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col5 ASC NULLS LAST","partition by:":"_col2"}]
-                    Select Operator [SEL_9] (rows=26 width=491)
+                    Select Operator [SEL_9] (rows=26 width=495)
                       Output:["_col1","_col2","_col5"]
                     <-Map 1 [SIMPLE_EDGE] llap
                       SHUFFLE [RS_8]
@@ -2974,9 +2974,9 @@ Stage-0
       File Output Operator [FS_6]
         Select Operator [SEL_4] (rows=20 width=52)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
-          PTF Operator [PTF_3] (rows=20 width=459)
+          PTF Operator [PTF_3] (rows=20 width=463)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"0 ASC NULLS FIRST","partition by:":"0"}]
-            Select Operator [SEL_2] (rows=20 width=459)
+            Select Operator [SEL_2] (rows=20 width=463)
               Output:["_col2","_col3"]
             <-Map 1 [SIMPLE_EDGE] llap
               SHUFFLE [RS_1]
@@ -3007,9 +3007,9 @@ Stage-0
       File Output Operator [FS_6]
         Select Operator [SEL_4] (rows=20 width=52)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
-          PTF Operator [PTF_3] (rows=20 width=459)
+          PTF Operator [PTF_3] (rows=20 width=463)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"0 ASC NULLS FIRST","partition by:":"0"}]
-            Select Operator [SEL_2] (rows=20 width=459)
+            Select Operator [SEL_2] (rows=20 width=463)
               Output:["_col2","_col3"]
             <-Map 1 [SIMPLE_EDGE] llap
               SHUFFLE [RS_1]
@@ -3040,9 +3040,9 @@ Stage-0
       File Output Operator [FS_6]
         Select Operator [SEL_4] (rows=20 width=64)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"]
-          PTF Operator [PTF_3] (rows=20 width=621)
+          PTF Operator [PTF_3] (rows=20 width=625)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col0"}]
-            Select Operator [SEL_2] (rows=20 width=621)
+            Select Operator [SEL_2] (rows=20 width=625)
               Output:["_col0","_col1","_col2","_col3"]
             <-Map 1 [SIMPLE_EDGE] llap
               SHUFFLE [RS_1]
@@ -3071,9 +3071,9 @@ Stage-0
       File Output Operator [FS_6]
         Select Operator [SEL_4] (rows=25 width=179)
           Output:["_col0","_col1","_col2"]
-          PTF Operator [PTF_3] (rows=25 width=443)
+          PTF Operator [PTF_3] (rows=25 width=447)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col0"}]
-            Select Operator [SEL_2] (rows=25 width=443)
+            Select Operator [SEL_2] (rows=25 width=447)
               Output:["_col0","_col1"]
             <-Map 1 [SIMPLE_EDGE] llap
               SHUFFLE [RS_1]
@@ -3978,7 +3978,7 @@ Stage-0
         Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Inner),Output:["_col0","_col1","_col5","_col6"]
+            Conds:RS_2.key=RS_3.value(Inner),Output:["_col0","_col1","_col6","_col7"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_2]
               PartitionCols:key
@@ -4013,7 +4013,7 @@ Stage-0
         Select Operator [SEL_11] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           Merge Join Operator [MERGEJOIN_41] (rows=1 width=8)
-            Conds:RS_7._col0=RS_9.key(Inner),Output:["_col0","_col1","_col5","_col6","_col10","_col11"]
+            Conds:RS_7._col0=RS_9.key(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_9]
               PartitionCols:key
@@ -4025,7 +4025,7 @@ Stage-0
             SHUFFLE [RS_7]
               PartitionCols:_col0
               Merge Join Operator [MERGEJOIN_40] (rows=1 width=8)
-                Conds:RS_3.key=RS_4.value(Inner),Output:["_col0","_col1","_col5","_col6"]
+                Conds:RS_3.key=RS_4.value(Inner),Output:["_col0","_col1","_col6","_col7"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_3]
                   PartitionCols:key
@@ -4061,7 +4061,7 @@ Stage-0
         Select Operator [SEL_9] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           Merge Join Operator [MERGEJOIN_12] (rows=1 width=8)
-            Conds:RS_6._col0=RS_7.key(Inner),Output:["_col0","_col1","_col5","_col6","_col10","_col11"]
+            Conds:RS_6._col0=RS_7.key(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_7]
               PartitionCols:key
@@ -4071,7 +4071,7 @@ Stage-0
             SHUFFLE [RS_6]
               PartitionCols:_col0
               Merge Join Operator [MERGEJOIN_11] (rows=1 width=8)
-                Conds:RS_3.key=RS_4.value(Inner),Output:["_col0","_col1","_col5","_col6"]
+                Conds:RS_3.key=RS_4.value(Inner),Output:["_col0","_col1","_col6","_col7"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_3]
                   PartitionCols:key
@@ -4105,7 +4105,7 @@ Stage-0
         Select Operator [SEL_13] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           Merge Join Operator [MERGEJOIN_19] (rows=1 width=8)
-            Conds:RS_9._col0, _col1=RS_11.key, value(Inner),Output:["_col0","_col1","_col5","_col6","_col10","_col11"]
+            Conds:RS_9._col0, _col1=RS_11.key, value(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_11]
               PartitionCols:key, value
@@ -4117,7 +4117,7 @@ Stage-0
             SHUFFLE [RS_9]
               PartitionCols:_col0, _col1
               Merge Join Operator [MERGEJOIN_18] (rows=1 width=8)
-                Conds:RS_4.key, value=RS_6.value, key(Inner),Output:["_col0","_col1","_col5","_col6"]
+                Conds:RS_4.key, value=RS_6.value, key(Inner),Output:["_col0","_col1","_col6","_col7"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_4]
                   PartitionCols:key, value
@@ -4153,7 +4153,7 @@ Stage-0
         Select Operator [SEL_9] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           Merge Join Operator [MERGEJOIN_12] (rows=1 width=8)
-            Conds:RS_6._col0, _col1=RS_7.key, value(Inner),Output:["_col0","_col1","_col5","_col6","_col10","_col11"]
+            Conds:RS_6._col0, _col1=RS_7.key, value(Inner),Output:["_col0","_col1","_col6","_col7","_col12","_col13"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_7]
               PartitionCols:key, value
@@ -4163,7 +4163,7 @@ Stage-0
             SHUFFLE [RS_6]
               PartitionCols:_col0, _col1
               Merge Join Operator [MERGEJOIN_11] (rows=1 width=8)
-                Conds:RS_3.key, value=RS_4.value, key(Inner),Output:["_col0","_col1","_col5","_col6"]
+                Conds:RS_3.key, value=RS_4.value, key(Inner),Output:["_col0","_col1","_col6","_col7"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_3]
                   PartitionCols:key, value
@@ -4196,7 +4196,7 @@ Stage-0
         Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Left Outer),Output:["_col0","_col1","_col5","_col6"]
+            Conds:RS_2.key=RS_3.value(Left Outer),Output:["_col0","_col1","_col6","_col7"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_2]
               PartitionCols:key
@@ -4230,7 +4230,7 @@ Stage-0
         Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Right Outer),Output:["_col0","_col1","_col5","_col6"]
+            Conds:RS_2.key=RS_3.value(Right Outer),Output:["_col0","_col1","_col6","_col7"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_2]
               PartitionCols:key
@@ -4264,7 +4264,7 @@ Stage-0
         Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Outer),Output:["_col0","_col1","_col5","_col6"]
+            Conds:RS_2.key=RS_3.value(Outer),Output:["_col0","_col1","_col6","_col7"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_2]
               PartitionCols:key
@@ -4298,7 +4298,7 @@ Stage-0
         Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=1 width=8)
-            Conds:RS_2.key=RS_3.value(Inner),Output:["_col0","_col1","_col5","_col6"]
+            Conds:RS_2.key=RS_3.value(Inner),Output:["_col0","_col1","_col6","_col7"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_2]
               PartitionCols:key
@@ -4395,7 +4395,7 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Inner),Output:["_col0","_col1","_col5","_col6"]
+            Conds:TS_0.key=TS_1.key(Inner),Output:["_col0","_col1","_col6","_col7"]
           <-TableScan [TS_1] (rows=26 width=7)
               default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_0] (rows=26 width=7)
@@ -4423,7 +4423,7 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:RS_2.key, value=RS_3.key, value(Inner),Output:["_col0","_col1","_col5","_col6"]
+            Conds:RS_2.key, value=RS_3.key, value(Inner),Output:["_col0","_col1","_col6","_col7"]
           <-Map 1 [SIMPLE_EDGE] llap
             SHUFFLE [RS_2]
               PartitionCols:key, value
@@ -4454,7 +4454,7 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Right Outer),Output:["_col0","_col1","_col5","_col6"]
+            Conds:TS_0.key=TS_1.key(Right Outer),Output:["_col0","_col1","_col6","_col7"]
           <-TableScan [TS_0] (rows=26 width=7)
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_1] (rows=26 width=7)
@@ -4479,7 +4479,7 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Inner),Output:["_col0","_col1","_col5","_col6"]
+            Conds:TS_0.key=TS_1.key(Inner),Output:["_col0","_col1","_col6","_col7"]
           <-TableScan [TS_1] (rows=26 width=7)
               default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_0] (rows=26 width=7)
@@ -4504,7 +4504,7 @@ Stage-0
         Select Operator [SEL_5] (rows=48 width=15)
           Output:["_col0","_col1","_col2","_col3"]
           Merge Join Operator [MERGEJOIN_7] (rows=48 width=15)
-            Conds:TS_0.key=TS_1.key(Left Outer),Output:["_col0","_col1","_col5","_col6"]
+            Conds:TS_0.key=TS_1.key(Left Outer),Output:["_col0","_col1","_col6","_col7"]
           <-TableScan [TS_1] (rows=26 width=7)
               default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-TableScan [TS_0] (rows=26 width=7)
@@ -4786,16 +4786,16 @@ Stage-0
       File Output Operator [FS_9]
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_6] (rows=26 width=499)
+          PTF Operator [PTF_6] (rows=26 width=503)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_5] (rows=26 width=499)
+            Select Operator [SEL_5] (rows=26 width=503)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
-                PTF Operator [PTF_3] (rows=26 width=499)
+                PTF Operator [PTF_3] (rows=26 width=503)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_2] (rows=26 width=499)
+                  Select Operator [SEL_2] (rows=26 width=503)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_1]
@@ -4902,16 +4902,16 @@ Stage-0
       File Output Operator [FS_9]
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_6] (rows=26 width=499)
+          PTF Operator [PTF_6] (rows=26 width=503)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_5] (rows=26 width=499)
+            Select Operator [SEL_5] (rows=26 width=503)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
-                PTF Operator [PTF_3] (rows=26 width=499)
+                PTF Operator [PTF_3] (rows=26 width=503)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_2] (rows=26 width=499)
+                  Select Operator [SEL_2] (rows=26 width=503)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_1]
@@ -4957,16 +4957,16 @@ Stage-0
       File Output Operator [FS_9]
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-          PTF Operator [PTF_6] (rows=26 width=491)
+          PTF Operator [PTF_6] (rows=26 width=495)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_5] (rows=26 width=491)
+            Select Operator [SEL_5] (rows=26 width=495)
               Output:["_col1","_col2","_col5"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
-                PTF Operator [PTF_3] (rows=26 width=491)
+                PTF Operator [PTF_3] (rows=26 width=495)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_2] (rows=26 width=491)
+                  Select Operator [SEL_2] (rows=26 width=495)
                     Output:["_col1","_col2","_col5"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_1]
@@ -5027,11 +5027,11 @@ Stage-0
                 <-Reducer 2 [SIMPLE_EDGE] llap
                   SHUFFLE [RS_5]
                     PartitionCols:rand()
-                    Select Operator [SEL_4] (rows=26 width=491)
+                    Select Operator [SEL_4] (rows=26 width=495)
                       Output:["_col1","_col2","_col5"]
-                      PTF Operator [PTF_3] (rows=26 width=491)
+                      PTF Operator [PTF_3] (rows=26 width=495)
                         Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                        Select Operator [SEL_2] (rows=26 width=491)
+                        Select Operator [SEL_2] (rows=26 width=495)
                           Output:["_col1","_col2","_col5"]
                         <-Map 1 [SIMPLE_EDGE] llap
                           SHUFFLE [RS_1]
@@ -5077,11 +5077,11 @@ Stage-0
               predicate:p_partkey is not null
               TableScan [TS_1] (rows=26 width=4)
                 default@part,p1,Tbl:COMPLETE,Col:COMPLETE,Output:["p_partkey"]
-        <-Filter Operator [FIL_14] (rows=26 width=887)
+        <-Filter Operator [FIL_14] (rows=26 width=891)
             predicate:_col0 is not null
-            PTF Operator [PTF_4] (rows=26 width=887)
+            PTF Operator [PTF_4] (rows=26 width=891)
               Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-              Select Operator [SEL_3] (rows=26 width=887)
+              Select Operator [SEL_3] (rows=26 width=891)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_2]
@@ -5121,16 +5121,16 @@ Stage-0
       File Output Operator [FS_10]
         Select Operator [SEL_8] (rows=26 width=227)
           Output:["_col0","_col1","_col2","_col3"]
-          PTF Operator [PTF_7] (rows=26 width=491)
+          PTF Operator [PTF_7] (rows=26 width=495)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST, _col5 DESC NULLS FIRST","partition by:":"_col2"}]
-            Select Operator [SEL_6] (rows=26 width=491)
+            Select Operator [SEL_6] (rows=26 width=495)
               Output:["_col1","_col2","_col5"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_5]
                 PartitionCols:_col2
-                PTF Operator [PTF_4] (rows=26 width=491)
+                PTF Operator [PTF_4] (rows=26 width=495)
                   Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1 ASC NULLS LAST, _col5 DESC NULLS FIRST","partition by:":"_col2"}}]
-                  Select Operator [SEL_3] (rows=26 width=491)
+                  Select Operator [SEL_3] (rows=26 width=495)
                     Output:["_col1","_col2","_col5"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_2]
@@ -5176,16 +5176,16 @@ Stage-0
       File Output Operator [FS_10]
         Select Operator [SEL_8] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_7] (rows=26 width=499)
+          PTF Operator [PTF_7] (rows=26 width=503)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_6] (rows=26 width=499)
+            Select Operator [SEL_6] (rows=26 width=503)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_5]
                 PartitionCols:_col2
-                PTF Operator [PTF_4] (rows=26 width=499)
+                PTF Operator [PTF_4] (rows=26 width=503)
                   Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_3] (rows=26 width=499)
+                  Select Operator [SEL_3] (rows=26 width=503)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_2]
@@ -5231,16 +5231,16 @@ Stage-0
       File Output Operator [FS_9]
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_6] (rows=26 width=499)
+          PTF Operator [PTF_6] (rows=26 width=503)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_5] (rows=26 width=499)
+            Select Operator [SEL_5] (rows=26 width=503)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
-                PTF Operator [PTF_3] (rows=26 width=499)
+                PTF Operator [PTF_3] (rows=26 width=503)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_2] (rows=26 width=499)
+                  Select Operator [SEL_2] (rows=26 width=503)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_1]
@@ -5287,25 +5287,25 @@ Stage-0
       File Output Operator [FS_13]
         Select Operator [SEL_11] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_10] (rows=26 width=499)
+          PTF Operator [PTF_10] (rows=26 width=503)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_9] (rows=26 width=499)
+            Select Operator [SEL_9] (rows=26 width=503)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 3 [SIMPLE_EDGE] llap
               SHUFFLE [RS_8]
                 PartitionCols:_col2
-                PTF Operator [PTF_7] (rows=26 width=499)
+                PTF Operator [PTF_7] (rows=26 width=503)
                   Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 DESC NULLS FIRST, _col1 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS FIRST, _col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_6] (rows=26 width=499)
+                  Select Operator [SEL_6] (rows=26 width=503)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_5]
                       PartitionCols:_col2
-                      PTF Operator [PTF_4] (rows=26 width=499)
+                      PTF Operator [PTF_4] (rows=26 width=503)
                         Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 DESC NULLS FIRST, _col1 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS FIRST, _col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                        PTF Operator [PTF_3] (rows=26 width=499)
+                        PTF Operator [PTF_3] (rows=26 width=503)
                           Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS FIRST, _col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                          Select Operator [SEL_2] (rows=26 width=499)
+                          Select Operator [SEL_2] (rows=26 width=503)
                             Output:["_col1","_col2","_col5","_col7"]
                           <-Map 1 [SIMPLE_EDGE] llap
                             SHUFFLE [RS_1]
@@ -5357,16 +5357,16 @@ Stage-0
       File Output Operator [FS_10]
         Select Operator [SEL_7] (rows=26 width=235)
           Output:["_col0","_col1","_col2","_col3"]
-          PTF Operator [PTF_6] (rows=26 width=499)
+          PTF Operator [PTF_6] (rows=26 width=503)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_5] (rows=26 width=499)
+            Select Operator [SEL_5] (rows=26 width=503)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
-                PTF Operator [PTF_3] (rows=26 width=499)
+                PTF Operator [PTF_3] (rows=26 width=503)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_2] (rows=26 width=499)
+                  Select Operator [SEL_2] (rows=26 width=503)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_1]
@@ -5416,9 +5416,9 @@ Stage-0
       File Output Operator [FS_15]
         Select Operator [SEL_13] (rows=27 width=259)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-          PTF Operator [PTF_12] (rows=27 width=767)
+          PTF Operator [PTF_12] (rows=27 width=775)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_11] (rows=27 width=767)
+            Select Operator [SEL_11] (rows=27 width=775)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_10]
@@ -5432,11 +5432,11 @@ Stage-0
                       predicate:p_partkey is not null
                       TableScan [TS_1] (rows=26 width=4)
                         default@part,p1,Tbl:COMPLETE,Col:COMPLETE,Output:["p_partkey"]
-                <-Filter Operator [FIL_18] (rows=26 width=503)
+                <-Filter Operator [FIL_18] (rows=26 width=507)
                     predicate:_col0 is not null
-                    PTF Operator [PTF_4] (rows=26 width=503)
+                    PTF Operator [PTF_4] (rows=26 width=507)
                       Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                      Select Operator [SEL_3] (rows=26 width=503)
+                      Select Operator [SEL_3] (rows=26 width=507)
                         Output:["_col0","_col1","_col2","_col5","_col7"]
                       <-Map 1 [SIMPLE_EDGE] llap
                         SHUFFLE [RS_2]
@@ -5584,16 +5584,16 @@ Stage-4
                           table:{"name:":"default.part_4_n1"}
                           Select Operator [SEL_7] (rows=26 width=239)
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                            PTF Operator [PTF_6] (rows=26 width=499)
+                            PTF Operator [PTF_6] (rows=26 width=503)
                               Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-                              Select Operator [SEL_5] (rows=26 width=499)
+                              Select Operator [SEL_5] (rows=26 width=503)
                                 Output:["_col1","_col2","_col5","_col7"]
                               <-Reducer 2 [SIMPLE_EDGE] llap
                                 SHUFFLE [RS_4]
                                   PartitionCols:_col2
-                                  PTF Operator [PTF_3] (rows=26 width=499)
+                                  PTF Operator [PTF_3] (rows=26 width=503)
                                     Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
-                                    Select Operator [SEL_2] (rows=26 width=499)
+                                    Select Operator [SEL_2] (rows=26 width=503)
                                       Output:["_col1","_col2","_col5","_col7"]
                                     <-Map 1 [SIMPLE_EDGE] llap
                                       SHUFFLE [RS_1]
@@ -5620,18 +5620,18 @@ Stage-4
                           table:{"name:":"default.part_5_n1"}
                           Select Operator [SEL_25] (rows=26 width=247)
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                            PTF Operator [PTF_24] (rows=26 width=499)
+                            PTF Operator [PTF_24] (rows=26 width=503)
                               Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 ASC NULLS LAST, _col2 ASC NULLS LAST","partition by:":"_col3"}]
-                              Select Operator [SEL_23] (rows=26 width=499)
+                              Select Operator [SEL_23] (rows=26 width=503)
                                 Output:["_col0","_col2","_col3","_col6"]
                               <-Reducer 6 [SIMPLE_EDGE] llap
                                 SHUFFLE [RS_22]
                                   PartitionCols:_col2
-                                  Select Operator [SEL_21] (rows=26 width=491)
+                                  Select Operator [SEL_21] (rows=26 width=495)
                                     Output:["sum_window_0","_col1","_col2","_col5"]
-                                    PTF Operator [PTF_20] (rows=26 width=491)
+                                    PTF Operator [PTF_20] (rows=26 width=495)
                                       Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col5 ASC NULLS LAST","partition by:":"_col2"}]
-                                      Select Operator [SEL_19] (rows=26 width=491)
+                                      Select Operator [SEL_19] (rows=26 width=495)
                                         Output:["_col1","_col2","_col5"]
                                       <-Reducer 2 [SIMPLE_EDGE] llap
                                         SHUFFLE [RS_18]
@@ -5702,25 +5702,25 @@ Stage-0
       File Output Operator [FS_13]
         Select Operator [SEL_11] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_10] (rows=26 width=491)
+          PTF Operator [PTF_10] (rows=26 width=495)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}]
-            Select Operator [SEL_9] (rows=26 width=491)
+            Select Operator [SEL_9] (rows=26 width=495)
               Output:["_col1","_col2","_col5"]
             <-Reducer 3 [SIMPLE_EDGE] llap
               SHUFFLE [RS_8]
                 PartitionCols:_col2, _col1
-                PTF Operator [PTF_7] (rows=26 width=491)
+                PTF Operator [PTF_7] (rows=26 width=495)
                   Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
-                  Select Operator [SEL_6] (rows=26 width=491)
+                  Select Operator [SEL_6] (rows=26 width=495)
                     Output:["_col1","_col2","_col5"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_5]
                       PartitionCols:_col2, _col1
-                      PTF Operator [PTF_4] (rows=26 width=491)
+                      PTF Operator [PTF_4] (rows=26 width=495)
                         Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
-                        PTF Operator [PTF_3] (rows=26 width=491)
+                        PTF Operator [PTF_3] (rows=26 width=495)
                           Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
-                          Select Operator [SEL_2] (rows=26 width=491)
+                          Select Operator [SEL_2] (rows=26 width=495)
                             Output:["_col1","_col2","_col5"]
                           <-Map 1 [SIMPLE_EDGE] llap
                             SHUFFLE [RS_1]
@@ -5782,30 +5782,30 @@ Stage-0
       File Output Operator [FS_15]
         Select Operator [SEL_13] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_12] (rows=26 width=491)
+          PTF Operator [PTF_12] (rows=26 width=495)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_11] (rows=26 width=491)
+            Select Operator [SEL_11] (rows=26 width=495)
               Output:["_col1","_col2","_col5"]
             <-Reducer 4 [SIMPLE_EDGE] llap
               SHUFFLE [RS_10]
                 PartitionCols:_col2
-                PTF Operator [PTF_9] (rows=26 width=491)
+                PTF Operator [PTF_9] (rows=26 width=495)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_8] (rows=26 width=491)
+                  Select Operator [SEL_8] (rows=26 width=495)
                     Output:["_col1","_col2","_col5"]
                   <-Reducer 3 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_7]
                       PartitionCols:_col2
-                      PTF Operator [PTF_6] (rows=26 width=491)
+                      PTF Operator [PTF_6] (rows=26 width=495)
                         Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
-                        Select Operator [SEL_5] (rows=26 width=491)
+                        Select Operator [SEL_5] (rows=26 width=495)
                           Output:["_col1","_col2","_col5"]
                         <-Reducer 2 [SIMPLE_EDGE] llap
                           SHUFFLE [RS_4]
                             PartitionCols:_col2, _col1
-                            PTF Operator [PTF_3] (rows=26 width=491)
+                            PTF Operator [PTF_3] (rows=26 width=495)
                               Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
-                              Select Operator [SEL_2] (rows=26 width=491)
+                              Select Operator [SEL_2] (rows=26 width=495)
                                 Output:["_col1","_col2","_col5"]
                               <-Map 1 [SIMPLE_EDGE] llap
                                 SHUFFLE [RS_1]
@@ -5862,23 +5862,23 @@ Stage-0
       File Output Operator [FS_12]
         Select Operator [SEL_10] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          PTF Operator [PTF_9] (rows=26 width=491)
+          PTF Operator [PTF_9] (rows=26 width=495)
             Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
-            Select Operator [SEL_8] (rows=26 width=491)
+            Select Operator [SEL_8] (rows=26 width=495)
               Output:["_col1","_col2","_col5"]
             <-Reducer 3 [SIMPLE_EDGE] llap
               SHUFFLE [RS_7]
                 PartitionCols:_col2
-                PTF Operator [PTF_6] (rows=26 width=491)
+                PTF Operator [PTF_6] (rows=26 width=495)
                   Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
-                  Select Operator [SEL_5] (rows=26 width=491)
+                  Select Operator [SEL_5] (rows=26 width=495)
                     Output:["_col1","_col2","_col5"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_4]
                       PartitionCols:_col2
-                      PTF Operator [PTF_3] (rows=26 width=491)
+                      PTF Operator [PTF_3] (rows=26 width=495)
                         Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
-                        Select Operator [SEL_2] (rows=26 width=491)
+                        Select Operator [SEL_2] (rows=26 width=495)
                           Output:["_col1","_col2","_col5"]
                         <-Map 1 [SIMPLE_EDGE] llap
                           SHUFFLE [RS_1]

@@ -129,7 +129,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 9932 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -180,7 +180,7 @@ STAGE PLANS:
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   Lead/Lag information: lag(...) (type: double)
-                  Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 9932 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col7 (type: double), _col5 (type: int), (round(sum_window_0, 2) = round((sum_window_1 + last_value_window_2), 2)) (type: boolean), ((max_window_3 - min_window_4) = (last_value_window_2 - first_value_window_5)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -339,7 +339,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 1]
-                Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 9932 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -379,7 +379,7 @@ STAGE PLANS:
                       outputTypes: [int, double, string, int, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4]
-                  Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 9932 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col7 (type: double), _col5 (type: int), rank_window_0 (type: int), sum_window_1 (type: double), (sum_window_1 - 5.0D) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1447,7 +1447,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 26 Data size: 12428 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12532 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1480,7 +1480,7 @@ STAGE PLANS:
                       outputTypes: [double, string, string, double]
                       partitionExpressions: [col 0:string, col 1:string]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 12428 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12532 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), avg_window_0 (type: double)
                     outputColumnNames: _col0, _col1
@@ -1630,7 +1630,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                Statistics: Num rows: 26 Data size: 12428 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 12532 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1663,7 +1663,7 @@ STAGE PLANS:
                       outputTypes: [double, string, string, double]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3]
-                  Statistics: Num rows: 26 Data size: 12428 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 12532 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), avg_window_0 (type: double)
                     outputColumnNames: _col0, _col1
@@ -2071,7 +2071,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 9932 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2104,7 +2104,7 @@ STAGE PLANS:
                               window function: GenericUDAFLastValueEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   Lead/Lag information: lag(...) (type: double)
-                  Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 9932 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col7 (type: double), _col5 (type: int), ((round(sum_window_0, 2) + 50.0D) = round((sum_window_1 + last_value_window_2), 2)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3

@@ -117,6 +117,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
+  private boolean fetchDeletedRows = false;
+
   private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
 
   private transient TableSample tableSample;
@@ -223,6 +225,14 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public AcidUtils.AcidOperationalProperties getAcidOperationalProperties() {
     return acidOperationalProperties;
+  }
+
+  public boolean isFetchDeletedRows() {
+    return fetchDeletedRows;
+  }
+
+  public void setFetchDeletedRows(boolean fetchDeletedRows) {
+    this.fetchDeletedRows = fetchDeletedRows;
   }
 
   @Explain(displayName = "Output", explainLevels = { Level.USER })
