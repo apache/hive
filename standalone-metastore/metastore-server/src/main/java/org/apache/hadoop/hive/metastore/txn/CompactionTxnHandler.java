@@ -302,21 +302,20 @@ class CompactionTxnHandler extends TxnHandler {
          * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
          * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
          */
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_NEXT_TXN_ID\"");
-        sb.append(" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" IN (");
-        sb.append(" SELECT DISTINCT \"CQ_ID\" FROM (");
-        sb.append("   SELECT MAX(\"CQ_NEXT_TXN_ID\") \"CQ_NEXT_TXN_ID\", MAX(\"CQ_ID\") \"CQ_ID\" ");
-        sb.append("     FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'");
-        sb.append("     AND (\"CQ_NEXT_TXN_ID\" <= ").append(minOpenTxnWaterMark).append(" OR \"CQ_NEXT_TXN_ID\" IS NULL)");
+        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_TYPE\", \"CQ_RUN_AS\"," +
+                " \"CQ_HIGHEST_WRITE_ID\", \"CQ_NEXT_TXN_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" IN (" +
+                " SELECT DISTINCT \"CQ_ID\" FROM (" +
+                "   SELECT MAX(\"CQ_NEXT_TXN_ID\") \"CQ_NEXT_TXN_ID\", MAX(\"CQ_ID\") \"CQ_ID\" " +
+                "     FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'" +
+                "     AND (\"CQ_NEXT_TXN_ID\" <= "+ minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         if (retentionTime > 0) {
-          sb.append("   AND \"CQ_COMMIT_TIME\" < (").append(getEpochFn(dbProduct)).append(" - ").append(retentionTime).append(")");
+          s += "      AND \"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ")";
         }
-        sb.append("     GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\" ) x )");
+        s += "        GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\" ) \"X\" )";
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute query <" + sb.toString() + ">");
+          LOG.debug("Going to execute query <" + s + ">");
         }
-        rs = stmt.executeQuery(sb.toString());
+        rs = stmt.executeQuery(s);
 
         while (rs.next()) {
           CompactionInfo info = new CompactionInfo();
