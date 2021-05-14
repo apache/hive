@@ -28,32 +28,15 @@ import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.*;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERVIEW_PROPERTIES;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessControlException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -327,6 +310,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /** Marks the temporary table created for a serialized CTE. The table is scoped to the query. */
   static final String MATERIALIZATION_MARKER = "$MATERIALIZATION";
 
+  // Remove this when HIVE-23244 is backported
+  protected  static final EnumSet<HiveOperation> viewOperations = EnumSet.of(
+          CREATEVIEW, ALTERVIEW_AS, ALTERVIEW_RENAME, ALTERVIEW_PROPERTIES);
+
   private Map<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private Map<TableScanOperator, PrunedPartitionList> opToPartList;
   protected Map<String, TableScanOperator> topOps;
@@ -340,7 +327,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private final HashMap<TableScanOperator, Map<String, String>> topToTableProps;
   private QB qb;
-  private ASTNode ast;
+  protected ASTNode ast;
   private int destTableId;
   private UnionProcContext uCtx;
   private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
@@ -2739,11 +2726,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
-      if (!unparseTranslator.isEnabled() &&
-          (viewMask.isEnabled() && analyzeRewrite == null)) {
-        viewTree = rewriteASTWithMaskAndFilter(viewMask, viewTree,
+      if (viewMask.isEnabled() && analyzeRewrite == null) {
+        ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
             ctx, db, tabNameToTabObject, ignoredTokens);
+        viewTree = parseResult.getTree();
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
         @Override
@@ -3946,9 +3933,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ErrorMsg.INVALID_COLUMN.getMsg(), sel));
     }
 
-    if (unparseTranslator.isEnabled()) {
-      unparseTranslator.addTranslation(sel, replacementText.toString());
-    } else if (tableMask.isEnabled()) {
+    unparseTranslator.addTranslation(sel, replacementText.toString());
+    if (tableMask.isEnabled()) {
       tableMask.addTranslation(sel, replacementText.toString());
     }
     return pos;
@@ -12646,7 +12632,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  private ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+  private ParseResult rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
       Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
@@ -12699,13 +12685,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         // We pass a new empty context with our HiveConf so the lexer can
         // detect if allowQuotedId is enabled.
-        rewrittenTree = ParseUtils.parse(rewrittenQuery, new Context(conf));
+        Context rewriteCtx = new Context(conf);
+        ctx.addSubContext(rewriteCtx);
+        rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
+        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
       } catch (ParseException | IOException e) {
         throw new SemanticException(e);
       }
-      return rewrittenTree;
     } else {
-      return ast;
+      return new ParseResult(ast, ctx.getTokenRewriteStream());
     }
   }
 
@@ -12924,15 +12912,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator sinkOp = genOPTree(ast, plannerCtx);
 
     boolean usesMasking = false;
-    if (!unparseTranslator.isEnabled() &&
-        (tableMask.isEnabled() && analyzeRewrite == null)) {
+    if (ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
+        (tableMask.isEnabled() && analyzeRewrite == null) &&
+            !viewOperations.contains(queryState.getHiveOperation())) {
       // Here we rewrite the * and also the masking table
-      ASTNode rewrittenAST = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
+      ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
           ctx, db, tabNameToTabObject, ignoredTokens);
+      ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
         plannerCtx = pcf.create();
         ctx.setSkipTableMasking(true);
+        ctx.setTokenRewriteStream(rewrittenResult.getTokenRewriteStream());
         init(true);
         //change the location of position alias process here
         processPositionAlias(rewrittenAST);
@@ -14441,12 +14432,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String msg = "Cannot enable automatic rewriting for materialized view.";
           if (ctx.getCboInfo() != null) {
             msg += " " + ctx.getCboInfo();
+          } else {
+            msg += " Check CBO is turned on: set " + ConfVars.HIVE_CBO_ENABLED.varname;
           }
           throw new SemanticException(msg);
         }
         if (!isValidAutomaticRewritingMaterialization()) {
-          throw new SemanticException("Cannot enable automatic rewriting for materialized view. " +
-              getInvalidAutomaticRewritingMaterializationReason());
+          String errorMessage = "Only query text based automatic rewriting is available for materialized view. " +
+                  getInvalidAutomaticRewritingMaterializationReason();
+          console.printError(errorMessage);
+          LOG.warn(errorMessage);
         }
       }
 

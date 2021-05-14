@@ -176,6 +176,15 @@ public class Context {
    */
   private boolean enableUnparse;
 
+  /**
+   * true if this Context belongs to a statement which is analyzed by {@link org.apache.hadoop.hive.ql.parse.ScheduledQueryAnalyzer}.
+   * If the goal of the statement is to schedule an alter materialized view rebuild command we need the the fully qualified name
+   * if the materialized view only which is done by {@link org.apache.hadoop.hive.ql.parse.UnparseTranslator} and the query
+   * shouldn't be rewritten.
+   * See {@link org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer}.
+   */
+  private boolean scheduledQuery;
+
   private EngineEventSequence timeline = new DummyEventSequence();
 
   public void setTimeline(EngineEventSequence timeline) {
@@ -345,6 +354,12 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+    // Sql text based materialized view auto rewriting compares the extended query text (contains fully qualified
+    // identifiers) to the stored Materialized view query definitions. We have to enable unparsing for generating
+    // the extended query text when auto rewriting is enabled.
+    enableUnparse =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL);
+    scheduledQuery = false;
   }
 
   protected Context(Context ctx) {
@@ -388,6 +403,8 @@ public class Context {
     this.viewsTokenRewriteStreams = new HashMap<>();
     this.subContexts = new HashSet<>();
     this.opContext = new CompilationOpContext();
+    this.enableUnparse = ctx.enableUnparse;
+    this.scheduledQuery = ctx.scheduledQuery;
   }
 
   public Map<String, Path> getFsScratchDirs() {
@@ -929,7 +946,8 @@ public class Context {
    *          the stream being used
    */
   public void setTokenRewriteStream(TokenRewriteStream tokenRewriteStream) {
-    assert (this.tokenRewriteStream == null || this.getExplainAnalyze() == AnalyzeState.RUNNING);
+    assert (this.tokenRewriteStream == null || this.getExplainAnalyze() == AnalyzeState.RUNNING ||
+        skipTableMasking);
     this.tokenRewriteStream = tokenRewriteStream;
   }
 
@@ -1237,4 +1255,11 @@ public class Context {
     this.enableUnparse = enableUnparse;
   }
 
+  public boolean isScheduledQuery() {
+    return scheduledQuery;
+  }
+
+  public void setScheduledQuery(boolean scheduledQuery) {
+    this.scheduledQuery = scheduledQuery;
+  }
 }

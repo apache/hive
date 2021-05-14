@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10009]: Line 6:12 Invalid table alias 'b'
+FAILED: SemanticException [Error 10004]: Line 6:12 Invalid table alias or column reference 'b': (possible column names are: x.key, x.value, y.key, y.value)

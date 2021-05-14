@@ -179,7 +179,7 @@ public class UnparseTranslator {
     if (!enabled) {
       return;
     }
-    assert (identifier.getToken().getType() == HiveParser.Identifier);
+    assert (identifier.getToken().getType() == HiveParser.Identifier || identifier.getToken().getType() == HiveParser.StringLiteral);
     String replacementText = identifier.getText();
     replacementText = BaseSemanticAnalyzer.unescapeIdentifier(replacementText);
     replacementText = HiveUtils.unparseIdentifier(replacementText, conf);
@@ -220,10 +220,15 @@ public class UnparseTranslator {
    *          rewrite-capable stream
    */
   void applyTranslations(TokenRewriteStream tokenRewriteStream) {
+    applyTranslations(tokenRewriteStream, TokenRewriteStream.DEFAULT_PROGRAM_NAME);
+  }
+
+  void applyTranslations(TokenRewriteStream tokenRewriteStream, String programName) {
     for (Map.Entry<Integer, Translation> entry : translations.entrySet()) {
       if (entry.getKey() > 0) { // negative means the key didn't exist in the original
                                 // stream (i.e.: we changed the tree)
         tokenRewriteStream.replace(
+           programName,
            entry.getKey(),
            entry.getValue().tokenStopIndex,
            entry.getValue().replacementText);
@@ -231,9 +236,11 @@ public class UnparseTranslator {
     }
     for (CopyTranslation copyTranslation : copyTranslations) {
       String replacementText = tokenRewriteStream.toString(
+        programName,
         copyTranslation.sourceNode.getTokenStartIndex(),
         copyTranslation.sourceNode.getTokenStopIndex());
       String currentText = tokenRewriteStream.toString(
+        programName,
         copyTranslation.targetNode.getTokenStartIndex(),
         copyTranslation.targetNode.getTokenStopIndex());
       if (currentText.equals(replacementText)) {
@@ -245,6 +252,7 @@ public class UnparseTranslator {
       // checking.
       addTranslation(copyTranslation.targetNode, replacementText);
       tokenRewriteStream.replace(
+        programName,
         copyTranslation.targetNode.getTokenStartIndex(),
         copyTranslation.targetNode.getTokenStopIndex(),
         replacementText);

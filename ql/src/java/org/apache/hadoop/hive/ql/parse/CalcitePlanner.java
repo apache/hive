@@ -353,9 +353,20 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.copyMaterializationToNewCluster;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
+
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
+  /**
+   * {@link org.antlr.runtime.TokenRewriteStream} offers the opportunity of multiple rewrites of the same
+   * input text (in our case the sql query text). These rewrites are called programs and identified by a string.
+   * EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM is for identifying the program which replaces all identifiers in the
+   * query with fully qualified identifiers.
+   */
+  private static final String EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM = "EXPANDED_QUERY_PROGRAM";
   private final AtomicInteger noColsMissingStats = new AtomicInteger(0);
   private SemanticException semanticException;
   private boolean runCBO = true;
@@ -1993,6 +2004,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
       markEvent("Calcite - Plan created");
 
+      if (isMaterializedViewRewritingByTextEnabled()) {
+        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calciteGenPlan, optCluster);
+        if (rewrittenPlan != null) {
+          return CalcitePlan.of(rewrittenPlan, rewrittenPlan);
+        }
+      }
+
+
       // Create executor
       RexExecutor executorProvider = functionHelper.getRexExecutor();
       calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
@@ -2426,15 +2445,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               }
               return true;
             })
-            .map(materialization -> {
-              // We need to use the current cluster for the scan operator on views,
-              // otherwise the planner will throw an Exception (different planners)
-              final RelNode viewScan = materialization.tableRel;
-              final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-                  optCluster, viewScan, functionHelper.getPartitionPruneRuleHelper());
-              return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-                  materialization.qualifiedTableName);
-            })
+            .map(materialization -> copyMaterializationToNewCluster(optCluster, materialization,
+                    functionHelper.getPartitionPruneRuleHelper()))
             .collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
@@ -2568,6 +2580,43 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return basePlan;
+    }
+
+    private boolean isMaterializedViewRewritingByTextEnabled() {
+      return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
+              mvRebuildMode == MaterializationRebuildMode.NONE &&
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
+              getQB().getIsQuery() &&
+              getQB().hasTableDefined();
+    }
+
+    private RelNode applyMaterializedViewRewritingByText(RelNode calciteGenPlan, RelOptCluster optCluster) {
+      unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+      String expandedQueryText = ctx.getTokenRewriteStream()
+              .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
+      try {
+        List<RelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
+                expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
+        for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
+          try {
+            Table hiveTableMD = extractTable(relOptMaterialization);
+            if (db.validateMaterializedViewsFromRegistry(
+                    singletonList(hiveTableMD),
+                    singletonList(hiveTableMD.getFullyQualifiedName()),
+                    getTxnMgr())) {
+              return copyMaterializationToNewCluster(optCluster, relOptMaterialization,
+                      functionHelper.getPartitionPruneRuleHelper()).tableRel;
+            }
+          } catch (HiveException e) {
+            LOG.warn("Skipping materialized view due to validation failure: " +
+                    relOptMaterialization.qualifiedTableName, e);
+          }
+        }
+      } catch (HiveException e) {
+        LOG.warn(String.format("Exception while looking up materialized views for query '%s'", expandedQueryText), e);
+      }
+
+      return null;
     }
 
     /**

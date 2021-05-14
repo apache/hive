@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery._Fields;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -62,6 +63,12 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   public ScheduledQueryAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
+  }
+
+  @Override
+  public void initCtx(Context ctx) {
+    ctx.setScheduledQuery(true);
+    super.initCtx(ctx);
   }
 
   @Override
@@ -356,7 +363,6 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ((HiveConf) (ctx.getConf())).setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
 
-    ctx.setEnableUnparse(true);
     sem.analyze(input, ctx);
     sem.validate();
     sem.executeUnparseTranlations();

@@ -204,6 +204,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     try {
       useSuper = true;
       // Note: this will overwrite this.ctx with rewrittenCtx
+      rewrittenCtx.setEnableUnparse(false);
       super.analyze(rewrittenTree, rewrittenCtx);
     } finally {
       useSuper = false;
