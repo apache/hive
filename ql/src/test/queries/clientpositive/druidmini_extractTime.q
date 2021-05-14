@@ -1,4 +1,4 @@
---! qt:dataset:alltypesorc
+--! qt:disabled:HIVE-24816
 
 SET hive.vectorized.execution.enabled=false;
 SET hive.ctas.external.tables=true;
