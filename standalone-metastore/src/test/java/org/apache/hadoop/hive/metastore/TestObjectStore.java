@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import com.codahale.metrics.Counter;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
@@ -106,6 +108,8 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
 
 @Category(MetastoreUnitTest.class)
 public class TestObjectStore {
@@ -1150,6 +1154,43 @@ public class TestObjectStore {
         .setLocation("/tmp")
         .build();
     objectStore.createCatalog(cat);
+  }
+
+  @Test
+  public void testUpdateCreationMetadataSetsMaterializationTime() throws Exception {
+    Database db1 = new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf);
+    objectStore.createDatabase(db1);
+
+    StorageDescriptor sd1 =
+            new StorageDescriptor(ImmutableList.of(new FieldSchema("pk_col", "double", null)),
+                    "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
+                    null, null, null);
+    HashMap<String, String> params = new HashMap<>();
+    params.put("EXTERNAL", "false");
+    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd1, null, params, null, null, "MANAGED_TABLE");
+    tbl1.setCatName(db1.getCatalogName());
+    objectStore.createTable(tbl1);
+
+    Table matView1 = new Table("mat1", DB1, "owner", 1, 2, 3, sd1, null, params, null, null, "MATERIALIZED_VIEW");
+    matView1.setCatName(db1.getCatalogName());
+
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setCatName(db1.getCatalogName());
+    creationMetadata.setDbName(matView1.getDbName());
+    creationMetadata.setTblName(matView1.getTableName());
+    creationMetadata.setTablesUsed(Collections.singleton(tbl1.getDbName() + "." + tbl1.getTableName()));
+    matView1.setCreationMetadata(creationMetadata);
+    objectStore.createTable(matView1);
+
+    CreationMetadata newCreationMetadata = new CreationMetadata(matView1.getCatName(), matView1.getDbName(),
+            matView1.getTableName(), ImmutableSet.copyOf(creationMetadata.getTablesUsed()));
+    objectStore.updateCreationMetadata(matView1.getCatName(), matView1.getDbName(), matView1.getTableName(), newCreationMetadata);
+
+    assertThat(creationMetadata.getMaterializationTime(), is(not(0)));
   }
 }
 
