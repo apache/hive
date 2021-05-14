@@ -1,5 +1,9 @@
---! qt:dataset:alltypesorc
-CREATE TABLE druid_table_n3
+--! qt:disabled:HIVE-24816
+--! qt:dataset:druid_table_alltypesorc
+SET hive.ctas.external.tables=true;
+SET hive.external.table.purge.default = true;
+
+CREATE EXTERNAL TABLE druid_table_n3
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS

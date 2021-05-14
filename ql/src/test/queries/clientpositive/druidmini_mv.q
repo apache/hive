@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24816
 -- SORT_QUERY_RESULTS
 
 SET hive.vectorized.execution.enabled=false;

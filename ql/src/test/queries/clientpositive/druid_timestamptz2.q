@@ -1,3 +1,6 @@
+--! qt:disabled:HIVE-24816
+SET hive.ctas.external.tables=true;
+SET hive.external.table.purge.default = true;
 CREATE database druid_test_dst;
 use druid_test_dst;
 
