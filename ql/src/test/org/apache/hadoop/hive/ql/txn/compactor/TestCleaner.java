@@ -515,6 +515,68 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals("base_23_v25", paths.get(0).getName());
   }
 
+  @Test
+  public void testReadyForCleaningPileup() throws Exception {
+    String dbName = "default";
+    String tblName = "trfcp";
+    String partName = "ds=today";
+    Table t = newTable(dbName, tblName, true);
+    Partition p = newPartition(t, "today");
+
+    // block cleaner with an open txn
+    long blockingTxn = openTxn();
+
+    // minor compaction
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 21L, 1);
+    addDeltaFile(t, p, 22L, 22L, 1);
+    burnThroughTransactions(dbName, tblName, 22);
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname(partName);
+    compactInTxn(rqst);
+    addDeltaFile(t, p, 21, 22, 2);
+    startCleaner();
+
+    // make sure cleaner didn't remove anything, and cleaning is still queued
+    List<Path> paths = getDirectories(conf, t, p);
+    Assert.assertEquals("Expected 4 files after minor compaction, instead these files were present " + paths,
+            4, paths.size());
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Expected 1 compaction in queue, got: " + rsp.getCompacts(), 1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+
+    // major compaction
+    addDeltaFile(t, p, 23L, 23L, 1);
+    addDeltaFile(t, p, 24L, 24L, 1);
+    burnThroughTransactions(dbName, tblName, 2);
+    rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    rqst.setPartitionname(partName);
+    long compactTxn = compactInTxn(rqst);
+    addBaseFile(t, p, 24, 24, compactTxn);
+    startCleaner();
+
+    // make sure cleaner didn't remove anything, and 2 cleaning are still queued
+    paths = getDirectories(conf, t, p);
+    Assert.assertEquals("Expected 7 files after minor compaction, instead these files were present " + paths,
+            7, paths.size());
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Expected 2 compactions in queue, got: " + rsp.getCompacts(), 2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    // unblock the cleaner and run again
+    txnHandler.commitTxn(new CommitTxnRequest(blockingTxn));
+    startCleaner();
+
+    // make sure cleaner removed everything below base_24, and both compactions are successful
+    paths = getDirectories(conf, t, p);
+    Assert.assertEquals(1, paths.size());
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Expected 2 compactions in queue, got: " + rsp.getCompacts(), 2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+  }
 
   @Override
   boolean useHive130DeltaDirName() {

@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -381,6 +382,37 @@ public class TxnUtils {
     queries.add(buf.toString());
     ret.add(currentCount);
     return ret;
+  }
+
+  /**
+   * Executes simple update queries based on output from TxnUtils#buildQueryWithINClauseStrings.
+   * Example: desired queries are "delete from x where y in (1, 2, 3)" and "delete from x where y in (4, 5, 6)"
+   *
+   * @param updateQueries  List of: "delete from x where y in (?,?,?)", "delete from x where y in (?,?,?)"
+   * @param updateQueryCount Number of queries to execute, in the example: 2
+   * @param ids to prepare statement with. In the example: List containing: 1, 2, 3, 4, 5, 6
+   * @param dbConn database Connection
+   * @throws SQLException
+   */
+  public static int executeUpdateQueries(List<String> updateQueries, List<Integer> updateQueryCount, List<Long> ids,
+          Connection dbConn)
+          throws SQLException {
+    int totalCount = 0;
+    int updatedCount = 0;
+    for (int i = 0; i < updateQueries.size(); i++) {
+      String query = updateQueries.get(i);
+      long insertCount = updateQueryCount.get(i);
+      LOG.debug("Going to execute update <" + query + ">");
+      PreparedStatement pStmt = dbConn.prepareStatement(query);
+      for (int j = 0; j < insertCount; j++) {
+        pStmt.setLong(j + 1, ids.get(totalCount + j));
+      }
+      totalCount += insertCount;
+      int count = pStmt.executeUpdate();
+      LOG.debug("Updated " + count + " records");
+      updatedCount += count;
+    }
+    return updatedCount;
   }
 
   /**

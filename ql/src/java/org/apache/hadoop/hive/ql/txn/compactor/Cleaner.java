@@ -198,7 +198,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
       //save it so that getAcidState() sees it
       conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
-      /**
+      /*
        * {@code validTxnList} is capped by minOpenTxnGLB so if
        * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
        * produced by a compactor, that means every reader that could be active right now see it

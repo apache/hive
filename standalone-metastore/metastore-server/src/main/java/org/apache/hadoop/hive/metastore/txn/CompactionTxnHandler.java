@@ -26,8 +26,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +45,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
-
-import com.codahale.metrics.Counter;
 
 /**
  * Extends the transaction handler with methods needed only by the compactor threads.  These
@@ -251,6 +247,7 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       Connection dbConn = null;
       Statement stmt = null;
+
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
@@ -297,6 +294,7 @@ class CompactionTxnHandler extends TxnHandler {
 
     Statement stmt = null;
     ResultSet rs = null;
+
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -305,17 +303,21 @@ class CompactionTxnHandler extends TxnHandler {
          * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
          * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
          */
-        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
-                + READY_FOR_CLEANING + "'";
-        if (minOpenTxnWaterMark > 0) {
-          s = s + " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
-        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_NEXT_TXN_ID\"");
+        sb.append(" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" IN (");
+        sb.append(" SELECT DISTINCT \"CQ_ID\" FROM (");
+        sb.append("   SELECT MAX(\"CQ_NEXT_TXN_ID\") \"CQ_NEXT_TXN_ID\", MAX(\"CQ_ID\") \"CQ_ID\" ");
+        sb.append("     FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'");
+        sb.append("     AND (\"CQ_NEXT_TXN_ID\" <= ").append(minOpenTxnWaterMark).append(" OR \"CQ_NEXT_TXN_ID\" IS NULL)");
         if (retentionTime > 0) {
-          s = s + " AND \"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ")";
+          sb.append("   AND \"CQ_COMMIT_TIME\" < (").append(getEpochFn(dbProduct)).append(" - ").append(retentionTime).append(")");
         }
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
+        sb.append("     GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\" ) x )");
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute query <" + sb.toString() + ">");
+        }
+        rs = stmt.executeQuery(sb.toString());
 
         while (rs.next()) {
           CompactionInfo info = new CompactionInfo();
@@ -326,6 +328,7 @@ class CompactionTxnHandler extends TxnHandler {
           info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
           info.runAs = rs.getString(6);
           info.highestWriteId = rs.getLong(7);
+          info.nextTxnId = rs.getLong(9);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Found ready to clean: " + info.toString());
           }
@@ -365,7 +368,29 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        String s = "INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
+
+        // Get all of this partition's COMPACTION_QUEUE entries in "ready for cleaning" with smaller id.
+        // TODO eventually change this to CQ_NEXT_TXN_ID (it might be null for some entires)
+        String s = "SELECT \"CQ_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\"=? AND \"CQ_TABLE\"=? ";
+        if (info.partName != null) {
+          s += " AND \"CQ_PARTITION\" = ?";
+        }
+        s += " AND \"CQ_STATE\"='" + READY_FOR_CLEANING + "' AND \"CQ_ID\" <= " + info.id;
+        pStmt = dbConn.prepareStatement(s);
+        pStmt.setString(1, info.dbname);
+        pStmt.setString(2, info.tableName);
+        if (info.partName != null) {
+          pStmt.setString(3, info.partName);
+        }
+        LOG.debug("Going to execute query <" + s + "> for CQ_ID=" + info.id);
+        rs = pStmt.executeQuery();
+        List<Long> compactionIds = new ArrayList<>();
+        while (rs.next()) {
+          compactionIds.add(rs.getLong(1));
+        }
+
+        // Move all the entries to COMPLETED_COMPACTIONS
+        StringBuilder queryPrefix = new StringBuilder("INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
             + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
             + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
             + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\", "
@@ -375,22 +400,27 @@ class CompactionTxnHandler extends TxnHandler {
             + getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
             + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
             + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\""
-            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-        pStmt = dbConn.prepareStatement(s);
-        pStmt.setLong(1, info.id);
-        LOG.debug("Going to execute update <" + s + "> for CQ_ID=" + info.id);
-        pStmt.executeUpdate();
+            + "FROM \"COMPACTION_QUEUE\" WHERE ");
+        List<String> questionMarks = Collections.nCopies(compactionIds.size(), "?");
+        List<String> insertQueries = new ArrayList<>();
+        List<Integer> queryCount = TxnUtils.buildQueryWithINClauseStrings(conf, insertQueries, queryPrefix,
+                new StringBuilder(), questionMarks, "\"CQ_ID\"", false, false);
+        TxnUtils.executeUpdateQueries(insertQueries, queryCount, compactionIds, dbConn);
+        dbConn.commit();
 
-        s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-        pStmt = dbConn.prepareStatement(s);
-        pStmt.setLong(1, info.id);
-        LOG.debug("Going to execute update <" + s + ">");
-        int updCount = pStmt.executeUpdate();
-        if (updCount != 1) {
-          LOG.error("Unable to delete compaction record: " + info +  ".  Update count=" + updCount);
+        // Remove all relevant ids from compaction queue
+        queryPrefix = new StringBuilder("DELETE FROM \"COMPACTION_QUEUE\" WHERE ");
+        insertQueries = new ArrayList<>(); // use the same questionMarks from previous update query
+        queryCount = TxnUtils.buildQueryWithINClauseStrings(conf, insertQueries, queryPrefix,
+                new StringBuilder(), questionMarks, "\"CQ_ID\"", false, false);
+
+        int updCount = TxnUtils.executeUpdateQueries(insertQueries, queryCount, compactionIds, dbConn);
+        if (updCount < 1) {
+          LOG.error("Unable to delete compaction record: " + info + ".  Update count=" + updCount);
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
+
         // Remove entries from completed_txn_components as well, so we don't start looking there
         // again but only up to the highest write ID include in this compaction job.
         //highestWriteId will be NULL in upgrade scenarios
@@ -965,19 +995,7 @@ class CompactionTxnHandler extends TxnHandler {
         }
         List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions,
             "\"CC_ID\"", false, false);
-        int totalCount = 0;
-        for (int i = 0; i < queries.size(); i++) {
-          String query = queries.get(i);
-          long insertCount = counts.get(i);
-          LOG.debug("Going to execute update <" + query + ">");
-          pStmt = dbConn.prepareStatement(query);
-          for (int j = 0; j < insertCount; j++) {
-            pStmt.setLong(j + 1, deleteSet.get(totalCount + j));
-          }
-          totalCount += insertCount;
-          int count = pStmt.executeUpdate();
-          LOG.debug("Removed " + count + " records from COMPLETED_COMPACTIONS");
-        }
+        TxnUtils.executeUpdateQueries(queries, counts, deleteSet, dbConn);
         dbConn.commit();
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
