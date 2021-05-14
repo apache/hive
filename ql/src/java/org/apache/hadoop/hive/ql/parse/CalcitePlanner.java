@@ -357,7 +357,10 @@ import javax.sql.DataSource;
 import static java.util.Collections.singletonList;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.copyMaterializationToNewCluster;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
-
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.CREATEVIEW;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERVIEW_AS;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERVIEW_RENAME;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERVIEW_PROPERTIES;
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -2060,8 +2063,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 3. Materialized view based rewriting
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
+      EnumSet<HiveOperation> viewOperations = EnumSet.of(
+              CREATEVIEW, ALTERVIEW_AS, ALTERVIEW_RENAME, ALTERVIEW_PROPERTIES);
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
-              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS()) {
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
+              !viewOperations.contains(queryState.getHiveOperation())) {
         calcitePreCboPlan = applyMaterializedViewRewriting(planner,
             calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
       }
