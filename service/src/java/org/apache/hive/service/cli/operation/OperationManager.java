@@ -419,7 +419,14 @@ public class OperationManager extends AbstractService {
   }
 
   public Set<String> getAllCachedQueryIds() {
-    return queryInfoCache.getAllQueryIds();
+    // On startup, there is a chance that OperationManager is not initialized
+    // when OperationLogDirCleaner trying to clean the expired logs, so the queryInfoCache
+    // is null, return an empty hashset for this case.
+    if (queryInfoCache != null) {
+      return queryInfoCache.getAllQueryIds();
+    } else {
+      return Collections.emptySet();
+    }
   }
 
 }

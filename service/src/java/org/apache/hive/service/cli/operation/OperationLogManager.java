@@ -128,14 +128,14 @@ public class OperationLogManager {
       parentFile = new File(HISTORIC_OPERATION_LOG_ROOT_DIR + "/" + sessionId);
       if (!parentFile.exists()) {
         if (!parentFile.mkdirs()) {
-          LOG.warn("Unable to create the historic operation log session dir: {}, " +
-              "fall back to the original operation log session dir.", parentFile);
+          LOG.warn("Unable to create the historic operation log session dir: " + parentFile +
+              ", fall back to the original operation log session dir.");
           parentFile = session.getOperationLogSessionDir();
           isHistoricLogEnabled = false;
         }
       } else if (!parentFile.isDirectory()) {
-        LOG.warn("The historic operation log session dir: {} is exist, but it's not a directory, " +
-            "fall back to the original operation log session dir.", parentFile);
+        LOG.warn("The historic operation log session dir: " + parentFile + " is exist, but it's not a directory, " +
+            "fall back to the original operation log session dir.");
         parentFile = session.getOperationLogSessionDir();
         isHistoricLogEnabled = false;
       }
