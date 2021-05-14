@@ -25,9 +25,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -82,7 +80,6 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
     Category category;
     PrimitiveCategory primitiveCategory;
     TypeInfo typeInfo;
-    DataTypePhysicalVariation dataTypePhysicalVariation;
 
     int index;
     int count;
@@ -94,12 +91,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   }
 
   public LazyBinaryDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
-    this(typeInfos, null, useExternalBuffer);
-  }
-
-  public LazyBinaryDeserializeRead(TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
-      boolean useExternalBuffer) {
-    super(typeInfos, dataTypePhysicalVariations, useExternalBuffer);
+    super(typeInfos, useExternalBuffer);
     tempVInt = new VInt();
     tempVLong = new VLong();
     currentExternalBufferNeeded = false;
@@ -396,12 +388,6 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
           final int scale = decimalTypeInfo.getScale();
 
           decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
-          if (!decimalIsNull) {
-            if (HiveDecimalWritable.isPrecisionDecimal64(precision)) {
-              currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
-            }
-            return true;
-          }
         }
         if (decimalIsNull) {
           return false;
