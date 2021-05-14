@@ -538,13 +538,14 @@ public final class ParseUtils {
       return sb.toString();
     }
 
-  public static RelNode parseQuery(HiveConf conf, String viewQuery)
+  public static CBOPlan parseQuery(HiveConf conf, String viewQuery)
       throws SemanticException, IOException, ParseException {
     final Context ctx = new Context(conf);
     ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
-    return analyzer.genLogicalPlan(ast);
+    RelNode logicalPlan = analyzer.genLogicalPlan(ast);
+    return new CBOPlan(logicalPlan, analyzer.getInvalidAutomaticRewritingMaterializationReason());
   }
 
   public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)

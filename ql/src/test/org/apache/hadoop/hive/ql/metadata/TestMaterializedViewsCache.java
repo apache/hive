@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.metadata;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptQuery;
 import org.apache.calcite.plan.RelOptTable;
@@ -46,6 +45,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -68,20 +68,24 @@ import static org.hamcrest.core.Is.is;
 public class TestMaterializedViewsCache {
   private MaterializedViewsCache materializedViewsCache;
   private Table defaultMV1;
-  private RelOptMaterialization defaultRelOptMaterialization1;
-  private Table defaultMV2;
-  private RelOptMaterialization defaultRelOptMaterialization2;
+  private HiveRelOptMaterialization defaultMaterialization1;
+  private Table defaultMV1Same;
+  private HiveRelOptMaterialization defaultMaterialization1Same;
+  private Table defaultMVUpCase;
+  private HiveRelOptMaterialization defaultMaterializationUpCase;
   private Table db1MV1;
-  private RelOptMaterialization db1RelOptMaterialization1;
+  private HiveRelOptMaterialization db1Materialization1;
 
   @Before
   public void setUp() {
     defaultMV1 = getTable("default", "mat1", "select col0 from t1 where col0 = 'foo'");
-    defaultRelOptMaterialization1 = createRelOptMaterialization(defaultMV1);
-    defaultMV2 = getTable("default", "mat2", "select col0 from t1 where col0 = 'FOO'");
-    defaultRelOptMaterialization2 = createRelOptMaterialization(defaultMV2);
+    defaultMaterialization1 = createMaterialization(defaultMV1);
+    defaultMV1Same = getTable("default", "mat_same", "select col0 from t1 where col0 = 'foo'");
+    defaultMaterialization1Same = createMaterialization(defaultMV1Same);
+    defaultMVUpCase = getTable("default", "mat2", "select col0 from t1 where col0 = 'FOO'");
+    defaultMaterializationUpCase = createMaterialization(defaultMVUpCase);
     db1MV1 = getTable("db1", "mat1", "select col0 from t1 where col0 = 'foo'");
-    db1RelOptMaterialization1 = createRelOptMaterialization(db1MV1);
+    db1Materialization1 = createMaterialization(db1MV1);
 
     materializedViewsCache = new MaterializedViewsCache();
   }
@@ -103,7 +107,7 @@ public class TestMaterializedViewsCache {
 
   @Test
   public void testQueryDoesNotMatchAnyMVDefinition() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
 
     assertThat(materializedViewsCache.get("select 'not found'").isEmpty(), is(true));
     assertThat(materializedViewsCache.values().size(), is(1));
@@ -111,13 +115,13 @@ public class TestMaterializedViewsCache {
 
   @Test
   public void testAdd() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).get(0), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).get(0), is(defaultMaterialization1));
     assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values().get(0), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1));
   }
 
   private Table getTable(String db, String tableName, String definition) {
@@ -128,54 +132,66 @@ public class TestMaterializedViewsCache {
     return table;
   }
 
-  private static RelOptMaterialization createRelOptMaterialization(Table table) {
-    return new RelOptMaterialization(
-            new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName()));
+  private static HiveRelOptMaterialization createMaterialization(Table table) {
+    return new HiveRelOptMaterialization(
+            new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName()),
+            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class));
   }
 
   @Test
   public void testAddMVsWithSameDefinition() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-    materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1Same, defaultMaterialization1Same);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1Same.getDbName(), defaultMV1Same.getTableName()), is(defaultMaterialization1Same));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1Same));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
   @Test
   public void testAddMVsWithSameDefinitionButDifferentDatabase() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-    materializedViewsCache.putIfAbsent(db1MV1, db1RelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewsCache.putIfAbsent(db1MV1, db1Materialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
-    assertThat(materializedViewsCache.get(db1MV1.getDbName(), db1MV1.getTableName()), is(db1RelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewsCache.get(db1MV1.getDbName(), db1MV1.getTableName()), is(db1Materialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(db1RelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(db1Materialization1));
+    assertThat(materializedViewsCache.values().size(), is(2));
+  }
+
+  @Test
+  public void testLookupByTextIsCaseSensitive() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMVUpCase, defaultMaterializationUpCase);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
   @Test
   public void testRefreshWhenMVWasNotCached() {
-    materializedViewsCache.refresh(defaultMV1, defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.refresh(defaultMV1, defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
     assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.values(), hasItem(defaultMaterialization1));
   }
 
   @Test
   public void testRefreshWhenMVIsCachedButWasUpdated() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-    RelOptMaterialization newMaterialization = createRelOptMaterialization(defaultMV1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    HiveRelOptMaterialization newMaterialization = createMaterialization(defaultMV1);
     materializedViewsCache.refresh(defaultMV1, defaultMV1, newMaterialization);
 
-    assertThat(newMaterialization, is(not(defaultRelOptMaterialization1)));
+    assertThat(newMaterialization, is(not(defaultMaterialization1)));
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(newMaterialization));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(newMaterialization));
@@ -185,19 +201,19 @@ public class TestMaterializedViewsCache {
 
   @Test
   public void testRefreshWhenMVRefersToANewMaterialization() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-    materializedViewsCache.refresh(defaultMV2, defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewsCache.refresh(defaultMV1Same, defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultMaterialization1));
     assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.values(), hasItem(defaultMaterialization1));
   }
 
   @Test
   public void testRemoveByTable() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
 
     materializedViewsCache.remove(defaultMV1);
 
@@ -208,7 +224,7 @@ public class TestMaterializedViewsCache {
 
   @Test
   public void testRemoveByTableName() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
 
     materializedViewsCache.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
 
@@ -222,41 +238,41 @@ public class TestMaterializedViewsCache {
   public void testParallelism() {
     int ITERATIONS = 1000000;
 
-    List<Pair<Table, RelOptMaterialization>> testData = new ArrayList<>();
+    List<Pair<Table, HiveRelOptMaterialization>> testData = new ArrayList<>();
     for (int i = 0; i < 10; ++i) {
       Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
       table.setDbName("default");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
-      RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
-      testData.add(new Pair<>(table, relOptMaterialization));
+      HiveRelOptMaterialization materialization = createMaterialization(table);
+      testData.add(new Pair<>(table, materialization));
     }
     for (int i = 0; i < 10; ++i) {
       Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
       table.setDbName("db1");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
-      RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
-      testData.add(new Pair<>(table, relOptMaterialization));
+      HiveRelOptMaterialization materialization = createMaterialization(table);
+      testData.add(new Pair<>(table, materialization));
     }
 
     List<Callable<Void>> callableList = new ArrayList<>();
     callableList.add(() -> {
-      for (Pair<Table, RelOptMaterialization> entry : testData) {
+      for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
         materializedViewsCache.refresh(entry.left, entry.left, entry.right);
       }
       return null;
     });
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        for (Pair<Table, RelOptMaterialization> entry : testData) {
+        for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
           materializedViewsCache.remove(entry.left);
           materializedViewsCache.putIfAbsent(entry.left, entry.right);
         }
       }
       return null;
     });
-    for (Pair<Table, RelOptMaterialization> entry : testData) {
+    for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
       callableList.add(() -> {
         for (int j = 0; j < ITERATIONS; ++j) {
           materializedViewsCache.get(entry.left.getViewExpandedText());
@@ -266,7 +282,7 @@ public class TestMaterializedViewsCache {
     }
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        List<RelOptMaterialization> materializations = materializedViewsCache.values();
+        List<HiveRelOptMaterialization> materializations = materializedViewsCache.values();
       }
       return null;
     });

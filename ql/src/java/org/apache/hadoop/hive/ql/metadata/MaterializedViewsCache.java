@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,8 +33,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Collection for storing {@link RelOptMaterialization}s.
- * RelOptMaterialization can be lookup by
+ * Collection for storing {@link HiveRelOptMaterialization}s.
+ * Materialization can be lookup by
  * - the Materialized View fully qualified name
  * - query text.
  * This implementation contains two {@link ConcurrentHashMap} one for name based and one for query text based lookup.
@@ -48,18 +46,18 @@ public class MaterializedViewsCache {
   private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewsCache.class);
 
   // Key is the database name. Value a map from the qualified name to the view object.
-  private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
+  private final ConcurrentMap<String, ConcurrentMap<String, HiveRelOptMaterialization>> materializedViews =
           new ConcurrentHashMap<>();
   // Map for looking up materialization by view query text
-  private final Map<String, List<RelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
+  private final Map<String, List<HiveRelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
 
 
-  public void putIfAbsent(Table materializedViewTable, RelOptMaterialization materialization) {
-    ConcurrentMap<String, RelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
+  public void putIfAbsent(Table materializedViewTable, HiveRelOptMaterialization materialization) {
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
 
     // You store the materialized view
-    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, relOptMaterialization) -> {
-      List<RelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
+    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, aMaterialization) -> {
+      List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
               materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
       materializationList.add(materialization);
       return materialization;
@@ -69,12 +67,12 @@ public class MaterializedViewsCache {
             materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
-  private ConcurrentMap<String, RelOptMaterialization> ensureDbMap(Table materializedViewTable) {
+  private ConcurrentMap<String, HiveRelOptMaterialization> ensureDbMap(Table materializedViewTable) {
     // We are going to create the map for each view in the given database
-    ConcurrentMap<String, RelOptMaterialization> dbMap =
-            new ConcurrentHashMap<String, RelOptMaterialization>();
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap =
+            new ConcurrentHashMap<String, HiveRelOptMaterialization>();
     // If we are caching the MV, we include it in the cache
-    final ConcurrentMap<String, RelOptMaterialization> prevDbMap = materializedViews.putIfAbsent(
+    final ConcurrentMap<String, HiveRelOptMaterialization> prevDbMap = materializedViews.putIfAbsent(
             materializedViewTable.getDbName(), dbMap);
     if (prevDbMap != null) {
       dbMap = prevDbMap;
@@ -83,11 +81,11 @@ public class MaterializedViewsCache {
   }
 
   public void refresh(
-          Table oldMaterializedViewTable, Table materializedViewTable, RelOptMaterialization newMaterialization) {
-    ConcurrentMap<String, RelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
+          Table oldMaterializedViewTable, Table materializedViewTable, HiveRelOptMaterialization newMaterialization) {
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
 
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
-      List<RelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
+      List<HiveRelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
               materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
 
       if (existingMaterialization == null) {
@@ -112,13 +110,13 @@ public class MaterializedViewsCache {
   }
 
   public void remove(Table materializedViewTable) {
-    ConcurrentMap<String, RelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
     if (dbMap != null) {
       // Delete only if the create time for the input materialized view table and the table
       // in the map match. Otherwise, keep the one in the map.
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
         if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
-          List<RelOptMaterialization> materializationList =
+          List<HiveRelOptMaterialization> materializationList =
                   sqlToMaterializedView.get(materializedViewTable.getViewExpandedText());
           materializationList.remove(oldMaterialization);
           return null;
@@ -132,12 +130,12 @@ public class MaterializedViewsCache {
   }
 
   public void remove(String dbName, String tableName) {
-    ConcurrentMap<String, RelOptMaterialization> dbMap = materializedViews.get(dbName);
+    ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(dbName);
     if (dbMap != null) {
-      dbMap.computeIfPresent(tableName, (mvTableName, relOptMaterialization) -> {
-        String queryText = HiveMaterializedViewUtils.extractTable(relOptMaterialization).getViewExpandedText();
-        List<RelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
-        materializationList.remove(relOptMaterialization);
+      dbMap.computeIfPresent(tableName, (mvTableName, materialization) -> {
+        String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
+        List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
+        materializationList.remove(materialization);
         return null;
       });
 
@@ -145,13 +143,13 @@ public class MaterializedViewsCache {
     }
   }
 
-  public List<RelOptMaterialization> values() {
-    List<RelOptMaterialization> result = new ArrayList<>();
+  public List<HiveRelOptMaterialization> values() {
+    List<HiveRelOptMaterialization> result = new ArrayList<>();
     materializedViews.forEach((dbName, mvs) -> result.addAll(mvs.values()));
     return unmodifiableList(result);
   }
 
-  RelOptMaterialization get(String dbName, String viewName) {
+  HiveRelOptMaterialization get(String dbName, String viewName) {
     if (materializedViews.get(dbName) != null) {
       LOG.debug("Found materialized view {}.{} in registry", dbName, viewName);
       return materializedViews.get(dbName).get(viewName);
@@ -160,8 +158,8 @@ public class MaterializedViewsCache {
     return null;
   }
 
-  public List<RelOptMaterialization> get(String querySql) {
-    List<RelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(querySql);
+  public List<HiveRelOptMaterialization> get(String querySql) {
+    List<HiveRelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(querySql);
     if (relOptMaterializationList == null) {
       LOG.trace("No materialized view with query text '{}' found in registry.", querySql);
       LOG.debug("No materialized view with similar query text found in registry.");

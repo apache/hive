@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -170,8 +171,8 @@ public class HiveMaterializedViewUtils {
    * Method to enrich the materialization query contained in the input with
    * its invalidation.
    */
-  public static RelOptMaterialization augmentMaterializationWithTimeInformation(
-      RelOptMaterialization materialization, String validTxnsList,
+  public static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
+      HiveRelOptMaterialization materialization, String validTxnsList,
       ValidTxnWriteIdList materializationTxnList) throws LockException {
     // Extract tables used by the query which will in turn be used to generate
     // the corresponding txn write ids
@@ -196,8 +197,8 @@ public class HiveMaterializedViewUtils {
         augmentMaterializationProgram.build());
     augmentMaterializationPlanner.setRoot(materialization.queryRel);
     final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
-    return new RelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName);
+    return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
+        null, materialization.qualifiedTableName, materialization.getScope());
   }
 
   /**
@@ -208,7 +209,8 @@ public class HiveMaterializedViewUtils {
    * values. The view scan will consist of the scan over the materialization followed by a
    * filter on the grouping id value corresponding to that grouping set.
    */
-  public static List<RelOptMaterialization> deriveGroupingSetsMaterializedViews(RelOptMaterialization materialization) {
+  public static List<HiveRelOptMaterialization> deriveGroupingSetsMaterializedViews(
+      HiveRelOptMaterialization materialization) {
     final RelNode query = materialization.queryRel;
     final Project project;
     final Aggregate aggregate;
@@ -257,7 +259,7 @@ public class HiveMaterializedViewUtils {
       }
     }
     // Create multiple materializations
-    final List<RelOptMaterialization> materializationList = new ArrayList<>();
+    final List<HiveRelOptMaterialization> materializationList = new ArrayList<>();
     final RelBuilder builder = HiveRelFactories.HIVE_BUILDER.create(aggregate.getCluster(), null);
     final RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<AggregateCall> aggregateCalls = new ArrayList<>(aggregate.getAggCallList());
@@ -316,9 +318,9 @@ public class HiveMaterializedViewUtils {
       final RelNode newTableRel = builder.build();
       final Table scanTable = extractTable(materialization);
       materializationList.add(
-          new RelOptMaterialization(newTableRel, newQueryRel, null,
+          new HiveRelOptMaterialization(newTableRel, newQueryRel, null,
               ImmutableList.of(scanTable.getDbName(), scanTable.getTableName(),
-                  "#" + materializationList.size())));
+                  "#" + materializationList.size()), materialization.getScope()));
     }
     return materializationList;
   }
@@ -336,8 +338,8 @@ public class HiveMaterializedViewUtils {
     return value;
   }
 
-  public static RelOptMaterialization copyMaterializationToNewCluster(RelOptCluster optCluster, RelOptMaterialization materialization,
-                                                                      PartitionPruneRuleHelper ruleHelper) {
+  public static RelOptMaterialization copyMaterializationToNewCluster(
+      RelOptCluster optCluster, RelOptMaterialization materialization, PartitionPruneRuleHelper ruleHelper) {
     final RelNode viewScan = materialization.tableRel;
     final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
             optCluster, viewScan, ruleHelper);
