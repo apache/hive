@@ -20721,15 +20721,18 @@ class Materialization:
   """
   Attributes:
    - sourceTablesUpdateDeleteModified
+   - sourceTablesCompacted
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.BOOL, 'sourceTablesUpdateDeleteModified', None, None, ), # 1
+    (2, TType.BOOL, 'sourceTablesCompacted', None, None, ), # 2
   )
 
-  def __init__(self, sourceTablesUpdateDeleteModified=None,):
+  def __init__(self, sourceTablesUpdateDeleteModified=None, sourceTablesCompacted=None,):
     self.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified
+    self.sourceTablesCompacted = sourceTablesCompacted
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -20743,6 +20746,11 @@ class Materialization:
       if fid == 1:
         if ftype == TType.BOOL:
           self.sourceTablesUpdateDeleteModified = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.sourceTablesCompacted = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -20759,18 +20767,25 @@ class Materialization:
       oprot.writeFieldBegin('sourceTablesUpdateDeleteModified', TType.BOOL, 1)
       oprot.writeBool(self.sourceTablesUpdateDeleteModified)
       oprot.writeFieldEnd()
+    if self.sourceTablesCompacted is not None:
+      oprot.writeFieldBegin('sourceTablesCompacted', TType.BOOL, 2)
+      oprot.writeBool(self.sourceTablesCompacted)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
     if self.sourceTablesUpdateDeleteModified is None:
       raise TProtocol.TProtocolException(message='Required field sourceTablesUpdateDeleteModified is unset!')
+    if self.sourceTablesCompacted is None:
+      raise TProtocol.TProtocolException(message='Required field sourceTablesCompacted is unset!')
     return
 
 
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.sourceTablesUpdateDeleteModified)
+    value = (value * 31) ^ hash(self.sourceTablesCompacted)
     return value
 
   def __repr__(self):

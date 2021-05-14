@@ -1736,21 +1736,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   /**
-   * Verify that the expected number of transactions have run, and their state is "succeeded".
-   *
-   * @param expectedSuccessfulCompactions number of compactions already run
-   * @throws MetaException
-   */
-  private void verifySuccessfulCompaction(int expectedSuccessfulCompactions) throws MetaException {
-    List<ShowCompactResponseElement> compacts =
-        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
-    Assert.assertEquals("Completed compaction queue must contain " + expectedSuccessfulCompactions + " element(s)",
-        expectedSuccessfulCompactions, compacts.size());
-    compacts.forEach(
-        c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
-  }
-
-  /**
    * Read file, and
    * 1. make sure that the bucket property in each row matches the file name.
    * For example, if the bucketId is 0, we check file bucket_00000 to make sure that the third

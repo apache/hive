@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Materialization");
 
   private static final org.apache.thrift.protocol.TField SOURCE_TABLES_UPDATE_DELETE_MODIFIED_FIELD_DESC = new org.apache.thrift.protocol.TField("sourceTablesUpdateDeleteModified", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField SOURCE_TABLES_COMPACTED_FIELD_DESC = new org.apache.thrift.protocol.TField("sourceTablesCompacted", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ import org.slf4j.LoggerFactory;
   }
 
   private boolean sourceTablesUpdateDeleteModified; // required
+  private boolean sourceTablesCompacted; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    SOURCE_TABLES_UPDATE_DELETE_MODIFIED((short)1, "sourceTablesUpdateDeleteModified");
+    SOURCE_TABLES_UPDATE_DELETE_MODIFIED((short)1, "sourceTablesUpdateDeleteModified"),
+    SOURCE_TABLES_COMPACTED((short)2, "sourceTablesCompacted");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // SOURCE_TABLES_UPDATE_DELETE_MODIFIED
           return SOURCE_TABLES_UPDATE_DELETE_MODIFIED;
+        case 2: // SOURCE_TABLES_COMPACTED
+          return SOURCE_TABLES_COMPACTED;
         default:
           return null;
       }
@@ -108,11 +113,14 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __SOURCETABLESUPDATEDELETEMODIFIED_ISSET_ID = 0;
+  private static final int __SOURCETABLESCOMPACTED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.SOURCE_TABLES_UPDATE_DELETE_MODIFIED, new org.apache.thrift.meta_data.FieldMetaData("sourceTablesUpdateDeleteModified", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.SOURCE_TABLES_COMPACTED, new org.apache.thrift.meta_data.FieldMetaData("sourceTablesCompacted", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Materialization.class, metaDataMap);
@@ -122,11 +130,14 @@ import org.slf4j.LoggerFactory;
   }
 
   public Materialization(
-    boolean sourceTablesUpdateDeleteModified)
+    boolean sourceTablesUpdateDeleteModified,
+    boolean sourceTablesCompacted)
   {
     this();
     this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
     setSourceTablesUpdateDeleteModifiedIsSet(true);
+    this.sourceTablesCompacted = sourceTablesCompacted;
+    setSourceTablesCompactedIsSet(true);
   }
 
   /**
@@ -135,6 +146,7 @@ import org.slf4j.LoggerFactory;
   public Materialization(Materialization other) {
     __isset_bitfield = other.__isset_bitfield;
     this.sourceTablesUpdateDeleteModified = other.sourceTablesUpdateDeleteModified;
+    this.sourceTablesCompacted = other.sourceTablesCompacted;
   }
 
   public Materialization deepCopy() {
@@ -145,6 +157,8 @@ import org.slf4j.LoggerFactory;
   public void clear() {
     setSourceTablesUpdateDeleteModifiedIsSet(false);
     this.sourceTablesUpdateDeleteModified = false;
+    setSourceTablesCompactedIsSet(false);
+    this.sourceTablesCompacted = false;
   }
 
   public boolean isSourceTablesUpdateDeleteModified() {
@@ -169,6 +183,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SOURCETABLESUPDATEDELETEMODIFIED_ISSET_ID, value);
   }
 
+  public boolean isSourceTablesCompacted() {
+    return this.sourceTablesCompacted;
+  }
+
+  public void setSourceTablesCompacted(boolean sourceTablesCompacted) {
+    this.sourceTablesCompacted = sourceTablesCompacted;
+    setSourceTablesCompactedIsSet(true);
+  }
+
+  public void unsetSourceTablesCompacted() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SOURCETABLESCOMPACTED_ISSET_ID);
+  }
+
+  /** Returns true if field sourceTablesCompacted is set (has been assigned a value) and false otherwise */
+  public boolean isSetSourceTablesCompacted() {
+    return EncodingUtils.testBit(__isset_bitfield, __SOURCETABLESCOMPACTED_ISSET_ID);
+  }
+
+  public void setSourceTablesCompactedIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SOURCETABLESCOMPACTED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SOURCE_TABLES_UPDATE_DELETE_MODIFIED:
@@ -179,6 +215,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case SOURCE_TABLES_COMPACTED:
+      if (value == null) {
+        unsetSourceTablesCompacted();
+      } else {
+        setSourceTablesCompacted((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -186,6 +230,9 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case SOURCE_TABLES_UPDATE_DELETE_MODIFIED:
       return isSourceTablesUpdateDeleteModified();
+
+    case SOURCE_TABLES_COMPACTED:
+      return isSourceTablesCompacted();
 
     }
     throw new IllegalStateException();
@@ -200,6 +247,8 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case SOURCE_TABLES_UPDATE_DELETE_MODIFIED:
       return isSetSourceTablesUpdateDeleteModified();
+    case SOURCE_TABLES_COMPACTED:
+      return isSetSourceTablesCompacted();
     }
     throw new IllegalStateException();
   }
@@ -226,6 +275,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_sourceTablesCompacted = true;
+    boolean that_present_sourceTablesCompacted = true;
+    if (this_present_sourceTablesCompacted || that_present_sourceTablesCompacted) {
+      if (!(this_present_sourceTablesCompacted && that_present_sourceTablesCompacted))
+        return false;
+      if (this.sourceTablesCompacted != that.sourceTablesCompacted)
+        return false;
+    }
+
     return true;
   }
 
@@ -237,6 +295,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_sourceTablesUpdateDeleteModified);
     if (present_sourceTablesUpdateDeleteModified)
       list.add(sourceTablesUpdateDeleteModified);
+
+    boolean present_sourceTablesCompacted = true;
+    list.add(present_sourceTablesCompacted);
+    if (present_sourceTablesCompacted)
+      list.add(sourceTablesCompacted);
 
     return list.hashCode();
   }
@@ -255,6 +318,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetSourceTablesUpdateDeleteModified()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sourceTablesUpdateDeleteModified, other.sourceTablesUpdateDeleteModified);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSourceTablesCompacted()).compareTo(other.isSetSourceTablesCompacted());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSourceTablesCompacted()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sourceTablesCompacted, other.sourceTablesCompacted);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -282,6 +355,10 @@ import org.slf4j.LoggerFactory;
     sb.append("sourceTablesUpdateDeleteModified:");
     sb.append(this.sourceTablesUpdateDeleteModified);
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("sourceTablesCompacted:");
+    sb.append(this.sourceTablesCompacted);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -290,6 +367,10 @@ import org.slf4j.LoggerFactory;
     // check for required fields
     if (!isSetSourceTablesUpdateDeleteModified()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'sourceTablesUpdateDeleteModified' is unset! Struct:" + toString());
+    }
+
+    if (!isSetSourceTablesCompacted()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'sourceTablesCompacted' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -339,6 +420,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // SOURCE_TABLES_COMPACTED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.sourceTablesCompacted = iprot.readBool();
+              struct.setSourceTablesCompactedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -354,6 +443,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(SOURCE_TABLES_UPDATE_DELETE_MODIFIED_FIELD_DESC);
       oprot.writeBool(struct.sourceTablesUpdateDeleteModified);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(SOURCE_TABLES_COMPACTED_FIELD_DESC);
+      oprot.writeBool(struct.sourceTablesCompacted);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -373,6 +465,7 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, Materialization struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeBool(struct.sourceTablesUpdateDeleteModified);
+      oprot.writeBool(struct.sourceTablesCompacted);
     }
 
     @Override
@@ -380,6 +473,8 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.sourceTablesUpdateDeleteModified = iprot.readBool();
       struct.setSourceTablesUpdateDeleteModifiedIsSet(true);
+      struct.sourceTablesCompacted = iprot.readBool();
+      struct.setSourceTablesCompactedIsSet(true);
     }
   }
 

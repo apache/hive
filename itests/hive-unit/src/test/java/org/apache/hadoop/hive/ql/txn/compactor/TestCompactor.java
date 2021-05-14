@@ -2265,7 +2265,7 @@ public class TestCompactor {
   /**
    * convenience method to execute a select stmt and dump results to log file
    */
-  private static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
+  public static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
     throws Exception {
     executeStatementOnDriver(selectStmt, driver);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
@@ -2276,6 +2276,20 @@ public class TestCompactor {
       LOG.debug(" rowIdx=" + rowIdx++ + ":" + row);
     }
     return valuesReadFromHiveDriver;
+  }
+
+  /**
+   * Execute Hive CLI statement and ignore any exception thrown.
+   *
+   * @param cmd arbitrary statement to execute
+   */
+  static void executeStatementOnDriverSilently(String cmd, IDriver driver) {
+    try {
+      executeStatementOnDriver(cmd, driver);
+    }
+    catch (Exception ex) {
+      LOG.warn("Error while executing query: " + cmd, ex);
+    }
   }
 
   static void createTestDataFile(String filename, String[] lines) throws IOException {

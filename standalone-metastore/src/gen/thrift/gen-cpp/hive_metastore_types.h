@@ -12392,17 +12392,22 @@ class Materialization {
 
   Materialization(const Materialization&);
   Materialization& operator=(const Materialization&);
-  Materialization() : sourceTablesUpdateDeleteModified(0) {
+  Materialization() : sourceTablesUpdateDeleteModified(0), sourceTablesCompacted(0) {
   }
 
   virtual ~Materialization() throw();
   bool sourceTablesUpdateDeleteModified;
+  bool sourceTablesCompacted;
 
   void __set_sourceTablesUpdateDeleteModified(const bool val);
+
+  void __set_sourceTablesCompacted(const bool val);
 
   bool operator == (const Materialization & rhs) const
   {
     if (!(sourceTablesUpdateDeleteModified == rhs.sourceTablesUpdateDeleteModified))
+      return false;
+    if (!(sourceTablesCompacted == rhs.sourceTablesCompacted))
       return false;
     return true;
   }

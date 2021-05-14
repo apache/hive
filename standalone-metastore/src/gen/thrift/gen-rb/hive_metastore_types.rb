@@ -4575,15 +4575,18 @@ end
 class Materialization
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SOURCETABLESUPDATEDELETEMODIFIED = 1
+  SOURCETABLESCOMPACTED = 2
 
   FIELDS = {
-    SOURCETABLESUPDATEDELETEMODIFIED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesUpdateDeleteModified'}
+    SOURCETABLESUPDATEDELETEMODIFIED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesUpdateDeleteModified'},
+    SOURCETABLESCOMPACTED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesCompacted'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sourceTablesUpdateDeleteModified is unset!') if @sourceTablesUpdateDeleteModified.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sourceTablesCompacted is unset!') if @sourceTablesCompacted.nil?
   end
 
   ::Thrift::Struct.generate_accessors self

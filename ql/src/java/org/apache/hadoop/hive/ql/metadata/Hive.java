@@ -1793,10 +1793,11 @@ public class Hive {
               result = false;
             } else {
               // Obtain additional information if we should try incremental rewriting / rebuild
-              // We will not try partial rewriting if there were update/delete operations on source tables
+              // We will not try partial rewriting if there were update/delete/compaction operations on source tables
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                   materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
-              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified()) {
+              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
+                  invalidationInfo.isSetSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
                 // registry, since it is up-to-date
                 result = false;
@@ -1898,10 +1899,11 @@ public class Hive {
             ignore = true;
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
-            // We will not try partial rewriting if there were update/delete operations on source tables
+            // We will not try partial rewriting if there were update/delete/compaction operations on source tables
             Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                 creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
-            ignore = invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified();
+            ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted() ||
+                invalidationInfo.isSourceTablesUpdateDeleteModified();
           }
           if (ignore) {
             LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +

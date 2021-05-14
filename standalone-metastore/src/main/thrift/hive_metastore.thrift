@@ -1544,6 +1544,7 @@ struct TableMeta {
 
 struct Materialization {
   1: required bool sourceTablesUpdateDeleteModified;
+  2: required bool sourceTablesCompacted;
 }
 
 // Data types for workload management.
