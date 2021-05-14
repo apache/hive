@@ -250,25 +250,31 @@ public class OperationLogManager {
     if (HISTORIC_OPERATION_LOG_ROOT_DIR == null) {
       return;
     }
-    // remove the corruption operation logs firstly
+    // remove the expired operation logs firstly
     List<File> operationLogFiles = getExpiredOperationLogFiles();
     if (operationLogFiles.isEmpty()) {
-      LOG.info("No corruption historic operation log under the dir: {}", HISTORIC_OPERATION_LOG_ROOT_DIR);
+      LOG.info("No expired operation logs found under the dir: {}", HISTORIC_OPERATION_LOG_ROOT_DIR);
     } else {
-      LOG.info("Trying to remove the corruption historic operation logs: {} ", getFileNames(operationLogFiles));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Trying to delete the expired operation logs: {} ", getFileNames(operationLogFiles));
+      }
       for (File logFile : operationLogFiles) {
         FileUtils.deleteQuietly(logFile);
       }
+      LOG.info("Deleted {} expired operation logs", operationLogFiles.size());
     }
     // remove the historic operation log session dirs
     List<File> sessionLogDirs = getExpiredSessionLogDirs();
     if (sessionLogDirs.isEmpty()) {
-      LOG.info("No corruption historic operation log session dir under the dir: {}", HISTORIC_OPERATION_LOG_ROOT_DIR);
+      LOG.info("No expired operation log session dir under the dir: {}", HISTORIC_OPERATION_LOG_ROOT_DIR);
     } else {
-      LOG.info("Trying to remove the corruption historic operation log session dirs: {} ", getFileNames(sessionLogDirs));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Trying to delete the expired operation log session dirs: {} ", getFileNames(sessionLogDirs));
+      }
       for (File logDir : sessionLogDirs) {
         FileUtils.deleteQuietly(logDir);
       }
+      LOG.info("Deleted {} expired operation log session dirs", sessionLogDirs.size());
     }
   }
 
