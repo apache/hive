@@ -148,7 +148,7 @@ STAGE PLANS:
         Reducer 3 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: lineitem_trs
@@ -244,7 +244,7 @@ STAGE PLANS:
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
-        Map 4
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: unique_lineitem_stage
@@ -310,7 +310,7 @@ STAGE PLANS:
                     dataColumns: l_orderkey:string, l_partkey:bigint, l_suppkey:bigint, l_linenumber:int, l_quantity:decimal(12,2)/DECIMAL_64, l_extendedprice:decimal(12,2)/DECIMAL_64, l_discount:decimal(12,2)/DECIMAL_64, l_tax:decimal(12,2)/DECIMAL_64, l_returnflag:string, l_linestatus:string, l_shipdate:string, l_commitdate:string, l_receiptdate:string, l_shipinstruct:string, l_shipmode:string, l_comment:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [double]
-        Map 5
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: lineitem_trs
@@ -365,7 +365,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [double]
-        Reducer 2
+        Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -402,7 +402,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.lineitem_trs
                   Write Type: UPDATE
-        Reducer 3
+        Reducer 3 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -478,3 +478,4 @@ STAGE PLANS:
   Stage: Stage-7
     Stats Work
       Basic Stats Work:
+
