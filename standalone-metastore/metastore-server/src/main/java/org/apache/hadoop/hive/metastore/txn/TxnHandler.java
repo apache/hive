@@ -466,13 +466,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
-    return getOpenTxnsList(true, null).toOpenTxnsInfoResponse();
+    return getOpenTxnsList(true).toOpenTxnsInfoResponse();
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return getOpenTxnsList(false, null).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
+    return getOpenTxnsList(false).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
   }
 
   private GetOpenTxnsResponse getOpenTxns(Connection dbConn) throws MetaException {
@@ -482,12 +482,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException {
-    return getOpenTxnsList(false, null).toOpenTxnsResponse(excludeTxnTypes);
+    return getOpenTxnsList(false).toOpenTxnsResponse(excludeTxnTypes);
+  }
+
+  private OpenTxnList getOpenTxnsList(boolean infoFileds) throws MetaException {
+    Connection dbConn = null;
+    try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      return getOpenTxnsList(infoFileds, dbConn);
+    } catch (SQLException e) {
+      throw new MetaException(
+          "Unable to get a connection: " + getMessage(e) + StringUtils.stringifyException(e));
+    } finally {
+      closeDbConn(dbConn);
+    }
   }
 
   private OpenTxnList getOpenTxnsList(boolean infoFields, Connection dbConn) throws MetaException {
-    // If the dbConn is passed in, the connection should not be closed
-    boolean shouldCloseConnection = (dbConn == null);
     try {
       // We need to figure out the HighWaterMark and the list of open transactions.
       Statement stmt = null;
@@ -502,9 +513,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * openTxns must ensure, that no new transaction will be opened with txn_id below LWM and
          * commitTxn must ensure, that no committed transaction will be removed before the time period expires.
          */
-        if (dbConn == null) {
-          dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        }
         stmt = dbConn.createStatement();
         List<OpenTxn> txnInfos = new ArrayList<>();
         String txnsQuery = String.format(infoFields ? OpenTxn.OPEN_TXNS_INFO_QUERY : OpenTxn.OPEN_TXNS_QUERY,
@@ -561,18 +569,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException(
             "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
       } finally {
-        if (shouldCloseConnection) {
-          close(rs, stmt, dbConn);
-        } else {
-          close(rs, stmt, null);
-        }
+        close(rs, stmt, null);
       }
     } catch (RetryException e) {
-      if (shouldCloseConnection) {
-        return getOpenTxnsList(infoFields, null);
-      } else {
-        return getOpenTxnsList(infoFields, dbConn);
-      }
+      return getOpenTxnsList(infoFields, dbConn);
     }
   }
 
@@ -1807,9 +1807,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     PreparedStatement pst = null;
     ResultSet rs = null;
     try {
-      // To reuse dbConn, we should get open transactions at first
-      GetOpenTxnsResponse openTxns = getOpenTxns(dbConn);
-
       String[] names = TxnUtils.getDbTableName(fullTableName);
       assert names.length == 2;
       List<String> params = Arrays.asList(names[0], names[1]);
@@ -1821,7 +1818,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               quoteString(names[1]));
       rs = pst.executeQuery();
       if (rs.next()) {
-        return TxnCommonUtils.createValidReadTxnList(openTxns, rs.getLong(1));
+        long txnId = rs.getLong(1);
+        return TxnCommonUtils.createValidReadTxnList(getOpenTxns(dbConn), txnId);
       }
       throw new MetaException("invalid write id " + writeId + " for table " + fullTableName);
     } finally {
