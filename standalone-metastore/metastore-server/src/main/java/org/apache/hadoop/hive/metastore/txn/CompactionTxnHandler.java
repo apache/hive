@@ -331,6 +331,7 @@ class CompactionTxnHandler extends TxnHandler {
         if (retentionTime > 0) {
           s = s + " AND \"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - " + retentionTime + ")";
         }
+        s = s + " ORDER BY \"CQ_COMMIT_TIME\"";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
 
