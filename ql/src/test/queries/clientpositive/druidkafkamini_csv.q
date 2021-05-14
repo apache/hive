@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24816
 SET hive.vectorized.execution.enabled=false;
 
 CREATE EXTERNAL TABLE druid_kafka_test_csv(`__time` timestamp , `page` string, `user` string, `language` string,
