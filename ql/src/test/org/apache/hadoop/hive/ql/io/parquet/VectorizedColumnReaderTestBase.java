@@ -389,7 +389,7 @@ public class VectorizedColumnReaderTestBase {
         LongColumnVector vector = (LongColumnVector) previous.cols[0];
         assertTrue(vector.noNulls);
         for (int i = 0; i < vector.vector.length; i++) {
-          if(c == nElements){
+          if (c == nElements){
             break;
           }
           assertEquals("Failed at " + c, getIntValue(isDictionaryEncoding, c), vector.vector[i]);
