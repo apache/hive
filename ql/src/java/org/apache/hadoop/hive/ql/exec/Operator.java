@@ -33,11 +33,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.stats.fs.FSStatsPublisher;
+import org.apache.hadoop.hive.ql.util.PeriodicLoggerWithStopwatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -1554,5 +1557,20 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     for (Operator<? extends OperatorDesc> c : getChildOperators()) {
       c.replaceTabAlias(oldAlias, newAlias);
     }
+  }
+
+  protected PeriodicLoggerWithStopwatch getPeriodicLoggerWithPrefix(Configuration hconf,
+      String prefix) {
+    PeriodicLoggerWithStopwatch periodicLogger = new PeriodicLoggerWithStopwatch(this)
+        .fixed((int) HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS));
+
+    periodicLogger.logMessageSupplier(new Supplier<String>() {
+      @Override
+      public String get() {
+        return prefix + periodicLogger.getCount();
+      }
+    });
+
+    return periodicLogger;
   }
 }

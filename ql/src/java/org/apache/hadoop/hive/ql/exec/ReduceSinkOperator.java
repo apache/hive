@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBucketNumber;
+import org.apache.hadoop.hive.ql.util.PeriodicLoggerWithStopwatch;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -132,8 +133,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
   protected transient Object[][] cachedKeys;
 
-  protected transient long cntr = 1;
-  protected transient long logEveryNRows = 0;
+  private transient PeriodicLoggerWithStopwatch periodicLogger;
 
   /** Kryo ctor. */
   protected ReduceSinkOperator() {
@@ -150,8 +150,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     try {
 
       numRows = 0;
-      cntr = 1;
-      logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
+      periodicLogger = getPeriodicLoggerWithPrefix(hconf, toString() + ": records written - ");
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
@@ -515,14 +514,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (null != out) {
       numRows++;
       runTimeNumRows++;
-      if (numRows == cntr) {
-        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
-        if (cntr < 0 || numRows < 0) {
-          cntr = 0;
-          numRows = 1;
-        }
-        LOG.info("{}: records written - {}", this, numRows);
-      }
+      periodicLogger.increment();
       out.collect(keyWritable, valueWritable);
     }
   }
