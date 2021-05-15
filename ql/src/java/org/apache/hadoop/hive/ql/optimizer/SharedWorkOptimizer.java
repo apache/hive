@@ -1559,6 +1559,9 @@ public class SharedWorkOptimizer extends Transform {
     // 1.1. None of the works that we are merging can contain a Union
     // operator. This is not supported yet as we might end up with cycles in
     // the Tez DAG.
+    // Note: Ancestors have been added temporarily since problems in the merging
+    //       logic in presence of Union were observed. This will be fixed by the
+    //       work done in HIVE-24384.
     // 1.2. There cannot be any DummyStore operator in the works being merged.
     //  This is due to an assumption in MergeJoinProc that needs to be further explored.
     //  This is also due to some assumption in task generation
@@ -1566,7 +1569,9 @@ public class SharedWorkOptimizer extends Transform {
     // TODO: Extend rule so it can be applied for these cases.
     final Set<Operator<?>> workOps1 = findWorkOperators(optimizerCache, op1);
     final Set<Operator<?>> workOps2 = findWorkOperators(optimizerCache, op2);
-    for (Operator<?> op : workOps1) {
+    final Set<Operator<?>> ascendantWorksOps1 = findAscendantWorkOperators(pctx, optimizerCache, op1);
+    final Set<Operator<?>> ascendantWorksOps2 = findAscendantWorkOperators(pctx, optimizerCache, op2);
+    for (Operator<?> op : Sets.union(workOps1, ascendantWorksOps1)) {
       if (op instanceof UnionOperator) {
         // We cannot merge (1.1)
         return false;
@@ -1576,7 +1581,7 @@ public class SharedWorkOptimizer extends Transform {
         return false;
       }
     }
-    for (Operator<?> op : workOps2) {
+    for (Operator<?> op : Sets.union(workOps2, ascendantWorksOps2)) {
       if (op instanceof UnionOperator) {
         // We cannot merge (1.1)
         return false;
