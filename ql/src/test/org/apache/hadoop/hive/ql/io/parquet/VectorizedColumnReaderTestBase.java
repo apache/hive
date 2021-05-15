@@ -79,6 +79,7 @@ public class VectorizedColumnReaderTestBase {
       + "required int32 int32_field; "
       + "required int64 int64_field; "
       + "required int96 int96_field; "
+      + "required int32 date_field; "
       + "required double double_field; "
       + "required float float_field; "
       + "required boolean boolean_field; "
@@ -246,7 +247,8 @@ public class VectorizedColumnReaderTestBase {
         .append("double_field", doubleVal)
         .append("float_field", floatVal)
         .append("boolean_field", booleanVal)
-        .append("flba_field", "abc");
+        .append("flba_field", "abc")
+        .append("date_field", intVal);
 
       if (!isNull) {
         group.append("some_null_field", "x");
@@ -362,6 +364,35 @@ public class VectorizedColumnReaderTestBase {
             break;
           }
           assertEquals("Failed at " + c, getLongValue(isDictionaryEncoding, c), vector.vector[i]);
+          assertFalse(vector.isNull[i]);
+          c++;
+        }
+      }
+      assertEquals(nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  protected void dateRead(boolean isDictionaryEncoding) throws InterruptedException, HiveException, IOException {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS,"date_field");
+    conf.set(IOConstants.COLUMNS_TYPES,"date");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader =
+            createParquetReader("message test { required int date_field;}", conf);
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        LongColumnVector vector = (LongColumnVector) previous.cols[0];
+        assertTrue(vector.noNulls);
+        for (int i = 0; i < vector.vector.length; i++) {
+          if (c == nElements){
+            break;
+          }
+          assertEquals("Failed at " + c, getIntValue(isDictionaryEncoding, c), vector.vector[i]);
           assertFalse(vector.isNull[i]);
           c++;
         }
