@@ -144,11 +144,15 @@ public class OperationLogManager {
     OperationHandle opHandle = operation.getHandle();
     File operationLogFile = new File(parentFile, queryState.getQueryId());
     OperationLog operationLog;
+    HiveConf.setBoolVar(queryState.getConf(),
+        HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED, isHistoricLogEnabled);
     if (isHistoricLogEnabled) {
       // dynamically setting the log location to route the operation log
       HiveConf.setVar(queryState.getConf(),
           HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION, HISTORIC_OPERATION_LOG_ROOT_DIR);
-      HiveConf.setBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS, false);
+      if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
+        HiveConf.setBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS, false);
+      }
       LOG.info("The operation log location changes from {} to {}.", new File(session.getOperationLogSessionDir(),
           queryState.getQueryId()), operationLogFile);
     }

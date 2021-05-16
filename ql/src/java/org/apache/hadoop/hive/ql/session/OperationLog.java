@@ -54,7 +54,7 @@ public class OperationLog {
   // requested.
   private final boolean isShortLogs;
   // True if the logs should be removed after the operation. Should be used only in test mode
-  // or the historic log is enabled
+  // or the historic operation log is enabled
   private final boolean isRemoveLogs;
 
   private final LoggingLevel opLoggingLevel;
@@ -74,10 +74,10 @@ public class OperationLog {
       opLoggingLevel = LoggingLevel.UNKNOWN;
     }
 
-    isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS);
     // If in test mod create a test log file which will contain only logs which are supposed to
     // be written to the qtest output
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+      isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS);
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_SHORT_LOGS)) {
         testLogFile = new LogFile(new File(file.getAbsolutePath() + ".test"));
         isShortLogs = true;
@@ -88,6 +88,9 @@ public class OperationLog {
     } else {
       testLogFile = null;
       isShortLogs = false;
+      // If the historic operation log is enabled, don't remove it, the operation log will be cleaned by
+      // a daemon when the query info of the operation is no longer found at webui
+      isRemoveLogs = !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED);
     }
   }
 
