@@ -691,7 +691,7 @@ struct ForeignKeysRequest {
   1: string parent_db_name,
   2: string parent_tbl_name,
   3: string foreign_db_name,
-  4: string foreign_tbl_name
+  4: string foreign_tbl_name,
   5: optional string catName,          // No cross catalog constraints
   6: optional string validWriteIdList,
   7: optional i64 tableId=-1
