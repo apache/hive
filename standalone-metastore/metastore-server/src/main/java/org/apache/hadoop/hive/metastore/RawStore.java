@@ -150,9 +150,8 @@ public interface RawStore extends Configurable {
   /**
    * Create a new catalog.
    * @param cat Catalog to create.
-   * @throws MetaException if something goes wrong, usually in storing it to the database.
    */
-  void createCatalog(Catalog cat) throws MetaException;
+  void createCatalog(Catalog cat);
 
   /**
    * Alter an existing catalog.  Only description and location can be changed, and the change of
@@ -185,18 +184,15 @@ public interface RawStore extends Configurable {
    * Drop a catalog.  The catalog must be empty.
    * @param catalogName name of the catalog to drop.
    * @throws NoSuchObjectException no catalog of this name exists.
-   * @throws MetaException could mean the catalog isn't empty, could mean general database error.
    */
-  void dropCatalog(String catalogName) throws NoSuchObjectException, MetaException;
+  void dropCatalog(String catalogName) throws NoSuchObjectException;
 
   /**
    * Create a database.
    * @param db database to create.
    * @throws InvalidObjectException not sure it actually ever throws this.
-   * @throws MetaException if something goes wrong, usually in writing it to the database.
    */
-  void createDatabase(Database db)
-      throws InvalidObjectException, MetaException;
+  void createDatabase(Database db) throws InvalidObjectException;
 
   /**
    * Get a database.
@@ -214,10 +210,9 @@ public interface RawStore extends Configurable {
    * @param dbname name of the database.
    * @return true if the database was dropped, pretty much always returns this if it returns.
    * @throws NoSuchObjectException no database in this catalog of this name to drop
-   * @throws MetaException something went wrong, usually with the database.
    */
   boolean dropDatabase(String catalogName, String dbname)
-      throws NoSuchObjectException, MetaException;
+      throws NoSuchObjectException;
 
   /**
    * Alter a database.
@@ -227,33 +222,29 @@ public interface RawStore extends Configurable {
    *          existing db object.
    * @return true if the change succeeds, could fail due to db constraint violations.
    * @throws NoSuchObjectException no database of this name exists to alter.
-   * @throws MetaException something went wrong, usually with the database.
    */
   boolean alterDatabase(String catalogName, String dbname, Database db)
-      throws NoSuchObjectException, MetaException;
+      throws NoSuchObjectException;
 
   /**
    * Get all database in a catalog having names that match a pattern.
    * @param catalogName name of the catalog to search for databases in
    * @param pattern pattern names should match
    * @return list of matching database names.
-   * @throws MetaException something went wrong, usually with the database.
    */
-  List<String> getDatabases(String catalogName, String pattern) throws MetaException;
+  List<String> getDatabases(String catalogName, String pattern);
 
   /**
    * Get names of all the databases in a catalog.
    * @param catalogName name of the catalog to search for databases in
    * @return list of names of all databases in the catalog
-   * @throws MetaException something went wrong, usually with the database.
    */
-  List<String> getAllDatabases(String catalogName) throws MetaException;
+  List<String> getAllDatabases(String catalogName);
 
   /**
    * Create a dataconnector.
    * @param dataConnector dataconnector to create.
    * @throws InvalidObjectException not sure it actually ever throws this.
-   * @throws MetaException if something goes wrong, usually in writing it to the dataconnector.
    */
   void createDataConnector(DataConnector dataConnector)
       throws InvalidObjectException, MetaException;
@@ -263,10 +254,9 @@ public interface RawStore extends Configurable {
    * @param dcName name of the dataconnector.
    * @return true if the database was dropped, pretty much always returns this if it returns.
    * @throws NoSuchObjectException no database in this catalog of this name to drop
-   * @throws MetaException something went wrong, usually with the database.
    */
   boolean dropDataConnector(String dcName)
-      throws NoSuchObjectException, MetaException;
+      throws NoSuchObjectException;
 
   /**
    * Alter a dataconnector.
@@ -275,10 +265,9 @@ public interface RawStore extends Configurable {
    *          existing db object.
    * @return true if the change succeeds, false otherwise.
    * @throws NoSuchObjectException no dataconnector of this name exists to alter.
-   * @throws MetaException something went wrong, usually with the backend HMSDB.
    */
   boolean alterDataConnector(String dcName, DataConnector connector)
-      throws NoSuchObjectException, MetaException;
+      throws NoSuchObjectException;
 
   /**
    * Get the dataconnector with a given name, if exists.
@@ -291,9 +280,8 @@ public interface RawStore extends Configurable {
   /**
    * Get names of all the databases in a catalog.
    * @return list of names of all dataconnectors
-   * @throws MetaException something went wrong, usually with the database.
    */
-  List<String> getAllDataConnectorNames() throws MetaException;
+  List<String> getAllDataConnectorNames();
 
   boolean createType(Type type);
 
@@ -301,8 +289,7 @@ public interface RawStore extends Configurable {
 
   boolean dropType(String typeName);
 
-  void createTable(Table tbl) throws InvalidObjectException,
-      MetaException;
+  void createTable(Table tbl) throws InvalidObjectException;
 
   /**
    * Drop a table.
@@ -310,13 +297,12 @@ public interface RawStore extends Configurable {
    * @param dbName database the table is in
    * @param tableName table name
    * @return true if the table was dropped
-   * @throws MetaException something went wrong, usually in the RDBMS or storage
    * @throws NoSuchObjectException No table of this name
    * @throws InvalidObjectException Don't think this is ever actually thrown
    * @throws InvalidInputException Don't think this is ever actually thrown
    */
   boolean dropTable(String catalogName, String dbName, String tableName)
-      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
+      throws NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
   /**
    * Get a table object.
@@ -325,9 +311,8 @@ public interface RawStore extends Configurable {
    * @param tableName table name.
    * @return table object, or null if no such table exists (wow it would be nice if we either
    * consistently returned null or consistently threw NoSuchObjectException).
-   * @throws MetaException something went wrong in the RDBMS
    */
-  Table getTable(String catalogName, String dbName, String tableName) throws MetaException;
+  Table getTable(String catalogName, String dbName, String tableName);
 
   /**
    * Get a table object.
@@ -337,10 +322,9 @@ public interface RawStore extends Configurable {
    * @param writeIdList string format of valid writeId transaction list
    * @return table object, or null if no such table exists (wow it would be nice if we either
    * consistently returned null or consistently threw NoSuchObjectException).
-   * @throws MetaException something went wrong in the RDBMS
    */
   Table getTable(String catalogName, String dbName, String tableName,
-                 String writeIdList) throws MetaException;
+                 String writeIdList);
 
   /**
    * Get a table object.
@@ -491,11 +475,10 @@ public interface RawStore extends Configurable {
    *                 implementation specific.
    * @return
    * @throws InvalidObjectException The new table object is invalid.
-   * @throws MetaException something went wrong, usually in the RDBMS or storage.
    */
   Table alterTable(String catName, String dbname, String name, Table newTable,
       String queryValidWriteIds)
-      throws InvalidObjectException, MetaException;
+      throws InvalidObjectException;
 
   /**
    * Update creation metadata for a materialized view.
@@ -503,10 +486,8 @@ public interface RawStore extends Configurable {
    * @param dbname database name.
    * @param tablename table name.
    * @param cm new creation metadata
-   * @throws MetaException error accessing the RDBMS.
    */
-  void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm)
-      throws MetaException;
+  void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm);
 
   /**
    * Get table names that match a pattern.
@@ -535,22 +516,18 @@ public interface RawStore extends Configurable {
   /**
    * Retrieve all materialized views.
    * @return all materialized views in a catalog
-   * @throws MetaException error querying the RDBMS
-   * @throws NoSuchObjectException no such database
    */
-  List<Table> getAllMaterializedViewObjectsForRewriting(String catName)
-      throws MetaException;
+  List<Table> getAllMaterializedViewObjectsForRewriting(String catName);
 
   /**
    * Get list of materialized views in a database.
    * @param catName catalog name
    * @param dbName database name
    * @return names of all materialized views in the database
-   * @throws MetaException error querying the RDBMS
    * @throws NoSuchObjectException no such database
    */
   List<String> getMaterializedViewsForRewriting(String catName, String dbName)
-      throws MetaException, NoSuchObjectException;
+      throws NoSuchObjectException;
 
   /**
 
@@ -559,10 +536,9 @@ public interface RawStore extends Configurable {
    * @param tableNames names of tables to select.
    * @param tableTypes types of tables to look for.
    * @return list of matching table meta information.
-   * @throws MetaException failure in querying the RDBMS.
    */
   List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames,
-                               List<String> tableTypes) throws MetaException;
+                               List<String> tableTypes);
 
   /**
    * @param catName catalog name
@@ -626,10 +602,9 @@ public interface RawStore extends Configurable {
    * @param tbl_name table name.
    * @param max_parts maximum number of partitions to retrieve, -1 for all.
    * @return list of partition names.
-   * @throws MetaException there was an error accessing the RDBMS
    */
   List<String> listPartitionNames(String catName, String db_name,
-      String tbl_name, short max_parts) throws MetaException;
+      String tbl_name, short max_parts);
 
   /**
    * Get a partial or complete list of names for partitions of a table.
@@ -805,24 +780,24 @@ public interface RawStore extends Configurable {
                                        List<String> partNames)
       throws MetaException, NoSuchObjectException;
 
-  Table markPartitionForEvent(String catName, String dbName, String tblName, Map<String,String> partVals, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
+  Table markPartitionForEvent(String catName, String dbName, String tblName, Map<String,String> partVals, PartitionEventType evtType) throws UnknownTableException, InvalidPartitionException, UnknownPartitionException;
 
-  boolean isPartitionMarkedForEvent(String catName, String dbName, String tblName, Map<String, String> partName, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
+  boolean isPartitionMarkedForEvent(String catName, String dbName, String tblName, Map<String, String> partName, PartitionEventType evtType) throws UnknownTableException, InvalidPartitionException, UnknownPartitionException;
 
   boolean addRole(String rowName, String ownerName)
-      throws InvalidObjectException, MetaException, NoSuchObjectException;
+      throws InvalidObjectException, NoSuchObjectException;
 
-  boolean removeRole(String roleName) throws MetaException, NoSuchObjectException;
+  boolean removeRole(String roleName) throws NoSuchObjectException;
 
   boolean grantRole(Role role, String userName, PrincipalType principalType,
       String grantor, PrincipalType grantorType, boolean grantOption)
-      throws MetaException, NoSuchObjectException, InvalidObjectException;
+      throws NoSuchObjectException, InvalidObjectException;
 
   boolean revokeRole(Role role, String userName, PrincipalType principalType,
       boolean grantOption) throws MetaException, NoSuchObjectException;
 
   PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException;
+      List<String> groupNames) throws InvalidObjectException;
 
   /**
    * Get privileges for a database for a user.
@@ -832,10 +807,9 @@ public interface RawStore extends Configurable {
    * @param groupNames list of groups the user is in
    * @return privileges for that user on indicated database
    * @throws InvalidObjectException no such database
-   * @throws MetaException error accessing the RDBMS
    */
   PrincipalPrivilegeSet getDBPrivilegeSet (String catName, String dbName, String userName,
-      List<String> groupNames)  throws InvalidObjectException, MetaException;
+      List<String> groupNames)  throws InvalidObjectException;
 
   /**
    * Get privileges for a table for a user.
@@ -846,10 +820,9 @@ public interface RawStore extends Configurable {
    * @param groupNames list of groups the user is in
    * @return privileges for that user on indicated table
    * @throws InvalidObjectException no such table
-   * @throws MetaException error accessing the RDBMS
    */
   PrincipalPrivilegeSet getTablePrivilegeSet (String catName, String dbName, String tableName,
-      String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
+      String userName, List<String> groupNames) throws InvalidObjectException;
 
   /**
    * Get privileges for a partition for a user.
@@ -861,10 +834,9 @@ public interface RawStore extends Configurable {
    * @param groupNames list of groups the user is in
    * @return privileges for that user on indicated partition
    * @throws InvalidObjectException no such partition
-   * @throws MetaException error accessing the RDBMS
    */
   PrincipalPrivilegeSet getPartitionPrivilegeSet (String catName, String dbName, String tableName,
-      String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
+      String partition, String userName, List<String> groupNames) throws InvalidObjectException;
 
   /**
    * Get privileges for a column in a table or partition for a user.
@@ -877,10 +849,9 @@ public interface RawStore extends Configurable {
    * @param groupNames list of groups the user is in
    * @return privileges for that user on indicated column in the table or partition
    * @throws InvalidObjectException no such table, partition, or column
-   * @throws MetaException error accessing the RDBMS
    */
   PrincipalPrivilegeSet getColumnPrivilegeSet (String catName, String dbName, String tableName, String partitionName,
-      String columnName, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
+      String columnName, String userName, List<String> groupNames) throws InvalidObjectException;
 
   List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType);
@@ -1029,12 +1000,11 @@ public interface RawStore extends Configurable {
    * @param max_parts
    *          The maximum number of partitions to return
    * @return A list of partition names that match the partial spec.
-   * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException No such table exists
    */
   List<String> listPartitionNamesPs(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
-      throws MetaException, NoSuchObjectException;
+      throws NoSuchObjectException;
 
   /**
    * Lists partitions that match a given partial specification and sets their auth privileges.
@@ -1216,13 +1186,12 @@ public interface RawStore extends Configurable {
    * @param engine engine for which we want to delete statistics
    * @return true if the statistics were deleted.
    * @throws NoSuchObjectException no such table or column.
-   * @throws MetaException error access the RDBMS.
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad inputs, such as null table name.
    */
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
     String colName, String engine)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+    throws NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
   long cleanupEvents();
 
@@ -1549,19 +1518,19 @@ public interface RawStore extends Configurable {
    * Gets total number of tables.
    */
   @InterfaceStability.Evolving
-  int getTableCount() throws MetaException;
+  int getTableCount();
 
   /**
    * Gets total number of partitions.
    */
   @InterfaceStability.Evolving
-  int getPartitionCount() throws MetaException;
+  int getPartitionCount();
 
   /**
    * Gets total number of databases.
    */
   @InterfaceStability.Evolving
-  int getDatabaseCount() throws MetaException;
+  int getDatabaseCount();
 
   /**
    * Get the primary associated with a table.  Strangely enough each SQLPrimaryKey is actually a
@@ -1748,52 +1717,49 @@ public interface RawStore extends Configurable {
   String getMetastoreDbUuid() throws MetaException;
 
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
-      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException;
 
   WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException;
 
-  List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException;
+  List<WMResourcePlan> getAllResourcePlans(String string);
 
   WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException;
 
-  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException;
+  WMFullResourcePlan getActiveResourcePlan(String ns);
 
   WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException;
+      throws NoSuchObjectException, InvalidObjectException;
 
   void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException;
 
   void createWMTrigger(WMTrigger trigger)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException;
 
   void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+      throws NoSuchObjectException, InvalidOperationException;
 
   void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+      throws NoSuchObjectException, InvalidOperationException;
 
   List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException;
+      throws NoSuchObjectException;
 
   void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidOperationException, MetaException;
+      InvalidOperationException;
 
   void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
-      NoSuchObjectException, InvalidOperationException, MetaException;
+      NoSuchObjectException, InvalidOperationException;
 
   void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+      throws NoSuchObjectException, InvalidOperationException;
 
   void createOrUpdateWMMapping(WMMapping mapping, boolean update)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException;
 
   void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+      throws NoSuchObjectException, InvalidOperationException;
 
   void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
@@ -1806,10 +1772,8 @@ public interface RawStore extends Configurable {
    * Create a new ISchema.
    * @param schema schema to create
    * @throws AlreadyExistsException there's already a schema with this name
-   * @throws MetaException general database exception
    */
-  void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
-      NoSuchObjectException;
+  void createISchema(ISchema schema) throws AlreadyExistsException, NoSuchObjectException;
 
   /**
    * Alter an existing ISchema.  This assumes the caller has already checked that such a schema.
@@ -1817,9 +1781,8 @@ public interface RawStore extends Configurable {
    * @param schemaName name of the schema
    * @param newSchema new schema object
    * @throws NoSuchObjectException no function with this name exists
-   * @throws MetaException general database exception
    */
-  void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException, MetaException;
+  void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException;
 
   /**
    * Get an ISchema by name.
@@ -1827,7 +1790,7 @@ public interface RawStore extends Configurable {
    * @return ISchema
    * @throws MetaException general database exception
    */
-  ISchema getISchema(ISchemaName schemaName) throws MetaException;
+  ISchema getISchema(ISchemaName schemaName);
 
   /**
    * Drop an ISchema.
@@ -1835,9 +1798,8 @@ public interface RawStore extends Configurable {
    * existence, it assumes the caller has already done that.
    * @param schemaName schema descriptor
    * @throws NoSuchObjectException no schema of this name exists
-   * @throws MetaException general database exception
    */
-  void dropISchema(ISchemaName schemaName) throws NoSuchObjectException, MetaException;
+  void dropISchema(ISchemaName schemaName) throws NoSuchObjectException;
 
   /**
    * Create a new version of an existing schema.
@@ -1846,10 +1808,9 @@ public interface RawStore extends Configurable {
    * exists.
    * @throws InvalidObjectException the passed in SchemaVersion object has problems.
    * @throws NoSuchObjectException no schema with the passed in name exists.
-   * @throws MetaException general database exception
    */
   void addSchemaVersion(SchemaVersion schemaVersion)
-      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException;
 
   /**
    * Alter a schema version.
@@ -1860,34 +1821,30 @@ public interface RawStore extends Configurable {
    * @param version version descriptor for the schema
    * @param newVersion altered SchemaVersion
    * @throws NoSuchObjectException no such version of the named schema exists
-   * @throws MetaException general database exception
    */
   void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion)
-      throws NoSuchObjectException, MetaException;
+      throws NoSuchObjectException;
 
   /**
    * Get a specific schema version.
    * @param version version descriptor for the schema
    * @return the SchemaVersion
-   * @throws MetaException general database exception
    */
-  SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException;
+  SchemaVersion getSchemaVersion(SchemaVersionDescriptor version);
 
   /**
    * Get the latest version of a schema.
    * @param schemaName name of the schema
    * @return latest version of the schema
-   * @throws MetaException general database exception
    */
-  SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
+  SchemaVersion getLatestSchemaVersion(ISchemaName schemaName);
 
   /**
    * Get all of the versions of a schema.
    * @param schemaName name of the schema
    * @return all versions of the schema
-   * @throws MetaException general database exception
    */
-  List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
+  List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName);
 
   /**
    * Find all SchemaVersion objects that match a query.
@@ -1904,41 +1861,36 @@ public interface RawStore extends Configurable {
    * @return List of all SchemaVersions that match.  Note that there is no expectation that these
    * SchemaVersions derive from the same ISchema.  The list will be empty if there are no
    * matching SchemaVersions.
-   * @throws MetaException general database exception
    */
-  List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
-      throws MetaException;
+  List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type);
 
   /**
    * Drop a version of the schema.
    * @param version version descriptor for the schema
    * @throws NoSuchObjectException no such version of the named schema exists
-   * @throws MetaException general database exception
    */
-  void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
+  void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException;
 
   /**
    * Get serde information.
    * @param serDeName name of the SerDe
    * @return the SerDe, or null if there is no such serde
    * @throws NoSuchObjectException no serde with this name exists
-   * @throws MetaException general database exception
    */
-  SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException;
+  SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException;
 
   /**
    * Add a serde.
    * @param serde serde to add
    * @throws AlreadyExistsException a serde of this name already exists
-   * @throws MetaException general database exception
    */
-  void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException;
+  void addSerde(SerDeInfo serde) throws AlreadyExistsException;
 
   /** Adds a RuntimeStat for persistence. */
   void addRuntimeStat(RuntimeStat stat) throws MetaException;
 
   /** Reads runtime statistic entries. */
-  List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException;
+  List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime);
 
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;

@@ -524,7 +524,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException {
+      List<String> groupNames) throws InvalidObjectException {
     return objectStore.getUserPrivilegeSet(userName, groupNames);
   }
 

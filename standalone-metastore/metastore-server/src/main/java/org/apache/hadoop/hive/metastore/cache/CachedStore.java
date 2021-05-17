@@ -476,7 +476,7 @@ public class CachedStore implements RawStore, Configurable {
               LOG.warn("Failed to cache database " + DatabaseName.getQualified(catName, dbName) + ", moving on", e);
             }
           }
-        } catch (MetaException e) {
+        } catch (Exception e) {
           LOG.warn("Failed to cache databases in catalog " + catName + ", moving on", e);
         }
       }
@@ -506,8 +506,8 @@ public class CachedStore implements RawStore, Configurable {
             Table table;
             try {
               table = rawStore.getTable(catName, dbName, tblName);
-            } catch (MetaException e) {
-              LOG.debug(ExceptionUtils.getStackTrace(e));
+            } catch (Exception e) {
+              LOG.debug("Failed to get table", e);
               // It is possible the table is deleted during fetching tables of the database,
               // in that case, continue with the next table
               continue;
@@ -1055,7 +1055,7 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.rollbackTransaction();
   }
 
-  @Override public void createCatalog(Catalog cat) throws MetaException {
+  @Override public void createCatalog(Catalog cat) {
     rawStore.createCatalog(cat);
     // in case of event based cache update, cache will not be updated for catalog.
     if (!canUseEvents) {
@@ -1091,7 +1091,7 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.listCachedCatalogs();
   }
 
-  @Override public void dropCatalog(String catalogName) throws NoSuchObjectException, MetaException {
+  @Override public void dropCatalog(String catalogName) throws NoSuchObjectException {
     rawStore.dropCatalog(catalogName);
 
     // in case of event based cache update, cache will not be updated for catalog.
@@ -1101,7 +1101,7 @@ public class CachedStore implements RawStore, Configurable {
     }
   }
 
-  @Override public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+  @Override public void createDatabase(Database db) throws InvalidObjectException {
     if (db.getType() == null) {
       db.setType(DatabaseType.NATIVE);
     }
@@ -1128,7 +1128,7 @@ public class CachedStore implements RawStore, Configurable {
     return db;
   }
 
-  @Override public boolean dropDatabase(String catName, String dbName) throws NoSuchObjectException, MetaException {
+  @Override public boolean dropDatabase(String catName, String dbName) throws NoSuchObjectException {
     boolean succ = rawStore.dropDatabase(catName, dbName);
     if (succ && !canUseEvents) {
       // in case of event based cache update, cache will be updated during commit.
@@ -1139,7 +1139,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public boolean alterDatabase(String catName, String dbName, Database db)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     boolean succ = rawStore.alterDatabase(catName, dbName, db);
     if (succ && !canUseEvents) {
       // in case of event based cache update, cache will be updated during commit.
@@ -1149,14 +1149,14 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
-  @Override public List<String> getDatabases(String catName, String pattern) throws MetaException {
+  @Override public List<String> getDatabases(String catName, String pattern) {
     if (!sharedCache.isDatabaseCachePrewarmed() || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getDatabases(catName, pattern);
     }
     return sharedCache.listCachedDatabases(catName, pattern);
   }
 
-  @Override public List<String> getAllDatabases(String catName) throws MetaException {
+  @Override public List<String> getAllDatabases(String catName) {
     if (!sharedCache.isDatabaseCachePrewarmed() || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getAllDatabases(catName);
     }
@@ -1175,17 +1175,17 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean dropDataConnector(String dcName) throws NoSuchObjectException, MetaException {
+  public boolean dropDataConnector(String dcName) throws NoSuchObjectException {
      return rawStore.dropDataConnector(dcName);
   }
 
   @Override public boolean alterDataConnector(String dcName, DataConnector connector)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     return rawStore.alterDataConnector(dcName, connector);
   }
 
   @Override
-  public List<String> getAllDataConnectorNames() throws MetaException {
+  public List<String> getAllDataConnectorNames() {
       return rawStore.getAllDataConnectorNames();
   }
   
@@ -1219,7 +1219,7 @@ public class CachedStore implements RawStore, Configurable {
     tbl.setTableType(tableType);
   }
 
-  @Override public void createTable(Table tbl) throws InvalidObjectException, MetaException {
+  @Override public void createTable(Table tbl) throws InvalidObjectException {
     rawStore.createTable(tbl);
     // in case of event based cache update, cache will be updated during commit.
     if (canUseEvents) {
@@ -1237,7 +1237,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public boolean dropTable(String catName, String dbName, String tblName)
-      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+      throws NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean succ = rawStore.dropTable(catName, dbName, tblName);
     // in case of event based cache update, cache will be updated during commit.
     if (succ && !canUseEvents) {
@@ -1252,17 +1252,16 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
-  @Override public Table getTable(String catName, String dbName, String tblName) throws MetaException {
+  @Override public Table getTable(String catName, String dbName, String tblName) {
     return getTable(catName, dbName, tblName, null);
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
+  public Table getTable(String catName, String dbName, String tblName, String validWriteIds) {
     return getTable(catName, dbName, tblName, null, -1);
   }
 
-  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
-      throws MetaException {
+  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId) {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
@@ -1466,7 +1465,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public Table alterTable(String catName, String dbName, String tblName, Table newTable, String validWriteIds)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     newTable = rawStore.alterTable(catName, dbName, tblName, newTable, validWriteIds);
     // in case of event based cache update, cache will be updated during commit.
     if (canUseEvents) {
@@ -1497,8 +1496,7 @@ public class CachedStore implements RawStore, Configurable {
     return newTable;
   }
 
-  @Override public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm)
-      throws MetaException {
+  @Override public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm) {
     rawStore.updateCreationMetadata(catName, dbname, tablename, cm);
   }
 
@@ -1511,18 +1509,18 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getTables(catName, dbName, pattern, tableType, limit);
   }
 
-  @Override public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
+  @Override public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) {
     // TODO fucntionCache
     return rawStore.getAllMaterializedViewObjectsForRewriting(catName);
   }
 
   @Override public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
-      throws MetaException, NoSuchObjectException {
+      throws NoSuchObjectException {
     return rawStore.getMaterializedViewsForRewriting(catName, dbName);
   }
 
   @Override public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames,
-      List<String> tableTypes) throws MetaException {
+      List<String> tableTypes) {
     return rawStore.getTableMeta(catName, dbNames, tableNames, tableTypes);
   }
 
@@ -1581,8 +1579,7 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.listTableNamesByFilter(catName, dbName, filter, maxTables);
   }
 
-  @Override public List<String> listPartitionNames(String catName, String dbName, String tblName, short maxParts)
-      throws MetaException {
+  @Override public List<String> listPartitionNames(String catName, String dbName, String tblName, short maxParts) {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
@@ -1766,28 +1763,28 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public Table markPartitionForEvent(String catName, String dbName, String tblName,
       Map<String, String> partVals, PartitionEventType evtType)
-      throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException {
+      throws UnknownTableException, InvalidPartitionException, UnknownPartitionException {
     return rawStore.markPartitionForEvent(catName, dbName, tblName, partVals, evtType);
   }
 
   @Override public boolean isPartitionMarkedForEvent(String catName, String dbName, String tblName,
       Map<String, String> partName, PartitionEventType evtType)
-      throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException {
+      throws UnknownTableException, InvalidPartitionException, UnknownPartitionException {
     return rawStore.isPartitionMarkedForEvent(catName, dbName, tblName, partName, evtType);
   }
 
   @Override public boolean addRole(String rowName, String ownerName)
-      throws InvalidObjectException, MetaException, NoSuchObjectException {
+      throws InvalidObjectException, NoSuchObjectException {
     return rawStore.addRole(rowName, ownerName);
   }
 
-  @Override public boolean removeRole(String roleName) throws MetaException, NoSuchObjectException {
+  @Override public boolean removeRole(String roleName) throws NoSuchObjectException {
     return rawStore.removeRole(roleName);
   }
 
   @Override public boolean grantRole(Role role, String userName, PrincipalType principalType, String grantor,
       PrincipalType grantorType, boolean grantOption)
-      throws MetaException, NoSuchObjectException, InvalidObjectException {
+      throws NoSuchObjectException, InvalidObjectException {
     return rawStore.grantRole(role, userName, principalType, grantor, grantorType, grantOption);
   }
 
@@ -1797,28 +1794,28 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public PrincipalPrivilegeSet getUserPrivilegeSet(String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     return rawStore.getUserPrivilegeSet(userName, groupNames);
   }
 
   @Override public PrincipalPrivilegeSet getDBPrivilegeSet(String catName, String dbName, String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException {
+      List<String> groupNames) throws InvalidObjectException {
     return rawStore.getDBPrivilegeSet(catName, dbName, userName, groupNames);
   }
 
   @Override public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
-      String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
+      String userName, List<String> groupNames) throws InvalidObjectException {
     return rawStore.getTablePrivilegeSet(catName, dbName, tableName, userName, groupNames);
   }
 
   @Override public PrincipalPrivilegeSet getPartitionPrivilegeSet(String catName, String dbName, String tableName,
-      String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
+      String partition, String userName, List<String> groupNames) throws InvalidObjectException {
     return rawStore.getPartitionPrivilegeSet(catName, dbName, tableName, partition, userName, groupNames);
   }
 
   @Override public PrincipalPrivilegeSet getColumnPrivilegeSet(String catName, String dbName, String tableName,
       String partitionName, String columnName, String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     return rawStore.getColumnPrivilegeSet(catName, dbName, tableName, partitionName, columnName, userName, groupNames);
   }
 
@@ -1946,7 +1943,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public List<String> listPartitionNamesPs(String catName, String dbName, String tblName,
-      List<String> partSpecs, short maxParts) throws MetaException, NoSuchObjectException {
+      List<String> partSpecs, short maxParts) throws NoSuchObjectException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
@@ -2148,7 +2145,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+      throws NoSuchObjectException, InvalidObjectException, InvalidInputException {
     if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
@@ -2571,15 +2568,15 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getFileMetadataHandler(type);
   }
 
-  @Override public int getTableCount() throws MetaException {
+  @Override public int getTableCount() {
     return rawStore.getTableCount();
   }
 
-  @Override public int getPartitionCount() throws MetaException {
+  @Override public int getPartitionCount() {
     return rawStore.getPartitionCount();
   }
 
-  @Override public int getDatabaseCount() throws MetaException {
+  @Override public int getDatabaseCount() {
     return rawStore.getDatabaseCount();
   }
 
@@ -2833,7 +2830,7 @@ public class CachedStore implements RawStore, Configurable {
 
   // TODO - not clear if we should cache these or not.  For now, don't bother
   @Override public void createISchema(ISchema schema)
-      throws AlreadyExistsException, NoSuchObjectException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException {
     rawStore.createISchema(schema);
   }
 
@@ -2843,54 +2840,53 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void alterISchema(ISchemaName schemaName, ISchema newSchema)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     rawStore.alterISchema(schemaName, newSchema);
   }
 
-  @Override public ISchema getISchema(ISchemaName schemaName) throws MetaException {
+  @Override public ISchema getISchema(ISchemaName schemaName) {
     return rawStore.getISchema(schemaName);
   }
 
-  @Override public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException, MetaException {
+  @Override public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException {
     rawStore.dropISchema(schemaName);
   }
 
   @Override public void addSchemaVersion(SchemaVersion schemaVersion)
-      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException {
     rawStore.addSchemaVersion(schemaVersion);
   }
 
   @Override public void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     rawStore.alterSchemaVersion(version, newVersion);
   }
 
-  @Override public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException {
+  @Override public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) {
     return rawStore.getSchemaVersion(version);
   }
 
-  @Override public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
+  @Override public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) {
     return rawStore.getLatestSchemaVersion(schemaName);
   }
 
-  @Override public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
+  @Override public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) {
     return rawStore.getAllSchemaVersion(schemaName);
   }
 
-  @Override public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
-      throws MetaException {
+  @Override public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type) {
     return rawStore.getSchemaVersionsByColumns(colName, colNamespace, type);
   }
 
-  @Override public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException, MetaException {
+  @Override public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException {
     rawStore.dropSchemaVersion(version);
   }
 
-  @Override public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException {
+  @Override public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException {
     return rawStore.getSerDeInfo(serDeName);
   }
 
-  @Override public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+  @Override public void addSerde(SerDeInfo serde) throws AlreadyExistsException {
     rawStore.addSerde(serde);
   }
 
@@ -2907,7 +2903,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException {
     rawStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
@@ -2916,22 +2912,22 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getResourcePlan(name, ns);
   }
 
-  @Override public List<WMResourcePlan> getAllResourcePlans(String ns) throws MetaException {
+  @Override public List<WMResourcePlan> getAllResourcePlans(String ns) {
     return rawStore.getAllResourcePlans(ns);
   }
 
   @Override public WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     return rawStore.alterResourcePlan(name, ns, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
-  @Override public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
+  @Override public WMFullResourcePlan getActiveResourcePlan(String ns) {
     return rawStore.getActiveResourcePlan(ns);
   }
 
   @Override public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException {
+      throws NoSuchObjectException, InvalidObjectException {
     return rawStore.validateResourcePlan(name, ns);
   }
 
@@ -2940,47 +2936,47 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createWMTrigger(WMTrigger trigger)
-      throws AlreadyExistsException, MetaException, NoSuchObjectException, InvalidOperationException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     rawStore.createWMTrigger(trigger);
   }
 
   @Override public void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     rawStore.alterWMTrigger(trigger);
   }
 
   @Override public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     rawStore.dropWMTrigger(resourcePlanName, triggerName, ns);
   }
 
   @Override public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     return rawStore.getTriggersForResourcePlan(resourcePlanName, ns);
   }
 
   @Override public void createPool(WMPool pool)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     rawStore.createPool(pool);
   }
 
   @Override public void alterPool(WMNullablePool pool, String poolPath)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     rawStore.alterPool(pool, poolPath);
   }
 
   @Override public void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     rawStore.dropWMPool(resourcePlanName, poolPath, ns);
   }
 
   @Override public void createOrUpdateWMMapping(WMMapping mapping, boolean update)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     rawStore.createOrUpdateWMMapping(mapping, update);
   }
 
   @Override public void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     rawStore.dropWMMapping(mapping);
   }
 
@@ -3084,7 +3080,7 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.addRuntimeStat(stat);
   }
 
-  @Override public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+  @Override public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) {
     return rawStore.getRuntimeStats(maxEntries, maxCreateTime);
   }
 

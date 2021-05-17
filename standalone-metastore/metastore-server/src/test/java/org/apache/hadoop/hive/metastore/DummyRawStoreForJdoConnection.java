@@ -181,7 +181,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void createCatalog(Catalog cat) throws MetaException {
+  public void createCatalog(Catalog cat) {
 
   }
 
@@ -202,7 +202,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void dropCatalog(String catalogName) throws NoSuchObjectException, MetaException {
+  public void dropCatalog(String catalogName) throws NoSuchObjectException {
 
   }
 
@@ -544,7 +544,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public PrincipalPrivilegeSet getUserPrivilegeSet(String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
 
     return null;
   }
@@ -1322,7 +1322,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) {
     return Collections.emptyList();
   }
 
