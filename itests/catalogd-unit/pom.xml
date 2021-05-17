@@ -99,6 +99,10 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>org.apache.impala</groupId>
+                <artifactId>impala-minimal-hive-exec</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <!-- Some of the tests need test utils defined in Impala source code -->
@@ -153,6 +157,10 @@
               <exclusion>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.impala</groupId>
+                <artifactId>impala-minimal-hive-exec</artifactId>
               </exclusion>
             </exclusions>
         </dependency>

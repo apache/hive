@@ -287,6 +287,10 @@
               <groupId>org.glassfish</groupId>
               <artifactId>javax.json</artifactId>
             </exclusion>
+            <exclusion>
+              <groupId>org.apache.impala</groupId>
+              <artifactId>impala-minimal-hive-exec</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
       </dependencies>
