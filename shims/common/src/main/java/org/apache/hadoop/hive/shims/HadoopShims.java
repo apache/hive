@@ -542,11 +542,13 @@ public interface HadoopShims {
    * @param newSnapshot    final snapshot
    * @param srcPaths List of Path to the source files or directories to copy
    * @param dst      Path to the destination file or directory
+   * @param overwriteTarget if true, in case the target is modified, restores back the target to the original state
+   *                        and reattempt copying using snapshots.
    * @param conf     The hadoop configuration object
    * @return true if it is successful; false otherwise.
    */
   boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
-      Configuration conf) throws IOException;
+      boolean overwriteTarget, Configuration conf) throws IOException;
 
   /**
    * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
@@ -559,12 +561,14 @@ public interface HadoopShims {
    * @param newSnapshot     final snapshot
    * @param srcPaths  List of Path to the source files or directories to copy
    * @param dst       Path to the destination file or directory
-   * @param conf      The hadoop configuration object
+   * @param overwriteTarget if true, in case the target is modified, restores back the target to the original state
+   *                        and reattempt copying using snapshots.
    * @param proxyUser The user to perform the distcp as
+   * @param conf      The hadoop configuration object
    * @return true if it is successful; false otherwise.
    */
   boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
-      Configuration conf, UserGroupInformation proxyUser) throws IOException;
+      boolean overwriteTarget, UserGroupInformation proxyUser, Configuration conf) throws IOException;
 
 
   /**

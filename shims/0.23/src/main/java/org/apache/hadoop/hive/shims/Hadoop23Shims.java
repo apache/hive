@@ -1228,7 +1228,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst, Configuration conf)
+  public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, Configuration conf)
       throws IOException {
     DistCpOptions options =
         new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
@@ -1247,10 +1248,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         LOG.warn("Copy failed with INVALID_ARGUMENT for source: {} to target: {} snapshot1: {} snapshot2: {} "
             + "params: {}", srcPaths, dst, oldSnapshot, newSnapshot, params);
         return true;
-      } else if (returnCode == DistCpConstants.UNKNOWN_ERROR && conf
-          .getBoolean("hive.repl.externaltable.snapshot.overwrite.target", true)) {
+      } else if (returnCode == DistCpConstants.UNKNOWN_ERROR && overwriteTarget) {
         // Check if this error is due to target modified.
-        if (shouldRdiff(dst, conf, oldSnapshot)) {
+        if (shouldRdiff(dst, conf, oldSnapshot, overwriteTarget)) {
           LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
               + "snapshot: {}", srcPaths, dst, oldSnapshot);
           List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
@@ -1285,11 +1285,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    * @param p path where snapshot exists.
    * @param conf the hive configuration.
    * @param snapshot the name of snapshot.
+   * @param overwriteTarget whether overwriting target is enabled.
    * @return true, if we need to do rdiff.
    */
-  private static boolean shouldRdiff(Path p, Configuration conf, String snapshot) throws Exception {
+  private static boolean shouldRdiff(Path p, Configuration conf, String snapshot, boolean overwriteTarget) throws Exception {
     // Using the configuration in string form since hive-shims doesn't have a dependency on hive-common.
-    boolean isOverwrite = conf.getBoolean("hive.repl.externaltable.snapshot.overwrite.target", true);
     boolean targetModified = false;
     try {
       DistributedFileSystem dfs = (DistributedFileSystem) p.getFileSystem(conf);
@@ -1311,21 +1311,20 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     } catch (Exception e) {
       LOG.error("Failed to compute snapshot diff for path: {} and snapshot: {}", p, snapshot);
     }
-    if (targetModified && !isOverwrite) {
+    if (targetModified && !overwriteTarget) {
       throw new Exception(
           "The target modified during snapshot based data copy for path: " + p + " and snapshot: " + snapshot);
     }
     return targetModified;
   }
 
-  public boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot,
-      List<Path> srcPaths, Path dst, Configuration conf,
-      UserGroupInformation proxyUser) throws IOException {
+  public boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, UserGroupInformation proxyUser, Configuration conf) throws IOException {
     try {
       return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
         @Override
         public Boolean run() throws Exception {
-          return runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, conf);
+          return runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, conf);
         }
       });
     } catch (InterruptedException e) {

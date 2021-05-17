@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.HdfsUtils.constructDistCpOptions;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.firstSnapshot;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.secondSnapshot;
@@ -227,17 +228,19 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
     boolean result = false;
     if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.DIFF_COPY)) {
       LOG.info("Using snapshot diff copy for source: {} and target: {}", sourcePath, targetPath);
+      boolean overwriteTarget = conf.getBoolVar(REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY);
+      LOG.debug("Overwrite target in case the target location is modified is turned {}",
+          overwriteTarget ? "on" : "off");
        result = FileUtils
           .distCpWithSnapshot(firstSnapshot(work.getSnapshotPrefix()), secondSnapshot(work.getSnapshotPrefix()),
-              Collections.singletonList(sourcePath), targetPath, proxyUser,
-              conf, ShimLoader.getHadoopShims());
+              Collections.singletonList(sourcePath), targetPath, overwriteTarget, conf, ShimLoader.getHadoopShims(), proxyUser);
        if(result) {
          // Delete the older snapshot from last iteration.
          targetFs.deleteSnapshot(targetPath, firstSnapshot(work.getSnapshotPrefix()));
        } else {
          throw new SnapshotException(
-             "Can not successfully copy external table data using snapshot diff. source:" + sourcePath + " and target: "
-                 + targetPath);
+             "Can not successfully copy external table data using snapshot diff. source: " + sourcePath + " and "
+                 + "target: " + targetPath);
        }
     } else if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.INITIAL_COPY)) {
       LOG.info("Using snapshot initial copy for source: {} and target: {}", sourcePath, targetPath);

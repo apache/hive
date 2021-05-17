@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -692,13 +691,14 @@ public final class FileUtils {
   }
 
   public static boolean distCpWithSnapshot(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
-      UserGroupInformation proxyUser, HiveConf conf, HadoopShims shims) {
+      boolean overwriteTarget, HiveConf conf, HadoopShims shims, UserGroupInformation proxyUser) {
     boolean copied = false;
     try {
       if (proxyUser == null) {
-        copied = shims.runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, conf);
+        copied = shims.runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, conf);
       } else {
-        copied = shims.runDistCpWithSnapshotsAs(oldSnapshot, newSnapshot, srcPaths, dst, conf, proxyUser);
+        copied =
+            shims.runDistCpWithSnapshotsAs(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, proxyUser, conf);
       }
       if (copied)
         LOG.info("Successfully copied using snapshots source {} and dest {} using snapshots {} and {}", srcPaths, dst,

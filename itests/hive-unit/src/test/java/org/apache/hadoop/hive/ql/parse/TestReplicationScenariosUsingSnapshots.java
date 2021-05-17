@@ -1305,14 +1305,12 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     fs.create(new Path(random, "file3")).close();
 
     // Create a filter file for DistCp
-    Path filterFile = new Path("/tmp/filter");
-    try(FSDataOutputStream stream = fs.create(filterFile)) {
-      stream.writeBytes(".*randomStuff.*");
-    }
-    assertTrue(fs.exists(filterFile.makeQualified(fs.getUri(), fs.getWorkingDirectory())));
-    FileWriter myWriter = new FileWriter("/tmp/filter");
+    String filterFilePath = "/tmp/filter";
+    FileWriter myWriter = new FileWriter(filterFilePath);
     myWriter.write(".*randomStuff.*");
     myWriter.close();
+
+    assertTrue(new File(filterFilePath).exists());
 
     // Specify the project directory as the snapshot root using the single copy task path config.
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
@@ -1321,7 +1319,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
 
     // Add Filter file
-    withClause.add("'distcp.options.filters'='" + "/tmp/filter" + "'");
+    withClause.add("'distcp.options.filters'='" + filterFilePath + "'");
 
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
         .run("create external table table1 (place string)  row format "
@@ -1385,6 +1383,8 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Check if the randomStuff Directory didn't get copied, post diff copy
     assertFalse(fs.exists(new Path(REPLICA_EXTERNAL_BASE, random.toUri().getPath().replaceFirst("/", ""))));
 
+    // Clean up the filter file.
+    new File(filterFilePath).delete();
   }
 
   // Verifies if the initial rounds are snapshots are created for source and target database.
