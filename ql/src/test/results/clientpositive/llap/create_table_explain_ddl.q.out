@@ -1211,7 +1211,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -1285,7 +1284,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
@@ -1363,7 +1361,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
@@ -1704,7 +1701,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
@@ -1778,7 +1774,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
@@ -1856,7 +1851,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
