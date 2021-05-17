@@ -29,14 +29,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
  * In particular, it removes the union branch that reads the old data from
  * the materialization, and keeps the branch that will read the new data.
  */
-public class HiveNoAggregateIncrementalRewritingRule extends RelOptRule {
+public class HiveJoinInsertIncrementalRewritingRule extends RelOptRule {
 
-  public static final HiveNoAggregateIncrementalRewritingRule INSTANCE =
-      new HiveNoAggregateIncrementalRewritingRule();
+  public static final HiveJoinInsertIncrementalRewritingRule INSTANCE =
+      new HiveJoinInsertIncrementalRewritingRule();
 
-  private HiveNoAggregateIncrementalRewritingRule() {
+  private HiveJoinInsertIncrementalRewritingRule() {
     super(operand(Union.class, any()),
-        HiveRelFactories.HIVE_BUILDER, "HiveNoAggregateIncrementalRewritingRule");
+        HiveRelFactories.HIVE_BUILDER, "HiveJoinInsertIncrementalRewritingRule");
   }
 
   @Override

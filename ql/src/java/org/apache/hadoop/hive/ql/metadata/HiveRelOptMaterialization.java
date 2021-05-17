@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.metastore.api.Materialization;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -49,12 +53,23 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
 
   }
   private final EnumSet<RewriteAlgorithm> scope;
+  private final boolean sourceTablesUpdateDeleteModified;
+  private final boolean sourceTablesCompacted;
 
   public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
                                    EnumSet<RewriteAlgorithm> scope) {
+    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false);
+  }
+
+  private HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
+                                   RelOptTable starRelOptTable, List<String> qualifiedTableName,
+                                   EnumSet<RewriteAlgorithm> scope,
+                                   boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted) {
     super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
+    this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
+    this.sourceTablesCompacted = sourceTablesCompacted;
   }
 
   public EnumSet<RewriteAlgorithm> getScope() {
@@ -69,4 +84,24 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
   public boolean isSupported(EnumSet<RewriteAlgorithm> scope) {
     return !intersection(this.scope, scope).isEmpty();
   }
+
+  public boolean isSourceTablesUpdateDeleteModified() {
+    return sourceTablesUpdateDeleteModified;
+  }
+
+  public boolean isSourceTablesCompacted() {
+    return sourceTablesCompacted;
+  }
+
+  public HiveRelOptMaterialization updateInvalidation(Materialization materialization) {
+    return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
+        materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted());
+  }
+
+  public HiveRelOptMaterialization copyToNewCluster(RelOptCluster optCluster, PartitionPruneRuleHelper ruleHelper) {
+    final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(optCluster, tableRel, ruleHelper);
+    return new HiveRelOptMaterialization(newViewScan, queryRel, null, qualifiedTableName, scope,
+        sourceTablesUpdateDeleteModified, sourceTablesCompacted);
+  }
+
 }

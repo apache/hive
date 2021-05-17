@@ -28,6 +28,7 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -39,6 +40,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -70,6 +72,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final ImmutableSet<Integer> virtualColIndxsInTS;
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
+  private final boolean fetchDeletedRows;
 
   public String getTableAlias() {
     return tblAlias;
@@ -93,11 +96,18 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView);
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, false);
+  }
+
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView, boolean fetchDeletedRows) {
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView,
+        fetchDeletedRows);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView) {
+      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
+      boolean fetchDeletedRows) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
@@ -110,6 +120,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.virtualColIndxsInTS = colIndxPair.getRight();
     this.useQBIdInDigest = useQBIdInDigest;
     this.insideView = insideView;
+    this.fetchDeletedRows = fetchDeletedRows;
   }
 
   @Override
@@ -126,8 +137,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView);
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
+        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
+  }
+
+  public HiveTableScan enableFetchDeletedRows() {
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
+        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, true);
   }
 
   /**
@@ -139,7 +155,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       PartitionPruneRuleHelper ruleHelper) {
     return new HiveTableScan(getCluster(), getTraitSet(),
         ((RelOptHiveTable) table).copy(newRowtype, ruleHelper, true), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView);
+        newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
   }
 
   @Override public RelWriter explainTerms(RelWriter pw) {
@@ -269,6 +285,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return insideView;
   }
 
+  public boolean isFetchDeletedRows() {
+    return fetchDeletedRows;
+  }
+
   // We need to include isInsideView inside digest to differentiate direct
   // tables and tables inside view. Otherwise, Calcite will treat them as the same.
   // Also include partition list key to trigger cost evaluation even if an
@@ -276,7 +296,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public String computeDigest() {
     String digest = super.computeDigest() +
         "[" + this.neededColIndxsFrmReloptHT + "]" +
-        "[" + this.isInsideView() + "]";
+        "[" + this.isInsideView() + "]" +
+        "[" + this.isFetchDeletedRows() + "]";
     String partitionListKey = ((RelOptHiveTable) table).getPartitionListKey();
     if (partitionListKey != null) {
       return digest + "[" + partitionListKey + "]";
@@ -297,5 +318,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       }
     }
     return super.computeSelfCost(planner, mq);
+  }
+
+  @Override
+  public RelNode accept(RelShuttle shuttle) {
+    if(shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 }
