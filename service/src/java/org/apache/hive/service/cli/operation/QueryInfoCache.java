@@ -101,20 +101,6 @@ public class QueryInfoCache {
   }
 
   /**
-   * @return the total size of the cache
-   */
-  public int size() {
-    int size = 0;
-    synchronized (webuiLock) {
-      size += liveQueryInfos.size();
-      if (historicalQueryInfos != null) {
-        size += historicalQueryInfos.size();
-      }
-    }
-    return size;
-  }
-
-  /**
    * @param handle handle of SQLOperation.
    * @return display representing a particular SQLOperation.
    */
@@ -146,19 +132,15 @@ public class QueryInfoCache {
     return result;
   }
 
-  private List<QueryInfo> getCachedQueryInfos() {
-    List<QueryInfo> results = new LinkedList<>();
+  public Set<String> getAllQueryIds() {
+    List<QueryInfo> queryInfos = new LinkedList<>();
     synchronized (webuiLock) {
-      results.addAll(liveQueryInfos.values());
+      queryInfos.addAll(liveQueryInfos.values());
       if (historicalQueryInfos != null) {
-        results.addAll(historicalQueryInfos.values());
+        queryInfos.addAll(historicalQueryInfos.values());
       }
     }
-    return results;
-  }
 
-  public Set<String> getAllQueryIds() {
-    List<QueryInfo> queryInfos = getCachedQueryInfos();
     Set<String> results = new HashSet<>();
     for (QueryInfo queryInfo : queryInfos) {
       results.add(queryInfo.getQueryDisplay().getQueryId());

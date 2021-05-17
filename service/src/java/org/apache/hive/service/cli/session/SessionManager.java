@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -93,7 +94,7 @@ public class SessionManager extends CompositeService {
   private int userIpAddressLimit;
   private final OperationManager operationManager = new OperationManager();
   private KillQueryZookeeperManager killQueryZookeeperManager;
-  private OperationLogManager logManager;
+  private Optional<OperationLogManager> logManager = Optional.empty();
   private ThreadPoolExecutor backgroundOperationPool;
   private boolean isOperationLogEnabled;
   private File operationLogRootDir;
@@ -284,7 +285,7 @@ public class SessionManager extends CompositeService {
         LOG.warn("Failed to schedule cleanup HS2 operation logging root dir: " +
             operationLogRootDir.getAbsolutePath(), e);
       }
-      logManager = new OperationLogManager(this, hiveConf);
+      logManager = Optional.of(new OperationLogManager(this, hiveConf));
     }
   }
 
@@ -376,9 +377,7 @@ public class SessionManager extends CompositeService {
       backgroundOperationPool = null;
     }
     cleanupLoggingRootDir();
-    if (logManager != null) {
-      logManager.stop();
-    }
+    logManager.ifPresent(lm -> lm.stop());
   }
 
   private void cleanupLoggingRootDir() {
@@ -663,7 +662,7 @@ public class SessionManager extends CompositeService {
   }
 
   @VisibleForTesting
-  public OperationLogManager getLogManager() {
+  public Optional<OperationLogManager> getLogManager() {
     return logManager;
   }
 

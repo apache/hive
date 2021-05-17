@@ -119,7 +119,7 @@ public class TestOperationLogManager {
     assertNull(operationManager.getQueryInfo(opHandle1.getHandleIdentifier().toString()));
 
     // now the session1 is closed and has no cached query info, the historic session log dir should be returned.
-    OperationLogManager logManager = sessionManager.getLogManager();
+    OperationLogManager logManager = sessionManager.getLogManager().get();
     List<File> expiredLogDirs = logManager.getExpiredSessionLogDirs();
     List<File> expiredOperationLogs = logManager.getExpiredOperationLogFiles();
 

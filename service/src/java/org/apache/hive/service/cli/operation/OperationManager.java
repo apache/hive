@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,7 +69,7 @@ public class OperationManager extends AbstractService {
   private final SetMultimap<String, String> queryTagToIdMap =
           Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
-  private QueryInfoCache queryInfoCache;
+  private Optional<QueryInfoCache> queryInfoCache = Optional.empty();
 
   public OperationManager() {
     super(OperationManager.class.getSimpleName());
@@ -78,8 +79,9 @@ public class OperationManager extends AbstractService {
   public synchronized void init(HiveConf hiveConf) {
     LogDivertAppender.registerRoutingAppender(hiveConf);
     LogDivertAppenderForTest.registerRoutingAppenderIfInTest(hiveConf);
-
-    this.queryInfoCache = new QueryInfoCache(hiveConf);
+    if (hiveConf.isWebUiEnabled()) {
+      queryInfoCache = Optional.of(new QueryInfoCache(hiveConf));
+    }
     super.init(hiveConf);
   }
 
@@ -193,7 +195,7 @@ public class OperationManager extends AbstractService {
         operation.getParentSession().getSessionHandle());
     queryIdOperation.put(getQueryId(operation), operation);
     handleToOperation.put(operation.getHandle(), operation);
-    queryInfoCache.addLiveQueryInfo(operation);
+    queryInfoCache.ifPresent(cache -> cache.addLiveQueryInfo(operation));
   }
 
   public void updateQueryTag(String queryId, String queryTag) {
@@ -217,7 +219,7 @@ public class OperationManager extends AbstractService {
       queryTagToIdMap.remove(queryTag, queryId);
     }
     LOG.info("Removed queryId: {} corresponding to operation: {} with tag: {}", queryId, opHandle, queryTag);
-    queryInfoCache.removeLiveQueryInfo(operation);
+    queryInfoCache.ifPresent(cache -> cache.removeLiveQueryInfo(operation));
     return operation;
   }
 
@@ -261,7 +263,7 @@ public class OperationManager extends AbstractService {
       OperationState operationState = OperationState.CANCELED;
       operationState.setErrorMessage(errMsg);
       operation.cancel(operationState);
-      queryInfoCache.removeLiveQueryInfo(operation);
+      queryInfoCache.ifPresent(cache -> cache.removeLiveQueryInfo(operation));
     }
   }
 
@@ -369,14 +371,18 @@ public class OperationManager extends AbstractService {
    * hive.server2.webui.max.historic.queries. Newest items will be first.
    */
   public List<QueryInfo> getHistoricalQueryInfos() {
-    return queryInfoCache.getHistoricalQueryInfos();
+    return queryInfoCache
+        .map(cache -> cache.getHistoricalQueryInfos())
+        .orElse(Collections.emptyList());
   }
 
   /**
    * @return displays representing live SQLOperations
    */
   public List<QueryInfo> getLiveQueryInfos() {
-    return queryInfoCache.getLiveQueryInfos();
+    return queryInfoCache
+        .map(cache -> cache.getLiveQueryInfos())
+        .orElse(Collections.emptyList());
   }
 
   /**
@@ -384,7 +390,9 @@ public class OperationManager extends AbstractService {
    * @return display representing a particular SQLOperation.
    */
   public QueryInfo getQueryInfo(String handle) {
-    return queryInfoCache.getQueryInfo(handle);
+    return queryInfoCache
+        .map(cache -> cache.getQueryInfo(handle))
+        .orElse(null);
   }
 
   public Operation getOperationByQueryId(String queryId) {
@@ -419,14 +427,9 @@ public class OperationManager extends AbstractService {
   }
 
   public Set<String> getAllCachedQueryIds() {
-    // On startup, there is a chance that OperationManager is not initialized
-    // when OperationLogDirCleaner trying to clean the expired logs, so the queryInfoCache
-    // is null, return an empty hashset for this case.
-    if (queryInfoCache != null) {
-      return queryInfoCache.getAllQueryIds();
-    } else {
-      return Collections.emptySet();
-    }
+    return queryInfoCache
+        .map(cache -> cache.getAllQueryIds())
+        .orElse(Collections.emptySet());
   }
 
 }
