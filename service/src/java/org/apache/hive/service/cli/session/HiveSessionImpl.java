@@ -243,7 +243,8 @@ public class HiveSessionImpl implements HiveSession {
     try {
       sessionHive = sessionState.getHiveDb();
     } catch (HiveException e) {
-      LOG.error("Failed to retrieve Hive object", e);
+      String msg = "Failed to create Hive Object: " + e;
+      LOG.error(msg, e);
       throw new HiveSQLException(msg, e);
     }
   }
