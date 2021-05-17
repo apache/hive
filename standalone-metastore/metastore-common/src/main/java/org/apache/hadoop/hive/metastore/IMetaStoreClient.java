@@ -3178,7 +3178,7 @@ public interface IMetaStoreClient {
   long openTxn(String user, TxnType txnType) throws TException;
 
   /**
-   * Initiate a transaction at the target cluster or dump/load transactions.
+   * Initiate a repl replayed or hive replication transaction (dump/load).
    * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
    *                   or database under replication name for hive replication txns
    * @param srcTxnIds The list of transaction ids at the source cluster in case of repl replayed transactions
@@ -3234,7 +3234,7 @@ public interface IMetaStoreClient {
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
    * @param srcTxnid id of transaction at source while is rolled back and to be replicated
-   *                 or null incase of hive replication transactions
+   *                 or null in case of hive replication transactions
    * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
    *                   or database under replication name for hive replication txns
    * @param txnType Type of transaction to Rollback: REPL_CREATED for repl replayed transactions
