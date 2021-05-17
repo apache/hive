@@ -989,12 +989,17 @@ public class VectorizedOrcAcidRowBatchReader
           rowIsDeletedVector.vector[0] = 0;
           rowIsDeletedVector.isRepeating = true;
         } else {
-          Arrays.fill(rowIsDeletedVector.vector, 1);
-          rowIsDeletedVector.isRepeating = false;
-          for (int setBitIndex = notDeletedBitSet.nextSetBit(0);
-               setBitIndex >= 0;
-               setBitIndex = notDeletedBitSet.nextSetBit(setBitIndex + 1)) {
-            rowIsDeletedVector.vector[setBitIndex] = 0;
+          if (notDeletedBitSet.cardinality() == 0) {
+            rowIsDeletedVector.vector[0] = 1;
+            rowIsDeletedVector.isRepeating = true;
+          } else {
+            Arrays.fill(rowIsDeletedVector.vector, 1);
+            rowIsDeletedVector.isRepeating = false;
+            for (int setBitIndex = notDeletedBitSet.nextSetBit(0);
+                 setBitIndex >= 0;
+                 setBitIndex = notDeletedBitSet.nextSetBit(setBitIndex + 1)) {
+              rowIsDeletedVector.vector[setBitIndex] = 0;
+            }
           }
         }
       } else {
