@@ -695,15 +695,13 @@ public class ObjectStore implements RawStore, Configurable {
     LOG.debug("Fetching all catalog names");
     boolean commited = false;
     List<String> catalogs = null;
-
-    String queryStr = "select name from org.apache.hadoop.hive.metastore.model.MCatalog";
-    Query query = null;
+    Query<MCatalog> query = null;
 
     openTransaction();
     try {
-      query = pm.newQuery(queryStr);
+      query = pm.newQuery(MCatalog.class);
       query.setResult("name");
-      catalogs = new ArrayList<>((Collection<String>) query.execute());
+      catalogs = new ArrayList<>(query.executeResultList(String.class));
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
@@ -734,14 +732,15 @@ public class ObjectStore implements RawStore, Configurable {
 
   private MCatalog getMCatalog(String catalogName) {
     boolean committed = false;
-    Query query = null;
+    Query<MCatalog> query = null;
+    final String normalizedCatalogName = normalizeIdentifier(catalogName);
     try {
       openTransaction();
-      catalogName = normalizeIdentifier(catalogName);
-      query = pm.newQuery(MCatalog.class, "name == catname");
-      query.declareParameters("java.lang.String catname");
+      query = pm.newQuery(MCatalog.class);
+      query.setFilter("this.name == :name");
+      query.setNamedParameters(Collections.singletonMap("name", normalizedCatalogName));
       query.setUnique(true);
-      MCatalog mCat = (MCatalog)query.execute(catalogName);
+      MCatalog mCat = (MCatalog) query.execute(catalogName);
       pm.retrieve(mCat);
       committed = commitTransaction();
       return mCat;
