@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -5503,21 +5504,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           long maxColLen = 0;
           long numTrues = 0;
           long numFalses = 0;
-          byte[] bitVector = null;
+          byte[] bitVector;
+          Long longHighVal = null;
+          Long longLowVal = null;
+          Double doubleHighVal = null;
+          Double doubleLowVal = null;
+          String decimalHighVal = null;
+          String decimalLowVal = null;
           if (columnType.equalsIgnoreCase("long")
                   || columnType.equalsIgnoreCase("tinyint")
                   || columnType.equalsIgnoreCase("smallint")
                   || columnType.equalsIgnoreCase("int")
-                  || columnType.equalsIgnoreCase("bigint")
-                  || columnType.equalsIgnoreCase("timestamp")) {
+                  || columnType.equalsIgnoreCase("bigint")) {
             numNulls = statsData.getLongStats().getNumNulls();
             numDVs = statsData.getLongStats().getNumDVs();
             bitVector = statsData.getLongStats().getBitVectors();
+            longHighVal = statsData.getLongStats().getHighValue();
+            longLowVal = statsData.getLongStats().getLowValue();
           } else if (columnType.equalsIgnoreCase("double")
                   || columnType.equalsIgnoreCase("float")) {
             numNulls = statsData.getDoubleStats().getNumNulls();
             numDVs = statsData.getDoubleStats().getNumDVs();
             bitVector = statsData.getDoubleStats().getBitVectors();
+            doubleHighVal = statsData.getDoubleStats().getHighValue();
+            doubleLowVal = statsData.getDoubleStats().getLowValue();
           } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
                   || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
             avgColLen = statsData.getStringStats().getAvgColLen();
@@ -5537,11 +5547,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             bitVector = statsData.getBinaryStats().getBitVectors();
           } else if (columnType.toLowerCase().startsWith("decimal")) {
             numNulls = statsData.getDecimalStats().getNumNulls();
+            numDVs = statsData.getDecimalStats().getNumDVs();
             bitVector = statsData.getDecimalStats().getBitVectors();
+            decimalHighVal = DecimalUtils.createJdoDecimalString(statsData.getDecimalStats().getHighValue());
+            decimalLowVal = DecimalUtils.createJdoDecimalString(statsData.getDecimalStats().getLowValue());
           } else if (columnType.equalsIgnoreCase("date")) {
             numNulls = statsData.getDateStats().getNumNulls();
             numDVs = statsData.getDateStats().getNumDVs();
             bitVector = statsData.getDateStats().getBitVectors();
+          } else if (columnType.equalsIgnoreCase("timestamp")) {
+            numNulls = statsData.getTimestampStats().getNumNulls();
+            numDVs = statsData.getTimestampStats().getNumDVs();
+            bitVector = statsData.getTimestampStats().getBitVectors();
+          } else {
+            throw new RuntimeException("Invalid datatype" + columnType);
           }
 
           if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRESQL_NAME) && bitVector == null) {
@@ -5558,22 +5577,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           statement.setString(6, statisticsObj.getColName());
           statement.setString(7, statisticsObj.getColType());
           statement.setLong(8, partId);
-          statement.setObject(9,
-                  (statsData.isSetLongStats() ? statsData.getLongStats().getLowValue() : null));
-          statement.setObject(10,
-                  (statsData.isSetLongStats() ? statsData.getLongStats().getHighValue() : null));
-          statement.setObject(11,
-                  (statsData.isSetDoubleStats() ? statsData.getDoubleStats().getLowValue() : null));
-          statement.setObject(12,
-                  (statsData.isSetDoubleStats() ? statsData.getDoubleStats().getHighValue() : null));
-          statement.setObject(13,
-                  (statsData.isSetDecimalStats() ? statsData.getDecimalStats().getLowValue() : null),
-                  java.sql.JDBCType.DECIMAL, statsData.isSetDecimalStats() ?
-                          statsData.getDecimalStats().getLowValue().getScale() : 0);
-          statement.setObject(14,
-                  (statsData.isSetDecimalStats() ? statsData.getDecimalStats().getHighValue() : null),
-                  java.sql.JDBCType.DECIMAL, statsData.isSetDecimalStats() ?
-                          statsData.getDecimalStats().getHighValue().getScale() : 0);
+          statement.setObject(9, longLowVal);
+          statement.setObject(10, longHighVal);
+          statement.setObject(11, doubleHighVal);
+          statement.setObject(12, doubleLowVal);
+          statement.setString(13, decimalLowVal);
+          statement.setString(14, decimalHighVal);
           statement.setLong(15, numNulls);
           statement.setLong(16, numDVs);
           statement.setBytes(17, bitVector);
@@ -5873,7 +5882,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.info("ETL_PERF done updatePartitionParamTable");
 
         LOG.info("ETL_PERF started cleanOldStatsFromPartColStatTable ");
-        cleanOldStatsFromPartColStatTable(dbConn, partIdList);
+        //cleanOldStatsFromPartColStatTable(dbConn, partIdList);
         LOG.info("ETL_PERF done cleanOldStatsFromPartColStatTable ");
 
         LOG.info("ETL_PERF started insertIntoPartColStatTable ");

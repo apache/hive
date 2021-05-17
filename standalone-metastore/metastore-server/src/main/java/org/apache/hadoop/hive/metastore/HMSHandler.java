@@ -9029,10 +9029,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             colNames, newStatsMap, request);
       } else { // No merge.
         Table t = getTable(catName, dbName, tableName);
-        LOG.info("ETL_PERF started updatePartitionColStatsInBatch");
-        ret = updatePartitionColStatsInBatch(t, newStatsMap,
-                request.getValidWriteIdList(), request.getWriteId());
-        LOG.info("ETL_PERF done updatePartitionColStatsInBatch");
+        // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
+        if (newStatsMap.size() > 1) {
+          LOG.info("ETL_PERF started updatePartitionColStatsInBatch");
+          ret = updatePartitionColStatsInBatch(t, newStatsMap,
+                  request.getValidWriteIdList(), request.getWriteId());
+          LOG.info("ETL_PERF done updatePartitionColStatsInBatch");
+        } else {
+          ret = updatePartitonColStatsInternal(t, newStatsMap.values().iterator().next(),
+                  request.getValidWriteIdList(), request.getWriteId());
+        }
       }
     }
     return ret;
