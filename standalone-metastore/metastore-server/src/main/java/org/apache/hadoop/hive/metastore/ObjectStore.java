@@ -5095,14 +5095,18 @@ public class ObjectStore implements RawStore, Configurable {
       Iterator<List<String>> part_val_itr = part_vals.iterator();
       Set<MColumnDescriptor> oldCds = new HashSet<>();
       Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+      MTable table = null;
       for (Partition tmpPart: newParts) {
         List<String> tmpPartVals = part_val_itr.next();
         if (writeId > 0) {
           tmpPart.setWriteId(writeId);
         }
         oldCdRef.t = null;
+        if (table == null) {
+          table = this.getMTable(tmpPart.getCatName(), tmpPart.getDbName(), tmpPart.getTableName());
+        }
         Partition result = alterPartitionNoTxn(
-            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef);
+            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef, table);
         results.add(result);
         if (oldCdRef.t != null) {
           oldCds.add(oldCdRef.t);
